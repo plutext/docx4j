@@ -33,7 +33,7 @@ import org.dom4j.Namespace;
 
 public interface Constants {
 
-	
+	// TODO -replace with Tag class 16/11/07
 	
 	/////////////////////////////////////////////////////////////////////////////
 	// 				Open Xml word keywords
