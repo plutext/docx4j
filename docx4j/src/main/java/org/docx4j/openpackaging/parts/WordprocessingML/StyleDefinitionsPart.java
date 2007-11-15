@@ -19,41 +19,26 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringWriter;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.docx4j.document.wordprocessingml.*;
-import org.docx4j.document.wordprocessingml.style.*;
 import org.docx4j.document.wordprocessingml.styledefinitionspart.DocDefaults;
 import org.docx4j.document.wordprocessingml.styledefinitionspart.LatentStyles;
 import org.docx4j.document.wordprocessingml.styledefinitionspart.Style;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.OpenXML4JException;
-import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.Namespace;
-import org.dom4j.Node;
 import org.dom4j.QName;
 import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
-
-
-
-
-
 
 public final class StyleDefinitionsPart extends Part {
 	
