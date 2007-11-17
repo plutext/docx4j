@@ -96,6 +96,9 @@ public class LoadFromJCR extends Load {
         	
 	}
 	
+	 // HashMap containing the names of all the nodes,
+		// so we can tell whether there are any orphans
+	public HashMap unusedJCRNodes = null;
 	
 	public LoadFromJCR() {
 		this(new ContentTypeManagerImpl() );
@@ -122,12 +125,9 @@ public class LoadFromJCR extends Load {
 		Package p = null;
 		
 		// 1. The idea is to walk the tree of relationships, getting
-//		everything we need from JCR.  But I'd like to know
-//		whether there are any orphans, so first we make
-//		a HashMap containing the names of all the nodes,
-		// so we can tick them off.
+//		everything we need from JCR. 
 		
-		HashMap unusedJCRNodes = new HashMap();
+		unusedJCRNodes = new HashMap();
         try {
 	        Node docxContentNode = docxNode.getNode("jcr:content");
 
@@ -177,7 +177,7 @@ public class LoadFromJCR extends Load {
 	//		in the relationships
 	//		(ii) add the new Part to the package
 	//		(iii) cross the PartName off unusedJCRNodes
-			addPartsFromRelationships(jcrSession, docxContentNode, p, rp, unusedJCRNodes );
+			addPartsFromRelationships(jcrSession, docxContentNode, p, rp );
 			
 			
 			// 6. Check unusedJCRNodes is empty
@@ -190,7 +190,7 @@ public class LoadFromJCR extends Load {
 			 
 	    } catch (Exception e) {
 			e.printStackTrace() ;
-			throw new Docx4JException("Failed to get package");			
+			throw new Docx4JException("Failed to get package", e);			
 	    }
 	    
 	 return p;
@@ -270,9 +270,8 @@ public class LoadFromJCR extends Load {
 	(ii) add the new Part to the package
 	(iii) cross the PartName off unusedJCRNodes
 	*/
-	private void addPartsFromRelationships(Session jcrSession, 
-			Node docxNode, Base source, RelationshipsPart rp,
-			HashMap unusedJCRNodes ) throws Docx4JException {
+	public void addPartsFromRelationships(Session jcrSession, 
+			Node docxNode, Base source, RelationshipsPart rp) throws Docx4JException {
 		
 		Package pkg = source.getPackage();		
 		
@@ -282,44 +281,69 @@ public class LoadFromJCR extends Load {
 					+ " Source is " + r.getSource().getPartName() 
 					+ ", Target is " + r.getTargetURI() );
 			try {
-				String target = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 				
+
 				// Now drop leading "/'
-				target = target.substring(1);				
+				resolvedPartUri = resolvedPartUri.substring(1);				
 
 				// Now normalise it .. ie abc/def/../ghi
 				// becomes abc/ghi
 //				target = (new java.net.URI(target)).normalize().toString();
 //				log.info("Normalised, it is " + target );				
 				
-				Part part = getPart(jcrSession, docxNode, target);
-				pkg.addPart(part);
-				part.setPackage(pkg); 
-				
-				// The source Part (or Package) might have a convenience
-				// method for this
-				if (source.setPartShortcut(part, r.getRelationshipType() ) ) {
-					log.info("Convenience method established from " + source.getPartName() 
-							+ " to " + part.getPartName());
-				}				
-				
-				unusedJCRNodes.put(target, new Boolean(false));
-				log.info(".. added part '" + part.getPartName() + "'" );
-				
-				RelationshipsPart rrp = getRelationshipsPart(jcrSession, docxNode, part);
-				if (rrp!=null) {
-					// recurse via this parts relationships, if it has any
-					addPartsFromRelationships(jcrSession, docxNode, part, rrp, unusedJCRNodes );					
-					String relPart = PartName.getRelationshipsPartName(
-							part.getPartName().getName().substring(1) );
-					unusedJCRNodes.put(relPart, new Boolean(false));
-				}
+				getPart(jcrSession, docxNode, source, pkg, 
+						resolvedPartUri, r.getRelationshipType());
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
 		}
 		
 		
+	}
+
+
+	/**
+	 * Get a Part (except a relationships part), and all its related parts.  
+	 * This can be called directly from outside the library, in which case 
+	 * the Part will not be owned by a Package until the calling code makes it so.  
+	 *
+	 * @param jcrSession
+	 * @param docxNode
+	 * @param source
+	 * @param pkg
+	 * @param resolvedPartUri
+	 * @param relationshipType
+	 * @throws Docx4JException
+	 * @throws RepositoryException
+	 * @throws InvalidFormatException
+	 */
+	public void getPart(Session jcrSession, Node docxNode, Base source,
+			Package pkg, String resolvedPartUri, String relationshipType)
+			throws Docx4JException, RepositoryException, InvalidFormatException {
+		
+		Part part = getRawPart(jcrSession, docxNode, resolvedPartUri);
+		pkg.addPart(part);
+		part.setPackage(pkg); 
+		
+		// The source Part (or Package) might have a convenience
+		// method for this
+		if (source.setPartShortcut(part, relationshipType ) ) {
+			log.info("Convenience method established from " + source.getPartName() 
+					+ " to " + part.getPartName());
+		}				
+		
+		unusedJCRNodes.put(resolvedPartUri, new Boolean(false));
+		log.info(".. added part '" + part.getPartName() + "'" );
+		
+		RelationshipsPart rrp = getRelationshipsPart(jcrSession, docxNode, part);
+		if (rrp!=null) {
+			// recurse via this parts relationships, if it has any
+			addPartsFromRelationships(jcrSession, docxNode, part, rrp );					
+			String relPart = PartName.getRelationshipsPartName(
+					part.getPartName().getName().substring(1) );
+			unusedJCRNodes.put(relPart, new Boolean(false));
+		}
 	}
 
 
@@ -362,9 +386,12 @@ public class LoadFromJCR extends Load {
 
 
 	/**
-	 * Get a Part (except a relationships part).  This can be called directly from 
-	 * outside the library, in which case 
+	 * Get a Part (except a relationships part), but not its relationships part
+	 * or related parts.  Useful if you need quick access to just this part.
+	 * This can be called directly from outside the library, in which case 
 	 * the Part will not be owned by a Package until the calling code makes it so.  
+	 * @see  To get a Part and all its related parts, and add all to a package, use
+	 * getPart.
 	 * @param jcrSession
 	 * @param docxNode
 	 * @param resolvedPartUri
@@ -373,7 +400,7 @@ public class LoadFromJCR extends Load {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	public Part getPart(Session jcrSession, Node docxNode, String resolvedPartUri)
+	public Part getRawPart(Session jcrSession, Node docxNode, String resolvedPartUri)
 			throws Docx4JException {
 		Part part = null;
 		try {
