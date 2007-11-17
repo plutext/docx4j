@@ -71,6 +71,10 @@ public class LoadFromZipFile extends Load {
 		LoadFromZipFile loader = new LoadFromZipFile();
 		loader.get(filepath);		
 	}
+
+	 // HashMap containing the names of all the zip entries,
+	// so we can tell whether there are any orphans
+	public HashMap unusedZipEntries = null;
 	
 	public LoadFromZipFile() {
 		this(new ContentTypeManagerImpl() );
@@ -107,7 +111,7 @@ public class LoadFromZipFile extends Load {
 //		a HashMap containing the names of all the zip file 
 //		entries, so we can tick them off.
 		
-		HashMap unusedZipEntries = new HashMap();
+		unusedZipEntries = new HashMap();
 		Enumeration entries = zf.entries();
 		while (entries.hasMoreElements()) {
 			ZipEntry entry = (ZipEntry) entries.nextElement();
@@ -158,7 +162,7 @@ public class LoadFromZipFile extends Load {
 //		in the relationships
 //		(ii) add the new Part to the package
 //		(iii) cross the PartName off unusedZipEntries
-		addPartsFromRelationships(zf, p, rp, unusedZipEntries );
+		addPartsFromRelationships(zf, p, rp );
 		
 		
 		// 6. Check unusedZipEntries is empty
@@ -212,8 +216,8 @@ public class LoadFromZipFile extends Load {
 	(ii) add the new Part to the package
 	(iii) cross the PartName off unusedZipEntries
 	*/
-	private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp,
-			HashMap unusedZipEntries )  throws Docx4JException {
+	private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp)
+		throws Docx4JException {
 		
 		Package pkg = source.getPackage();				
 		
@@ -223,42 +227,21 @@ public class LoadFromZipFile extends Load {
 					+ r.getSource().getPartName() 
 					+ ", Target is " + r.getTargetURI() );
 			try {
-				String target = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 				
 				// Now drop leading "/'
-				target = target.substring(1);				
+				resolvedPartUri = resolvedPartUri.substring(1);				
 				
 				// Now normalise it .. ie abc/def/../ghi
 				// becomes abc/ghi
 				// Maybe this isn't necessary with a zip file,
 				// - ZipFile class may be smart enough to do it.
 				// But it is certainly necessary in the JCR case.
-				target = (new java.net.URI(target)).normalize().toString();
-				log.info("Normalised, it is " + target );				
+				resolvedPartUri = (new java.net.URI(resolvedPartUri)).normalize().toString();
+				log.info("Normalised, it is " + resolvedPartUri );				
 
-				Part part = getPart(zf, target);
 				
-				pkg.addPart(part);
-				part.setPackage(pkg); 
-				
-				// The source Part (or Package) might have a convenience
-				// method for this
-				if (source.setPartShortcut(part, r.getRelationshipType() ) ) {
-					log.info("Convenience method established from " + source.getPartName() 
-							+ " to " + part.getPartName());
-				}
-				
-				unusedZipEntries.put(target, new Boolean(false));
-				log.info(".. added." );
-				
-				RelationshipsPart rrp = getRelationshipsPart(zf, part);
-				if (rrp!=null) {
-					// recurse via this parts relationships, if it has any
-					addPartsFromRelationships(zf, part, rrp, unusedZipEntries );
-					String relPart = PartName.getRelationshipsPartName(
-							part.getPartName().getName().substring(1) );
-					unusedZipEntries.put(relPart, new Boolean(false));					
-				}
+				getPart(zf, source, pkg, resolvedPartUri, r.getRelationshipType());
 				
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
@@ -266,6 +249,48 @@ public class LoadFromZipFile extends Load {
 		}
 		
 		
+	}
+
+	/**
+	 * Get a Part (except a relationships part), and all its related parts.  
+	 * This can be called directly from outside the library, in which case 
+	 * the Part will not be owned by a Package until the calling code makes it so.  
+	 * 
+	 * @param zf
+	 * @param source
+	 * @param unusedZipEntries
+	 * @param pkg
+	 * @param r
+	 * @param resolvedPartUri
+	 * @throws Docx4JException
+	 * @throws InvalidFormatException
+	 */
+	private void getPart(ZipFile zf, Base source, 
+			Package pkg, String resolvedPartUri, String relationshipType)
+			throws Docx4JException, InvalidFormatException {
+		Part part = getRawPart(zf, resolvedPartUri);
+		
+		pkg.addPart(part);
+		part.setPackage(pkg); 
+		
+		// The source Part (or Package) might have a convenience
+		// method for this
+		if (source.setPartShortcut(part, relationshipType ) ) {
+			log.info("Convenience method established from " + source.getPartName() 
+					+ " to " + part.getPartName());
+		}
+		
+		unusedZipEntries.put(resolvedPartUri, new Boolean(false));
+		log.info(".. added." );
+		
+		RelationshipsPart rrp = getRelationshipsPart(zf, part);
+		if (rrp!=null) {
+			// recurse via this parts relationships, if it has any
+			addPartsFromRelationships(zf, part, rrp );
+			String relPart = PartName.getRelationshipsPartName(
+					part.getPartName().getName().substring(1) );
+			unusedZipEntries.put(relPart, new Boolean(false));					
+		}
 	}
 
 	/**
@@ -300,17 +325,19 @@ public class LoadFromZipFile extends Load {
 	
 
 	/**
-	 * Get a Part (except a relationships part).  This can be called directly from 
-	 * outside the library, in which case 
+	 * Get a Part (except a relationships part), but not its relationships part
+	 * or related parts.  Useful if you need quick access to just this part.
+	 * This can be called directly from outside the library, in which case 
 	 * the Part will not be owned by a Package until the calling code makes it so.  
-	 * 
+	 * @see  To get a Part and all its related parts, and add all to a package, use
+	 * getPart.
 	 * @param zf
 	 * @param resolvedPartUri
 	 * @return
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	private Part getPart(ZipFile zf, String resolvedPartUri)
+	private Part getRawPart(ZipFile zf, String resolvedPartUri)
 			throws Docx4JException {
 		Part part = null;
 		
