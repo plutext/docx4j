@@ -32,10 +32,6 @@ import java.util.zip.ZipFile;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
@@ -48,6 +44,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.openpackaging.samples.DemoCore;
+
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -83,11 +81,11 @@ public class LoadFromZipFile extends Load {
 	}
 	
 	
-	public Package get(String filepath) throws InvalidFormatException {
+	public Package get(String filepath) throws Docx4JException {
 		return get(new File(filepath));
 	}
 	
-	public Package get(File f) throws InvalidFormatException {
+	public Package get(File f) throws Docx4JException {
 		log.info("Filepath = " + f.getPath() );
 		
 		ZipFile zf = null;
@@ -98,6 +96,7 @@ public class LoadFromZipFile extends Load {
 			zf = new ZipFile(f);
 		} catch (IOException ioe) {
 			ioe.printStackTrace() ;
+			throw new Docx4JException("Couldn't get ZipFile", ioe);
 		}
 		
 		//dumpZipFileContents(zf);
@@ -122,9 +121,9 @@ public class LoadFromZipFile extends Load {
 		Document ctmDocument = null;
 		try {
 			ctmDocument = getDocumentFromZippedPart(zf, "[Content_Types].xml");
-		} catch (DocumentException e) {
+		} catch (Exception e) {
 			// Shouldn't happen
-			e.printStackTrace();
+			throw new Docx4JException("Couldn't get [Content_Types].xml", e);
 		}
 		debugPrint(ctmDocument);
 		ctm.parseContentTypesFile(ctmDocument);		
@@ -174,13 +173,14 @@ public class LoadFromZipFile extends Load {
 	}
 	
 	private RelationshipsPart getRelationshipsPartFromZip(Base p, ZipFile zf, String partName) 
-			throws InvalidFormatException {
+			throws Docx4JException {
 			Document contents = null;
 			try {
 				contents = getDocumentFromZippedPart( zf,  partName);
-			} catch (DocumentException e) {
-				// Shouldn't happen, since this is an XML part.
+			} catch (Exception e) {
 				e.printStackTrace();
+				throw new Docx4JException("Error getting document from Zipped Part", e);
+				
 			} 
 		// debugPrint(contents);
 		// TODO - why don't any of the part names in this document start with "/"?
@@ -188,14 +188,10 @@ public class LoadFromZipFile extends Load {
 	}
 	
 	private Document getDocumentFromZippedPart(ZipFile zf, String partName) 
-		throws DocumentException {
+		throws DocumentException, IOException {
 		
 		InputStream in = null;
-		try {			
-			in = zf.getInputStream( zf.getEntry(partName ) );
-		} catch (IOException e) {
-			e.printStackTrace() ;
-		}				
+		in = zf.getInputStream( zf.getEntry(partName ) );
 		SAXReader xmlReader = new SAXReader();
 		Document contents = null;
 		try {
@@ -217,7 +213,7 @@ public class LoadFromZipFile extends Load {
 	(iii) cross the PartName off unusedZipEntries
 	*/
 	private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp,
-			HashMap unusedZipEntries ) {
+			HashMap unusedZipEntries )  throws Docx4JException {
 		
 		Package pkg = source.getPackage();				
 		
@@ -255,21 +251,17 @@ public class LoadFromZipFile extends Load {
 				unusedZipEntries.put(target, new Boolean(false));
 				log.info(".. added." );
 				
-				// recurse via this parts relationships, if it has any
-				String relPart = PartName.getRelationshipsPartName(target);
-				if (zf.getEntry(relPart) !=null ) {
-					log.info("Found relationships " + relPart );
-					log.info("Recursing ... " );
-					RelationshipsPart rrp = getRelationshipsPartFromZip(part,  zf,  relPart);
-					part.setRelationships(rrp);
-					unusedZipEntries.put(relPart, new Boolean(false));					
+				RelationshipsPart rrp = getRelationshipsPart(zf, part);
+				if (rrp!=null) {
+					// recurse via this parts relationships, if it has any
 					addPartsFromRelationships(zf, part, rrp, unusedZipEntries );
-				} else {
-					log.info("No relationships " + relPart );					
+					String relPart = PartName.getRelationshipsPartName(
+							part.getPartName().getName().substring(1) );
+					unusedZipEntries.put(relPart, new Boolean(false));					
 				}
+				
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
 		}
 		
@@ -277,8 +269,40 @@ public class LoadFromZipFile extends Load {
 	}
 
 	/**
-	 * Get a Part.  This can be called directly from outside the library, in which case 
-	 * the Part will not be owned by a Package until the calling code makes it so.
+	 * Get the Relationships Part (if there is one) for a given Part.  
+	 * Otherwise return null.
+	 * 
+	 * @param zf
+	 * @param part
+	 * @return
+	 * @throws InvalidFormatException
+	 */
+	public RelationshipsPart getRelationshipsPart(ZipFile zf, Part part)
+	throws Docx4JException, InvalidFormatException {
+		RelationshipsPart rrp = null;
+		// recurse via this parts relationships, if it has any
+		//String relPart = PartName.getRelationshipsPartName(target);
+		String relPart = PartName.getRelationshipsPartName(
+				part.getPartName().getName().substring(1) );
+		
+		if (zf.getEntry(relPart) !=null ) {
+			log.info("Found relationships " + relPart );
+			log.info("Recursing ... " );
+			rrp = getRelationshipsPartFromZip(part,  zf,  relPart);
+			part.setRelationships(rrp);
+		} else {
+			log.info("No relationships " + relPart );	
+			return null;
+		}
+		return rrp;
+	}
+	
+	
+
+	/**
+	 * Get a Part (except a relationships part).  This can be called directly from 
+	 * outside the library, in which case 
+	 * the Part will not be owned by a Package until the calling code makes it so.  
 	 * 
 	 * @param zf
 	 * @param resolvedPartUri
@@ -287,40 +311,46 @@ public class LoadFromZipFile extends Load {
 	 * @throws InvalidFormatException
 	 */
 	private Part getPart(ZipFile zf, String resolvedPartUri)
-			throws URISyntaxException, InvalidFormatException {
+			throws Docx4JException {
 		Part part = null;
 		
 		try {
-		
-			Document contents = getDocumentFromZippedPart( zf,  resolvedPartUri);
+			try {
+			
+				Document contents = getDocumentFromZippedPart( zf,  resolvedPartUri);
 
-			// Get a subclass of Part appropriate for this content type				
-			part = ctm.getPart("/" + resolvedPartUri);
-			part.setDocument(contents );	
-		
-		} catch (DocumentException e) {
-			// Deal with:
+				// Get a subclass of Part appropriate for this content type				
+				part = ctm.getPart("/" + resolvedPartUri);
+				part.setDocument(contents );	
+			
+			} catch (DocumentException e) {
+				// Deal with:
 //					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
 //					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
 //						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
 //						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
 //						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)
-			
-			// Untested in the zip case as of 20071113					
-			
-			InputStream in = null;					
-			try {			
-				in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
-				part = new BinaryPart( new PartName("/" + resolvedPartUri));
 				
-				((BinaryPart)part).setBinaryData(in);
-				log.info("Stored as BinaryData" );
+				// Untested in the zip case as of 20071113					
 				
-			} catch (IOException ioe) {
-				ioe.printStackTrace() ;
-			}				
-			
-		}
+				InputStream in = null;					
+				try {			
+					in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
+					part = new BinaryPart( new PartName("/" + resolvedPartUri));
+					
+					((BinaryPart)part).setBinaryData(in);
+					log.info("Stored as BinaryData" );
+					
+				} catch (IOException ioe) {
+					ioe.printStackTrace() ;
+				}				
+				
+			}
+		} catch (Exception ex) {
+			// IOException, URISyntaxException
+			ex.printStackTrace();
+			throw new Docx4JException("Failed to getPart", ex);			
+		} 
 		return part;
 	}
 	

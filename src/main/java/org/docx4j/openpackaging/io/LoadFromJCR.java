@@ -32,6 +32,7 @@ import javax.jcr.Property;
 import javax.jcr.Repository;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
+import javax.jcr.ValueFormatException;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -51,6 +52,8 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -103,18 +106,18 @@ public class LoadFromJCR extends Load {
 	}
 
 	
-	public Package get(Session jcrSession, String nodePath) {
+	public Package get(Session jcrSession, String nodePath) throws Docx4JException {
         try {
             Node root = jcrSession.getRootNode();
             Node docxNode = root.getNode(nodePath);
             return get(jcrSession, docxNode);
 	    } catch (Exception e) {
 			e.printStackTrace() ;
-			return null;
+			throw new Docx4JException("Failed to get package");
 	    }
 	}
 	
-	public Package get(Session jcrSession, Node docxNode ) {
+	public Package get(Session jcrSession, Node docxNode ) throws Docx4JException  {
 
 		Package p = null;
 		
@@ -187,6 +190,7 @@ public class LoadFromJCR extends Load {
 			 
 	    } catch (Exception e) {
 			e.printStackTrace() ;
+			throw new Docx4JException("Failed to get package");			
 	    }
 	    
 	 return p;
@@ -194,13 +198,13 @@ public class LoadFromJCR extends Load {
 	}
 	
 	public RelationshipsPart getRelationshipsPartFromJCR(Base p, Session jcrSession, Node docxNode, String partName) 
-			throws InvalidFormatException {
+			throws InvalidFormatException, Docx4JException {
 		Document contents=null;
 		try {
 			contents = getDocumentFromJCRPart( jcrSession, docxNode,  partName);
-		} catch (DocumentException e) {
-			// TODO Auto-generated catch block
+		} catch (Exception e) {
 			e.printStackTrace();
+			throw new Docx4JException("Error getting document from JCR Part", e);
 		}
 		
 		log.info("\n\n" + partName + "\n ===================");
@@ -231,24 +235,16 @@ public class LoadFromJCR extends Load {
 		
 	}
 	
-	public static Document getDocumentFromJCRPart(Session jcrSession, Node docxNode, String partName) 
-		throws DocumentException {
+	private Document getDocumentFromJCRPart(Session jcrSession, Node docxNode, String partName) 
+		throws DocumentException, RepositoryException, PathNotFoundException {
 		
 		InputStream in = null;
-		try {
-			try {
-				log.info("Fetching " + encodeSlashes(partName));
-				Node fileNode = docxNode.getNode(encodeSlashes(partName));
-				Node contentNode = fileNode.getNode("jcr:content");
-				
-				Property jcrData = contentNode.getProperty("jcr:data");
-				in = jcrData.getStream();
-			} catch (PathNotFoundException e) {
-				e.printStackTrace();				
-			}
-		} catch (RepositoryException e) {
-			e.printStackTrace();				
-		}
+		log.info("Fetching " + encodeSlashes(partName));
+		Node fileNode = docxNode.getNode(encodeSlashes(partName));
+		Node contentNode = fileNode.getNode("jcr:content");
+		
+		Property jcrData = contentNode.getProperty("jcr:data");
+		in = jcrData.getStream();
 		
 		SAXReader xmlReader = new SAXReader();
 		Document contents = null;
@@ -276,7 +272,7 @@ public class LoadFromJCR extends Load {
 	*/
 	private void addPartsFromRelationships(Session jcrSession, 
 			Node docxNode, Base source, RelationshipsPart rp,
-			HashMap unusedJCRNodes ) {
+			HashMap unusedJCRNodes ) throws Docx4JException {
 		
 		Package pkg = source.getPackage();		
 		
@@ -310,26 +306,16 @@ public class LoadFromJCR extends Load {
 				unusedJCRNodes.put(target, new Boolean(false));
 				log.info(".. added part '" + part.getPartName() + "'" );
 				
-				// recurse via this parts relationships, if it has any
-				String relPart = PartName.getRelationshipsPartName(target);
-				try {
-					docxNode.getNode(encodeSlashes(relPart)); // if null, 
-					//throws javax.jcr.PathNotFoundException
-					
-					log.info("Found relationships " + relPart );
-					log.info("Recursing ... " );
-					RelationshipsPart rrp = getRelationshipsPartFromJCR( 
-							part, jcrSession, docxNode,  relPart);
-					part.setRelationships(rrp);
-					log.info("set its RelationshipsPart to '" + rrp.getPartName() + "'");
-					unusedJCRNodes.put(relPart, new Boolean(false));					
+				RelationshipsPart rrp = getRelationshipsPart(jcrSession, docxNode, part);
+				if (rrp!=null) {
+					// recurse via this parts relationships, if it has any
 					addPartsFromRelationships(jcrSession, docxNode, part, rrp, unusedJCRNodes );					
-				} catch (javax.jcr.PathNotFoundException e) {
-					log.info("No relationships " + relPart );										
+					String relPart = PartName.getRelationshipsPartName(
+							part.getPartName().getName().substring(1) );
+					unusedJCRNodes.put(relPart, new Boolean(false));
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
 		}
 		
@@ -338,43 +324,83 @@ public class LoadFromJCR extends Load {
 
 
 	/**
-	 * Get a Part.  This can be called directly from outside the library, in which case 
+	 * Get the Relationships Part (if there is one) for a given Part.  
+	 * Otherwise return null.
+	 *  
+	 * @param jcrSession
+	 * @param docxNode
+	 * @param part
+	 * @param rrp
+	 * @param relPart
+	 * @return
+	 * @throws RepositoryException
+	 * @throws InvalidFormatException
+	 */
+	public RelationshipsPart getRelationshipsPart(Session jcrSession,
+			Node docxNode, Part part)
+			throws Docx4JException, RepositoryException, InvalidFormatException {
+		//String relPart = PartName.getRelationshipsPartName(target);
+		String relPart = PartName.getRelationshipsPartName(
+				part.getPartName().getName().substring(1) );
+		RelationshipsPart rrp = null;
+		try {
+			docxNode.getNode(encodeSlashes(relPart)); // if null, 
+			//throws javax.jcr.PathNotFoundException
+			
+			log.info("Found relationships " + relPart );
+			log.info("Recursing ... " );
+			rrp = getRelationshipsPartFromJCR( 
+					part, jcrSession, docxNode,  relPart);
+			part.setRelationships(rrp);
+			log.info("set its RelationshipsPart to '" + rrp.getPartName() + "'");
+		} catch (javax.jcr.PathNotFoundException e) {
+			log.info("No relationships " + relPart );	
+			return null;
+		}
+		return rrp;
+	}
+
+
+	/**
+	 * Get a Part (except a relationships part).  This can be called directly from 
+	 * outside the library, in which case 
 	 * the Part will not be owned by a Package until the calling code makes it so.  
 	 * @param jcrSession
 	 * @param docxNode
 	 * @param resolvedPartUri
 	 * @return
+	 * 
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
 	public Part getPart(Session jcrSession, Node docxNode, String resolvedPartUri)
-			throws URISyntaxException, InvalidFormatException {
+			throws Docx4JException {
 		Part part = null;
 		try {
-			Document contents = getDocumentFromJCRPart( jcrSession, 
-					docxNode,  resolvedPartUri);
-			
-			log.info("Root node is: " + contents.getRootElement().getName());					
+			try {
+				Document contents = getDocumentFromJCRPart( jcrSession, 
+						docxNode,  resolvedPartUri);
+				
+				log.info("Root node is: " + contents.getRootElement().getName());					
 
-				// Get a subclass of Part appropriate for this content type
+					// Get a subclass of Part appropriate for this content type
 //						if (parentRef==null) {
-					// Usual case
-					part = ctm.getPart("/" + resolvedPartUri); 
+						// Usual case
+						part = ctm.getPart("/" + resolvedPartUri); 
 //						} else {
 //							// since the Target might look like ../customXml/item1.xml
 //							part = ctm.getPart(parentRef); 
 //						}
-				part.setDocument(contents );					
-			
-		} catch (DocumentException e) {
-			// Deal with:
+					part.setDocument(contents );					
+				
+			} catch (DocumentException e) {
+				// Deal with:
 //					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
 //					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
 //						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
 //						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
 //						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)					
-			InputStream in = null;
-			try {
+				InputStream in = null;
 				log.info("Fetching " + encodeSlashes(resolvedPartUri));
 				Node fileNode = docxNode.getNode(encodeSlashes(resolvedPartUri));
 				Node contentNode = fileNode.getNode("jcr:content");
@@ -386,11 +412,13 @@ public class LoadFromJCR extends Load {
 				
 				((BinaryPart)part).setBinaryData(in);
 				log.info("Stored as BinaryData" );
-				
-			} catch (RepositoryException re) {
-				re.printStackTrace();				
-			}					
-		}
+					
+			}
+		} catch (Exception ex) {
+			// PathNotFoundException, ValueFormatException, RepositoryException, URISyntaxException
+			ex.printStackTrace();
+			throw new Docx4JException("Failed to getPart", ex);
+		} 
 		return part;
 	}
 		

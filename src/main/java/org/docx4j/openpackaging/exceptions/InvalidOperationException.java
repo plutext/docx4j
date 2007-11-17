@@ -35,7 +35,7 @@ package org.docx4j.openpackaging.exceptions;
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class InvalidOperationException extends OpenXML4JRuntimeException{
+public class InvalidOperationException extends Docx4JRuntimeException{
 
 	public InvalidOperationException(String message){
 		super(message);

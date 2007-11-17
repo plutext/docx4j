@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.OpenXML4JException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.Part;
 import org.dom4j.Document;
 
