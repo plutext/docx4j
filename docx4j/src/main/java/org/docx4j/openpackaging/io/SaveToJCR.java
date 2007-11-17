@@ -52,6 +52,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
@@ -94,7 +96,7 @@ public class SaveToJCR {
           Node baseNode = exampledoc1.addNode("jcr:content", "nt:unstructured");
        Consider passing instead the folder node and desired filename.
 	 *  */
-	public boolean save(Node baseNode) throws InvalidFormatException {
+	public boolean save(Node baseNode) throws Docx4JException {
 		
 		
 		 try {
@@ -105,7 +107,7 @@ public class SaveToJCR {
 
 			// 3. Get [Content_Types].xml
 			ContentTypeManager ctm = p.getContentTypeManager();
-			put(baseNode, "[Content_Types].xml", ctm.getDocument() );
+			saveRawXmlPart(baseNode, "[Content_Types].xml", ctm.getDocument() );
 	        
 			// 4. Start with _rels/.rels
 
@@ -117,7 +119,9 @@ public class SaveToJCR {
 			
 			String partName = "_rels/.rels";
 			RelationshipsPart rp = p.getRelationshipPart();
-			put(baseNode, partName, rp.getDocument() );
+			// TODO - replace with saveRawXmlPart(baseNode, rp)
+			// once we know that partName resolves correctly
+			saveRawXmlPart(baseNode, partName, rp.getDocument() );
 			
 			
 			// 5. Now recursively 
@@ -128,6 +132,11 @@ public class SaveToJCR {
 	    
 	    } catch (Exception e) {
 			e.printStackTrace() ;
+			if (e instanceof Docx4JException) {
+				throw (Docx4JException)e;
+			} else {
+				throw new Docx4JException("Failed to save package", e);
+			}
 	    }
 
 	    log.info("...Done!" );		
@@ -144,12 +153,24 @@ public class SaveToJCR {
 		
 	}
 
+
+	public String saveRawXmlPart(Node baseNode, Part part) throws Docx4JException {
+		
+		// This is a neater signature and should be used where possible!
+		
+		String partName = part.getPartName().getName().substring(1);
+		
+		org.dom4j.Document xml = part.getDocument();
+		
+		return saveRawXmlPart(baseNode, partName, xml);  
+		
+	}
 	
 	/* @displayName - a human readable description for this content
 	 * object.  Pass null if you don't want the displayName property set. 
 	 * Returns the version number of the resource.
 	 */
-	public String put(Node baseNode, String partName, org.dom4j.Document xml) throws IOException {
+	public String saveRawXmlPart(Node baseNode, String partName, org.dom4j.Document xml) throws Docx4JException {
 
 		try {
             // NB: Nodetypes used are required for interoperability with 
@@ -236,7 +257,7 @@ public class SaveToJCR {
 			
 		} catch (Exception e ) {
 			e.printStackTrace();
-			return null;
+			throw new Docx4JException("Failed to put " + partName, e);
 		}
 				
 	}
@@ -247,7 +268,7 @@ public class SaveToJCR {
 		(iii) traverse its relationship
 	*/
 	public void addPartsFromRelationships( 
-			Node baseNode, RelationshipsPart rp ) {
+			Node baseNode, RelationshipsPart rp )  throws Docx4JException  {
 		
 		for (Iterator it = rp.iterator(); it.hasNext(); ) {
 			Relationship r = (Relationship)it.next();
@@ -255,9 +276,9 @@ public class SaveToJCR {
 					+ " Source is " + r.getSource().getPartName() 
 					+ ", Target is " + r.getTargetURI() );
 			try {
-				String target = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 				// Now drop leading "/'
-				target = target.substring(1);				
+				resolvedPartUri = resolvedPartUri.substring(1);				
 				
 				// Now normalise it .. ie abc/def/../ghi
 				// becomes abc/ghi
@@ -270,66 +291,66 @@ public class SaveToJCR {
 				// TODO - if this is already in our hashmap, skip
 				// to the next				
 				if (!false) {
-					log.info("Getting part /" + target );
+					log.info("Getting part /" + resolvedPartUri );
+					Part part = p.getPart(new PartName("/" + resolvedPartUri));
+					log.info( part.getClass());
 					
-					Part part = null;
-					if (target.indexOf("document.xml")>-1)  {
-												
-						part = p.getPart(new PartName("/" + target));							
-						log.info( part.getClass());
-						
-						if ( part instanceof MainDocumentPart) {
-							// nb that returns true if its an instance of a subclass!
-							part = p.getPart(new PartName("/" + target));
-							log.info(".. saving " );
-							put( baseNode, target, part.getDocument() );								
-							
-						}  else {
-							// Should not happen
-							log.error("check logic - encountered class " + part.getClass());							
-						}
-						
-					} else {
-						// The usual case - a part other than document.xml
-						part = p.getPart(new PartName("/" + target));
-						if (part instanceof BinaryPart) {
-							log.info(".. saving binary stuff" );
-							put( baseNode, target, ((BinaryPart)part).getBinaryData() );
-							
-						} else {
-							// The usual case
-							log.info(".. saving " );
-							put( baseNode, target, part.getDocument() );
-						}
-					}
-					
-					// recurse via this parts relationships, if it has any
-					if (part.getRelationshipPart()!= null ) {
-						RelationshipsPart rrp = part.getRelationshipPart(); // **
-						String relPart = PartName.getRelationshipsPartName(target);
-						log.info("Found relationships " + relPart );
-						put(baseNode,  relPart, rrp.getDocument() );
-						log.info("Recursing ... " );
-//						addPartsFromRelationships( baseNode, PartName.base(target), rrp );
-						addPartsFromRelationships( baseNode, rrp );
-					} else {
-						log.info("No relationships for " + target );					
-					}
+					savePart(baseNode, part);
 					
 				}
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
 		}
 		
 		
 	}
 
-	/* put binary parts */
-	protected void put(Node baseNode, String partName, InputStream bin) throws IOException {
+	/**
+	 * Save a Part (not a relationship part though) to JCR, along with its relationship
+	 * part (if any), and any parts referred to in its relationships, 
+	 * and so on, recursively.
+	 * @param baseNode
+	 * @param target
+	 * @param part
+	 * @throws Docx4JException
+	 */
+	public void savePart(Node baseNode, Part part)
+			throws Docx4JException {
+		
+		// Drop the leading '/'
+		String resolvedPartUri = part.getPartName().getName().substring(1);
+		if (part instanceof BinaryPart) {
+			log.info(".. saving binary stuff" );
+			saveRawBinaryPart( baseNode, part );
+			
+		} else {
+			log.info(".. saving " );
+			saveRawXmlPart( baseNode, part );
+		}
+		
+		// recurse via this parts relationships, if it has any
+		if (part.getRelationshipPart()!= null ) {
+			RelationshipsPart rrp = part.getRelationshipPart(); // **
+			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
+			log.info("Found relationships " + relPart );
+			saveRawXmlPart(baseNode,  relPart, rrp.getDocument() );
+			log.info("Recursing ... " );
+			addPartsFromRelationships( baseNode, rrp );
+		} else {
+			log.info("No relationships for " + resolvedPartUri );					
+		}
+	}
 
+	/* put binary parts */
+	protected void saveRawBinaryPart(Node baseNode, Part part) throws Docx4JException {
+
+		// Drop the leading '/'
+		String resolvedPartUri = part.getPartName().getName().substring(1);
+
+		InputStream bin = ((BinaryPart)part).getBinaryData();
+		
 		try {
 		
 			// Create an nt:file node to represent each file name
@@ -337,11 +358,11 @@ public class SaveToJCR {
 			Node fileNode;			
 			try {
 				// Does it exist already?
-				fileNode = baseNode.getNode(encodeSlashes(partName));
-				log.info(encodeSlashes(partName) + " found .. ");				
+				fileNode = baseNode.getNode(encodeSlashes(resolvedPartUri));
+				log.info(encodeSlashes(resolvedPartUri) + " found .. ");				
 			} catch (PathNotFoundException pnf) {
-				log.info(encodeSlashes(partName) + " not found .. so adding");
-		        fileNode = baseNode.addNode( encodeSlashes(partName), "nt:file" );
+				log.info(encodeSlashes(resolvedPartUri) + " not found .. so adding");
+		        fileNode = baseNode.addNode( encodeSlashes(resolvedPartUri), "nt:file" );
 		    }	        			
 	        //Node fileNode = baseNode.addNode( encodeSlashes(partName), "nt:file" );
 
@@ -377,7 +398,7 @@ public class SaveToJCR {
 			
 			Version firstVersion = contentNode.checkin();
 		} catch (Exception e ) {
-			e.printStackTrace();
+			throw new Docx4JException("Failed to put binary part", e);			
 		}
 	}
 	

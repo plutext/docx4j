@@ -33,10 +33,13 @@ import java.util.zip.ZipOutputStream;
 
 import java.util.Iterator;
 
+import javax.jcr.Node;
+
 import org.apache.log4j.Logger;
 
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
@@ -86,7 +89,7 @@ public class SaveToZipFile {
 	
 
 	/* Save a Package as a Zip file in the file system */
-	public boolean save(String filepath) throws InvalidFormatException {
+	public boolean save(String filepath) throws Docx4JException  {
 		
 		log.info("Saving to" +  filepath );		
 		try {
@@ -99,7 +102,7 @@ public class SaveToZipFile {
 	}
 	
 	/* Save a Package as a Zip file in the outputstream provided */
-	public boolean save(OutputStream realOS) throws InvalidFormatException {		
+	public boolean save(OutputStream realOS) throws Docx4JException  {		
 		
 		 try {
 
@@ -108,7 +111,7 @@ public class SaveToZipFile {
 			
 			// 3. Get [Content_Types].xml
 			ContentTypeManager ctm = p.getContentTypeManager();
-			put(out, "[Content_Types].xml", ctm.getDocument() );
+			saveRawXmlPart(out, "[Content_Types].xml", ctm.getDocument() );
 	        
 			// 4. Start with _rels/.rels
 
@@ -120,7 +123,7 @@ public class SaveToZipFile {
 			
 			String partName = "_rels/.rels";
 			RelationshipsPart rp = p.getRelationshipPart();
-			put(out, partName, rp.getDocument() );
+			saveRawXmlPart(out, partName, rp.getDocument() );
 			
 			
 			// 5. Now recursively 
@@ -133,8 +136,14 @@ public class SaveToZipFile {
 			// to work, but when you open the zip file you'll get an error
 			// "End-of-central-directory signature not found."
 	        out.close();
-	    } catch (IOException e) {
+	        
+	    } catch (Exception e) {
 			e.printStackTrace() ;
+			if (e instanceof Docx4JException) {
+				throw (Docx4JException)e;
+			} else {
+				throw new Docx4JException("Failed to save package", e);
+			}
 	    }
 
 	    log.info("...Done!" );		
@@ -142,24 +151,36 @@ public class SaveToZipFile {
 		 return true;
 	}
 
-	
-	protected void put(ZipOutputStream out, String partName, Document xml) throws IOException {
+
+	public void  saveRawXmlPart(ZipOutputStream out, Part part) throws Docx4JException {
 		
-        // Add ZIP entry to output stream.
-        out.putNextEntry(new ZipEntry(partName));
+		// This is a neater signature and should be used where possible!
+		
+		String partName = part.getPartName().getName().substring(1);
+		
+		org.dom4j.Document xml = part.getDocument();
+		
+		saveRawXmlPart(out, partName, xml);  
+		
+	}
+	
+	protected void saveRawXmlPart(ZipOutputStream out, String partName, Document xml) throws Docx4JException  {
+		
 
 		try {
+	        // Add ZIP entry to output stream.
+	        out.putNextEntry(new ZipEntry(partName));
 			OutputFormat format = OutputFormat.createPrettyPrint();
 			format.setEncoding("UTF-8");			
 		    XMLWriter writer = new XMLWriter( out, format );
 		    writer.write( xml );
+	        // Complete the entry
+	        out.closeEntry();
+			log.info( "PUT SUCCESS: " + partName);		
 		} catch (Exception e ) {
 			e.printStackTrace();
-		}
-		
-        // Complete the entry
-        out.closeEntry();
-		log.info( "PUT SUCCESS: " + partName);		
+			throw new Docx4JException("Failed to put " + partName, e);
+		}		
 		
 	}
 	
@@ -168,15 +189,17 @@ public class SaveToZipFile {
 		(ii) add the Part to the zip file
 		(iii) traverse its relationship
 	*/
-	public void addPartsFromRelationships(ZipOutputStream out,  RelationshipsPart rp ) {
+	public void addPartsFromRelationships(ZipOutputStream out,  RelationshipsPart rp )
+	 throws Docx4JException {
+		
 		for (Iterator it = rp.iterator(); it.hasNext(); ) {
 			Relationship r = (Relationship)it.next();
 			log.info("For Relationship Id=" + r.getId() + " Source is " + r.getSource() + ", Target is " + r.getTargetURI() );
 			try {
-				String target = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 
 				// Now drop leading "/'
-				target = target.substring(1);				
+				resolvedPartUri = resolvedPartUri.substring(1);				
 				
 				// Now normalise it .. ie abc/def/../ghi
 				// becomes abc/ghi
@@ -191,88 +214,85 @@ public class SaveToZipFile {
 				// TODO - if this is already in our hashmap, skip
 				// to the next				
 				if (!false) {
-					log.info("Getting part /" + target );
+					log.info("Getting part /" + resolvedPartUri );
 					
-					Part part = null;
-					if (target.indexOf("document.xml")>-1)  {
-												
-							part = p.getPart(new PartName("/" + target));							
-						log.info( part.getClass());
-						
-						if ( part instanceof MainDocumentPart) {
-							// nb that returns true if its an instance of a subclass!
-
-								// The usual case - 
-								// same as for any other part (other than skeleton).
-								part = p.getPart(new PartName("/" + target));
-								
-								if (part instanceof BinaryPart) {
-									log.info(".. saving binary stuff" );
-									put( out, target, ((BinaryPart)part).getBinaryData() );
-									
-								} else {
-									// The usual case
-									log.info(".. saving " );
-									put( out, target, part.getDocument() );
-								}
-						}  else {
-							// Should not happen
-							log.error("check logic - encountered class " + part.getClass());							
-						}
-							
-						
-					} else {
-						// The usual case - a part other than document.xml
-						log.info("Getting part /" + target );
-						part = p.getPart(new PartName("/" + target));
-						log.info(".. saving " );
-						put(out, target, part.getDocument() );
-					}
-				
-					// recurse via this parts relationships, if it has any
-					if (part.getRelationshipPart()!= null ) {
-						RelationshipsPart rrp = part.getRelationshipPart();
-						log.info("Found relationships " + rrp.getPartName() );
-						String relPart = PartName.getRelationshipsPartName(target);
-						log.info("Cf constructed name " + relPart );
-						
-						put(out, relPart, rrp.getDocument() );
-						addPartsFromRelationships(out, rrp );
-					} else {
-						log.info("No relationships for " + target );					
-					}
+					Part part = p.getPart(new PartName("/" + resolvedPartUri));
+					
+					savePart(out, part);
 					
 				}
 					
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new Docx4JException("Failed to add parts from relationships", e);				
 			}
 		}
 		
 		
 	}
-	
-	protected void put(ZipOutputStream out, String partName, InputStream bin) throws IOException {
+
+
+	/**
+	 * @param out
+	 * @param resolvedPartUri
+	 * @param part
+	 * @throws Docx4JException
+	 * @throws IOException
+	 */
+	public void savePart(ZipOutputStream out, Part part)
+			throws Docx4JException, IOException {
 		
-        // Add ZIP entry to output stream.
-        out.putNextEntry(new ZipEntry(partName));
+		// Drop the leading '/'
+		String resolvedPartUri = part.getPartName().getName().substring(1);
+		
+		if (part instanceof BinaryPart) {
+			log.info(".. saving binary stuff" );
+			saveRawBinaryPart( out, part );
+			
+		} else {
+			log.info(".. saving " );					
+			saveRawXmlPart( out, part );
+		}
+		
+		// recurse via this parts relationships, if it has any
+		if (part.getRelationshipPart()!= null ) {
+			RelationshipsPart rrp = part.getRelationshipPart();
+			log.info("Found relationships " + rrp.getPartName() );
+			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
+			log.info("Cf constructed name " + relPart );
+			
+			saveRawXmlPart(out, relPart, rrp.getDocument() );
+			addPartsFromRelationships(out, rrp );
+		} else {
+			log.info("No relationships for " + resolvedPartUri );					
+		}
+	}
+	
+	protected void saveRawBinaryPart(ZipOutputStream out, Part part) throws Docx4JException {
+
+		// Drop the leading '/'
+		String resolvedPartUri = part.getPartName().getName().substring(1);
+
+		InputStream bin = ((BinaryPart)part).getBinaryData();
+		
 
 		try {
+	        // Add ZIP entry to output stream.
+	        out.putNextEntry(new ZipEntry(resolvedPartUri));
 			
 			// Copy the input stream to the output stream
 			byte[] buffer = new byte[8192];
 			int amount;
 			while (( amount = bin.read(buffer)) >=0 )
 				out.write(buffer, 0, amount);			
+
+			// Complete the entry
+	        out.closeEntry();
 			
 		} catch (Exception e ) {
-			e.printStackTrace();
+			throw new Docx4JException("Failed to put binary part", e);			
 		}
 		
-        // Complete the entry
-        out.closeEntry();
-		log.info( "PUT SUCCESS: " + partName);		
+		log.info( "PUT SUCCESS: " + resolvedPartUri);		
 		
 	}
 	
