@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.io;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -239,39 +240,7 @@ public class LoadFromZipFile extends Load {
 				target = (new java.net.URI(target)).normalize().toString();
 				log.info("Normalised, it is " + target );				
 
-				Part part = null;
-				
-				try {
-				
-					Document contents = getDocumentFromZippedPart( zf,  target);
-	
-					// Get a subclass of Part appropriate for this content type				
-					part = ctm.getPart("/" + target);
-					part.setDocument(contents );	
-				
-				} catch (DocumentException e) {
-					// Deal with:
-//					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
-//					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
-//						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)
-					
-					// Untested in the zip case as of 20071113					
-					
-					InputStream in = null;					
-					try {			
-						in = zf.getInputStream( zf.getEntry(target ) );
-						part = new BinaryPart( new PartName("/" + target));
-						
-						((BinaryPart)part).setBinaryData(in);
-						log.info("Stored as BinaryData" );
-						
-					} catch (IOException ioe) {
-						ioe.printStackTrace() ;
-					}				
-					
-				}
+				Part part = getPart(zf, target);
 				
 				pkg.addPart(part);
 				part.setPackage(pkg); 
@@ -305,6 +274,54 @@ public class LoadFromZipFile extends Load {
 		}
 		
 		
+	}
+
+	/**
+	 * Get a Part.  This can be called directly from outside the library, in which case 
+	 * the Part will not be owned by a Package until the calling code makes it so.
+	 * 
+	 * @param zf
+	 * @param resolvedPartUri
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws InvalidFormatException
+	 */
+	private Part getPart(ZipFile zf, String resolvedPartUri)
+			throws URISyntaxException, InvalidFormatException {
+		Part part = null;
+		
+		try {
+		
+			Document contents = getDocumentFromZippedPart( zf,  resolvedPartUri);
+
+			// Get a subclass of Part appropriate for this content type				
+			part = ctm.getPart("/" + resolvedPartUri);
+			part.setDocument(contents );	
+		
+		} catch (DocumentException e) {
+			// Deal with:
+//					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
+//					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
+//						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
+//						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
+//						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)
+			
+			// Untested in the zip case as of 20071113					
+			
+			InputStream in = null;					
+			try {			
+				in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
+				part = new BinaryPart( new PartName("/" + resolvedPartUri));
+				
+				((BinaryPart)part).setBinaryData(in);
+				log.info("Stored as BinaryData" );
+				
+			} catch (IOException ioe) {
+				ioe.printStackTrace() ;
+			}				
+			
+		}
+		return part;
 	}
 	
 	private void dumpZipFileContents(ZipFile zf) {
