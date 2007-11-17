@@ -29,7 +29,7 @@ package org.docx4j.openpackaging.exceptions;
 
 
 @SuppressWarnings("serial")
-public class InvalidFormatException extends OpenXML4JException{
+public class InvalidFormatException extends Docx4JException{
 
 	public InvalidFormatException(String message){
 		super(message);

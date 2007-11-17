@@ -30,7 +30,7 @@ import org.docx4j.Namespaces;
 import org.docx4j.document.wordprocessingml.Constants;
 import org.docx4j.document.wordprocessingml.Paragraph;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.OpenXML4JException;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.PartName;
 

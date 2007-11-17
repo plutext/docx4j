@@ -60,7 +60,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
-import org.docx4j.openpackaging.exceptions.OpenXML4JRuntimeException;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
@@ -266,7 +266,7 @@ public class Package extends Base {
 			try {
 				sourcePartName = URIHelper.createPartName(sourceURI);
 			} catch (InvalidFormatException e) {
-				throw new OpenXML4JRuntimeException(
+				throw new Docx4JRuntimeException(
 						"The part name "
 								+ sourceURI
 								+ " is not valid but this exception should not have been raise by OpenXML4J ! Please send a mail to the developers team.");

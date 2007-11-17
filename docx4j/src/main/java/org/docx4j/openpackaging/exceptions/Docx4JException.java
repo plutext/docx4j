@@ -28,17 +28,22 @@
 package org.docx4j.openpackaging.exceptions;
 
 /**
- * Global exception throws when a critical error occurs (this exception is
- * set as Runtime in order not to force the user to manage the exception in a
+ * Global exception throws when a critical error occurs. (this exception is not
+ * set as Runtime in order to force user to manage the exception in a
  * try/catch).
  * 
- * @author Julien Chable
+ * @author CDubettier, Julien Chable
  * @version 1.0
  */
 @SuppressWarnings("serial")
-public class OpenXML4JRuntimeException extends RuntimeException {
+public class Docx4JException extends Exception {
 
-	public OpenXML4JRuntimeException(String msg) {
+	public Docx4JException(String msg) {
 		super(msg);
 	}
+	
+	public Docx4JException(String msg, Exception e) {
+		super(msg, e);
+	}
+	
 }

@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
-import org.docx4j.openpackaging.exceptions.OpenXML4JRuntimeException;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 
 
 
@@ -100,7 +100,7 @@ public final class PartName implements Comparable<PartName> {
 			throwExceptionIfInvalidPartUri(uri);
 		} else {
 			if (!URIHelper.PACKAGE_ROOT_URI.equals(uri)) {
-				throw new OpenXML4JRuntimeException(
+				throw new Docx4JRuntimeException(
 						"OCP conformance must be check for ALL part name except special cases : ['/']");
 			}
 		}
@@ -153,7 +153,7 @@ public final class PartName implements Comparable<PartName> {
 			throwExceptionIfInvalidPartUri(partURI);
 		} else {
 			if (!URIHelper.PACKAGE_ROOT_URI.equals(partURI)) {
-				throw new OpenXML4JRuntimeException(
+				throw new Docx4JRuntimeException(
 						"OCP conformance must be check for ALL part name except special cases : ['/']");
 			}
 		}
