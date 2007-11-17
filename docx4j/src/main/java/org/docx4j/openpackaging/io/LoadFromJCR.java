@@ -21,6 +21,7 @@ package org.docx4j.openpackaging.io;
 
 
 import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -295,48 +296,7 @@ public class LoadFromJCR extends Load {
 //				target = (new java.net.URI(target)).normalize().toString();
 //				log.info("Normalised, it is " + target );				
 				
-				Part part = null;
-				try {
-					Document contents = getDocumentFromJCRPart( jcrSession, 
-							docxNode,  target);
-					
-					log.info("Root node is: " + contents.getRootElement().getName());					
-
-						// Get a subclass of Part appropriate for this content type
-//						if (parentRef==null) {
-							// Usual case
-							part = ctm.getPart("/" + target); 
-//						} else {
-//							// since the Target might look like ../customXml/item1.xml
-//							part = ctm.getPart(parentRef); 
-//						}
-						part.setDocument(contents );					
-					
-				} catch (DocumentException e) {
-					// Deal with:
-//					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
-//					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
-//						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)					
-					InputStream in = null;
-					try {
-						log.info("Fetching " + encodeSlashes(target));
-						Node fileNode = docxNode.getNode(encodeSlashes(target));
-						Node contentNode = fileNode.getNode("jcr:content");
-						
-						Property jcrData = contentNode.getProperty("jcr:data");
-						in = jcrData.getStream();
-						
-						part = new BinaryPart( new PartName("/" + target));
-						
-						((BinaryPart)part).setBinaryData(in);
-						log.info("Stored as BinaryData" );
-						
-					} catch (RepositoryException re) {
-						re.printStackTrace();				
-					}					
-				}
+				Part part = getPart(jcrSession, docxNode, target);
 				pkg.addPart(part);
 				part.setPackage(pkg); 
 				
@@ -374,6 +334,64 @@ public class LoadFromJCR extends Load {
 		}
 		
 		
+	}
+
+
+	/**
+	 * Get a Part.  This can be called directly from outside the library, in which case 
+	 * the Part will not be owned by a Package until the calling code makes it so.  
+	 * @param jcrSession
+	 * @param docxNode
+	 * @param resolvedPartUri
+	 * @return
+	 * @throws URISyntaxException
+	 * @throws InvalidFormatException
+	 */
+	public Part getPart(Session jcrSession, Node docxNode, String resolvedPartUri)
+			throws URISyntaxException, InvalidFormatException {
+		Part part = null;
+		try {
+			Document contents = getDocumentFromJCRPart( jcrSession, 
+					docxNode,  resolvedPartUri);
+			
+			log.info("Root node is: " + contents.getRootElement().getName());					
+
+				// Get a subclass of Part appropriate for this content type
+//						if (parentRef==null) {
+					// Usual case
+					part = ctm.getPart("/" + resolvedPartUri); 
+//						} else {
+//							// since the Target might look like ../customXml/item1.xml
+//							part = ctm.getPart(parentRef); 
+//						}
+				part.setDocument(contents );					
+			
+		} catch (DocumentException e) {
+			// Deal with:
+//					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
+//					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
+//						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
+//						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
+//						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)					
+			InputStream in = null;
+			try {
+				log.info("Fetching " + encodeSlashes(resolvedPartUri));
+				Node fileNode = docxNode.getNode(encodeSlashes(resolvedPartUri));
+				Node contentNode = fileNode.getNode("jcr:content");
+				
+				Property jcrData = contentNode.getProperty("jcr:data");
+				in = jcrData.getStream();
+				
+				part = new BinaryPart( new PartName("/" + resolvedPartUri));
+				
+				((BinaryPart)part).setBinaryData(in);
+				log.info("Stored as BinaryData" );
+				
+			} catch (RepositoryException re) {
+				re.printStackTrace();				
+			}					
+		}
+		return part;
 	}
 		
 	
