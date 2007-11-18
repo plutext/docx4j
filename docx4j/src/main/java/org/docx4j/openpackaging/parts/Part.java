@@ -24,6 +24,7 @@ import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 
 import org.dom4j.Document;
 
@@ -58,6 +59,22 @@ public abstract class Part extends Base {
 	
 	
 	protected Package pack;
+	
+	/** Every part is the target of some relationship,
+	 * specified in a RelationshipsPart. Every part can also 
+	 * have its own RelationshipsPart - for that, see Base 
+	 * (since Package has one as well). 
+	 */
+	private RelationshipsPart owningRelationshipPart;
+		
+	public RelationshipsPart getOwningRelationshipPart() {
+		return owningRelationshipPart;
+	}
+
+	public void setOwningRelationshipPart(
+			RelationshipsPart owningRelationshipPart) {
+		this.owningRelationshipPart = owningRelationshipPart;
+	}
 	
 	public Part() {
 		
@@ -136,4 +153,5 @@ public abstract class Part extends Base {
 	public boolean setPartShortcut(Part part, String relationshipType) {
 		return false;
 	}
+
 }

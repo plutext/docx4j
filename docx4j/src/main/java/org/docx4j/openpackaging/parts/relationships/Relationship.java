@@ -107,10 +107,6 @@ public final class Relationship {
 	 */
 	private String id;
 
-//	/**
-//	 * R�f�rence vers le package.
-//	 */
-//	private Package container;
 
 	/**
 	 * Type de relation.

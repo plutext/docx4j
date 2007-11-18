@@ -60,6 +60,7 @@ import org.apache.log4j.Logger;
 
 import org.docx4j.Namespaces;
 import org.docx4j.openpackaging.URIHelper;
+import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.Base;
@@ -219,58 +220,143 @@ public final class RelationshipsPart extends Part implements
 		relationshipsByType = new TreeMap<String, Relationship>();		
 	}
 	
-
 	/**
-	 * Copy constructor.
+	 * Loads a pre-existing target part.
 	 * 
-	 * This collection will contain only elements from the specified collection
-	 * for which the type is compatible with the specified relationship type
-	 * filter.
+	 * The target part is assumed to be specified already in this 
+	 * relationship part. 
 	 * 
-	 * @param coll
-	 *            Collection to import.
-	 * @param filter
-	 *            Relationship type filter.
-	 */
-//	public RelationshipsPart(RelationshipsPart coll,
-//			String filter) {
-//		this();
-//		for (Relationship rel : coll.relationshipsByID.values()) {
-//			if (filter == null || rel.getRelationshipType().equals(filter))
-//				addRelationship(rel);
-//		}
-//	}
-
-
-
-	/**
-	 * Constructor. Parse the existing package relationship part if one exists.
+	 * Generally this will be used by io.load classes.
 	 * 
-	 * @param container
-	 *            The parent package.
 	 * @param part
-	 *            The part that own this relationships collection. If <b>null</b>
-	 *            then this part is considered as the package root.
-	 * @throws InvalidFormatException
-	 *             If an error occurs during the parsing of the relatinships
-	 *             part fo the specified part.
+	 *            The part to add.
 	 */
-//	public RelationshipsPart(Package container, Part part)
-//			throws InvalidFormatException {
-//		this();
-//
-//		if (container == null)
-//			throw new IllegalArgumentException("container");
-//
-//		this.container = container;
-//		this.sourcePart = part;
-//		this.partName = getRelationshipPartName(part);
-//		if ((container.getPackageAccess() != PackageAccess.WRITE)
-//				&& container.partExists(this.partName)) {
-//			relationshipPart = container.getPart(this.partName);
-//			parseRelationshipsPart(relationshipPart);
-//		}
-//	}
+	public void loadPart(Part part) {
+
+		if (part == null) {
+			throw new IllegalArgumentException("part");
+		}
+		
+		PartName partName = part.getPartName();
+		log.info("Loading part " + partName.getName() );
+		
+		part.setOwningRelationshipPart(this);
+
+		// All (non-relationship) parts are stored in a collection
+		// in the package, even though conceptually this loadPart
+		// method should be invoked on the relationship source.		
+	
+		getPackage().getParts().put(part);
+		
+		// Tell the part what package it belongs to!
+		// TODO - do this in the Part constructor.  It can be too late
+		// leaving it until the Part is added to the Package.
+		part.setPackage( getPackage() );
+		
+	}
+	
+	/**
+	 * Add a newly created part, a relationship and the content type.
+	 *  
+	 * 
+	 * @param part
+	 *            The part to add.
+	 * @return The part added to the package, the same as the one specified.
+	 */
+	public void addPart(Part part) {
+		
+		loadPart(part);
+		
+		// Now add a new relationship
+		String relationshipType = null;
+		int num = size() + 1;
+		String id = "rId" + num;
+		Relationship rel = new Relationship(sourceP, part.getPartName().getURI(), 
+				TargetMode.INTERNAL, relationshipType, id);
+		addRelationship(rel );
+		
+		// Add an override to ContentTypeManager
+		getPackage().getContentTypeManager().addOverrideContentType(part.getPartName().getURI(), part.getContentType());
+
+	}
+
+
+	
+	 /** Remove all parts from this relationships
+	 *   part */ 
+	public void removeParts() {
+		
+		for (Relationship r : relationshipsByID.values() ) {
+			
+			String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+			
+			log.info("Removing part: " + resolvedPartUri);
+			
+			try {
+				removePart(new PartName(resolvedPartUri));
+			} catch (InvalidFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * Remove a part from this package, including its relationships
+	 * part and all target parts. Do so recursively. 
+	 * 
+	 * If this part is relationship part, then
+	 * delete all relationships in the source part.
+	 * 
+	 * @param partName
+	 *            The part name of the part to remove.
+	 */
+	public void removePart(PartName partName) {
+		if (partName == null)
+			throw new IllegalArgumentException("partName was null");
+		
+		Part part = getPackage().getParts().get(partName);
+		
+		if (part!=null) {
+
+			// Remove the relationship for which it is a target from here
+			// Throw an error if this can't be found!
+			boolean found = false;
+			for (Relationship rel : relationshipsByID.values() ) {
+				
+				// TODO - test/debug this
+				// anticipate some minor adjustments may be required
+				log.debug("Comparing " + rel.getTargetURI() + " == " + partName.getName());
+				if (rel.getTargetURI().equals(partName.getName()) ) {
+					log.info("True - will delete relationship with target " + rel.getTargetURI());
+					removeRelationship(rel);
+					found = true;
+				}
+				
+			}
+			if (!found) {
+				// The Part may be in the package somewhere, but its not
+				// a target of this relationships part!
+				throw new IllegalArgumentException(partName + " is not a target of " + this.partName );
+			}
+						
+			// Remove parts it references
+			part.getRelationshipsPart().removeParts();
+			part.setRelationships(null);
+
+			// Remove from Content Type Manager
+				// TODO
+			
+			
+			// Delete the specified part from the package.
+			getPackage().getParts().remove(partName);						
+		}
+
+		this.isDirty = true;
+	}
+
+
+
 
 
 	/**
@@ -368,57 +454,7 @@ public final class RelationshipsPart extends Part implements
 		relationshipsByType.put(rel.getRelationshipType(), rel);
 	}
 
-	/**
-	 * Add a relationship to the collection.
-	 * 
-	 * @param targetUri
-	 *            Target URI.
-	 * @param targetMode
-	 *            The target mode : INTERNAL or EXTERNAL
-	 * @param relationshipType
-	 *            Relationship type.
-	 * @param id
-	 *            Relationship ID.
-	 * @return The newly created relationship.
-	 * @see PackageAccess
-	 */
-	public Relationship addRelationship(URI targetUri,
-			TargetMode targetMode, String relationshipType, String id) {
 
-		if (id == null) {
-			// Generate a unique ID if id parameter is null.
-			int i = 0;
-			do {
-				id = "rId" + ++i;
-			} while (relationshipsByID.get(id) != null);
-		}
-
-		Relationship rel = new Relationship(
-				sourceP, targetUri, targetMode, relationshipType, id);
-//		relationshipsByID.put(rel.getId(), rel);
-//		relationshipsByType.put(rel.getRelationshipType(), rel);
-		addRelationship(rel);
-		return rel;
-	}
-
-	/**
-	 * Add a package relationship.
-	 * 
-	 * @param targetName
-	 *            Target part name.
-	 * @param targetMode
-	 *            Target mode, either Internal or External.
-	 * @param relationshipType
-	 *            Relationship type.
-	 * @param relID
-	 *            ID of the relationship.
-	 */
-	public Relationship addRelationship(PartName targetName,
-			TargetMode targetMode, String relationshipType, String relID) {
-		
-		return addRelationship(targetName
-				.getURI(), targetMode, relationshipType, relID);
-	}
 	
 	
 	/**
@@ -427,15 +463,15 @@ public final class RelationshipsPart extends Part implements
 	 * @param id
 	 *            The relationship ID to remove.
 	 */
-	public void removeRelationship(String id) {
-		if (relationshipsByID != null && relationshipsByType != null) {
-			Relationship rel = relationshipsByID.get(id);
-			if (rel != null) {
-				relationshipsByID.remove(rel.getId());
-				relationshipsByType.values().remove(rel);
-			}
-		}
-	}
+//	private void removeRelationship(String id) {
+//		if (relationshipsByID != null && relationshipsByType != null) {
+//			Relationship rel = relationshipsByID.get(id);
+//			if (rel != null) {
+//				relationshipsByID.remove(rel.getId());
+//				relationshipsByType.values().remove(rel);
+//			}
+//		}
+//	}
 
 	/**
 	 * Remove a relationship by its reference.
@@ -486,7 +522,7 @@ public final class RelationshipsPart extends Part implements
 	}
 	
 	/**
-	 * Get the numbe rof relationships in the collection.
+	 * Get the number of relationships in the collection.
 	 */
 	public int size() {
 		return relationshipsByID.values().size();

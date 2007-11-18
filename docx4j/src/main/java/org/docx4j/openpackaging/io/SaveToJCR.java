@@ -118,7 +118,7 @@ public class SaveToJCR {
 //			</Relationships>		
 			
 			String partName = "_rels/.rels";
-			RelationshipsPart rp = p.getRelationshipPart();
+			RelationshipsPart rp = p.getRelationshipsPart();
 			// TODO - replace with saveRawXmlPart(baseNode, rp)
 			// once we know that partName resolves correctly
 			saveRawXmlPart(baseNode, partName, rp.getDocument() );
@@ -292,7 +292,7 @@ public class SaveToJCR {
 				// to the next				
 				if (!false) {
 					log.info("Getting part /" + resolvedPartUri );
-					Part part = p.getPart(new PartName("/" + resolvedPartUri));
+					Part part = p.getParts().get(new PartName("/" + resolvedPartUri));
 					log.info( part.getClass());
 					
 					savePart(baseNode, part);
@@ -331,8 +331,8 @@ public class SaveToJCR {
 		}
 		
 		// recurse via this parts relationships, if it has any
-		if (part.getRelationshipPart()!= null ) {
-			RelationshipsPart rrp = part.getRelationshipPart(); // **
+		if (part.getRelationshipsPart()!= null ) {
+			RelationshipsPart rrp = part.getRelationshipsPart(); // **
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
 			log.info("Found relationships " + relPart );
 			saveRawXmlPart(baseNode,  relPart, rrp.getDocument() );
