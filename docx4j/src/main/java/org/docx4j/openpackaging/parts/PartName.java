@@ -41,6 +41,14 @@ import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 /**
  * An immutable Open Packaging Convention compliant part name.
  * 
+ * [Docx4J comment: Note that in docx4J, part names should be resolved,
+ * before being set, so that they are absolute
+ * (ie start with '/').  In contrast, this class enforces the
+ * OPC specification, which says that a part name can't be 
+ * absolute.  For this reason, you'll see the leading '/'
+ * being added and removed in various places :(              ]
+ * 
+ * 
  * @author Julien Chable
  * @version 0.1
  */
