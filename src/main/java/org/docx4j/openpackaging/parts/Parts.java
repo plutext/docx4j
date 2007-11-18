@@ -49,11 +49,11 @@
 
 package org.docx4j.openpackaging.parts;
 
-//import java.util.ArrayList;
 import java.util.HashMap;
 
-//import org.openxml4j.exceptions.InvalidOperationException;
-//import org.openxml4j.opc.PackagingURIHelper;
+import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.packages.Package;
+
 
 
 /**
@@ -63,14 +63,9 @@ import java.util.HashMap;
  * @version 0.1
  */
 public class Parts {
-
-//	private static final long serialVersionUID = 2515031135957635515L;
-
-//	/**
-//	 * Arraylist use to store this collection part names as string for rule
-//	 * M1.11 optimized checking.
-//	 */
-//	private ArrayList<String> registerPartNameStr = new ArrayList<String>();
+	
+	private static Logger log = Logger.getLogger(Parts.class);
+	
 
 	private HashMap parts;
 
@@ -78,16 +73,11 @@ public class Parts {
 		parts = new HashMap();
 	}
 
-	/**
-	 * Check rule [M1.11]: a package implementer shall neither create nor
-	 * recognize a part with a part name derived from another part name by
-	 * appending segments to it.
-	 * 
-	 * @exception InvalidOperationException
-	 *                Throws if you try to add a part with a name derived from
-	 *                another part name.
-	 */
 	public void put(Part part) {
+		if (get( part.getPartName() )!=null ) {
+			log.warn("Overwriting existing part " + part.getPartName() );
+		}
+		
 		parts.put(part.getPartName(), part);
 	}
 
@@ -96,7 +86,13 @@ public class Parts {
 	}
 	
 	public void remove(PartName partName) {
-		// TODO - implement this!
+		
+		if (get( partName )!=null ) {
+			log.info("Deleting part " + partName );
+			parts.remove(partName);
+		} else {
+			log.error("Couldn't delete part " + partName + " - nothing by that name");
+		}
 	}
 	
 //	@Override

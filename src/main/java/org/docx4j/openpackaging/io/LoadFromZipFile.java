@@ -227,21 +227,8 @@ public class LoadFromZipFile extends Load {
 					+ r.getSource().getPartName() 
 					+ ", Target is " + r.getTargetURI() );
 			try {
-				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 				
-				// Now drop leading "/'
-				resolvedPartUri = resolvedPartUri.substring(1);				
-				
-				// Now normalise it .. ie abc/def/../ghi
-				// becomes abc/ghi
-				// Maybe this isn't necessary with a zip file,
-				// - ZipFile class may be smart enough to do it.
-				// But it is certainly necessary in the JCR case.
-				resolvedPartUri = (new java.net.URI(resolvedPartUri)).normalize().toString();
-				log.info("Normalised, it is " + resolvedPartUri );				
-
-				
-				getPart(zf, source, pkg, resolvedPartUri, r.getRelationshipType());
+				getPart(zf, pkg, rp, r);
 				
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
@@ -265,14 +252,30 @@ public class LoadFromZipFile extends Load {
 	 * @throws Docx4JException
 	 * @throws InvalidFormatException
 	 */
-	private void getPart(ZipFile zf, Base source, 
-			Package pkg, String resolvedPartUri, String relationshipType)
+//	private void getPart(ZipFile zf, Base source, 
+//			Package pkg, String resolvedPartUri, String relationshipType)
+	private void getPart(ZipFile zf, Package pkg, RelationshipsPart rp, Relationship r)
 			throws Docx4JException, InvalidFormatException {
+		
+		Base source = r.getSource();
+		String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();		
+
+		// Now drop leading "/'
+		resolvedPartUri = resolvedPartUri.substring(1);				
+
+		// Now normalise it .. ie abc/def/../ghi
+		// becomes abc/ghi
+		// Maybe this isn't necessary with a zip file,
+		// - ZipFile class may be smart enough to do it.
+		// But it is certainly necessary in the JCR case.
+//		resolvedPartUri = (new java.net.URI(resolvedPartUri)).normalize().toString();
+//		log.info("Normalised, it is " + resolvedPartUri );				
+		
+		String relationshipType = r.getRelationshipType();		
+			
 		Part part = getRawPart(zf, resolvedPartUri);
-		
-		pkg.addPart(part);
-		part.setPackage(pkg); 
-		
+		rp.loadPart(part);
+
 		// The source Part (or Package) might have a convenience
 		// method for this
 		if (source.setPartShortcut(part, relationshipType ) ) {

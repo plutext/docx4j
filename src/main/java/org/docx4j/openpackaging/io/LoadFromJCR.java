@@ -281,19 +281,10 @@ public class LoadFromJCR extends Load {
 					+ " Source is " + r.getSource().getPartName() 
 					+ ", Target is " + r.getTargetURI() );
 			try {
-				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 				
-
-				// Now drop leading "/'
-				resolvedPartUri = resolvedPartUri.substring(1);				
-
-				// Now normalise it .. ie abc/def/../ghi
-				// becomes abc/ghi
-//				target = (new java.net.URI(target)).normalize().toString();
-//				log.info("Normalised, it is " + target );				
-				
-				getPart(jcrSession, docxNode, source, pkg, 
-						resolvedPartUri, r.getRelationshipType());
+//				getPart(jcrSession, docxNode, source, pkg, 
+//						resolvedPartUri, r.getRelationshipType());
+				getPart(jcrSession, docxNode, pkg, rp, r);
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
@@ -310,21 +301,35 @@ public class LoadFromJCR extends Load {
 	 *
 	 * @param jcrSession
 	 * @param docxNode
-	 * @param source
 	 * @param pkg
-	 * @param resolvedPartUri
-	 * @param relationshipType
+	 * @param rp
+	 * @param r
 	 * @throws Docx4JException
 	 * @throws RepositoryException
 	 * @throws InvalidFormatException
 	 */
-	public void getPart(Session jcrSession, Node docxNode, Base source,
-			Package pkg, String resolvedPartUri, String relationshipType)
+//	public void getPart(Session jcrSession, Node docxNode, Base source,
+//			Package pkg, String resolvedPartUri, String relationshipType)
+	public void getPart(Session jcrSession, Node docxNode, 
+			Package pkg, RelationshipsPart rp, Relationship r)	
 			throws Docx4JException, RepositoryException, InvalidFormatException {
 		
+		Base source = r.getSource();
+		String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();		
+
+		// Now drop leading "/'
+		resolvedPartUri = resolvedPartUri.substring(1);				
+
+		// Now normalise it .. ie abc/def/../ghi
+		// becomes abc/ghi
+//		target = (new java.net.URI(target)).normalize().toString();
+//		log.info("Normalised, it is " + target );				
+		
+		String relationshipType = r.getRelationshipType();		
+		
 		Part part = getRawPart(jcrSession, docxNode, resolvedPartUri);
-		pkg.addPart(part);
-		part.setPackage(pkg); 
+		rp.loadPart(part);
+		
 		
 		// The source Part (or Package) might have a convenience
 		// method for this

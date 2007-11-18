@@ -122,7 +122,7 @@ public class SaveToZipFile {
 //			</Relationships>		
 			
 			String partName = "_rels/.rels";
-			RelationshipsPart rp = p.getRelationshipPart();
+			RelationshipsPart rp = p.getRelationshipsPart();
 			saveRawXmlPart(out, partName, rp.getDocument() );
 			
 			
@@ -216,7 +216,7 @@ public class SaveToZipFile {
 				if (!false) {
 					log.info("Getting part /" + resolvedPartUri );
 					
-					Part part = p.getPart(new PartName("/" + resolvedPartUri));
+					Part part = p.getParts().get(new PartName("/" + resolvedPartUri));
 					
 					savePart(out, part);
 					
@@ -254,8 +254,8 @@ public class SaveToZipFile {
 		}
 		
 		// recurse via this parts relationships, if it has any
-		if (part.getRelationshipPart()!= null ) {
-			RelationshipsPart rrp = part.getRelationshipPart();
+		if (part.getRelationshipsPart()!= null ) {
+			RelationshipsPart rrp = part.getRelationshipsPart();
 			log.info("Found relationships " + rrp.getPartName() );
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
 			log.info("Cf constructed name " + relPart );
