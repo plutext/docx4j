@@ -191,7 +191,7 @@ public class LoadFromZipFile extends Load {
 		return new RelationshipsPart( p, new PartName("/" + partName), contents );	
 	}
 	
-	private Document getDocumentFromZippedPart(ZipFile zf, String partName) 
+	private static Document getDocumentFromZippedPart(ZipFile zf, String partName) 
 		throws DocumentException, IOException {
 		
 		InputStream in = null;
@@ -273,7 +273,7 @@ public class LoadFromZipFile extends Load {
 		
 		String relationshipType = r.getRelationshipType();		
 			
-		Part part = getRawPart(zf, resolvedPartUri);
+		Part part = getRawPart(zf, ctm, resolvedPartUri);
 		rp.loadPart(part);
 
 		// The source Part (or Package) might have a convenience
@@ -340,7 +340,7 @@ public class LoadFromZipFile extends Load {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	private Part getRawPart(ZipFile zf, String resolvedPartUri)
+	public static Part getRawPart(ZipFile zf, ContentTypeManager ctm, String resolvedPartUri)
 			throws Docx4JException {
 		Part part = null;
 		
