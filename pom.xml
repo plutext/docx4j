@@ -3,7 +3,7 @@
   <groupId>org.plutext</groupId>
   <artifactId>docx4j</artifactId>
   <version>0.0.1</version>
-  <description>org.plutext.docx4j</description>
+  <description>org.docx4j</description>
   <dependencies>
     <dependency>
       <groupId>xerces</groupId>
