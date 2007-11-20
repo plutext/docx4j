@@ -235,7 +235,7 @@ public class LoadFromJCR extends Load {
 		
 	}
 	
-	private Document getDocumentFromJCRPart(Session jcrSession, Node docxNode, String partName) 
+	private static Document getDocumentFromJCRPart(Session jcrSession, Node docxNode, String partName) 
 		throws DocumentException, RepositoryException, PathNotFoundException {
 		
 		InputStream in = null;
@@ -327,7 +327,7 @@ public class LoadFromJCR extends Load {
 		
 		String relationshipType = r.getRelationshipType();		
 		
-		Part part = getRawPart(jcrSession, docxNode, resolvedPartUri);
+		Part part = getRawPart(jcrSession, docxNode, ctm, resolvedPartUri);
 		rp.loadPart(part);
 		
 		
@@ -405,7 +405,7 @@ public class LoadFromJCR extends Load {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	public Part getRawPart(Session jcrSession, Node docxNode, String resolvedPartUri)
+	public static Part getRawPart(Session jcrSession, Node docxNode, ContentTypeManager ctm, String resolvedPartUri)
 			throws Docx4JException {
 		Part part = null;
 		try {
