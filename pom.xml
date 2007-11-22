@@ -1,9 +1,37 @@
-<?xml version="1.0" encoding="UTF-8"?><project>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd ">
+
+  <!-- ====================================================================== -->
+  <!-- P R O J E C T  D E S C R I P T I O N                                   -->
+  <!-- ====================================================================== -->
+
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.plutext</groupId>
   <artifactId>docx4j</artifactId>
-  <version>0.0.1</version>
-  <description>org.docx4j</description>
+  <packaging>jar</packaging>
+  <version>0.1-SNAPSHOT</version>
+  <name>docx4j</name>
+  <description>docx4j is a library which helps you to work with the Office Open XML file format, specifically WordprocessingML as used in docx documents.</description>
+  <url>http://dev.plutext.org/</url>
+  <prerequisites />
+  <inceptionYear>2007</inceptionYear>
+  
+  <developers>
+    <developer>
+      <id>jharrop</id>
+      <name>Jason Harrop</name>
+      <email>jason@plutext.org</email>
+      <organization>Plutext</organization>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>+10</timezone>
+    </developer>
+  </developers>
+  
   <dependencies>
     <dependency>
       <groupId>xerces</groupId>
