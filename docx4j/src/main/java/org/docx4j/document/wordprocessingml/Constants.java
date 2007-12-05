@@ -88,6 +88,10 @@ public interface Constants {
 	public static final String PARAGRAPH_PERM_END_TAG_NAME = "permEnd";
 	public static final String PARAGRAPH_PERM_ID_TAG_NAME = "id";
 
+	//run content
+	public static final String BR = "br";
+	public static final String CR = "cr";
+	
 	// misc
 	public static final String ATTRIBUTE_VAL="val";
 	public static final String ATTRIBUTE_SIZE="sz";
