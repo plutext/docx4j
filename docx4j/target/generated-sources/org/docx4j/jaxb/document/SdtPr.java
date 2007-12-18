@@ -14,6 +14,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.log4j.Logger;
+import org.docx4j.document.wordprocessingml.SdtProperties;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -65,7 +68,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class SdtPr
     implements Child
 {
-
+	
+	private static Logger log = Logger.getLogger(SdtProperties.class);	
+	
     protected SdtPr.Alias alias;
     protected Lock lock;
     protected DecimalNumber id;
@@ -142,7 +147,16 @@ public class SdtPr
      *     
      */
     public void setId(DecimalNumber value) {
+		if (!this.id.equals(value)) {
+			log.debug("Changing SDT ID from " + this.id + " to " + id);
+		}    	
         this.id = value;
+    }
+    
+    public void setId() {
+    	
+    	setId( Integer.toString(Math.abs(new java.util.Random().nextInt())) );
+    	
     }
 
     /**
