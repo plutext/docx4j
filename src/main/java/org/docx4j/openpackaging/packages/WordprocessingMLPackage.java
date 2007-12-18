@@ -67,10 +67,10 @@ public class WordprocessingMLPackage extends Package {
 	
 	
 	// Main document
-	MainDocumentPart mainDoc;
+	protected MainDocumentPart mainDoc;
 	
 	// (optional) Glossary document
-	GlossaryDocumentPart glossaryDoc;
+	protected GlossaryDocumentPart glossaryDoc;
 	
 	public WordprocessingMLPackage() {
 		super();
