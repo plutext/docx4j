@@ -151,11 +151,11 @@ public class Package extends Base {
 		
 	}
 	
-	DocPropsCorePart docPropsCorePart;
+	protected DocPropsCorePart docPropsCorePart;
 
-	DocPropsExtendedPart docPropsExtendedPart;
+	protected DocPropsExtendedPart docPropsExtendedPart;
 	
-	DocPropsCustomPart docPropsCustomPart;
+	protected DocPropsCustomPart docPropsCustomPart;
 
 	@Override
 	public boolean setPartShortcut(Part part, String relationshipType) {
