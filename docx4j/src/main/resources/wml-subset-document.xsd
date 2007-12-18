@@ -1,0 +1,2522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  
+  This is a schema for a subset of the document part of WordML.
+
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+	
+  And optionally, the parent-pointer-plugin.  See http://fisheye5.cenqua.com/browse/jaxb2-commons/parent-pointer-plugin
+	
+  We have a copy of this in the branch's lib dir.  Or you can build it yourself:
+	
+	cvs -d :pserver:$DEV_JAVA_NET_USERNAME@cvs.dev.java.net:/cvs checkout -P jaxb2-commons
+	 
+    mvn package 
+	
+  To CLEAN previously generated classes, from /src/main/resources$ 
+
+	rm ../../../target/generated-sources/org/docx4j/jaxb/document/* -rf
+	
+  To generate the classes	
+	
+	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh wml-subset-document.xsd -d ../../../target/generated-sources/ -Xlocator -mark-generated
+
+  or, with the parent-pointer-plugin:
+	
+	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh -classpath ~/jaxb/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer   wml-subset-document.xsd -d ../../../target/generated-sources/   -Xlocator -mark-generated
+	
+  To allow the field P.paragraphContent to contain things not
+  allowed by the xsd subset, annotate it with @XmlAnyElement
+  (Eclipse: Compare With > Latest from Repository) for details.
+	
+  To marshall properly, Text.java needs @XmlRootElement(name = "t").
+  Again, look at the repository copy for details on how to do this.		 	
+	
+-->
+
+<!--
+
+  Problems:
+  - duplicate definition of tab
+-->
+
+
+<!-- 
+
+Patterns:
+
+   <xsd:element name="pStyle" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Referenced Paragraph Style</xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+          <xsd:attributeGroup ref="main:CT_String"/>
+        </xsd:complexType>
+   </xsd:element>
+
+ <xsd:attributeGroup  name="CT_String">
+    <xsd:attribute name="val" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>String Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+
+(obtained by converting rnc to xsd)
+results in the creation of a pStyle class.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+<xsd:element name="pStyle"  minOccurs="0">
+  <xsd:complexType>
+        <xsd:attribute name="val" type="xsd:string"/>
+  </xsd:complexType>
+</xsd:element>
+
+also results in the creation of a pStyle class.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+      <xsd:element name="pStyle" type="main:CT_String" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Referenced Paragraph Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
+  <xsd:simpleType name="ST_String">
+    <xsd:annotation>
+      <xsd:documentation>String</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="CT_String">
+    <xsd:attribute name="val" type="main:ST_String" use="required">
+      <xsd:annotation>
+        <xsd:documentation>String Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+
+results in a field of type CTString.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+None are the simple String we might wish for!
+
+
+			No benefit to this construct.  It generates an inner class for i, but 
+				 without the default value 
+			<xsd:element name="i" minOccurs="0">
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:documentation>Italics</xsd:documentation>
+					</xsd:annotation>
+					<xsd:attribute name="val" type="xsd:boolean"/>
+				</xsd:complexType>
+			</xsd:element>
+
+	
+			Generates an inner class for i, with default value
+			<xsd:element name="i" minOccurs="0">
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:documentation>Italics</xsd:documentation>
+					</xsd:annotation>
+					<xsd:attribute name="val" type="xsd:boolean" default="true"/>
+				</xsd:complexType>
+			</xsd:element>
+
+-->
+
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" attributeFormDefault="qualified"
+	targetNamespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:main="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!-- jaxb:extensionBindingPrefixes="xjc" -->
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<!--
+			<jaxb:globalBindings generateElementClass="true"/>
+			-->
+			<!--
+			<jaxb:globalBindings>
+			<xjc:simple/>
+			</jaxb:globalBindings> 
+			-->
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+					<!-- Makes no difference. Could comment out. -->
+					<jaxb:javaType name="java.lang.String" xmlType="xsd:string"
+						parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+						printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+					<jaxb:javaType name="java.lang.String" xmlType="xsd:string"
+						parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+						printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				<jaxb:package name="org.docx4j.jaxb.document"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
+	
+	<!--xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/-->
+	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace"/>
+	
+	<!--
+	Add this back in when we support images
+	include "shared-relationshipReference.rnc" inherit = rel
+	-->
+	<!--
+	EG means element group
+	CT means complex type
+	-->
+	<!--
+	BUILT_IN_ANY_TYPE =
+	(element * { BUILT_IN_ANY_TYPE }
+	| attribute * { text }
+	| text)*
+	-->
+	<!--
+	=========================================================================================================
+	start = document | numbering | styles |  fonts | hdr | ftr | footnotes | endnotes |  comments | settings | recipients | txbxContent | webSettings | glossaryDocument
+	-->
+	<!--
+	
+	document
+	
+	-->
+	<xsd:element name="document" type="main:CT_Document"/>
+	<xsd:complexType name="CT_Document">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Document"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:body"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="body" type="main:CT_Body"/>
+	<!-- CT_DocumentBase = element background { CT_Background }? -->
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	DocParts
+	-->
+	<!-- CT_DocParts = element docPart { CT_DocPart }+ -->
+	<!--
+	CT_DocPart =
+	element docPartPr { CT_DocPartPr }?,
+	element docPartBody { CT_Body }?
+	-->
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Body
+	-->
+	<xsd:complexType name="CT_Body">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Body"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_BlockLevelElts"/>
+			<xsd:element minOccurs="0" ref="main:sectPr"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="sectPr" type="main:CT_SectPr"/>
+	<xsd:group name="EG_BlockLevelElts">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="BlockLevelElements"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_BlockLevelChunkElts"/>
+		</xsd:sequence>
+	</xsd:group>
+	<!--  | element altChunk { CT_AltChunk }* -->
+	<xsd:group name="EG_BlockLevelChunkElts">
+		<xsd:sequence>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_ContentBlockContent"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="EG_ContentBlockContent">
+		<xsd:choice>
+			<xsd:element ref="main:sdt"/>
+			<xsd:element minOccurs="0" maxOccurs="unbounded" ref="main:p"/>
+			<xsd:element minOccurs="0" maxOccurs="unbounded" ref="main:tbl"/>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_RunLevelElts"/>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:element name="sdt" type="main:CT_SdtBlock"/>
+	<xsd:element name="p" type="main:CT_P"/>
+	<xsd:element name="tbl" type="main:CT_Tbl"/>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Section properties
+	-->
+	<xsd:complexType name="CT_SectPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SectPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:group minOccurs="0" ref="main:EG_SectPrContents"/>
+	</xsd:complexType>
+	<!--
+	was:
+	(EG_HdrFtrReferences*,
+	EG_SectPrContents?)
+	element sectPrChange { CT_SectPrChange }?),
+	AG_SectPrAttributes
+	-->
+	<xsd:group name="EG_SectPrContents">
+		<xsd:sequence>
+			<!--
+			<xsd:element name="footnotePr" type="CT_FtnProps" minOccurs="0">
+			<xsd:annotation>
+			<xsd:documentation>Section-Wide Footnote Properties</xsd:documentation>
+			</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="endnotePr" type="CT_EdnProps" minOccurs="0">
+			<xsd:annotation>
+			<xsd:documentation>Section-Wide Endnote Properties</xsd:documentation>
+			</xsd:annotation>
+			</xsd:element>
+			-->
+			<xsd:element name="type" type="main:SectType" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Section Type</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pgSz" type="main:PageSz" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Page Size</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pgMar" type="main:PageMar" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Page Margins</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pgNumType" type="main:PageNumber" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Page Numbering Settings</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<!--
+			<xsd:element name="cols" type="CT_Columns" minOccurs="0">
+			<xsd:annotation>
+			<xsd:documentation>Column Definitions</xsd:documentation>
+			</xsd:annotation>
+			</xsd:element>
+			-->
+			<xsd:element name="titlePg" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Different First Page Headers and
+						Footers</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Paragraph
+	-->
+	<xsd:complexType name="CT_P">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="P"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:pPr"/>
+			<xsd:group minOccurs="0" maxOccurs="unbounded" ref="main:EG_PContent"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--
+	++++++++++++++++++++++++
+	Paragraph properties
+	-->
+	
+	<!--
+	<xsd:element name="pPr" type="main:CT_PPr"/>
+	<xsd:complexType name="CT_PPr">
+	<xsd:annotation>
+	<xsd:appinfo>
+	<jaxb:class name="PPr"/>
+	</xsd:appinfo>
+	<xsd:documentation> EG_ParaRPrTrackChanges?,</xsd:documentation>
+	</xsd:annotation>
+	<xsd:sequence>
+	<xsd:group ref="main:CT_PPrBase"/>
+	<xsd:sequence>
+	<xsd:element minOccurs="0" ref="main:rPr"/>
+	<xsd:element minOccurs="0" ref="main:sectPr"/>
+	</xsd:sequence>
+	</xsd:sequence>
+	</xsd:complexType>
+	-->
+	
+	<xsd:element name="pPr">
+		<xsd:complexType>
+			<!-- name="CT_PPr" -->
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:class name="PPr"/>
+				</xsd:appinfo>
+			</xsd:annotation>
+			<xsd:sequence>
+				<xsd:group ref="main:CT_PPrBase"/>
+				<xsd:sequence>
+					<xsd:element minOccurs="0" ref="main:rPr"/>
+					<xsd:element minOccurs="0" ref="main:sectPr"/>
+				</xsd:sequence>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!--   element pPrChange { CT_PPrChange }?) -->
+	
+	<xsd:group name="CT_PPrBase">
+		<xsd:sequence>
+			<!--
+			<xsd:element name="pStyle" minOccurs="0">
+			<xsd:annotation>
+			<xsd:documentation>Referenced Paragraph Style</xsd:documentation>
+			</xsd:annotation>
+			<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_String"/>
+			</xsd:complexType>
+			</xsd:element> -->
+			
+			<xsd:element name="pStyle" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Referenced Paragraph
+						Style</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attribute name="val" type="xsd:string"/>
+				</xsd:complexType>
+			</xsd:element>
+			
+			<xsd:element name="keepNext" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Keep Paragraph With Next
+						Paragraph</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="keepLines"  minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Keep All Lines On One Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pageBreakBefore" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Start Paragraph on Next
+						Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="numPr" type="main:NumPr" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Numbering Definition Instance
+						Reference</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="tabs" type="main:CT_Tabs" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Set of Custom Tab Stops</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="spacing" type="main:Spacing" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Spacing Between Lines and Above/Below
+						Paragraph</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="ind" type="main:Ind" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Paragraph Indentation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="jc" type="main:Jc" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Paragraph Alignment</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="outlineLvl" type="main:DecimalNumber"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Associated Outline
+						Level</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Paragraph content
+	-->
+	<xsd:group name="EG_PContent">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="ParagraphContent"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_ContentRunContent"/>
+		</xsd:sequence>
+	</xsd:group>
+	
+	<xsd:group name="EG_ContentRunContent">
+		<xsd:choice>
+			<xsd:element ref="main:r"/>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_RunLevelElts"/>
+		</xsd:choice>
+	</xsd:group>
+	
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Run
+	-->
+	
+	<!--
+	Replace this structure.  We want to ensure a proper 
+	object is used for r, rather than a JAXBElement.
+	
+	See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
+	
+	<xsd:element name="r" type="main:CT_R"/>
+	
+	<xsd:complexType name="CT_R">
+	<xsd:annotation>
+	<xsd:appinfo>
+	<jaxb:class name="R"/>
+	</xsd:appinfo>
+	</xsd:annotation>
+	<xsd:sequence>
+	<xsd:element minOccurs="0" ref="main:EG_RPr"/>
+	<xsd:group minOccurs="0" maxOccurs="unbounded" ref="main:EG_RunInnerContent"/>
+	</xsd:sequence>
+	</xsd:complexType>
+	-->
+	
+	<xsd:element name="r">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="R"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<!-- was name="CT_R" -->
+			<xsd:sequence>
+				<xsd:element minOccurs="0" ref="main:rPr"/>
+<!--				<xsd:element minOccurs="0" ref="main:EG_RPr"/> -->
+				<xsd:group minOccurs="0" maxOccurs="unbounded"
+					ref="main:EG_RunInnerContent"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Run properties
+	-->
+	<!-- EG_RPr = element rPr { CT_RPr }? -->
+
+	
+<!--		
+	<xsd:element name="rPr" substitutionGroup="main:EG_RPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="RPrZZ"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+	
+	<xsd:element name="EG_RPr" abstract="true" type="main:CT_RPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="RPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+	</xsd:element>
+	
+	<xsd:complexType name="CT_RPr">
+		<xsd:group minOccurs="0" ref="main:EG_RPrContent"/>
+	</xsd:complexType>
+	
+	<xsd:group name="EG_RPrContent">
+		<xsd:sequence>
+			<xsd:group minOccurs="0" ref="main:EG_RPrBase"/>
+		</xsd:sequence>
+	</xsd:group>
+-->
+	<xsd:element name="rPr">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:class name="RPr"/>
+				</xsd:appinfo>
+			</xsd:annotation>
+			<xsd:sequence>
+				<xsd:group minOccurs="0" ref="main:EG_RPrBase"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+			
+	<!--  element rPrChange { CT_RPrChange }? -->
+	<xsd:group name="EG_RPrBase">
+		<xsd:sequence>
+			<xsd:element name="rStyle" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Referenced Character
+						Style</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attributeGroup ref="main:CT_String"/>
+				</xsd:complexType>				
+			</xsd:element>
+			
+			<xsd:element name="b" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Bold</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="i" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Italics</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="caps" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Display All Characters As Capital
+						Letters</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="smallCaps" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Small Caps</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="strike" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Single Strikethrough</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="dstrike" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Double Strikethrough</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="outline" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Display Character
+						Outline</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="shadow" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Shadow</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="emboss" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Embossing</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="imprint" minOccurs="0" type="main:BooleanDefaultTrue">
+				<xsd:annotation>
+					<xsd:documentation>Imprinting</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="color" type="main:Color" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Run Content Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="highlight" type="main:Highlight" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Text Highlighting</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="u" type="main:Underline" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Underline</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="vertAlign" type="main:VerticalAlignRun"
+				minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Subscript/Superscript
+						Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:element name="shd">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Shd"/>
+		</xsd:complexType>
+	</xsd:element>
+	
+	
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Run content
+	-->
+
+		
+	<!-- Not just run level, since referenced from EG_ContentBlockContent -->
+	<xsd:group name="EG_RunLevelElts">
+		<xsd:choice>
+			<xsd:element minOccurs="0" ref="main:ins"/>
+			<xsd:element minOccurs="0" ref="main:del"/>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:element name="ins" type="main:CT_RunTrackChange"/>
+	<xsd:element name="del" type="main:CT_RunTrackChange"/>
+	<!--
+	| element moveFrom { CT_RunTrackChange }
+	| element moveTo { CT_RunTrackChange }
+	| EG_MathContent*
+	-->
+	<xsd:group name="EG_RunInnerContent">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="RunContent"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:choice>
+			<xsd:element ref="main:br"/>
+			<xsd:element ref="main:t"/>
+			<xsd:element ref="main:delText"/>
+			<xsd:element ref="main:instrText"/>
+			<xsd:element ref="main:delInstrText"/>
+			<xsd:element ref="main:noBreakHyphen"/>
+			<xsd:element minOccurs="0" ref="main:softHyphen"/>
+			<xsd:element minOccurs="0" ref="main:cr"/>
+			<!--  <xsd:element minOccurs="0" ref="main:dayShort"/>
+			<xsd:element minOccurs="0" ref="main:monthShort"/>
+			<xsd:element minOccurs="0" ref="main:yearShort"/>
+			<xsd:element minOccurs="0" ref="main:dayLong"/>
+			<xsd:element minOccurs="0" ref="main:monthLong"/>
+			<xsd:element minOccurs="0" ref="main:yearLong"/>
+			<xsd:element minOccurs="0" ref="main:annotationRef"/>
+			<xsd:element minOccurs="0" ref="main:footnoteRef"/>
+			<xsd:element minOccurs="0" ref="main:endnoteRef"/>
+			<xsd:element minOccurs="0" ref="main:separator"/>
+			<xsd:element minOccurs="0" ref="main:continuationSeparator"/>
+			<xsd:element minOccurs="0" ref="main:sym"/>
+			<xsd:element minOccurs="0" ref="main:pgNum"/>
+			<xsd:element minOccurs="0" ref="main:ptab"/>
+			<xsd:element minOccurs="0" ref="main:lastRenderedPageBreak"/> -->
+		</xsd:choice>
+	</xsd:group>
+	<xsd:element name="br">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Br"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="t" type="main:CT_Text"/>
+	<xsd:element name="delText" type="main:CT_Text"/>
+	<xsd:element name="instrText" type="main:CT_Text"/>
+	<xsd:element name="delInstrText" type="main:CT_Text"/>
+	<xsd:element name="noBreakHyphen">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="softHyphen">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="dayShort">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="monthShort">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="yearShort">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="dayLong">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="monthLong">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="yearLong">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="annotationRef">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="footnoteRef">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="endnoteRef">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="separator">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="continuationSeparator">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="sym">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Sym"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="pgNum">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="cr">
+		<xsd:complexType/>
+	</xsd:element>
+	<xsd:element name="ptab">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_PTab"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="lastRenderedPageBreak">
+		<xsd:complexType/>
+	</xsd:element>
+	
+	
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Track changes
+	-->
+	<xsd:attributeGroup name="CT_Markup">
+		<xsd:attribute name="id" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:attributeGroup name="CT_TrackChange">
+		<xsd:attributeGroup ref="main:CT_Markup"/>
+		<xsd:attribute name="author" use="required"/>
+		<xsd:attribute name="date"/>
+	</xsd:attributeGroup>
+	<xsd:complexType name="CT_RunTrackChange">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="RunTrackChange"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:group minOccurs="0" maxOccurs="unbounded"
+			ref="main:EG_ContentRunContent"/>
+		<xsd:attributeGroup ref="main:CT_TrackChange"/>
+	</xsd:complexType>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Structured Document Types
+	-->
+	<xsd:complexType name="CT_SdtBlock">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SdtBlock"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:sdtPr"/>
+			<xsd:element minOccurs="0" ref="main:sdtContent"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="sdtPr" type="main:CT_SdtPr"/>
+	<xsd:element name="sdtContent" type="main:CT_SdtContentBlock"/>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Std Properties
+	-->
+	<xsd:complexType name="CT_SdtPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SdtPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:choice maxOccurs="unbounded">
+			
+			<xsd:element minOccurs="0" ref="main:rPr"/>
+			
+			<xsd:element name="alias" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Friendly Name</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attributeGroup ref="main:CT_String"/>
+				</xsd:complexType>
+			</xsd:element>
+			
+			<xsd:element minOccurs="0" ref="main:lock"/>
+			<xsd:element minOccurs="0" ref="main:id"/>
+			
+			<xsd:element name="tag" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Programmatic Tag</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attributeGroup ref="main:CT_String"/>
+				</xsd:complexType>
+			</xsd:element>
+			
+		</xsd:choice>
+	</xsd:complexType>
+	
+	<xsd:element name="lock">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Lock"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="id" type="main:DecimalNumber">
+		<xsd:annotation>
+			<xsd:documentation>Unique ID</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--
+	| (element equation { CT_Empty }
+	| element comboBox { CT_SdtComboBox }
+	| element date { CT_SdtDate }
+	| element docPartObj { CT_SdtDocPart }
+	| element docPartList { CT_SdtDocPart }
+	| element dropDownList { CT_SdtDropDownList }
+	| element picture { CT_Empty }
+	| element richText { CT_Empty }
+	| element text { CT_SdtText }
+	| element citation { CT_Empty }
+	| element group { CT_Empty }
+	| element bibliography { CT_Empty })?)+
+	-->
+	<xsd:simpleType name="ST_Lock">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="sdtLocked"/>
+							<xsd:enumeration value="contentLocked"/>
+							<xsd:enumeration value="unlocked"/>
+							<xsd:enumeration value="sdtContentLocked"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_Lock">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Std Content
+	-->
+	<xsd:complexType name="CT_SdtContentBlock">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SdtContentBlock"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:group minOccurs="0" maxOccurs="unbounded"
+			ref="main:EG_ContentBlockContent"/>
+	</xsd:complexType>
+	<!-- EG_ContentBlockContent is defined in body section above -->
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Table
+	-->
+	<xsd:complexType name="CT_Tbl">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Tbl"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element ref="main:tblPr"/>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_ContentRowContent"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="tblPr" type="main:CT_TblPr"/>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Table Properties
+	-->
+	<xsd:complexType name="CT_TblPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="main:CT_TblPrBase"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--  element tblPrChange { CT_TblPrChange }? -->
+	<xsd:complexType name="CT_TblPrBase">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblPrBase"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:tblW"/>
+			<!--      <xsd:element minOccurs="0" ref="main:jc"/>-->
+			<xsd:element minOccurs="0" ref="main:tblBorders"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--
+	element shd { CT_Shd }?,
+	element tblLayout { CT_TblLayoutType }?,
+	element tblCellMar { CT_TblCellMar }?,
+	element tblLook { CT_ShortHexNumber }?
+	-->
+	<xsd:element name="tblW">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_TblWidth"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="tblBorders" type="main:CT_TblBorders"/>
+	<xsd:attributeGroup name="CT_TblWidth">
+		<xsd:attribute name="w" use="required"/>
+		<xsd:attribute name="type" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:complexType name="CT_TblBorders">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblBorders"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:top"/>
+			<xsd:element minOccurs="0" ref="main:left"/>
+			<xsd:element minOccurs="0" ref="main:bottom"/>
+			<xsd:element minOccurs="0" ref="main:right"/>
+			<xsd:element minOccurs="0" ref="main:insideH"/>
+			<xsd:element minOccurs="0" ref="main:insideV"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="top">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="left">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="bottom">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="right">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="insideH">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="insideV">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Table Grid
+	-->
+	<!--
+	CT_TblGrid =
+	CT_TblGridBase
+	element tblGridChange { CT_TblGridChange }?
+	-->
+	<!-- CT_TblGridBase = element gridCol { CT_TblGridCol }* -->
+	<!--
+	CT_TblGridCol =
+	attribute w { text >> xs:documentation [ "Grid Column Width" ] }
+	-->
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Table ContentRowContent
+	-->
+	<xsd:group name="EG_ContentRowContent">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" maxOccurs="unbounded" ref="main:tr"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:element name="tr" type="main:CT_Row"/>
+	<!--
+	| element customXml { CT_CustomXmlRow }
+	| element sdt { CT_SdtRow }
+	| EG_RunLevelElts*
+	-->
+	<xsd:complexType name="CT_Row">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Row"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:tblPrEx"/>
+			<xsd:element minOccurs="0" ref="main:trPr"/>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_ContentCellContent"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="tblPrEx" type="main:CT_TblPrEx"/>
+	<xsd:element name="trPr" type="main:CT_TrPr"/>
+	<!--
+	attribute rsidRPr {
+	text
+	>> xs:documentation [
+	"Revision Identifier for Table Row Glyph Formatting"
+	]
+	},
+	attribute rsidR {
+	text >> xs:documentation [ "Revision Identifier for Table Row" ]
+	},
+	attribute rsidDel {
+	text
+	>> xs:documentation [ "Revision Identifier for Table Row Deletion" ]
+	},
+	attribute rsidTr {
+	text
+	>> xs:documentation [
+	"Revision Identifier for Table Row Properties"
+	]
+	}
+	-->
+	<xsd:complexType name="CT_TblPrEx">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblPrEx"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="main:CT_TblPrExBase"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--  element tblPrExChange { CT_TblPrExChange }? -->
+	<xsd:complexType name="CT_TblPrExBase">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblPrExBase"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:tblW"/>
+			<!--      <xsd:element minOccurs="0" ref="main:jc"/>-->
+			<xsd:element ref="main:tblBorders"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--
+	element shd { CT_Shd }?,
+	element tblLayout { CT_TblLayoutType }?,
+	element tblCellMar { CT_TblCellMar }?,
+	element tblLook { CT_ShortHexNumber }?
+	-->
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Table Row Properties
+	-->
+	<xsd:complexType name="CT_TrPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TrPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="main:CT_TrPrBase"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--
+	(element ins { CT_TrackChange }?,
+	element del { CT_TrackChange }?,
+	element trPrChange { CT_TrPrChange }?)
+	-->
+	<xsd:complexType name="CT_TrPrBase">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TrPrBase"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="cantSplit" type="main:OnOff" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Table Row Cannot Break Across
+						Pages</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!--
+	| element trHeight { CT_Height }?
+	| element tblHeader { CT_OnOff }?
+	| element tblCellSpacing { CT_TblWidth }?
+	| element jc { CT_Jc }?
+	| element hidden { CT_OnOff }?)+
+	-->
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Table ContentCellContent
+	-->
+	<xsd:group name="EG_ContentCellContent">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" maxOccurs="unbounded" ref="main:tc"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:element name="tc" type="main:CT_Tc"/>
+	<!--
+	| element customXml { CT_CustomXmlCell }
+	| element sdt { CT_SdtCell }
+	| EG_RunLevelElts*
+	-->
+	<xsd:complexType name="CT_Tc">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcType"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:tcPr"/>
+			<xsd:group maxOccurs="unbounded" ref="main:EG_BlockLevelElts"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="tcPr" type="main:CT_TcPr"/>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Table Cell Properties
+	-->
+	<xsd:complexType name="CT_TcPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="main:CT_TcPrInner"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!--  element tcPrChange { CT_TcPrChange }? -->
+	<xsd:complexType name="CT_TcPrInner">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcPrInner"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="main:CT_TcPrBase"/>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- 	, EG_CellMarkupElements? -->
+	<xsd:complexType name="CT_TcPrBase">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcPrBase"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element minOccurs="0" ref="main:tcW"/>
+			<xsd:element minOccurs="0" ref="main:hMerge"/>
+			<xsd:element minOccurs="0" ref="main:vMerge"/>
+			<xsd:element minOccurs="0" ref="main:tcBorders"/>
+			<xsd:element minOccurs="0" ref="main:shd"/>
+			<xsd:element minOccurs="0" ref="main:noWrap"/>
+			<xsd:element minOccurs="0" ref="main:vAlign"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="tcW">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_TblWidth"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="hMerge">
+		<xsd:annotation>
+			<xsd:documentation> </xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_HMerge"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="vMerge">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_VMerge"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="tcBorders" type="main:CT_TcBorders"/>
+	<xsd:element name="noWrap" type="main:OnOff"> <!-- minOccurs="0"-->
+		<xsd:annotation>
+			<xsd:documentation>Don't Wrap Cell Content</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<!--  element hideMark { CT_OnOff }? -->
+	<xsd:attributeGroup name="CT_VMerge">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:attributeGroup name="CT_HMerge">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:complexType name="CT_TcBorders">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcBorders"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="main:CT_TblBorders">
+				<xsd:sequence>
+					<xsd:element minOccurs="0" ref="main:tl2br"/>
+					<xsd:element minOccurs="0" ref="main:tr2bl"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:element name="tl2br">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="tr2bl">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_Border"/>
+		</xsd:complexType>
+	</xsd:element>
+	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Miscellaneous junk!!
+	-->
+
+	<xsd:complexType name="BooleanDefaultTrue">
+		<!--
+			
+			Replaces ST_OnOff, for more intuitive field generation by JAXB.
+			
+			http://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#boolean
+		    says ·boolean· can have the following legal literals {true, false, 1, 0}.
+			
+			Don't use this for elements where Word 2007 passes 'on' or 'off' (which ST_OnOff allows).
+			
+			Note that a third party processor could choose to use 'on' or 'off', even where
+			Word doesn't.  This would cause trouble.
+			
+			Hopefully the result of standardisation will be to formally get rid
+			of 'on' and 'off', and use xsd:boolean instead.   
+			
+			-->
+		<xsd:attribute name="val" type="xsd:boolean" default="true">
+			<xsd:annotation>
+				<xsd:documentation>True/False Value (default is true)</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	
+		
+	<xsd:simpleType name="ST_OnOff">
+		<xsd:annotation>
+			<xsd:documentation>On/Off Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="true">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="false">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="on">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="off">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="OnOff">
+		<xsd:attribute name="val" type="main:ST_OnOff">
+			<xsd:annotation>
+				<xsd:documentation>On/Off Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_LongHexNumber">
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="4"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_LongHexNumber">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_ShortHexNumber">
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_ShortHexNumber">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_UcharHexNumber">
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_UcharHexNumber">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_DecimalNumber">
+		<xsd:annotation>
+			<xsd:documentation>Decimal Number Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer"/>
+	</xsd:simpleType>
+	<xsd:complexType name="DecimalNumber">
+		<xsd:attribute name="val" type="main:ST_DecimalNumber" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Decimal Number Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_UnsignedDecimalNumber">
+		<xsd:restriction base="xsd:unsignedLong"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TwipsMeasure">
+		<xsd:restriction base="xsd:unsignedLong"/>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_TwipsMeasure">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_SignedTwipsMeasure">
+		<xsd:restriction base="xsd:integer"/>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_SignedTwipsMeasure">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_PixelsMeasure">
+		<xsd:restriction base="xsd:unsignedLong"/>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_PixelsMeasure">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_HpsMeasure">
+		<xsd:restriction base="xsd:unsignedLong"/>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_HpsMeasure">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_SignedHpsMeasure">
+		<xsd:restriction base="xsd:integer"/>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_SignedHpsMeasure">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_DateTime">
+		<xsd:restriction base="xsd:dateTime"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_MacroName">
+		<xsd:restriction base="xsd:string">
+			<xsd:maxLength value="33"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_MacroName">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_EighthPointMeasure">
+		<xsd:restriction base="xsd:unsignedLong"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PointMeasure">
+		<xsd:restriction base="xsd:unsignedLong"/>
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="ST_String">
+		<xsd:annotation>
+			<xsd:documentation>String</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	
+	<xsd:attributeGroup name="CT_String">
+		<xsd:attribute name="val" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>String Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	
+	<xsd:simpleType name="ST_TextScale">
+		<xsd:restriction base="xsd:integer">
+			<xsd:minInclusive value="0"/>
+			<xsd:maxInclusive value="600"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_TextScale">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_HighlightColor">
+		<xsd:annotation>
+			<xsd:documentation>Text Highlight Colors</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="black">
+				<xsd:annotation>
+					<xsd:documentation>Black Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="blue">
+				<xsd:annotation>
+					<xsd:documentation>Blue Highlighting Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cyan">
+				<xsd:annotation>
+					<xsd:documentation>Cyan Highlighting Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="green">
+				<xsd:annotation>
+					<xsd:documentation>Green Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="magenta">
+				<xsd:annotation>
+					<xsd:documentation>Magenta Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="red">
+				<xsd:annotation>
+					<xsd:documentation>Red Highlighting Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="yellow">
+				<xsd:annotation>
+					<xsd:documentation>Yellow Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="white">
+				<xsd:annotation>
+					<xsd:documentation>White Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="darkBlue">
+				<xsd:annotation>
+					<xsd:documentation>Dark Blue Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="darkCyan">
+				<xsd:annotation>
+					<xsd:documentation>Dark Cyan Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="darkGreen">
+				<xsd:annotation>
+					<xsd:documentation>Dark Green Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="darkMagenta">
+				<xsd:annotation>
+					<xsd:documentation>Dark Magenta Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="darkRed">
+				<xsd:annotation>
+					<xsd:documentation>Dark Red Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="darkYellow">
+				<xsd:annotation>
+					<xsd:documentation>Dark Yellow Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="darkGray">
+				<xsd:annotation>
+					<xsd:documentation>Dark Gray Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lightGray">
+				<xsd:annotation>
+					<xsd:documentation>Light Gray Highlighting
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>No Text Highlighting</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="Highlight">
+		<xsd:attribute name="val" type="main:ST_HighlightColor" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Highlighting Color</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_HexColorAuto">
+		<xsd:annotation>
+			<xsd:documentation>‘Automatic’ Color Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="auto">
+				<xsd:annotation>
+					<xsd:documentation>Automatically Determined
+						Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_HexColorRGB">
+		<xsd:annotation>
+			<xsd:documentation>Hexadecimal Color Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="3" fixed="true"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_HexColor">
+		<xsd:annotation>
+			<xsd:documentation>Color Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="main:ST_HexColorAuto main:ST_HexColorRGB"/>
+	</xsd:simpleType>
+	<xsd:complexType name="Color">
+		<xsd:attribute name="val" type="main:ST_HexColor" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Run Content Color</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_LangCode">
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="2"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Lang">
+		<xsd:union memberTypes="main:ST_LangCode main:ST_String"/>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_Lang">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_Guid">
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern
+				value="\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_Guid">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_Underline">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="single"/>
+							<xsd:enumeration value="none"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="Underline">
+		<xsd:attribute name="val" type="main:ST_Underline" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Underline Style</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="color" type="main:ST_HexColor" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Underline Color</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TextEffect">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="blinkBackground"/>
+							<xsd:enumeration value="none"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_TextEffect">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_Border">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="nil"/>
+							<xsd:enumeration value="none"/>
+							<xsd:enumeration value="single"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_Border">
+		<xsd:attribute name="val" use="required"/>
+		<xsd:attribute name="color"/>
+		<xsd:attribute name="themeColor"/>
+		<xsd:attribute name="themeTint"/>
+		<xsd:attribute name="themeShade"/>
+		<xsd:attribute name="sz"/>
+		<xsd:attribute name="space"/>
+		<xsd:attribute name="shadow"/>
+		<xsd:attribute name="frame"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_Shd">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="nil"/>
+							<xsd:enumeration value="clear"/>
+							<xsd:enumeration value="solid"/>
+							<xsd:enumeration value="horzStripe"/>
+							<xsd:enumeration value="thinDiagCross"/>
+							<xsd:enumeration value="pct5"/>
+							<xsd:enumeration value="pct10"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_Shd">
+		<xsd:attribute name="val" use="required"/>
+		<xsd:attribute name="color"/>
+		<xsd:attribute name="themeColor"/>
+		<xsd:attribute name="themeTint"/>
+		<xsd:attribute name="themeShade"/>
+		<xsd:attribute name="fill"/>
+		<xsd:attribute name="themeFill"/>
+		<xsd:attribute name="themeFillTint"/>
+		<xsd:attribute name="themeFillShade"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_VerticalAlignRun">
+		<xsd:annotation>
+			<xsd:documentation>Vertical Positioning Location</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="baseline">
+				<xsd:annotation>
+					<xsd:documentation>Regular Vertical
+						Positioning</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="superscript">
+				<xsd:annotation>
+					<xsd:documentation>Superscript</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="subscript">
+				<xsd:annotation>
+					<xsd:documentation>Subscript</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="VerticalAlignRun">
+		<xsd:attribute name="val" type="main:ST_VerticalAlignRun" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Subscript/Superscript
+					Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:attributeGroup name="CT_FitText">
+		<xsd:attribute name="val" use="required"/>
+		<xsd:attribute name="id"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_HeightRule">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="auto"/>
+							<xsd:enumeration value="exact"/>
+							<xsd:enumeration value="atLeast"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Wrap">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="auto"/>
+							<xsd:enumeration value="notBeside"/>
+							<xsd:enumeration value="around"/>
+							<xsd:enumeration value="tight"/>
+							<xsd:enumeration value="through"/>
+							<xsd:enumeration value="none"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_VAnchor">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="text"/>
+							<xsd:enumeration value="margin"/>
+							<xsd:enumeration value="page"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_HAnchor">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="text"/>
+							<xsd:enumeration value="margin"/>
+							<xsd:enumeration value="page"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TabJc">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="clear"/>
+							<xsd:enumeration value="left"/>
+							<xsd:enumeration value="center"/>
+							<xsd:enumeration value="right"/>
+							<xsd:enumeration value="decimal"/>
+							<xsd:enumeration value="bar"/>
+							<xsd:enumeration value="num"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TabTlc">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="none"/>
+							<xsd:enumeration value="dot"/>
+							<xsd:enumeration value="hyphen"/>
+							<xsd:enumeration value="underscore"/>
+							<xsd:enumeration value="heavy"/>
+							<xsd:enumeration value="middleDot"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_TabStop">
+		<xsd:attribute name="val" use="required"/>
+		<xsd:attribute name="leader"/>
+		<xsd:attribute name="pos" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_LineSpacingRule">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="auto"/>
+							<xsd:enumeration value="exact"/>
+							<xsd:enumeration value="atLeast"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="Spacing">
+		<xsd:attribute name="before" type="main:ST_TwipsMeasure" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Spacing Above Paragraph</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="beforeLines" type="main:ST_DecimalNumber"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Spacing Above Paragraph IN Line
+					Units</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="beforeAutospacing" type="main:ST_OnOff"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Automatically Determine Spacing Above
+					Paragraph</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="after" type="main:ST_TwipsMeasure" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Spacing Below Paragraph</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="afterLines" type="main:ST_DecimalNumber"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Spacing Below Paragraph in Line
+					Units</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="afterAutospacing" type="main:ST_OnOff" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Automatically Determine Spacing Below
+					Paragraph</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="line" type="main:ST_SignedTwipsMeasure"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Spacing Between Lines in
+					Paragraph</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="lineRule" type="main:ST_LineSpacingRule"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Type of Spacing Between Lines</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="Ind">
+		<xsd:attribute name="left" type="main:ST_SignedTwipsMeasure"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Left Indentation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="leftChars" type="main:ST_DecimalNumber"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Left Indentation in Character
+					Units</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="right" type="main:ST_SignedTwipsMeasure"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Right Indentation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="rightChars" type="main:ST_DecimalNumber"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Right Indentation in Character
+					Units</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="hanging" type="main:ST_TwipsMeasure" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Indentation Removed from First
+					Line</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="hangingChars" type="main:ST_DecimalNumber"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Indentation Removed From First Line in Character
+					Units</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="firstLine" type="main:ST_TwipsMeasure" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Additional First Line
+					Indentation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="firstLineChars" type="main:ST_DecimalNumber"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Additional First Line Indentation in Character
+					Units</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_Jc">
+		<xsd:annotation>
+			<xsd:documentation>Horizontal Alignment Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="left">
+				<xsd:annotation>
+					<xsd:documentation>Align Left</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="center">
+				<xsd:annotation>
+					<xsd:documentation>Align Center</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="right">
+				<xsd:annotation>
+					<xsd:documentation>Align Right</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="both">
+				<xsd:annotation>
+					<xsd:documentation>Justified</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="Jc">
+		<xsd:attribute name="val" type="main:ST_Jc" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Alignment Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TextAlignment">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="top"/>
+							<xsd:enumeration value="center"/>
+							<xsd:enumeration value="baseline"/>
+							<xsd:enumeration value="bottom"/>
+							<xsd:enumeration value="auto"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_TextAlignment">
+		<xsd:attribute name="val" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:group name="CT_Comment">
+		<xsd:sequence>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:EG_BlockLevelElts"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:attributeGroup name="CT_Comment">
+		<xsd:attributeGroup ref="main:CT_TrackChange"/>
+		<xsd:attribute name="initials"/>
+	</xsd:attributeGroup>
+	<xsd:complexType name="NumPr">
+		<xsd:sequence>
+			<xsd:element name="ilvl" type="main:DecimalNumber" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Numbering Level
+						Reference</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="numId" type="main:DecimalNumber" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Numbering Definition Instance
+						Reference</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Tabs">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Tabs"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" ref="main:tab"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="tab">
+		<xsd:complexType>
+			<xsd:attributeGroup ref="main:CT_TabStop"/>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:simpleType name="ST_SectionMark">
+		<xsd:annotation>
+			<xsd:documentation>Section Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="nextPage">
+				<xsd:annotation>
+					<xsd:documentation>Next Page Section Break</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="nextColumn">
+				<xsd:annotation>
+					<xsd:documentation>Column Section Break</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="continuous">
+				<xsd:annotation>
+					<xsd:documentation>Continuous Section
+						Break</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="evenPage">
+				<xsd:annotation>
+					<xsd:documentation>Even Page Section Break</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="oddPage">
+				<xsd:annotation>
+					<xsd:documentation>Odd Page Section Break</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="SectType">
+		<xsd:attribute name="val" type="main:ST_SectionMark">
+			<xsd:annotation>
+				<xsd:documentation>Section Type Setting</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_NumberFormat">
+		<xsd:annotation>
+			<xsd:documentation>Numbering Format</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="decimal">
+				<xsd:annotation>
+					<xsd:documentation>Decimal Numbers</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="upperRoman">
+				<xsd:annotation>
+					<xsd:documentation>Uppercase Roman
+						Numerals</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lowerRoman">
+				<xsd:annotation>
+					<xsd:documentation>Lowercase Roman
+						Numerals</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="upperLetter">
+				<xsd:annotation>
+					<xsd:documentation>Uppercase Latin
+						Alphabet</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lowerLetter">
+				<xsd:annotation>
+					<xsd:documentation>Lowercase Latin
+						Alphabet</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ordinal">
+				<xsd:annotation>
+					<xsd:documentation>Ordinal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cardinalText">
+				<xsd:annotation>
+					<xsd:documentation>Cardinal Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ordinalText">
+				<xsd:annotation>
+					<xsd:documentation>Ordinal Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="chicago">
+				<xsd:annotation>
+					<xsd:documentation>Chicago Manual of Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="decimalEnclosedCircle">
+				<xsd:annotation>
+					<xsd:documentation>Decimal Numbers Enclosed in a
+						Circle</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="bullet">
+				<xsd:annotation>
+					<xsd:documentation>Bullet</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="decimalEnclosedFullstop">
+				<xsd:annotation>
+					<xsd:documentation>Decimal Numbers Followed by a
+						Period</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="decimalEnclosedParen">
+				<xsd:annotation>
+					<xsd:documentation>Decimal Numbers Enclosed in
+						Parenthesis</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="decimalEnclosedCircleChinese">
+				<xsd:annotation>
+					<xsd:documentation>Decimal Numbers Enclosed in a
+						Circle</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>No Numbering</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PageOrientation">
+		<xsd:annotation>
+			<xsd:documentation>Page Orientation</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="portrait">
+				<xsd:annotation>
+					<xsd:documentation>Portrait Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="landscape">
+				<xsd:annotation>
+					<xsd:documentation>Landscape Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="PageSz">
+		<xsd:attribute name="w" type="main:ST_TwipsMeasure" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Page Width</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="h" type="main:ST_TwipsMeasure" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Page Height</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="orient" type="main:ST_PageOrientation" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Page Orientation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="code" type="main:ST_DecimalNumber">
+			<xsd:annotation>
+				<xsd:documentation>Printer Paper Code</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="PageMar">
+		<xsd:attribute name="top" type="main:ST_SignedTwipsMeasure" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Top Margin Spacing</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="right" type="main:ST_TwipsMeasure" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Right Margin Spacing</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="bottom" type="main:ST_SignedTwipsMeasure"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation>Page Bottom Spacing</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="left" type="main:ST_TwipsMeasure" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Left Margin Spacing</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="header" type="main:ST_TwipsMeasure" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Spacing to Top of Header</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="footer" type="main:ST_TwipsMeasure" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Spacing to Bottom of Footer</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="gutter" type="main:ST_TwipsMeasure" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Page Gutter Spacing</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="PageNumber">
+		<xsd:attribute name="fmt" type="main:ST_NumberFormat" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Page Number Format</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="start" type="main:ST_DecimalNumber" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Starting Page Number</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="chapStyle" type="main:ST_DecimalNumber"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Chapter Heading Style</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="chapSep" type="main:ST_ChapterSep" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Chapter Separator Character</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_ChapterSep">
+		<xsd:annotation>
+			<xsd:documentation>Chapter Separator Types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="hyphen">
+				<xsd:annotation>
+					<xsd:documentation>Hyphen Chapter
+						Separator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="period">
+				<xsd:annotation>
+					<xsd:documentation>Period Chapter
+						Separator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="colon">
+				<xsd:annotation>
+					<xsd:documentation>Colon Chapter Separator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="emDash">
+				<xsd:annotation>
+					<xsd:documentation>Em Dash Chapter
+						Separator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="enDash">
+				<xsd:annotation>
+					<xsd:documentation>En Dash Chapter
+						Separator</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	<xsd:element name="vAlign" type="main:CT_VerticalJc">
+		<xsd:annotation>
+			<xsd:documentation>Vertical Text Alignment on Page</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	
+	<xsd:simpleType name="ST_VerticalJc">
+		<xsd:annotation>
+			<xsd:documentation>Vertical Alignment Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="top">
+				<xsd:annotation>
+					<xsd:documentation>Align Top</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="center">
+				<xsd:annotation>
+					<xsd:documentation>Align Center</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="both">
+				<xsd:annotation>
+					<xsd:documentation>Vertical Justification</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="bottom">
+				<xsd:annotation>
+					<xsd:documentation>Align Bottom</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_VerticalJc">
+		<xsd:attribute name="val" type="main:ST_VerticalJc" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Vertical Alignment Setting</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	
+	<xsd:simpleType name="ST_BrType">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="page"/>
+							<xsd:enumeration value="column"/>
+							<xsd:enumeration value="textWrapping"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_BrClear">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="none"/>
+							<xsd:enumeration value="left"/>
+							<xsd:enumeration value="right"/>
+							<xsd:enumeration value="all"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_Br">
+		<xsd:attribute name="type"/>
+		<xsd:attribute name="clear"/>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_PTabAlignment">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="left"/>
+							<xsd:enumeration value="center"/>
+							<xsd:enumeration value="right"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PTabRelativeTo">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="margin"/>
+							<xsd:enumeration value="indent"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PTabLeader">
+		<xsd:restriction>
+			<xsd:simpleType>
+				<xsd:list>
+					<xsd:simpleType>
+						<xsd:restriction base="xsd:token">
+							<xsd:enumeration value="none"/>
+							<xsd:enumeration value="dot"/>
+							<xsd:enumeration value="hyphen"/>
+							<xsd:enumeration value="underscore"/>
+							<xsd:enumeration value="middleDot"/>
+						</xsd:restriction>
+					</xsd:simpleType>
+				</xsd:list>
+			</xsd:simpleType>
+			<xsd:length value="1"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attributeGroup name="CT_PTab">
+		<xsd:attribute name="alignment" use="required"/>
+		<xsd:attribute name="relativeTo" use="required"/>
+		<xsd:attribute name="leader" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:attributeGroup name="CT_Sym">
+		<xsd:attribute name="font" use="required"/>
+		<xsd:attribute name="char" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:complexType name="CT_Text">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Text"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="main:ST_String">
+				<!--
+				<xsd:attribute ref="xml:space"/>
+				-->
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

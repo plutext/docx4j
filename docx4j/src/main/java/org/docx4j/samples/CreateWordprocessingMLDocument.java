@@ -18,7 +18,7 @@
  */
 
 
-package org.docx4j.openpackaging.samples;
+package org.docx4j.samples;
 
 import java.io.File;
 

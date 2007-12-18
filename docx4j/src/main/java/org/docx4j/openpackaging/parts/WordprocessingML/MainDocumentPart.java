@@ -44,47 +44,28 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.JAXBElement; 
+
+import org.docx4j.jaxb.document.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 
 public class MainDocumentPart extends DocumentPart  {
 	
-	private java.util.ArrayList body; // [1.2.2]
-
 	private static Logger log = Logger.getLogger(MainDocumentPart.class);
 	
+//	org.docx4j.wordml.Document wmlDocumentEl;
 	
-	/** The body ArrayList is a list of objects representing the block level
-	 * contents of the body of the document - the main document editing surface.
-	 * 
-	 * Unless and until we have a dedicated object to represent a particular bit 
-	 * of block level markup, we just store the XML snippet.  That way, 100%
-	 * fidelity can be ensured.
-	 * 
-	 * Here's the plan for dealing with each bit of block level content:
-	 * 
-	 * High Priority
-	 * -------------
-	 * p (Paragraph)
-	 * sectPr (Document Final Section Properties)
-	 * proofErr (Proofing Error Anchor)
-	 * tbl (Table)
-	 * 
-	 * Medium Priority
-	 * ---------------
-	 * BookmarkStart/End
-	 * CommentRangeStart/End
-	 * Revisions (16 elements)
-	 * 
-	 * Lower Priority
-	 * --------------
-	 * altChunk
-	 * CustomXml
-	 * sdt (Block-Level Structured Document Tag)
-	 * RangePermissions
-	 * Math
-	 * 
-*/
+	JAXBElement<?> root; 
 	
+	Document w3cDocument;	
+	
+
 	 /** 
 	 * @throws InvalidFormatException
 	 */
@@ -92,9 +73,10 @@ public class MainDocumentPart extends DocumentPart  {
 	public MainDocumentPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
-
-	public ArrayList getBody() {
-		return body;
+	
+	
+	public org.docx4j.jaxb.document.Document getDocumentObj() {
+		return (org.docx4j.jaxb.document.Document)root.getValue();
 	}
 	
 	public void setDocument(Document document) {
@@ -103,6 +85,7 @@ public class MainDocumentPart extends DocumentPart  {
 	}
 	
 	public Document getDocument() {
+		// TODO: remove getDocument() from API; marshall() suffices.
 		return marshall();
 	}
 	
@@ -117,25 +100,24 @@ public class MainDocumentPart extends DocumentPart  {
 	private void unmarshall(Document doc) {
 		
 		try {
-			//debugPrint(doc);
-			body = new ArrayList();
-		    Element root = doc.getRootElement();
-		    Node bodyNode = root.element("body");
-			// We iterate through the block level elements.
-			// If its a p, we make a p object.
-			// Otherwise, we just stick the XML fragment into the ArrayList.
-		    Iterator elementIterator = ((Element)bodyNode).elementIterator();
-		    while(elementIterator.hasNext()){
-		      Element element = (Element)elementIterator.next();
-		      
-			  if (element.getName()=="p" ) {
-				  Paragraph p = new Paragraph(element);
-					  body.add( p );
-			  } else {
-			      log.info("Adding raw XML for '" + element.getName() + "'");
-				  body.add( element );
-			  }
-		    }
+		    
+		    org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
+		    org.w3c.dom.Document w3cDoc = writer.write(doc);
+		    
+			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+			Unmarshaller u = jc.createUnmarshaller();
+			
+			// Will throw javax.xml.bind.UnmarshalException
+			// if an unexpected element is encountered.
+//			u.setEventHandler(new javax.xml.bind.helpers.DefaultValidationEventHandler());
+			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+			
+			root = (JAXBElement<?>)u.unmarshal(w3cDoc);
+			
+			System.out.println( "unmarshalled " );
+			
+						
+
 		} catch (Exception e ) {
 			e.printStackTrace();
 		}
@@ -143,23 +125,6 @@ public class MainDocumentPart extends DocumentPart  {
 	}
 	
 
-	/* 
-	 * If you set the objects in the following order:
-	 * 
-	 * -- Lists
-	 * -- List Overrides
-	 * -- Styles
-	 * -- *then* Body
-	 * 
-	 * then for example, you can check that all the styles
-	 * referenced in the body actually exist.  And all the numbering lists
-	 * references in the styles exist.
-	 * 
-	 * That's why we don't have a constructor which builds the MainDocumentPart
-	 * with just a body, though maybe we should also.
-	 * 
-	 * And for now, we just do the Body first. 
-	 */
 
 	private void debugPrint( Document coreDoc) {
 		try {
@@ -193,27 +158,39 @@ public class MainDocumentPart extends DocumentPart  {
 		// 		<w:body>
 		//			<w:p ..>
 
-		Document doc = DocumentHelper.createDocument();
-		Namespace nsWordprocessingML = new Namespace("w",
-				"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
-		Element elDocument = doc.addElement(new QName("document",
-				nsWordprocessingML));
-		Element elBody = elDocument.addElement(new QName(Constants.WORD_DOC_BODY_TAG_NAME,
-				Namespaces.namespaceWord));
-		
-		List bodyChildren = elBody.content();
-		
-		
-		// iterate through the body ArrayList
-		for (Object o : body ) {
+		try {
+			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+			Marshaller marshaller=jc.createMarshaller();
 			
-			if ( o instanceof Paragraph ) {
-				bodyChildren.add( ((Paragraph)o).marshall() );
-			} else {
-				bodyChildren.add( ((Element)o).createCopy() );
-			}
+			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+
+			marshaller.marshal(root, doc);
+			
+			// Now convert the W3C document to a dom4j document
+			org.dom4j.io.DOMReader xmlReader = new org.dom4j.io.DOMReader();
+			
+			/*  Should be able to do ..
+			 * 
+			 *  dom4j has DocumentResult that extends Result, so you can do:
+
+				DocumentResult dr = new DocumentResult();
+				marshaller.marshal( object, dr );
+				o = dr.getDocument();
+
+			 * 
+			 * 
+			 */
+		    return xmlReader.read(doc);
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return doc;
+		return null;
 	}
 			
 	

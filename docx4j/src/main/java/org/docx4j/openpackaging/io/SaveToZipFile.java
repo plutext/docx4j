@@ -48,7 +48,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.openpackaging.samples.DemoCore;
+import org.docx4j.samples.DemoCore;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
