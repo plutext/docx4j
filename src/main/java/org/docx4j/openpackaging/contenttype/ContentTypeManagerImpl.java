@@ -298,7 +298,6 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 
 	}
 
-	@Override
 	public Part CreateDefaultPartObject(String partName)
 			throws InvalidFormatException {
 		return new DefaultPart(new PartName(partName));
@@ -348,49 +347,41 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 		return new DocPropsCustomPart(new PartName(partName));
 	}
 	
-	@Override
 	public Part CreateCommentsPartObject(String partName)
 			throws InvalidFormatException {
 		return new CommentsPart(new PartName(partName));
 	}
 
-	@Override
 	public Part CreateCustomXmlPropertiesPartObject(String partName)
 			throws InvalidFormatException {
 		return new CustomXmlPropertiesPart(new PartName(partName));
 	}
 
-	@Override
 	public Part CreateEndnotesPartObject(String partName)
 			throws InvalidFormatException {
 		return new EndnotesPart(new PartName(partName));
 	}
 
-	@Override
 	public Part CreateFooterPartObject(String partName)
 			throws InvalidFormatException {
 		return new FooterPart(new PartName(partName));
 	}
 
-	@Override
 	public Part CreateFootnotesPartObject(String partName)
 			throws InvalidFormatException {
 		return new FootnotesPart(new PartName(partName));
 	}
 
-	@Override
 	public Part CreateGlossaryDocumentPartObject(String partName)
 			throws InvalidFormatException {
 		return new GlossaryDocumentPart(new PartName(partName));
 	}
 
-	@Override
 	public Part CreateHeaderPartObject(String partName)
 			throws InvalidFormatException {
 		return new HeaderPart(new PartName(partName));
 	}
 
-	@Override
 	public Part CreateNumberingPartObject(String partName)
 			throws InvalidFormatException {
 		return new NumberingDefinitionsPart(new PartName(partName));

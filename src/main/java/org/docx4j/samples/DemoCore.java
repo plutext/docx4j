@@ -25,7 +25,7 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.docx4j.openpackaging.samples;
+package org.docx4j.samples;
 
 import java.io.File;
 
