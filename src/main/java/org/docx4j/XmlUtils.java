@@ -215,4 +215,24 @@ public class XmlUtils {
 		return null;				
 	}
 	
+	/** Clone this JAXB object */ 
+	public static Object deepCopy(Object in) {
+		
+		Object o = null;
+		try {				
+
+			Unmarshaller u = jc.createUnmarshaller();
+			
+			// Temp
+			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+
+			o = u.unmarshal( new javax.xml.bind.util.JAXBSource(jc, in) );
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}		
+		return o;
+		
+	}
+	
 }
