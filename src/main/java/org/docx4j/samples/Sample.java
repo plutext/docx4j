@@ -78,6 +78,7 @@ public class Sample {
 		org.docx4j.jaxb.document.ObjectFactory factory = new org.docx4j.jaxb.document.ObjectFactory();
 		org.docx4j.jaxb.document.R  run = factory.createR();
 		org.docx4j.jaxb.document.Text  t = factory.createText();
+				
 		
 		t.setValue("SOMETHING NEW, with added JAXB convenience!");
 		
