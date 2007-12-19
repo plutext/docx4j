@@ -21,6 +21,7 @@
 package org.docx4j;
 
 import java.io.IOException;
+import java.io.StringWriter;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -37,7 +38,7 @@ import org.dom4j.io.XMLWriter;
 public class XmlUtils {
 	
 	/** Make a dom4j element into something JAXB can unmarshall */
-	public static java.io.InputStream getInputStreamFromDom4jEl(Element el) {
+	private static java.io.InputStream getInputStreamFromDom4jEl(Element el) {
 		
 		// Write it to an output stream
 		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
@@ -56,6 +57,29 @@ public class XmlUtils {
 		// Now return an input stream
 	    return new java.io.ByteArrayInputStream(bytes);
 		
+	}
+
+	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document */ 
+	public static Object unmarshalDom4jDoc(org.dom4j.Document doc) {
+		Object o = null;
+		try {				
+		    org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
+			org.w3c.dom.Document w3cDoc = writer.write(doc);
+
+			// TODO - reuse this object 
+			JAXBContext jc = JAXBContext
+					.newInstance("org.docx4j.jaxb.document");
+			Unmarshaller u = jc.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+
+			o = u.unmarshal( w3cDoc );
+
+			System.out.println("unmarshalled ");
+
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}		
+		return o;
 	}
 	
 	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document */ 
@@ -83,7 +107,7 @@ public class XmlUtils {
 	public static Object unmarshalString(String str) {
 		Object o = null;
 		try {				
-
+			
 			// TODO - reuse this object 
 			JAXBContext jc = JAXBContext
 					.newInstance("org.docx4j.jaxb.document");
@@ -138,4 +162,49 @@ public class XmlUtils {
 		}
 		return null;				
 	}
+	
+	/** Marshal to a String */ 
+	public static String marshaltoString(Object o) {
+
+		// TODO - option to suppress XML declaration	
+		
+		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
+		 * 
+		 * If you are writing to a file, a socket, or memory, then you should use
+		 * the version that takes OutputStream. Unless you change the target 
+		 * encoding to something else (default is UTF-8), there's a special 
+		 * marshaller codepath for OutputStream, which makes it run really fast.
+		 * You also don't have to use BufferedOutputStream, since the JAXB RI 
+		 * does the adequate buffering.
+		 * 
+		 * You can also write to Writer, but in this case you'll be responsible 
+		 * for encoding characters, so in general you need to be careful. If 
+		 * you want to marshal XML into an encoding other than UTF-8, it's best
+		 *  to use the JAXB_ENCODING property and then write to OutputStream, 
+		 *  as it escapes characters to things like &#x1824; correctly. 
+		 */
+		
+		try {			
+			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+			Marshaller m=jc.createMarshaller();
+
+			StringWriter sWriter = new StringWriter();
+			m.marshal(o, sWriter);
+			return sWriter.toString();
+			
+/*          Alternative implementation
+ 
+			java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();			
+			marshaller.marshal(o, out);			
+		    byte[] bytes = out.toByteArray();
+		    return new String(bytes);
+ */	
+			
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;				
+	}
+	
 }
