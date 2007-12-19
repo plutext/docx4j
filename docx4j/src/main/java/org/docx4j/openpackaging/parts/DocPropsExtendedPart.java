@@ -19,44 +19,13 @@
 
 package org.docx4j.openpackaging.parts;
 
-import java.net.URI;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 
-import org.docx4j.document.wordprocessingml.Constants;
-import org.docx4j.document.wordprocessingml.Paragraph;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.Package;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
 import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.dom.DOMElement;
-import org.dom4j.Namespace;
-import org.dom4j.Node;
-import org.dom4j.QName;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
 
 
-//import org.openxml4j.opc.Package;
-//import org.openxml4j.opc.PackagePart;
-//import org.openxml4j.opc.PackagingURIHelper;
-//import org.openxml4j.opc.StreamHelper;
-//
-//import org.openxml4j.opc.PackagePartName;
-//import org.openxml4j.opc.internal.marshallers.ZipPartMarshaller;
 
 
 public class DocPropsExtendedPart extends AbstractDocPropsPart  {
