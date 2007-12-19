@@ -99,5 +99,21 @@ public class Id
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         setParent(parent);
     }
+    
+    
+    public boolean equals(Object obj) {
+    	if (obj instanceof Id) {
+    		return val.equals( ((Id)obj).getVal() ); 
+    	} else {
+    		return false;
+    	}
+    }
+    
+    public int hashCode() {
+    	
+    	// Natural and good enough...
+    	return val.intValue();
+    	
+    }
 
 }

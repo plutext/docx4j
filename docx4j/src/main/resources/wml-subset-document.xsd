@@ -127,7 +127,24 @@ None are the simple String we might wish for!
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-to ensure you generate
+We want to generate:	
+
+		protected List<Object> paragraphContent;
+	
+So that an element you create using factory can be 
+	    added to the list.  	
+
+Spurious reasons:
+				
+	1.  So i can annotate with @XmlAnyElement (and have those populate it)
+		- NOT A REASON: additional elements will always be 
+			unmarshalled asJAXBElements
+	
+	2.  Ease of use: So things unmarshall directly to the correct class, rather than 
+	    as JAXBElements.
+	    - NOT A REASON: this is a consequence of @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
+		
+To ensure you generate
 			
 	    protected List<Object> paragraphContent;
 

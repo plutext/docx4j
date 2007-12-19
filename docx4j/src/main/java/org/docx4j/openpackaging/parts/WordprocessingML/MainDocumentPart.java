@@ -48,7 +48,7 @@ public class MainDocumentPart extends DocumentPart  {
 	
 	JAXBElement<?> root; 
 	
-	Document w3cDocument;	
+//	Document w3cDocument;	
 	
 
 	 /** 
