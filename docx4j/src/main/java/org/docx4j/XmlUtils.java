@@ -37,6 +37,17 @@ import org.dom4j.io.XMLWriter;
 
 public class XmlUtils {
 	
+	static JAXBContext jc;
+	
+	static {
+		
+		try {		
+			jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}				
+	}
+	
 	/** Make a dom4j element into something JAXB can unmarshall */
 	private static java.io.InputStream getInputStreamFromDom4jEl(Element el) {
 		
@@ -66,9 +77,8 @@ public class XmlUtils {
 		    org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
 			org.w3c.dom.Document w3cDoc = writer.write(doc);
 
-			// TODO - reuse this object 
-			JAXBContext jc = JAXBContext
-					.newInstance("org.docx4j.jaxb.document");
+//			JAXBContext jc = JAXBContext
+//					.newInstance("org.docx4j.jaxb.document");
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 
@@ -87,9 +97,8 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 
-			// TODO - reuse this object 
-			JAXBContext jc = JAXBContext
-					.newInstance("org.docx4j.jaxb.document");
+//			JAXBContext jc = JAXBContext
+//					.newInstance("org.docx4j.jaxb.document");
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 
@@ -108,9 +117,8 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 			
-			// TODO - reuse this object 
-			JAXBContext jc = JAXBContext
-					.newInstance("org.docx4j.jaxb.document");
+//			JAXBContext jc = JAXBContext
+//					.newInstance("org.docx4j.jaxb.document");
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 
@@ -129,7 +137,7 @@ public class XmlUtils {
 	public static org.dom4j.Document marshaltoDom4jDocument(Object o) {
 		// TODO - refactor this.
 		try {
-			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+//			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
 			Marshaller marshaller=jc.createMarshaller();
 			
 			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -185,7 +193,7 @@ public class XmlUtils {
 		 */
 		
 		try {			
-			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+//			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
 			Marshaller m=jc.createMarshaller();
 
 			StringWriter sWriter = new StringWriter();
