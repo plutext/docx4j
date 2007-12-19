@@ -327,7 +327,8 @@ None are the simple String we might wish for!
 			</xsd:annotation>
 			</xsd:element>
 			-->
-			<xsd:element name="titlePg" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="titlePg" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Different First Page Headers and
 						Footers</xsd:documentation>
@@ -415,13 +416,15 @@ None are the simple String we might wish for!
 				</xsd:complexType>
 			</xsd:element>
 			
-			<xsd:element name="keepNext" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="keepNext" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Keep Paragraph With Next
 						Paragraph</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="keepLines"  minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="keepLines" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Keep All Lines On One Page</xsd:documentation>
 				</xsd:annotation>
@@ -459,12 +462,14 @@ None are the simple String we might wish for!
 					<xsd:documentation>Paragraph Alignment</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="outlineLvl" type="main:DecimalNumber"
-				minOccurs="0">
-				<xsd:annotation>
-					<xsd:documentation>Associated Outline
-						Level</xsd:documentation>
-				</xsd:annotation>
+			<xsd:element name="outlineLvl" minOccurs="0">
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:documentation>Associated Outline
+							Level</xsd:documentation>
+					</xsd:annotation>
+					<xsd:attribute name="val" type="xsd:integer" use="required"/>
+				</xsd:complexType>				
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:group>
@@ -526,7 +531,7 @@ None are the simple String we might wish for!
 			<!-- was name="CT_R" -->
 			<xsd:sequence>
 				<xsd:element minOccurs="0" ref="main:rPr"/>
-<!--				<xsd:element minOccurs="0" ref="main:EG_RPr"/> -->
+				<!--				<xsd:element minOccurs="0" ref="main:EG_RPr"/> -->
 				<xsd:group minOccurs="0" maxOccurs="unbounded"
 					ref="main:EG_RunInnerContent"/>
 			</xsd:sequence>
@@ -537,35 +542,34 @@ None are the simple String we might wish for!
 	Run properties
 	-->
 	<!-- EG_RPr = element rPr { CT_RPr }? -->
-
 	
-<!--		
+	<!--		
 	<xsd:element name="rPr" substitutionGroup="main:EG_RPr">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<jaxb:class name="RPrZZ"/>
-			</xsd:appinfo>
-		</xsd:annotation>
+	<xsd:annotation>
+	<xsd:appinfo>
+	<jaxb:class name="RPrZZ"/>
+	</xsd:appinfo>
+	</xsd:annotation>
 	</xsd:element>
 	
 	<xsd:element name="EG_RPr" abstract="true" type="main:CT_RPr">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<jaxb:property name="RPr"/>
-			</xsd:appinfo>
-		</xsd:annotation>
+	<xsd:annotation>
+	<xsd:appinfo>
+	<jaxb:property name="RPr"/>
+	</xsd:appinfo>
+	</xsd:annotation>
 	</xsd:element>
 	
 	<xsd:complexType name="CT_RPr">
-		<xsd:group minOccurs="0" ref="main:EG_RPrContent"/>
+	<xsd:group minOccurs="0" ref="main:EG_RPrContent"/>
 	</xsd:complexType>
 	
 	<xsd:group name="EG_RPrContent">
-		<xsd:sequence>
-			<xsd:group minOccurs="0" ref="main:EG_RPrBase"/>
-		</xsd:sequence>
+	<xsd:sequence>
+	<xsd:group minOccurs="0" ref="main:EG_RPrBase"/>
+	</xsd:sequence>
 	</xsd:group>
--->
+	-->
 	<xsd:element name="rPr">
 		<xsd:complexType>
 			<xsd:annotation>
@@ -578,7 +582,7 @@ None are the simple String we might wish for!
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
-			
+	
 	<!--  element rPrChange { CT_RPrChange }? -->
 	<xsd:group name="EG_RPrBase">
 		<xsd:sequence>
@@ -589,7 +593,7 @@ None are the simple String we might wish for!
 				</xsd:annotation>
 				<xsd:complexType>
 					<xsd:attributeGroup ref="main:CT_String"/>
-				</xsd:complexType>				
+				</xsd:complexType>
 			</xsd:element>
 			
 			<xsd:element name="b" minOccurs="0" type="main:BooleanDefaultTrue">
@@ -608,38 +612,45 @@ None are the simple String we might wish for!
 						Letters</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="smallCaps" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="smallCaps" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Small Caps</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="strike" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="strike" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Single Strikethrough</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="dstrike" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="dstrike" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Double Strikethrough</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="outline" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="outline" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Display Character
 						Outline</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="shadow" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="shadow" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Shadow</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="emboss" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="emboss" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Embossing</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="imprint" minOccurs="0" type="main:BooleanDefaultTrue">
+			<xsd:element name="imprint" minOccurs="0"
+				type="main:BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Imprinting</xsd:documentation>
 				</xsd:annotation>
@@ -674,12 +685,10 @@ None are the simple String we might wish for!
 		</xsd:complexType>
 	</xsd:element>
 	
-	
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Run content
 	-->
-
-		
+	
 	<!-- Not just run level, since referenced from EG_ContentBlockContent -->
 	<xsd:group name="EG_RunLevelElts">
 		<xsd:choice>
@@ -794,7 +803,6 @@ None are the simple String we might wish for!
 		<xsd:complexType/>
 	</xsd:element>
 	
-	
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Track changes
 	-->
@@ -822,7 +830,7 @@ None are the simple String we might wish for!
 	<xsd:complexType name="CT_SdtBlock">
 		<xsd:annotation>
 			<xsd:appinfo>
-				<jaxb:class name="SdtBlock"/>
+				<jaxb:class name="Sdt"/>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -841,10 +849,11 @@ None are the simple String we might wish for!
 				<jaxb:class name="SdtPr"/>
 			</xsd:appinfo>
 		</xsd:annotation>
-		<xsd:choice maxOccurs="unbounded">
+		<xsd:sequence>
 			
+			<!--
 			<xsd:element minOccurs="0" ref="main:rPr"/>
-			
+			-->
 			<xsd:element name="alias" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Friendly Name</xsd:documentation>
@@ -866,7 +875,7 @@ None are the simple String we might wish for!
 				</xsd:complexType>
 			</xsd:element>
 			
-		</xsd:choice>
+		</xsd:sequence>
 	</xsd:complexType>
 	
 	<xsd:element name="lock">
@@ -874,11 +883,16 @@ None are the simple String we might wish for!
 			<xsd:attributeGroup ref="main:CT_Lock"/>
 		</xsd:complexType>
 	</xsd:element>
-	<xsd:element name="id" type="main:DecimalNumber">
-		<xsd:annotation>
-			<xsd:documentation>Unique ID</xsd:documentation>
-		</xsd:annotation>
+	
+	<xsd:element name="id">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:documentation>Unique ID</xsd:documentation>
+			</xsd:annotation>
+			<xsd:attribute name="val" type="xsd:integer" use="required"/>
+		</xsd:complexType>
 	</xsd:element>
+	
 	<!--
 	| (element equation { CT_Empty }
 	| element comboBox { CT_SdtComboBox }
@@ -919,7 +933,7 @@ None are the simple String we might wish for!
 	<xsd:complexType name="CT_SdtContentBlock">
 		<xsd:annotation>
 			<xsd:appinfo>
-				<jaxb:class name="SdtContentBlock"/>
+				<jaxb:class name="SdtContent"/>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:group minOccurs="0" maxOccurs="unbounded"
@@ -1235,7 +1249,8 @@ None are the simple String we might wish for!
 	</xsd:element>
 	<xsd:element name="hMerge">
 		<xsd:annotation>
-			<xsd:documentation> </xsd:documentation>
+			<xsd:documentation>
+			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:attributeGroup ref="main:CT_HMerge"/>
@@ -1287,32 +1302,32 @@ None are the simple String we might wish for!
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Miscellaneous junk!!
 	-->
-
+	
 	<xsd:complexType name="BooleanDefaultTrue">
 		<!--
-			
-			Replaces ST_OnOff, for more intuitive field generation by JAXB.
-			
-			http://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#boolean
-		    says ·boolean· can have the following legal literals {true, false, 1, 0}.
-			
-			Don't use this for elements where Word 2007 passes 'on' or 'off' (which ST_OnOff allows).
-			
-			Note that a third party processor could choose to use 'on' or 'off', even where
-			Word doesn't.  This would cause trouble.
-			
-			Hopefully the result of standardisation will be to formally get rid
-			of 'on' and 'off', and use xsd:boolean instead.   
-			
-			-->
+		
+		Replaces ST_OnOff, for more intuitive field generation by JAXB.
+		
+		http://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#boolean
+		says ·boolean· can have the following legal literals {true, false, 1, 0}.
+		
+		Don't use this for elements where Word 2007 passes 'on' or 'off' (which ST_OnOff allows).
+		
+		Note that a third party processor could choose to use 'on' or 'off', even where
+		Word doesn't.  This would cause trouble.
+		
+		Hopefully the result of standardisation will be to formally get rid
+		of 'on' and 'off', and use xsd:boolean instead.   
+		
+		-->
 		<xsd:attribute name="val" type="xsd:boolean" default="true">
 			<xsd:annotation>
-				<xsd:documentation>True/False Value (default is true)</xsd:documentation>
+				<xsd:documentation>True/False Value (default is
+					true)</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
 	
-		
 	<xsd:simpleType name="ST_OnOff">
 		<xsd:annotation>
 			<xsd:documentation>On/Off Value</xsd:documentation>
@@ -1381,19 +1396,7 @@ None are the simple String we might wish for!
 	<xsd:attributeGroup name="CT_UcharHexNumber">
 		<xsd:attribute name="val" use="required"/>
 	</xsd:attributeGroup>
-	<xsd:simpleType name="ST_DecimalNumber">
-		<xsd:annotation>
-			<xsd:documentation>Decimal Number Value</xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="xsd:integer"/>
-	</xsd:simpleType>
-	<xsd:complexType name="DecimalNumber">
-		<xsd:attribute name="val" type="main:ST_DecimalNumber" use="required">
-			<xsd:annotation>
-				<xsd:documentation>Decimal Number Value</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
+		
 	<xsd:simpleType name="ST_UnsignedDecimalNumber">
 		<xsd:restriction base="xsd:unsignedLong"/>
 	</xsd:simpleType>
@@ -1906,12 +1909,12 @@ None are the simple String we might wish for!
 				<xsd:documentation>Spacing Above Paragraph</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="beforeLines" type="main:ST_DecimalNumber"
+		<xsd:attribute name="beforeLines" type="xsd:integer"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Spacing Above Paragraph IN Line
 					Units</xsd:documentation>
-			</xsd:annotation>
+			</xsd:annotation>			
 		</xsd:attribute>
 		<xsd:attribute name="beforeAutospacing" type="main:ST_OnOff"
 			use="optional">
@@ -1925,7 +1928,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Spacing Below Paragraph</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="afterLines" type="main:ST_DecimalNumber"
+		<xsd:attribute name="afterLines" type="xsd:integer"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Spacing Below Paragraph in Line
@@ -1959,7 +1962,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Left Indentation</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="leftChars" type="main:ST_DecimalNumber"
+		<xsd:attribute name="leftChars" type="xsd:integer"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Left Indentation in Character
@@ -1972,7 +1975,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Right Indentation</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="rightChars" type="main:ST_DecimalNumber"
+		<xsd:attribute name="rightChars" type="xsd:integer"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Right Indentation in Character
@@ -1985,7 +1988,7 @@ None are the simple String we might wish for!
 					Line</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="hangingChars" type="main:ST_DecimalNumber"
+		<xsd:attribute name="hangingChars" type="xsd:integer"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Indentation Removed From First Line in Character
@@ -1998,7 +2001,7 @@ None are the simple String we might wish for!
 					Indentation</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="firstLineChars" type="main:ST_DecimalNumber"
+		<xsd:attribute name="firstLineChars" type="xsd:integer"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Additional First Line Indentation in Character
@@ -2073,13 +2076,13 @@ None are the simple String we might wish for!
 	</xsd:attributeGroup>
 	<xsd:complexType name="NumPr">
 		<xsd:sequence>
-			<xsd:element name="ilvl" type="main:DecimalNumber" minOccurs="0">
+			<xsd:element name="ilvl" type="xsd:integer" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Numbering Level
 						Reference</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="numId" type="main:DecimalNumber" minOccurs="0">
+			<xsd:element name="numId" type="xsd:integer" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Numbering Definition Instance
 						Reference</xsd:documentation>
@@ -2265,7 +2268,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Page Orientation</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="code" type="main:ST_DecimalNumber">
+		<xsd:attribute name="code" type="xsd:integer">
 			<xsd:annotation>
 				<xsd:documentation>Printer Paper Code</xsd:documentation>
 			</xsd:annotation>
@@ -2315,12 +2318,12 @@ None are the simple String we might wish for!
 				<xsd:documentation>Page Number Format</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="start" type="main:ST_DecimalNumber" use="optional">
+		<xsd:attribute name="start" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Starting Page Number</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="chapStyle" type="main:ST_DecimalNumber"
+		<xsd:attribute name="chapStyle" type="xsd:integer"
 			use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Chapter Heading Style</xsd:documentation>

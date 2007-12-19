@@ -25,8 +25,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.docx4j.document.wordprocessingml.Paragraph;
-import org.docx4j.document.wordprocessingml.RunProperties;
+
+import org.docx4j.jaxb.document.P;
+import org.docx4j.jaxb.document.RPr;
+
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
@@ -100,7 +102,7 @@ public class Style {
 	int uiPriority;
 	
 	// Not sure whether a table style can have this, but both paragraph and character styles can
-	RunProperties rPr;
+	RPr rPr;
 
 	protected HashMap styleChildren = new HashMap();
 	
@@ -134,7 +136,8 @@ public class Style {
 			  }
 		  } else if (element.getName()=="rPr" ) {
 			  //log.debug("found RunProperties...");
-			  rPr = new RunProperties(element);  
+			  rPr = (RPr)org.docx4j.XmlUtils.unmarshalDom4jEl(element);
+				  //new RunProperties(element);  
 		  } else if (element.getName()=="pPr" ) {
 			  log.warn("found ParagraphProperties...TODO - process this in the subclass");
 		  } else {

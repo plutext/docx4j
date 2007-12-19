@@ -20,21 +20,15 @@
 package org.docx4j.samples;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 
-import org.docx4j.document.wordprocessingml.Paragraph;
-import org.docx4j.document.wordprocessingml.Run;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.jaxb.document.Body;
-import org.dom4j.Element;
 
 
 public class Sample {

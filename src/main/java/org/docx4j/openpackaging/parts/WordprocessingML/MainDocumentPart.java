@@ -20,28 +20,14 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import java.util.Iterator;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import org.docx4j.Namespaces;
-import org.docx4j.document.wordprocessingml.Constants;
-import org.docx4j.document.wordprocessingml.Paragraph;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.PartName;
 
 import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.Node;
-import org.dom4j.QName;
 import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import javax.xml.bind.JAXBContext;
@@ -50,7 +36,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBElement; 
 
-import org.docx4j.jaxb.document.*;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
