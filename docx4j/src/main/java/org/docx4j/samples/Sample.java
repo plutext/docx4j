@@ -59,13 +59,13 @@ public class Sample {
 		org.docx4j.jaxb.document.Document wmlDocumentEl = documentPart.getDocumentObj();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <JAXBElement<?>> bodyChildren = body.getBlockLevelElements();
+		List <Object> bodyChildren = body.getBlockLevelElements();
 		
 		walkJAXBElements(bodyChildren);
 			
 		
 //		// Change something
-		org.docx4j.jaxb.document.P p = (org.docx4j.jaxb.document.P)bodyChildren.get(2).getValue();
+		org.docx4j.jaxb.document.P p = (org.docx4j.jaxb.document.P)((JAXBElement)bodyChildren.get(2)).getValue();
 		
 		//walkList(p.getParagraphContent());
 		
@@ -105,13 +105,13 @@ public class Sample {
 		
 	}
 	
-	static void walkJAXBElements(List <JAXBElement<?>> bodyChildren){
+	static void walkJAXBElements(List <Object> bodyChildren){
 	
-		for (JAXBElement o : bodyChildren ) {
+		for (Object o : bodyChildren ) {
 						
 			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.jaxb.document.P") ) {
 				System.out.println( "Paragraph object: ");
-				org.docx4j.jaxb.document.P p = (org.docx4j.jaxb.document.P)o.getValue();
+				org.docx4j.jaxb.document.P p = (org.docx4j.jaxb.document.P)((JAXBElement)o).getValue();
 				
 //				if (p.getPPr()!=null) {
 //					System.out.println( "Properties...");					

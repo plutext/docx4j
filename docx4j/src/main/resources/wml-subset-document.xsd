@@ -7,7 +7,7 @@
 	
   And optionally, the parent-pointer-plugin.  See http://fisheye5.cenqua.com/browse/jaxb2-commons/parent-pointer-plugin
 	
-  We have a copy of this in the branch's lib dir.  Or you can build it yourself:
+  We have a copy of this in the lib dir.  Or you can build it yourself:
 	
 	cvs -d :pserver:$DEV_JAVA_NET_USERNAME@cvs.dev.java.net:/cvs checkout -P jaxb2-commons
 	 
@@ -65,7 +65,6 @@ Patterns:
 (obtained by converting rnc to xsd)
 results in the creation of a pStyle class.
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 <xsd:element name="pStyle"  minOccurs="0">
   <xsd:complexType>
@@ -75,7 +74,6 @@ results in the creation of a pStyle class.
 
 also results in the creation of a pStyle class.
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
       <xsd:element name="pStyle" type="main:CT_String" minOccurs="0">
         <xsd:annotation>
@@ -100,10 +98,10 @@ also results in the creation of a pStyle class.
 
 results in a field of type CTString.
 
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 None are the simple String we might wish for!
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 			No benefit to this construct.  It generates an inner class for i, but 
 				 without the default value 
@@ -127,6 +125,25 @@ None are the simple String we might wish for!
 				</xsd:complexType>
 			</xsd:element>
 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+to ensure you generate
+			
+	    protected List<Object> paragraphContent;
+
+rather than
+		
+	    protected List<JAXBElement<?>> blockLevelElements;
+
+you need to make sure you have at least one
+	
+        @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),				
+	
+(rather than all type = JAXBElement.class)
+	
+This in turn requires at least one of the element definitions to be direct, rather
+	than by type.  See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html  	
+			
 -->
 
 
@@ -233,30 +250,19 @@ None are the simple String we might wish for!
 		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:group minOccurs="0" maxOccurs="unbounded"
-				ref="main:EG_BlockLevelElts"/>
-			<xsd:element minOccurs="0" ref="main:sectPr"/>
+				ref="main:BlockLevelElements"/>
+			<xsd:element name="sectPr" minOccurs="0" maxOccurs="1"
+				type="main:CT_SectPr">
+				<xsd:annotation>
+					<xsd:documentation>Document Final Section Properties. Any other
+						sectPr is in a pPr.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:element name="sectPr" type="main:CT_SectPr"/>
-	<xsd:group name="EG_BlockLevelElts">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<jaxb:property name="BlockLevelElements"/>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:sequence>
-			<xsd:group minOccurs="0" maxOccurs="unbounded"
-				ref="main:EG_BlockLevelChunkElts"/>
-		</xsd:sequence>
-	</xsd:group>
-	<!--  | element altChunk { CT_AltChunk }* -->
-	<xsd:group name="EG_BlockLevelChunkElts">
-		<xsd:sequence>
-			<xsd:group minOccurs="0" maxOccurs="unbounded"
-				ref="main:EG_ContentBlockContent"/>
-		</xsd:sequence>
-	</xsd:group>
-	<xsd:group name="EG_ContentBlockContent">
+	
+	<xsd:group name="BlockLevelElements">
+		<!-- was EG_ContentBlockContent -->
 		<xsd:choice>
 			<xsd:element ref="main:sdt"/>
 			<xsd:element minOccurs="0" maxOccurs="unbounded" ref="main:p"/>
@@ -265,12 +271,14 @@ None are the simple String we might wish for!
 				ref="main:EG_RunLevelElts"/>
 		</xsd:choice>
 	</xsd:group>
-	<xsd:element name="sdt" type="main:CT_SdtBlock"/>
 	<xsd:element name="p" type="main:CT_P"/>
 	<xsd:element name="tbl" type="main:CT_Tbl"/>
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Section properties
 	-->
+	
+	<xsd:element name="sectPr" type="main:CT_SectPr"/>
+	
 	<xsd:complexType name="CT_SectPr">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -469,7 +477,7 @@ None are the simple String we might wish for!
 							Level</xsd:documentation>
 					</xsd:annotation>
 					<xsd:attribute name="val" type="xsd:integer" use="required"/>
-				</xsd:complexType>				
+				</xsd:complexType>
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:group>
@@ -595,6 +603,24 @@ None are the simple String we might wish for!
 					<xsd:attributeGroup ref="main:CT_String"/>
 				</xsd:complexType>
 			</xsd:element>
+			<xsd:element name="rFonts" minOccurs="0">
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:documentation>Run Fonts</xsd:documentation>
+					</xsd:annotation>
+					<xsd:attribute name="ascii" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation>ASCII Font</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="hAnsi" type="xsd:string">
+						<xsd:annotation>
+							<xsd:documentation>High ANSI Font</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					
+				</xsd:complexType>
+			</xsd:element>
 			
 			<xsd:element name="b" minOccurs="0" type="main:BooleanDefaultTrue">
 				<xsd:annotation>
@@ -658,6 +684,11 @@ None are the simple String we might wish for!
 			<xsd:element name="color" type="main:Color" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Run Content Color</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sz" type="main:HpsMeasure" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Font Size</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="highlight" type="main:Highlight" minOccurs="0">
@@ -827,22 +858,21 @@ None are the simple String we might wish for!
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Structured Document Types
 	-->
-	<xsd:complexType name="CT_SdtBlock">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<jaxb:class name="Sdt"/>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:sequence>
-			<xsd:element minOccurs="0" ref="main:sdtPr"/>
-			<xsd:element minOccurs="0" ref="main:sdtContent"/>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="sdtPr" type="main:CT_SdtPr"/>
-	<xsd:element name="sdtContent" type="main:CT_SdtContentBlock"/>
+	
+	<xsd:element name="sdt">		
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element minOccurs="0" ref="main:sdtPr"/>
+				<xsd:element minOccurs="0" ref="main:sdtContent"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Std Properties
 	-->
+	<xsd:element name="sdtPr" type="main:CT_SdtPr"/>
+	
 	<xsd:complexType name="CT_SdtPr">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -930,15 +960,18 @@ None are the simple String we might wish for!
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Std Content
 	-->
-	<xsd:complexType name="CT_SdtContentBlock">
-		<xsd:annotation>
-			<xsd:appinfo>
-				<jaxb:class name="SdtContent"/>
-			</xsd:appinfo>
-		</xsd:annotation>
-		<xsd:group minOccurs="0" maxOccurs="unbounded"
-			ref="main:EG_ContentBlockContent"/>
-	</xsd:complexType>
+	<xsd:element name="sdtContent">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:appinfo>
+					<jaxb:class name="SdtContent"/>
+				</xsd:appinfo>
+			</xsd:annotation>
+			<xsd:group minOccurs="0" maxOccurs="unbounded"
+				ref="main:BlockLevelElements"/>
+		</xsd:complexType>
+	</xsd:element>
+	
 	<!-- EG_ContentBlockContent is defined in body section above -->
 	<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	Table
@@ -1197,7 +1230,7 @@ None are the simple String we might wish for!
 		</xsd:annotation>
 		<xsd:sequence>
 			<xsd:element minOccurs="0" ref="main:tcPr"/>
-			<xsd:group maxOccurs="unbounded" ref="main:EG_BlockLevelElts"/>
+			<xsd:group maxOccurs="unbounded" ref="main:BlockLevelElements"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:element name="tcPr" type="main:CT_TcPr"/>
@@ -1396,7 +1429,7 @@ None are the simple String we might wish for!
 	<xsd:attributeGroup name="CT_UcharHexNumber">
 		<xsd:attribute name="val" use="required"/>
 	</xsd:attributeGroup>
-		
+	
 	<xsd:simpleType name="ST_UnsignedDecimalNumber">
 		<xsd:restriction base="xsd:unsignedLong"/>
 	</xsd:simpleType>
@@ -1418,12 +1451,18 @@ None are the simple String we might wish for!
 	<xsd:attributeGroup name="CT_PixelsMeasure">
 		<xsd:attribute name="val" use="required"/>
 	</xsd:attributeGroup>
+	<!--	
 	<xsd:simpleType name="ST_HpsMeasure">
-		<xsd:restriction base="xsd:unsignedLong"/>
+	<xsd:restriction base="xsd:unsignedLong"/>
 	</xsd:simpleType>
-	<xsd:attributeGroup name="CT_HpsMeasure">
-		<xsd:attribute name="val" use="required"/>
-	</xsd:attributeGroup>
+	-->
+	<xsd:complexType name="HpsMeasure">
+		<xsd:attribute name="val" type="xsd:unsignedLong" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Half Point Measurement</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
 	<xsd:simpleType name="ST_SignedHpsMeasure">
 		<xsd:restriction base="xsd:integer"/>
 	</xsd:simpleType>
@@ -1909,12 +1948,11 @@ None are the simple String we might wish for!
 				<xsd:documentation>Spacing Above Paragraph</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="beforeLines" type="xsd:integer"
-			use="optional">
+		<xsd:attribute name="beforeLines" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Spacing Above Paragraph IN Line
 					Units</xsd:documentation>
-			</xsd:annotation>			
+			</xsd:annotation>
 		</xsd:attribute>
 		<xsd:attribute name="beforeAutospacing" type="main:ST_OnOff"
 			use="optional">
@@ -1928,8 +1966,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Spacing Below Paragraph</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="afterLines" type="xsd:integer"
-			use="optional">
+		<xsd:attribute name="afterLines" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Spacing Below Paragraph in Line
 					Units</xsd:documentation>
@@ -1962,8 +1999,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Left Indentation</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="leftChars" type="xsd:integer"
-			use="optional">
+		<xsd:attribute name="leftChars" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Left Indentation in Character
 					Units</xsd:documentation>
@@ -1975,8 +2011,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Right Indentation</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="rightChars" type="xsd:integer"
-			use="optional">
+		<xsd:attribute name="rightChars" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Right Indentation in Character
 					Units</xsd:documentation>
@@ -1988,8 +2023,7 @@ None are the simple String we might wish for!
 					Line</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="hangingChars" type="xsd:integer"
-			use="optional">
+		<xsd:attribute name="hangingChars" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Indentation Removed From First Line in Character
 					Units</xsd:documentation>
@@ -2001,8 +2035,7 @@ None are the simple String we might wish for!
 					Indentation</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="firstLineChars" type="xsd:integer"
-			use="optional">
+		<xsd:attribute name="firstLineChars" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Additional First Line Indentation in Character
 					Units</xsd:documentation>
@@ -2067,7 +2100,7 @@ None are the simple String we might wish for!
 	<xsd:group name="CT_Comment">
 		<xsd:sequence>
 			<xsd:group minOccurs="0" maxOccurs="unbounded"
-				ref="main:EG_BlockLevelElts"/>
+				ref="main:BlockLevelElements"/>
 		</xsd:sequence>
 	</xsd:group>
 	<xsd:attributeGroup name="CT_Comment">
@@ -2323,8 +2356,7 @@ None are the simple String we might wish for!
 				<xsd:documentation>Starting Page Number</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="chapStyle" type="xsd:integer"
-			use="optional">
+		<xsd:attribute name="chapStyle" type="xsd:integer" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Chapter Heading Style</xsd:documentation>
 			</xsd:annotation>
