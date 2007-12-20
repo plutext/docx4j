@@ -120,6 +120,7 @@ public class XmlUtils {
 //			JAXBContext jc = JAXBContext
 //					.newInstance("org.docx4j.jaxb.document");
 			Unmarshaller u = jc.createUnmarshaller();
+						
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 
 			o = u.unmarshal( new javax.xml.transform.stream.StreamSource(
@@ -172,7 +173,7 @@ public class XmlUtils {
 	}
 	
 	/** Marshal to a String */ 
-	public static String marshaltoString(Object o) {
+	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
 
 		// TODO - option to suppress XML declaration	
 		
@@ -193,9 +194,27 @@ public class XmlUtils {
 		 */
 		
 		try {			
-//			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
 			Marshaller m=jc.createMarshaller();
 
+			/* Fix for:
+			 * 		<t tstamp='1198193417585' snum='1' op='update'>
+			 * ~~~~~~~>	<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+			 * 				<ns1:sdt xmlns:ns1="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+			 * 					<ns1:sdtPr><ns1:id ns1:val="1814108031"/><ns1:tag ns1:val="1"/></ns1:sdtPr><ns1:sdtContent><ns1:p><ns1:r><ns1:t>Lookin</ns1:t></ns1:r><ns1:r><ns1:t> pretty</ns1:t></ns1:r></ns1:p></ns1:sdtContent></ns1:sdt></t>
+			 */
+			
+			/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
+			 * 
+			 * JAXB_FRAGMENT prevents the marshaller from producing an XML declaration, 
+			 * so the above works just fine. The downside of this approach is that if 
+			 * the ancestor elements declare the namespaces, JAXB won't be able to take 
+			 * advantage of them.
+			 */
+			
+			if (suppressDeclaration) {
+				m.setProperty(Marshaller.JAXB_FRAGMENT,true);
+			}			
+			
 			StringWriter sWriter = new StringWriter();
 			m.marshal(o, sWriter);
 			return sWriter.toString();
