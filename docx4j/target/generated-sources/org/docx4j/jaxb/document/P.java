@@ -152,18 +152,24 @@ public class P
     	
     	List<Object> children = getParagraphContent();
     	
+//    	System.out.println("p.toString");
+    	
 		for (Object o : children ) {					
-			System.out.println("  " + o.getClass().getName() );
+//			System.out.println("  " + o.getClass().getName() );
 			if ( o instanceof org.docx4j.jaxb.document.R) {
+//		    	System.out.println("Hit R");
 				org.docx4j.jaxb.document.R  run = (org.docx4j.jaxb.document.R)o;
 		    	List<Object> runContent = run.getRunContent();
 				for (Object o2 : runContent ) {					
-					if ( o instanceof javax.xml.bind.JAXBElement) {
+					if ( o2 instanceof javax.xml.bind.JAXBElement) {
 						// TODO - unmarshall directly to Text.
-						if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.jaxb.document.Text") ) {
-							org.docx4j.jaxb.document.Text t = (org.docx4j.jaxb.document.Text)((JAXBElement)o).getValue();
+						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.jaxb.document.Text") ) {
+//					    	System.out.println("Found Text");
+							org.docx4j.jaxb.document.Text t = (org.docx4j.jaxb.document.Text)((JAXBElement)o2).getValue();
 							result.append( t.getValue() );					
 						}
+					} else {
+//				    	System.out.println(o2.getClass().getName());						
 					}
 				}
 			} 
