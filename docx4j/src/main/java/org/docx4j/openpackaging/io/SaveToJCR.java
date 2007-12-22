@@ -45,6 +45,7 @@ import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -453,7 +454,7 @@ public class SaveToJCR {
 	                new SimpleCredentials("username", "password".toCharArray()));
 	        
 	        // 2. a Package
-    		Package p = Package.createTestPackage();
+			WordprocessingMLPackage p = WordprocessingMLPackage.createTestPackage();
     		log.info( "Test package created..");
 
     		// 3. a Node to save to

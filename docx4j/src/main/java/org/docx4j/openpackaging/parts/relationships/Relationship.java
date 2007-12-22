@@ -53,7 +53,6 @@ import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
 
-import org.docx4j.Namespaces;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

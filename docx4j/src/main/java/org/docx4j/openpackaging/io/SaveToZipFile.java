@@ -64,19 +64,7 @@ import org.dom4j.io.XMLWriter;
  */
 public class SaveToZipFile {
 	
-	private static Logger log = Logger.getLogger(SaveToZipFile.class);		
-	
-	// Testing
-	public static void main(String[] args) throws Exception {
-		DemoCore demoCore = new DemoCore();
-		String filepath = demoCore.getTestRootPath() + "myveryfirst.docx";	
-		Package p = Package.createTestPackage();
-		log.info( "Test package created..");	
-		
-		SaveToZipFile saver = new SaveToZipFile(p); 		
-		saver.save(filepath);		
-	}
-	
+	private static Logger log = Logger.getLogger(SaveToZipFile.class);				
 	
 	public SaveToZipFile(Package p) {
 		

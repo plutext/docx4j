@@ -17,7 +17,7 @@
     
  */
 
-package org.docx4j;
+package org.docx4j.openpackaging.parts.relationships;
 
 import org.dom4j.Namespace;
 
