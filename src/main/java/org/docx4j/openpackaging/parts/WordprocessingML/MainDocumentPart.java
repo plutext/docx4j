@@ -44,9 +44,9 @@ public class MainDocumentPart extends DocumentPart  {
 	
 	private static Logger log = Logger.getLogger(MainDocumentPart.class);
 	
-//	org.docx4j.wordml.Document wmlDocumentEl;
+	org.docx4j.jaxb.document.Document wmlDocumentEl;
 	
-	JAXBElement<?> root; 
+//	JAXBElement<?> root; 
 	
 //	Document w3cDocument;	
 	
@@ -61,11 +61,21 @@ public class MainDocumentPart extends DocumentPart  {
 	
 	
 	public org.docx4j.jaxb.document.Document getDocumentObj() {
-		return (org.docx4j.jaxb.document.Document)root.getValue();
+		//return (org.docx4j.jaxb.document.Document)root.getValue();
+		return wmlDocumentEl;
+	}
+	public void setDocumentObj(org.docx4j.jaxb.document.Document wmlDocumentEl) {
+		this.wmlDocumentEl = wmlDocumentEl;
 	}
 	
-	public void setDocument(Document document) {
+	public void setDocument(org.dom4j.Document document) {
+		
+		// TODO - don't store this. Rely instead on our
+		// Java objects.  Should be able to get rid of
+		// dependencies on dom4j in docx4j.
+		
 		this.document = document;
+		
 		unmarshall(document);
 	}
 	
@@ -97,7 +107,9 @@ public class MainDocumentPart extends DocumentPart  {
 //			u.setEventHandler(new javax.xml.bind.helpers.DefaultValidationEventHandler());
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 			
-			root = (JAXBElement<?>)u.unmarshal(w3cDoc);
+			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal(w3cDoc);
+			
+			wmlDocumentEl = (org.docx4j.jaxb.document.Document)root.getValue();
 			
 			System.out.println( "unmarshalled " );
 			
@@ -151,7 +163,7 @@ public class MainDocumentPart extends DocumentPart  {
 			dbf.setNamespaceAware(true);
 			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
 
-			marshaller.marshal(root, doc);
+			marshaller.marshal(wmlDocumentEl, doc);
 			
 			// Now convert the W3C document to a dom4j document
 			org.dom4j.io.DOMReader xmlReader = new org.dom4j.io.DOMReader();

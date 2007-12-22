@@ -150,7 +150,7 @@ public class LoadFromZipFile extends Load {
 		String partName = "_rels/.rels";
 		RelationshipsPart rp = getRelationshipsPartFromZip(p, zf,  partName);		
 		p.setRelationships(rp);
-		rp.setPackageRelationshipPart(true);		
+		//rp.setPackageRelationshipPart(true);		
 		unusedZipEntries.put(partName, new Boolean(false));
 		
 		

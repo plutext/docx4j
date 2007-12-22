@@ -60,6 +60,12 @@ public class ContentTypes {
 	// 				CONTENT TYPES
 	////////////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Relationships part - CRITICAL!
+	 */
+	public static final String RELATIONSHIPS_PART = "application/vnd.openxmlformats-package.relationships+xml";
+	
+	
 	//   <Default ContentType="application/xml" Extension="xml"/>
 	public final static String APPLICATION_XML = "application/xml";	
 	
@@ -141,10 +147,6 @@ public class ContentTypes {
 //	 */
 //	public static final String DIGITAL_SIGNATURE_XML_SIGNATURE_PART = "application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml";
 //
-//	/**
-//	 * Relationships part - don't need this given the way our load/save classes work
-//	 */
-//	public static final String RELATIONSHIPS_PART = "application/vnd.openxmlformats-package.relationships+xml";
 
 	// Images format supported by WordprocessingML. See tc45-2006-334.pdf p.146
 

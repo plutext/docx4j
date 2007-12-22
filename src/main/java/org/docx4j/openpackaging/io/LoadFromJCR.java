@@ -165,7 +165,7 @@ public class LoadFromJCR extends Load {
 			String partName = "_rels/.rels";
 			RelationshipsPart rp = getRelationshipsPartFromJCR(p, jcrSession, docxContentNode,  partName);
 			p.setRelationships(rp);
-			rp.setPackageRelationshipPart(true);
+			//rp.setPackageRelationshipPart(true);
 			unusedJCRNodes.put(partName, new Boolean(false));
 			
 			

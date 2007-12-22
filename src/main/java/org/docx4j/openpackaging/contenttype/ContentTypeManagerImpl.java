@@ -592,7 +592,9 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 
 	}
 
-	/* Return a package of the appropriate type */
+	/* Return a package of the appropriate type.  Used when loading an existing
+	 * Package, with an already populated [Content_Types].xml.  When 
+	 * creating a new Package, start with the new WordprocessingMLPackage constructor. */
 	public Package createPackage() throws InvalidFormatException {
 		
 		/* How do we know what type of Package this is?

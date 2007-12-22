@@ -60,6 +60,22 @@ public abstract class Part extends Base {
 	
 	protected Package pack;
 	
+	
+	/** The Namespace of this Part.  
+	 *  Used when adding the Part to a relationship Part.
+	 *  TODO: set this when the Part is constructed.
+	 */
+	private String relationshipType;
+
+	public String getRelationshipType() {
+		return relationshipType;
+	}
+
+	public void setRelationshipType(String relationshipType) {
+		this.relationshipType = relationshipType;
+	}
+	
+	
 	/** Every part is the target of some relationship,
 	 * specified in a RelationshipsPart. Every part can also 
 	 * have its own RelationshipsPart - for that, see Base 
@@ -153,5 +169,6 @@ public abstract class Part extends Base {
 	public boolean setPartShortcut(Part part, String relationshipType) {
 		return false;
 	}
+
 
 }

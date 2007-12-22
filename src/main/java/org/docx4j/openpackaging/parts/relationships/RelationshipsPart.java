@@ -58,8 +58,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 
-import org.docx4j.Namespaces;
 import org.docx4j.openpackaging.URIHelper;
+import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
@@ -160,22 +160,16 @@ public final class RelationshipsPart extends Part implements
 		return sourceP;
 	}
 	
-	/* This Relationship Part is the package relationship part
-	 * if its source is the Package. ie if sourceP instanceof Package
-	 * 
-	 * But we can also explicitly tell this Relationship Part
-	 * that when we construct it.  Which is what I do here.
-	 */
-	 
-	boolean isPackageRelationshipPart = false;
-	
+	/** This Relationship Part is the package relationship part
+	 * if its source is the Package. 
+	 */	 
 	public boolean isPackageRelationshipPart() {
-		return isPackageRelationshipPart;
+		return (sourceP instanceof Package);
 	}
 
-	public void setPackageRelationshipPart(boolean isPackageRelationshipPart) {
-		this.isPackageRelationshipPart = isPackageRelationshipPart;
-	}
+//	public void setPackageRelationshipPart(boolean isPackageRelationshipPart) {
+//		this.isPackageRelationshipPart = isPackageRelationshipPart;
+//	}
 	
 
 	/**
@@ -193,6 +187,25 @@ public final class RelationshipsPart extends Part implements
 		
 		//throw new InvalidFormatException();
 	}
+
+	/**
+	 * Constructor.  Parses the .rels XML document.
+	 * 
+	 * @param partName
+	 *            The part name, relative to the parent Package root.
+	 * @sourceP
+	 * 			  Source part for these relationships
+	 *             
+	 * @throws InvalidFormatException
+	 *             If the specified URI is not valid.
+	 */
+	public RelationshipsPart(PartName partName, Base sourceP)
+			throws InvalidFormatException {
+		super(partName);
+		this.sourceP = sourceP;
+		init();
+	}
+	
 	
 	/**
 	 * Constructor.  Parses the .rels XML document.
@@ -263,20 +276,31 @@ public final class RelationshipsPart extends Part implements
 	 *            The part to add.
 	 * @return The part added to the package, the same as the one specified.
 	 */
-	public void addPart(Part part) {
+	public void addPart(Part part, ContentTypeManager ctm) {
 		
 		loadPart(part);
 		
 		// Now add a new relationship
-		String relationshipType = null;
 		int num = size() + 1;
 		String id = "rId" + num;
-		Relationship rel = new Relationship(sourceP, part.getPartName().getURI(), 
-				TargetMode.INTERNAL, relationshipType, id);
+				
+		// drop leading "/' from the part name
+		PartName partName =  part.getPartName();
+		URI partNameUri=null;
+		try {
+			partNameUri = new URI(partName.toString().substring(1));
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Using URI " + partNameUri.toString() );
+		
+		Relationship rel = new Relationship(sourceP, partNameUri, 
+				TargetMode.INTERNAL, part.getRelationshipType(), id);
 		addRelationship(rel );
 		
 		// Add an override to ContentTypeManager
-		getPackage().getContentTypeManager().addOverrideContentType(part.getPartName().getURI(), part.getContentType());
+		ctm.addOverrideContentType(part.getPartName().getURI(), part.getContentType());
 
 	}
 

@@ -22,7 +22,7 @@ package org.docx4j.samples;
 
 import java.io.File;
 
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 
 /**
@@ -43,12 +43,12 @@ public class CreateWordprocessingMLDocument {
 //				+ "sample_output_zip.docx" );
 		
 		System.out.println( "Creating package..");
-		Package p = Package.createTestPackage();
+		WordprocessingMLPackage p = WordprocessingMLPackage.createTestPackage();
 		System.out.println( ".. done!");
 		
 		// Now save it 
 		SaveToZipFile saver = new SaveToZipFile(p); 		
-		saver.save("/some/filepath");		
+		saver.save("/home/jharrop/tmp/created-rels2.docx");		
 				
 	}
 	

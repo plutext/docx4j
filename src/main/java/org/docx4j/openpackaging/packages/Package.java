@@ -22,7 +22,6 @@ package org.docx4j.openpackaging.packages;
 
 import org.apache.log4j.Logger;
 
-import org.docx4j.Namespaces;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -34,6 +33,7 @@ import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.Parts;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 
 import org.dom4j.Document;
@@ -99,57 +99,6 @@ public class Package extends Base {
 		return this;
 	}
 		
-
-
-	
-	public static Package createTestPackage() throws InvalidFormatException {
-		
-		// Create a package
-		Package p = new Package();
-
-		// Add a ContentTypeManager to it
-		ContentTypeManager ctm = new ContentTypeManagerImpl();
-		p.setContentTypeManager(ctm);
-		
-		/* Main part */
-		PartName corePartName = URIHelper
-				.createPartName("/word/document.xml");
-
-		// Create main document part content
-		Document doc = DocumentHelper.createDocument();
-		Namespace nsWordprocessinML = new Namespace("w",
-				"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
-		Element elDocument = doc.addElement(new QName("document",
-				nsWordprocessinML));
-		Element elBody = elDocument.addElement(new QName("body",
-				nsWordprocessinML));
-		Element elParagraph = elBody.addElement(new QName("p",
-				nsWordprocessinML));
-		Element elRun = elParagraph
-				.addElement(new QName("r", nsWordprocessinML));
-		Element elText = elRun.addElement(new QName("t", nsWordprocessinML));
-		elText.setText("Hello world");
-
-		// Create main document part
-		//Part corePart = new Part(corePartName, doc);
-		Part corePart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart(corePartName);
-		corePart.setDocument(doc);
-		
-		corePart.setContentType(new org.docx4j.openpackaging.contenttype.ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml") );		
-		
-		// Create the PackageRelationships part	
-		RelationshipsPart rp = new RelationshipsPart( new PartName("/_rels/.rels") );
-		// Add it to the package
-		p.setRelationships(rp);
-				
-		// Add it to the collection of parts
-		rp.addPart(corePart);
-		
-		// Return the new package
-		return p;
-
-		
-	}
 	
 	protected DocPropsCorePart docPropsCorePart;
 
