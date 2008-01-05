@@ -33,6 +33,18 @@ import org.apache.log4j.Logger;
 
 /**
  * An abstraction of an Open Packaging Convention (OPC) Part.
+ * 
+ * OPC Parts are either XML, or binary (or text) documents.
+ * 
+ * Most are XML documents.
+ *  
+ *  docx4j aims to represent XML parts using JAXB.  However, 
+ *  at present we only have a JAXB representation for the main
+ *  document part.  
+ *  
+ *  Until such time as a JAXB representation for an XML Part exists,
+ *  the Part should extend this class.   
+ * 
  * To instantiate a Part use (or create) an appropriate subclass.
  * When an existing document is being loaded, ContentTypeManager.getPart
  * will instantiate the appropriate subclass. 
@@ -44,19 +56,6 @@ public abstract class Part extends Base {
 	 */
 	protected static Logger log = Logger.getLogger(Part.class);
 
-	
-	/**
-	 * This part's XML contents.  Not guaranteed to be up to date.
-	 * Whether it is or not will depend on how the class which extends
-	 * Part chooses to treat it.  It may be that the class uses some
-	 * other internal representation for its data. 
-	 */
-	public Document document;
-	
-	public abstract void setDocument(Document document);
-	
-	public abstract Document getDocument();
-	
 	
 	protected Package pack;
 	
@@ -117,15 +116,12 @@ public abstract class Part extends Base {
 	 * 
 	 * @param partName
 	 *            The part name, relative to the parent Package root.
-	 * @param contents
-	 *            The XML Document contents of the part.
 	 * @throws InvalidFormatException
 	 *             If the specified URI is not valid.
 	 */
 	public Part(PartName partName, Document document)
 			throws InvalidFormatException {
 		this.partName = partName;
-		this.document = document;
 	}
 	
 	/**

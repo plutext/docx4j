@@ -19,6 +19,7 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ import org.docx4j.document.wordprocessingml.styledefinitionspart.DocDefaults;
 import org.docx4j.document.wordprocessingml.styledefinitionspart.LatentStyles;
 import org.docx4j.document.wordprocessingml.styledefinitionspart.Style;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.DomXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
@@ -40,7 +42,7 @@ import org.dom4j.QName;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-public final class StyleDefinitionsPart extends Part {
+public final class StyleDefinitionsPart extends DomXmlPart {
 	
 	private static Logger log = Logger.getLogger(StyleDefinitionsPart.class);		
 	
@@ -49,15 +51,24 @@ public final class StyleDefinitionsPart extends Part {
 		super(partName);
 	}
 	
-	public StyleDefinitionsPart(PartName partName, Document contents) throws InvalidFormatException {
-		super(partName, contents);
-		setDocument(contents);
+//	public StyleDefinitionsPart(PartName partName, Document contents) throws InvalidFormatException {
+//		super(partName);
+//		setDocument(contents);
+//	}
+	
+//	public void setDocument(Document document) {
+//		this.document = document;
+//		unmarshall(document);
+//	}
+	
+	public void setDocument(InputStream in ) {
+		
+		super.setDocument(in);
+		
+		unmarshall(document);		
+		
 	}
 	
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
 	
 	public Document getDocument() {
 		return marshall();

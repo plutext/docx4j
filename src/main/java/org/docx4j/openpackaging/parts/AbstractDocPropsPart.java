@@ -43,7 +43,7 @@ import org.dom4j.io.XMLWriter;
 
 
 
-public abstract class AbstractDocPropsPart extends Part {
+public abstract class AbstractDocPropsPart extends DomXmlPart {
 	
 	/** Abstract class from which classes to implement the following
 	 *  inherit:
@@ -62,11 +62,6 @@ public abstract class AbstractDocPropsPart extends Part {
 	 *  an equivalent of this?
 	 */ 
 	
-	
-	//public DocumentPart(Package pack, PackagePartName partUri) {
-	public AbstractDocPropsPart() {
-		// super(pack,partUri);		
-	}
 	
 	public AbstractDocPropsPart(PartName partName) throws InvalidFormatException {
 		super(partName);

@@ -36,11 +36,14 @@ import javax.jcr.version.*;
 import javax.jcr.NodeIterator;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
+import javax.xml.bind.JAXBException;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.jackrabbit.core.TransientRepository;  // Testing only
 
 import org.apache.log4j.Logger;
 
+import org.docx4j.jaxbcontexts.DocumentContext;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -56,6 +59,7 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
@@ -108,7 +112,11 @@ public class SaveToJCR {
 
 			// 3. Get [Content_Types].xml
 			ContentTypeManager ctm = p.getContentTypeManager();
-			saveRawXmlPart(baseNode, "[Content_Types].xml", ctm.getDocument() );
+			org.w3c.dom.Document w3cDoc = null;
+			// convert dom4j node to real W3C dom node
+			w3cDoc = new org.dom4j.io.DOMWriter()
+					.write(ctm.getDocument());
+			saveRawXmlPart(baseNode, "[Content_Types].xml", w3cDoc );
 	        
 			// 4. Start with _rels/.rels
 
@@ -122,7 +130,7 @@ public class SaveToJCR {
 			RelationshipsPart rp = p.getRelationshipsPart();
 			// TODO - replace with saveRawXmlPart(baseNode, rp)
 			// once we know that partName resolves correctly
-			saveRawXmlPart(baseNode, partName, rp.getDocument() );
+			saveRawXmlPart(baseNode, partName, rp.getW3cDocument() );
 			
 			
 			// 5. Now recursively 
@@ -161,9 +169,38 @@ public class SaveToJCR {
 		
 		String partName = part.getPartName().getName().substring(1);
 		
-		org.dom4j.Document xml = part.getDocument();
+		org.w3c.dom.Document w3cDoc = null;
 		
-		return saveRawXmlPart(baseNode, partName, xml);  
+		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+
+			try {
+				javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+				dbf.setNamespaceAware(true);
+				w3cDoc = dbf.newDocumentBuilder().newDocument();
+				
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc );
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			
+		} else if (part instanceof org.docx4j.openpackaging.parts.DomXmlPart) {
+
+			w3cDoc = ((org.docx4j.openpackaging.parts.DomXmlPart)part).getW3cDocument();
+						
+		} else {
+			// Shouldn't happen, since ContentTypeManagerImpl should
+			// return an instance of one of the above, or throw an
+			// Exception.
+			
+			log.error("No suitable part found for: " + partName);
+			return null;					
+		}		
+		
+		return saveRawXmlPart(baseNode, partName, w3cDoc);  
+		
+		// TODO - refactor, so that in JaxbXmlPart case, we write
+		// directly to output stream (like we do in SaveToZipFile)
 		
 	}
 	
@@ -171,7 +208,8 @@ public class SaveToJCR {
 	 * object.  Pass null if you don't want the displayName property set. 
 	 * Returns the version number of the resource.
 	 */
-	public String saveRawXmlPart(Node baseNode, String partName, org.dom4j.Document xml) throws Docx4JException {
+//	public String saveRawXmlPart(Node baseNode, String partName, org.dom4j.Document xml) throws Docx4JException {
+	public String saveRawXmlPart(Node baseNode, String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
 
 		try {
             // NB: Nodetypes used are required for interoperability with 
@@ -233,10 +271,11 @@ public class SaveToJCR {
 	        // See http://www.ibm.com/developerworks/java/library/j-io1/
 	        // Though the byte array would work ok as well.
 
-	        // For now, convert dom4j node to real W3C dom node
-	        // (TODO write org.merlin.io.DOM4JSerializerEngine!)
-	        org.w3c.dom.Document w3cDoc 
-	        	= new org.dom4j.io.DOMWriter().write(xml);
+//	        // For now, convert dom4j node to real W3C dom node
+//	        // (TODO write org.merlin.io.DOM4JSerializerEngine!)
+//	        org.w3c.dom.Document w3cDoc 
+//	        	= new org.dom4j.io.DOMWriter().write(xml);
+	        
 	        DOMSerializerEngine engine 
 	        	= new DOMSerializerEngine( (org.w3c.dom.Node)w3cDoc.getDocumentElement() );
 
@@ -336,7 +375,7 @@ public class SaveToJCR {
 			RelationshipsPart rrp = part.getRelationshipsPart(); // **
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
 			log.info("Found relationships " + relPart );
-			saveRawXmlPart(baseNode,  relPart, rrp.getDocument() );
+			saveRawXmlPart(baseNode,  relPart, rrp.getW3cDocument() );
 			log.info("Recursing ... " );
 			addPartsFromRelationships( baseNode, rrp );
 		} else {

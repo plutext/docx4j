@@ -44,46 +44,21 @@ public class MainDocumentPart extends DocumentPart  {
 	
 	private static Logger log = Logger.getLogger(MainDocumentPart.class);
 	
-	org.docx4j.jaxb.document.Document wmlDocumentEl;
+//	org.docx4j.jaxb.document.Document wmlDocumentEl;
 	
-//	JAXBElement<?> root; 
 	
-//	Document w3cDocument;	
-	
-
-	 /** 
-	 * @throws InvalidFormatException
-	 */
-	//public MainDocumentPart(Package pack, PackagePartName partUri) {
 	public MainDocumentPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
-	
-	
-	public org.docx4j.jaxb.document.Document getDocumentObj() {
-		//return (org.docx4j.jaxb.document.Document)root.getValue();
-		return wmlDocumentEl;
-	}
-	public void setDocumentObj(org.docx4j.jaxb.document.Document wmlDocumentEl) {
-		this.wmlDocumentEl = wmlDocumentEl;
-	}
-	
-	public void setDocument(org.dom4j.Document document) {
 		
-		// TODO - don't store this. Rely instead on our
-		// Java objects.  Should be able to get rid of
-		// dependencies on dom4j in docx4j.
-		
-		this.document = document;
-		
-		unmarshall(document);
-	}
 	
-	public Document getDocument() {
-		// TODO: remove getDocument() from API; marshall() suffices.
-		return marshall();
-	}
-	
+//	public org.docx4j.jaxb.document.Document getDocumentObj() {
+//		return wmlDocumentEl;
+//	}
+//	public void setDocumentObj(org.docx4j.jaxb.document.Document wmlDocumentEl) {
+//		this.wmlDocumentEl = wmlDocumentEl;
+//	}
+		
 	
 	/* Create a Java object tree from the XML document 
 	 * which looks something like:
@@ -92,35 +67,71 @@ public class MainDocumentPart extends DocumentPart  {
 		 * 		<w:body>
 	 *			<w:p ..>
 	 */
-	private void unmarshall(Document doc) {
-		
+//	private void unmarshall(Document doc) {
+//		
+//		try {
+//		    
+//		    org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
+//		    org.w3c.dom.Document w3cDoc = writer.write(doc);
+//		    
+//			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+//			Unmarshaller u = jc.createUnmarshaller();
+//			
+//			// Will throw javax.xml.bind.UnmarshalException
+//			// if an unexpected element is encountered.
+//			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+//			
+//			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal(w3cDoc);
+//			
+//			wmlDocumentEl = (org.docx4j.jaxb.document.Document)root.getValue();
+//			
+//			System.out.println( "unmarshalled " );
+//			
+//						
+//
+//		} catch (Exception e ) {
+//			e.printStackTrace();
+//		}
+//		
+//	}
+	
+    /**
+     * Unmarshal XML data from the specified InputStream and return the 
+     * resulting content tree.  Validation event location information may
+     * be incomplete when using this form of the unmarshal API.
+     *
+     * <p>
+     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
+     * 
+     * @param is the InputStream to unmarshal XML data from
+     * @return the newly created root object of the java content tree 
+     *
+     * @throws JAXBException 
+     *     If any unexpected errors occur while unmarshalling
+     */
+    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+    	
 		try {
-		    
-		    org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
-		    org.w3c.dom.Document w3cDoc = writer.write(doc);
-		    
-			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+		    		    
 			Unmarshaller u = jc.createUnmarshaller();
 			
-			// Will throw javax.xml.bind.UnmarshalException
-			// if an unexpected element is encountered.
-//			u.setEventHandler(new javax.xml.bind.helpers.DefaultValidationEventHandler());
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 			
-			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal(w3cDoc);
+			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );
 			
-			wmlDocumentEl = (org.docx4j.jaxb.document.Document)root.getValue();
+//			wmlDocumentEl = (org.docx4j.jaxb.document.Document)root.getValue();
+			jaxbElement = (org.docx4j.jaxb.document.Document)root.getValue();
 			
-			System.out.println( "unmarshalled " );
-			
-						
+			System.out.println( "unmarshalled " );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();
 		}
-		
-	}
-	
+    	
+		return jaxbElement;
+    	
+    }
+
 
 
 	private void debugPrint( Document coreDoc) {
@@ -136,60 +147,61 @@ public class MainDocumentPart extends DocumentPart  {
 	
 	
 	
-	/* Create an XML document from the Java object tree
-	 * 
-	 */
-	private Document marshall() {
-		
-		// create a new Document with root element
-		// <w:document 
-		//		xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
-		//		xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-		//		xmlns:o="urn:schemas-microsoft-com:office:office" 
-		//		xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
-		//		xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" 
-		//		xmlns:v="urn:schemas-microsoft-com:vml" 
-		//		xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" 
-		//		xmlns:w10="urn:schemas-microsoft-com:office:word" 
-		//		xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
-		// 		<w:body>
-		//			<w:p ..>
+//	/* Create an XML document from the Java object tree
+//	 * 
+//	 */
+//	public Document marshall() {
+//		
+//		// create a new Document with root element
+//		// <w:document 
+//		//		xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+//		//		xmlns:ve="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+//		//		xmlns:o="urn:schemas-microsoft-com:office:office" 
+//		//		xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
+//		//		xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" 
+//		//		xmlns:v="urn:schemas-microsoft-com:vml" 
+//		//		xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" 
+//		//		xmlns:w10="urn:schemas-microsoft-com:office:word" 
+//		//		xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+//		// 		<w:body>
+//		//			<w:p ..>
+//
+//		try {
+//			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+//			Marshaller marshaller=jc.createMarshaller();
+//			
+//			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+//			dbf.setNamespaceAware(true);
+//			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+//
+//			marshaller.marshal(wmlDocumentEl, doc);
+//			
+//			// Now convert the W3C document to a dom4j document
+//			org.dom4j.io.DOMReader xmlReader = new org.dom4j.io.DOMReader();
+//			
+//			/*  Should be able to do ..
+//			 * 
+//			 *  dom4j has DocumentResult that extends Result, so you can do:
+//
+//				DocumentResult dr = new DocumentResult();
+//				marshaller.marshal( object, dr );
+//				o = dr.getDocument();
+//
+//			 * 
+//			 * 
+//			 */
+//		    return xmlReader.read(doc);
+//		} catch (JAXBException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (ParserConfigurationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
 
-		try {
-			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
-			Marshaller marshaller=jc.createMarshaller();
-			
-			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
-
-			marshaller.marshal(wmlDocumentEl, doc);
-			
-			// Now convert the W3C document to a dom4j document
-			org.dom4j.io.DOMReader xmlReader = new org.dom4j.io.DOMReader();
-			
-			/*  Should be able to do ..
-			 * 
-			 *  dom4j has DocumentResult that extends Result, so you can do:
-
-				DocumentResult dr = new DocumentResult();
-				marshaller.marshal( object, dr );
-				o = dr.getDocument();
-
-			 * 
-			 * 
-			 */
-		    return xmlReader.read(doc);
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-			
+	
 	
 }
 

@@ -22,6 +22,8 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+
+import javax.xml.bind.JAXBContext;
 //import java.net.URI;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -29,13 +31,14 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.dom4j.Document;
 
 
 
-public abstract class DocumentPart extends Part {
+public abstract class DocumentPart extends JaxbXmlPart {
 	
 	/** Parts which can be the target of a relationship from either
 	 *  the Main Document or the Glossary Document
@@ -100,14 +103,11 @@ public abstract class DocumentPart extends Part {
 	 */ 
 	//private VML background; // [1.2.1]
 	
-	//public DocumentPart(Package pack, PackagePartName partUri) {
-	public DocumentPart() {
-		// super(pack,partUri);		
-	}
 	
 	public DocumentPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
+
 	
 
 	public CommentsPart getCommentsPart() {

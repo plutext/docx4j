@@ -27,33 +27,15 @@ import org.dom4j.Document;
 
 
 
-public final class CustomXmlPropertiesPart extends Part {
+public final class CustomXmlPropertiesPart extends DomXmlPart {
 	
-	public CustomXmlPropertiesPart() throws InvalidFormatException {
-		//super(null,null);		
-	}
-
 	public CustomXmlPropertiesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
 
 	@Override
 	public Document getDocument() {
-		return marshall();
-	}
-	private Document marshall() {
 		return document;
-	}
-	
-
-	@Override
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
-
-	private void unmarshall(Document doc) {
-		// TODO Auto-generated method stub
-	}
+	}	
 	
 }

@@ -32,6 +32,10 @@ import java.util.zip.ZipFile;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.jcr.Node;
+import javax.jcr.Session;
+
+import org.docx4j.jaxbcontexts.DocumentContext;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
@@ -124,7 +128,7 @@ public class LoadFromZipFile extends Load {
 		
 		Document ctmDocument = null;
 		try {
-			ctmDocument = getDocumentFromZippedPart(zf, "[Content_Types].xml");
+			ctmDocument = deprecatedGetDocumentFromZippedPart(zf, "[Content_Types].xml");
 		} catch (Exception e) {
 			// Shouldn't happen
 			throw new Docx4JException("Couldn't get [Content_Types].xml", e);
@@ -178,20 +182,39 @@ public class LoadFromZipFile extends Load {
 	
 	private RelationshipsPart getRelationshipsPartFromZip(Base p, ZipFile zf, String partName) 
 			throws Docx4JException {
-			Document contents = null;
-			try {
-				contents = getDocumentFromZippedPart( zf,  partName);
-			} catch (Exception e) {
-				e.printStackTrace();
-				throw new Docx4JException("Error getting document from Zipped Part", e);
-				
-			} 
-		// debugPrint(contents);
-		// TODO - why don't any of the part names in this document start with "/"?
-		return new RelationshipsPart( p, new PartName("/" + partName), contents );	
+//			Document contents = null;
+//			try {
+//				contents = getDocumentFromZippedPart( zf,  partName);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				throw new Docx4JException("Error getting document from Zipped Part", e);
+//				
+//			} 
+//		// debugPrint(contents);
+//		// TODO - why don't any of the part names in this document start with "/"?
+//		return new RelationshipsPart( p, new PartName("/" + partName), contents );	
+		try {
+			InputStream is =  getInputStreamFromZippedPart( zf,  partName);
+			return new RelationshipsPart( p, new PartName("/" + partName), is );	
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Docx4JException("Error getting document from Zipped Part:" + partName, e);
+			
+		} 
+	// debugPrint(contents);
+	// TODO - why don't any of the part names in this document start with "/"?
 	}
+
+	private static InputStream getInputStreamFromZippedPart(ZipFile zf, String partName) 
+	throws DocumentException, IOException {
 	
-	private static Document getDocumentFromZippedPart(ZipFile zf, String partName) 
+	InputStream in = null;
+	in = zf.getInputStream( zf.getEntry(partName ) );
+	return in;		
+}
+	
+	
+	private static Document deprecatedGetDocumentFromZippedPart(ZipFile zf, String partName) 
 		throws DocumentException, IOException {
 		
 		InputStream in = null;
@@ -346,34 +369,34 @@ public class LoadFromZipFile extends Load {
 		
 		try {
 			try {
-			
-				Document contents = getDocumentFromZippedPart( zf,  resolvedPartUri);
 
 				// Get a subclass of Part appropriate for this content type				
 				part = ctm.getPart("/" + resolvedPartUri);
-				part.setDocument(contents );	
+				
+				InputStream is = getInputStreamFromZippedPart( zf,  resolvedPartUri);
+
+				if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(DocumentContext.jc);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+					
+				} else if (part instanceof org.docx4j.openpackaging.parts.DomXmlPart) {
+					
+					((org.docx4j.openpackaging.parts.DomXmlPart)part).setDocument( is );
+					
+				} else {
+					// Shouldn't happen, since ContentTypeManagerImpl should
+					// return an instance of one of the above, or throw an
+					// Exception.
+					
+					log.error("No suitable part found for: " + resolvedPartUri);
+					return null;					
+				}
 			
 			} catch (DocumentException e) {
-				// Deal with:
-//					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
-//					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
-//						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)
-				
-				// Untested in the zip case as of 20071113					
-				
-				InputStream in = null;					
-				try {			
-					in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
-					part = new BinaryPart( new PartName("/" + resolvedPartUri));
-					
-					((BinaryPart)part).setBinaryData(in);
-					log.info("Stored as BinaryData" );
-					
-				} catch (IOException ioe) {
-					ioe.printStackTrace() ;
-				}				
+
+				// Try to get it as a binary part
+				return getBinaryPart(zf, ctm, resolvedPartUri);
 				
 			}
 		} catch (Exception ex) {
@@ -383,6 +406,24 @@ public class LoadFromZipFile extends Load {
 		} 
 		return part;
 	}
+	
+	public static Part getBinaryPart(ZipFile zf, ContentTypeManager ctm, String resolvedPartUri)
+			throws Docx4JException {
+
+		Part part = null;
+		InputStream in = null;					
+		try {			
+			in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
+			part = new BinaryPart( new PartName("/" + resolvedPartUri));
+			
+			((BinaryPart)part).setBinaryData(in);
+			log.info("Stored as BinaryData" );
+			
+		} catch (IOException ioe) {
+			ioe.printStackTrace() ;
+		}	
+		return part;
+	}	
 	
 	private void dumpZipFileContents(ZipFile zf) {
 		Enumeration entries = zf.entries();

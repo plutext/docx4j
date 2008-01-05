@@ -26,34 +26,15 @@ import org.dom4j.Document;
 
 
 /** Part to use if no specialised Part exists */
-public final class DefaultPart extends Part {
+public final class DefaultXmlPart extends DomXmlPart {
 	
-	public DefaultPart() throws InvalidFormatException {
-		//super(null,null);		
-	}
-
-	public DefaultPart(PartName partName) throws InvalidFormatException {
+	public DefaultXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
 
 	@Override
 	public Document getDocument() {
-		return marshall();
-	}
-	private Document marshall() {
-		// TODO Auto-generated method stub
 		return document;
-	}
-	
-
-	@Override
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
-
-	private void unmarshall(Document doc) {
-		// TODO Auto-generated method stub
-	}
+	}	
 	
 }
