@@ -30,24 +30,14 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.docx4j.jaxb.document.Sdt;
+import org.docx4j.jaxbcontexts.DocumentContext;
+
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 public class XmlUtils {
-	
-	static JAXBContext jc;
-	
-	static {
 		
-		try {		
-			jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}				
-	}
-	
 	/** Make a dom4j element into something JAXB can unmarshall */
 	private static java.io.InputStream getInputStreamFromDom4jEl(Element el) {
 		
@@ -72,6 +62,11 @@ public class XmlUtils {
 
 	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document */ 
 	public static Object unmarshalDom4jDoc(org.dom4j.Document doc) {
+		
+		// TODO - make JAXBContext a method parameter.
+		
+		JAXBContext jc = DocumentContext.jc;
+			
 		Object o = null;
 		try {				
 		    org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
@@ -97,8 +92,9 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 
-//			JAXBContext jc = JAXBContext
-//					.newInstance("org.docx4j.jaxb.document");
+			// TODO - make JAXBContext a method parameter.			
+			JAXBContext jc = DocumentContext.jc;
+
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 
@@ -117,8 +113,9 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 			
-//			JAXBContext jc = JAXBContext
-//					.newInstance("org.docx4j.jaxb.document");
+			// TODO - make JAXBContext a method parameter.			
+			JAXBContext jc = DocumentContext.jc;
+
 			Unmarshaller u = jc.createUnmarshaller();
 						
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
@@ -138,7 +135,9 @@ public class XmlUtils {
 	public static org.dom4j.Document marshaltoDom4jDocument(Object o) {
 		// TODO - refactor this.
 		try {
-//			JAXBContext jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+			// TODO - make JAXBContext a method parameter.			
+			JAXBContext jc = DocumentContext.jc;
+
 			Marshaller marshaller=jc.createMarshaller();
 			
 			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -175,8 +174,9 @@ public class XmlUtils {
 	/** Marshal to a String */ 
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
 
-		// TODO - option to suppress XML declaration	
-		
+		// TODO - make JAXBContext a method parameter.			
+		JAXBContext jc = DocumentContext.jc;
+				
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
 		 * 
 		 * If you are writing to a file, a socket, or memory, then you should use
@@ -236,6 +236,9 @@ public class XmlUtils {
 	
 	/** Clone this JAXB object */ 
 	public static Object deepCopy(Object in) {
+
+		// TODO - make JAXBContext a method parameter.			
+		JAXBContext jc = DocumentContext.jc;
 		
 		Object o = null;
 		try {				

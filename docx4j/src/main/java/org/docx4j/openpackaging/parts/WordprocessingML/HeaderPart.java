@@ -21,33 +21,21 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.DomXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
 
 
-public final class HeaderPart extends Part {
+public final class HeaderPart extends DomXmlPart {
 	
 	public HeaderPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
+	
 	@Override
 	public Document getDocument() {
-		return marshall();
-	}
-	private Document marshall() {
 		return document;
-	}
-	
-
-	@Override
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
-
-	private void unmarshall(Document doc) {
-		// TODO Auto-generated method stub
-	}
+	}	
 	
 }

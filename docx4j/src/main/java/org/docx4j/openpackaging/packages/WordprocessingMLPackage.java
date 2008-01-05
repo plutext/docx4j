@@ -241,7 +241,8 @@ public class WordprocessingMLPackage extends Package {
 		Part corePart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart(new PartName("/word/document.xml"));
 		
 		// Put the content in the part
-		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setDocumentObj(wmlDocumentEl);
+//		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setDocumentObj(wmlDocumentEl);
+		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setJaxbElement(wmlDocumentEl);
 		
 		corePart.setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT));
 		corePart.setRelationshipType(Namespaces.DOCUMENT);

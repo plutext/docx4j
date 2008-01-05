@@ -43,26 +43,6 @@ public final class BinaryPart  extends Part {
 	public void setBinaryData(InputStream binaryData) {
 		this.binaryData = binaryData;
 	}		
-	
-	@Override
-	public Document getDocument() {
-		return marshall();
-	}
-	private Document marshall() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-
-	@Override
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
-
-	private void unmarshall(Document doc) {
-		// TODO Auto-generated method stub
-	}
-	
+		
 
 }

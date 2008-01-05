@@ -20,6 +20,9 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
@@ -33,30 +36,21 @@ public final class GlossaryDocumentPart extends DocumentPart  {
 	
 			// TO BE IMPLEMENTED
 	
-	public GlossaryDocumentPart()  {
-	}
+	/* A copy of the original document, for debug purposes only */
+	private org.dom4j.Document document;
 
 	public GlossaryDocumentPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
-
-	@Override
-	public Document getDocument() {
-		return marshall();
-	}
-	private Document marshall() {
-		return document;
-	}
 	
+	
+    public void marshal( org.w3c.dom.Node node )
+    throws JAXBException {}
 
-	@Override
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
-
-	private void unmarshall(Document doc) {
+    
+    public  Object unmarshal( java.io.InputStream is ) throws JAXBException {
 		// TODO Auto-generated method stub
+    	return null;
 	}
 	
 }

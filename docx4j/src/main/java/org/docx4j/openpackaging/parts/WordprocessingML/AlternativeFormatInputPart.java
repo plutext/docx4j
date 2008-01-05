@@ -24,36 +24,22 @@ import java.io.OutputStream;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.parts.DomXmlPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
 
 
 
-public final class AlternativeFormatInputPart extends Part {
+public final class AlternativeFormatInputPart extends DomXmlPart {
 	
-	public AlternativeFormatInputPart() throws InvalidFormatException {
-		//super(null,null);		
+	public AlternativeFormatInputPart(PartName partName) throws InvalidFormatException {
+		super(partName);
 	}
 
 	@Override
 	public Document getDocument() {
-		return marshall();
-	}
-	private Document marshall() {
-		// TODO Auto-generated method stub
 		return document;
-	}
-	
-
-	@Override
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
-
-	private void unmarshall(Document doc) {
-		// TODO Auto-generated method stub
-	}
-	
+	}	
 	
 }

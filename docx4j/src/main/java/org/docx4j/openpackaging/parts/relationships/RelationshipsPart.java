@@ -49,6 +49,7 @@
 
 package org.docx4j.openpackaging.parts.relationships;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -68,6 +69,8 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 
+import org.docx4j.openpackaging.parts.DomXmlPart;
+
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
@@ -86,7 +89,7 @@ import org.dom4j.io.SAXReader;
  * @author Julien Chable, CDubettier
  * @version 0.1
  */
-public final class RelationshipsPart extends Part implements
+public final class RelationshipsPart extends DomXmlPart implements
 		Iterable<Relationship> {
 
 	/* Example:
@@ -217,9 +220,11 @@ public final class RelationshipsPart extends Part implements
 	 * @throws InvalidFormatException
 	 *             If the specified URI is not valid.
 	 */
-	public RelationshipsPart(Base sourceP, PartName partName, Document contents)
+//	public RelationshipsPart(Base sourceP, PartName partName, Document contents)
+	public RelationshipsPart(Base sourceP, PartName partName, InputStream in)
 			throws InvalidFormatException {
-		super(partName, contents);
+		super(partName);
+		setDocument(in);
 		this.sourceP = sourceP;
 		init();
 		parseRelationshipsDocument();
@@ -619,12 +624,5 @@ public final class RelationshipsPart extends Part implements
 //		}
 		return str + "]";
 	}
-
-	@Override
-	public void setDocument(Document document) {
-		// TODO Auto-generated method stub
-		
-	}
-
 
 }

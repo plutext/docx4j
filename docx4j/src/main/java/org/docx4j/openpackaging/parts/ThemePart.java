@@ -26,34 +26,15 @@ import org.dom4j.Document;
 
 
 
-public final class ThemePart extends Part {
+public final class ThemePart extends DomXmlPart {
 	
-	public ThemePart() throws InvalidFormatException {
-		//super(null,null);		
-	}
-
 	public ThemePart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
 
 	@Override
 	public Document getDocument() {
-		return marshall();
-	}
-	private Document marshall() {
-		// TODO Auto-generated method stub
 		return document;
-	}
-	
-
-	@Override
-	public void setDocument(Document document) {
-		this.document = document;
-		unmarshall(document);
-	}
-
-	private void unmarshall(Document doc) {
-		// TODO Auto-generated method stub
-	}
+	}	
 	
 }

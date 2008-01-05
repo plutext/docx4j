@@ -37,10 +37,13 @@ import javax.jcr.ValueFormatException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
+import javax.xml.bind.JAXBContext;
+
 import org.apache.jackrabbit.core.TransientRepository;
 
 import org.apache.log4j.Logger;
 
+import org.docx4j.jaxbcontexts.DocumentContext;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
@@ -55,6 +58,8 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
+// Aim to remove dependency on any XML API from 
+// this package.
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -142,7 +147,7 @@ public class LoadFromJCR extends Load {
 			// 2. Create a new Package
 	//		Eventually, you'll only be able to create an Excel package etc
 	//		but only the WordML package exists at present
-			Document ctmDocument = getDocumentFromJCRPart(jcrSession, docxContentNode, "[Content_Types].xml");
+			Document ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, docxContentNode, "[Content_Types].xml");
 			debugPrint(ctmDocument);
 			ctm.parseContentTypesFile(ctmDocument);
 			p = ctm.createPackage();
@@ -199,19 +204,33 @@ public class LoadFromJCR extends Load {
 	
 	public RelationshipsPart getRelationshipsPartFromJCR(Base p, Session jcrSession, Node docxNode, String partName) 
 			throws InvalidFormatException, Docx4JException {
-		Document contents=null;
+		
 		try {
-			contents = getDocumentFromJCRPart( jcrSession, docxNode,  partName);
+			InputStream is = getInputStreamFromJCRPart( jcrSession, 
+					docxNode,  partName);
+
+			return new RelationshipsPart(p, new PartName("/" + partName), is );
+			
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-			throw new Docx4JException("Error getting document from JCR Part", e);
-		}
+			throw new Docx4JException("Error getting document from JCR Part:" + partName, e);
+		} 
 		
-		log.info("\n\n" + partName + "\n ===================");
-		debugPrint(contents);		
+//		Document contents=null;
+//		try {
+//			contents = deprecatedGetDocumentFromJCRPart( jcrSession, docxNode,  partName);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			throw new Docx4JException("Error getting document from JCR Part", e);
+//		}
+//		
+//		log.info("\n\n" + partName + "\n ===================");
+//		debugPrint(contents);		
+//		
+//		// TODO - why don't any of the part names in this document start with "/"?
+//		return new RelationshipsPart(p, new PartName("/" + partName), contents );
 		
-		// TODO - why don't any of the part names in this document start with "/"?
-		return new RelationshipsPart(p, new PartName("/" + partName), contents );
 	
 	}
 
@@ -235,7 +254,7 @@ public class LoadFromJCR extends Load {
 		
 	}
 	
-	private static Document getDocumentFromJCRPart(Session jcrSession, Node docxNode, String partName) 
+	private static InputStream getInputStreamFromJCRPart(Session jcrSession, Node docxNode, String partName) 
 		throws DocumentException, RepositoryException, PathNotFoundException {
 		
 		InputStream in = null;
@@ -246,23 +265,36 @@ public class LoadFromJCR extends Load {
 		Property jcrData = contentNode.getProperty("jcr:data");
 		in = jcrData.getStream();
 		
-		SAXReader xmlReader = new SAXReader();
-		Document contents = null;
-		try {
-			contents = xmlReader.read(in);
-//			log.info("\n\n" + partName + "\n ===================");
-//			debugPrint(contents);
-			
-		} catch (DocumentException e) {
-			// Will land here for binary files eg gif file
-			// These do get handled ..
-			log.error("DocumentException on " + partName + " . Check this is binary content."); 
-			//e.printStackTrace() ;
-			throw e;
-		}
-		return contents;		
+		return in;		
 	}
 	
+	private static Document deprecatedGetDocumentFromJCRPart(Session jcrSession, Node docxNode, String partName) 
+	throws DocumentException, RepositoryException, PathNotFoundException {
+	
+	InputStream in = null;
+	log.info("Fetching " + encodeSlashes(partName));
+	Node fileNode = docxNode.getNode(encodeSlashes(partName));
+	Node contentNode = fileNode.getNode("jcr:content");
+	
+	Property jcrData = contentNode.getProperty("jcr:data");
+	in = jcrData.getStream();
+	
+	SAXReader xmlReader = new SAXReader();
+	Document contents = null;
+	try {
+		contents = xmlReader.read(in);
+//		log.info("\n\n" + partName + "\n ===================");
+//		debugPrint(contents);
+		
+	} catch (DocumentException e) {
+		// Will land here for binary files eg gif file
+		// These do get handled ..
+		log.error("DocumentException on " + partName + " . Check this is binary content."); 
+		//e.printStackTrace() ;
+		throw e;
+	}
+	return contents;		
+}
 	
 	/* recursively 
 	(i) create new Parts for each thing listed
@@ -407,43 +439,39 @@ public class LoadFromJCR extends Load {
 	 */
 	public static Part getRawPart(Session jcrSession, Node docxNode, ContentTypeManager ctm, String resolvedPartUri)
 			throws Docx4JException {
+		
 		Part part = null;
+				
 		try {
+						
 			try {
-				Document contents = getDocumentFromJCRPart( jcrSession, 
+
+				part = ctm.getPart("/" + resolvedPartUri);
+								
+				InputStream is = getInputStreamFromJCRPart( jcrSession, 
 						docxNode,  resolvedPartUri);
 				
-				log.info("Root node is: " + contents.getRootElement().getName());					
+				if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
-					// Get a subclass of Part appropriate for this content type
-//						if (parentRef==null) {
-						// Usual case
-						part = ctm.getPart("/" + resolvedPartUri); 
-//						} else {
-//							// since the Target might look like ../customXml/item1.xml
-//							part = ctm.getPart(parentRef); 
-//						}
-					part.setDocument(contents );					
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(DocumentContext.jc);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+					
+				} else if (part instanceof org.docx4j.openpackaging.parts.DomXmlPart) {
+					
+					((org.docx4j.openpackaging.parts.DomXmlPart)part).setDocument( is );
+					
+				} else {
+					// Shouldn't happen, since ContentTypeManagerImpl should
+					// return an instance of one of the above, or throw an
+					// Exception.
+					
+					log.error("No suitable part found for: " + resolvedPartUri);
+					return null;					
+				}
+			} catch (Exception e) {
 				
-			} catch (DocumentException e) {
-				// Deal with:
-//					23.07.2007 15:30:37 *INFO * LoadFromJCR: Fetching word%2FattachedToolbars.bin (LoadFromJCR.java, line 212)
-//					org.dom4j.DocumentException: Error on line 1 of document  : Content is not allowed in prolog. Nested exception: Content is not allowed in prolog.
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:482)
-//						at org.dom4j.io.SAXReader.read(SAXReader.java:343)
-//						at au.com.xn.openpackaging.io.LoadFromJCR.getDocumentFromJCRPart(LoadFromJCR.java:242)					
-				InputStream in = null;
-				log.info("Fetching " + encodeSlashes(resolvedPartUri));
-				Node fileNode = docxNode.getNode(encodeSlashes(resolvedPartUri));
-				Node contentNode = fileNode.getNode("jcr:content");
-				
-				Property jcrData = contentNode.getProperty("jcr:data");
-				in = jcrData.getStream();
-				
-				part = new BinaryPart( new PartName("/" + resolvedPartUri));
-				
-				((BinaryPart)part).setBinaryData(in);
-				log.info("Stored as BinaryData" );
+				// Try to get it as a binary part				
+				return getBinaryPart(jcrSession, docxNode, ctm, resolvedPartUri);
 					
 			}
 		} catch (Exception ex) {
@@ -454,6 +482,36 @@ public class LoadFromJCR extends Load {
 		return part;
 	}
 		
+	public static Part getBinaryPart(Session jcrSession, Node docxNode,
+			ContentTypeManager ctm, String resolvedPartUri)
+			throws Docx4JException {
+
+		Part part = null;
+
+		try {
+
+			InputStream in = null;
+			log.info("Fetching " + encodeSlashes(resolvedPartUri));
+			Node fileNode = docxNode.getNode(encodeSlashes(resolvedPartUri));
+			Node contentNode = fileNode.getNode("jcr:content");
+
+			Property jcrData = contentNode.getProperty("jcr:data");
+			in = jcrData.getStream();
+
+			part = new BinaryPart(new PartName("/" + resolvedPartUri));
+
+			((BinaryPart) part).setBinaryData(in);
+			log.info("Stored as BinaryData");
+
+		} catch (Exception ex) {
+			// PathNotFoundException, ValueFormatException, RepositoryException,
+			// URISyntaxException
+			ex.printStackTrace();
+			throw new Docx4JException("Failed to getPart", ex);
+		}
+		return part;
+	}
+
 	
 	
 }

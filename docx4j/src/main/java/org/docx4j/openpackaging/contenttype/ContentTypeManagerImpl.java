@@ -300,7 +300,7 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 
 	public Part CreateDefaultPartObject(String partName)
 			throws InvalidFormatException {
-		return new DefaultPart(new PartName(partName));
+		return new DefaultXmlPart(new PartName(partName));
 	}
 	
 	public Part CreateMainDocumentPartObject(String partName)
@@ -344,6 +344,7 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 
 	public Part CreateDocPropsCustomPartObject(String partName)
 			throws InvalidFormatException {
+		log.info("Using DocPropsCustomPart ...");		
 		return new DocPropsCustomPart(new PartName(partName));
 	}
 	

@@ -99,7 +99,7 @@ public class SaveToZipFile {
 			
 			// 3. Get [Content_Types].xml
 			ContentTypeManager ctm = p.getContentTypeManager();
-			saveRawXmlPart(out, "[Content_Types].xml", ctm.getDocument() );
+			deprecatedSaveRawXmlPart(out, "[Content_Types].xml", ctm.getDocument() );
 	        
 			// 4. Start with _rels/.rels
 
@@ -111,7 +111,7 @@ public class SaveToZipFile {
 			
 			String partName = "_rels/.rels";
 			RelationshipsPart rp = p.getRelationshipsPart();
-			saveRawXmlPart(out, partName, rp.getDocument() );
+			deprecatedSaveRawXmlPart(out, partName, rp.getDocument() );
 			
 			
 			// 5. Now recursively 
@@ -145,19 +145,53 @@ public class SaveToZipFile {
 		// This is a neater signature and should be used where possible!
 		
 		String partName = part.getPartName().getName().substring(1);
+				
+		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+
+			try {				
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( out );
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			
+		} else if (part instanceof org.docx4j.openpackaging.parts.DomXmlPart) {
+
+			try {
+		        // Add ZIP entry to output stream.
+		        out.putNextEntry(new ZipEntry(partName));		        
+		        
+		        // Do things the DOM4J way
+				OutputFormat format = OutputFormat.createPrettyPrint();
+				format.setEncoding("UTF-8");			
+			    XMLWriter writer = new XMLWriter( out, format );
+			    writer.write( ((org.docx4j.openpackaging.parts.DomXmlPart)part).getDocument() );
+		        // Complete the entry
+		        out.closeEntry();
+				log.info( "PUT SUCCESS: " + partName);		
+			} catch (Exception e ) {
+				e.printStackTrace();
+				throw new Docx4JException("Failed to put " + partName, e);
+			}		
+						
+		} else {
+			// Shouldn't happen, since ContentTypeManagerImpl should
+			// return an instance of one of the above, or throw an
+			// Exception.
+			
+			log.error("No suitable part found for: " + partName);
+		}		
 		
-		org.dom4j.Document xml = part.getDocument();
-		
-		saveRawXmlPart(out, partName, xml);  
 		
 	}
 	
-	protected void saveRawXmlPart(ZipOutputStream out, String partName, Document xml) throws Docx4JException  {
-		
+	protected void deprecatedSaveRawXmlPart(ZipOutputStream out, String partName, Document xml) throws Docx4JException  {
 
 		try {
 	        // Add ZIP entry to output stream.
 	        out.putNextEntry(new ZipEntry(partName));
+	        
+	        
 			OutputFormat format = OutputFormat.createPrettyPrint();
 			format.setEncoding("UTF-8");			
 		    XMLWriter writer = new XMLWriter( out, format );
@@ -248,7 +282,7 @@ public class SaveToZipFile {
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
 			log.info("Cf constructed name " + relPart );
 			
-			saveRawXmlPart(out, relPart, rrp.getDocument() );
+			deprecatedSaveRawXmlPart(out, relPart, rrp.getDocument() );
 			addPartsFromRelationships(out, rrp );
 		} else {
 			log.info("No relationships for " + resolvedPartUri );					

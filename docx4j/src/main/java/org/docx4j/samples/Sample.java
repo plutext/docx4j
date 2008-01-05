@@ -56,7 +56,8 @@ public class Sample {
 		System.out.println( "\n\n OUTPUT " );
 		System.out.println( "====== \n\n " );	
 		
-		org.docx4j.jaxb.document.Document wmlDocumentEl = documentPart.getDocumentObj();
+//		org.docx4j.jaxb.document.Document wmlDocumentEl = documentPart.getDocumentObj();
+		org.docx4j.jaxb.document.Document wmlDocumentEl = (org.docx4j.jaxb.document.Document)documentPart.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
 		List <Object> bodyChildren = body.getBlockLevelElements();
