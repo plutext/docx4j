@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
@@ -44,11 +45,21 @@ public class MainDocumentPart extends DocumentPart  {
 	
 	private static Logger log = Logger.getLogger(MainDocumentPart.class);
 	
+	
+	
 //	org.docx4j.jaxb.document.Document wmlDocumentEl;
 	
 	
 	public MainDocumentPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		
+		// Used if this Part is added to [Content_Types].xml 
+		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
+				org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT));
+
+		// Used when this Part is added to a rels 
+		setRelationshipType(Namespaces.DOCUMENT);
+		
 	}
 		
 	

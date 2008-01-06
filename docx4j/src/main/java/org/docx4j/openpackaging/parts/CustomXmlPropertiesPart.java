@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import org.dom4j.Document;
 
@@ -31,6 +32,14 @@ public final class CustomXmlPropertiesPart extends Dom4jXmlPart {
 	
 	public CustomXmlPropertiesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		
+		// Used if this Part is added to [Content_Types].xml 
+		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
+				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_CUSTOMXMLPROPERTIES));
+
+		// Used when this Part is added to a rels 
+//		setRelationshipType(Namespaces. TODO);
+		
 	}
 
 	@Override
