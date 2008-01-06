@@ -184,9 +184,9 @@ public class SaveToJCR {
 				e.printStackTrace();
 			} 
 			
-		} else if (part instanceof org.docx4j.openpackaging.parts.DomXmlPart) {
+		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
 
-			w3cDoc = ((org.docx4j.openpackaging.parts.DomXmlPart)part).getW3cDocument();
+			w3cDoc = ((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).getW3cDocument();
 						
 		} else {
 			// Shouldn't happen, since ContentTypeManagerImpl should

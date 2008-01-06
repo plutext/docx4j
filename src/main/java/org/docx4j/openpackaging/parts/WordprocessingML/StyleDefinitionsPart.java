@@ -31,7 +31,7 @@ import org.docx4j.document.wordprocessingml.styledefinitionspart.DocDefaults;
 import org.docx4j.document.wordprocessingml.styledefinitionspart.LatentStyles;
 import org.docx4j.document.wordprocessingml.styledefinitionspart.Style;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.DomXmlPart;
+import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
@@ -42,7 +42,7 @@ import org.dom4j.QName;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-public final class StyleDefinitionsPart extends DomXmlPart {
+public final class StyleDefinitionsPart extends Dom4jXmlPart {
 	
 	private static Logger log = Logger.getLogger(StyleDefinitionsPart.class);		
 	

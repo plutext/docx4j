@@ -26,7 +26,7 @@ import org.dom4j.Document;
 
 
 /** Part to use if no specialised Part exists */
-public final class DefaultXmlPart extends DomXmlPart {
+public final class DefaultXmlPart extends Dom4jXmlPart {
 	
 	public DefaultXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);

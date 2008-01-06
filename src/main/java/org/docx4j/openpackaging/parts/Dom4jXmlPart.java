@@ -38,9 +38,9 @@ import org.dom4j.io.SAXReader;
  *  Until such time as a JAXB representation for an XML Part exists,
  *  the Part should extend this class.   
  * */
-public abstract class DomXmlPart extends Part {
+public abstract class Dom4jXmlPart extends Part {
 	
-	public DomXmlPart(PartName partName) throws InvalidFormatException {
+	public Dom4jXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
 	

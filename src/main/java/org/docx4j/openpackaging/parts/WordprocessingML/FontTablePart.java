@@ -21,7 +21,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.DomXmlPart;
+import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 
@@ -29,7 +29,7 @@ import org.dom4j.Document;
 
 
 
-public final class FontTablePart extends DomXmlPart {
+public final class FontTablePart extends Dom4jXmlPart {
 	
 	public FontTablePart(PartName partName) throws InvalidFormatException {
 		super(partName);
