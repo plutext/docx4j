@@ -27,7 +27,7 @@ import org.dom4j.Document;
 
 
 
-public final class CustomXmlPropertiesPart extends DomXmlPart {
+public final class CustomXmlPropertiesPart extends Dom4jXmlPart {
 	
 	public CustomXmlPropertiesPart(PartName partName) throws InvalidFormatException {
 		super(partName);

@@ -69,7 +69,7 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 
-import org.docx4j.openpackaging.parts.DomXmlPart;
+import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -89,7 +89,7 @@ import org.dom4j.io.SAXReader;
  * @author Julien Chable, CDubettier
  * @version 0.1
  */
-public final class RelationshipsPart extends DomXmlPart implements
+public final class RelationshipsPart extends Dom4jXmlPart implements
 		Iterable<Relationship> {
 
 	/* Example:

@@ -21,13 +21,13 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.DomXmlPart;
+import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
 
 
-public final class FooterPart extends DomXmlPart {
+public final class FooterPart extends Dom4jXmlPart {
 	
 	public FooterPart(PartName partName) throws InvalidFormatException {
 		super(partName);

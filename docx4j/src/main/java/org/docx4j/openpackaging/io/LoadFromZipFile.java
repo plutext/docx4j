@@ -380,9 +380,9 @@ public class LoadFromZipFile extends Load {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(DocumentContext.jc);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
-				} else if (part instanceof org.docx4j.openpackaging.parts.DomXmlPart) {
+				} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
 					
-					((org.docx4j.openpackaging.parts.DomXmlPart)part).setDocument( is );
+					((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).setDocument( is );
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should

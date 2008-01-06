@@ -155,7 +155,7 @@ public class SaveToZipFile {
 				e.printStackTrace();
 			} 
 			
-		} else if (part instanceof org.docx4j.openpackaging.parts.DomXmlPart) {
+		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
 
 			try {
 		        // Add ZIP entry to output stream.
@@ -165,7 +165,7 @@ public class SaveToZipFile {
 				OutputFormat format = OutputFormat.createPrettyPrint();
 				format.setEncoding("UTF-8");			
 			    XMLWriter writer = new XMLWriter( out, format );
-			    writer.write( ((org.docx4j.openpackaging.parts.DomXmlPart)part).getDocument() );
+			    writer.write( ((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).getDocument() );
 		        // Complete the entry
 		        out.closeEntry();
 				log.info( "PUT SUCCESS: " + partName);		

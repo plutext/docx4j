@@ -43,7 +43,7 @@ import org.dom4j.io.XMLWriter;
 
 
 
-public abstract class AbstractDocPropsPart extends DomXmlPart {
+public abstract class AbstractDocPropsPart extends Dom4jXmlPart {
 	
 	/** Abstract class from which classes to implement the following
 	 *  inherit:

@@ -26,7 +26,7 @@ import org.dom4j.Document;
 
 
 
-public final class ThemePart extends DomXmlPart {
+public final class ThemePart extends Dom4jXmlPart {
 	
 	public ThemePart(PartName partName) throws InvalidFormatException {
 		super(partName);

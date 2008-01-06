@@ -24,14 +24,14 @@ import java.io.OutputStream;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.parts.DomXmlPart;
+import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
 
 
 
-public final class AlternativeFormatInputPart extends DomXmlPart {
+public final class AlternativeFormatInputPart extends Dom4jXmlPart {
 	
 	public AlternativeFormatInputPart(PartName partName) throws InvalidFormatException {
 		super(partName);
