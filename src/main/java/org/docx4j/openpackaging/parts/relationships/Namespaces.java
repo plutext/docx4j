@@ -94,6 +94,7 @@ public class Namespaces {
 
 	public final static String COMMENTS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
 	
+	public final static String AF = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
 
 	
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";

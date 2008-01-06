@@ -244,8 +244,8 @@ public class WordprocessingMLPackage extends Package {
 //		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setDocumentObj(wmlDocumentEl);
 		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setJaxbElement(wmlDocumentEl);
 		
-		corePart.setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT));
-		corePart.setRelationshipType(Namespaces.DOCUMENT);
+//		corePart.setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT));
+//		corePart.setRelationshipType(Namespaces.DOCUMENT);
 		
 		// Make getMainDocumentPart() work
 		p.setPartShortcut(corePart, corePart.getRelationshipType());
@@ -260,6 +260,7 @@ public class WordprocessingMLPackage extends Package {
 		p.setRelationships(rp);
 				
 		// Add the main document part to the package relationships
+		// and to [Content_Types].xml
 		rp.addPart(corePart, p.getContentTypeManager());
 		
 		// Return the new package

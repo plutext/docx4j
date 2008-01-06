@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts;
 import org.apache.log4j.Logger;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.dom4j.Document;
 
 
@@ -52,6 +53,14 @@ public class DocPropsCorePart extends AbstractDocPropsPart  {
 	//public MainDocumentPart(Package pack, PackagePartName partUri) {
 	public DocPropsCorePart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		
+		// Used if this Part is added to [Content_Types].xml 
+		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
+				org.docx4j.openpackaging.contenttype.ContentTypes.PACKAGE_COREPROPERTIES));
+
+		// Used when this Part is added to a rels 
+		setRelationshipType(Namespaces.PROPERTIES_CORE);
+		
 	}
 
 	public void setDocument(Document document) {

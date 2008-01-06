@@ -27,6 +27,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.dom4j.Document;
 
 
@@ -35,6 +36,13 @@ public final class AlternativeFormatInputPart extends Dom4jXmlPart {
 	
 	public AlternativeFormatInputPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		
+		 
+		// ContentType will vary - see spec 11.3.1 
+
+		// Used when this Part is added to a rels 
+		setRelationshipType(Namespaces.AF);
+		
 	}
 
 	@Override

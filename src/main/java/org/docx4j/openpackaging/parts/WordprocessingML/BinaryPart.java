@@ -28,10 +28,16 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.dom4j.Document;
 
 
-public final class BinaryPart  extends Part {
+public class BinaryPart extends Part {
 	
 	public BinaryPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		
+		// Can't setContentType or setRelationshipType, since 
+		// these will differ depending on the nature of the data.
+		// Common binary parts should extend this class to 
+		// provide that information.
+		
 	}
 	
 	private InputStream binaryData;
