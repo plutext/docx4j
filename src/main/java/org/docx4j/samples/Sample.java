@@ -39,7 +39,7 @@ public class Sample {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/jharrop/tmp/simple.docx";
-		String inputfilepath = "/home/jharrop/tmp/underline.docx";
+		String inputfilepath = "/home/jharrop/tmp/Jo-Temp1.docx";
 		String outputfilepath = "/home/jharrop/tmp/simple-out.docx";
 		
 		
@@ -64,7 +64,7 @@ public class Sample {
 		
 		walkJAXBElements(bodyChildren);
 			
-		
+/*		
 //		// Change something
 		org.docx4j.jaxb.document.P p = (org.docx4j.jaxb.document.P)((JAXBElement)bodyChildren.get(2)).getValue();
 		
@@ -103,7 +103,8 @@ public class Sample {
 				
 		// Save it
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-		saver.save(outputfilepath);	
+		saver.save(outputfilepath);
+*/			
 		
 	}
 	
