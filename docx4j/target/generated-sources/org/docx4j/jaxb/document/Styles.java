@@ -1,6 +1,7 @@
 
 package org.docx4j.jaxb.document;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.Unmarshaller;
@@ -55,11 +56,22 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                           &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *                           &lt;attribute name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                           &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                           &lt;attribute name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                           &lt;attribute name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                           &lt;attribute name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
  *                   &lt;/element>
  *                 &lt;/sequence>
+ *                 &lt;attribute name="defLockedState" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                 &lt;attribute name="defUIPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                 &lt;attribute name="defSemiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                 &lt;attribute name="defUnhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                 &lt;attribute name="defQFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                 &lt;attribute name="count" type="{http://www.w3.org/2001/XMLSchema}integer" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -305,11 +317,22 @@ public class Styles
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *                 &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+     *                 &lt;attribute name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *                 &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
+     *                 &lt;attribute name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *                 &lt;attribute name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *                 &lt;attribute name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
      *         &lt;/element>
      *       &lt;/sequence>
+     *       &lt;attribute name="defLockedState" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *       &lt;attribute name="defUIPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
+     *       &lt;attribute name="defSemiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *       &lt;attribute name="defUnhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *       &lt;attribute name="defQFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *       &lt;attribute name="count" type="{http://www.w3.org/2001/XMLSchema}integer" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -326,6 +349,18 @@ public class Styles
     {
 
         protected List<Styles.LatentStyles.LsdException> lsdException;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String defLockedState;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected BigInteger defUIPriority;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String defSemiHidden;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String defUnhideWhenUsed;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String defQFormat;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected BigInteger count;
         @XmlTransient
         private Object parent;
 
@@ -356,6 +391,150 @@ public class Styles
                 lsdException = new ArrayList<Styles.LatentStyles.LsdException>();
             }
             return this.lsdException;
+        }
+
+        /**
+         * Gets the value of the defLockedState property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getDefLockedState() {
+            return defLockedState;
+        }
+
+        /**
+         * Sets the value of the defLockedState property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setDefLockedState(String value) {
+            this.defLockedState = value;
+        }
+
+        /**
+         * Gets the value of the defUIPriority property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BigInteger }
+         *     
+         */
+        public BigInteger getDefUIPriority() {
+            return defUIPriority;
+        }
+
+        /**
+         * Sets the value of the defUIPriority property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BigInteger }
+         *     
+         */
+        public void setDefUIPriority(BigInteger value) {
+            this.defUIPriority = value;
+        }
+
+        /**
+         * Gets the value of the defSemiHidden property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getDefSemiHidden() {
+            return defSemiHidden;
+        }
+
+        /**
+         * Sets the value of the defSemiHidden property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setDefSemiHidden(String value) {
+            this.defSemiHidden = value;
+        }
+
+        /**
+         * Gets the value of the defUnhideWhenUsed property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getDefUnhideWhenUsed() {
+            return defUnhideWhenUsed;
+        }
+
+        /**
+         * Sets the value of the defUnhideWhenUsed property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setDefUnhideWhenUsed(String value) {
+            this.defUnhideWhenUsed = value;
+        }
+
+        /**
+         * Gets the value of the defQFormat property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getDefQFormat() {
+            return defQFormat;
+        }
+
+        /**
+         * Sets the value of the defQFormat property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setDefQFormat(String value) {
+            this.defQFormat = value;
+        }
+
+        /**
+         * Gets the value of the count property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BigInteger }
+         *     
+         */
+        public BigInteger getCount() {
+            return count;
+        }
+
+        /**
+         * Sets the value of the count property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BigInteger }
+         *     
+         */
+        public void setCount(BigInteger value) {
+            this.count = value;
         }
 
         /**
@@ -395,6 +574,11 @@ public class Styles
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+         *       &lt;attribute name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+         *       &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
+         *       &lt;attribute name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+         *       &lt;attribute name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+         *       &lt;attribute name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -410,6 +594,16 @@ public class Styles
 
             @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
             protected String name;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected String locked;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected BigInteger uiPriority;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected String semiHidden;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected String unhideWhenUsed;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected String qFormat;
             @XmlTransient
             private Object parent;
 
@@ -435,6 +629,126 @@ public class Styles
              */
             public void setName(String value) {
                 this.name = value;
+            }
+
+            /**
+             * Gets the value of the locked property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getLocked() {
+                return locked;
+            }
+
+            /**
+             * Sets the value of the locked property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setLocked(String value) {
+                this.locked = value;
+            }
+
+            /**
+             * Gets the value of the uiPriority property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link BigInteger }
+             *     
+             */
+            public BigInteger getUiPriority() {
+                return uiPriority;
+            }
+
+            /**
+             * Sets the value of the uiPriority property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link BigInteger }
+             *     
+             */
+            public void setUiPriority(BigInteger value) {
+                this.uiPriority = value;
+            }
+
+            /**
+             * Gets the value of the semiHidden property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getSemiHidden() {
+                return semiHidden;
+            }
+
+            /**
+             * Sets the value of the semiHidden property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setSemiHidden(String value) {
+                this.semiHidden = value;
+            }
+
+            /**
+             * Gets the value of the unhideWhenUsed property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getUnhideWhenUsed() {
+                return unhideWhenUsed;
+            }
+
+            /**
+             * Sets the value of the unhideWhenUsed property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setUnhideWhenUsed(String value) {
+                this.unhideWhenUsed = value;
+            }
+
+            /**
+             * Gets the value of the qFormat property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getQFormat() {
+                return qFormat;
+            }
+
+            /**
+             * Sets the value of the qFormat property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setQFormat(String value) {
+                this.qFormat = value;
             }
 
             /**

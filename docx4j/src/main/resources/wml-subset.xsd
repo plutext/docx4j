@@ -19,13 +19,13 @@
 	
   To generate the classes	
 	
-	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh wml-subset-document.xsd -d ../../../target/generated-sources/ 
+	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh wml-subset.xsd -d ../../../target/generated-sources/ 
 		-no-header  -target 2.0
 	
   or, with the parent-pointer-plugin:
 	
 	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh -classpath ~/jaxb/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer   
-		wml-subset-document.xsd -d ../../../target/generated-sources/   
+		wml-subset.xsd -d ../../../target/generated-sources/   
 		-no-header  -target 2.0
 
   Then apply our patches:	
@@ -2515,11 +2515,83 @@
 												Name</xsd:documentation>
 										</xsd:annotation>
 									</xsd:attribute>
-									<!--    other attributes deleted -->
+									<xsd:attribute name="locked"
+										type="main:ST_OnOff">
+										<xsd:annotation>
+											<xsd:documentation>Latent Style
+												Locking
+												Setting</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="uiPriority"
+										type="xsd:integer">
+										<xsd:annotation>
+											<xsd:documentation>Override default
+												sorting order</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="semiHidden"
+										type="main:ST_OnOff">
+										<xsd:annotation>
+											<xsd:documentation>Semi hidden text
+												override</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="unhideWhenUsed"
+										type="main:ST_OnOff">
+										<xsd:annotation>
+											<xsd:documentation>Unhide when
+												used</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="qFormat"
+										type="main:ST_OnOff">
+										<xsd:annotation>
+											<xsd:documentation>Latent Style
+												Primary Style
+												Setting</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
 								</xsd:complexType>
 							</xsd:element>
 						</xsd:sequence>
-						<!-- attributes deleted -->
+						<xsd:attribute name="defLockedState" type="main:ST_OnOff">
+							<xsd:annotation>
+								<xsd:documentation>Default Style Locking
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defUIPriority" type="xsd:integer">
+							<xsd:annotation>
+								<xsd:documentation>Default User Interface Priority
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defSemiHidden" type="main:ST_OnOff">
+							<xsd:annotation>
+								<xsd:documentation>Default Semi-Hidden
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defUnhideWhenUsed"
+							type="main:ST_OnOff">
+							<xsd:annotation>
+								<xsd:documentation>Default Hidden Until Used
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defQFormat" type="main:ST_OnOff">
+							<xsd:annotation>
+								<xsd:documentation>Default Primary Style
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="count" type="xsd:integer">
+							<xsd:annotation>
+								<xsd:documentation>Latent Style
+									Count</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
 					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="style" minOccurs="0" maxOccurs="unbounded">
