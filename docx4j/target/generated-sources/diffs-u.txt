@@ -1,0 +1,179 @@
+diff -u -r ./org/docx4j/jaxb/document/Document.java ../generated-sources/org/docx4j/jaxb/document/Document.java
+--- ./org/docx4j/jaxb/document/Document.java	2008-01-07 10:35:10.000000000 +1100
++++ ../generated-sources/org/docx4j/jaxb/document/Document.java	2007-12-22 10:25:37.000000000 +1100
+@@ -11,6 +11,7 @@
+ import javax.xml.bind.Unmarshaller;
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+@@ -39,6 +40,7 @@
+ @XmlType(name = "CT_Document", propOrder = {
+     "body"
+ })
++@XmlRootElement(name = "document")
+ public class Document
+     implements Child
+ {
+diff -u -r ./org/docx4j/jaxb/document/Id.java ../generated-sources/org/docx4j/jaxb/document/Id.java
+--- ./org/docx4j/jaxb/document/Id.java	2008-01-07 10:35:10.000000000 +1100
++++ ../generated-sources/org/docx4j/jaxb/document/Id.java	2007-12-21 00:26:46.000000000 +1100
+@@ -99,5 +99,21 @@
+     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+         setParent(parent);
+     }
++    
++    
++    public boolean equals(Object obj) {
++    	if (obj instanceof Id) {
++    		return val.equals( ((Id)obj).getVal() ); 
++    	} else {
++    		return false;
++    	}
++    }
++    
++    public int hashCode() {
++    	
++    	// Natural and good enough...
++    	return val.intValue();
++    	
++    }
+ 
+ }
+diff -u -r ./org/docx4j/jaxb/document/P.java ../generated-sources/org/docx4j/jaxb/document/P.java
+--- ./org/docx4j/jaxb/document/P.java	2008-01-07 10:35:10.000000000 +1100
++++ ../generated-sources/org/docx4j/jaxb/document/P.java	2007-12-22 10:40:12.000000000 +1100
+@@ -16,10 +16,12 @@
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlElementRef;
+ import javax.xml.bind.annotation.XmlElementRefs;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+ 
++import javax.xml.bind.annotation.XmlAnyElement;
+ 
+ /**
+  * <p>Java class for CT_P complex type.
+@@ -46,11 +48,14 @@
+     "pPr",
+     "paragraphContent"
+ })
++@XmlRootElement(name = "p")
+ public class P
+     implements Child
+ {
+ 
+     protected PPr pPr;
++    
++    @XmlAnyElement    
+     @XmlElementRefs({
+         @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+         @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+@@ -141,4 +146,38 @@
+         setParent(parent);
+     }
+ 
++    // Not generated
++    /** Get the text content of all runs in the P */
++    public String toString() {
++
++    	StringBuilder result = new StringBuilder();
++    	
++    	List<Object> children = getParagraphContent();
++    	
++//    	System.out.println("p.toString");
++    	
++		for (Object o : children ) {					
++//			System.out.println("  " + o.getClass().getName() );
++			if ( o instanceof org.docx4j.jaxb.document.R) {
++//		    	System.out.println("Hit R");
++				org.docx4j.jaxb.document.R  run = (org.docx4j.jaxb.document.R)o;
++		    	List<Object> runContent = run.getRunContent();
++				for (Object o2 : runContent ) {					
++					if ( o2 instanceof javax.xml.bind.JAXBElement) {
++						// TODO - unmarshall directly to Text.
++						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.jaxb.document.Text") ) {
++//					    	System.out.println("Found Text");
++							org.docx4j.jaxb.document.Text t = (org.docx4j.jaxb.document.Text)((JAXBElement)o2).getValue();
++							result.append( t.getValue() );					
++						}
++					} else {
++//				    	System.out.println(o2.getClass().getName());						
++					}
++				}
++			} 
++		}
++		return result.toString();
++    	
++    }
++
+ }
+diff -u -r ./org/docx4j/jaxb/document/SdtPr.java ../generated-sources/org/docx4j/jaxb/document/SdtPr.java
+--- ./org/docx4j/jaxb/document/SdtPr.java	2008-01-07 10:35:10.000000000 +1100
++++ ../generated-sources/org/docx4j/jaxb/document/SdtPr.java	2007-12-20 16:12:00.000000000 +1100
+@@ -16,6 +16,7 @@
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+ 
++import org.apache.log4j.Logger;
+ 
+ /**
+  * <p>Java class for CT_SdtPr complex type.
+@@ -66,6 +67,8 @@
+     implements Child
+ {
+ 
++	private static Logger log = Logger.getLogger(SdtPr.class);	
++	
+     protected SdtPr.Alias alias;
+     protected Lock lock;
+     protected Id id;
+@@ -142,8 +145,23 @@
+      *     
+      */
+     public void setId(Id value) {
++		if (!this.id.equals(value)) {
++			log.debug("Changing SDT ID from " + this.id + " to " + id);
++		}    	
+         this.id = value;
+     }
++    
++    // Not generated!
++    public void setId() {
++    	
++    	if (id==null) {
++    		ObjectFactory factory = new ObjectFactory();
++    		id = factory.createId();
++    	}
++    	
++    	id.setVal( java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt())) );
++    	
++    }
+ 
+     /**
+      * Gets the value of the tag property.
+diff -u -r ./org/docx4j/jaxb/document/Text.java ../generated-sources/org/docx4j/jaxb/document/Text.java
+--- ./org/docx4j/jaxb/document/Text.java	2008-01-07 10:35:10.000000000 +1100
++++ ../generated-sources/org/docx4j/jaxb/document/Text.java	2007-12-20 16:10:22.000000000 +1100
+@@ -11,6 +11,7 @@
+ import javax.xml.bind.Unmarshaller;
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import javax.xml.bind.annotation.XmlValue;
+@@ -37,6 +38,8 @@
+ @XmlType(name = "CT_Text", propOrder = {
+     "value"
+ })
++@XmlRootElement(name = "t")
++//@Generated(value = "com.sun.tools.xjc.Driver", date = "2007-12-17T02:57:16+10:00", comments = "JAXB RI v2.1.5-b01-fcs")
+ public class Text
+     implements Child
+ {
+
