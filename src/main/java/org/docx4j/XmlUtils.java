@@ -62,9 +62,7 @@ public class XmlUtils {
 
 	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document */ 
 	public static Object unmarshalDom4jDoc(org.dom4j.Document doc) {
-		
-		// TODO - make JAXBContext a method parameter.
-		
+				
 		JAXBContext jc = DocumentContext.jc;
 			
 		Object o = null;
@@ -92,7 +90,6 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 
-			// TODO - make JAXBContext a method parameter.			
 			JAXBContext jc = DocumentContext.jc;
 
 			Unmarshaller u = jc.createUnmarshaller();
@@ -113,7 +110,6 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 			
-			// TODO - make JAXBContext a method parameter.			
 			JAXBContext jc = DocumentContext.jc;
 
 			Unmarshaller u = jc.createUnmarshaller();
@@ -135,7 +131,6 @@ public class XmlUtils {
 	public static org.dom4j.Document marshaltoDom4jDocument(Object o) {
 		// TODO - refactor this.
 		try {
-			// TODO - make JAXBContext a method parameter.			
 			JAXBContext jc = DocumentContext.jc;
 
 			Marshaller marshaller=jc.createMarshaller();
@@ -174,7 +169,6 @@ public class XmlUtils {
 	/** Marshal to a String */ 
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
 
-		// TODO - make JAXBContext a method parameter.			
 		JAXBContext jc = DocumentContext.jc;
 				
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
@@ -237,7 +231,6 @@ public class XmlUtils {
 	/** Clone this JAXB object */ 
 	public static Object deepCopy(Object in) {
 
-		// TODO - make JAXBContext a method parameter.			
 		JAXBContext jc = DocumentContext.jc;
 		
 		Object o = null;
