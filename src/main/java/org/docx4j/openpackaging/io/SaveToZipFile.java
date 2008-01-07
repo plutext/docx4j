@@ -149,7 +149,15 @@ public class SaveToZipFile {
 		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 			try {				
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( out );
+		        // Add ZIP entry to output stream.
+		        out.putNextEntry(new ZipEntry(partName));		        
+
+		        ((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( out );
+		        
+		        // Complete the entry
+		        out.closeEntry();
+				log.info( "PUT SUCCESS: " + partName);		
+		        
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
