@@ -85,12 +85,6 @@ public abstract class JaxbXmlPart extends Part {
 	}
 	
 	
-	/** 
-	 * 
-	 * Create an XML document from the Java object tree.
-	 * 
-	 * */	
-//	public abstract Document marshall();
 	
     /**
      * Marshal the content tree rooted at <tt>jaxbElement</tt> into a DOM tree.
