@@ -39,135 +39,6 @@
 	
 -->
 
-<!--
-
-  Problems:
-  - duplicate definition of tab
--->
-
-
-<!-- 
-
-Patterns:
-
-   <xsd:element name="pStyle" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>Referenced Paragraph Style</xsd:documentation>
-        </xsd:annotation>
-        <xsd:complexType>
-          <xsd:attributeGroup ref="main:CT_String"/>
-        </xsd:complexType>
-   </xsd:element>
-
- <xsd:attributeGroup  name="CT_String">
-    <xsd:attribute name="val" type="xsd:string" use="required">
-      <xsd:annotation>
-        <xsd:documentation>String Value</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-  </xsd:attributeGroup>
-
-(obtained by converting rnc to xsd)
-results in the creation of a pStyle class.
-
-
-<xsd:element name="pStyle"  minOccurs="0">
-  <xsd:complexType>
-        <xsd:attribute name="val" type="xsd:string"/>
-  </xsd:complexType>
-</xsd:element>
-
-also results in the creation of a pStyle class.
-
-
-      <xsd:element name="pStyle" type="main:CT_String" minOccurs="0">
-        <xsd:annotation>
-          <xsd:documentation>Referenced Paragraph Style</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-
-  <xsd:simpleType name="ST_String">
-    <xsd:annotation>
-      <xsd:documentation>String</xsd:documentation>
-    </xsd:annotation>
-    <xsd:restriction base="xsd:string"/>
-  </xsd:simpleType>
-
-  <xsd:complexType name="CT_String">
-    <xsd:attribute name="val" type="main:ST_String" use="required">
-      <xsd:annotation>
-        <xsd:documentation>String Value</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-  </xsd:complexType>
-
-results in a field of type CTString.
-
-
-None are the simple String we might wish for!
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-			No benefit to this construct.  It generates an inner class for i, but 
-				 without the default value 
-			<xsd:element name="i" minOccurs="0">
-				<xsd:complexType>
-					<xsd:annotation>
-						<xsd:documentation>Italics</xsd:documentation>
-					</xsd:annotation>
-					<xsd:attribute name="val" type="xsd:boolean"/>
-				</xsd:complexType>
-			</xsd:element>
-
-	
-			Generates an inner class for i, with default value
-			<xsd:element name="i" minOccurs="0">
-				<xsd:complexType>
-					<xsd:annotation>
-						<xsd:documentation>Italics</xsd:documentation>
-					</xsd:annotation>
-					<xsd:attribute name="val" type="xsd:boolean" default="true"/>
-				</xsd:complexType>
-			</xsd:element>
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-We want to generate:	
-
-		protected List<Object> paragraphContent;
-	
-So that an element you create using factory can be 
-	    added to the list.  	
-
-Spurious reasons:
-				
-	1.  So i can annotate with @XmlAnyElement (and have those populate it)
-		- NOT A REASON: additional elements will always be 
-			unmarshalled asJAXBElements
-	
-	2.  Ease of use: So things unmarshall directly to the correct class, rather than 
-	    as JAXBElements.
-	    - NOT A REASON: this is a consequence of @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
-		
-To ensure you generate
-			
-	    protected List<Object> paragraphContent;
-
-rather than
-		
-	    protected List<JAXBElement<?>> blockLevelElements;
-
-you need to make sure you have at least one
-	
-        @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),				
-	
-(rather than all type = JAXBElement.class)
-	
-This in turn requires at least one of the element definitions to be direct, rather
-	than by type.  See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html  	
-			
--->
-
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	elementFormDefault="qualified" attributeFormDefault="qualified"
@@ -190,13 +61,14 @@ This in turn requires at least one of the element definitions to be direct, rath
 			-->
 			<xsd:appinfo>
 				<jaxb:globalBindings>
-					<!-- Makes no difference. Could comment out. -->
+					<!-- Makes no difference. Could comment out. 
 					<jaxb:javaType name="java.lang.String" xmlType="xsd:string"
-						parseMethod="javax.xml.bind.DatatypeConverter.parseString"
-						printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+					parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+					printMethod="javax.xml.bind.DatatypeConverter.printString"/>
 					<jaxb:javaType name="java.lang.String" xmlType="xsd:string"
-						parseMethod="javax.xml.bind.DatatypeConverter.parseString"
-						printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+					parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+					printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+					-->
 				</jaxb:globalBindings>
 			</xsd:appinfo>
 			<jaxb:schemaBindings>
@@ -233,11 +105,14 @@ This in turn requires at least one of the element definitions to be direct, rath
 	<!--
 	=========================================================================================================
 	start = document | numbering | styles |  fonts | hdr | ftr | footnotes | endnotes |  comments | settings | recipients | txbxContent | webSettings | glossaryDocument
+	
 	-->
-	<!--
-	
-	document
-	
+	<!-- 
+	****************************************************************
+	***                                                          ***
+	***                      document                            ***
+	***                                                          ***
+	****************************************************************
 	-->
 	<xsd:element name="document" type="main:CT_Document"/>
 	<xsd:complexType name="CT_Document">
@@ -837,9 +712,9 @@ This in turn requires at least one of the element definitions to be direct, rath
 		<xsd:complexType/>
 	</xsd:element>
 	<xsd:element name="sym">
-        <xsd:annotation>
-          <xsd:documentation>Symbol Character</xsd:documentation>
-        </xsd:annotation>		
+		<xsd:annotation>
+			<xsd:documentation>Symbol Character</xsd:documentation>
+		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:attributeGroup ref="main:CT_Sym"/>
 		</xsd:complexType>
@@ -848,9 +723,9 @@ This in turn requires at least one of the element definitions to be direct, rath
 		<xsd:complexType/>
 	</xsd:element>
 	<xsd:element name="cr">
-        <xsd:annotation>
-          <xsd:documentation>Carriage Return</xsd:documentation>
-        </xsd:annotation>		
+		<xsd:annotation>
+			<xsd:documentation>Carriage Return</xsd:documentation>
+		</xsd:annotation>
 		<xsd:complexType/>
 	</xsd:element>
 	<xsd:element name="ptab">
@@ -887,7 +762,7 @@ This in turn requires at least one of the element definitions to be direct, rath
 	Structured Document Types
 	-->
 	
-	<xsd:element name="sdt">		
+	<xsd:element name="sdt">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element minOccurs="0" ref="main:sdtPr"/>
@@ -2582,4 +2457,419 @@ This in turn requires at least one of the element definitions to be direct, rath
 			</xsd:extension>
 		</xsd:simpleContent>
 	</xsd:complexType>
+	
+	<!-- 
+	****************************************************************
+	***                                                          ***
+	***                      styles                              ***
+	***                                                          ***
+	****************************************************************
+	-->
+	<xsd:element name="styles">
+		<xsd:annotation>
+			<xsd:documentation>Style Definitions</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="rPrDefault" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Default Run
+							Properties</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element ref="main:rPr" minOccurs="0"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="pPrDefault" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Default Paragraph
+							Properties</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element ref="main:pPr" minOccurs="0"/>
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="latentStyles" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>Latent Style Information - latent
+							(not-yet-instantiated built-in)
+							styles.</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="lsdException" minOccurs="0"
+								maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation>Latent Style
+										Exception</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attribute name="name"
+										type="main:ST_String" use="required">
+										<xsd:annotation>
+											<xsd:documentation>Primary Style
+												Name</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<!--    other attributes deleted -->
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:sequence>
+						<!-- attributes deleted -->
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="style" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>Style Definition</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:annotation>
+							<xsd:appinfo>
+								<jaxb:property name="Style"/>
+							</xsd:appinfo>
+						</xsd:annotation>
+						<xsd:sequence>
+							<xsd:element name="name" minOccurs="0" maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation>Primary Style
+										Name</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attributeGroup ref="main:CT_String"/>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="aliases" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>Alternate Style
+										Names</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attributeGroup ref="main:CT_String"/>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="basedOn" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>Parent Style
+										ID</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attributeGroup ref="main:CT_String"/>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="next" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>Style For Next
+										Paragraph</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attributeGroup ref="main:CT_String"/>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="link" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>Linked Style
+										Reference</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attributeGroup ref="main:CT_String"/>
+								</xsd:complexType>
+							</xsd:element>
+							<!--
+							<xsd:element name="autoRedefine" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>Automatically Merge User Formatting Into Style Definition</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="hidden" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>Hide Style From User Interface</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="uiPriority" type="CT_DecimalNumber" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>Optional User Interface Sorting Order</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="semiHidden" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>Hide Style From Main User Interface</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="unhideWhenUsed" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>Remove Semi-Hidden Property When Style Is Used</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element> -->
+							<xsd:element name="qFormat"
+								type="main:BooleanDefaultTrue" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>Primary
+										Style</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<!--		
+							<xsd:element name="locked" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>Style Cannot Be Applied</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="personal" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>E-Mail Message Text Style</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="personalCompose" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>E-Mail Message Composition Style</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="personalReply" type="CT_OnOff" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>E-Mail Message Reply Style</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="rsid" type="CT_LongHexNumber" minOccurs="0">
+							<xsd:annotation>
+							<xsd:documentation>Revision Identifier for Style Definition</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element> -->
+							<xsd:element ref="main:pPr" minOccurs="0"
+								maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation>Style Paragraph
+										Properties</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<xsd:element ref="main:rPr" minOccurs="0"
+								maxOccurs="1">
+								<xsd:annotation>
+									<xsd:documentation>Run
+										Properties</xsd:documentation>
+								</xsd:annotation>
+							</xsd:element>
+							<!--		
+							<xsd:element name="tblPr" type="CT_TblPrBase" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+							<xsd:documentation>Style Table Properties</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="trPr" type="CT_TrPr" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+							<xsd:documentation>Style Table Row Properties</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="tcPr" type="CT_TcPr" minOccurs="0" maxOccurs="1">
+							<xsd:annotation>
+							<xsd:documentation>Style Table Cell Properties</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>
+							<xsd:element name="tblStylePr" type="CT_TblStylePr" minOccurs="0" maxOccurs="unbounded">
+							<xsd:annotation>
+							<xsd:documentation>Style Conditional Table Formatting Properties</xsd:documentation>
+							</xsd:annotation>
+							</xsd:element>-->
+						</xsd:sequence>
+						<xsd:attribute name="type" use="optional">
+							<xsd:annotation>
+								<xsd:documentation>Style Type</xsd:documentation>
+							</xsd:annotation>
+							<xsd:simpleType>
+								
+								<xsd:restriction base="xsd:string">
+									<xsd:enumeration value="paragraph">
+										<xsd:annotation>
+											<xsd:documentation>Paragraph
+												Style</xsd:documentation>
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="character">
+										<xsd:annotation>
+											<xsd:documentation>Character
+												Style</xsd:documentation>
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="table">
+										<xsd:annotation>
+											<xsd:documentation>Table
+												Style</xsd:documentation>
+										</xsd:annotation>
+									</xsd:enumeration>
+									<xsd:enumeration value="numbering">
+										<xsd:annotation>
+											<xsd:documentation>Numbering
+												Style</xsd:documentation>
+										</xsd:annotation>
+									</xsd:enumeration>
+								</xsd:restriction>
+							</xsd:simpleType>
+							
+						</xsd:attribute>
+						<xsd:attribute name="styleId" type="main:ST_String"
+							use="optional">
+							<xsd:annotation>
+								<xsd:documentation>Style ID</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="default" type="main:ST_OnOff"
+							use="optional">
+							<xsd:annotation>
+								<xsd:documentation>Default
+									Style</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="customStyle" type="main:ST_OnOff"
+							use="optional">
+							<xsd:annotation>
+								<xsd:documentation>User-Defined
+									Style</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	
+
+	
+	<!-- 
+	****************************************************************
+	***                                                          ***
+	***                     numbering                            ***
+	***                                                          ***
+	****************************************************************
+	-->
+	
+	<!--
+	
+	Problems:
+	- duplicate definition of tab
+	-->
+	
+	<!-- 
+	
+	Patterns:
+	
+	<xsd:element name="pStyle" minOccurs="0">
+	<xsd:annotation>
+	<xsd:documentation>Referenced Paragraph Style</xsd:documentation>
+	</xsd:annotation>
+	<xsd:complexType>
+	<xsd:attributeGroup ref="main:CT_String"/>
+	</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:attributeGroup  name="CT_String">
+	<xsd:attribute name="val" type="xsd:string" use="required">
+	<xsd:annotation>
+	<xsd:documentation>String Value</xsd:documentation>
+	</xsd:annotation>
+	</xsd:attribute>
+	</xsd:attributeGroup>
+	
+	(obtained by converting rnc to xsd)
+	results in the creation of a pStyle class.
+	
+	
+	<xsd:element name="pStyle"  minOccurs="0">
+	<xsd:complexType>
+	<xsd:attribute name="val" type="xsd:string"/>
+	</xsd:complexType>
+	</xsd:element>
+	
+	also results in the creation of a pStyle class.
+	
+	
+	<xsd:element name="pStyle" type="main:CT_String" minOccurs="0">
+	<xsd:annotation>
+	<xsd:documentation>Referenced Paragraph Style</xsd:documentation>
+	</xsd:annotation>
+	</xsd:element>
+	
+	<xsd:simpleType name="ST_String">
+	<xsd:annotation>
+	<xsd:documentation>String</xsd:documentation>
+	</xsd:annotation>
+	<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	
+	<xsd:complexType name="CT_String">
+	<xsd:attribute name="val" type="main:ST_String" use="required">
+	<xsd:annotation>
+	<xsd:documentation>String Value</xsd:documentation>
+	</xsd:annotation>
+	</xsd:attribute>
+	</xsd:complexType>
+	
+	results in a field of type CTString.
+	
+	
+	None are the simple String we might wish for!
+	
+	++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	No benefit to this construct.  It generates an inner class for i, but 
+	without the default value 
+	<xsd:element name="i" minOccurs="0">
+	<xsd:complexType>
+	<xsd:annotation>
+	<xsd:documentation>Italics</xsd:documentation>
+	</xsd:annotation>
+	<xsd:attribute name="val" type="xsd:boolean"/>
+	</xsd:complexType>
+	</xsd:element>
+	
+	
+	Generates an inner class for i, with default value
+	<xsd:element name="i" minOccurs="0">
+	<xsd:complexType>
+	<xsd:annotation>
+	<xsd:documentation>Italics</xsd:documentation>
+	</xsd:annotation>
+	<xsd:attribute name="val" type="xsd:boolean" default="true"/>
+	</xsd:complexType>
+	</xsd:element>
+	
+	++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	We want to generate:	
+	
+	protected List<Object> paragraphContent;
+	
+	So that an element you create using factory can be 
+	added to the list.  	
+	
+	Spurious reasons:
+	
+	1.  So i can annotate with @XmlAnyElement (and have those populate it)
+	- NOT A REASON: additional elements will always be 
+	unmarshalled asJAXBElements
+	
+	2.  Ease of use: So things unmarshall directly to the correct class, rather than 
+	as JAXBElements.
+	- NOT A REASON: this is a consequence of @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
+	
+	To ensure you generate
+	
+	protected List<Object> paragraphContent;
+	
+	rather than
+	
+	protected List<JAXBElement<?>> blockLevelElements;
+	
+	you need to make sure you have at least one
+	
+	@XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),				
+	
+	(rather than all type = JAXBElement.class)
+	
+	This in turn requires at least one of the element definitions to be direct, rather
+	than by type.  See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html  	
+	
+	-->
+	
 </xsd:schema>
