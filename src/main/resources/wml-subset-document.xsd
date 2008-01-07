@@ -19,18 +19,23 @@
 	
   To generate the classes	
 	
-	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh wml-subset-document.xsd -d ../../../target/generated-sources/ -Xlocator -mark-generated
-
+	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh wml-subset-document.xsd -d ../../../target/generated-sources/ 
+		-no-header  -target 2.0
+	
   or, with the parent-pointer-plugin:
 	
-	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh -classpath ~/jaxb/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer   wml-subset-document.xsd -d ../../../target/generated-sources/   -Xlocator -mark-generated
+	sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh -classpath ~/jaxb/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer   
+		wml-subset-document.xsd -d ../../../target/generated-sources/   
+		-no-header  -target 2.0
+
+  Then apply our patches:	
 	
-  To allow the field P.paragraphContent to contain things not
-  allowed by the xsd subset, annotate it with @XmlAnyElement
-  (Eclipse: Compare With > Latest from Repository) for details.
+	/target/new-sources$ patch -p0 < diffs-u.txt
 	
-  To marshall properly, Text.java needs @XmlRootElement(name = "t").
-  Again, look at the repository copy for details on how to do this.		 	
+  To create patches:	
+	
+	/target/new-sources$ diff . ../generated-sources/ -u -r > diffs-u.txt
+	
 	
 -->
 
@@ -776,9 +781,9 @@ This in turn requires at least one of the element definitions to be direct, rath
 			<xsd:element minOccurs="0" ref="main:footnoteRef"/>
 			<xsd:element minOccurs="0" ref="main:endnoteRef"/>
 			<xsd:element minOccurs="0" ref="main:separator"/>
-			<xsd:element minOccurs="0" ref="main:continuationSeparator"/>
+			<xsd:element minOccurs="0" ref="main:continuationSeparator"/>-->
 			<xsd:element minOccurs="0" ref="main:sym"/>
-			<xsd:element minOccurs="0" ref="main:pgNum"/>
+			<!--xsd:element minOccurs="0" ref="main:pgNum"/>
 			<xsd:element minOccurs="0" ref="main:ptab"/>
 			<xsd:element minOccurs="0" ref="main:lastRenderedPageBreak"/> -->
 		</xsd:choice>
@@ -832,6 +837,9 @@ This in turn requires at least one of the element definitions to be direct, rath
 		<xsd:complexType/>
 	</xsd:element>
 	<xsd:element name="sym">
+        <xsd:annotation>
+          <xsd:documentation>Symbol Character</xsd:documentation>
+        </xsd:annotation>		
 		<xsd:complexType>
 			<xsd:attributeGroup ref="main:CT_Sym"/>
 		</xsd:complexType>
@@ -840,6 +848,9 @@ This in turn requires at least one of the element definitions to be direct, rath
 		<xsd:complexType/>
 	</xsd:element>
 	<xsd:element name="cr">
+        <xsd:annotation>
+          <xsd:documentation>Carriage Return</xsd:documentation>
+        </xsd:annotation>		
 		<xsd:complexType/>
 	</xsd:element>
 	<xsd:element name="ptab">
