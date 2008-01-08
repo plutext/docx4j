@@ -1,3 +1,21 @@
+/*
+ *  Copyright 2007, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is free software: you can use it, redistribute it and/or modify
+    it under the terms of version 3 of the GNU Affero General Public License 
+    as published by the Free Software Foundation.
+
+    docx4j is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License   
+    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
+    
+ */
 
 package org.docx4j.jaxb.document;
 
@@ -40,11 +58,11 @@ public class SdtContent
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "tbl", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "p", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Sdt.class)
+        @XmlElementRef(name = "tbl", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Sdt.class),
+        @XmlElementRef(name = "p", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<Object> blockLevelElements;
     @XmlTransient
@@ -68,11 +86,11 @@ public class SdtContent
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Sdt }
      * {@link JAXBElement }{@code <}{@link Tbl }{@code >}
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link P }{@code >}
+     * {@link Sdt }
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link P }{@code >}
      * 
      * 
      */
