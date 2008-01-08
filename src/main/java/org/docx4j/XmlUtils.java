@@ -24,11 +24,14 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.jaxbcontexts.DocumentContext;
 
@@ -85,17 +88,33 @@ public class XmlUtils {
 		return o;
 	}
 	
-	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document */ 
-	public static Object unmarshalDom4jEl(Element el) {
-		Object o = null;
-		try {				
+	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document.
+	 * 
+	 *  Since most of our types don't have an XmlRootElement, here we use
+	 *  the version of the unmarshal method that takes the 'expectedType' argument.
+	 *  See https://jaxb.dev.java.net/guide/_XmlRootElement_and_unmarshalling.html  
+	 *  
+	 *  */ 
+	public static  <T> JAXBElement<T> unmarshalDom4jEl(Element el, Class<T> declaredType) {
+		
+		JAXBElement<T> o = null;
+		//Object o = null;
+		try {	
 
 			JAXBContext jc = DocumentContext.jc;
 
 			Unmarshaller u = jc.createUnmarshaller();
+						
+			//u.setSchema(null);
+			//u.setValidating( false );
+			
 			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
 
-			o = u.unmarshal( org.docx4j.XmlUtils.getInputStreamFromDom4jEl(el) );
+//			// Convert dom4j el to W3C
+//			org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
+//			org.w3c.dom.Document w3cDoc = writer.write(el);  // Only takes Document objects :(
+						
+			o = u.unmarshal(new StreamSource(org.docx4j.XmlUtils.getInputStreamFromDom4jEl(el)), declaredType);
 
 			System.out.println("unmarshalled ");
 
