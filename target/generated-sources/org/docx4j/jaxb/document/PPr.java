@@ -24,7 +24,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -59,10 +58,25 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "keepNext",
     "keepLines",
     "pageBreakBefore",
+    "widowControl",
     "numPr",
+    "suppressLineNumbers",
     "tabs",
+    "suppressAutoHyphens",
+    "kinsoku",
+    "wordWrap",
+    "overflowPunct",
+    "topLinePunct",
+    "autoSpaceDE",
+    "autoSpaceDN",
+    "bidi",
+    "adjustRightInd",
+    "snapToGrid",
     "spacing",
     "ind",
+    "contextualSpacing",
+    "mirrorIndents",
+    "suppressOverlap",
     "jc",
     "outlineLvl",
     "rPr",
@@ -75,12 +89,26 @@ public class PPr
     protected PPr.PStyle pStyle;
     protected BooleanDefaultTrue keepNext;
     protected BooleanDefaultTrue keepLines;
-    @XmlElement(required = true)
     protected BooleanDefaultTrue pageBreakBefore;
+    protected BooleanDefaultTrue widowControl;
     protected NumPr numPr;
+    protected BooleanDefaultTrue suppressLineNumbers;
     protected Tabs tabs;
+    protected BooleanDefaultTrue suppressAutoHyphens;
+    protected BooleanDefaultTrue kinsoku;
+    protected BooleanDefaultTrue wordWrap;
+    protected BooleanDefaultTrue overflowPunct;
+    protected BooleanDefaultTrue topLinePunct;
+    protected BooleanDefaultTrue autoSpaceDE;
+    protected BooleanDefaultTrue autoSpaceDN;
+    protected BooleanDefaultTrue bidi;
+    protected BooleanDefaultTrue adjustRightInd;
+    protected BooleanDefaultTrue snapToGrid;
     protected Spacing spacing;
     protected Ind ind;
+    protected BooleanDefaultTrue contextualSpacing;
+    protected BooleanDefaultTrue mirrorIndents;
+    protected BooleanDefaultTrue suppressOverlap;
     protected Jc jc;
     protected PPr.OutlineLvl outlineLvl;
     protected RPr rPr;
@@ -185,6 +213,30 @@ public class PPr
     }
 
     /**
+     * Gets the value of the widowControl property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getWidowControl() {
+        return widowControl;
+    }
+
+    /**
+     * Sets the value of the widowControl property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setWidowControl(BooleanDefaultTrue value) {
+        this.widowControl = value;
+    }
+
+    /**
      * Gets the value of the numPr property.
      * 
      * @return
@@ -209,6 +261,30 @@ public class PPr
     }
 
     /**
+     * Gets the value of the suppressLineNumbers property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getSuppressLineNumbers() {
+        return suppressLineNumbers;
+    }
+
+    /**
+     * Sets the value of the suppressLineNumbers property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setSuppressLineNumbers(BooleanDefaultTrue value) {
+        this.suppressLineNumbers = value;
+    }
+
+    /**
      * Gets the value of the tabs property.
      * 
      * @return
@@ -230,6 +306,246 @@ public class PPr
      */
     public void setTabs(Tabs value) {
         this.tabs = value;
+    }
+
+    /**
+     * Gets the value of the suppressAutoHyphens property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getSuppressAutoHyphens() {
+        return suppressAutoHyphens;
+    }
+
+    /**
+     * Sets the value of the suppressAutoHyphens property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setSuppressAutoHyphens(BooleanDefaultTrue value) {
+        this.suppressAutoHyphens = value;
+    }
+
+    /**
+     * Gets the value of the kinsoku property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getKinsoku() {
+        return kinsoku;
+    }
+
+    /**
+     * Sets the value of the kinsoku property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setKinsoku(BooleanDefaultTrue value) {
+        this.kinsoku = value;
+    }
+
+    /**
+     * Gets the value of the wordWrap property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getWordWrap() {
+        return wordWrap;
+    }
+
+    /**
+     * Sets the value of the wordWrap property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setWordWrap(BooleanDefaultTrue value) {
+        this.wordWrap = value;
+    }
+
+    /**
+     * Gets the value of the overflowPunct property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getOverflowPunct() {
+        return overflowPunct;
+    }
+
+    /**
+     * Sets the value of the overflowPunct property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setOverflowPunct(BooleanDefaultTrue value) {
+        this.overflowPunct = value;
+    }
+
+    /**
+     * Gets the value of the topLinePunct property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getTopLinePunct() {
+        return topLinePunct;
+    }
+
+    /**
+     * Sets the value of the topLinePunct property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setTopLinePunct(BooleanDefaultTrue value) {
+        this.topLinePunct = value;
+    }
+
+    /**
+     * Gets the value of the autoSpaceDE property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getAutoSpaceDE() {
+        return autoSpaceDE;
+    }
+
+    /**
+     * Sets the value of the autoSpaceDE property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setAutoSpaceDE(BooleanDefaultTrue value) {
+        this.autoSpaceDE = value;
+    }
+
+    /**
+     * Gets the value of the autoSpaceDN property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getAutoSpaceDN() {
+        return autoSpaceDN;
+    }
+
+    /**
+     * Sets the value of the autoSpaceDN property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setAutoSpaceDN(BooleanDefaultTrue value) {
+        this.autoSpaceDN = value;
+    }
+
+    /**
+     * Gets the value of the bidi property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getBidi() {
+        return bidi;
+    }
+
+    /**
+     * Sets the value of the bidi property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setBidi(BooleanDefaultTrue value) {
+        this.bidi = value;
+    }
+
+    /**
+     * Gets the value of the adjustRightInd property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getAdjustRightInd() {
+        return adjustRightInd;
+    }
+
+    /**
+     * Sets the value of the adjustRightInd property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setAdjustRightInd(BooleanDefaultTrue value) {
+        this.adjustRightInd = value;
+    }
+
+    /**
+     * Gets the value of the snapToGrid property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getSnapToGrid() {
+        return snapToGrid;
+    }
+
+    /**
+     * Sets the value of the snapToGrid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setSnapToGrid(BooleanDefaultTrue value) {
+        this.snapToGrid = value;
     }
 
     /**
@@ -278,6 +594,78 @@ public class PPr
      */
     public void setInd(Ind value) {
         this.ind = value;
+    }
+
+    /**
+     * Gets the value of the contextualSpacing property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getContextualSpacing() {
+        return contextualSpacing;
+    }
+
+    /**
+     * Sets the value of the contextualSpacing property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setContextualSpacing(BooleanDefaultTrue value) {
+        this.contextualSpacing = value;
+    }
+
+    /**
+     * Gets the value of the mirrorIndents property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getMirrorIndents() {
+        return mirrorIndents;
+    }
+
+    /**
+     * Sets the value of the mirrorIndents property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setMirrorIndents(BooleanDefaultTrue value) {
+        this.mirrorIndents = value;
+    }
+
+    /**
+     * Gets the value of the suppressOverlap property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getSuppressOverlap() {
+        return suppressOverlap;
+    }
+
+    /**
+     * Sets the value of the suppressOverlap property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setSuppressOverlap(BooleanDefaultTrue value) {
+        this.suppressOverlap = value;
     }
 
     /**
