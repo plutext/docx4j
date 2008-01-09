@@ -62,15 +62,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;sequence>
- *                   &lt;element name="nsid" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
+ *                   &lt;element name="nsid" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LongHexNumber" minOccurs="0"/>
  *                   &lt;element name="multiLevelType" minOccurs="0">
  *                     &lt;complexType>
  *                       &lt;complexContent>
@@ -88,15 +80,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
  *                   &lt;/element>
- *                   &lt;element name="tmpl" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
+ *                   &lt;element name="tmpl" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LongHexNumber" minOccurs="0"/>
  *                   &lt;element name="name" minOccurs="0">
  *                     &lt;complexType>
  *                       &lt;complexContent>
@@ -386,15 +370,7 @@ public class Numbering
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;element name="nsid" minOccurs="0">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
+     *         &lt;element name="nsid" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LongHexNumber" minOccurs="0"/>
      *         &lt;element name="multiLevelType" minOccurs="0">
      *           &lt;complexType>
      *             &lt;complexContent>
@@ -412,15 +388,7 @@ public class Numbering
      *             &lt;/complexContent>
      *           &lt;/complexType>
      *         &lt;/element>
-     *         &lt;element name="tmpl" minOccurs="0">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
+     *         &lt;element name="tmpl" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LongHexNumber" minOccurs="0"/>
      *         &lt;element name="name" minOccurs="0">
      *           &lt;complexType>
      *             &lt;complexContent>
@@ -492,9 +460,9 @@ public class Numbering
         implements Child
     {
 
-        protected Numbering.AbstractNum.Nsid nsid;
+        protected CTLongHexNumber nsid;
         protected Numbering.AbstractNum.MultiLevelType multiLevelType;
-        protected Numbering.AbstractNum.Tmpl tmpl;
+        protected CTLongHexNumber tmpl;
         protected Numbering.AbstractNum.Name name;
         protected Numbering.AbstractNum.StyleLink styleLink;
         protected Numbering.AbstractNum.NumStyleLink numStyleLink;
@@ -509,10 +477,10 @@ public class Numbering
          * 
          * @return
          *     possible object is
-         *     {@link Numbering.AbstractNum.Nsid }
+         *     {@link CTLongHexNumber }
          *     
          */
-        public Numbering.AbstractNum.Nsid getNsid() {
+        public CTLongHexNumber getNsid() {
             return nsid;
         }
 
@@ -521,10 +489,10 @@ public class Numbering
          * 
          * @param value
          *     allowed object is
-         *     {@link Numbering.AbstractNum.Nsid }
+         *     {@link CTLongHexNumber }
          *     
          */
-        public void setNsid(Numbering.AbstractNum.Nsid value) {
+        public void setNsid(CTLongHexNumber value) {
             this.nsid = value;
         }
 
@@ -557,10 +525,10 @@ public class Numbering
          * 
          * @return
          *     possible object is
-         *     {@link Numbering.AbstractNum.Tmpl }
+         *     {@link CTLongHexNumber }
          *     
          */
-        public Numbering.AbstractNum.Tmpl getTmpl() {
+        public CTLongHexNumber getTmpl() {
             return tmpl;
         }
 
@@ -569,10 +537,10 @@ public class Numbering
          * 
          * @param value
          *     allowed object is
-         *     {@link Numbering.AbstractNum.Tmpl }
+         *     {@link CTLongHexNumber }
          *     
          */
-        public void setTmpl(Numbering.AbstractNum.Tmpl value) {
+        public void setTmpl(CTLongHexNumber value) {
             this.tmpl = value;
         }
 
@@ -912,87 +880,6 @@ public class Numbering
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
-         * </pre>
-         * 
-         * 
-         */
-        @XmlAccessorType(XmlAccessType.FIELD)
-        @XmlType(name = "")
-        public static class Nsid
-            implements Child
-        {
-
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-            protected String val;
-            @XmlTransient
-            private Object parent;
-
-            /**
-             * Gets the value of the val property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link String }
-             *     
-             */
-            public String getVal() {
-                return val;
-            }
-
-            /**
-             * Sets the value of the val property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link String }
-             *     
-             */
-            public void setVal(String value) {
-                this.val = value;
-            }
-
-            /**
-             * Gets the parent object in the object tree representing the unmarshalled xml document.
-             * 
-             * @return
-             *     The parent object.
-             */
-            public Object getParent() {
-                return this.parent;
-            }
-
-            public void setParent(Object parent) {
-                this.parent = parent;
-            }
-
-            /**
-             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-             * 
-             * @param parent
-             *     The parent object in the object tree.
-             * @param unmarshaller
-             *     The unmarshaller that generated the instance.
-             */
-            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-                setParent(parent);
-            }
-
-        }
-
-
-        /**
-         * <p>Java class for anonymous complex type.
-         * 
-         * <p>The following schema fragment specifies the expected content contained within this class.
-         * 
-         * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;attribute name="val" use="required">
          *         &lt;simpleType>
          *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
@@ -1095,87 +982,6 @@ public class Numbering
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "")
         public static class StyleLink
-            implements Child
-        {
-
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-            protected String val;
-            @XmlTransient
-            private Object parent;
-
-            /**
-             * Gets the value of the val property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link String }
-             *     
-             */
-            public String getVal() {
-                return val;
-            }
-
-            /**
-             * Sets the value of the val property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link String }
-             *     
-             */
-            public void setVal(String value) {
-                this.val = value;
-            }
-
-            /**
-             * Gets the parent object in the object tree representing the unmarshalled xml document.
-             * 
-             * @return
-             *     The parent object.
-             */
-            public Object getParent() {
-                return this.parent;
-            }
-
-            public void setParent(Object parent) {
-                this.parent = parent;
-            }
-
-            /**
-             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-             * 
-             * @param parent
-             *     The parent object in the object tree.
-             * @param unmarshaller
-             *     The unmarshaller that generated the instance.
-             */
-            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-                setParent(parent);
-            }
-
-        }
-
-
-        /**
-         * <p>Java class for anonymous complex type.
-         * 
-         * <p>The following schema fragment specifies the expected content contained within this class.
-         * 
-         * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
-         * </pre>
-         * 
-         * 
-         */
-        @XmlAccessorType(XmlAccessType.FIELD)
-        @XmlType(name = "")
-        public static class Tmpl
             implements Child
         {
 

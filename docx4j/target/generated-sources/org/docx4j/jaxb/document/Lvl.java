@@ -151,7 +151,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *           &lt;/restriction>
  *         &lt;/simpleType>
  *       &lt;/attribute>
- *       &lt;attribute name="tplc" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="tplc" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
  *       &lt;attribute name="tentative" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
