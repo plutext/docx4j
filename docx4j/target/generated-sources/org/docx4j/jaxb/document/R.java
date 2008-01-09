@@ -66,15 +66,15 @@ public class R implements Child
 
     protected RPr rPr;
     @XmlElementRefs({
+        @XmlElementRef(name = "sym", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Sym.class),
         @XmlElementRef(name = "noBreakHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = NoBreakHyphen.class),
-        @XmlElementRef(name = "delInstrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "instrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "delText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sym", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Sym.class),
-        @XmlElementRef(name = "softHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = SoftHyphen.class),
         @XmlElementRef(name = "t", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "br", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Br.class),
         @XmlElementRef(name = "cr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Cr.class),
-        @XmlElementRef(name = "br", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Br.class)
+        @XmlElementRef(name = "delInstrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "softHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = SoftHyphen.class)
     })
     protected List<Object> runContent;
     @XmlTransient
@@ -123,14 +123,14 @@ public class R implements Child
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link NoBreakHyphen }
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
      * {@link Sym }
-     * {@link SoftHyphen }
-     * {@link Cr }
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
      * {@link JAXBElement }{@code <}{@link Text }{@code >}
      * {@link Br }
+     * {@link Cr }
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
+     * {@link SoftHyphen }
      * 
      * 
      */

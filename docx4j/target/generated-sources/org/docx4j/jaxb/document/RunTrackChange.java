@@ -61,8 +61,8 @@ public class RunTrackChange
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class)
     })
     protected List<Object> egContentRunContent;
@@ -96,8 +96,8 @@ public class RunTrackChange
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link R }
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link R }
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * 
      * 

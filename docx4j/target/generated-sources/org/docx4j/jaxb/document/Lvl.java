@@ -26,8 +26,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -153,7 +151,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *           &lt;/restriction>
  *         &lt;/simpleType>
  *       &lt;/attribute>
- *       &lt;attribute name="tplc" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
+ *       &lt;attribute name="tplc" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="tentative" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -196,8 +194,7 @@ public class Lvl
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected BigInteger ilvl;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] tplc;
+    protected String tplc;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean tentative;
     @XmlTransient
@@ -525,7 +522,7 @@ public class Lvl
      *     {@link String }
      *     
      */
-    public byte[] getTplc() {
+    public String getTplc() {
         return tplc;
     }
 
@@ -537,8 +534,8 @@ public class Lvl
      *     {@link String }
      *     
      */
-    public void setTplc(byte[] value) {
-        this.tplc = ((byte[]) value);
+    public void setTplc(String value) {
+        this.tplc = value;
     }
 
     /**
