@@ -20,7 +20,7 @@ ValidationEventHandler{
           ValidationEventLocator  locator = ve.getLocator();
           
           //print message from validation event
-          if (log.isDebugEnabled()) {
+          if (log.isDebugEnabled() || ve.getMessage().length() < 120 ) {
         	  log.warn( printSeverity(ve) + ": " + ve.getMessage() );
           } else {
         	  /* These messages are long, for example:
@@ -49,11 +49,7 @@ ValidationEventHandler{
       // (Marshalling, Unmarshalling, Validating)
       log.info("continuing (with possible element/attribute loss)");
        return true;
-       
-      // TODO: JAXB then prints a stack trace, from
-      // com.sun.xml.bind.v2.runtime.unmarshaller.UnmarshallingContext.handleEvent
-      // How to suppress this?
-      
+             
      }
     
     public String printSeverity(ValidationEvent ve) {
