@@ -91,7 +91,7 @@ public class PPr
     protected BooleanDefaultTrue keepLines;
     protected BooleanDefaultTrue pageBreakBefore;
     protected BooleanDefaultTrue widowControl;
-    protected NumPr numPr;
+    protected PPr.NumPr numPr;
     protected BooleanDefaultTrue suppressLineNumbers;
     protected Tabs tabs;
     protected BooleanDefaultTrue suppressAutoHyphens;
@@ -241,10 +241,10 @@ public class PPr
      * 
      * @return
      *     possible object is
-     *     {@link NumPr }
+     *     {@link PPr.NumPr }
      *     
      */
-    public NumPr getNumPr() {
+    public PPr.NumPr getNumPr() {
         return numPr;
     }
 
@@ -253,10 +253,10 @@ public class PPr
      * 
      * @param value
      *     allowed object is
-     *     {@link NumPr }
+     *     {@link PPr.NumPr }
      *     
      */
-    public void setNumPr(NumPr value) {
+    public void setNumPr(PPr.NumPr value) {
         this.numPr = value;
     }
 
@@ -788,6 +788,315 @@ public class PPr
      */
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         setParent(parent);
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;element name="ilvl" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="val" use="required">
+     *                   &lt;simpleType>
+     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+     *                     &lt;/restriction>
+     *                   &lt;/simpleType>
+     *                 &lt;/attribute>
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *         &lt;element name="numId" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="val" use="required">
+     *                   &lt;simpleType>
+     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+     *                     &lt;/restriction>
+     *                   &lt;/simpleType>
+     *                 &lt;/attribute>
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *       &lt;/sequence>
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "ilvl",
+        "numId"
+    })
+    public static class NumPr
+        implements Child
+    {
+
+        protected PPr.NumPr.Ilvl ilvl;
+        protected PPr.NumPr.NumId numId;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the ilvl property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link PPr.NumPr.Ilvl }
+         *     
+         */
+        public PPr.NumPr.Ilvl getIlvl() {
+            return ilvl;
+        }
+
+        /**
+         * Sets the value of the ilvl property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link PPr.NumPr.Ilvl }
+         *     
+         */
+        public void setIlvl(PPr.NumPr.Ilvl value) {
+            this.ilvl = value;
+        }
+
+        /**
+         * Gets the value of the numId property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link PPr.NumPr.NumId }
+         *     
+         */
+        public PPr.NumPr.NumId getNumId() {
+            return numId;
+        }
+
+        /**
+         * Sets the value of the numId property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link PPr.NumPr.NumId }
+         *     
+         */
+        public void setNumId(PPr.NumPr.NumId value) {
+            this.numId = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="val" use="required">
+         *         &lt;simpleType>
+         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+         *           &lt;/restriction>
+         *         &lt;/simpleType>
+         *       &lt;/attribute>
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Ilvl
+            implements Child
+        {
+
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            protected BigInteger val;
+            @XmlTransient
+            private Object parent;
+
+            /**
+             * Gets the value of the val property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link BigInteger }
+             *     
+             */
+            public BigInteger getVal() {
+                return val;
+            }
+
+            /**
+             * Sets the value of the val property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link BigInteger }
+             *     
+             */
+            public void setVal(BigInteger value) {
+                this.val = value;
+            }
+
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="val" use="required">
+         *         &lt;simpleType>
+         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+         *           &lt;/restriction>
+         *         &lt;/simpleType>
+         *       &lt;/attribute>
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class NumId
+            implements Child
+        {
+
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            protected BigInteger val;
+            @XmlTransient
+            private Object parent;
+
+            /**
+             * Gets the value of the val property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link BigInteger }
+             *     
+             */
+            public BigInteger getVal() {
+                return val;
+            }
+
+            /**
+             * Sets the value of the val property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link BigInteger }
+             *     
+             */
+            public void setVal(BigInteger value) {
+                this.val = value;
+            }
+
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
+        }
+
     }
 
 

@@ -19,6 +19,7 @@
 
 package org.docx4j.jaxb.document;
 
+import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,15 +30,15 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_LongHexNumber complex type.
+ * <p>Java class for CT_DecimalNumber complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_LongHexNumber">
+ * &lt;complexType name="CT_DecimalNumber">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
+ *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -46,13 +47,13 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_LongHexNumber")
-public class CTLongHexNumber
+@XmlType(name = "CT_DecimalNumber")
+public class CTDecimalNumber
     implements Child
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    protected String val;
+    protected BigInteger val;
     @XmlTransient
     private Object parent;
 
@@ -61,10 +62,10 @@ public class CTLongHexNumber
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link BigInteger }
      *     
      */
-    public String getVal() {
+    public BigInteger getVal() {
         return val;
     }
 
@@ -73,10 +74,10 @@ public class CTLongHexNumber
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link BigInteger }
      *     
      */
-    public void setVal(String value) {
+    public void setVal(BigInteger value) {
         this.val = value;
     }
 
