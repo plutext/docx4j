@@ -127,7 +127,11 @@ public abstract class JaxbXmlPart extends Part {
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
+			System.out.println("marshalling " + this.getClass().getName() + " ..." );									
+			
 			marshaller.marshal(jaxbElement, os);
+			
+			System.out.println(this.getClass().getName() + " marshalled \n\n" );									
 
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
