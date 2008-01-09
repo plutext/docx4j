@@ -73,22 +73,27 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
- *                           &lt;attribute name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                           &lt;attribute name="name" use="required">
+ *                             &lt;simpleType>
+ *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *                               &lt;/restriction>
+ *                             &lt;/simpleType>
+ *                           &lt;/attribute>
+ *                           &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *                           &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
- *                           &lt;attribute name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
- *                           &lt;attribute name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
- *                           &lt;attribute name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                           &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                           &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                           &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
  *                   &lt;/element>
  *                 &lt;/sequence>
- *                 &lt;attribute name="defLockedState" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                 &lt;attribute name="defLockedState" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *                 &lt;attribute name="defUIPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
- *                 &lt;attribute name="defSemiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
- *                 &lt;attribute name="defUnhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
- *                 &lt;attribute name="defQFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                 &lt;attribute name="defSemiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                 &lt;attribute name="defUnhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                 &lt;attribute name="defQFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *                 &lt;attribute name="count" type="{http://www.w3.org/2001/XMLSchema}integer" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
@@ -158,9 +163,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;/restriction>
  *                   &lt;/simpleType>
  *                 &lt;/attribute>
- *                 &lt;attribute name="styleId" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
- *                 &lt;attribute name="default" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
- *                 &lt;attribute name="customStyle" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+ *                 &lt;attribute name="styleId">
+ *                   &lt;simpleType>
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *                     &lt;/restriction>
+ *                   &lt;/simpleType>
+ *                 &lt;/attribute>
+ *                 &lt;attribute name="default" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                 &lt;attribute name="customStyle" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -334,22 +344,27 @@ public class Styles
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
-     *                 &lt;attribute name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *                 &lt;attribute name="name" use="required">
+     *                   &lt;simpleType>
+     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+     *                     &lt;/restriction>
+     *                   &lt;/simpleType>
+     *                 &lt;/attribute>
+     *                 &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *                 &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
-     *                 &lt;attribute name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
-     *                 &lt;attribute name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
-     *                 &lt;attribute name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *                 &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *                 &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *                 &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
      *         &lt;/element>
      *       &lt;/sequence>
-     *       &lt;attribute name="defLockedState" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *       &lt;attribute name="defLockedState" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *       &lt;attribute name="defUIPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
-     *       &lt;attribute name="defSemiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
-     *       &lt;attribute name="defUnhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
-     *       &lt;attribute name="defQFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *       &lt;attribute name="defSemiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *       &lt;attribute name="defUnhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *       &lt;attribute name="defQFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *       &lt;attribute name="count" type="{http://www.w3.org/2001/XMLSchema}integer" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
@@ -368,15 +383,15 @@ public class Styles
 
         protected List<Styles.LatentStyles.LsdException> lsdException;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String defLockedState;
+        protected Boolean defLockedState;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger defUIPriority;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String defSemiHidden;
+        protected Boolean defSemiHidden;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String defUnhideWhenUsed;
+        protected Boolean defUnhideWhenUsed;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String defQFormat;
+        protected Boolean defQFormat;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected BigInteger count;
         @XmlTransient
@@ -416,11 +431,15 @@ public class Styles
          * 
          * @return
          *     possible object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public String getDefLockedState() {
-            return defLockedState;
+        public boolean isDefLockedState() {
+            if (defLockedState == null) {
+                return true;
+            } else {
+                return defLockedState;
+            }
         }
 
         /**
@@ -428,10 +447,10 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public void setDefLockedState(String value) {
+        public void setDefLockedState(Boolean value) {
             this.defLockedState = value;
         }
 
@@ -464,11 +483,15 @@ public class Styles
          * 
          * @return
          *     possible object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public String getDefSemiHidden() {
-            return defSemiHidden;
+        public boolean isDefSemiHidden() {
+            if (defSemiHidden == null) {
+                return true;
+            } else {
+                return defSemiHidden;
+            }
         }
 
         /**
@@ -476,10 +499,10 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public void setDefSemiHidden(String value) {
+        public void setDefSemiHidden(Boolean value) {
             this.defSemiHidden = value;
         }
 
@@ -488,11 +511,15 @@ public class Styles
          * 
          * @return
          *     possible object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public String getDefUnhideWhenUsed() {
-            return defUnhideWhenUsed;
+        public boolean isDefUnhideWhenUsed() {
+            if (defUnhideWhenUsed == null) {
+                return true;
+            } else {
+                return defUnhideWhenUsed;
+            }
         }
 
         /**
@@ -500,10 +527,10 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public void setDefUnhideWhenUsed(String value) {
+        public void setDefUnhideWhenUsed(Boolean value) {
             this.defUnhideWhenUsed = value;
         }
 
@@ -512,11 +539,15 @@ public class Styles
          * 
          * @return
          *     possible object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public String getDefQFormat() {
-            return defQFormat;
+        public boolean isDefQFormat() {
+            if (defQFormat == null) {
+                return true;
+            } else {
+                return defQFormat;
+            }
         }
 
         /**
@@ -524,10 +555,10 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public void setDefQFormat(String value) {
+        public void setDefQFormat(Boolean value) {
             this.defQFormat = value;
         }
 
@@ -591,12 +622,17 @@ public class Styles
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
-         *       &lt;attribute name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+         *       &lt;attribute name="name" use="required">
+         *         &lt;simpleType>
+         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+         *           &lt;/restriction>
+         *         &lt;/simpleType>
+         *       &lt;/attribute>
+         *       &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
          *       &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
-         *       &lt;attribute name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
-         *       &lt;attribute name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
-         *       &lt;attribute name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+         *       &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+         *       &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+         *       &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -613,15 +649,15 @@ public class Styles
             @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
             protected String name;
             @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected String locked;
+            protected Boolean locked;
             @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected BigInteger uiPriority;
             @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected String semiHidden;
+            protected Boolean semiHidden;
             @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected String unhideWhenUsed;
+            protected Boolean unhideWhenUsed;
             @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected String qFormat;
+            protected Boolean qFormat;
             @XmlTransient
             private Object parent;
 
@@ -654,11 +690,15 @@ public class Styles
              * 
              * @return
              *     possible object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public String getLocked() {
-                return locked;
+            public boolean isLocked() {
+                if (locked == null) {
+                    return true;
+                } else {
+                    return locked;
+                }
             }
 
             /**
@@ -666,10 +706,10 @@ public class Styles
              * 
              * @param value
              *     allowed object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public void setLocked(String value) {
+            public void setLocked(Boolean value) {
                 this.locked = value;
             }
 
@@ -702,11 +742,15 @@ public class Styles
              * 
              * @return
              *     possible object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public String getSemiHidden() {
-                return semiHidden;
+            public boolean isSemiHidden() {
+                if (semiHidden == null) {
+                    return true;
+                } else {
+                    return semiHidden;
+                }
             }
 
             /**
@@ -714,10 +758,10 @@ public class Styles
              * 
              * @param value
              *     allowed object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public void setSemiHidden(String value) {
+            public void setSemiHidden(Boolean value) {
                 this.semiHidden = value;
             }
 
@@ -726,11 +770,15 @@ public class Styles
              * 
              * @return
              *     possible object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public String getUnhideWhenUsed() {
-                return unhideWhenUsed;
+            public boolean isUnhideWhenUsed() {
+                if (unhideWhenUsed == null) {
+                    return true;
+                } else {
+                    return unhideWhenUsed;
+                }
             }
 
             /**
@@ -738,10 +786,10 @@ public class Styles
              * 
              * @param value
              *     allowed object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public void setUnhideWhenUsed(String value) {
+            public void setUnhideWhenUsed(Boolean value) {
                 this.unhideWhenUsed = value;
             }
 
@@ -750,11 +798,15 @@ public class Styles
              * 
              * @return
              *     possible object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public String getQFormat() {
-                return qFormat;
+            public boolean isQFormat() {
+                if (qFormat == null) {
+                    return true;
+                } else {
+                    return qFormat;
+                }
             }
 
             /**
@@ -762,10 +814,10 @@ public class Styles
              * 
              * @param value
              *     allowed object is
-             *     {@link String }
+             *     {@link Boolean }
              *     
              */
-            public void setQFormat(String value) {
+            public void setQFormat(Boolean value) {
                 this.qFormat = value;
             }
 
@@ -1037,9 +1089,14 @@ public class Styles
      *           &lt;/restriction>
      *         &lt;/simpleType>
      *       &lt;/attribute>
-     *       &lt;attribute name="styleId" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
-     *       &lt;attribute name="default" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
-     *       &lt;attribute name="customStyle" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_OnOff" />
+     *       &lt;attribute name="styleId">
+     *         &lt;simpleType>
+     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+     *           &lt;/restriction>
+     *         &lt;/simpleType>
+     *       &lt;/attribute>
+     *       &lt;attribute name="default" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *       &lt;attribute name="customStyle" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -1075,9 +1132,9 @@ public class Styles
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String styleId;
         @XmlAttribute(name = "default", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String _default;
+        protected Boolean _default;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String customStyle;
+        protected Boolean customStyle;
         @XmlTransient
         private Object parent;
 
@@ -1328,11 +1385,15 @@ public class Styles
          * 
          * @return
          *     possible object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public String getDefault() {
-            return _default;
+        public boolean isDefault() {
+            if (_default == null) {
+                return true;
+            } else {
+                return _default;
+            }
         }
 
         /**
@@ -1340,10 +1401,10 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public void setDefault(String value) {
+        public void setDefault(Boolean value) {
             this._default = value;
         }
 
@@ -1352,11 +1413,15 @@ public class Styles
          * 
          * @return
          *     possible object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public String getCustomStyle() {
-            return customStyle;
+        public boolean isCustomStyle() {
+            if (customStyle == null) {
+                return true;
+            } else {
+                return customStyle;
+            }
         }
 
         /**
@@ -1364,10 +1429,10 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public void setCustomStyle(String value) {
+        public void setCustomStyle(Boolean value) {
             this.customStyle = value;
         }
 
