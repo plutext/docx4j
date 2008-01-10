@@ -43,7 +43,7 @@ import org.apache.jackrabbit.core.TransientRepository;  // Testing only
 
 import org.apache.log4j.Logger;
 
-import org.docx4j.jaxbcontexts.DocumentContext;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

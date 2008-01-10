@@ -35,7 +35,7 @@ import java.util.Iterator;
 import javax.jcr.Node;
 import javax.jcr.Session;
 
-import org.docx4j.jaxbcontexts.DocumentContext;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
@@ -377,7 +377,7 @@ public class LoadFromZipFile extends Load {
 
 				if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(DocumentContext.jc);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {

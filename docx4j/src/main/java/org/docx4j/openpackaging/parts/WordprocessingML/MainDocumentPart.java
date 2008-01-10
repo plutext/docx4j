@@ -78,12 +78,13 @@ public class MainDocumentPart extends DocumentPart  {
 		try {
 		    		    
 			Unmarshaller u = jc.createUnmarshaller();
-			
-			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);			
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 			
 			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );
 			
-			jaxbElement = (org.docx4j.jaxb.document.Document)root.getValue();
+			jaxbElement = (org.docx4j.wml.Document)root.getValue();
 			
 			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 

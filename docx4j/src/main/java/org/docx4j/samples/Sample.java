@@ -28,7 +28,7 @@ import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.jaxb.document.Body;
+import org.docx4j.wml.Body;
 
 
 public class Sample {
@@ -39,7 +39,7 @@ public class Sample {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/jharrop/tmp/simple.docx";
-		String inputfilepath = "/home/jharrop/tmp/Jo-Temp1.docx";
+		String inputfilepath = "/home/jharrop/tmp/numbering.docx";
 		String outputfilepath = "/home/jharrop/tmp/simple-out.docx";
 		
 		
@@ -57,39 +57,38 @@ public class Sample {
 		System.out.println( "====== \n\n " );	
 		
 //		org.docx4j.jaxb.document.Document wmlDocumentEl = documentPart.getDocumentObj();
-		org.docx4j.jaxb.document.Document wmlDocumentEl = (org.docx4j.jaxb.document.Document)documentPart.getJaxbElement();
+		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
 		List <Object> bodyChildren = body.getBlockLevelElements();
 		
 		walkJAXBElements(bodyChildren);
 			
-/*		
 //		// Change something
-		org.docx4j.jaxb.document.P p = (org.docx4j.jaxb.document.P)((JAXBElement)bodyChildren.get(2)).getValue();
+		org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)bodyChildren.get(2)).getValue();
 		
 		//walkList(p.getParagraphContent());
 		
-		org.docx4j.jaxb.document.PPr pPr = p.getPPr();
+		org.docx4j.wml.PPr pPr = p.getPPr();
 		
 		if (pPr!=null) {
 			System.out.println( "Style: " + pPr.getPStyle().getVal() );
 		}		
 		
-		org.docx4j.jaxb.document.ObjectFactory factory = new org.docx4j.jaxb.document.ObjectFactory();
-		org.docx4j.jaxb.document.R  run = factory.createR();
-		org.docx4j.jaxb.document.Text  t = factory.createText();
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		org.docx4j.wml.R  run = factory.createR();
+		org.docx4j.wml.Text  t = factory.createText();
 				
 		
 		t.setValue("SOMETHING NEW, with added JAXB convenience!");
 		
 		run.getRunContent().add(t);		
 		
-		org.docx4j.jaxb.document.RPr  runProps = factory.createRPr();
+		org.docx4j.wml.RPr  runProps = factory.createRPr();
 		
 		run.setRPr( runProps); 
 		
-		org.docx4j.jaxb.document.BooleanDefaultTrue val = factory.createBooleanDefaultTrue();
+		org.docx4j.wml.BooleanDefaultTrue val = factory.createBooleanDefaultTrue();
 		val.setVal(Boolean.valueOf(true));
 		runProps.setB( val );
 		
@@ -104,7 +103,6 @@ public class Sample {
 		// Save it
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(outputfilepath);
-*/			
 		
 	}
 	
@@ -112,9 +110,9 @@ public class Sample {
 	
 		for (Object o : bodyChildren ) {
 						
-			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.jaxb.document.P") ) {
+			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
 				System.out.println( "Paragraph object: ");
-				org.docx4j.jaxb.document.P p = (org.docx4j.jaxb.document.P)((JAXBElement)o).getValue();
+				org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
 				
 //				if (p.getPPr()!=null) {
 //					System.out.println( "Properties...");					
@@ -140,15 +138,15 @@ public class Sample {
 				System.out.println("      " +  ((JAXBElement)o).getDeclaredType().getName());
 				
 				// TODO - unmarshall directly to Text.
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.jaxb.document.Text") ) {
-					org.docx4j.jaxb.document.Text t = (org.docx4j.jaxb.document.Text)((JAXBElement)o).getValue();
+				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
+					org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o).getValue();
 					System.out.println("      " +  t.getValue() );					
 				}
 				
 			} else if ( o instanceof org.apache.xerces.dom.ElementNSImpl) {
 				System.out.println("      " +  ((org.apache.xerces.dom.ElementNSImpl)o).getNodeName() );					
-			} else if ( o instanceof org.docx4j.jaxb.document.R) {
-				org.docx4j.jaxb.document.R  run = (org.docx4j.jaxb.document.R)o;
+			} else if ( o instanceof org.docx4j.wml.R) {
+				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
 				if (run.getRPr()!=null) {
 					System.out.println("      " +   "Properties...");
 					if (run.getRPr().getB()!=null) {

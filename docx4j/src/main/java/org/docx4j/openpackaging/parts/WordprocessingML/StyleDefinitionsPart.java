@@ -68,7 +68,10 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 		    		    
 			Unmarshaller u = jc.createUnmarshaller();
 			
-			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			System.out.println("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
 			jaxbElement = u.unmarshal( is );
 			

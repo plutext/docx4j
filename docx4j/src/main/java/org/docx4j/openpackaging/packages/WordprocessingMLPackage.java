@@ -62,12 +62,7 @@ public class WordprocessingMLPackage extends Package {
 	 * word/document.xml
 	 */
 	
-	
-	// 20070812 - nb although io.LoadFromJCR will 
-	// detect a WordprocessingMLPackage and instantiate
-	// this class, at present this class doesn't 
-	// do anything that Package doesn't do!
-	
+		
 	
 	// Main document
 	protected MainDocumentPart mainDoc;
@@ -77,115 +72,6 @@ public class WordprocessingMLPackage extends Package {
 	
 	public WordprocessingMLPackage() {
 		super();
-		try {	
-			
-			//for (PackagePart part : p.getParts() ) {
-			//	log.debug(part.getPartName() + " --- " + part.getContentType());
-			//}
-			
-			// Have to do this for side effect or org.openxml4j.opc.Package.getRelationshipsByType
-			// will later give a NullPointerException
-//			PackageRelationshipCollection packageRelationshipCollection = 
-//				p.getRelationships();
-//	
-//			// CORE_DOCUMENT
-//			PackageRelationship pRelationship = p
-//					.getRelationshipsByType(
-//							PackageRelationshipTypes.CORE_DOCUMENT )
-//					.getRelationship(0);
-//			// Get the Core Document part from the relationship
-//			PackagePart mainDocPart = p
-//					.getPart(pRelationship);
-//			InputStream inStream = mainDocPart.getInputStream();
-//			mainDoc = new MainDocumentPart();
-			
-			// can't just do 
-			//	MainDocumentPart mainDoc = (MainDocumentPart)p.getPart(pRelationship);
-			//	InputStream inStream = mainDoc.getInputStream();
-			// since this is casting ZipPackagePart to MainDocumentPart
-			// Should I make MainDocumentPart extend ZipPackagePart? 
-			
-//			mainDoc.load(inStream);
-//			inStream.close();
-
-			// STYLE_DOCUMENT
-/*
-  			PackageRelationshipCollection mainDocRelationshipCollection = 
-				new PackageRelationshipCollection(mainDocPart);
-
-			// Add those to the relationships known to the package
-			for (Iterator i = mainDocRelationshipCollection.iterator(); i.hasNext(); ) {
-				// add the relation to the other PCR
-				PackageRelationship rel = (PackageRelationship)i.next();
-				log.debugprintln("Adding " + (rel.getTargetURI()).toString() + rel.getTargetMode() 
-						+ rel.getRelationshipType() + rel.getId());
-				p.addRelationship(new PackagePartName(rel.getTargetURI(), true), rel.getTargetMode(), 
-						rel.getRelationshipType());
-			}
-*/
-			
-/*			//getPart gives NullPointerException
-			pRelationship = p
-					.getRelationshipsByType(
-							PackageRelationshipTypes.STYLE_PART )
-					.getRelationship(0);
-			PackagePart pPart = p
-					.getPart(pRelationship);
-*/		 
-//			PackagePart pPart = p.getPart(new PackagePartName("/word/styles.xml", true));
-//			inStream = pPart.getInputStream();
-//			StyleDefinitionsPart stylePart = 
-//				new StyleDefinitionsPart(p, pPart.getPartName());
-//			stylePart.load(inStream);
-//			//mainDoc.setStyleDefinitionsPart( stylePart );
-//			inStream.close();			
-			
-			/** Then we want to do something like:
-			 * 
-			 *  coreDoc.setNumberingDefinitionsPart ( xxx );
-			 * 
-			 */
-			
-			
-			// Add a paragraph to the end of the document
-			
-			
-			
-			/* Now save the document.
-			 * 
-			 *  How to do this?
-			 *  
-			 *  We simply use the methods in the existing Parts.
-			 *  
-			 *  Alternative approaches which rely on my Parts extending
-			 *  the existing Parts.
-			 *  
-			 *  Approach 1:
-			 *  -----------
-			 *  // remove the original CORE_DOCUMENT
-			 *  removePart(PackagePartName partName)
-			 *  // add our new one in its place
-			 *  addPackagePart(PackagePart part)
-			 *  // (Then what about its rel listing?)
-			 *  
-			 *  Approach 2:
-			 *  -----------
-			 *  Keep the original Part (ie mainDocPart), but replace its contents
-			 *  
-			*/
-			
-			//p.setPackageAccess(PackageAccess.READ_WRITE); // had to create this if not opened it READ_WRITE in the first place!
-
-			// Save the XML structure into the part
-//			mainDoc.save(mainDocPart.getOutputStream());
-			
-			// The document will save using:
-			//p.save(new java.io.File("/home/jharrop/text.docx"));
-			
-			
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}
 	}
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
@@ -219,21 +105,21 @@ public class WordprocessingMLPackage extends Package {
 		
 
 		// Create main document part content
-		org.docx4j.jaxb.document.ObjectFactory factory = new org.docx4j.jaxb.document.ObjectFactory();
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
 
-		org.docx4j.jaxb.document.Text  t = factory.createText();
+		org.docx4j.wml.Text  t = factory.createText();
 		t.setValue("Hello world, from docx4j");
 
-		org.docx4j.jaxb.document.R  run = factory.createR();
+		org.docx4j.wml.R  run = factory.createR();
 		run.getRunContent().add(t);		
 		
-		org.docx4j.jaxb.document.P  para = factory.createP();
+		org.docx4j.wml.P  para = factory.createP();
 		para.getParagraphContent().add(run);
 		
-		org.docx4j.jaxb.document.Body  body = factory.createBody();
+		org.docx4j.wml.Body  body = factory.createBody();
 		body.getBlockLevelElements().add(para);
 		
-		org.docx4j.jaxb.document.Document wmlDocumentEl = factory.createDocument();
+		org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
 		wmlDocumentEl.setBody(body);
 		
 
