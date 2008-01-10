@@ -51,7 +51,7 @@ public class DemoCore {
 	/**
 	 * Demo logger
 	 */
-	private static Logger logger = Logger.getLogger("org.openxml4j.demo");
+	private static Logger logger = Logger.getLogger(DemoCore.class);
 
 	static {
 		pathRootProject = System.getProperty("user.dir") + File.separator;
