@@ -35,14 +35,14 @@ import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
-public class DocumentContext {
+public class Context {
 	
 	public static JAXBContext jc;
 	
 	static {
 		
 		try {		
-			jc = JAXBContext.newInstance("org.docx4j.jaxb.document");
+			jc = JAXBContext.newInstance("org.docx4j.wml");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}				
