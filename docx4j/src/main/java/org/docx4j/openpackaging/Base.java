@@ -1,19 +1,19 @@
 /*
  *  Copyright 2007, Plutext Pty Ltd.
  *   
- *  This file is part of Docx4J.
+ *  This file is part of docx4j.
 
-    Docx4J is free software: you can redistribute it and/or modify
-    it under the terms of version 3 of the GNU General Public License 
+    docx4j is free software: you can use it, redistribute it and/or modify
+    it under the terms of version 3 of the GNU Affero General Public License 
     as published by the Free Software Foundation.
 
-    Docx4J is distributed in the hope that it will be useful,
+    docx4j is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+    GNU Affero General Public License for more details.
 
-    You should have received a copy of the GNU General Public License   
-    along with Docx4J.  If not, see <http://www.gnu.org/licenses/>.
+    You should have received a copy of the GNU Affero General Public License   
+    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
     
  */
 
@@ -125,23 +125,23 @@ public abstract class Base {
 	 */ 
 	public abstract boolean setPartShortcut(Part part, String relationshipType);
 
-	/**
-	 * Flag if a modification has been made.  
-	 * The semantics are as follows:
-	 * - on a Part: the Part, its relationships part, or a target part
-	 *   has been modified
-	 * - on the Package: its relationships part, or a target part
-	 *   has been modified. 
-	 */
-	protected boolean isDirty = false;
-	
-	public boolean isDirty() {
-		return isDirty;
-	}
-
-	public void setDirty(boolean isDirty) {
-		this.isDirty = isDirty;
-	}
+//	/**
+//	 * Flag if a modification has been made.  
+//	 * The semantics are as follows:
+//	 * - on a Part: the Part, its relationships part, or a target part
+//	 *   has been modified
+//	 * - on the Package: its relationships part, or a target part
+//	 *   has been modified. 
+//	 */
+//	protected boolean isDirty = false;
+//	
+//	public boolean isDirty() {
+//		return isDirty;
+//	}
+//
+//	public void setDirty(boolean isDirty) {
+//		this.isDirty = isDirty;
+//	}
 	
 
 }
