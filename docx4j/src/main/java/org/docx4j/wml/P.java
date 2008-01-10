@@ -176,7 +176,7 @@ public class P
 				for (Object o2 : runContent ) {					
 					if ( o2 instanceof javax.xml.bind.JAXBElement) {
 						// TODO - unmarshall directly to Text.
-						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.jaxb.document.Text") ) {
+						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
 //					    	System.out.println("Found Text");
 							org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o2).getValue();
 							result.append( t.getValue() );					
