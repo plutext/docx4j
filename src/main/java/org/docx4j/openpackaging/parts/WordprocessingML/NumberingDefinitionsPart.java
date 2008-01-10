@@ -65,17 +65,17 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 		    		    
 			Unmarshaller u = jc.createUnmarshaller();
 			
-			javax.xml.validation.SchemaFactory sf = 
-				javax.xml.validation.SchemaFactory.newInstance(
-				      javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+//			javax.xml.validation.SchemaFactory sf = 
+//				javax.xml.validation.SchemaFactory.newInstance(
+//				      javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
+//
+//			javax.xml.validation.Schema schema = sf.newSchema(new java.io.File("/home/jharrop/workspace200711/docx4j-001/src/main/resources/wml-local-subset.xsd"));			
 
-			javax.xml.validation.Schema schema = sf.newSchema(new java.io.File("/home/jharrop/workspace200711/docx4j-001/src/main/resources/wml-local-subset.xsd"));			
-
-			u.setSchema(schema);
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			
 			//u.setValidating( false );
 			
-			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 						
 			jaxbElement = u.unmarshal( is );
 			

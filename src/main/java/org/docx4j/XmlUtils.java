@@ -33,7 +33,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import javax.xml.transform.stream.StreamSource;
 
-import org.docx4j.jaxbcontexts.DocumentContext;
+import org.docx4j.jaxb.Context;
 
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -66,7 +66,7 @@ public class XmlUtils {
 	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document */ 
 	public static Object unmarshalDom4jDoc(org.dom4j.Document doc) {
 				
-		JAXBContext jc = DocumentContext.jc;
+		JAXBContext jc = Context.jc;
 			
 		Object o = null;
 		try {				
@@ -76,7 +76,7 @@ public class XmlUtils {
 //			JAXBContext jc = JAXBContext
 //					.newInstance("org.docx4j.jaxb.document");
 			Unmarshaller u = jc.createUnmarshaller();
-			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			o = u.unmarshal( w3cDoc );
 
@@ -101,14 +101,14 @@ public class XmlUtils {
 		//Object o = null;
 		try {	
 
-			JAXBContext jc = DocumentContext.jc;
+			JAXBContext jc = Context.jc;
 
 			Unmarshaller u = jc.createUnmarshaller();
 						
 			//u.setSchema(null);
 			//u.setValidating( false );
 			
-			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 //			// Convert dom4j el to W3C
 //			org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
@@ -129,11 +129,11 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 			
-			JAXBContext jc = DocumentContext.jc;
+			JAXBContext jc = Context.jc;
 
 			Unmarshaller u = jc.createUnmarshaller();
 						
-			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			o = u.unmarshal( new javax.xml.transform.stream.StreamSource(
 					new java.io.StringReader(str)) );
@@ -150,7 +150,7 @@ public class XmlUtils {
 	public static org.dom4j.Document marshaltoDom4jDocument(Object o) {
 		// TODO - refactor this.
 		try {
-			JAXBContext jc = DocumentContext.jc;
+			JAXBContext jc = Context.jc;
 
 			Marshaller marshaller=jc.createMarshaller();
 			
@@ -188,7 +188,7 @@ public class XmlUtils {
 	/** Marshal to a String */ 
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
 
-		JAXBContext jc = DocumentContext.jc;
+		JAXBContext jc = Context.jc;
 				
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
 		 * 
@@ -250,7 +250,7 @@ public class XmlUtils {
 	/** Clone this JAXB object */ 
 	public static Object deepCopy(Object in) {
 
-		JAXBContext jc = DocumentContext.jc;
+		JAXBContext jc = Context.jc;
 		
 		Object o = null;
 		try {				
@@ -258,7 +258,7 @@ public class XmlUtils {
 			Unmarshaller u = jc.createUnmarshaller();
 			
 			// Temp
-			u.setEventHandler(new org.docx4j.JaxbValidationEventHandler());
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			o = u.unmarshal( new javax.xml.bind.util.JAXBSource(jc, in) );
 
