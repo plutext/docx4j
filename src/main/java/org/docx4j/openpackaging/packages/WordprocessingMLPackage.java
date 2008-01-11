@@ -38,6 +38,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 
 
 
@@ -107,8 +108,20 @@ public class WordprocessingMLPackage extends Package {
 	public static WordprocessingMLPackage load(java.io.File docxFile) throws Docx4JException {
 		
 		LoadFromZipFile loader = new LoadFromZipFile();
-		return (WordprocessingMLPackage)loader.get(docxFile);
+		return (WordprocessingMLPackage)loader.get(docxFile);		
+	}
+
+	/**
+	 * Convenience method to save a WordprocessingMLPackage
+	 * to a File.
+     *
+	 * @param docxFile
+	 *            The docx file 
+	 */	
+	public void save(java.io.File docxFile) throws Docx4JException {
 		
+		SaveToZipFile saver = new SaveToZipFile(this); 
+		saver.save(docxFile);
 	}
 	
 	
