@@ -43,12 +43,11 @@ public class CreateWordprocessingMLDocument {
 //				+ "sample_output_zip.docx" );
 		
 		System.out.println( "Creating package..");
-		WordprocessingMLPackage p = WordprocessingMLPackage.createTestPackage();
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createTestPackage();
 		System.out.println( ".. done!");
 		
 		// Now save it 
-		SaveToZipFile saver = new SaveToZipFile(p); 		
-		saver.save("/home/jharrop/tmp/created-rels2.docx");		
+		wordMLPackage.save(new java.io.File("/home/jharrop/tmp/created-rels2.docx") );
 				
 	}
 	

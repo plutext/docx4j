@@ -88,6 +88,19 @@ public class SaveToZipFile {
 			return false;
 		}
 	}
+
+	/* Save a Package as a Zip file in the file system */
+	public boolean save(java.io.File docxFile) throws Docx4JException  {
+		
+		log.info("Saving to" +  docxFile );		
+		try {
+			return save(new FileOutputStream(docxFile));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
 	
 	/* Save a Package as a Zip file in the outputstream provided */
 	public boolean save(OutputStream realOS) throws Docx4JException  {		
