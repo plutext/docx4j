@@ -124,15 +124,11 @@ public class WordprocessingMLPackage extends Package {
 		
 
 		// Create main document part
-		Part corePart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart(new PartName("/word/document.xml"));
+		Part corePart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart();
 		
 		// Put the content in the part
-//		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setDocumentObj(wmlDocumentEl);
 		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setJaxbElement(wmlDocumentEl);
-		
-//		corePart.setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_DOCUMENT));
-//		corePart.setRelationshipType(Namespaces.DOCUMENT);
-		
+				
 		// Make getMainDocumentPart() work
 		p.setPartShortcut(corePart, corePart.getRelationshipType());
 		
@@ -144,11 +140,30 @@ public class WordprocessingMLPackage extends Package {
 		
 		// Add it to the package
 		p.setRelationships(rp);
+			// TODO - this should happen automatically?
 				
 		// Add the main document part to the package relationships
 		// and to [Content_Types].xml
 		rp.addPart(corePart, p.getContentTypeManager());
 		
+		
+		// Create a styles part
+		Part stylesPart = new org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart();
+		try {
+			((org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart) stylesPart)
+					.unmarshalDefaultStyles();
+			
+			// Now we need to add it the main document part's relationships
+			RelationshipsPart docRels = new RelationshipsPart( new PartName("/word/_rels/document.xml.rels"), corePart );
+				// TODO - should construct the relationships part name from the source part name
+			corePart.setRelationships(docRels);
+			// TODO - this should happen automatically?
+			docRels.addPart(stylesPart, p.getContentTypeManager());			
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();			
+		}
 		// Return the new package
 		return p;
 
