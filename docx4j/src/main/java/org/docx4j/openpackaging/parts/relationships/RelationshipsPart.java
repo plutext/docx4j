@@ -196,7 +196,7 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	 * 
 	 * @param partName
 	 *            The part name, relative to the parent Package root.
-	 * @sourceP
+	 * @param sourceP
 	 * 			  Source part for these relationships
 	 *             
 	 * @throws InvalidFormatException
@@ -288,19 +288,18 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 		// Now add a new relationship
 		int num = size() + 1;
 		String id = "rId" + num;
-				
-		// drop leading "/' from the part name
-		PartName partName =  part.getPartName();
-		URI partNameUri=null;
-		try {
-			partNameUri = new URI(partName.toString().substring(1));
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println("Using URI " + partNameUri.toString() );
+
+		URI tobeRelativized = part.getPartName().getURI();
+		URI relativizeAgainst = sourceP.getPartName().getURI();
 		
-		Relationship rel = new Relationship(sourceP, partNameUri, 
+		log.debug("Relativising " + tobeRelativized 
+				+ " against " + relativizeAgainst);
+		
+		URI result = org.docx4j.openpackaging.URIHelper.relativizeURI(tobeRelativized, relativizeAgainst); 
+		
+		System.out.println("Result " + result); 
+		
+		Relationship rel = new Relationship(sourceP, result, 
 				TargetMode.INTERNAL, part.getRelationshipType(), id);
 		addRelationship(rel );
 		
