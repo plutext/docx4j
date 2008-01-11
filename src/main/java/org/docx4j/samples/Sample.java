@@ -39,8 +39,11 @@ public class Sample {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/jharrop/tmp/simple.docx";
-		String inputfilepath = "/home/jharrop/tmp/numbering.docx";
+		String inputfilepath = "/home/jharrop/tmp/Styles-lots.docx";
+		
+		boolean save = false;
 		String outputfilepath = "/home/jharrop/tmp/simple-out.docx";
+		
 		
 		
 		// Open a document from the file system
@@ -101,9 +104,11 @@ public class Sample {
 //		walkList(p.getParagraphContent());
 				
 		// Save it
-		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-		saver.save(outputfilepath);
 		
+		if (save) {		
+			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
+			saver.save(outputfilepath);
+		}
 	}
 	
 	static void walkJAXBElements(List <Object> bodyChildren){
