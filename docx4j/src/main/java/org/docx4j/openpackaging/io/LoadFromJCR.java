@@ -156,7 +156,8 @@ public class LoadFromJCR extends Load {
 			// 3. Get [Content_Types].xml
 	//		Once we've got this, then we can look up the content type for
 	//		each PartName, and use it in the Part constructor.
-			p.setContentTypeManager(ctm);
+
+//			p.setContentTypeManager(ctm); - 20080111 - done by ctm.createPackage();
 			unusedJCRNodes.put("[Content_Types].xml", new Boolean(false));
 			
 			// 4. Start with _rels/.rels

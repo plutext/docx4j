@@ -618,11 +618,10 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 		if ( partURI == null ) {
 			log.warn("No part in [Content_Types].xml for content type" + ContentTypes.WORDPROCESSINGML_DOCUMENT);
 			// TODO - what content type in this case?
-			return new Package();
+			return new Package(this);
 		} else {
 			log.info("Detected WordProcessingML package, at " + partURI.toString() );			
-			p = new WordprocessingMLPackage();
-			p.setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT));
+			p = new WordprocessingMLPackage(this);
 			return p;
 		}
 	}
