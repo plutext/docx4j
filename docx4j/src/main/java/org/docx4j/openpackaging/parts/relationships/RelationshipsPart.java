@@ -381,7 +381,7 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 			getPackage().getParts().remove(partName);						
 		}
 
-		this.isDirty = true;
+//		this.isDirty = true;
 	}
 
 
