@@ -224,7 +224,7 @@ public class SaveToZipFile {
 		
 		for (Iterator it = rp.iterator(); it.hasNext(); ) {
 			Relationship r = (Relationship)it.next();
-			log.info("For Relationship Id=" + r.getId() + " Source is " + r.getSource() + ", Target is " + r.getTargetURI() );
+			log.info("For Relationship Id=" + r.getId() + " Source is " + r.getSource().getPartName() + ", Target is " + r.getTargetURI() );
 			try {
 				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 
