@@ -23,6 +23,7 @@ package org.docx4j.openpackaging;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.contenttype.ContentType;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -143,5 +144,41 @@ public abstract class Base {
 //		this.isDirty = isDirty;
 //	}
 	
+	/**
+	 * Convenience method to add a part to this Part's
+	 * relationships.  The package must be set on this
+	 * part in order for this to work.
+	 * 
+	 * @param targetpart
+	 *            The part to add to this part's relationships
+	 */
+	public void addTargetPart(Part targetpart) throws InvalidFormatException {
+		
+		if ( this.getPackage()==null ) {
+						
+			throw new InvalidFormatException("Package not set");
+		}
 
+		// Create RelationshipsPart for this part if necessary
+		if (this.getRelationshipsPart() == null ) {
+			this.setRelationships(new RelationshipsPart( this ));
+			
+			// Make sure content manager knows how to handle .rels
+			getPackage().getContentTypeManager().addDefaultContentType("rels", org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
+			
+		}
+		
+		// Now add the targetpart to the relationships
+		this.getRelationshipsPart().addPart(targetpart, getPackage().getContentTypeManager());
+		
+		// Finally, set part shortcut if there is one to set
+		boolean shortcutSet = setPartShortcut(targetpart, targetpart.getRelationshipType());
+		if (shortcutSet) {
+			log.info("shortcut was set");			
+		}
+		
+	}
+
+	
+	
 }

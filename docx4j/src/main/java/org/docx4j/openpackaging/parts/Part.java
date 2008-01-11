@@ -107,6 +107,7 @@ public abstract class Part extends Base {
 	 */
 	public Part(PartName partName)
 			throws InvalidFormatException {
+		log.info("Constructing " + partName.getName() );
 		this.partName = partName;
 	}
 	
@@ -140,8 +141,8 @@ public abstract class Part extends Base {
 		this(partName);
 		this.contentType = new ContentType(contentType);
 	}
+		
 	
-
 	public Package getPackage() {
 		if (pack==null) {
 			log.error("Package field null for this Part!");

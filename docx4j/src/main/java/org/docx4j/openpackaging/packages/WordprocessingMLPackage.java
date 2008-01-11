@@ -20,6 +20,8 @@
 package org.docx4j.openpackaging.packages;
 
 
+import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -62,6 +64,7 @@ public class WordprocessingMLPackage extends Package {
 	 * word/document.xml
 	 */
 	
+	protected static Logger log = Logger.getLogger(WordprocessingMLPackage.class);
 		
 	
 	// Main document
@@ -77,12 +80,15 @@ public class WordprocessingMLPackage extends Package {
 	public boolean setPartShortcut(Part part, String relationshipType) {
 		if (relationshipType.equals(Namespaces.PROPERTIES_CORE)) {
 			docPropsCorePart = (DocPropsCorePart)part;
+			log.info("Set shortcut for docPropsCorePart");
 			return true;			
 		} else if (relationshipType.equals(Namespaces.PROPERTIES_EXTENDED)) {
 			docPropsExtendedPart = (DocPropsExtendedPart)part;
+			log.info("Set shortcut for docPropsExtendedPart");
 			return true;			
 		} else if (relationshipType.equals(Namespaces.DOCUMENT)) {
 			mainDoc = (MainDocumentPart)part;
+			log.info("Set shortcut for mainDoc");
 			return true;			
 		} else {	
 			return false;
@@ -97,13 +103,17 @@ public class WordprocessingMLPackage extends Package {
 		
 				
 		// Create a package
-		WordprocessingMLPackage p = new WordprocessingMLPackage();
+		WordprocessingMLPackage wmlPack = new WordprocessingMLPackage();
 
 		// Add a ContentTypeManager to it
 		ContentTypeManager ctm = new ContentTypeManagerImpl();
-		p.setContentTypeManager(ctm);
-		
+		wmlPack.setContentTypeManager(ctm);
+			// TODO - move this to constructor?
 
+
+		// Create main document part
+		Part wordDocumentPart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart();		
+		
 		// Create main document part content
 		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
 
@@ -121,54 +131,31 @@ public class WordprocessingMLPackage extends Package {
 		
 		org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
 		wmlDocumentEl.setBody(body);
-		
-
-		// Create main document part
-		Part corePart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart();
-		
+				
 		// Put the content in the part
-		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)corePart).setJaxbElement(wmlDocumentEl);
-				
-		// Make getMainDocumentPart() work
-		p.setPartShortcut(corePart, corePart.getRelationshipType());
-		
-		// Create the PackageRelationships part	
-		RelationshipsPart rp = new RelationshipsPart( new PartName("/_rels/.rels"), p );
-		
-		// Make sure content manager knows how to handle .rels
-		ctm.addDefaultContentType("rels", org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
-		
-		// Add it to the package
-		p.setRelationships(rp);
-			// TODO - this should happen automatically?
-				
+		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)wordDocumentPart).setJaxbElement(wmlDocumentEl);
+						
 		// Add the main document part to the package relationships
-		// and to [Content_Types].xml
-		rp.addPart(corePart, p.getContentTypeManager());
-		
-		
+		// (creating it if necessary)
+		wmlPack.addTargetPart(wordDocumentPart);
+				
 		// Create a styles part
 		Part stylesPart = new org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart();
 		try {
 			((org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart) stylesPart)
 					.unmarshalDefaultStyles();
 			
-			// Now we need to add it the main document part's relationships
-			RelationshipsPart docRels = new RelationshipsPart( new PartName("/word/_rels/document.xml.rels"), corePart );
-				// TODO - should construct the relationships part name from the source part name
-			corePart.setRelationships(docRels);
-			// TODO - this should happen automatically?
-			docRels.addPart(stylesPart, p.getContentTypeManager());			
+			// Add the styles part to the main document part relationships
+			// (creating it if necessary)
+			wordDocumentPart.addTargetPart(stylesPart); // NB - add it to main doc part, not package!			
 			
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();			
 		}
 		// Return the new package
-		return p;
-
+		return wmlPack;
 		
 	}
-
 	
 }

@@ -192,21 +192,29 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	}
 
 	/**
-	 * Constructor.  Parses the .rels XML document.
+	 * Constructor.  Creates an appropriately named .rels XML document.
 	 * 
-	 * @param partName
-	 *            The part name, relative to the parent Package root.
 	 * @param sourceP
 	 * 			  Source part for these relationships
 	 *             
 	 * @throws InvalidFormatException
 	 *             If the specified URI is not valid.
 	 */
-	public RelationshipsPart(PartName partName, Base sourceP)
+	public RelationshipsPart(Base sourceP)
 			throws InvalidFormatException {
-		super(partName);
+		
+		super(new PartName(PartName.getRelationshipsPartName(
+				sourceP.getPartName().getName() )) );
+		
 		this.sourceP = sourceP;
 		init();
+		
+		
+		sourceP.setRelationships(this);
+			// TODO - use setRelationships from here 
+			// like this in other constructors
+			// in this class.
+		
 	}
 	
 	
@@ -220,7 +228,6 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	 * @throws InvalidFormatException
 	 *             If the specified URI is not valid.
 	 */
-//	public RelationshipsPart(Base sourceP, PartName partName, Document contents)
 	public RelationshipsPart(Base sourceP, PartName partName, InputStream in)
 			throws InvalidFormatException {
 		super(partName);
@@ -297,7 +304,7 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 		
 		URI result = org.docx4j.openpackaging.URIHelper.relativizeURI(tobeRelativized, relativizeAgainst); 
 		
-		System.out.println("Result " + result); 
+		log.debug("Result " + result); 
 		
 		Relationship rel = new Relationship(sourceP, result, 
 				TargetMode.INTERNAL, part.getRelationshipType(), id);
