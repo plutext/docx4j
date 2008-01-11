@@ -29,6 +29,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.ValidationEventHandler;
 
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.dom4j.Document;
 
@@ -59,6 +60,7 @@ public abstract class JaxbXmlPart extends Part {
 	
 	public JaxbXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		setJAXBContext(Context.jc);						
 	}
 
 	public JaxbXmlPart(PartName partName, JAXBContext jc) throws InvalidFormatException {
