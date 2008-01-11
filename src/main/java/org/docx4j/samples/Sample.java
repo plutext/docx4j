@@ -48,18 +48,15 @@ public class Sample {
 		
 		// Open a document from the file system
 		// 1. Load the Package
-		LoadFromZipFile loader = new LoadFromZipFile();
-		WordprocessingMLPackage wordMLPackage = (WordprocessingMLPackage)loader.get(inputfilepath);	
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
-		// 2. Fetch the document part 
+		// 2. Fetch the document part 		
+		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();			
-		//MainDocumentPart documentPart = (MainDocumentPart)wordMLPackage.getPart( new PartName( "/word/document.xml" ) );
 		// Display its contents 
 		System.out.println( "\n\n OUTPUT " );
 		System.out.println( "====== \n\n " );	
 		
-//		org.docx4j.jaxb.document.Document wmlDocumentEl = documentPart.getDocumentObj();
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 

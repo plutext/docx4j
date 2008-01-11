@@ -35,7 +35,10 @@ import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io.LoadFromZipFile;
+
 
 
 
@@ -92,6 +95,20 @@ public class WordprocessingMLPackage extends Package {
 	public WordprocessingMLPackage(ContentTypeManager contentTypeManager) {
 		super(contentTypeManager);
 		setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT));
+	}
+	
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * from an existing File.
+     *
+	 * @param docxFile
+	 *            The docx file 
+	 */	
+	public static WordprocessingMLPackage load(java.io.File docxFile) throws Docx4JException {
+		
+		LoadFromZipFile loader = new LoadFromZipFile();
+		return (WordprocessingMLPackage)loader.get(docxFile);
+		
 	}
 	
 	
