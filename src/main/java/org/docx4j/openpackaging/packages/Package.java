@@ -80,15 +80,31 @@ public class Package extends Base {
 	
 	
 	/**
-	 * Constructor.
-	 * 
-	 * Note that Load.createPackage() returns appropriate subclass eg 
-	 * WordprocessingMLPackage.
+	 * Constructor.  Also creates a new content type manager
 	 * 
 	 */
 	public Package() {
 		try {
 			partName = new PartName("/", false);
+			
+			contentTypeManager = new ContentTypeManagerImpl();
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			// TODO: handle exception
+		}
+	}
+
+	/**
+	 * Constructor.
+	 *  
+	 * @param contentTypeManager
+	 *            The content type manager to use 
+	 */
+	public Package(ContentTypeManager contentTypeManager) {
+		try {
+			partName = new PartName("/", false);
+			
+			this.contentTypeManager = contentTypeManager;
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			// TODO: handle exception

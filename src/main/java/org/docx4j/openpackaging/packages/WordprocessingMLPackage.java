@@ -31,8 +31,10 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 
+import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 
 
@@ -73,9 +75,25 @@ public class WordprocessingMLPackage extends Package {
 	// (optional) Glossary document
 	protected GlossaryDocumentPart glossaryDoc;
 	
+	/**
+	 * Constructor.  Also creates a new content type manager
+	 * 
+	 */	
 	public WordprocessingMLPackage() {
 		super();
+		setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT));
 	}
+	/**
+	 * Constructor.
+	 *  
+	 * @param contentTypeManager
+	 *            The content type manager to use 
+	 */
+	public WordprocessingMLPackage(ContentTypeManager contentTypeManager) {
+		super(contentTypeManager);
+		setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT));
+	}
+	
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
 		if (relationshipType.equals(Namespaces.PROPERTIES_CORE)) {
@@ -104,12 +122,6 @@ public class WordprocessingMLPackage extends Package {
 				
 		// Create a package
 		WordprocessingMLPackage wmlPack = new WordprocessingMLPackage();
-
-		// Add a ContentTypeManager to it
-		ContentTypeManager ctm = new ContentTypeManagerImpl();
-		wmlPack.setContentTypeManager(ctm);
-			// TODO - move this to constructor?
-
 
 		// Create main document part
 		Part wordDocumentPart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart();		
