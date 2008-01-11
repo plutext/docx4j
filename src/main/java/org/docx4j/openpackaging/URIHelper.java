@@ -449,5 +449,68 @@ public final class URIHelper {
 		return retVal.toString();
 	}
 
+	/**
+	 * Fully relativize the source part URI against the target part URI.
+	 * 
+	 * @param sourceURI
+	 *            The source part URI.
+	 * @param targetURI
+	 *            The target part URI.
+	 * @return A fully relativize part name URI ('word/media/image1.gif',
+	 *         '/word/document.xml' => 'media/image1.gif') else
+	 *         <code>null</code>.
+	 */
+	public static URI relativizeURI(URI sourceURI, URI targetURI) {
+		StringBuffer retVal = new StringBuffer();
+		String[] segmentsSource = sourceURI.getPath().split("/");
+		String[] segmentsTarget = targetURI.getPath().split("/");
 
+		// If the source URI is empty
+		if (segmentsSource.length == 0) {
+			return null;
+		}
+
+		// If target URI is empty
+		if (segmentsTarget.length == 0) {
+			if (sourceURI.getPath().startsWith(FORWARD_SLASH_STRING)) {
+				try {
+					return new URI(sourceURI.getPath().substring(1));
+				} catch (Exception e) {
+					return null;
+				}
+			} else
+				return sourceURI;
+		}
+
+		// Relativize the source URI against the target URI.
+		for (short i = 0, j = 0; i < segmentsSource.length
+				&& j < segmentsTarget.length; ++i, ++j) {
+			if (segmentsSource[i].equalsIgnoreCase(segmentsTarget[j])) {
+				if (i < segmentsSource.length - 1) {
+					continue;
+				} else {
+					// We add the last segment whatever it happens
+					retVal.append("/");
+					retVal.append(segmentsTarget[i]);
+					break;
+				}
+			} else {
+				for (; i < segmentsSource.length; ++i) {
+					retVal.append("/");
+					retVal.append(segmentsSource[i]);
+				}
+				break;
+			}
+		}
+		try {
+			PartName retPartName = new PartName(
+					retVal.toString(), true);
+			return new URI(retPartName.getURI().getPath().substring(1));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	
+	
 }
