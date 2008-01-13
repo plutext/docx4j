@@ -269,4 +269,20 @@ public class XmlUtils {
 		
 	}
 	
+	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
+	public static org.w3c.dom.Document neww3cDomDocument() {
+		
+		try {
+			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			return dbf.newDocumentBuilder().newDocument();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}		
+		
+	}
+	
+	
 }
