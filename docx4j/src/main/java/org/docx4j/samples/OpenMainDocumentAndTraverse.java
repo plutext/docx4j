@@ -31,7 +31,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
 
 
-public class Sample {
+public class OpenMainDocumentAndTraverse {
 
 	/**
 	 * @param args

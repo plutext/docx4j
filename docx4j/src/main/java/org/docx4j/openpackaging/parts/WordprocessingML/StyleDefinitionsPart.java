@@ -117,7 +117,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 				//is = getResource("styles.xml");
 				
 				// Works in Eclipse - not absence of leading '/'
-				is = getResource("org/docx4j/openpackaging/parts/WordprocessingML/styles.xml");
+				is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/styles.xml");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -126,20 +126,5 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
     	return unmarshal( is );    	
     }
 	
-    public static java.io.InputStream getResource(String filename) throws java.io.IOException
-    {
-        // Try to load resource from jar
-        java.net.URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
-        
-        
-        if (url == null ) {
-        	System.out.println("Couldn't get resource!!");
-        }
-        
-        // Get the jar file
-//        JarURLConnection conn = (JarURLConnection) url.openConnection();
-        java.io.InputStream is = url.openConnection().getInputStream();
-        return is;
-    }
     
 }
