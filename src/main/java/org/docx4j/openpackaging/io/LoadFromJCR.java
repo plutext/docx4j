@@ -21,6 +21,7 @@ package org.docx4j.openpackaging.io;
 
 
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.apache.jackrabbit.core.TransientRepository;
 
 import org.apache.log4j.Logger;
 
+import org.docx4j.JcrNodeMapper.NodeMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -93,7 +95,8 @@ public class LoadFromJCR extends Load {
         try {
 		
     		LoadFromJCR loader = new LoadFromJCR();
-    		loader.get(jcrSession, nodePath);	
+    		org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper nodeMapper = new org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper(); 
+    		loader.get(jcrSession, nodeMapper, nodePath);	
         	
         } finally {
         	jcrSession.logout();
@@ -105,6 +108,8 @@ public class LoadFromJCR extends Load {
 		// so we can tell whether there are any orphans
 	public HashMap unusedJCRNodes = null;
 	
+	public NodeMapper nodeMapper = null;
+	
 	public LoadFromJCR() {
 		this(new ContentTypeManagerImpl() );
 	}
@@ -114,19 +119,21 @@ public class LoadFromJCR extends Load {
 	}
 
 	
-	public Package get(Session jcrSession, String nodePath) throws Docx4JException {
+	public Package get(Session jcrSession, NodeMapper nodeMapper, String nodePath) throws Docx4JException {
         try {
             Node root = jcrSession.getRootNode();
             Node docxNode = root.getNode(nodePath);
-            return get(jcrSession, docxNode);
+            return get(jcrSession, nodeMapper, docxNode);
 	    } catch (Exception e) {
 			e.printStackTrace() ;
 			throw new Docx4JException("Failed to get package");
 	    }
 	}
 	
-	public Package get(Session jcrSession, Node docxNode ) throws Docx4JException  {
+	public Package get(Session jcrSession, NodeMapper nodeMapper, Node docxNode ) throws Docx4JException  {
 
+		this.nodeMapper = nodeMapper;
+		
 		Package p = null;
 		
 		// 1. The idea is to walk the tree of relationships, getting
@@ -134,20 +141,22 @@ public class LoadFromJCR extends Load {
 		
 		unusedJCRNodes = new HashMap();
         try {
-	        Node docxContentNode = docxNode.getNode("jcr:content");
+//	        Node docxContentNode = docxNode.getNode("jcr:content");
+			Node docxContentNode = nodeMapper.getContentNode(docxNode);
 
             // Its a flat structure since we've URL Encoded '/'
             NodeIterator nodeIterator = docxContentNode.getNodes();
 	        while(nodeIterator.hasNext()) {
 	            Node n=nodeIterator.nextNode();
 	            log.info(n.getName());
-				unusedJCRNodes.put(decodeSlashes(n.getName()), new Boolean(true) );				
+				unusedJCRNodes.put(decodeSlashes(nodeMapper, n.getName()), new Boolean(true) );				
 	        }		
 		
 			// 2. Create a new Package
 	//		Eventually, you'll only be able to create an Excel package etc
 	//		but only the WordML package exists at present
-			Document ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, docxContentNode, "[Content_Types].xml");
+	        Document ctmDocument = null; 
+	        ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper, docxContentNode, "[Content_Types].xml");	        	
 			debugPrint(ctmDocument);
 			ctm.parseContentTypesFile(ctmDocument);
 			p = ctm.createPackage();
@@ -207,7 +216,7 @@ public class LoadFromJCR extends Load {
 			throws InvalidFormatException, Docx4JException {
 		
 		try {
-			InputStream is = getInputStreamFromJCRPart( jcrSession, 
+			InputStream is = getInputStreamFromJCRPart( jcrSession, nodeMapper, 
 					docxNode,  partName);
 
 			return new RelationshipsPart(p, new PartName("/" + partName), is );
@@ -217,67 +226,84 @@ public class LoadFromJCR extends Load {
 			e.printStackTrace();
 			throw new Docx4JException("Error getting document from JCR Part:" + partName, e);
 		} 
-		
-//		Document contents=null;
-//		try {
-//			contents = deprecatedGetDocumentFromJCRPart( jcrSession, docxNode,  partName);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			throw new Docx4JException("Error getting document from JCR Part", e);
-//		}
-//		
-//		log.info("\n\n" + partName + "\n ===================");
-//		debugPrint(contents);		
-//		
-//		// TODO - why don't any of the part names in this document start with "/"?
-//		return new RelationshipsPart(p, new PartName("/" + partName), contents );
-		
 	
 	}
 
-	// TODO - put this (and its duplicate in SaveToJCR) somewhere
-	// more sensible
-	public static String encodeSlashes( String partName) {
+	public static String encodeSlashes(NodeMapper nodeMapper, String partName) {
+		
+		// TODO - fix Jackrabbit stuff so that it creates directories
+		// rather than encoding slashes!
+		
 		
 //		log.info( "Incoming: " + partName);
 //		log.info( "Encoded as: " + java.net.URLEncoder.encode( partName ));
 		
-		return java.net.URLEncoder.encode( partName );
+		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
+			
+			log.info("incoming path:" + partName);
+						
+			// Add cm: prefix
+			
+			// Split it into segments, and add cm: prefix
+			StringBuffer retVal = new StringBuffer();
+			String[] partNameSegments = partName.split("/");
+
+			// Relativize the source URI against the target URI.
+			for (short i = 0 ; i < partNameSegments.length; ++i) {
+				if (i>0) retVal.append("/");
+				retVal.append("cm:" + org.docx4j.JcrNodeMapper.ISO9075.encode(partNameSegments[i]) );
+			}
+			log.info("created path:" + retVal.toString());
+			return retVal.toString();
+		} else {
+			return java.net.URLEncoder.encode( partName );
+		}
 		
 	}
 	
-	public String decodeSlashes( String partName) {
+	public String decodeSlashes(NodeMapper nodeMapper, String partName) {
 		
 //		log.info( "Incoming: " + partName);
 //		log.info( "Decoded as: " + java.net.URLDecoder.decode( partName ));
 		
-		return java.net.URLDecoder.decode( partName );
+		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
+			log.info("TODO decode:" + partName);
+			return partName;
+		} else {
+			return java.net.URLDecoder.decode( partName );
+		}
 		
 	}
 	
-	private static InputStream getInputStreamFromJCRPart(Session jcrSession, Node docxNode, String partName) 
+	private static InputStream getInputStreamFromJCRPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode, String partName) 
 		throws DocumentException, RepositoryException, PathNotFoundException {
 		
 		InputStream in = null;
-		log.info("Fetching " + encodeSlashes(partName));
-		Node fileNode = docxNode.getNode(encodeSlashes(partName));
-		Node contentNode = fileNode.getNode("jcr:content");
+		log.info("Fetching " + encodeSlashes(nodeMapper, partName));
+		Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, partName));
+//		Node contentNode = fileNode.getNode("jcr:content");
+		Node contentNode = nodeMapper.getContentNode(fileNode);
 		
-		Property jcrData = contentNode.getProperty("jcr:data");
+//		Property jcrData = contentNode.getProperty("jcr:data"); 
+		Property jcrData = nodeMapper.getJcrData(contentNode);		
 		in = jcrData.getStream();
 		
 		return in;		
 	}
 	
-	private static Document deprecatedGetDocumentFromJCRPart(Session jcrSession, Node docxNode, String partName) 
+	private static Document deprecatedGetDocumentFromJCRPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode, String partName) 
 	throws DocumentException, RepositoryException, PathNotFoundException {
 	
 	InputStream in = null;
-	log.info("Fetching " + encodeSlashes(partName));
-	Node fileNode = docxNode.getNode(encodeSlashes(partName));
-	Node contentNode = fileNode.getNode("jcr:content");
+	log.info("Fetching " + encodeSlashes(nodeMapper, partName));
+	Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, partName));
 	
-	Property jcrData = contentNode.getProperty("jcr:data");
+//	Node contentNode = fileNode.getNode("jcr:content");
+	Node contentNode = nodeMapper.getContentNode(fileNode);
+	
+//	Property jcrData = contentNode.getProperty("jcr:data"); 
+	Property jcrData = nodeMapper.getJcrData(contentNode);
+	
 	in = jcrData.getStream();
 	
 	SAXReader xmlReader = new SAXReader();
@@ -313,10 +339,7 @@ public class LoadFromJCR extends Load {
 			log.info("For Relationship Id=" + r.getId() 
 					+ " Source is " + r.getSource().getPartName() 
 					+ ", Target is " + r.getTargetURI() );
-			try {
-				
-//				getPart(jcrSession, docxNode, source, pkg, 
-//						resolvedPartUri, r.getRelationshipType());
+			try {				
 				getPart(jcrSession, docxNode, pkg, rp, r);
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
@@ -341,8 +364,6 @@ public class LoadFromJCR extends Load {
 	 * @throws RepositoryException
 	 * @throws InvalidFormatException
 	 */
-//	public void getPart(Session jcrSession, Node docxNode, Base source,
-//			Package pkg, String resolvedPartUri, String relationshipType)
 	public void getPart(Session jcrSession, Node docxNode, 
 			Package pkg, RelationshipsPart rp, Relationship r)	
 			throws Docx4JException, RepositoryException, InvalidFormatException {
@@ -360,7 +381,7 @@ public class LoadFromJCR extends Load {
 		
 		String relationshipType = r.getRelationshipType();		
 		
-		Part part = getRawPart(jcrSession, docxNode, ctm, resolvedPartUri);
+		Part part = getRawPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);
 		rp.loadPart(part);
 		
 		
@@ -406,7 +427,7 @@ public class LoadFromJCR extends Load {
 				part.getPartName().getName().substring(1) );
 		RelationshipsPart rrp = null;
 		try {
-			docxNode.getNode(encodeSlashes(relPart)); // if null, 
+			docxNode.getNode(encodeSlashes(nodeMapper, relPart)); // if null, 
 			//throws javax.jcr.PathNotFoundException
 			
 			log.info("Found relationships " + relPart );
@@ -438,7 +459,7 @@ public class LoadFromJCR extends Load {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	public static Part getRawPart(Session jcrSession, Node docxNode, ContentTypeManager ctm, String resolvedPartUri)
+	public static Part getRawPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode, ContentTypeManager ctm, String resolvedPartUri)
 			throws Docx4JException {
 		
 		Part part = null;
@@ -450,7 +471,7 @@ public class LoadFromJCR extends Load {
 				part = ctm.getPart("/" + resolvedPartUri);
 								
 				InputStream is = getInputStreamFromJCRPart( jcrSession, 
-						docxNode,  resolvedPartUri);
+						nodeMapper, docxNode,  resolvedPartUri);
 				
 				if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
@@ -472,7 +493,7 @@ public class LoadFromJCR extends Load {
 			} catch (Exception e) {
 				
 				// Try to get it as a binary part				
-				return getBinaryPart(jcrSession, docxNode, ctm, resolvedPartUri);
+				return getBinaryPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);
 					
 			}
 		} catch (Exception ex) {
@@ -483,7 +504,7 @@ public class LoadFromJCR extends Load {
 		return part;
 	}
 		
-	public static Part getBinaryPart(Session jcrSession, Node docxNode,
+	public static Part getBinaryPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode,
 			ContentTypeManager ctm, String resolvedPartUri)
 			throws Docx4JException {
 
@@ -492,11 +513,14 @@ public class LoadFromJCR extends Load {
 		try {
 
 			InputStream in = null;
-			log.info("Fetching " + encodeSlashes(resolvedPartUri));
-			Node fileNode = docxNode.getNode(encodeSlashes(resolvedPartUri));
-			Node contentNode = fileNode.getNode("jcr:content");
+			log.info("Fetching " + encodeSlashes(nodeMapper, resolvedPartUri));
+			Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, resolvedPartUri));
+			
+//			Node contentNode = fileNode.getNode("jcr:content");
+			Node contentNode = nodeMapper.getContentNode(fileNode);
 
-			Property jcrData = contentNode.getProperty("jcr:data");
+//			Property jcrData = contentNode.getProperty("jcr:data"); 
+			Property jcrData = nodeMapper.getJcrData(contentNode);			
 			in = jcrData.getStream();
 
 			part = new BinaryPart(new PartName("/" + resolvedPartUri));
