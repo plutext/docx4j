@@ -39,10 +39,11 @@ import javax.jcr.RepositoryException;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.jackrabbit.core.TransientRepository;  // Testing only
+//import org.apache.jackrabbit.core.TransientRepository;  // Testing only
 
 import org.apache.log4j.Logger;
 
+import org.docx4j.JcrNodeMapper.NodeMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -83,17 +84,23 @@ public class SaveToJCR {
 	private static Logger log = Logger.getLogger(SaveToJCR.class);		
 
 	
-	public SaveToJCR(Package p, Session jcrSession) {
+	public SaveToJCR(Package p, NodeMapper nodeMapper, Session jcrSession) {
 		
 		this.p = p;
 		this.jcrSession = jcrSession;
+		this.nodeMapper = nodeMapper;
 		
 	}
+	
+	public static final String CM_NAMESPACE = "cm:";
 	
 	// The package to save
 	public Package p;
 			
 	public Session jcrSession;
+	
+	public NodeMapper nodeMapper = null;
+	
 	
 	/* Save a Package to baseNode in JCR.
 	 * baseNode must exist an be a suitable node type.             
@@ -153,12 +160,29 @@ public class SaveToJCR {
 		 return true;
 	}
 	
-	public String encodeSlashes( String partName) {
+	public String encodeSlashes(NodeMapper nodeMapper,  String partName) {		
 		
-		log.debug( "Incoming: " + partName);
-		log.debug( "Encoded as: " + java.net.URLEncoder.encode( partName ));
-		
-		return java.net.URLEncoder.encode( partName );
+		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
+			
+			log.info("incoming path:" + partName);
+						
+			// Add CM_NAMESPACE prefix
+			
+			// Split it into segments, and add CM_NAMESPACE prefix
+			StringBuffer retVal = new StringBuffer();
+			String[] partNameSegments = partName.split("/");
+
+			for (short i = 0 ; i < partNameSegments.length; ++i) {
+				if (i>0) retVal.append("/");
+				retVal.append(CM_NAMESPACE + org.docx4j.JcrNodeMapper.ISO9075.encode(partNameSegments[i]) );
+			}
+			log.info("created path:" + retVal.toString());
+			return retVal.toString();
+		} else {
+			log.debug( "Incoming: " + partName);
+			log.debug( "Encoded as: " + java.net.URLEncoder.encode( partName ));
+			return java.net.URLEncoder.encode( partName );
+		}
 		
 	}
 
@@ -208,10 +232,10 @@ public class SaveToJCR {
 	 * object.  Pass null if you don't want the displayName property set. 
 	 * Returns the version number of the resource.
 	 */
-//	public String saveRawXmlPart(Node baseNode, String partName, org.dom4j.Document xml) throws Docx4JException {
 	public String saveRawXmlPart(Node baseNode, String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
 
 		try {
+			// OLD COMMENT - IN COURSE OF BECOMING REDUNDANT (as of 18 Jan 2008)  
             // NB: Nodetypes used are required for interoperability with 
             // org.apache.jackrabbit.server.   Three things are required 
 			// for interoperability:
@@ -225,17 +249,51 @@ public class SaveToJCR {
 			// Create an nt:file node to represent each file name
 			// Encode '/' so it is a flat structure
 
-			Node fileNode;			
+			Node cmContentNode;			
 			try {
 				// Does it exist already?
-				fileNode = baseNode.getNode(encodeSlashes(partName));
-				log.info(encodeSlashes(partName) + " found .. ");				
+				cmContentNode = baseNode.getNode(encodeSlashes(nodeMapper, partName));
+				log.info(encodeSlashes(nodeMapper, partName) + " found .. ");				
 			} catch (PathNotFoundException pnf) {
-				log.info(encodeSlashes(partName) + " not found .. so adding");
-		        fileNode = baseNode.addNode( encodeSlashes(partName), "nt:file" );
+				log.info(encodeSlashes(nodeMapper, partName) + " not found .. so adding");
+//		        cmContentNode = baseNode.addNode( encodeSlashes(nodeMapper, partName), "nt:file" );
+				cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, partName));
+				
 		    }	        
 			
-	        		
+			// New
+			if (cmContentNode.isNodeType("mix:versionable")) {
+				log.info(" it is mix:versionable .. so checkout");					
+				// check it out
+				cmContentNode.checkout();
+			} else {
+//				cmContentNode.addMixin("mix:versionable");	
+//		        
+//		        // TODO: Alfreso needs cm:versionable
+//		        // http://issues.alfresco.com/browse/AR-659
+//		        // How to add this?
+//		        // .. Patch Alfresco to do it?
+//		        
+//				log.info(" made mix:versionable ");	
+//				
+//				// Works fine - for existing
+				
+				// Alfresco
+				if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
+					// An Alfresco aspect is a mixin?  Seems to be.
+					// This does prevent the error "Node workspace://SpacesStore/... is not versionable"
+					cmContentNode.addMixin("cm:versionable");
+				}	        
+				cmContentNode.addMixin("mix:versionable");	
+				log.info(" made mix:versionable ");	
+
+				// New 2008 01 18
+				cmContentNode.checkout();
+				
+			}
+			
+/* With impending new content model for Jackrabbit, this is not required.
+ * 
 			// Then a jcr:content node for the content
 	        // The jcr:content child node can be of any node type to allow maximum flexibility, 
 	        // but the nt:resource node type is the common choice for jcr:content nodes.
@@ -243,7 +301,9 @@ public class SaveToJCR {
 			Node contentNode; 
 			try {
 				// Does it exist already?
-				contentNode = fileNode.getNode("jcr:content");
+//				contentNode = fileNode.getNode("jcr:content");
+				contentNode = nodeMapper.getContentNode(cmContentNode);
+				
 				log.info(" jcr:content found ");
 				
 				if (contentNode.isNodeType("mix:versionable")) {
@@ -251,16 +311,24 @@ public class SaveToJCR {
 					// check it out
 					contentNode.checkout();
 				} else {
-			        contentNode.addMixin("mix:versionable");					
+			        contentNode.addMixin("mix:versionable");	
+			        
+			        // TODO: Alfreso needs cm:versionable
+			        // http://issues.alfresco.com/browse/AR-659
+			        // How to add this?
+			        // .. Patch Alfresco to do it?
+			        
 					log.info(" made mix:versionable ");					
 				}
 				
 			} catch (PathNotFoundException pnf) {
 				log.info("jcr:content not found .. so adding");
-				contentNode = fileNode.addNode("jcr:content", "nt:unstructured");
+				contentNode = cmContentNode.addNode("jcr:content", "nt:unstructured");
 		        contentNode.addMixin("mix:versionable");
 		    }	        	        
-	                	
+ * 
+ */ 			
+
 	        
 	        // Need to convert the Document to an input stream
 	        // There are at least three possible ways to do it:
@@ -279,21 +347,29 @@ public class SaveToJCR {
 	        DOMSerializerEngine engine 
 	        	= new DOMSerializerEngine( (org.w3c.dom.Node)w3cDoc.getDocumentElement() );
 
+	        // New - in what follows, replaced contentNode with cmContentNode
+	        
 	        // javax.jcr.nodetype.ConstraintViolationException: no matching property definition found for {http://www.jcp.org/jcr/1.0}data
-	        contentNode.setProperty("jcr:mimeType", "text/plain");
+	        cmContentNode.setProperty("jcr:mimeType", "text/plain");
 //	        contentNode.setProperty("jcr:encoding", "");
-	        contentNode.setProperty("jcr:data", new OutputEngineInputStream(engine) );
+	        
+	        // Maybe this will just work in Alfreso?
+	        // If not, use setJcrDataProperty
+//	        cmContentNode.setProperty("jcr:data", new OutputEngineInputStream(engine) );
+	        nodeMapper.setJcrDataProperty(cmContentNode, new OutputEngineInputStream(engine) );	        
+	        
 	        Calendar lastModified = Calendar.getInstance();
 	        lastModified.setTimeInMillis(lastModified.getTimeInMillis());
-	        contentNode.setProperty("jcr:lastModified", lastModified);	
+	        cmContentNode.setProperty("jcr:lastModified", lastModified);	
 			jcrSession.save();
 			
-			Version firstVersion = contentNode.checkin();
+			Version firstVersion = cmContentNode.checkin();
 
-			log.info( "PUT SUCCESS: " + partName + " VERSION " + contentNode.getBaseVersion().getName());		
+			log.info( "PUT SUCCESS: " + partName + " VERSION " + cmContentNode.getBaseVersion().getName());		
 			
-			return contentNode.getBaseVersion().getName();
+			return cmContentNode.getBaseVersion().getName();
 				// WARNING: this is JCR implementation specific
+				// TODO - fix for Alfresco
 			
 		} catch (Exception e ) {
 			e.printStackTrace();
@@ -395,21 +471,44 @@ public class SaveToJCR {
 		
 			// Create an nt:file node to represent each file name
 			// Encode '/' so it is a flat structure
-			Node fileNode;			
+			Node cmContentNode;			
 			try {
 				// Does it exist already?
-				fileNode = baseNode.getNode(encodeSlashes(resolvedPartUri));
-				log.info(encodeSlashes(resolvedPartUri) + " found .. ");				
+				cmContentNode = baseNode.getNode(encodeSlashes(nodeMapper, resolvedPartUri));
+				log.info(encodeSlashes(nodeMapper, resolvedPartUri) + " found .. ");				
 			} catch (PathNotFoundException pnf) {
-				log.info(encodeSlashes(resolvedPartUri) + " not found .. so adding");
-		        fileNode = baseNode.addNode( encodeSlashes(resolvedPartUri), "nt:file" );
-		    }	        			
-	        //Node fileNode = baseNode.addNode( encodeSlashes(partName), "nt:file" );
+				log.info(encodeSlashes(nodeMapper, resolvedPartUri) + " not found .. so adding");
+//		        cmContentNode = baseNode.addNode( encodeSlashes(nodeMapper, resolvedPartUri), "nt:file" );
+				cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, resolvedPartUri));				
+		    }
+			
+			// New
+			if (cmContentNode.isNodeType("mix:versionable")) {
+				log.info(" it is mix:versionable .. so checkout");					
+				// check it out
+				cmContentNode.checkout();
+			} else {
+				// Alfresco
+				if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
+					// An Alfresco aspect is a mixin?  Seems to be.
+					// This does prevent the error "Node workspace://SpacesStore/... is not versionable"
+					cmContentNode.addMixin("cm:versionable");
+				}	        
+				cmContentNode.addMixin("mix:versionable");	
+				log.info(" made mix:versionable ");	
+
+				// New 2008 01 18
+				cmContentNode.checkout();
+			}
+			
+			
+/* With impending new content model for Jackrabbit, this is not required.
+ * 
 
 			Node contentNode; 
 			try {
 				// Does it exist already?
-				contentNode = fileNode.getNode("jcr:content");
+				contentNode = cmContentNode.getNode("jcr:content");
 				log.info(" jcr:content found ");
 				if (contentNode.isNodeType("mix:versionable")) {
 					log.info(" it is mix:versionable.. so checkout");					
@@ -421,22 +520,24 @@ public class SaveToJCR {
 				}
 			} catch (PathNotFoundException pnf) {
 				log.info("jcr:content not found .. so adding");
-				contentNode = fileNode.addNode("jcr:content", "nt:unstructured");
+				contentNode = cmContentNode.addNode("jcr:content", "nt:unstructured");
 		        contentNode.addMixin("mix:versionable");
 		    }	        	        
-			
-	        //Node contentNode = fileNode.addNode("jcr:content", "nt:unstructured");	        
-	        //contentNode.addMixin("mix:versionable");
+*/			
+	        // New - in what follows, replaced contentNode with cmContentNode
 	        
-	        contentNode.setProperty("jcr:mimeType", "application/octet-stream");
+			cmContentNode.setProperty("jcr:mimeType", "application/octet-stream");
 //	        contentNode.setProperty("jcr:encoding", "");
-	        contentNode.setProperty("jcr:data", bin );
+	        
+			//cmContentNode.setProperty("jcr:data", bin );
+	        nodeMapper.setJcrDataProperty(cmContentNode, bin );	        
+			
 	        Calendar lastModified = Calendar.getInstance();
 	        lastModified.setTimeInMillis(lastModified.getTimeInMillis());
-	        contentNode.setProperty("jcr:lastModified", lastModified);	
+	        cmContentNode.setProperty("jcr:lastModified", lastModified);	
 			jcrSession.save();
 			
-			Version firstVersion = contentNode.checkin();
+			Version firstVersion = cmContentNode.checkin();
 		} catch (Exception e ) {
 			throw new Docx4JException("Failed to put binary part", e);			
 		}
@@ -480,42 +581,44 @@ public class SaveToJCR {
 		}	    
 	}
 		
-	// Testing
-	public static void main(String[] args) throws Exception {
-		Session jcrSession = null;
-        try {
-
-        	//We need:
-        	
-        	// 1. a Session
-	        Repository repository = new TransientRepository();
-	        jcrSession = repository.login(
-	                new SimpleCredentials("username", "password".toCharArray()));
-	        
-	        // 2. a Package
-			WordprocessingMLPackage p = WordprocessingMLPackage.createTestPackage();
-    		log.info( "Test package created..");
-
-    		// 3. a Node to save to
-    		Node root = jcrSession.getRootNode();
-            Node customers = root.addNode("customers", "nt:folder");
-            Node customer = customers.addNode("contoso", "nt:folder");
-            Node docs = customer.addNode("docs", "nt:folder");
-            Node exampledoc1 = docs.addNode("exampledoc1.docx", "nt:file");            
-            // This node required for interoperability with 
-            // org.apache.jackrabbit.server
-	        Node contentNode = exampledoc1.addNode("jcr:content", "nt:unstructured");
-	        
-	        // Now we can do the actual save.
-	        SaveToJCR saver = new SaveToJCR(p, jcrSession);
-	        saver.save(contentNode );		
-	        
-        } catch(Exception e) {
-            e.printStackTrace();	        
-        } finally {
-        	jcrSession.logout();
-        }
-	}
+//	// Testing - Jackrabbit only
+//	public static void main(String[] args) throws Exception {
+//		Session jcrSession = null;
+//        try {
+//
+//        	//We need:
+//        	
+//        	// 1. a Session
+//	        Repository repository = new TransientRepository();
+//	        jcrSession = repository.login(
+//	                new SimpleCredentials("username", "password".toCharArray()));
+//	        
+//	        // 2. a Package
+//			WordprocessingMLPackage p = WordprocessingMLPackage.createTestPackage();
+//    		log.info( "Test package created..");
+//
+//    		// 3. a Node to save to
+//    		Node root = jcrSession.getRootNode();
+//            Node customers = root.addNode("customers", "nt:folder");
+//            Node customer = customers.addNode("contoso", "nt:folder");
+//            Node docs = customer.addNode("docs", "nt:folder");
+//            Node exampledoc1 = docs.addNode("exampledoc1.docx", "nt:file");            
+//            // This node required for interoperability with 
+//            // org.apache.jackrabbit.server
+//            	// TODO 20080118 - review in light of new content model
+//	        Node contentNode = exampledoc1.addNode("jcr:content", "nt:unstructured");
+//	        
+//	        // Now we can do the actual save.
+//    		org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper nodeMapper = new org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper(); 	        
+//	        SaveToJCR saver = new SaveToJCR(p, nodeMapper, jcrSession);
+//	        saver.save(contentNode );		
+//	        
+//        } catch(Exception e) {
+//            e.printStackTrace();	        
+//        } finally {
+//        	jcrSession.logout();
+//        }
+//	}
 
 	
 	

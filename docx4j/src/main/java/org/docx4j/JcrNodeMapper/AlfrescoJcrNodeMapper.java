@@ -6,6 +6,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
 import org.apache.log4j.Logger;
+import org.merlin.io.OutputEngineInputStream;
 
 public class AlfrescoJcrNodeMapper implements NodeMapper {
 
@@ -17,6 +18,31 @@ public class AlfrescoJcrNodeMapper implements NodeMapper {
 		return node;
 		
 	}
+
+	
+	public  Node addFileNode(Node baseNode, String partName )  throws PathNotFoundException, RepositoryException {
+		
+		/* Alfresco's contentModel.xml defines:
+		 * 
+			<type name="cm:content">
+		         <title>Content</title>
+		         <parent>cm:cmobject</parent>
+		         <archive>true</archive>
+		         <properties>
+		            <property name="cm:content">
+		               <type>d:content</type>
+		               <mandatory>false</mandatory>
+						:
+		            </property>
+		         </properties>
+		      </type>
+		 */
+		
+		return baseNode.addNode(partName, "cm:content" ); 
+		
+	}
+	
+	
 	
 	public  Property getJcrData(Node contentNode) 
  throws PathNotFoundException, RepositoryException {
@@ -38,6 +64,12 @@ public class AlfrescoJcrNodeMapper implements NodeMapper {
 		
 		return contentNode.getProperty("cm:content");
 		
+	}
+	
+	
+	public void setJcrDataProperty(Node cmContentNode, java.io.InputStream is) throws Exception {
+		// Alfresco has property named cm:content, not jcr:data
+        cmContentNode.setProperty("cm:content", is );		
 	}
 
 }

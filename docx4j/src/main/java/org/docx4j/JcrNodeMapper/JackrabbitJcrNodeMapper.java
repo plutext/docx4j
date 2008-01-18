@@ -13,6 +13,13 @@ public class JackrabbitJcrNodeMapper implements NodeMapper {
 		
 	}
 	
+	public  Node addFileNode(Node baseNode, String partName )  throws PathNotFoundException, RepositoryException {
+		
+		return baseNode.addNode(partName, "nt:file" );
+		
+	}
+	
+	
 	public  Property getJcrData(Node contentNode) 
 	 throws PathNotFoundException, RepositoryException {
 			
@@ -21,4 +28,10 @@ public class JackrabbitJcrNodeMapper implements NodeMapper {
 			
 		}
 
+	public void setJcrDataProperty(Node cmContentNode, java.io.InputStream is) throws Exception {
+		// Alfresco has property named cm:content, not jcr:data
+        cmContentNode.setProperty("jcr:data", is );		
+	}
+	
+	
 }
