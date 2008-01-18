@@ -180,7 +180,7 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 	 *            Content type of the part.
 	 */
 	public void addOverrideContentType(URI partUri, String contentType) {
-		log.debug("Registered " + partUri.toString() );
+		log.info("Registered " + partUri.toString() );
 		overrideContentType.put(partUri, contentType);
 	}
 

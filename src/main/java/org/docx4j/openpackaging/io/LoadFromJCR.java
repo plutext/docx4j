@@ -40,7 +40,7 @@ import javax.jcr.RepositoryException;
 
 import javax.xml.bind.JAXBContext;
 
-import org.apache.jackrabbit.core.TransientRepository;
+//import org.apache.jackrabbit.core.TransientRepository;
 
 import org.apache.log4j.Logger;
 
@@ -82,27 +82,29 @@ public class LoadFromJCR extends Load {
 	
 	private static Logger log = Logger.getLogger(LoadFromJCR.class);	
 
-	// Testing
-	public static void main(String[] args) throws Exception {
-
-        Repository repository = new TransientRepository();
-        Session jcrSession = repository.login(
-                new SimpleCredentials("username", "password".toCharArray()));
-
-        // You'll need to run SaveToJCR for this to exist
-        String nodePath = "customers/contoso/docs/exampledoc1";
-        
-        try {
-		
-    		LoadFromJCR loader = new LoadFromJCR();
-    		org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper nodeMapper = new org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper(); 
-    		loader.get(jcrSession, nodeMapper, nodePath);	
-        	
-        } finally {
-        	jcrSession.logout();
-        }
-        	
-	}
+//	// Testing - Jackrabbit only
+//	public static void main(String[] args) throws Exception {
+//
+//        Repository repository = new TransientRepository();
+//        Session jcrSession = repository.login(
+//                new SimpleCredentials("username", "password".toCharArray()));
+//
+//        // You'll need to run SaveToJCR for this to exist
+//        String nodePath = "customers/contoso/docs/exampledoc1";
+//        
+//        try {
+//		
+//    		org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper nodeMapper = new org.docx4j.JcrNodeMapper.JackrabbitJcrNodeMapper(); 
+//    		LoadFromJCR loader = new LoadFromJCR(nodeMapper);
+//    		loader.get(jcrSession, nodePath);	
+//        	
+//        } finally {
+//        	jcrSession.logout();
+//        }
+//        	
+//	}
+	
+	public static final String CM_NAMESPACE = "cm:";
 	
 	 // HashMap containing the names of all the nodes,
 		// so we can tell whether there are any orphans
@@ -110,29 +112,28 @@ public class LoadFromJCR extends Load {
 	
 	public NodeMapper nodeMapper = null;
 	
-	public LoadFromJCR() {
-		this(new ContentTypeManagerImpl() );
+	public LoadFromJCR(NodeMapper nodeMapper) {
+		this(new ContentTypeManagerImpl(), nodeMapper );
 	}
 
-	public LoadFromJCR(ContentTypeManager ctm) {
+	public LoadFromJCR(ContentTypeManager ctm, NodeMapper nodeMapper) {
 		this.ctm = ctm;
+		this.nodeMapper = nodeMapper;
 	}
 
 	
-	public Package get(Session jcrSession, NodeMapper nodeMapper, String nodePath) throws Docx4JException {
+	public Package get(Session jcrSession, String nodePath) throws Docx4JException {
         try {
             Node root = jcrSession.getRootNode();
             Node docxNode = root.getNode(nodePath);
-            return get(jcrSession, nodeMapper, docxNode);
+            return get(jcrSession, docxNode);
 	    } catch (Exception e) {
 			e.printStackTrace() ;
 			throw new Docx4JException("Failed to get package");
 	    }
 	}
 	
-	public Package get(Session jcrSession, NodeMapper nodeMapper, Node docxNode ) throws Docx4JException  {
-
-		this.nodeMapper = nodeMapper;
+	public Package get(Session jcrSession, Node docxNode ) throws Docx4JException  {
 		
 		Package p = null;
 		
@@ -234,28 +235,23 @@ public class LoadFromJCR extends Load {
 		// TODO - fix Jackrabbit stuff so that it creates directories
 		// rather than encoding slashes!
 		
-		
-//		log.info( "Incoming: " + partName);
-//		log.info( "Encoded as: " + java.net.URLEncoder.encode( partName ));
-		
 		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
 			
 			log.info("incoming path:" + partName);
 						
-			// Add cm: prefix
-			
-			// Split it into segments, and add cm: prefix
+			// Split it into segments, and add CM_NAMESPACE prefix
 			StringBuffer retVal = new StringBuffer();
 			String[] partNameSegments = partName.split("/");
 
-			// Relativize the source URI against the target URI.
 			for (short i = 0 ; i < partNameSegments.length; ++i) {
 				if (i>0) retVal.append("/");
-				retVal.append("cm:" + org.docx4j.JcrNodeMapper.ISO9075.encode(partNameSegments[i]) );
+				retVal.append(CM_NAMESPACE + org.docx4j.JcrNodeMapper.ISO9075.encode(partNameSegments[i]) );
 			}
 			log.info("created path:" + retVal.toString());
 			return retVal.toString();
 		} else {
+//			log.info( "Incoming: " + partName);
+//			log.info( "Encoded as: " + java.net.URLEncoder.encode( partName ));
 			return java.net.URLEncoder.encode( partName );
 		}
 		
@@ -267,8 +263,19 @@ public class LoadFromJCR extends Load {
 //		log.info( "Decoded as: " + java.net.URLDecoder.decode( partName ));
 		
 		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
-			log.info("TODO decode:" + partName);
-			return partName;
+			
+			log.info("incoming path:" + partName);
+			
+			// Split it into segments, and remove CM_NAMESPACE prefix
+			StringBuffer retVal = new StringBuffer();
+			String[] partNameSegments = partName.split("/");
+
+			for (short i = 0 ; i < partNameSegments.length; ++i) {
+				if (i>0) retVal.append("/");
+				retVal.append( org.docx4j.JcrNodeMapper.ISO9075.decode(partNameSegments[i].substring(CM_NAMESPACE.length())) );
+			}
+			log.info("created path:" + retVal.toString());
+			return retVal.toString();
 		} else {
 			return java.net.URLDecoder.decode( partName );
 		}
