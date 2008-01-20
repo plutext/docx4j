@@ -44,7 +44,7 @@ public class Load {
 
 	public ContentTypeManager ctm;
 
-	protected void debugPrint( Document coreDoc) {
+	protected static void debugPrint( Document coreDoc) {
 		try {
 			OutputFormat format = OutputFormat.createPrettyPrint();
 			
