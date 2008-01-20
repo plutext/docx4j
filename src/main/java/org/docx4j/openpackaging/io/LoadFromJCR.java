@@ -117,6 +117,8 @@ public class LoadFromJCR extends Load {
 	}
 
 	public LoadFromJCR(ContentTypeManager ctm, NodeMapper nodeMapper) {
+		
+		// Purpose is to be able to pass in the appropriate subclass of CTM
 		this.ctm = ctm;
 		this.nodeMapper = nodeMapper;
 	}

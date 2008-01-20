@@ -267,17 +267,6 @@ public class SaveToJCR {
 				// check it out
 				cmContentNode.checkout();
 			} else {
-//				cmContentNode.addMixin("mix:versionable");	
-//		        
-//		        // TODO: Alfreso needs cm:versionable
-//		        // http://issues.alfresco.com/browse/AR-659
-//		        // How to add this?
-//		        // .. Patch Alfresco to do it?
-//		        
-//				log.info(" made mix:versionable ");	
-//				
-//				// Works fine - for existing
-				
 				// Alfresco
 				if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
 					// An Alfresco aspect is a mixin?  Seems to be.
@@ -571,7 +560,7 @@ public class SaveToJCR {
     
   
  	
-	private void debugPrint( Document coreDoc) {
+	protected void debugPrint( Document coreDoc) {
 		try {
 			OutputFormat format = OutputFormat.createPrettyPrint();
 		    XMLWriter writer = new XMLWriter( System.out, format );
