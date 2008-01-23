@@ -33,5 +33,9 @@ public class JackrabbitJcrNodeMapper implements NodeMapper {
         cmContentNode.setProperty("jcr:data", is );		
 	}
 	
+	public void setJcrDataProperty(Node cmContentNode, String str) throws Exception {
+		// Alfresco has property named cm:content, not jcr:data
+        cmContentNode.setProperty("jcr:data", str );		
+	}
 	
 }
