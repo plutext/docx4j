@@ -20,4 +20,7 @@ public interface NodeMapper {
 	public void setJcrDataProperty(Node cmContentNode, java.io.InputStream is) 
 	throws Exception;
 	
+	public void setJcrDataProperty(Node cmContentNode, String str) 
+	throws Exception;
+	
 }

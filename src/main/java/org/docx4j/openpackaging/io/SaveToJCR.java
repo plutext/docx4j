@@ -144,7 +144,7 @@ public class SaveToJCR {
 //			addPartsFromRelationships(baseNode, "", rp );
 			addPartsFromRelationships(baseNode, rp );
 
-//			jcrSession.save();
+			jcrSession.save();
 	    
 	    } catch (Exception e) {
 			e.printStackTrace() ;
@@ -345,6 +345,9 @@ public class SaveToJCR {
 	        // Maybe this will just work in Alfreso?
 	        // If not, use setJcrDataProperty
 //	        cmContentNode.setProperty("jcr:data", new OutputEngineInputStream(engine) );
+	        
+	        log.info("using " + nodeMapper.getClass().getName());
+	        
 	        nodeMapper.setJcrDataProperty(cmContentNode, new OutputEngineInputStream(engine) );	        
 	        
 	        Calendar lastModified = Calendar.getInstance();
@@ -354,7 +357,7 @@ public class SaveToJCR {
 			
 			Version firstVersion = cmContentNode.checkin();
 
-			log.info( "PUT SUCCESS: " + partName + " VERSION " + cmContentNode.getBaseVersion().getName());		
+			log.info( "PUT SUCCESS: " + partName +  "(" + cmContentNode.getPath() + ") VERSION " + cmContentNode.getBaseVersion().getName());		
 			
 			return cmContentNode.getBaseVersion().getName();
 				// WARNING: this is JCR implementation specific

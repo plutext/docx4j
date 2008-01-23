@@ -71,5 +71,9 @@ public class AlfrescoJcrNodeMapper implements NodeMapper {
 		// Alfresco has property named cm:content, not jcr:data
         cmContentNode.setProperty("cm:content", is );		
 	}
+	public void setJcrDataProperty(Node cmContentNode, String str) throws Exception {
+		// Alfresco has property named cm:content, not jcr:data
+        cmContentNode.setProperty("cm:content", str );		
+	}
 
 }
