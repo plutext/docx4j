@@ -4,9 +4,9 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
 
 import org.apache.log4j.Logger;
-import org.merlin.io.OutputEngineInputStream;
 
 public class AlfrescoJcrNodeMapper implements NodeMapper {
 
@@ -74,6 +74,12 @@ public class AlfrescoJcrNodeMapper implements NodeMapper {
 	public void setJcrDataProperty(Node cmContentNode, String str) throws Exception {
 		// Alfresco has property named cm:content, not jcr:data
         cmContentNode.setProperty("cm:content", str );		
+	}
+	
+	public Node getFrozenNode(Version version) throws PathNotFoundException, RepositoryException {
+		javax.jcr.NodeIterator ni = version.getNodes();
+		return ni.nextNode();
+		
 	}
 
 }
