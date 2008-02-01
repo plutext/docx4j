@@ -4,6 +4,7 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
 
 public class JackrabbitJcrNodeMapper implements NodeMapper {
 	
@@ -36,6 +37,10 @@ public class JackrabbitJcrNodeMapper implements NodeMapper {
 	public void setJcrDataProperty(Node cmContentNode, String str) throws Exception {
 		// Alfresco has property named cm:content, not jcr:data
         cmContentNode.setProperty("jcr:data", str );		
+	}
+	
+	public Node getFrozenNode(Version version) throws PathNotFoundException, RepositoryException {
+		return version.getNode("jcr:frozenNode");
 	}
 	
 }
