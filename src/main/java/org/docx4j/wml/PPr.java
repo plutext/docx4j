@@ -24,6 +24,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -82,6 +83,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "rPr",
     "sectPr"
 })
+@XmlRootElement(name = "pPr")
 public class PPr
     implements Child
 {
