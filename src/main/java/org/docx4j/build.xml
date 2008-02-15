@@ -1,3 +1,0 @@
-<project name="docx4j" default="build">
-    <target name="build"/>
-</project>
