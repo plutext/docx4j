@@ -210,6 +210,8 @@ public class WordprocessingMLPackage extends Package {
 		
 		log.info("wordDocument created for PDF rendering!");
 		
+		
+		
 		// Now transform this into XHTML
 		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
 		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
@@ -272,6 +274,29 @@ public class WordprocessingMLPackage extends Package {
 				
 		// Now render the XHTML
 		org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
+		
+		// TODO: Handle fonts
+		// - this is platform specific
+		// Algorithm - to be implemented:
+		// 1.  Get a list of all the fonts in the document
+		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
+		//     - do this in a general way, since docx4all needs this as well to display fonts
+		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
+		//     possibly via an extension function in the XSLT
+		// 4.  Use addFont code like that below as necessary for the fonts
+		
+			// See https://xhtmlrenderer.dev.java.net/r7/users-guide-r7.html#xil_32
+		org.xhtmlrenderer.extend.FontResolver resolver = renderer.getFontResolver();
+		
+		log.info("OS: " + System.getProperty("os.name") );
+		if (System.getProperty("os.name").toUpperCase().indexOf("WINDOWS")>-1) {
+			log.info("Detected Windows - ");
+			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\ARIAL.TTF", true);
+			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\COMIC.TTF", true);
+			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\TREBUC.TTF", true);
+			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\VERDANA.TTF", true);
+		}
+		
 		renderer.setDocument(xhtmlDoc, null);
 		renderer.layout();
 		
