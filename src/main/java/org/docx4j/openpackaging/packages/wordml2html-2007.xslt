@@ -2619,6 +2619,13 @@ Changes since version 1.2:
 
 <xsl:template match="WX:font" mode="rpr">font-family:<xsl:value-of select="@WX:val"/>;</xsl:template>
 
+<!-- JHarrop 20080222
+
+       Basic support for fonts -->
+<xsl:template match="w:rFonts" mode="rpr">font-family:<xsl:value-of select="@w:ascii"/>;</xsl:template>
+
+
+
 <xsl:template match="w:smallCaps" mode="rpr">
 	<xsl:choose>
 		<xsl:when test="@w:val = 'off'">font-variant:normal;</xsl:when>
