@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+    xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.0">
+
+<!-- 
+ *  Copyright 2007, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is free software: you can use it, redistribute it and/or modify
+    it under the terms of version 3 of the GNU Affero General Public License 
+    as published by the Free Software Foundation.
+
+    docx4j is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License   
+    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
+    
+ * -->    
+ 
+    <xs:annotation>
+        <xs:appinfo>
+            <xs:appinfo>
+                <jaxb:globalBindings>
+                </jaxb:globalBindings>
+            </xs:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="org.docx4j.fonts.microsoft"/>
+            </jaxb:schemaBindings>
+        </xs:appinfo>
+    </xs:annotation>
+    
+  <xs:element name="fonts">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="font">
+          <xs:complexType>
+            <xs:sequence minOccurs="0">
+              <xs:element minOccurs="0" name="bold">
+                <xs:complexType>
+                  <xs:attribute name="filename" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element minOccurs="0" name="italic">
+                <xs:complexType>
+                  <xs:attribute name="filename" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element minOccurs="0" name="bolditalic">
+                <xs:complexType>
+                  <xs:attribute name="filename" type="xs:string" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="filename" type="xs:string" use="required" />
+            <xs:attribute name="coreWebFont" type="xs:boolean" use="optional" />
+            <xs:attribute name="clearTypeCollection" type="xs:boolean" use="optional" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

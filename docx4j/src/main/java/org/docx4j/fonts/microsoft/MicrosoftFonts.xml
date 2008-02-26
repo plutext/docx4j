@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fonts>
+
+<!--
+ *
+ *  Copyright 2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of Docx4all.
+
+    Docx4all is free software: you can redistribute it and/or modify
+    it under the terms of version 3 of the GNU General Public License 
+    as published by the Free Software Foundation.
+
+    Docx4all is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License   
+    along with Docx4all.  If not, see <http://www.gnu.org/licenses/>.
+    
+ *-->
+
+<!-- On Linux and OSX, we want to offer Windows Word 2007 fonts,
+     rather than the fonts installed on the platform.
+
+	 see http://support.microsoft.com/kb/924623 for a list of these.
+     
+     The rationale is that users are most likely to be exchanging
+     documents with Word 2007 users, and probably wouldn't intend
+     to embed a font not native to Windows (which we don't support
+     yet anyway).
+     
+     On Linux and OSX, we do our best to display the chosen font,
+     using a font fall back.
+
+	 Some fonts in this file have attribute clearTypeCollection="true"
+	 or coreWebFont="true".
+	 
+	 Ones marked coreWebFont="true" are good, in that Microsoft has
+	 made those fonts available such that a user can install them
+	 on a non-Windows platform.  Accordingly, docx4all displays 
+	 these fonts in its font drop down.
+
+	 http://blogs.msdn.com/michkap/archive/2007/02/06/1607855.aspx contains
+	 a classification of fonts.  For the moment, we'll only attempt 
+	 to handle Core, ClearType Collection, and Other Western.
+	 
+	 Of the others, it remains to be seen which have fallbacks defined
+	 in VCL.xcu.	
+-->
+
+<!-- "When a user starts the 2007 Microsoft Office system application 
+for the first time, Setup applies default settings that match the language 
+installed on the computer and the language specified by the Windows 
+user locale setting."  http://technet2.microsoft.com/Office/en-us/library/8d814df4-d030-45b2-9c18-5c845f7e183f1033.mspx?mfr=true
+-->
+
+<!-- 
+
+The Windows core fonts (Times New Roman, Courier New, Arial, MS Sans Serif, and Tahoma) 
+contain Western and Central European, Hebrew, Arabic, Greek, Turkish, Baltic, Cyrillic, 
+and Vietnamese scripts but do not contain East Asian script characters. They link to fonts that do. 
+http://www.microsoft.com/globaldev/getwr/steps/wrg_font.mspx
+
+See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
+
+     -->
+
+<!--  
+
+TODO: this is not all the fonts from http://support.microsoft.com/kb/924623 
+
+http://www.brawer.ch/software/fonts/doc/gnu/java/awt/font/opentype/NameDecoder.html 
+      can be used to interrogate the TTF file. Also http://www.brawer.ch/software/fonts/
+-->
+<font name="Algerian" filename="ALGER.TTF"/>
+
+<font name="Arial" filename="arial.ttf" coreWebFont="true">
+		<bold filename="arialbd.ttf"/>
+		<italic filename="ariali.ttf"/>
+		<bolditalic filename="arialbi.ttf"/>
+	</font>
+
+<font name="Arial Black" filename="ariblk.ttf"/>
+
+<font name="Arial Narrow" filename="ARIALN.TTF">
+		<bold filename="ARIALNB.TTF"/>
+		<italic filename="ARIALNI.TTF"/>
+		<bolditalic filename="ARIALNBI.TTF"/>
+	</font>
+
+<font name="Arial Unicode MS" filename="ARIALUNI.TTF"/>
+
+<font name="Baskerville Old Face" filename="BASKVILL.TTF"/>
+
+<font name="Batang" filename="batang.ttc"/>
+<font name="BatangChe"  filename="batang.ttc"/>
+<font name="Gungsuh"  filename="batang.ttc"/>
+<font name="GungsuhChe" filename="batang.ttc"/>
+
+<font name="Bauhaus 93" filename="BAUHS93.TTF"/>
+
+<font name="Bell MT" filename="BELL.TTF">
+		<bold filename="BELLB.TTF"/>
+		<italic filename="BELLI.TTF"/>
+		<bolditalic filename=""/>
+	</font>
+
+<font name="Berlin Sans FB" filename="BRLNSR.TTF">
+		<bold filename="BRLNSB.TTF"/>
+	</font>
+
+<font name="Berlin Sans FB Demi" filename="BRLNSDB.TTF"/>
+
+<font name="Bernard MT Condensed" filename="BERNHC.TTF"/>
+
+<font name="Bodoni MT Poster Compressed" filename="BOD_PSTC.TTF"/>
+
+<font name="Book Antiqua" filename="BKANT.TTF"/>
+
+<font name="Bookman Old Style" filename="BOOKOS.TTF">
+		<bold filename="BOOKOSB.TTF"/>
+		<italic filename="BOOKOSI.TTF"/>
+		<bolditalic filename="BOOKOSBI.TTF"/>
+	</font>
+
+<font name="Bookshelf Symbol 7" filename="BSSYM7.TTF"/>
+
+<font name="Britannic Bold" filename="BRITANIC.TTF"/>
+
+<font name="Broadway" filename="BROADW.TTF"/>
+
+<font name="Brush Script MT" filename="BRUSHSCI.TTF"/>
+
+<font name="Calibri" filename="CALIBRI.TTF" clearTypeCollection="true">
+		<bold filename="CALIBRIB.TTF"/>
+		<italic filename="CALIBRII.TTF"/>
+		<bolditalic filename="CALIBRIZ.TTF"/>
+	</font>
+
+<font name="Californian FB" filename="CALIFR.TTF">
+		<bold filename="CALIFB.TTF"/>
+		<italic filename="CALIFI.TTF"/>
+	</font>
+
+<font name="Cambria" filename="CAMBRIA.TTC" clearTypeCollection="true">
+		<bold filename="CAMBRIAB.TTF"/>
+		<italic filename="CAMBRIAI.TTF"/>
+		<bolditalic filename="CAMBRIAZ.TTF"/>
+	</font>
+
+<font name="Cambria Math" filename="CAMBRIA.TTC"/>
+
+<font name="Candara" filename="CANDARA.TTF" clearTypeCollection="true">
+		<bold filename="CANDARAB.TTF"/>
+		<italic filename="CANDARAI.TTF"/>
+		<bolditalic filename="CANDARAZ.TTF"/>
+	</font>
+
+<font name="Centaur" filename="CENTAUR.TTF"/>
+
+<font name="Century" filename="CENTURY.TTF"/>
+
+<font name="Century Gothic" filename="GOTHIC.TTF">
+		<bold filename="GOTHICB.TTF"/>
+		<italic filename="GOTHICI.TTF"/>
+		<bolditalic filename="GOTHICBI.TTF"/>
+	</font>
+
+<font name="Chiller" filename="CHILLER.TTF"/>
+
+<font name="Colonna MT" filename="COLONNA.TTF"/>
+
+<font name="Comic Sans MS" filename="comic.ttf"  coreWebFont="true">
+		<bold filename="comicbd.ttf"/>
+	</font>
+
+<font name="Consolas" filename="CONSOLA.TTF" clearTypeCollection="true">
+		<bold filename="CONSOLAB.TTF"/>
+		<italic filename="CONSOLAI.TTF"/>
+		<bolditalic filename="CONSOLAZ.TTF"/>
+	</font>
+
+<font name="Constantia" filename="CONSTAN.TTF" clearTypeCollection="true">
+		<bold filename="CONSTANB.TTF"/>
+		<italic filename="CONSTANI.TTF"/>
+		<bolditalic filename="CONSTANZ.TTF"/>
+	</font>
+
+<font name="Cooper Black" filename="COOPBL.TTF"/>
+
+<font name="Corbel" filename="CORBEL.TTF" clearTypeCollection="true">
+		<bold filename="CORBELB.TTF"/>
+		<italic filename="CORBELI.TTF"/>
+		<bolditalic filename="CORBELZ.TTF"/>
+	</font>
+
+<font name="Courier New" filename="cour.ttf" coreWebFont="true">
+		<bold filename="courbd.ttf"/>
+		<italic filename="couri.ttf"/>
+		<bolditalic filename="courbi.ttf"/>
+	</font>
+
+
+<font name="Estrangelo Edessa" filename="estre.ttf"/>
+
+<font name="Footlight MT Light" filename="FTLTLT.TTF"/>
+
+<font name="Franklin Gothic Medium" filename="framd.ttf">
+		<italic filename="framdit.ttf"/>
+	</font>
+
+<font name="Freestyle Script" filename="FREESCPT.TTF"/>
+
+<font name="Garamond" filename="GARA.TTF">
+		<bold filename="GARABD.TTF"/>
+		<italic filename="GARAIT.TTF"/>
+	</font>
+
+<font name="Gautami" filename="gautami.ttf"/>
+
+<font name="Georgia" filename="georgia.ttf" coreWebFont="true">
+		<bold filename="georgiab.ttf"/>
+		<italic filename="georgiai.ttf"/>
+		<bolditalic filename="georgiaz.ttf"/>
+	</font>
+
+<font name="Gulim" filename="gulim.ttc"/>
+<font name="GulimChe" filename="gulim.ttc"/>
+<font name="Dotum" filename="gulim.ttc"/>
+<font name="DotumChe" filename="gulim.ttc"/>
+
+
+<font name="Harlow Solid Italic" filename="HARLOWSI.TTF"/>
+
+<font name="Harrington" filename="HARNGTON.TTF"/>
+
+<font name="High Tower Text" filename="HTOWERT.TTF">
+		<italic filename="HTOWERTI.TTF"/>
+	</font>
+
+<font name="Impact" filename="impact.ttf" coreWebFont="true"/>
+
+<font name="Informal Roman" filename="INFROMAN.TTF"/>
+
+<font name="Jokerman" filename="JOKERMAN.TTF"/>
+
+<font name="Juice ITC" filename="JUICE___.TTF"/>
+
+<!--  kartika.ttf  -->
+
+<font name="Kristen ITC" filename="ITCKRIST.TTF"/>
+
+<font name="Kunstler Script" filename="KUNSTLER.TTF"/>
+
+
+<font name="Latha" filename="latha.ttf"/>
+
+
+<font name="Lucida Bright" filename="LBRITE.TTF">
+		<bold filename="LBRITED.TTF"/><!-- demibold - call it bold -->
+		<italic filename="LBRITEI.TTF"/>
+		<bolditalic filename="LBRITEDI.TTF"/>
+	</font>
+      
+
+<font name="Lucida Calligraphy" filename="LCALLIG.TTF"/>
+
+<font name="Lucida Console" filename="lucon.ttf"/>
+
+<font name="Lucida Fax" filename="LFAX.TTF">
+		<bold filename="LFAXD.TTF"/>
+		<italic filename="LFAXI.TTF"/>
+		<bolditalic filename="LFAXDI.TTF"/>
+	</font>
+   
+
+<font name="Lucida Handwriting" filename="LHANDW.TTF"/>
+
+<font name="Lucida Sans" filename="lsans.ttf">
+<!-- missing on Vista! -->
+		<bold filename="lsansd.ttf"/>
+		<italic filename="lsansi.ttf"/>
+		<bolditalic filename="lsansdi.ttf"/>
+	</font>
+
+
+<font name="Lucida Sans Unicode" filename="l_10646.ttf"/>
+
+<font name="Magneto" filename="MAGNETOB.TTF"/>
+
+<font name="Mangal" filename="mangal.ttf"/>
+
+<!--  Marlett  -->
+
+<font name="Matura MT Script Capitals" filename="MATURASC.TTF"/>
+
+<font name="Microsoft Sans Serif" filename="micross.ttf"/>
+
+<font name="MingLiU" filename="mingliu.ttc"/>
+<font name="PMingLiU" filename="mingliu.ttc"/>
+
+<font name="Mistral" filename="MISTRAL.TTF"/>
+
+<font name="Modern No. 20" filename="MOD20.TTF"/>
+
+<font name="Monotype Corsiva" filename="MTCORSVA.TTF"/>
+
+<font name="MS Gothic" filename="msgothic.ttc"/>
+<font name="MS PGothic" filename="msgothic.ttc"/>
+<font name="MS UI Gothic" filename="msgothic.ttc"/>
+
+<font name="MS Mincho" filename="msmincho.ttc"/>
+
+<font name="MS PMincho" filename="MSMINCHO.TTF"/>
+
+<font name="MS Reference Sans Serif" filename="REFSAN.TTF"/>
+
+<font name="MS Reference Specialty" filename="REFSPCL.TTF"/>
+
+<font name="MT Extra" filename="MTEXTRA.TTF"/> <!-- This is a link to another directory  -->
+
+<font name="MV Boli" filename="mvboli.ttf"/>
+
+<font name="Niagara Engraved" filename="NIAGENG.TTF"/>
+
+<font name="Niagara Solid" filename="NIAGSOL.TTF"/>
+
+<font name="Nina" filename="nina.ttf">
+		<bold filename="ninab.ttf"/>
+	</font>
+
+
+<font name="Old English Text MT" filename="OLDENGL.TTF"/>
+
+<font name="Onyx" filename="ONYX.TTF"/>
+
+<font name="Palatino Linotype" filename="pala.ttf">
+		<bold filename="palab.ttf"/>
+		<italic filename="palai.ttf"/>
+		<bolditalic filename="palabi.ttf"/>
+	</font>
+   
+
+<font name="Parchment" filename="PARCHM.TTF"/>
+
+<font name="Playbill" filename="PLAYBILL.TTF"/>
+
+<font name="Poor Richard" filename="POORICH.TTF"/>
+
+<font name="Raavi" filename="raavi.ttf"/>
+
+<font name="Ravie" filename="RAVIE.TTF"/>
+
+
+<font name="Segoe UI" filename="SEGOEUI.TTF">
+		<bold filename="SEGOEUIB.TTF"/>
+		<italic filename="SEGOEUII.TTF"/>
+		<bolditalic filename="SEGOEUIZ.TTF"/>
+	</font>
+   
+
+<font name="Showcard Gothic" filename="SHOWG.TTF"/>
+
+<font name="Shruti" filename="shruti.ttf"/>
+
+<font name="SimHei" filename="simhei.ttf"/>
+
+<font name="SimSun" filename="simsun.ttc"/>
+<font name="NSimSun" filename="simsun.ttc"/>
+
+<font name="Snap ITC" filename="SNAP____.TTF"/>
+
+<font name="Stencil" filename="STENCIL.TTF"/>
+
+<font name="Sylfaen" filename="sylfaen.ttf"/>
+
+<font name="Symbol" filename="symbol.ttf"/>
+
+<font name="Tahoma" filename="tahoma.ttf">
+		<bold filename="tahomabd.ttf"/>
+	</font>
+  
+
+<font name="Tempus Sans ITC" filename="TEMPSITC.TTF"/>
+
+<font name="Times New Roman" filename="times.ttf"  coreWebFont="true">
+		<bold filename="timesbd.ttf"/>
+		<italic filename="timesi.ttf"/>
+		<bolditalic filename="timesbi.ttf"/>
+	</font>
+   
+
+<font name="Trebuchet MS" filename="trebuc.ttf" coreWebFont="true">
+		<bold filename="trebucbd.ttf"/>
+		<italic filename="trebucit.ttf"/>
+		<bolditalic filename="trebucbi.ttf"/>
+	</font>
+   
+
+<font name="Tunga" filename="tunga.ttf"/>
+
+<font name="Verdana" filename="verdana.ttf" coreWebFont="true">
+		<bold filename="verdanab.ttf"/>
+		<italic filename="verdanai.ttf"/>
+		<bolditalic filename="verdanaz.ttf"/>
+	</font>
+   
+
+<font name="Viner Hand ITC" filename="VINERITC.TTF"/>
+
+<font name="Vivaldi" filename="VIVALDII.TTF"/>
+
+<font name="Vladimir Script" filename="VLADIMIR.TTF"/>
+
+<!--  vrinda.ttf  -->
+
+<font name="Webdings" filename="webdings.ttf" coreWebFont="true"/>
+
+<font name="Wide Latin" filename="LATINWD.TTF"/>
+
+<font name="Wingdings" filename="wingding.ttf"/>
+
+<font name="Wingdings2" filename="WINGDNG2.TTF"/>
+
+<font name="Wingdings3" filename="WINGDNG3.TTF"/>
+
+<!-- 
+
+@ prefix means Vertical support - see http://blogs.msdn.com/michkap/archive/2008/01/17/7141157.aspx
+
+@Batang
+@BatangChe
+@Dotum
+@DotumChe
+@Gulim
+@GulimChe
+@Gungsuh
+@GungsuhChe
+@MingLiU
+@MS Gothic
+@MS Mincho
+@MS PGothic
+@MS PMincho
+@MS UI Gothic
+@NSimSun
+@PMingLiU
+@SimHei
+@SimSun -->
+
+</fonts>			
