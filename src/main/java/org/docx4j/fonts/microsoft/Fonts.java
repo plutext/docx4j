@@ -1,0 +1,523 @@
+/*
+ *  Copyright 2007, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is free software: you can use it, redistribute it and/or modify
+    it under the terms of version 3 of the GNU Affero General Public License 
+    as published by the Free Software Foundation.
+
+    docx4j is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License   
+    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
+    
+ */
+
+package org.docx4j.fonts.microsoft;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+
+/**
+ * <p>Java class for anonymous complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="font" maxOccurs="unbounded">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence minOccurs="0">
+ *                   &lt;element name="bold" minOccurs="0">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
+ *                   &lt;element name="italic" minOccurs="0">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
+ *                   &lt;element name="bolditalic" minOccurs="0">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
+ *                 &lt;/sequence>
+ *                 &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+    "font"
+})
+@XmlRootElement(name = "fonts")
+public class Fonts {
+
+    @XmlElement(required = true)
+    protected List<Fonts.Font> font;
+
+    /**
+     * Gets the value of the font property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the font property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getFont().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Fonts.Font }
+     * 
+     * 
+     */
+    public List<Fonts.Font> getFont() {
+        if (font == null) {
+            font = new ArrayList<Fonts.Font>();
+        }
+        return this.font;
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence minOccurs="0">
+     *         &lt;element name="bold" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *         &lt;element name="italic" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *         &lt;element name="bolditalic" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *       &lt;/sequence>
+     *       &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+     *       &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+     *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "bold",
+        "italic",
+        "bolditalic"
+    })
+    public static class Font {
+
+        protected Fonts.Font.Bold bold;
+        protected Fonts.Font.Italic italic;
+        protected Fonts.Font.Bolditalic bolditalic;
+        @XmlAttribute
+        protected Boolean clearTypeCollection;
+        @XmlAttribute
+        protected Boolean coreWebFont;
+        @XmlAttribute(required = true)
+        protected String filename;
+        @XmlAttribute(required = true)
+        protected String name;
+
+        /**
+         * Gets the value of the bold property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Fonts.Font.Bold }
+         *     
+         */
+        public Fonts.Font.Bold getBold() {
+            return bold;
+        }
+
+        /**
+         * Sets the value of the bold property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Fonts.Font.Bold }
+         *     
+         */
+        public void setBold(Fonts.Font.Bold value) {
+            this.bold = value;
+        }
+
+        /**
+         * Gets the value of the italic property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Fonts.Font.Italic }
+         *     
+         */
+        public Fonts.Font.Italic getItalic() {
+            return italic;
+        }
+
+        /**
+         * Sets the value of the italic property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Fonts.Font.Italic }
+         *     
+         */
+        public void setItalic(Fonts.Font.Italic value) {
+            this.italic = value;
+        }
+
+        /**
+         * Gets the value of the bolditalic property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Fonts.Font.Bolditalic }
+         *     
+         */
+        public Fonts.Font.Bolditalic getBolditalic() {
+            return bolditalic;
+        }
+
+        /**
+         * Sets the value of the bolditalic property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Fonts.Font.Bolditalic }
+         *     
+         */
+        public void setBolditalic(Fonts.Font.Bolditalic value) {
+            this.bolditalic = value;
+        }
+
+        /**
+         * Gets the value of the clearTypeCollection property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Boolean }
+         *     
+         */
+        public Boolean isClearTypeCollection() {
+            return clearTypeCollection;
+        }
+
+        /**
+         * Sets the value of the clearTypeCollection property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Boolean }
+         *     
+         */
+        public void setClearTypeCollection(Boolean value) {
+            this.clearTypeCollection = value;
+        }
+
+        /**
+         * Gets the value of the coreWebFont property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Boolean }
+         *     
+         */
+        public Boolean isCoreWebFont() {
+            return coreWebFont;
+        }
+
+        /**
+         * Sets the value of the coreWebFont property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Boolean }
+         *     
+         */
+        public void setCoreWebFont(Boolean value) {
+            this.coreWebFont = value;
+        }
+
+        /**
+         * Gets the value of the filename property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getFilename() {
+            return filename;
+        }
+
+        /**
+         * Sets the value of the filename property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setFilename(String value) {
+            this.filename = value;
+        }
+
+        /**
+         * Gets the value of the name property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Sets the value of the name property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setName(String value) {
+            this.name = value;
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Bold {
+
+            @XmlAttribute(required = true)
+            protected String filename;
+
+            /**
+             * Gets the value of the filename property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getFilename() {
+                return filename;
+            }
+
+            /**
+             * Sets the value of the filename property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setFilename(String value) {
+                this.filename = value;
+            }
+
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Bolditalic {
+
+            @XmlAttribute(required = true)
+            protected String filename;
+
+            /**
+             * Gets the value of the filename property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getFilename() {
+                return filename;
+            }
+
+            /**
+             * Sets the value of the filename property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setFilename(String value) {
+                this.filename = value;
+            }
+
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Italic {
+
+            @XmlAttribute(required = true)
+            protected String filename;
+
+            /**
+             * Gets the value of the filename property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getFilename() {
+                return filename;
+            }
+
+            /**
+             * Sets the value of the filename property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setFilename(String value) {
+                this.filename = value;
+            }
+
+        }
+
+    }
+
+}
