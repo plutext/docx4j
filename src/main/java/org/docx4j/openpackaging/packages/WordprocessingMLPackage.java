@@ -295,6 +295,7 @@ public class WordprocessingMLPackage extends Package {
 			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\COMIC.TTF", true);
 			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\TREBUC.TTF", true);
 			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\VERDANA.TTF", true);
+			
 		}
 		
 		renderer.setDocument(xhtmlDoc, null);

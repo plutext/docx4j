@@ -92,11 +92,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "font"
 })
-@XmlRootElement(name = "fonts")
-public class Fonts {
+@XmlRootElement(name = "MicrosoftFonts")
+public class MicrosoftFonts {
 
     @XmlElement(required = true)
-    protected List<Fonts.Font> font;
+    protected List<MicrosoftFonts.Font> font;
 
     /**
      * Gets the value of the font property.
@@ -116,13 +116,13 @@ public class Fonts {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Fonts.Font }
+     * {@link MicrosoftFonts.Font }
      * 
      * 
      */
-    public List<Fonts.Font> getFont() {
+    public List<MicrosoftFonts.Font> getFont() {
         if (font == null) {
-            font = new ArrayList<Fonts.Font>();
+            font = new ArrayList<MicrosoftFonts.Font>();
         }
         return this.font;
     }
@@ -185,9 +185,9 @@ public class Fonts {
     })
     public static class Font {
 
-        protected Fonts.Font.Bold bold;
-        protected Fonts.Font.Italic italic;
-        protected Fonts.Font.Bolditalic bolditalic;
+        protected MicrosoftFonts.Font.Bold bold;
+        protected MicrosoftFonts.Font.Italic italic;
+        protected MicrosoftFonts.Font.Bolditalic bolditalic;
         @XmlAttribute
         protected Boolean clearTypeCollection;
         @XmlAttribute
@@ -202,10 +202,10 @@ public class Fonts {
          * 
          * @return
          *     possible object is
-         *     {@link Fonts.Font.Bold }
+         *     {@link MicrosoftFonts.Font.Bold }
          *     
          */
-        public Fonts.Font.Bold getBold() {
+        public MicrosoftFonts.Font.Bold getBold() {
             return bold;
         }
 
@@ -214,10 +214,10 @@ public class Fonts {
          * 
          * @param value
          *     allowed object is
-         *     {@link Fonts.Font.Bold }
+         *     {@link MicrosoftFonts.Font.Bold }
          *     
          */
-        public void setBold(Fonts.Font.Bold value) {
+        public void setBold(MicrosoftFonts.Font.Bold value) {
             this.bold = value;
         }
 
@@ -226,10 +226,10 @@ public class Fonts {
          * 
          * @return
          *     possible object is
-         *     {@link Fonts.Font.Italic }
+         *     {@link MicrosoftFonts.Font.Italic }
          *     
          */
-        public Fonts.Font.Italic getItalic() {
+        public MicrosoftFonts.Font.Italic getItalic() {
             return italic;
         }
 
@@ -238,10 +238,10 @@ public class Fonts {
          * 
          * @param value
          *     allowed object is
-         *     {@link Fonts.Font.Italic }
+         *     {@link MicrosoftFonts.Font.Italic }
          *     
          */
-        public void setItalic(Fonts.Font.Italic value) {
+        public void setItalic(MicrosoftFonts.Font.Italic value) {
             this.italic = value;
         }
 
@@ -250,10 +250,10 @@ public class Fonts {
          * 
          * @return
          *     possible object is
-         *     {@link Fonts.Font.Bolditalic }
+         *     {@link MicrosoftFonts.Font.Bolditalic }
          *     
          */
-        public Fonts.Font.Bolditalic getBolditalic() {
+        public MicrosoftFonts.Font.Bolditalic getBolditalic() {
             return bolditalic;
         }
 
@@ -262,10 +262,10 @@ public class Fonts {
          * 
          * @param value
          *     allowed object is
-         *     {@link Fonts.Font.Bolditalic }
+         *     {@link MicrosoftFonts.Font.Bolditalic }
          *     
          */
-        public void setBolditalic(Fonts.Font.Bolditalic value) {
+        public void setBolditalic(MicrosoftFonts.Font.Bolditalic value) {
             this.bolditalic = value;
         }
 
