@@ -53,7 +53,8 @@ public class FontExplorer {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
+		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
+		String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
@@ -159,33 +160,48 @@ public class FontExplorer {
 		// Go through FontsTable, and see which ones we can render!
 		for (Fonts.Font font : fontList ) {
 			String fontName =  font.getName();
-			FontSubstitutions.Replace replacement= (FontSubstitutions.Replace)replaceMap.get(normalise(fontName));
-			if (replacement!=null) {
-				//System.out.println( "\n" + fontName + " found." );	
-//				String subsFonts = replacement.getSubstFonts();
-				
-				// Is there anything in subsFonts we can use?
-				String[] tokens = replacement.getSubstFonts().split(";");
-				boolean found = false;
-			     for (int x=0; x<tokens.length; x++) {
-			         //System.out.println(tokens[x]);
-			    	 if(physicalFontMap.get(tokens[x])!=null) {
-			    		 String physicalFontFile = (String)physicalFontMap.get(tokens[x]);
-			    		 System.out.println(fontName + " --> "  +  physicalFontFile);	
-			    		 found = true;
-			    		 break;
-			    	 } else {
-			    		 //System.out.println("no match on token " + x + ":" + tokens[x]);
-			    	 }
-
-			     }
-			     
-			     if (!found) {
-		    		 System.out.println("!  " + fontName + " -->  Couldn't find any of " + replacement.getSubstFonts() );				    	 
-			     }
-				
+			
+			// First, is the actual font available?
+			if (physicalFontMap.get(normalise(fontName)) != null) {
+				System.out.println(fontName + " --> NATIVE");
 			} else {
-				System.out.println( "Nothing in FontSubstitutions.xml for: " + fontName );								
+
+				// If not ..
+				FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) replaceMap
+						.get(normalise(fontName));
+				if (replacement != null) {
+					// System.out.println( "\n" + fontName + " found." );
+					// String subsFonts = replacement.getSubstFonts();
+
+					// Is there anything in subsFonts we can use?
+					String[] tokens = replacement.getSubstFonts().split(";");
+					boolean found = false;
+					for (int x = 0; x < tokens.length; x++) {
+						// System.out.println(tokens[x]);
+						if (physicalFontMap.get(tokens[x]) != null) {
+							String physicalFontFile = (String) physicalFontMap
+									.get(tokens[x]);
+							System.out.println(fontName + " --> "
+									+ physicalFontFile);
+							found = true;
+							break;
+						} else {
+							// System.out.println("no match on token " + x + ":"
+							// + tokens[x]);
+						}
+
+					}
+
+					if (!found) {
+						System.out.println("!  " + fontName
+								+ " -->  Couldn't find any of "
+								+ replacement.getSubstFonts());
+					}
+
+				} else {
+					System.out.println("Nothing in FontSubstitutions.xml for: "
+							+ fontName);
+				}
 			}
 		}
         
@@ -268,7 +284,7 @@ public class FontExplorer {
 			    		 // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4752644
 			    		 
 			    		 //System.out.println(sun.font.FontManager.getFileNameForFontName(logicalAwtFontName) );
-			    		 System.out.println(((sun.awt.X11GraphicsEnvironment)ge).getFileNameFromPlatformName(logicalAwtFontName));
+			    		 //System.out.println(((sun.awt.X11GraphicsEnvironment)ge).getFileNameFromPlatformName(logicalAwtFontName));
 			    		 break;
 			    	 } else {
 			    		 //System.out.println("no match on token " + x + ":" + tokens[x]);
