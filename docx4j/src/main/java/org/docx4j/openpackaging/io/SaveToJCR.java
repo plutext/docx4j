@@ -164,7 +164,7 @@ public class SaveToJCR {
 		
 		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
 			
-			log.info("incoming path:" + partName);
+//			log.info("incoming path:" + partName);
 						
 			// Add CM_NAMESPACE prefix
 			
@@ -176,7 +176,7 @@ public class SaveToJCR {
 				if (i>0) retVal.append("/");
 				retVal.append(CM_NAMESPACE + org.docx4j.JcrNodeMapper.ISO9075.encode(partNameSegments[i]) );
 			}
-			log.info("created path:" + retVal.toString());
+//			log.info("created path:" + retVal.toString());
 			return retVal.toString();
 		} else {
 			log.debug( "Incoming: " + partName);

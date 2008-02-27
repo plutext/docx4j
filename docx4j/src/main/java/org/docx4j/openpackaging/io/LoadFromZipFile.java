@@ -32,9 +32,6 @@ import java.util.zip.ZipFile;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.jcr.Node;
-import javax.jcr.Session;
-
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;

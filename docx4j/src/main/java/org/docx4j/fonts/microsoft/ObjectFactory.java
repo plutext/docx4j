@@ -48,43 +48,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Fonts }
+     * Create an instance of {@link MicrosoftFonts }
      * 
      */
-    public Fonts createFonts() {
-        return new Fonts();
+    public MicrosoftFonts createMicrosoftFonts() {
+        return new MicrosoftFonts();
     }
 
     /**
-     * Create an instance of {@link Fonts.Font.Italic }
+     * Create an instance of {@link MicrosoftFonts.Font.Italic }
      * 
      */
-    public Fonts.Font.Italic createFontsFontItalic() {
-        return new Fonts.Font.Italic();
+    public MicrosoftFonts.Font.Italic createFontsFontItalic() {
+        return new MicrosoftFonts.Font.Italic();
     }
 
     /**
-     * Create an instance of {@link Fonts.Font }
+     * Create an instance of {@link MicrosoftFonts.Font }
      * 
      */
-    public Fonts.Font createFontsFont() {
-        return new Fonts.Font();
+    public MicrosoftFonts.Font createFontsFont() {
+        return new MicrosoftFonts.Font();
     }
 
     /**
-     * Create an instance of {@link Fonts.Font.Bolditalic }
+     * Create an instance of {@link MicrosoftFonts.Font.Bolditalic }
      * 
      */
-    public Fonts.Font.Bolditalic createFontsFontBolditalic() {
-        return new Fonts.Font.Bolditalic();
+    public MicrosoftFonts.Font.Bolditalic createFontsFontBolditalic() {
+        return new MicrosoftFonts.Font.Bolditalic();
     }
 
     /**
-     * Create an instance of {@link Fonts.Font.Bold }
+     * Create an instance of {@link MicrosoftFonts.Font.Bold }
      * 
      */
-    public Fonts.Font.Bold createFontsFontBold() {
-        return new Fonts.Font.Bold();
+    public MicrosoftFonts.Font.Bold createFontsFontBold() {
+        return new MicrosoftFonts.Font.Bold();
     }
 
 }

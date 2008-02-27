@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <oor:component-data xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:install="http://openoffice.org/2004/installation" oor:name="VCL" oor:package="org.openoffice">
 <!-- VCL.xcu - this comes from an install of OpenOffice 2.3.1
-     (I don't know where it lives in OO cvs these days).
+
+	 In CVS it lives at:
+	 
+	     http://util.openoffice.org/source/browse/util/officecfg/registry/data/org/openoffice/
+     
      As part of OpenOffice, it is available to us under LGPL. -->
 
 

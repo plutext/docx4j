@@ -239,7 +239,7 @@ public class LoadFromJCR extends Load {
 		
 		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
 			
-			log.info("incoming path:" + partName);
+//			log.info("incoming path:" + partName);
 						
 			// Split it into segments, and add CM_NAMESPACE prefix
 			StringBuffer retVal = new StringBuffer();
@@ -249,7 +249,7 @@ public class LoadFromJCR extends Load {
 				if (i>0) retVal.append("/");
 				retVal.append(CM_NAMESPACE + org.docx4j.JcrNodeMapper.ISO9075.encode(partNameSegments[i]) );
 			}
-			log.info("created path:" + retVal.toString());
+//			log.info("created path:" + retVal.toString());
 			return retVal.toString();
 		} else {
 //			log.info( "Incoming: " + partName);
@@ -266,7 +266,7 @@ public class LoadFromJCR extends Load {
 		
 		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
 			
-			log.info("incoming path:" + partName);
+//			log.info("incoming path:" + partName);
 			
 			// Split it into segments, and remove CM_NAMESPACE prefix
 			StringBuffer retVal = new StringBuffer();
@@ -276,7 +276,7 @@ public class LoadFromJCR extends Load {
 				if (i>0) retVal.append("/");
 				retVal.append( org.docx4j.JcrNodeMapper.ISO9075.decode(partNameSegments[i].substring(CM_NAMESPACE.length())) );
 			}
-			log.info("created path:" + retVal.toString());
+//			log.info("created path:" + retVal.toString());
 			return retVal.toString();
 		} else {
 			return java.net.URLDecoder.decode( partName );

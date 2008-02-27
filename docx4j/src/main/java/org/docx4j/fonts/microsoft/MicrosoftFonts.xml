@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fonts>
+<MicrosoftFonts>
 
 <!--
  *
@@ -449,4 +449,4 @@ http://www.brawer.ch/software/fonts/doc/gnu/java/awt/font/opentype/NameDecoder.h
 @SimHei
 @SimSun -->
 
-</fonts>			
+</MicrosoftFonts>			
