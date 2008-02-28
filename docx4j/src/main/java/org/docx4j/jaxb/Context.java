@@ -38,11 +38,13 @@ import org.dom4j.io.XMLWriter;
 public class Context {
 	
 	public static JAXBContext jc;
+	public static JAXBContext jcThemePart;
 	
 	static {
 		
 		try {		
 			jc = JAXBContext.newInstance("org.docx4j.wml");
+			jcThemePart = JAXBContext.newInstance("org.docx4j.dml");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}				

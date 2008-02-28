@@ -19,22 +19,23 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-
-import javax.xml.bind.JAXBContext;
+//import java.io.InputStream;
+//import java.io.OutputStream;
+//import java.net.URI;
+//
+//import javax.xml.bind.JAXBContext;
 //import java.net.URI;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.parts.DocPropsCorePart;
-import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
+//import org.docx4j.openpackaging.exceptions.Docx4JException;
+//import org.docx4j.openpackaging.parts.DocPropsCorePart;
+//import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.dom4j.Document;
+import org.docx4j.openpackaging.parts.ThemePart;
+//import org.dom4j.Document;
 
 
 
@@ -55,6 +56,7 @@ public abstract class DocumentPart extends JaxbXmlPart {
 	protected EndnotesPart endNotesPart; //done
 	
 	protected FontTablePart fontTablePart; // done (ie setup below and in SchemaType_
+	protected ThemePart themePart; // done 
 	
 	
 	protected FootnotesPart footnotesPart; //done
@@ -72,6 +74,9 @@ public abstract class DocumentPart extends JaxbXmlPart {
 		if (relationshipType.equals(Namespaces.FONT_TABLE)) {
 			fontTablePart = (FontTablePart)part;
 			return true;			
+		} else if (relationshipType.equals(Namespaces.THEME)) {
+			themePart = (ThemePart)part;
+			return true;	
 		} else if (relationshipType.equals(Namespaces.STYLES)) {
 			styleDefinitionsPart = (StyleDefinitionsPart)part;
 			return true;			

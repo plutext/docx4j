@@ -19,6 +19,10 @@
 
 package org.docx4j.openpackaging.parts;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -27,10 +31,22 @@ import org.dom4j.Document;
 
 
 
-public final class ThemePart extends Dom4jXmlPart {
+public final class ThemePart extends JaxbXmlPart {
+	
+	private static Logger log = Logger.getLogger(ThemePart.class);		
 	
 	public ThemePart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init();
+	}
+
+	public ThemePart() throws InvalidFormatException {
+		super(new PartName("/word/theme/theme1.xml"));
+		init();
+	}
+	
+	
+	public void init() {
 		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
@@ -41,9 +57,44 @@ public final class ThemePart extends Dom4jXmlPart {
 		
 	}
 
-	@Override
-	public Document getDocument() {
-		return document;
-	}	
+    /**
+     * Unmarshal XML data from the specified InputStream and return the 
+     * resulting content tree.  Validation event location information may
+     * be incomplete when using this form of the unmarshal API.
+     *
+     * <p>
+     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
+     * 
+     * @param is the InputStream to unmarshal XML data from
+     * @return the newly created root object of the java content tree 
+     *
+     * @throws JAXBException 
+     *     If any unexpected errors occur while unmarshalling
+     */
+    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+    	
+		try {
+			
+			setJAXBContext(org.docx4j.jaxb.Context.jcThemePart);				
+		    		    
+			Unmarshaller u = jc.createUnmarshaller();
+			
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			System.out.println("unmarshalling " + this.getClass().getName() + " \n\n" );									
+						
+			jaxbElement = u.unmarshal( is );
+			
+			
+			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+
+		} catch (Exception e ) {
+			e.printStackTrace();
+		}
+    	
+		return jaxbElement;
+    	
+    }
 	
 }
