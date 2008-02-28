@@ -482,7 +482,14 @@ public class LoadFromJCR extends Load {
 				InputStream is = getInputStreamFromJCRPart( jcrSession, 
 						nodeMapper, docxNode,  resolvedPartUri);
 				
-				if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
+
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcThemePart);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+					
+				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+					
+					// MainDocument part, Styles part, Font part etc
 
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
