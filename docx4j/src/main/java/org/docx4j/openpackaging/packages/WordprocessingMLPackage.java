@@ -31,6 +31,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
@@ -209,9 +210,22 @@ public class WordprocessingMLPackage extends Package {
 		marshaller.marshal(wd, doc);
 		
 		log.info("wordDocument created for PDF rendering!");
+
+/*		
+ * 		We want to use plain old Xalan J, not xsltc
+ * 
+ * 		Following is not necessary provided Xalan is on the classpath.
+ * 								   ==================================
+ * 
+		System.setProperty("javax.xml.transform.TransformerFactory", "FQCN");
+
+		examples of FQCN:
 		
+		  com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+		  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
 		
-		
+			
+*/		
 		// Now transform this into XHTML
 		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
 		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
@@ -227,7 +241,26 @@ public class WordprocessingMLPackage extends Package {
 		
 		// Use the template to create a transformer
 		javax.xml.transform.Transformer xformer = template.newTransformer();
+		
+		log.error(xformer.getClass().getName() );
+		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't work
+		// with our extension function.
 
+		// Handle fonts - this is platform specific
+		// Algorithm - to be implemented:
+		// 1.  Get a list of all the fonts in the document
+		java.util.Map fontsInUse = this.getMainDocumentPart().fontsInUse();
+		
+		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
+		//     - do this in a general way, since docx4all needs this as well to display fonts
+		Substituter s = new Substituter();
+		s.populateFontMappings(fontsInUse);
+		
+		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
+		//     possibly via an extension function in the XSLT
+		xformer.setParameter("substituterInstance", s);
+		
+		
 		//DEBUGGING 
 		// use the identity transform if you want to send wordDocument;
 		// otherwise you'll get the XHTML
@@ -274,15 +307,7 @@ public class WordprocessingMLPackage extends Package {
 				
 		// Now render the XHTML
 		org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
-		
-		// TODO: Handle fonts
-		// - this is platform specific
-		// Algorithm - to be implemented:
-		// 1.  Get a list of all the fonts in the document
-		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
-		//     - do this in a general way, since docx4all needs this as well to display fonts
-		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
-		//     possibly via an extension function in the XSLT
+				
 		// 4.  Use addFont code like that below as necessary for the fonts
 		
 			// See https://xhtmlrenderer.dev.java.net/r7/users-guide-r7.html#xil_32
