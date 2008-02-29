@@ -159,6 +159,10 @@ public abstract class DocumentPart extends JaxbXmlPart {
 		return styleDefinitionsPart;
 	}
 
+	public ThemePart getThemePart() {
+		return themePart;
+	}
+	
 
 	public WebSettingsPart getWebSettingsPart() {
 		return webSettingsPart;
