@@ -23,7 +23,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -68,7 +67,6 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "u",
     "vertAlign"
 })
-@XmlRootElement(name = "rPr")
 public class RPr
     implements Child
 {
@@ -541,6 +539,8 @@ public class RPr
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;attribute name="ascii" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="hAnsi" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="asciiTheme" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ThemeFontEnumeration" />
+     *       &lt;attribute name="hAnsiTheme" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ThemeFontEnumeration" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -558,6 +558,10 @@ public class RPr
         protected String ascii;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String hAnsi;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected ThemeFontEnumeration asciiTheme;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected ThemeFontEnumeration hAnsiTheme;
         @XmlTransient
         private Object parent;
 
@@ -607,6 +611,54 @@ public class RPr
          */
         public void setHAnsi(String value) {
             this.hAnsi = value;
+        }
+
+        /**
+         * Gets the value of the asciiTheme property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link ThemeFontEnumeration }
+         *     
+         */
+        public ThemeFontEnumeration getAsciiTheme() {
+            return asciiTheme;
+        }
+
+        /**
+         * Sets the value of the asciiTheme property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link ThemeFontEnumeration }
+         *     
+         */
+        public void setAsciiTheme(ThemeFontEnumeration value) {
+            this.asciiTheme = value;
+        }
+
+        /**
+         * Gets the value of the hAnsiTheme property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link ThemeFontEnumeration }
+         *     
+         */
+        public ThemeFontEnumeration getHAnsiTheme() {
+            return hAnsiTheme;
+        }
+
+        /**
+         * Sets the value of the hAnsiTheme property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link ThemeFontEnumeration }
+         *     
+         */
+        public void setHAnsiTheme(ThemeFontEnumeration value) {
+            this.hAnsiTheme = value;
         }
 
         /**

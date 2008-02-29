@@ -37,7 +37,18 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_FontFamily">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_FontFamily" />
+ *       &lt;attribute name="val" use="required">
+ *         &lt;simpleType>
+ *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *             &lt;enumeration value="decorative"/>
+ *             &lt;enumeration value="modern"/>
+ *             &lt;enumeration value="roman"/>
+ *             &lt;enumeration value="script"/>
+ *             &lt;enumeration value="swiss"/>
+ *             &lt;enumeration value="auto"/>
+ *           &lt;/restriction>
+ *         &lt;/simpleType>
+ *       &lt;/attribute>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -52,7 +63,7 @@ public class FontFamily
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    protected STFontFamily val;
+    protected String val;
     @XmlTransient
     private Object parent;
 
@@ -61,10 +72,10 @@ public class FontFamily
      * 
      * @return
      *     possible object is
-     *     {@link STFontFamily }
+     *     {@link String }
      *     
      */
-    public STFontFamily getVal() {
+    public String getVal() {
         return val;
     }
 
@@ -73,10 +84,10 @@ public class FontFamily
      * 
      * @param value
      *     allowed object is
-     *     {@link STFontFamily }
+     *     {@link String }
      *     
      */
-    public void setVal(STFontFamily value) {
+    public void setVal(String value) {
         this.val = value;
     }
 
