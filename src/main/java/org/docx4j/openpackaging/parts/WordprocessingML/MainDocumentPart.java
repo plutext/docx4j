@@ -147,7 +147,8 @@ public class MainDocumentPart extends DocumentPart  {
 		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
 
 	// Add default font
-		String defaultFont = getDefaultFont();  				
+		String defaultFont = getDefaultFont(); 
+		log.debug("fontsDiscovered.put:" + defaultFont);
 		fontsDiscovered.put( defaultFont, defaultFont  );
 		
 	// Add fonts used in the styles we discovered
