@@ -21,6 +21,16 @@
     
  * -->    
  
+ <!--
+ jharrop@jharrop-490:~/workspace200711/docx4j-001/src/main/java/org/docx4j/fonts/microsoft$
+  
+             sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh MicrosoftFonts.xsd -d ~/workspace200711/docx4j-001/src/main/java/ -no-header  -target 2.0
+ 
+ jharrop@jharrop-490:~/workspace200711/docx4j-001/src/main/java/org/docx4j/fonts$ 
+ 
+ 			sed -s -i -f script microsoft/*.java
+ -->
+ 
     <xs:annotation>
         <xs:appinfo>
             <xs:appinfo>
@@ -59,6 +69,7 @@
             <xs:attribute name="filename" type="xs:string" use="required" />
             <xs:attribute name="coreWebFont" type="xs:boolean" use="optional" />
             <xs:attribute name="clearTypeCollection" type="xs:boolean" use="optional" />
+            <xs:attribute name="secondary" type="xs:boolean" use="optional" />
           </xs:complexType>
         </xs:element>
       </xs:sequence>

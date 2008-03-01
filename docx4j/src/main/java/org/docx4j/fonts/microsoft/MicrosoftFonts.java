@@ -72,10 +72,11 @@ import javax.xml.bind.annotation.XmlType;
  *                     &lt;/complexType>
  *                   &lt;/element>
  *                 &lt;/sequence>
- *                 &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;attribute name="secondary" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -166,10 +167,11 @@ public class MicrosoftFonts {
      *           &lt;/complexType>
      *         &lt;/element>
      *       &lt;/sequence>
-     *       &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-     *       &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-     *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+     *       &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+     *       &lt;attribute name="secondary" type="{http://www.w3.org/2001/XMLSchema}boolean" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -188,14 +190,16 @@ public class MicrosoftFonts {
         protected MicrosoftFonts.Font.Bold bold;
         protected MicrosoftFonts.Font.Italic italic;
         protected MicrosoftFonts.Font.Bolditalic bolditalic;
+        @XmlAttribute(required = true)
+        protected String name;
+        @XmlAttribute(required = true)
+        protected String filename;
+        @XmlAttribute
+        protected Boolean coreWebFont;
         @XmlAttribute
         protected Boolean clearTypeCollection;
         @XmlAttribute
-        protected Boolean coreWebFont;
-        @XmlAttribute(required = true)
-        protected String filename;
-        @XmlAttribute(required = true)
-        protected String name;
+        protected Boolean secondary;
 
         /**
          * Gets the value of the bold property.
@@ -270,51 +274,27 @@ public class MicrosoftFonts {
         }
 
         /**
-         * Gets the value of the clearTypeCollection property.
+         * Gets the value of the name property.
          * 
          * @return
          *     possible object is
-         *     {@link Boolean }
+         *     {@link String }
          *     
          */
-        public Boolean isClearTypeCollection() {
-            return clearTypeCollection;
+        public String getName() {
+            return name;
         }
 
         /**
-         * Sets the value of the clearTypeCollection property.
+         * Sets the value of the name property.
          * 
          * @param value
          *     allowed object is
-         *     {@link Boolean }
+         *     {@link String }
          *     
          */
-        public void setClearTypeCollection(Boolean value) {
-            this.clearTypeCollection = value;
-        }
-
-        /**
-         * Gets the value of the coreWebFont property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link Boolean }
-         *     
-         */
-        public Boolean isCoreWebFont() {
-            return coreWebFont;
-        }
-
-        /**
-         * Sets the value of the coreWebFont property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link Boolean }
-         *     
-         */
-        public void setCoreWebFont(Boolean value) {
-            this.coreWebFont = value;
+        public void setName(String value) {
+            this.name = value;
         }
 
         /**
@@ -342,27 +322,75 @@ public class MicrosoftFonts {
         }
 
         /**
-         * Gets the value of the name property.
+         * Gets the value of the coreWebFont property.
          * 
          * @return
          *     possible object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public String getName() {
-            return name;
+        public Boolean isCoreWebFont() {
+            return coreWebFont;
         }
 
         /**
-         * Sets the value of the name property.
+         * Sets the value of the coreWebFont property.
          * 
          * @param value
          *     allowed object is
-         *     {@link String }
+         *     {@link Boolean }
          *     
          */
-        public void setName(String value) {
-            this.name = value;
+        public void setCoreWebFont(Boolean value) {
+            this.coreWebFont = value;
+        }
+
+        /**
+         * Gets the value of the clearTypeCollection property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Boolean }
+         *     
+         */
+        public Boolean isClearTypeCollection() {
+            return clearTypeCollection;
+        }
+
+        /**
+         * Sets the value of the clearTypeCollection property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Boolean }
+         *     
+         */
+        public void setClearTypeCollection(Boolean value) {
+            this.clearTypeCollection = value;
+        }
+
+        /**
+         * Gets the value of the secondary property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Boolean }
+         *     
+         */
+        public Boolean isSecondary() {
+            return secondary;
+        }
+
+        /**
+         * Sets the value of the secondary property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Boolean }
+         *     
+         */
+        public void setSecondary(Boolean value) {
+            this.secondary = value;
         }
 
 
