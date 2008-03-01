@@ -54,7 +54,9 @@ public class FontExplorer {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
-		String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
+		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
+		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
+		String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/docx4all-fonts.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
@@ -201,11 +203,20 @@ public class FontExplorer {
 				} else {
 					System.out.println("Nothing in FontSubstitutions.xml for: "
 							+ fontName);
+					System.out.println("Add the following ..");					
+					System.out.println("<replace name=\"" + normalise(fontName) + "\">"
+											+ "<SubstFonts>" + normalise(fontName) + "</SubstFonts>"
+											//+ "<SubstFontsPS></SubstFontsPS>"
+											+ "<SubstFontsHTML></SubstFontsHTML>"
+											+ "<FontWeight>Normal</FontWeight>"
+											+ "<FontWidth>Normal</FontWidth>"
+											+ "<FontType></FontType>"
+											+ "</replace>");
 				}
 			}
 		}
         
-        
+		//wordMLPackage.getMainDocumentPart().fontsInUse();    
         
 	}
 
@@ -300,6 +311,8 @@ public class FontExplorer {
 		// http://www.java2s.com/Open-Source/Java-Document/JDK-Modules-sun/font/sun/font/FontManager.java.htm		
 		// http://www.java2s.com/Open-Source/Java-Document/JDK-Modules-sun/java2d/sun/java2d/SunGraphicsEnvironment.java.htm		
 		// http://www.java2s.com/Open-Source/Java-Document/JDK-Modules-sun/awt/sun/awt/FontConfiguration.java.htm
+	
+		
 	}
 
 	static java.lang.CharSequence target = (new String(" ")).subSequence(0, 1);
