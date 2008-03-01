@@ -366,7 +366,10 @@ public class Substituter {
             	}
             	
             }
-        }		
+        }
+        
+        // http://www.brawer.ch/software/fonts/doc/gnu/java/awt/font/opentype/NameDecoder.html 
+        //    can be used to interrogate the TTF file. Also http://www.brawer.ch/software/fonts/
 	}
 	
 	private Map awtFontFamilyNames = new HashMap();
