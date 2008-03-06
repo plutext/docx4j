@@ -174,10 +174,13 @@ public class MainDocumentPart extends DocumentPart  {
     private void setFontScheme() {
     	
     	if (fontScheme==null) {  // ie we haven't done this already
-    		
-			org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)this.getThemePart().getJaxbElement();
-			if (theme.getThemeElements()!=null && theme.getThemeElements().getFontScheme()!=null) {			
-				fontScheme = theme.getThemeElements().getFontScheme();			
+    		if (this.getThemePart() != null) {
+				org.docx4j.dml.Theme theme = 
+					(org.docx4j.dml.Theme) this.getThemePart().getJaxbElement();
+				if (theme.getThemeElements() != null
+						&& theme.getThemeElements().getFontScheme() != null) {
+					fontScheme = theme.getThemeElements().getFontScheme();
+				}
 			}
     	}
     	
@@ -337,7 +340,8 @@ public class MainDocumentPart extends DocumentPart  {
     	if (rPr!=null && rPr.getRFonts()!=null) {
     		if (rPr.getRFonts().getAscii()!=null) {
         		return rPr.getRFonts().getAscii();
-    		} else if (rPr.getRFonts().getAsciiTheme()!=null ) {
+    		} else if (rPr.getRFonts().getAsciiTheme()!=null 
+    					&& this.getThemePart() != null) {
     			log.debug("Encountered rFonts/AsciiTheme: " + rPr.getRFonts().getAsciiTheme() );
     			
 				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)this.getThemePart().getJaxbElement();
