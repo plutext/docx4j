@@ -397,7 +397,8 @@ public class MainDocumentPart extends DocumentPart  {
 		
 		for (Object o : children ) {
 						
-
+			//log.debug("object: " + o.getClass().getName() );
+			
 			if (o instanceof org.docx4j.wml.R) {
 
 				org.docx4j.wml.R run = (org.docx4j.wml.R) o;
@@ -406,40 +407,42 @@ public class MainDocumentPart extends DocumentPart  {
 				}
 
 				// don't need to traverse run.getRunContent()
+				
+			} else if (o instanceof org.apache.xerces.dom.ElementNSImpl) {
+				
+				// Ignore these, eg w:bookmarkStart
+				
+				log.debug("not traversing into unhandled: " +  ((org.apache.xerces.dom.ElementNSImpl)o).getNodeName() );
+				
+			} else if ( o instanceof javax.xml.bind.JAXBElement) {
+					
+				if (((JAXBElement) o).getDeclaredType().getName().equals(
+						"org.docx4j.wml.P")) {
+					org.docx4j.wml.P p = (org.docx4j.wml.P) ((JAXBElement) o)
+							.getValue();
 
-			} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
-				org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
-				
-				if (p.getPPr()!=null && p.getPPr().getPStyle()!=null ) {
-					// Note this paragraph style
-		    		System.out.println("put style " + p.getPPr().getPStyle().getVal() );					
-					stylesInUse.put(p.getPPr().getPStyle().getVal(), p.getPPr().getPStyle().getVal());
-				}
+					if (p.getPPr() != null && p.getPPr().getPStyle() != null) {
+						// Note this paragraph style
+						System.out.println("put style "
+								+ p.getPPr().getPStyle().getVal());
+						stylesInUse.put(p.getPPr().getPStyle().getVal(), p
+								.getPPr().getPStyle().getVal());
+					}
 
-				if (p.getPPr()!=null && p.getPPr().getRPr() !=null ) {
-					// Inspect RPr
-					inspectRPr(p.getPPr().getRPr(), fontsDiscovered, stylesInUse);
-				}
-								
-				traverseMainDocumentRecursive(p.getParagraphContent(), fontsDiscovered, stylesInUse);
-								
-			}   /* else if ( o instanceof javax.xml.bind.JAXBElement) {
-				System.out.println("      " +  ((JAXBElement)o).getName() );
-				System.out.println("      " +  ((JAXBElement)o).getDeclaredType().getName());
-				
-				// TODO - unmarshall directly to Text.
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
-					org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o).getValue();
-					System.out.println("      " +  t.getValue() );					
+					if (p.getPPr() != null && p.getPPr().getRPr() != null) {
+						// Inspect RPr
+						inspectRPr(p.getPPr().getRPr(), fontsDiscovered,
+								stylesInUse);
+					}
+
+					traverseMainDocumentRecursive(p.getParagraphContent(),
+							fontsDiscovered, stylesInUse);
+
 				}
 				
-			} else if ( o instanceof org.apache.xerces.dom.ElementNSImpl) {
-				System.out.println("      " +  ((org.apache.xerces.dom.ElementNSImpl)o).getNodeName() );					
-			else {
-				System.out.println( o.getClass().getName() );
-				System.out.println( ((JAXBElement)o).getName() );
-				System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
-			} */
+			} else {
+				log.error( "UNEXPECTED: " + o.getClass().getName() );
+			} 
 		}
 	}
 	
