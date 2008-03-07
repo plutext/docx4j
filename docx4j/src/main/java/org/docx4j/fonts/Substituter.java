@@ -19,6 +19,7 @@
 package org.docx4j.fonts;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -55,23 +56,176 @@ import org.docx4j.wml.Fonts;
  *
  */
 public class Substituter {
-
 	protected static Logger log = Logger.getLogger(Substituter.class);
 	
-	java.util.Map MicrosoftFontsInDocument;
+	private final static Map<String, FontMapping> fontMappings;
+	
+	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
+	private final static Map<String, FontSubstitutions.Replace> replaceMap;
+	private final static Map<String, String> physicalFontMap;
+	private final static Map<String, String> awtFontFamilyNames;
 
-	public Substituter(Map microsoftFontsInDocument) {
-		super();
-		MicrosoftFontsInDocument = microsoftFontsInDocument;
+	private final static java.lang.CharSequence target;
+    private final static java.lang.CharSequence replacement;
+	
+	static {
+		fontMappings = Collections.synchronizedMap(new HashMap<String, FontMapping>());
+		target = (new String(" ")).subSequence(0, 1);
+		replacement = (new String("")).subSequence(0, 0);
+		
+		try {
+			// Microsoft Fonts
+			// 1. On Microsoft platform, to embed in PDF output
+			// 2. docx4all - all platforms - to populate font dropdown list
+			msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
+			setupMicrosoftFontFilenames();
+
+			// //////////////////////////////////////////////////////////////////////////////////
+			// Get candidate substitutions
+			// On a non-MS platform, we need these for two things:
+			// 1. to embed this font in the PDF output, in place of MS font
+			// 2. in docx4all, use in editor
+			replaceMap = new HashMap<String, FontSubstitutions.Replace>();
+			setupCandidateSubstitutionsMap();
+
+			// Map of all physical fonts (normalised names) to file paths
+			physicalFontMap = new HashMap<String, String>();
+			setupPhysicalFonts();
+
+			// //////////////////////////////////////////////////////////////////////////////////
+			// What fonts are available to AWT
+			awtFontFamilyNames = new HashMap<String, String>();
+			setupAwtFontFamilyNames();
+		} catch (Exception exc) {
+			throw new RuntimeException(exc);
+		}
+	}
+	
+	private final static void setupMicrosoftFontFilenames() throws Exception {
+		
+		////////////////////////////////////////////////////////////////////////////////////
+		// Get Microsoft fonts
+		// We need these:
+		// 1. On Microsoft platform, to embed in PDF output
+		// 2. docx4all - all platforms - to populate font dropdown list	
+		
+		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft");		
+		Unmarshaller u = msFontsContext.createUnmarshaller();		
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+		System.out.println("unmarshalling fonts.microsoft \n\n" );									
+		// Get the xml file
+		java.io.InputStream is = null;
+		// Works in Eclipse - note absence of leading '/'
+		is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/fonts/microsoft/MicrosoftFonts.xml");
+					
+		org.docx4j.fonts.microsoft.MicrosoftFonts msFonts = (org.docx4j.fonts.microsoft.MicrosoftFonts)u.unmarshal( is );
+		
+		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
+		
+		for (MicrosoftFonts.Font font : msFontsList ) {
+			System.out.println( "put font=" + font);
+			System.out.println( "put font.getName()=" + font.getName() );
+			msFontsFilenames.put(font.getName(), font);
+				//System.out.println( "put " + font.getName() );
+		}
+		
+	}
+	
+	private final static void setupCandidateSubstitutionsMap() throws Exception {
+		
+		////////////////////////////////////////////////////////////////////////////////////
+		// Get candidate substitutions 
+		// On a non-MS platform, we need these for two things:
+		// 1.  to embed this font in the PDF output, in place of MS font
+		// 2.  in docx4all, use in editor
+		
+		JAXBContext substitutionsContext = JAXBContext.newInstance("org.docx4j.fonts.substitutions");		
+		Unmarshaller u2 = substitutionsContext.createUnmarshaller();		
+		u2.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+		System.out.println("unmarshalling fonts.substitutions \n\n" );									
+		// Get the xml file
+		java.io.InputStream is2 = null;
+		// Works in Eclipse - note absence of leading '/'
+		is2 = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/fonts/substitutions/FontSubstitutions.xml");
+					
+		org.docx4j.fonts.substitutions.FontSubstitutions fs = (org.docx4j.fonts.substitutions.FontSubstitutions)u2.unmarshal( is2 );
+		
+		List<FontSubstitutions.Replace> replaceList = fs.getReplace();
+
+		for (FontSubstitutions.Replace replacement : replaceList ) {
+			replaceMap.put(replacement.getName(), replacement);
+		}
+				
 	}
 
+	// Map of all physical fonts (normalised names) to file paths 
+	private final static void setupPhysicalFonts() throws Exception {
+		// Use FOP
+        FontResolver fontResolver = FontSetup.createMinimalFontResolver();
+        FontCache fontCache = new FontCache();
+        
+        FontFileFinder fontFileFinder = new FontFileFinder();
+        List fontFileList = fontFileFinder.find();
+		
+        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+            URL fontUrl = (URL)iter.next();
+            // parse font to ascertain font info
+            FontInfoFinder finder = new FontInfoFinder();
+            EmbedFontInfo fontInfo = finder.find(fontUrl, fontResolver, fontCache);
+            if (fontInfo != null) {
+            
+            	for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
+            		FontTriplet triplet = (FontTriplet)iterIn.next(); 
+            		System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
+                	physicalFontMap.put(normalise(triplet.getName()), fontInfo.getEmbedFile() );
+                	
+                	// Uncomment this to see ...
+            		// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
+            	}
+            	
+            }
+        }
+        
+        // http://www.brawer.ch/software/fonts/doc/gnu/java/awt/font/opentype/NameDecoder.html 
+        //    can be used to interrogate the TTF file. Also http://www.brawer.ch/software/fonts/
+	}
+	
+	private final static void setupAwtFontFamilyNames() {
+		
+		////////////////////////////////////////////////////////////////////////////////////
+		// What fonts are available to AWT
+		
+		java.awt.GraphicsEnvironment ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
+		//System.out.println(ge.getClass().getName());
+		// sun.java2d.SunGraphicsEnvironment
+		// on Ubuntu Gnome, sun.awt.X11GraphicsEnvironment, which extends SunGraphicsEnvironment 
+		// But X11GraphicsEnvironment source code is not available.
+		//((sun.awt.X11GraphicsEnvironment)ge).loadFontFiles();
+		
+		//java.awt.Font[] geFonts = ge.getAllFonts();
+		String[] geFonts = ge.getAvailableFontFamilyNames();
+		for (int i=0; i<geFonts.length; i++) {
+			//System.out.println( geFonts[i] );
+			awtFontFamilyNames.put(normalise(geFonts[i]), geFonts[i]);
+	    }
+	}
+	
+	
+	// Remove spaces and make lower case        
+	public final static String normalise(String realName) {		
+        return realName.replace(target, replacement).toLowerCase();
+	}
+	
+	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
+		return msFontsFilenames;
+	}
+		
 	public Substituter() {
 		super();
 	}
 
-	
-	public Map fontMappings;
-	
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
@@ -89,7 +243,7 @@ public class Substituter {
 		Substituter s = new Substituter();
 		
 		// Standard setup
-		s.setup();
+		//s.setup();
 		
 		///////////////
 		// Go through the FontsTable, and see what we have filenames for.
@@ -134,11 +288,9 @@ public class Substituter {
 	
 	public void populateFontMappings(Map documentFontNames) throws Exception {
 		
-		setup();
+		//setup();
 		
 		log.info("\n\n Populating font mappings.");
-		
-		fontMappings = new HashMap();
 		
 		// Go through the font names, and determine which ones we can render!
 		
@@ -156,6 +308,9 @@ public class Substituter {
 			log.info("\n Populating for font: " + fontName);
 	        
 	        String normalisedFontName = normalise(fontName);
+	        if (fontMappings.get(normalisedFontName) != null) {
+	        	continue;
+	        }
 	        
 			boolean foundAwtMapping = false;
 			boolean foundPdfMapping = false;
@@ -253,157 +408,6 @@ public class Substituter {
 		
 	}
 	
-	private void setup() throws Exception {
-		
-		// Microsoft Fonts
-		// 1. On Microsoft platform, to embed in PDF output
-		// 2. docx4all - all platforms - to populate font dropdown list	
-		setupMicrosoftFontFilenames();
-		
-		////////////////////////////////////////////////////////////////////////////////////
-		// Get candidate substitutions 
-		// On a non-MS platform, we need these for two things:
-		// 1.  to embed this font in the PDF output, in place of MS font
-		// 2.  in docx4all, use in editor
-		setupCandidateSubstitutionsMap();
-		
-		// Map of all physical fonts (normalised names) to file paths 
-		setupPhysicalFonts();	
-		
-		////////////////////////////////////////////////////////////////////////////////////
-		// What fonts are available to AWT
-		setupAwtFontFamilyNames();
-			
-		
-	}
-	
-	
-	HashMap msFontsFilenames = new HashMap(); 
-	private void setupMicrosoftFontFilenames() throws Exception {
-		
-		////////////////////////////////////////////////////////////////////////////////////
-		// Get Microsoft fonts
-		// We need these:
-		// 1. On Microsoft platform, to embed in PDF output
-		// 2. docx4all - all platforms - to populate font dropdown list	
-		
-		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft");		
-		Unmarshaller u = msFontsContext.createUnmarshaller();		
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-		System.out.println("unmarshalling fonts.microsoft \n\n" );									
-		// Get the xml file
-		java.io.InputStream is = null;
-		// Works in Eclipse - note absence of leading '/'
-		is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/fonts/microsoft/MicrosoftFonts.xml");
-					
-		org.docx4j.fonts.microsoft.MicrosoftFonts msFonts = (org.docx4j.fonts.microsoft.MicrosoftFonts)u.unmarshal( is );
-		
-		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
-		
-		msFontsFilenames = new HashMap(); 
-		
-		for (MicrosoftFonts.Font font : msFontsList ) {
-			msFontsFilenames.put(font.getName(), font);
-				//System.out.println( "put " + font.getName() );
-		}
-		
-	}
-	
-	Map replaceMap = new HashMap();
-	private void setupCandidateSubstitutionsMap() throws Exception {
-		
-		////////////////////////////////////////////////////////////////////////////////////
-		// Get candidate substitutions 
-		// On a non-MS platform, we need these for two things:
-		// 1.  to embed this font in the PDF output, in place of MS font
-		// 2.  in docx4all, use in editor
-		
-		JAXBContext substitutionsContext = JAXBContext.newInstance("org.docx4j.fonts.substitutions");		
-		Unmarshaller u2 = substitutionsContext.createUnmarshaller();		
-		u2.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-		System.out.println("unmarshalling fonts.substitutions \n\n" );									
-		// Get the xml file
-		java.io.InputStream is2 = null;
-		// Works in Eclipse - note absence of leading '/'
-		is2 = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/fonts/substitutions/FontSubstitutions.xml");
-					
-		org.docx4j.fonts.substitutions.FontSubstitutions fs = (org.docx4j.fonts.substitutions.FontSubstitutions)u2.unmarshal( is2 );
-		
-		List<FontSubstitutions.Replace> replaceList = fs.getReplace();
-
-		for (FontSubstitutions.Replace replacement : replaceList ) {
-			replaceMap.put(replacement.getName(), replacement);
-		}
-				
-	}
-
-	// Map of all physical fonts (normalised names) to file paths 
-	private Map physicalFontMap = new HashMap();
-	private void setupPhysicalFonts() throws Exception {
-		
-		// Use FOP
-        FontResolver fontResolver = FontSetup.createMinimalFontResolver();
-        FontCache fontCache = new FontCache();
-        
-        FontFileFinder fontFileFinder = new FontFileFinder();
-        List fontFileList = fontFileFinder.find();
-		
-        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            URL fontUrl = (URL)iter.next();
-            // parse font to ascertain font info
-            FontInfoFinder finder = new FontInfoFinder();
-            EmbedFontInfo fontInfo = finder.find(fontUrl, fontResolver, fontCache);
-            if (fontInfo != null) {
-            
-            	for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
-            		FontTriplet triplet = (FontTriplet)iterIn.next(); 
-                	physicalFontMap.put(normalise(triplet.getName()), fontInfo.getEmbedFile() );
-                	
-                	// Uncomment this to see ...
-            		// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
-            	}
-            	
-            }
-        }
-        
-        // http://www.brawer.ch/software/fonts/doc/gnu/java/awt/font/opentype/NameDecoder.html 
-        //    can be used to interrogate the TTF file. Also http://www.brawer.ch/software/fonts/
-	}
-	
-	private Map awtFontFamilyNames = new HashMap();
-	private void setupAwtFontFamilyNames() {
-		
-		////////////////////////////////////////////////////////////////////////////////////
-		// What fonts are available to AWT
-		
-		java.awt.GraphicsEnvironment ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
-		//System.out.println(ge.getClass().getName());
-		// sun.java2d.SunGraphicsEnvironment
-		// on Ubuntu Gnome, sun.awt.X11GraphicsEnvironment, which extends SunGraphicsEnvironment 
-		// But X11GraphicsEnvironment source code is not available.
-		//((sun.awt.X11GraphicsEnvironment)ge).loadFontFiles();
-		
-		//java.awt.Font[] geFonts = ge.getAllFonts();
-		String[] geFonts = ge.getAvailableFontFamilyNames();
-		for (int i=0; i<geFonts.length; i++) {
-			//System.out.println( geFonts[i] );
-			awtFontFamilyNames.put(normalise(geFonts[i]), geFonts[i]);
-	    }
-		
-	}
-	
-	
-	java.lang.CharSequence target = (new String(" ")).subSequence(0, 1);
-    java.lang.CharSequence replacement = (new String("")).subSequence(0, 0);
-	
-	// Remove spaces and make lower case        
-	String normalise(String realName) {		
-        return realName.replace(target, replacement).toLowerCase();
-	}
-	
-		
 	public class FontMapping {
 
 		String microsoftFontName;
