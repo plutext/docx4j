@@ -53,10 +53,10 @@ public class FontExplorer {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
+		String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
 		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
-		String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/docx4all-fonts.docx";
+		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
@@ -71,6 +71,8 @@ public class FontExplorer {
 		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
 		
 		List<Fonts.Font> fontList = fonts.getFont();
+		
+		//Map m = wordMLPackage.getMainDocumentPart().fontsInUse();
 				
 //		walkFontsTable(fontList);
 		
@@ -149,10 +151,23 @@ public class FontExplorer {
             
             	for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
             		FontTriplet triplet = (FontTriplet)iterIn.next(); 
-                	physicalFontMap.put(normalise(triplet.getName()), fontInfo.getEmbedFile() );
+            		
+            		// TODO - make value an EmbedFontInfo object;
+            		// Add Panose to EmbedFontInfo .. FontInfoFinder will get this from CustomFont; TTFFontLoader has to set it.
+            		
+                	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
+//                	physicalFontMap.put(normalise(triplet.getName()), fontInfo.getEmbedFile() );
                 	
                 	// Uncomment this to see ...
-            		// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
+            		//System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
+            		
+            		// Which have PANOSE info?
+					if (fontInfo.getPanose()!=null) {
+						System.out.println(fontInfo.getPanose().toString() + " -> " + triplet.getName() + " -> " + fontInfo.getEmbedFile() );
+					} else {
+						System.out.println("? ? ? ? ? "  + " -> " + triplet.getName() + " -> " + fontInfo.getEmbedFile() );								
+					}
+            		
             	}
             	
             }
@@ -163,56 +178,178 @@ public class FontExplorer {
 		for (Fonts.Font font : fontList ) {
 			String fontName =  font.getName();
 			
+			System.out.println("\n\n" + fontName);
+			org.docx4j.wml.FontPanose panose = font.getPanose1();
+			org.apache.fop.fonts.Panose fopPanose = null;
+			if (panose!=null && panose.getVal()!=null ) {
+				fopPanose = new org.apache.fop.fonts.Panose(panose.getVal() );
+				System.out.println(".. " + fopPanose.toString() );					
+				
+			} else {
+				System.out.println(".. no panose info!!!");															
+			}
+			
 			// First, is the actual font available?
 			if (physicalFontMap.get(normalise(fontName)) != null) {
 				System.out.println(fontName + " --> NATIVE");
-			} else {
-
-				// If not ..
-				FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) replaceMap
-						.get(normalise(fontName));
-				if (replacement != null) {
-					// System.out.println( "\n" + fontName + " found." );
-					// String subsFonts = replacement.getSubstFonts();
-
-					// Is there anything in subsFonts we can use?
-					String[] tokens = replacement.getSubstFonts().split(";");
-					boolean found = false;
-					for (int x = 0; x < tokens.length; x++) {
-						// System.out.println(tokens[x]);
-						if (physicalFontMap.get(tokens[x]) != null) {
-							String physicalFontFile = (String) physicalFontMap
-									.get(tokens[x]);
-							System.out.println(fontName + " --> "
-									+ physicalFontFile);
-							found = true;
-							break;
-						} else {
-							// System.out.println("no match on token " + x + ":"
-							// + tokens[x]);
-						}
-
-					}
-
-					if (!found) {
-						System.out.println("!  " + fontName
-								+ " -->  Couldn't find any of "
-								+ replacement.getSubstFonts());
-					}
-
-				} else {
-					System.out.println("Nothing in FontSubstitutions.xml for: "
-							+ fontName);
-					System.out.println("Add the following ..");					
-					System.out.println("<replace name=\"" + normalise(fontName) + "\">"
-											+ "<SubstFonts>" + normalise(fontName) + "</SubstFonts>"
-											//+ "<SubstFontsPS></SubstFontsPS>"
-											+ "<SubstFontsHTML></SubstFontsHTML>"
-											+ "<FontWeight>Normal</FontWeight>"
-											+ "<FontWidth>Normal</FontWidth>"
-											+ "<FontType></FontType>"
-											+ "</replace>");
+				
+				// sanity check using Panose (since 
+				// a font could conceivably have the same name
+				// but quite different content)				
+				EmbedFontInfo nfontInfo = ((EmbedFontInfo)physicalFontMap.get(normalise(fontName)));
+				if (nfontInfo.getPanose() == null ) {
+					System.out.println(".. and lacking Panose!");					
+				} else if (fopPanose!=null ) {
+				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
+						System.out.println(".. panose distance: " + pd);					
 				}
+				
+				continue;
+			} 
+
+
+			// Second, what about a panose match?
+			String panoseKey = null;
+			if (fopPanose!=null ) {
+				
+				if (!org.apache.fop.fonts.Panose.validPanose(panose.getVal())) {
+					System.out.println("INVALID !");					
+				}
+								
+				System.out.println(" --> " + fopPanose);				
+				
+				// Logic to search panose space for closest matching physical 
+				// font file
+				Iterator it = physicalFontMap.entrySet().iterator();
+				long bestPanoseMatchValue = -1;		
+				String matchingPanoseString = null;
+			    while (it.hasNext()) {
+			        Map.Entry pairs = (Map.Entry)it.next();
+			        			        
+			        EmbedFontInfo fontInfo = (EmbedFontInfo)pairs.getValue();
+			        
+			        if (fontInfo.getPanose() == null ) {			        	
+			        	continue;
+			        }
+			        
+			        long panoseMatchValue = fopPanose.difference(fontInfo.getPanose().getPanoseArray());
+			        
+			        if (bestPanoseMatchValue==-1 || panoseMatchValue < bestPanoseMatchValue ) {
+			        	
+			        	bestPanoseMatchValue = panoseMatchValue;
+			        	matchingPanoseString = fontInfo.getPanose().toString();
+			        	panoseKey = (String)pairs.getKey();
+			        	
+			        	//System.out.println("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
+			        	
+			        	if (bestPanoseMatchValue==0) {
+			        		
+			        		// Can't do any better than this!
+			        		continue;
+			        	}
+			        	
+			        	
+			        } else {
+			        	//System.out.println("not small " + panoseMatchValue + "  " + fontInfo.getPanose().toString() );
+			        	
+			        }
+			    }
+
+				if (panoseKey!=null && bestPanoseMatchValue < org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
+					System.out.println("MATCHED " + panoseKey);									
+					System.out.println(" --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);
+					
+					System.out.println(fontName + " --> " + ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile() );
+					
+					// Out of interest, is this match in font substitutions table?
+					FontSubstitutions.Replace rtmp = (FontSubstitutions.Replace) replaceMap.get(normalise(fontName));
+					if (rtmp!=null && rtmp.getSubstFonts()!=null) {
+						if (rtmp.getSubstFonts().contains(panoseKey) ) {
+							System.out.println("(consistent with explicit substitutes)");
+						} else {
+							System.out.println("(lucky, since this is missing from explicit substitutes)");							
+						}
+						
+					}
+					
+					
+					continue; // we're done
+				} 
+				
+				
+			} else {
+				System.out.println(" --> null Panose");				
+			}
+			
+
+			// Finally, try explicit font substitutions
+			// - most likely to be useful for a font that doesn't have panose entries
+			System.out.println("So try explicit font substitutions table");				
+			FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) replaceMap
+					.get(normalise(fontName));
+			if (replacement != null) {
+				// System.out.println( "\n" + fontName + " found." );
+				// String subsFonts = replacement.getSubstFonts();
+
+				// Is there anything in subsFonts we can use?
+				String[] tokens = replacement.getSubstFonts().split(";");
+				boolean found = false;
+				for (int x = 0; x < tokens.length; x++) {
+					// System.out.println(tokens[x]);
+					if (physicalFontMap.get(tokens[x]) != null) {
+						
+						EmbedFontInfo embedFontInfo = (EmbedFontInfo)physicalFontMap.get(tokens[x]);
+						
+						
+						String physicalFontFile = embedFontInfo.getEmbedFile();
+						
+						System.out.println(fontName + " --> "
+								+ physicalFontFile);
+						
+						found = true;
+						
+						// Out of interest, does this have a Panose value?
+						// And what is the distance?
+						if (embedFontInfo.getPanose() == null ) {
+							System.out.println(".. as expected, lacking Panose");					
+						} else if (fopPanose!=null  ) {
+						        long pd = fopPanose.difference(embedFontInfo.getPanose().getPanoseArray());
+						        
+						        if (pd >= org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {						        
+						        	System.out.println(".. with a panose distance exceeding threshold: " + pd);
+						        } else {
+						        	// Sanity check
+						        	System.out.println(".. with a low panose distance (! How did we get here?) : " + pd);						        	
+						        }
+								
+						}						
+						
+						break;
+					} else {
+						// System.out.println("no match on token " + x + ":"
+						// + tokens[x]);
+					}
+
+				}
+
+				if (!found) {
+					System.out.println("!  " + fontName
+							+ " -->  Couldn't find any of "
+							+ replacement.getSubstFonts());
+				}
+
+			} else {
+				System.out.println("Nothing in FontSubstitutions.xml for: "
+						+ fontName);
+				System.out.println("Add the following ..");					
+				System.out.println("<replace name=\"" + normalise(fontName) + "\">"
+										+ "<SubstFonts>" + normalise(fontName) + "</SubstFonts>"
+										//+ "<SubstFontsPS></SubstFontsPS>"
+										+ "<SubstFontsHTML></SubstFontsHTML>"
+										+ "<FontWeight>Normal</FontWeight>"
+										+ "<FontWidth>Normal</FontWidth>"
+										+ "<FontType></FontType>"
+										+ "</replace>");
 			}
 		}
         
@@ -220,6 +357,7 @@ public class FontExplorer {
         
 	}
 
+		
 	/**
 	 * Try to use AWT to get the filename of the actual substitutions.  Can it be made to work? 
 	 * 
