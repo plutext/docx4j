@@ -38,6 +38,7 @@ import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -252,9 +253,12 @@ public class WordprocessingMLPackage extends Package {
 		java.util.Map fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
 		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
-		//     - do this in a general way, since docx4all needs this as well to display fonts
+		//     - do this in a general way, since docx4all needs this as well to display fonts		
 		Substituter s = new Substituter();
-		s.populateFontMappings(fontsInUse);
+		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();		
+		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
+		
+		s.populateFontMappings(fontsInUse, fonts);
 		
 		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
 		//     possibly via an extension function in the XSLT
