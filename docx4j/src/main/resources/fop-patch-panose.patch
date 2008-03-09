@@ -1,0 +1,294 @@
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(working copy)
+@@ -133,6 +133,7 @@
+         embedUrl = fontUrl.toExternalForm();
+         EmbedFontInfo fontInfo = new EmbedFontInfo(null, customFont.isKerningEnabled(),
+                 fontTripletList, embedUrl);
++        fontInfo.setPanose(customFont.getPanose());
+         if (fontCache != null) {
+             fontCache.addFont(fontInfo);
+         }
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(working copy)
+@@ -57,6 +57,17 @@
+     private Map kerning;
+ 
+     private boolean useKerning = true;
++    
++    private Panose panose = null;
++
++    public Panose getPanose() {
++		return panose;
++	}
++
++	public void setPanose(Panose panose) {
++		this.panose = panose;
++	}
++    
+ 
+     /** {@inheritDoc} */
+     public String getFontName() {
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(working copy)
+@@ -38,6 +38,17 @@
+     protected boolean kerning;
+     /** the list of associated font triplets */
+     protected List fontTriplets;
++    
++    protected Panose panose = null;
++
++    public Panose getPanose() {
++		return panose;
++	}
++
++	public void setPanose(Panose panose) {
++		this.panose = panose;
++	}
++    
+       
+     /**
+      * Main constructor
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
+@@ -0,0 +1,165 @@
++/*
++ * Copyright 2006 The FOray Project.
++ *      http://www.foray.org
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ *
++ * This work is in part derived from the following work(s), used with the
++ * permission of the licensor:
++ *      Apache FOP, licensed by the Apache Software Foundation
++ *
++ */
++
++/*
++ * $LastChangedRevision: 10097 $
++ * $LastChangedDate: 2007-07-24 15:05:09 -0600 (Tue, 24 Jul 2007) $
++ * $LastChangedBy$
++ */
++
++package org.apache.fop.fonts;
++
++/**
++ * A PANOSE classification number.
++ */
++public class Panose {
++
++    /** Constant indicating the size of the "panose" field, in bytes. */
++    public static final byte ARRAY_SIZE = 10;
++
++    /** Max difference for it to be considered an acceptable match.
++     *  Note that this value will depend on the weights in the
++     *  difference function.
++     */ 
++    public static final int MATCH_THRESHOLD = 30;
++    
++    
++    /** The array of PANOSE numbers. */
++    private byte[] panoseArray;
++    
++    // bFamilyType 5
++    // bSerifStyle 15
++    // bWeight 11
++    // bProportion 9
++    // bContrast 9
++    // bStrokeVariatoon 8
++    // bArmStyle 11
++    // bLetterform 15
++    // bMidline 13
++    // bXHeight 7
++    // See http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html
++    private final static int[] validMaxValues = { 5, 15, 11, 9, 9, 8, 11, 15, 13, 7 };    
++
++    /**
++     * Creates a new Panose instance.
++     * @param panoseArray The array of bytes recording the PANOSE
++     * classification.
++     */
++    public Panose(final byte[] panoseArray) {
++        this.panoseArray = panoseArray;
++    }
++
++    /**
++     * Returns the array of bytes representing the PANOSE number.
++     * @return The PANOSE array.
++     */
++    public byte[] getPanoseArray() {
++        return this.panoseArray;
++    }
++
++    /**
++     * Computes the weighted "closeness" of another Panose to this value.
++     * @param panoseDescription An array of Panose values to compare to this.
++     * @return The weighted difference between the two Panose values.
++     * A smaller value indicates that the two values are closer, and a larger
++     * value indicates that they are farther apart.
++     * A return value of {@link Long#MAX_VALUE} indicates that the input was
++     * invalid or that some other aspect of the comparison was invalid.
++     */
++    public long difference(final byte[] panoseDescription) {
++        if (! validPanose(panoseDescription)) {
++            return Long.MAX_VALUE;
++        }
++        /* We don't really know how to do this. Each byte is supposed to have
++         * a weight, and those weights do not appear to be documented anywhere.
++         * 
++         * Called "Panose match value" or "PANOSE Matching Heuristic"
++         * - see http://www.w3.org/Fonts/Panose/pan2.html#Heuristic
++         **/
++        long difference = 0;
++        for (int i = 0; i < panoseDescription.length; i++) {
++//            final int digit = panoseDescription.length - i;
++//            final int weight = (int) Math.round(Math.pow(2, digit - 1));
++            final int weight = 1;
++            
++            final int thisDifference = (this.panoseArray[i] - panoseDescription[i]);
++            difference += weight * thisDifference * thisDifference;
++        }
++        return difference;
++    }
++
++    /**
++     * Tests the validity of a panose description.
++     * @param panoseDescription The panose values to be tested.
++     * @return True for a valid PANOSE description, or false if the input is
++     * null, does not have 10 elements, or any of the elements do not contain
++     * valid ASCII numerals (0 through 9).
++     */
++    public static boolean validPanose(final byte[] panoseDescription) {
++        if (panoseDescription == null) {
++        	System.out.println("null byte[]" );
++            return false;
++        }
++        if (panoseDescription.length != Panose.ARRAY_SIZE) {
++        	System.out.println("Invalid length " + panoseDescription.length );
++            return false;
++        }
++        for (int i = 0; i < panoseDescription.length; i++) {
++            final byte theByte = panoseDescription[i];
++            String s = Byte.toString(theByte);            
++            int n = Integer.parseInt(s);
++            if (n < 0) {
++            	//System.out.println("Invalid value (too small) " + theByte + " in position " + i + " of " + toString(panoseDescription) );
++                return false;
++            }
++                        
++            if (n > validMaxValues[i]) {
++            	System.out.println("Invalid value " + n + " > " + validMaxValues[i] + " in position " + i + " of " + toString(panoseDescription) );
++                return false;
++            }
++        }
++        return true;
++    }
++
++    public String toString() {
++        return toString(this.panoseArray);    	
++    }
++
++    public static String toString(byte[] panoseArray) {
++
++        if (panoseArray.length != Panose.ARRAY_SIZE) {
++
++        	System.out.println("Unexpected length: " + panoseArray.length);
++        }
++    	        
++        StringBuilder sb = new StringBuilder(20);
++    	
++        for (int i = 0; i < panoseArray.length; i++) {
++            final byte theByte = panoseArray[i];
++            
++            sb.append(theByte + " ");
++        }
++    	
++        return sb.toString();    	
++    }
++    
++}
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(working copy)
+@@ -31,6 +31,7 @@
+ import org.apache.xmlgraphics.fonts.Glyphs;
+ 
+ import org.apache.fop.fonts.FontUtil;
++import org.apache.fop.fonts.Panose;
+ 
+ /**
+  * Reads a TrueType file or a TrueType Collection.
+@@ -48,6 +49,9 @@
+     public static final boolean TRACE_ENABLED = false;
+ 
+     private String encoding = "WinAnsiEncoding";    // Default encoding
++    
++    /** Array containing the Panose information. */
++    private Panose panose;
+ 
+     private short firstChar = 0;
+     private boolean isEmbeddable = true;
+@@ -996,10 +1000,21 @@
+                 isEmbeddable = true;
+             }
+             in.skip(11 * 2);
+-            in.skip(10); //panose array
++            
++            //in.skip(10); //panose array
++            final byte[] panoseArray = new byte[Panose.ARRAY_SIZE];
++            for (int i = 0; i < panoseArray.length; i++) {
++                panoseArray[i] = in.read();
++            }
++            this.panose = new Panose(panoseArray);
++            
++            
++            /* Skip ulUnicodeRange1 - 4. */            
+             in.skip(4 * 4); //unicode ranges
+             in.skip(4);
+             in.skip(3 * 2);
++           
++            /* Read sTypoAscender. */            
+             int v;
+             os2Ascender = in.readTTFShort(); //sTypoAscender
+             log.debug("sTypoAscender: " + os2Ascender 
+@@ -1568,4 +1583,8 @@
+             ioe.printStackTrace(System.err);
+         }
+     }
++
++	public Panose getPanose() {
++		return panose;
++	}
+ }
+\ No newline at end of file
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(working copy)
+@@ -92,6 +92,8 @@
+         returnFont.setMissingWidth(0);
+         returnFont.setWeight(ttf.getWeightClass());
+         
++        returnFont.setPanose(ttf.getPanose() );
++        
+         multiFont.setCIDType(CIDFontType.CIDTYPE2);
+         int[] wx = ttf.getWidths();
+         multiFont.setWidthArray(wx);
