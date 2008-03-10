@@ -423,7 +423,7 @@ public class MainDocumentPart extends DocumentPart  {
 
 					if (p.getPPr() != null && p.getPPr().getPStyle() != null) {
 						// Note this paragraph style
-						System.out.println("put style "
+						log.debug("put style "
 								+ p.getPPr().getPStyle().getVal());
 						stylesInUse.put(p.getPPr().getPStyle().getVal(), p
 								.getPPr().getPStyle().getVal());
@@ -449,12 +449,12 @@ public class MainDocumentPart extends DocumentPart  {
     private void inspectRPr(org.docx4j.wml.RPr rPr, Map fontsDiscovered, Map stylesInUse) {
     	if (rPr.getRFonts()!=null) {
     		// 	Note the font - just Ascii for now
-    		System.out.println("put font " + rPr.getRFonts().getAscii());
+    		log.debug("put font " + rPr.getRFonts().getAscii());
     		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
     	}
     	if (rPr.getRStyle()!=null) {
     		// 	Note this run style
-    		System.out.println("put style " + rPr.getRStyle().getVal() );
+    		log.debug("put style " + rPr.getRStyle().getVal() );
     		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
     	}
 }
