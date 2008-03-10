@@ -119,7 +119,7 @@ public class Substituter {
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-		System.out.println("unmarshalling fonts.microsoft \n\n" );									
+		log.info("unmarshalling fonts.microsoft \n\n" );									
 		// Get the xml file
 		java.io.InputStream is = null;
 		// Works in Eclipse - note absence of leading '/'
@@ -130,8 +130,7 @@ public class Substituter {
 		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
 		
 		for (MicrosoftFonts.Font font : msFontsList ) {
-			System.out.println( "put font=" + font);
-			System.out.println( "put font.getName()=" + font.getName() );
+			log.debug( "put font.getName()=" + font.getName() );
 			msFontsFilenames.put(font.getName(), font);
 				//System.out.println( "put " + font.getName() );
 		}
@@ -184,8 +183,16 @@ public class Substituter {
             
             	for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
             		FontTriplet triplet = (FontTriplet)iterIn.next(); 
-            		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
-                	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
+                	
+                    String lower = fontInfo.getEmbedFile().toLowerCase();
+                    if (lower.endsWith(".otf") || lower.endsWith(".ttf")) {
+                		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
+                    	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
+                    } else {                    	
+                    	// .pfb isn't supported in org.xhtmlrenderer.pdf.ITextFontResolver.addFont
+                    	// so don't consider them any further.
+                		log.warn("Skipping " + triplet.getName() + "; unsuported type: " + fontInfo.getEmbedFile());                	                    	
+                    }
                 	
                 	// Uncomment this to see ...
             		// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
@@ -398,7 +405,7 @@ public class Substituter {
 				EmbedFontInfo nfontInfo = ((EmbedFontInfo)physicalFontMap.get(normalise(fontName)));
 
 		        if (!nfontInfo.isEmbeddable() ) {
-		        	log.info(fontName + " is not embeddable; skipping.");
+//		        	log.info(fontName + " is not embeddable; skipping.");
 		        } else {
 				
 					System.out.println(fontName + " --> NATIVE");
@@ -467,7 +474,7 @@ public class Substituter {
 							will be thrown if os_2.fsType == 2
 							
 						 */
-			        	log.info(physicalFontKey + " is not embeddable; skipping.");
+//			        	log.info(physicalFontKey + " is not embeddable; skipping.");
 			        	continue;
 			        } 
 			        
@@ -551,7 +558,7 @@ public class Substituter {
 							EmbedFontInfo embedFontInfo = (EmbedFontInfo)physicalFontMap.get(tokens[x]);
 
 					        if (!embedFontInfo.isEmbeddable() ) {			        	
-					        	log.info(tokens[x] + " is not embeddable; skipping.");
+//					        	log.info(tokens[x] + " is not embeddable; skipping.");
 					        } else {
 								String physicalFontFile = embedFontInfo.getEmbedFile();
 								log.debug("PDF: " + fontName + " --> "
