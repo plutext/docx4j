@@ -62,6 +62,9 @@ public class Substituter {
 	 *  to produce.
 	 */
 	private final static Map<String, FontMapping> fontMappings;
+	public static Map<String, FontMapping> getFontMappings() {
+		return fontMappings;
+	}
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
 	private final static Map<String, FontSubstitutions.Replace> replaceMap;
@@ -280,7 +283,7 @@ public class Substituter {
 			return "noMappingFor" + normalise(documentStyleId);
 		}
 		
-		log.error(documentStyleId + " -> " + fontMapping.getPdfSubstituteFont());
+		log.error(documentStyleId + " -> " + fontMapping.getTripletName());
 		
 		if (fontFamilyStack) {
 			
@@ -301,9 +304,9 @@ public class Substituter {
 			// populateFontMappings, and added to the 
 			// FontMapping objects.
 			
-			return fontMapping.getPdfSubstituteFont();
+			return fontMapping.getTripletName();
 		} else {
-			return fontMapping.getPdfSubstituteFont();
+			return fontMapping.getTripletName();
 		}
 		
 	}
@@ -352,7 +355,8 @@ public class Substituter {
 			
 			FontMapping fm = new FontMapping();
 			// This will be the key
-			fm.setMicrosoftFontName(normalisedFontName);
+			
+//			fm.setMicrosoftFontName(normalisedFontName);
 			
 			// Panose setup
 			org.docx4j.wml.FontPanose panose = null;
@@ -396,8 +400,7 @@ public class Substituter {
 				System.out.println(fontName + " --> NATIVE");
 	        	// if so ..
 	        	foundPdfMapping = true;
-	        	fm.setPdfSubstituteFont(normalise(fontName));
-	        	fm.setPdfEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getEmbedFile());
+	        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getEmbedFile());
 	        	
 				// sanity check using Panose (since 
 				// a font could conceivably have the same name
@@ -411,7 +414,9 @@ public class Substituter {
 				}
 	        	
 				// We're done with this font.
+	        	fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getFontTriplets(), normalise(fontName) );				
 				fontMappings.put(normalisedFontName, fm);
+				
 				log.info("Entry added for: " +  normalisedFontName);
 				continue;
 			} 
@@ -468,9 +473,10 @@ public class Substituter {
 					log.info("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);					
 					log.debug(fontName + " --> " + ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile() );
 					
-		        	fm.setPdfSubstituteFont(panoseKey);
-		        	fm.setPdfEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile());					
+		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile());					
 					
+		        	fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getFontTriplets(), panoseKey );		        	
+		        	
 					// Out of interest, is this match in font substitutions table?
 					FontSubstitutions.Replace rtmp = (FontSubstitutions.Replace) replaceMap.get(normalise(fontName));
 					if (rtmp!=null && rtmp.getSubstFonts()!=null) {
@@ -518,8 +524,8 @@ public class Substituter {
 							log.debug("PDF: " + fontName + " --> "
 									+ physicalFontFile);
 							foundPdfMapping = true;
-				        	fm.setPdfSubstituteFont(tokens[x]);
-				        	fm.setPdfEmbeddedFile( physicalFontFile);
+				        	fm.setTripletName( embedFontInfo.getFontTriplets(), tokens[x] );				
+				        	fm.setEmbeddedFile( physicalFontFile);
 							
 							// Out of interest, does this have a Panose value?
 							// And what is the distance?
@@ -544,7 +550,8 @@ public class Substituter {
 					}
 				}
 
-				// AWT
+				// AWT				
+				// TODO - replace this.  See http://www.krugle.org/examples/p-xGdIjpq67jXKmBJt/FreeStandingAndSystemFonts.txt				
 				for (int x = 0; x < tokens.length; x++) {
 					// System.out.println(tokens[x]);
 					if (awtFontFamilyNames.get(tokens[x]) != null) {
@@ -584,21 +591,49 @@ public class Substituter {
 	
 	public class FontMapping {
 
-		String microsoftFontName;
+//		String microsoftFontName;
 		
+		// Get rid of this?  The AWT font is created from the 
+		// same TTF as we use for PDF.
+		// See See http://www.krugle.org/examples/p-xGdIjpq67jXKmBJt/FreeStandingAndSystemFonts.txt
 		String awtSubstituteFont;
+				
+		String embeddedFile;
 		
-		String pdfSubstituteFont;
-		
-		String pdfEmbeddedFile;
+		/** The actual name of the font, used for embedding. */
+		String tripletName;
 
-		public String getMicrosoftFontName() {
-			return microsoftFontName;
+		public String getTripletName() {
+			return tripletName;
 		}
 
-		public void setMicrosoftFontName(String microsoftFontName) {
-			this.microsoftFontName = microsoftFontName;
+		public void setTripletName(String tripletName) {
+			this.tripletName = tripletName;
 		}
+
+		public String setTripletName(List fontTriplets, String normalisedFontName) {
+			            
+        	for (Iterator iterIn = fontTriplets.iterator() ; iterIn.hasNext();) {
+        		FontTriplet triplet = (FontTriplet)iterIn.next();
+        		
+        		if (normalise(triplet.getName()).equals(normalisedFontName) ) {
+        			this.tripletName = triplet.getName();
+            		log.debug("Real name for " + normalisedFontName + " --> " + triplet.getName() );
+        			return triplet.getName();
+        		}
+        	}
+    		log.error("Couldn't get Real name for " + normalisedFontName );
+    		return null;        	
+        }
+		
+		
+//		public String getMicrosoftFontName() {
+//			return microsoftFontName;
+//		}
+//
+//		public void setMicrosoftFontName(String microsoftFontName) {
+//			this.microsoftFontName = microsoftFontName;
+//		}
 
 		public String getAwtSubstituteFont() {
 			return awtSubstituteFont;
@@ -608,21 +643,14 @@ public class Substituter {
 			this.awtSubstituteFont = awtSubstituteFont;
 		}
 
-		public String getPdfSubstituteFont() {
-			log.debug("Returning " + pdfSubstituteFont);
-			return pdfSubstituteFont;
+
+		public String getEmbeddedFile() {
+			return embeddedFile;
 		}
 
-		public void setPdfSubstituteFont(String pdfSubstituteFont) {
-			this.pdfSubstituteFont = pdfSubstituteFont;
-		}
-
-		public String getPdfEmbeddedFile() {
-			return pdfEmbeddedFile;
-		}
-
-		public void setPdfEmbeddedFile(String pdfEmbeddedFile) {
-			this.pdfEmbeddedFile = pdfEmbeddedFile;
+		public void setEmbeddedFile(String embeddedFile) {
+			this.embeddedFile = embeddedFile;
 		}
 	}
+
 }

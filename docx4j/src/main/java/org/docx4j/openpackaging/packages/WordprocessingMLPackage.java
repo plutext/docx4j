@@ -20,33 +20,28 @@
 package org.docx4j.openpackaging.packages;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
+
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.fop.fonts.EmbedFontInfo;
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -268,15 +263,15 @@ public class WordprocessingMLPackage extends Package {
 		
 		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
 		//     - do this in a general way, since docx4all needs this as well to display fonts		
-		Substituter s = new Substituter();
+		fontSubstituter = new Substituter();
 		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();		
 		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
 		
-		s.populateFontMappings(fontsInUse, fonts);
+		fontSubstituter.populateFontMappings(fontsInUse, fonts);
 		
 		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
 		//     possibly via an extension function in the XSLT
-		xformer.setParameter("substituterInstance", s);
+		xformer.setParameter("substituterInstance", fontSubstituter);
 		xformer.setParameter("fontFamilyStack", fontFamilyStack);
 		
 		
@@ -291,6 +286,8 @@ public class WordprocessingMLPackage extends Package {
     	
     }
 
+    private Substituter fontSubstituter;
+    
 	/** Create a pdf version of the document. 
 	 * 
 	 * @param os
@@ -330,17 +327,47 @@ public class WordprocessingMLPackage extends Package {
 		// 4.  Use addFont code like that below as necessary for the fonts
 		
 			// See https://xhtmlrenderer.dev.java.net/r7/users-guide-r7.html#xil_32
-		org.xhtmlrenderer.extend.FontResolver resolver = renderer.getFontResolver();
-		
-		log.info("OS: " + System.getProperty("os.name") );
-		if (System.getProperty("os.name").toUpperCase().indexOf("WINDOWS")>-1) {
-			log.info("Detected Windows - ");
-			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\ARIAL.TTF", true);
-			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\COMIC.TTF", true);
-			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\TREBUC.TTF", true);
-			renderer.getFontResolver().addFont("C:\\WINDOWS\\FONTS\\VERDANA.TTF", true);
-			
-		}
+		org.xhtmlrenderer.extend.FontResolver resolver = renderer.getFontResolver();		
+				
+		Map fontMappings = fontSubstituter.getFontMappings();
+		Iterator fontMappingsIterator = fontMappings.entrySet().iterator();
+	    while (fontMappingsIterator.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
+	        if(pairs.getKey()==null) {
+	        	log.info("Skipped null key");
+	        	pairs = (Map.Entry)fontMappingsIterator.next();
+	        }
+	        
+	        String fontName = (String)pairs.getKey();
+	        Substituter.FontMapping fm = (Substituter.FontMapping)pairs.getValue();
+	        
+			log.info("Substituting " + fontName + " with " + fm.getTripletName() + " from " + fm.getEmbeddedFile() );
+			if (fm.getEmbeddedFile()!=null) {
+				try {
+					renderer.getFontResolver().addFont(fm.getEmbeddedFile(), true);
+				} catch (com.lowagie.text.DocumentException e) {
+					/*
+					 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
+						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
+						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
+						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
+						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
+						at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
+					 */
+					log.warn(e.getMessage()); 
+				} catch (java.io.IOException e) {
+				
+				/* 
+				 * [AWT-EventQueue-0] INFO  packages.WordprocessingMLPackage - Substituting symbol with standardsymbolsl from file:/usr/share/fonts/type1/gsfonts/s050000l.pfb 
+java.io.IOException: Unsupported font type
+	at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
+				 */
+					log.warn(e.getMessage() + ": " + fm.getEmbeddedFile()); 
+				}
+			} else {
+				log.warn("Can't addFont for: " + fontName); 
+			}
+	    }
 		
 		renderer.setDocument(xhtmlDoc, null);
 		renderer.layout();

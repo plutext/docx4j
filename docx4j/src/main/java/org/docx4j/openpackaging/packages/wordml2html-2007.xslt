@@ -2636,7 +2636,7 @@ Changes since version 1.2:
 <xsl:template match="w:rFonts" mode="rpr">
 	<xsl:variable name="documentFont"><xsl:value-of select="string(@w:ascii)"/></xsl:variable>
 	<xsl:variable name="targetFont" select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, string($documentFont), boolean($fontFamilyStack))" />
-	font-family:<xsl:value-of select="$targetFont"/>;
+	font-family:'<xsl:value-of select="$targetFont"/>';
 </xsl:template>
 
 
