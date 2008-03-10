@@ -316,6 +316,7 @@ public class Substituter {
 		
 	}
 	
+	
 	public void populateFontMappings(Map documentFontNames, org.docx4j.wml.Fonts fonts ) throws Exception {
 		
 		//setup();
@@ -325,6 +326,12 @@ public class Substituter {
 		 *     FontTablePart fontTablePart= wordMLPackage.getMainDocumentPart().getFontTablePart();
 		 *     org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
 		 *     
+		 * If the document doesn't have a font table, 
+		 *     
+		 *		org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart fontTable 
+		 *			= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
+		 *		fontTable.unmarshalDefaultFonts();
+		 *	     
 		 * We need to make a map out of it.    
 		 */ 
 		List<Fonts.Font> fontList = fonts.getFont();

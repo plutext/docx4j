@@ -264,8 +264,16 @@ public class WordprocessingMLPackage extends Package {
 		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
 		//     - do this in a general way, since docx4all needs this as well to display fonts		
 		fontSubstituter = new Substituter();
-		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();		
-		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
+		org.docx4j.wml.Fonts fonts = null;
+		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();	
+		
+		if (fontTablePart!=null) {
+			fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
+		} else {
+			log.warn("FontTable missing; creating default part.");
+			fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
+			fontTablePart.unmarshalDefaultFonts();					
+		}
 		
 		fontSubstituter.populateFontMappings(fontsInUse, fonts);
 		

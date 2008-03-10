@@ -22,6 +22,8 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 //import java.io.IOException;
 
 //import javax.xml.bind.JAXBElement;
+import java.io.IOException;
+
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
@@ -99,5 +101,29 @@ public final class FontTablePart extends JaxbXmlPart {
 		return jaxbElement;
     	
     }
+    
+    /**
+     * Unmarshal a default font table, useful when creating this
+     * part from scratch. 
+     *
+     * @return the newly created root object of the java content tree 
+     *
+     * @throws JAXBException 
+     *     If any unexpected errors occur while unmarshalling
+     */
+    public Object unmarshalDefaultFonts() throws JAXBException {
+    	  
+    		java.io.InputStream is = null;
+			try {
+				// Works in Eclipse - not absence of leading '/'
+				is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/fontTable.xml");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}    		
+    	
+    	return unmarshal( is );    	
+    }
+    
 
 }
