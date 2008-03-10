@@ -354,7 +354,7 @@ public class WordprocessingMLPackage extends Package {
 java.io.IOException: Unsupported font type
 	at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 				 */
-					log.warn(e.getMessage() + ": " + fm.getEmbeddedFile()); 
+					log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + fm.getEmbeddedFile()); 
 				}
 			} else {
 				log.warn("Can't addFont for: " + fontName); 
