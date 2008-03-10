@@ -28,15 +28,13 @@ Changes since version 1.2:
 	version="1.0"
         exclude-result-prefixes="java msxsl ext w o v WX aml w10">	
 
-	<!-- 	xmlns:substituterClass= "org.docx4j.fonts.Substituter"
-	extension-element-prefixes="substituterClass"	
--->
 	
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 	<!-- doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN" doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" -->
 
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
+<xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->	
 	
 
 <xsl:variable name="paraStyleID_Default">Normal</xsl:variable>
@@ -2637,7 +2635,7 @@ Changes since version 1.2:
 	
 <xsl:template match="w:rFonts" mode="rpr">
 	<xsl:variable name="documentFont"><xsl:value-of select="string(@w:ascii)"/></xsl:variable>
-	<xsl:variable name="targetFont" select="java:org.docx4j.fonts.Substituter.getPdfSubstituteFont($substituterInstance, string($documentFont))" />
+	<xsl:variable name="targetFont" select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, string($documentFont), boolean($fontFamilyStack))" />
 	font-family:<xsl:value-of select="$targetFont"/>;
 </xsl:template>
 
