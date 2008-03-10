@@ -165,13 +165,27 @@ public class WordprocessingMLPackage extends Package {
 	
 	
 
-	/** Create an html version of the document. 
+	/** Create an html version of the document, using CSS font family
+	 *  stacks.  This is appropriate if the HTML is intended for
+	 *  viewing in a web browser, rather than an intermediate step
+	 *  on the way to generating PDF output. 
 	 * 
 	 * @param result
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
     public void html(javax.xml.transform.Result result) throws Exception {
+
+    	html(result, true);
+    }
+    
+	/** Create an html version of the document. 
+	 * 
+	 * @param result
+	 *            The javax.xml.transform.Result object to transform into 
+	 * 
+	 * */ 
+    public void html(javax.xml.transform.Result result, boolean fontFamilyStack) throws Exception {
     	
     	/*
     	 * Given that word2html.xsl is freely available, we use the second
@@ -263,6 +277,7 @@ public class WordprocessingMLPackage extends Package {
 		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
 		//     possibly via an extension function in the XSLT
 		xformer.setParameter("substituterInstance", s);
+		xformer.setParameter("fontFamilyStack", fontFamilyStack);
 		
 		
 		//DEBUGGING 
@@ -307,7 +322,7 @@ public class WordprocessingMLPackage extends Package {
         // Put the html in result
 		org.w3c.dom.Document xhtmlDoc = org.docx4j.XmlUtils.neww3cDomDocument();
 		javax.xml.transform.dom.DOMResult result = new javax.xml.transform.dom.DOMResult(xhtmlDoc);
-		html(result);
+		html(result, false); // false -> don't use HTML fonts.
 				
 		// Now render the XHTML
 		org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();

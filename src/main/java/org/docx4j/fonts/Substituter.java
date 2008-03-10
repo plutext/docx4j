@@ -259,12 +259,14 @@ public class Substituter {
 	}
 	
 	// For Xalan
-	public static String getPdfSubstituteFont(Substituter s, String documentStyleId) {
+	public static String getSubstituteFontXsltExtension(Substituter s, String documentStyleId, boolean fontFamilyStack) {
 		
-		return s.getPdfSubstituteFont(documentStyleId);
+		return s.getSubstituteFontXsltExtension(documentStyleId, fontFamilyStack);
 	}
 	
-	public String getPdfSubstituteFont(String documentStyleId) {
+	public String getSubstituteFontXsltExtension(String documentStyleId, boolean fontFamilyStack) {
+		
+		log.info("fontFamilyStack: " + fontFamilyStack);
 		
 		if (documentStyleId==null) {
 			log.error("passed null documentStyleId");
@@ -280,7 +282,29 @@ public class Substituter {
 		
 		log.error(documentStyleId + " -> " + fontMapping.getPdfSubstituteFont());
 		
-		return fontMapping.getPdfSubstituteFont();
+		if (fontFamilyStack) {
+			
+			// TODO - if this is an HTML document intended
+			// for viewing in a web browser, we need to add a 
+			// font-family cascade (since the true type font
+			// specified for PDF purposes won't necessarily be
+			// present on web browser's system).
+			
+			// The easiest way to do it might be to just
+			// see whether the substitute font is serif or
+			// not, and add cascade entries accordingly.
+			
+			// If we matched it via FontSubstitutions.xml,
+			// maybe that file contains an HTML match as well?
+			
+			// Either way, this stuff should be worked out in
+			// populateFontMappings, and added to the 
+			// FontMapping objects.
+			
+			return fontMapping.getPdfSubstituteFont();
+		} else {
+			return fontMapping.getPdfSubstituteFont();
+		}
 		
 	}
 	
