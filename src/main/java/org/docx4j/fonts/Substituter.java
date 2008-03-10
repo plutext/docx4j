@@ -58,6 +58,9 @@ import org.docx4j.wml.Fonts;
 public class Substituter {
 	protected static Logger log = Logger.getLogger(Substituter.class);
 	
+	/** This map is the one that the others are used
+	 *  to produce.
+	 */
 	private final static Map<String, FontMapping> fontMappings;
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
@@ -384,6 +387,8 @@ public class Substituter {
 				}
 	        	
 				// We're done with this font.
+				fontMappings.put(normalisedFontName, fm);
+				log.info("Entry added for: " +  normalisedFontName);
 				continue;
 			} 
 	        
@@ -425,7 +430,7 @@ public class Substituter {
 			        	if (bestPanoseMatchValue==0) {
 			        		
 			        		// Can't do any better than this!
-			        		continue;
+			        		continue; // this is just the inner while
 			        	}
 			        	
 			        	
@@ -455,6 +460,8 @@ public class Substituter {
 					
 					// TODO - add corresponding AWT font
 					
+					fontMappings.put(normalisedFontName, fm);
+					log.info("Entry added for: " +  normalisedFontName);
 					continue; // we're done
 				} 
 				
