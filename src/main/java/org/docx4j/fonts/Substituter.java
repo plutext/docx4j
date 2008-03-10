@@ -268,9 +268,7 @@ public class Substituter {
 	}
 	
 	public String getSubstituteFontXsltExtension(String documentStyleId, boolean fontFamilyStack) {
-		
-		log.info("fontFamilyStack: " + fontFamilyStack);
-		
+				
 		if (documentStyleId==null) {
 			log.error("passed null documentStyleId");
 			return "nullInputToExtension";
@@ -397,34 +395,43 @@ public class Substituter {
 	        
 	        // 1B
 	        if (physicalFontMap.get(normalise(fontName)) != null) {
-				System.out.println(fontName + " --> NATIVE");
-	        	// if so ..
-	        	foundPdfMapping = true;
-	        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getEmbedFile());
-	        	
-				// sanity check using Panose (since 
-				// a font could conceivably have the same name
-				// but quite different content)				
 				EmbedFontInfo nfontInfo = ((EmbedFontInfo)physicalFontMap.get(normalise(fontName)));
-				if (nfontInfo.getPanose() == null ) {
-					System.out.println(".. and lacking Panose!");					
-				} else if (fopPanose!=null ) {
-				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
-						System.out.println(".. panose distance: " + pd);					
-				}
-	        	
-				// We're done with this font.
-	        	fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getFontTriplets(), normalise(fontName) );				
-				fontMappings.put(normalisedFontName, fm);
+
+		        if (!nfontInfo.isEmbeddable() ) {
+		        	log.info(fontName + " is not embeddable; skipping.");
+		        } else {
 				
-				log.info("Entry added for: " +  normalisedFontName);
-				continue;
+					System.out.println(fontName + " --> NATIVE");
+		        	// if so ..
+		        	foundPdfMapping = true;
+		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getEmbedFile());
+		        	
+					// sanity check using Panose (since 
+					// a font could conceivably have the same name
+					// but quite different content)				
+					if (nfontInfo.getPanose() == null ) {
+						System.out.println(".. and lacking Panose!");					
+					} else if (fopPanose!=null ) {
+					        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
+							System.out.println(".. panose distance: " + pd);					
+					}
+		        	
+					// We're done with this font.
+		        	fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getFontTriplets(), normalise(fontName) );				
+					fontMappings.put(normalisedFontName, fm);
+					
+					log.info("Entry added for: " +  normalisedFontName);
+					continue;
+		        }
 			} 
 	        
 			// Second, what about a panose match?
 	        // TODO - only do this for latin fonts!
+			String physicalFontKey = null;
 			String panoseKey = null;
 			if (fopPanose!=null ) {
+				
+				// NB org.apache.fop.fonts.Panose only exists in our patched FOP
 				
 				if (!org.apache.fop.fonts.Panose.validPanose(panose.getVal())) {
 					System.out.println("INVALID !");					
@@ -440,9 +447,32 @@ public class Substituter {
 			    while (it.hasNext()) {
 			        Map.Entry mapPairs = (Map.Entry)it.next();
 			        			        
+			        physicalFontKey = (String)mapPairs.getKey();
 			        EmbedFontInfo fontInfo = (EmbedFontInfo)mapPairs.getValue();
 			        
+			        if (!fontInfo.isEmbeddable() ) {			        	
+						// NB isEmbeddable() only exists in our patched FOP
+			        
+						/*
+						 * No point looking at this font, since if we tried to use it,
+						 * later, we'd get:
+						 *  
+						 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
+							at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
+							at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
+							at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
+							at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
+							at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
+							
+							will be thrown if os_2.fsType == 2
+							
+						 */
+			        	log.info(physicalFontKey + " is not embeddable; skipping.");
+			        	continue;
+			        } 
+			        
 			        if (fontInfo.getPanose() == null ) {			        	
+			        	//log.info(physicalFontKey + " has no Panose data; skipping.");
 			        	continue;
 			        }
 			        
@@ -452,7 +482,7 @@ public class Substituter {
 			        	
 			        	bestPanoseMatchValue = panoseMatchValue;
 			        	matchingPanoseString = fontInfo.getPanose().toString();
-			        	panoseKey = (String)mapPairs.getKey();
+			        	panoseKey = physicalFontKey;
 			        	
 			        	//System.out.println("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
 			        	
@@ -519,30 +549,34 @@ public class Substituter {
 						if (physicalFontMap.get(tokens[x]) != null) {
 							
 							EmbedFontInfo embedFontInfo = (EmbedFontInfo)physicalFontMap.get(tokens[x]);
-							
-							String physicalFontFile = embedFontInfo.getEmbedFile();
-							log.debug("PDF: " + fontName + " --> "
-									+ physicalFontFile);
-							foundPdfMapping = true;
-				        	fm.setTripletName( embedFontInfo.getFontTriplets(), tokens[x] );				
-				        	fm.setEmbeddedFile( physicalFontFile);
-							
-							// Out of interest, does this have a Panose value?
-							// And what is the distance?
-							if (embedFontInfo.getPanose() == null ) {
-								System.out.println(".. as expected, lacking Panose");					
-							} else if (fopPanose!=null  ) {
-							        long pd = fopPanose.difference(embedFontInfo.getPanose().getPanoseArray());
-							        
-							        if (pd >= org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {						        
-							        	log.debug(".. with a panose distance exceeding threshold: " + pd);
-							        } else {
-							        	// Sanity check
-							        	log.error(".. with a low panose distance (! How did we get here?) : " + pd);						        	
-							        }									
-							}						
-											        	
-							break;
+
+					        if (!embedFontInfo.isEmbeddable() ) {			        	
+					        	log.info(tokens[x] + " is not embeddable; skipping.");
+					        } else {
+								String physicalFontFile = embedFontInfo.getEmbedFile();
+								log.debug("PDF: " + fontName + " --> "
+										+ physicalFontFile);
+								foundPdfMapping = true;
+					        	fm.setTripletName( embedFontInfo.getFontTriplets(), tokens[x] );				
+					        	fm.setEmbeddedFile( physicalFontFile);
+								
+								// Out of interest, does this have a Panose value?
+								// And what is the distance?
+								if (embedFontInfo.getPanose() == null ) {
+									System.out.println(".. as expected, lacking Panose");					
+								} else if (fopPanose!=null  ) {
+								        long pd = fopPanose.difference(embedFontInfo.getPanose().getPanoseArray());
+								        
+								        if (pd >= org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {						        
+								        	log.debug(".. with a panose distance exceeding threshold: " + pd);
+								        } else {
+								        	// Sanity check
+								        	log.error(".. with a low panose distance (! How did we get here?) : " + pd);						        	
+								        }									
+								}						
+												        	
+								break;
+					        }
 						} else {
 							// System.out.println("no match on token " + x + ":"
 							// + tokens[x]);

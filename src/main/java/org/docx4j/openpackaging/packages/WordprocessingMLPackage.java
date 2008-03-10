@@ -346,15 +346,7 @@ public class WordprocessingMLPackage extends Package {
 				try {
 					renderer.getFontResolver().addFont(fm.getEmbeddedFile(), true);
 				} catch (com.lowagie.text.DocumentException e) {
-					/*
-					 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
-						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
-						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
-						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
-						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
-						at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
-					 */
-					log.warn(e.getMessage()); 
+					log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
 				} catch (java.io.IOException e) {
 				
 				/* 
