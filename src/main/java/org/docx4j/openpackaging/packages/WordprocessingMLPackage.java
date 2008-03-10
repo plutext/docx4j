@@ -267,14 +267,13 @@ public class WordprocessingMLPackage extends Package {
 		org.docx4j.wml.Fonts fonts = null;
 		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();	
 		
-		if (fontTablePart!=null) {
-			fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
-		} else {
+		if (fontTablePart==null) {
 			log.warn("FontTable missing; creating default part.");
 			fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
 			fontTablePart.unmarshalDefaultFonts();					
 		}
 		
+		fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
 		fontSubstituter.populateFontMappings(fontsInUse, fonts);
 		
 		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
