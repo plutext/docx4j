@@ -2,11 +2,12 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(working copy)
-@@ -133,6 +133,7 @@
+@@ -133,6 +133,8 @@
          embedUrl = fontUrl.toExternalForm();
          EmbedFontInfo fontInfo = new EmbedFontInfo(null, customFont.isKerningEnabled(),
                  fontTripletList, embedUrl);
 +        fontInfo.setPanose(customFont.getPanose());
++        fontInfo.setEmbeddable(customFont.isEmbeddable());
          if (fontCache != null) {
              fontCache.addFont(fontInfo);
          }
@@ -14,10 +15,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFon
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(working copy)
-@@ -57,6 +57,17 @@
+@@ -57,6 +57,26 @@
      private Map kerning;
  
      private boolean useKerning = true;
++    
++    private boolean isEmbeddable = true; 
++	public boolean isEmbeddable() {
++		return isEmbeddable;
++	}
++	public void setEmbeddable(boolean isEmbeddable) {
++		this.isEmbeddable = isEmbeddable;
++	}
++    
 +    
 +    private Panose panose = null;
 +
@@ -32,14 +42,28 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFon
  
      /** {@inheritDoc} */
      public String getFontName() {
+@@ -448,4 +468,5 @@
+         }
+     }
+ 
++
+ }
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(working copy)
-@@ -38,6 +38,17 @@
+@@ -38,6 +38,25 @@
      protected boolean kerning;
      /** the list of associated font triplets */
      protected List fontTriplets;
++    
++    private boolean isEmbeddable = true; 
++	public boolean isEmbeddable() {
++		return isEmbeddable;
++	}
++	public void setEmbeddable(boolean isEmbeddable) {
++		this.isEmbeddable = isEmbeddable;
++	}    
 +    
 +    protected Panose panose = null;
 +
@@ -54,6 +78,33 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
        
      /**
       * Main constructor
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(working copy)
+@@ -133,12 +134,16 @@
+         }
+     }
+ 
+-    /**
+-     * {@inheritDoc}
+-     */
+-    public boolean isEmbeddable() {
+-        return !(getEmbedFileName() == null && getEmbedResourceName() == null);
+-    }
++    
++// Comment out - this overrides the value derived by TTFFile, which 
++// is not what we want.    
++    
++//    /**
++//     * {@inheritDoc}
++//     */
++//    public boolean isEmbeddable() {
++//        return !(getEmbedFileName() == null && getEmbedResourceName() == null);
++//    }
+ 
+     /**
+      * {@inheritDoc}
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
@@ -236,7 +287,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
  
  /**
   * Reads a TrueType file or a TrueType Collection.
-@@ -48,6 +49,9 @@
+@@ -48,9 +49,12 @@
      public static final boolean TRACE_ENABLED = false;
  
      private String encoding = "WinAnsiEncoding";    // Default encoding
@@ -245,8 +296,31 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
 +    private Panose panose;
  
      private short firstChar = 0;
-     private boolean isEmbeddable = true;
-@@ -996,10 +1000,21 @@
+-    private boolean isEmbeddable = true;
++    private boolean isEmbeddable = false; // until proven otherwise!
+     private boolean hasSerifs = true;
+     /**
+      * Table directory
+@@ -743,6 +747,7 @@
+      * @return boolean True if it may be embedded
+      */
+     public boolean isEmbeddable() {
++    	
+         return isEmbeddable;
+     }
+ 
+@@ -988,7 +993,10 @@
+         if (dirTabs.get("OS/2") != null) {
+             seekTab(in, "OS/2", 2 * 2);
+             this.usWeightClass = in.readTTFUShort();
++            
++            // usWidthClass
+             in.skip(2);
++            
+             int fsType = in.readTTFUShort();
+             if (fsType == 2) {
+                 isEmbeddable = false;
+@@ -996,10 +1004,21 @@
                  isEmbeddable = true;
              }
              in.skip(11 * 2);
@@ -269,7 +343,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              int v;
              os2Ascender = in.readTTFShort(); //sTypoAscender
              log.debug("sTypoAscender: " + os2Ascender 
-@@ -1568,4 +1583,8 @@
+@@ -1568,4 +1587,8 @@
              ioe.printStackTrace(System.err);
          }
      }
@@ -283,11 +357,12 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(working copy)
-@@ -92,6 +92,8 @@
+@@ -92,6 +92,9 @@
          returnFont.setMissingWidth(0);
          returnFont.setWeight(ttf.getWeightClass());
          
 +        returnFont.setPanose(ttf.getPanose() );
++        returnFont.setEmbeddable(ttf.isEmbeddable() );
 +        
          multiFont.setCIDType(CIDFontType.CIDTYPE2);
          int[] wx = ttf.getWidths();
