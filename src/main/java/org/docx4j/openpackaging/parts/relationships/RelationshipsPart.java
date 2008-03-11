@@ -280,6 +280,32 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 		
 	}
 	
+	/** Gets a loaded Part by its id */
+	public Part getPart(String id) {
+
+		log.debug("looking for: " + id);
+		
+		Relationship r = getRelationshipByID(id);
+		
+		if (r==null) {
+			log.warn("couldn't find part with id: " + id);
+			return null;
+		}
+		
+		log.info(" source is  " + r.getSourceURI() );
+    	log.info(id + " points to " + r.getTargetURI());
+    	// eg rId1 points to fonts/font1.odttf
+    	
+    	URI uri = org.docx4j.openpackaging.URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI());
+		
+    	try {
+			return getPackage().getParts().get( new PartName(uri, true ));
+		} catch (InvalidFormatException e) {
+			log.error("Couldn't get part using PartName: " + uri, e);
+			return null;
+		}
+	}
+	
 	/**
 	 * Add a newly created part, a relationship and the content type.
 	 *  
