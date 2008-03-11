@@ -219,6 +219,8 @@ public interface ContentTypeManager {
 	public Part CreateWebSettingsPartObject(String partName)
 	throws InvalidFormatException;
 
+	public Part CreateObfuscatedFontPartObject(String partName)
+	throws InvalidFormatException;
 
 	
 	

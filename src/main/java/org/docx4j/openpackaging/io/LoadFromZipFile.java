@@ -67,8 +67,8 @@ public class LoadFromZipFile extends Load {
 
 	// Testing
 	public static void main(String[] args) throws Exception {
-		DemoCore demoCore = new DemoCore();
-		String filepath = demoCore.getTestRootPath() + "sample.docx";
+		String filepath = System.getProperty("user.dir") + "/sample-docs/FontEmbedded.docx";
+		log.info("Path: " + filepath );
 		LoadFromZipFile loader = new LoadFromZipFile();
 		loader.get(filepath);		
 	}
@@ -387,6 +387,13 @@ public class LoadFromZipFile extends Load {
 				} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
 					
 					((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).setDocument( is );
+
+				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart) {
+					
+					log.debug("Detected ObfuscatedFontPart");
+					((BinaryPart)part).setBinaryData(is);
+					log.info("Stored as BinaryData" );
+					
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should

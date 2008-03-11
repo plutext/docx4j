@@ -85,6 +85,8 @@ public class ContentTypes {
 	public final static String OFFICEDOCUMENT_THEME =
 		"application/vnd.openxmlformats-officedocument.theme+xml";
 	
+	public final static String OFFICEDOCUMENT_FONT =
+		"application/vnd.openxmlformats-officedocument.obfuscatedFont";
 	
 	// PartName="/word/document.xml"
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
