@@ -40,6 +40,7 @@ import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.substitutions.FontSubstitutions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.wml.Fonts;
 
 /**
@@ -68,6 +69,7 @@ public class Substituter {
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
 	private final static Map<String, FontSubstitutions.Replace> replaceMap;
+	protected static FontCache fontCache;
 	private final static Map<String, EmbedFontInfo> physicalFontMap;
 	private final static Map<String, String> awtFontFamilyNames;
 
@@ -94,6 +96,11 @@ public class Substituter {
 			replaceMap = new HashMap<String, FontSubstitutions.Replace>();
 			setupCandidateSubstitutionsMap();
 
+	        fontCache = FontCache.load();
+	        if (fontCache == null) {
+	            fontCache = new FontCache();
+	        }			
+			
 			// Map of all physical fonts (normalised names) to file paths
 			physicalFontMap = new HashMap<String, EmbedFontInfo>();
 			setupPhysicalFonts();
@@ -165,47 +172,69 @@ public class Substituter {
 				
 	}
 
-	// Map of all physical fonts (normalised names) to file paths 
+ 
+	/**
+	 * Add all physical fonts (normalised names) to a map, 
+	 * value being EmbedFontInfo objects.
+	 */ 
 	private final static void setupPhysicalFonts() throws Exception {
-		// Use FOP
-        FontResolver fontResolver = FontSetup.createMinimalFontResolver();
-        FontCache fontCache = FontCache.load();
-        if (fontCache == null) {
-            fontCache = new FontCache();
-        }
-        
-        FontFileFinder fontFileFinder = new FontFileFinder();
-        List fontFileList = fontFileFinder.find();
 		
+		// Use FOP - inspired by org.apache.fop.render.PrintRendererConfigurator
+        FontResolver fontResolver = FontSetup.createMinimalFontResolver();        
+        FontFileFinder fontFileFinder = new FontFileFinder();
+        
+        // Automagically finds a list of font files on local system
+        // based on os.name
+        List fontFileList = fontFileFinder.find();                
         for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
             URL fontUrl = (URL)iter.next();
             // parse font to ascertain font info
             FontInfoFinder finder = new FontInfoFinder();
-            EmbedFontInfo fontInfo = finder.find(fontUrl, fontResolver, fontCache);
-            if (fontInfo != null) {
-            
-            	for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
-            		FontTriplet triplet = (FontTriplet)iterIn.next(); 
-                	
-                    String lower = fontInfo.getEmbedFile().toLowerCase();
-                    if (lower.endsWith(".otf") || lower.endsWith(".ttf")) {
-                		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
-                    	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
-                    } else {                    	
-                    	// .pfb isn't supported in org.xhtmlrenderer.pdf.ITextFontResolver.addFont
-                    	// so don't consider them any further.
-                		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
-                    }
-                	
-                	// Uncomment this to see ...
-            		// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
-            	}
-            	
-            }
+            setupPhysicalFont(fontResolver, fontUrl, finder);
+        }
+
+        // Add fonts from our Temporary Embedded Fonts dir
+        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
+        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+            URL fontUrl = (URL)iter.next();
+            // parse font to ascertain font info
+            FontInfoFinder finder = new FontInfoFinder();
+            setupPhysicalFont(fontResolver, fontUrl, finder);
         }
         
         fontCache.save();
         
+	}
+
+	/**
+	 * Add a physical font's EmbedFontInfo object.
+	 * 
+	 * @param fontResolver
+	 * @param fontUrl
+	 * @param finder
+	 */
+	public static void setupPhysicalFont(FontResolver fontResolver,
+			URL fontUrl, FontInfoFinder finder) {
+		EmbedFontInfo fontInfo = finder.find(fontUrl, fontResolver, fontCache);
+		if (fontInfo != null) {
+		
+			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
+				FontTriplet triplet = (FontTriplet)iterIn.next(); 
+		    	
+		        String lower = fontInfo.getEmbedFile().toLowerCase();
+		        if (lower.endsWith(".otf") || lower.endsWith(".ttf")) {
+		    		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
+		        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
+		        } else {                    	
+		        	// .pfb isn't supported in org.xhtmlrenderer.pdf.ITextFontResolver.addFont
+		        	// so don't consider them any further.
+		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
+		        }
+		    	
+		    	// Uncomment this to see ...
+				// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
+			}            	
+		}
 	}
 	
 	private final static void setupAwtFontFamilyNames() {

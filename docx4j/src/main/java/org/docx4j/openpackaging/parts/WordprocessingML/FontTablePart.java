@@ -143,12 +143,15 @@ public final class FontTablePart extends JaxbXmlPart {
 			FontRel embedBoldItalic = font.getEmbedBoldItalic();
 			FontRel embedItalic = font.getEmbedItalic();
 			
-			getObfuscatedFontFromRelationship(embedRegular);
+			getObfuscatedFontFromRelationship(fontName, embedRegular);
+			getObfuscatedFontFromRelationship(fontName, embedBold);
+			getObfuscatedFontFromRelationship(fontName, embedBoldItalic);
+			getObfuscatedFontFromRelationship(fontName, embedItalic);
     	
 		}
     }
     
-    private void getObfuscatedFontFromRelationship(FontRel fontRel) {
+    private void getObfuscatedFontFromRelationship(String fontName, FontRel fontRel) {
     
     	if (fontRel == null) {
     		log.info("fontRel not found.");
@@ -160,7 +163,7 @@ public final class FontTablePart extends JaxbXmlPart {
     	    	 
     	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
     	if (obfuscatedFont != null) {
-    		obfuscatedFont.deObfuscate(fontKey);
+    		obfuscatedFont.deObfuscate(fontName, fontKey);
     	} else {
     		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
     	}
