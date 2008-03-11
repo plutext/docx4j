@@ -169,7 +169,10 @@ public class Substituter {
 	private final static void setupPhysicalFonts() throws Exception {
 		// Use FOP
         FontResolver fontResolver = FontSetup.createMinimalFontResolver();
-        FontCache fontCache = new FontCache();
+        FontCache fontCache = FontCache.load();
+        if (fontCache == null) {
+            fontCache = new FontCache();
+        }
         
         FontFileFinder fontFileFinder = new FontFileFinder();
         List fontFileList = fontFileFinder.find();
@@ -191,7 +194,7 @@ public class Substituter {
                     } else {                    	
                     	// .pfb isn't supported in org.xhtmlrenderer.pdf.ITextFontResolver.addFont
                     	// so don't consider them any further.
-                		log.warn("Skipping " + triplet.getName() + "; unsuported type: " + fontInfo.getEmbedFile());                	                    	
+                		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
                     }
                 	
                 	// Uncomment this to see ...
@@ -201,8 +204,8 @@ public class Substituter {
             }
         }
         
-        // http://www.brawer.ch/software/fonts/doc/gnu/java/awt/font/opentype/NameDecoder.html 
-        //    can be used to interrogate the TTF file. Also http://www.brawer.ch/software/fonts/
+        fontCache.save();
+        
 	}
 	
 	private final static void setupAwtFontFamilyNames() {
