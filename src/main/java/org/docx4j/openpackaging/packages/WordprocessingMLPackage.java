@@ -252,12 +252,37 @@ public class WordprocessingMLPackage extends Package {
 		// Use the template to create a transformer
 		javax.xml.transform.Transformer xformer = template.newTransformer();
 		
-		log.error(xformer.getClass().getName() );
+		if (!xformer.getClass().getName().equals("org.apache.xalan.transformer.TransformerImpl")) {
+			log.error("Detected " + xformer.getClass().getName() 
+					+ ", but require org.apache.xalan.transformer.TransformerImpl. " +
+							"Ensure Xalan 2.7.0 is on your classpath!" );
+		}
 		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't work
 		// with our extension function.
 
-		// Handle fonts - this is platform specific
-		// Algorithm - to be implemented:
+		
+		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
+		//     possibly via an extension function in the XSLT
+		if (fontSubstituter==null) {
+			setFontSubstituter();
+		}
+		xformer.setParameter("substituterInstance", fontSubstituter);
+		xformer.setParameter("fontFamilyStack", fontFamilyStack);
+		
+		
+		//DEBUGGING 
+		// use the identity transform if you want to send wordDocument;
+		// otherwise you'll get the XHTML
+		//javax.xml.transform.Transformer xformer = tfactory.newTransformer();
+		
+		xformer.transform(domSource, result);
+
+		log.info("wordDocument transformed to xhtml ..");
+    	
+    }
+    
+    public void setFontSubstituter() throws Exception {
+    	
 		// 1.  Get a list of all the fonts in the document
 		java.util.Map fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
@@ -274,22 +299,7 @@ public class WordprocessingMLPackage extends Package {
 		}
 		
 		fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
-		fontSubstituter.populateFontMappings(fontsInUse, fonts);
-		
-		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
-		//     possibly via an extension function in the XSLT
-		xformer.setParameter("substituterInstance", fontSubstituter);
-		xformer.setParameter("fontFamilyStack", fontFamilyStack);
-		
-		
-		//DEBUGGING 
-		// use the identity transform if you want to send wordDocument;
-		// otherwise you'll get the XHTML
-		//javax.xml.transform.Transformer xformer = tfactory.newTransformer();
-		
-		xformer.transform(domSource, result);
-
-		log.info("wordDocument transformed to xhtml ..");
+		fontSubstituter.populateFontMappings(fontsInUse, fonts);    	
     	
     }
 
