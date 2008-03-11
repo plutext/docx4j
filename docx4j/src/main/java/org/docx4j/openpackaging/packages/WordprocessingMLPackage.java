@@ -231,9 +231,9 @@ public class WordprocessingMLPackage extends Package {
 
 		examples of FQCN:
 		
+		  org.apache.xalan.transformer.TransformerImpl (this is the one we want)
 		  com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
 		  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
-		
 			
 */		
 		// Now transform this into XHTML

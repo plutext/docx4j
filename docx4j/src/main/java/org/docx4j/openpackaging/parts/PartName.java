@@ -217,7 +217,7 @@ public final class PartName implements Comparable<PartName> {
 		// Check if the part name URI is absolute
 		throwExceptionIfAbsoluteUri(partUri);
 
-		// Check if the part name URI starts with a forward slash [M1.4]
+		// Check if the part name URI doesn't start with a forward slash [M1.4]
 		throwExceptionIfPartNameNotStartsWithForwardSlashChar(partUri);
 
 		// Check if the part name URI ends with a forward slash [M1.5]

@@ -29,8 +29,15 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 //import org.docx4j.jaxb.Context;
+
+import org.docx4j.wml.Fonts;
+import org.docx4j.wml.FontRel;
+import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
+
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io.LoadFromZipFile;
 //import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
@@ -125,5 +132,46 @@ public final class FontTablePart extends JaxbXmlPart {
     	return unmarshal( is );    	
     }
     
+    public void processEmbeddings() {
+    	
+    	Fonts fonts = (org.docx4j.wml.Fonts)this.getJaxbElement();
+		for (Fonts.Font font : fonts.getFont() ) {
+			String fontName =  font.getName();
+    	
+			FontRel embedRegular = font.getEmbedRegular();
+			FontRel embedBold = font.getEmbedBold();
+			FontRel embedBoldItalic = font.getEmbedBoldItalic();
+			FontRel embedItalic = font.getEmbedItalic();
+			
+			getObfuscatedFontFromRelationship(embedRegular);
+    	
+		}
+    }
+    
+    private void getObfuscatedFontFromRelationship(FontRel fontRel) {
+    
+    	if (fontRel == null) {
+    		log.info("fontRel not found.");
+    		return;
+    	}
+    	
+    	String id = fontRel.getId();    	
+    	String fontKey = fontRel.getFontKey();
+    	    	 
+    	ObfuscatedFontPart obfuscatedFont = (ObfuscatedFontPart)this.getRelationshipsPart().getPart(id);
+    	if (obfuscatedFont != null) {
+    		obfuscatedFont.deObfuscate(fontKey);
+    	} else {
+    		log.error("Couldn't find ObfuscatedFontPart with id: " + id);
+    	}
+    }
 
+	public static void main(String[] args) throws Exception {
+		String filepath = System.getProperty("user.dir") + "/sample-docs/FontEmbedded.docx";		
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(filepath));
+		
+		wordMLPackage.getMainDocumentPart().getFontTablePart().processEmbeddings();
+	}
+    
+    
 }

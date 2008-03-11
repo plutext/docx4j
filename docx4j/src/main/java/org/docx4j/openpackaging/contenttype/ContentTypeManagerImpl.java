@@ -286,6 +286,8 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			return CreateStyleDefinitionsPartObject( partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_WEBSETTINGS)) {
 			return CreateWebSettingsPartObject(partName );
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
+			return CreateObfuscatedFontPartObject(partName );
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)) {
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");
@@ -386,6 +388,11 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 	public Part CreateNumberingPartObject(String partName)
 			throws InvalidFormatException {
 		return new NumberingDefinitionsPart(new PartName(partName));
+	}
+	
+	public Part CreateObfuscatedFontPartObject(String partName)
+	throws InvalidFormatException {
+		return new ObfuscatedFontPart(new PartName(partName));		
 	}
 	
 	
