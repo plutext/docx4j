@@ -133,10 +133,12 @@ public class MainDocumentPart extends DocumentPart  {
 		
 		// It is convenient to have a HashMap of styles
 		Map stylesDefined = new java.util.HashMap();
-	     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
-	            org.docx4j.wml.Styles.Style s = (org.docx4j.wml.Styles.Style)iter.next();
-	            stylesDefined.put(s.getStyleId(), s);
-	     }
+		if (styles!=null) {
+		     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
+		            org.docx4j.wml.Styles.Style s = (org.docx4j.wml.Styles.Style)iter.next();
+		            stylesDefined.put(s.getStyleId(), s);
+		     }
+		}
     // We need to know what fonts and styles are used in the document
     	
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
@@ -201,6 +203,13 @@ public class MainDocumentPart extends DocumentPart  {
 		//	   in this case Calibri and Cambria)
 		// 3.2 if there is no rFonts element, default to Times New Roman.
 		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
+		
+		if (styles==null) {
+			log.info("No styles - default to Times New Roman");
+			// Guess that this is what Word does, but haven't verified
+			return "Times New Roman"; 										
+		}
+		
 		org.docx4j.wml.Styles.DocDefaults docDefaults = styles.getDocDefaults(); 		
 		
 		if (docDefaults!=null) {			
