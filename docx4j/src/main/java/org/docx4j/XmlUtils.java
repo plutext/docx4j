@@ -158,6 +158,9 @@ public class XmlUtils {
 			dbf.setNamespaceAware(true);
 			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
 
+			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			
 			marshaller.marshal(o, doc);
 			
 			// Now convert the W3C document to a dom4j document
@@ -209,6 +212,9 @@ public class XmlUtils {
 		try {			
 			Marshaller m=jc.createMarshaller();
 
+			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			
 			/* Fix for:
 			 * 		<t tstamp='1198193417585' snum='1' op='update'>
 			 * ~~~~~~~>	<?xml version="1.0" encoding="UTF-8" standalone="yes"?>

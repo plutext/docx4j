@@ -106,6 +106,9 @@ public abstract class JaxbXmlPart extends Part {
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
+			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			
 			marshaller.marshal(jaxbElement, node);
 
 		} catch (JAXBException e) {
@@ -129,6 +132,9 @@ public abstract class JaxbXmlPart extends Part {
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
+			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			
 			System.out.println("marshalling " + this.getClass().getName() + " ..." );									
 			
 			marshaller.marshal(jaxbElement, os);
