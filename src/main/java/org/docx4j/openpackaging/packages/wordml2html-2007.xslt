@@ -6,6 +6,11 @@ Modified by Oleg Tkachenko (http://www.xmllab.net) to support images, headers an
 Modified by Jason Harrop (dev.plutext.org) to support Word 2007
 - xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
 
+Works with the output of Word 2007's ActiveDocument.WordOpenXML,
+	which looks like:
+	
+	/pkg:package/pkg:part/pkg:xmlData	
+	
 Version 1.3-.NET-script
 
 Changes since version 1.2:
@@ -22,6 +27,7 @@ Changes since version 1.2:
 	xmlns:WX="http://schemas.microsoft.com/office/word/2003/auxHint"
 	xmlns:aml="http://schemas.microsoft.com/aml/2001/core"
 	xmlns:w10="urn:schemas-microsoft-com:office:word"
+	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"		
         xmlns:msxsl="urn:schemas-microsoft-com:xslt"
    	xmlns:ext="http://www.xmllab.net/wordml2html/ext"
 	xmlns:java="http://xml.apache.org/xalan/java"
@@ -144,11 +150,13 @@ Changes since version 1.2:
 <xsl:variable name="prListSuff_nothing">Nothing</xsl:variable>
 
 
-<xsl:variable name="nsStyles" select="/w:wordDocument[1]/w:styles[1]/w:style"/>
-<xsl:variable name="ndLists" select="/w:wordDocument[1]/w:lists[1]|//w:cfChunk/w:lists"/>
-<xsl:variable name="ndDocPr" select="/w:wordDocument[1]/w:docPr[1]"/>
-<xsl:variable name="ndDocInfo" select="/w:wordDocument[1]/w:docInfo[1]"/>
-<xsl:variable name="ndOfficeDocPr" select="/w:wordDocument[1]/o:DocumentProperties[1]"/>
+<xsl:variable name="nsStyles" select="/pkg:package/pkg:part/pkg:xmlData/w:styles[1]/w:style"/>
+	
+<!-- 2008 03 12: TODO following parts currently not included in our pkg:package -->	
+<xsl:variable name="ndLists" select="/pkg:package/pkg:part/pkg:xmlData/w:lists[1]|/w:cfChunk/w:lists"/>
+<xsl:variable name="ndDocPr" select="/pkg:package/pkg:part/pkg:xmlData/w:docPr[1]"/>
+<xsl:variable name="ndDocInfo" select="/pkg:package/pkg:part/pkg:xmlData/w:docInfo[1]"/>
+<xsl:variable name="ndOfficeDocPr" select="/pkg:package/pkg:part/pkg:xmlData/o:DocumentProperties[1]"/>
 
 
 <xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz'" />
@@ -4966,8 +4974,10 @@ if (msoBrowserCheck())
 	<xsl:apply-templates />
 </xsl:template>
 
-
+<!--
 <xsl:template match="/w:wordDocument">
+	-->
+<xsl:template match="/pkg:package">
 	<xsl:choose>
 		
 		
@@ -5048,9 +5058,11 @@ if (msoBrowserCheck())
 					<style type="print">						
 						<xsl:comment>
 							/*font definitions*/
+							<!-- 2008 03 12: TODO font part currently not included in our pkg:package -->
 							<xsl:apply-templates select="w:fonts[1]/w:font"/>
 							/*element styles*/
 							<xsl:choose>
+								<!-- 2008 03 12: TODO docPr currently not included in our pkg:package -->
 								<xsl:when test="w:docPr/w:revisionView/@w:markup = 'off'">
 								del {display:none;}
 								ins {text-decoration:none;}
@@ -5108,7 +5120,7 @@ if (msoBrowserCheck())
 					</xsl:if>	
 
 <!-- was <xsl:apply-templates select="w:body|w:cfChunk"/> -->
-					<xsl:apply-templates select="w:document/w:body|w:cfChunk"/>
+					<xsl:apply-templates select="pkg:part/pkg:xmlData/w:document/w:body|w:cfChunk"/>
 
 					
 					<xsl:for-each select="//aml:annotation[@w:type='Word.Comment']">

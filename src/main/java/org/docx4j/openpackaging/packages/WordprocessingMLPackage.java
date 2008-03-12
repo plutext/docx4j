@@ -189,35 +189,59 @@ public class WordprocessingMLPackage extends Package {
     	 * The question then is how the stylesheet is made to work with
     	 * our main document and style definition parts.
     	 * 
-    	 * For now, I've just edited it a little to accept our parts wrapped
-    	 * in a <w:wordDocument> element.  Since that's a completely
-    	 * arbitrary format, it may be better in due course to process
-    	 * pck:package/pck:part
+    	 * I've adapted the stylesheet to process the
+    	 * pck:package/pck:part stuff emitted by Word 2007.
     	 * 
     	 */
     	
 		// so, put the 2 parts together into a single document 
-    	// The JAXB object org.docx4j.wml.WordDocument is
+    	// The JAXB object org.docx4j.wml.Package is
     	// custom built for this purpose.
     	
-    	// Create a org.docx4j.wml.WordDocument object
+    	// Create a org.docx4j.wml.Package object
     	org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-    	org.docx4j.wml.WordDocument wd = factory.createWordDocument();
+    	org.docx4j.wml.Package pkg = factory.createPackage();
+    	
     	// Set its parts
+    	
     	// .. the main document part
+    	org.docx4j.wml.Package.Part pkgPartDocument = factory.createPackagePart();
+    	    	
 		MainDocumentPart documentPart = getMainDocumentPart(); 
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();		
-    	wd.setDocument(wmlDocumentEl);
+		
+    	pkgPartDocument.setName(documentPart.getPartName().getName());
+    	pkgPartDocument.setContentType(documentPart.getContentType() );
+		
+    	org.docx4j.wml.Package.Part.XmlData XmlDataDoc = factory.createPackagePartXmlData();
+    	
+		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
+		
+		XmlDataDoc.setDocument(wmlDocumentEl);
+		pkgPartDocument.setXmlData(XmlDataDoc);
+		pkg.getPart().add(pkgPartDocument);
+				
     	// .. the style part
+    	org.docx4j.wml.Package.Part pkgPartStyles = factory.createPackagePart();
+
     	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart = documentPart.getStyleDefinitionsPart();
+    	
+    	pkgPartDocument.setName(stylesPart.getPartName().getName());
+    	pkgPartDocument.setContentType(stylesPart.getContentType() );
+    	
+    	org.docx4j.wml.Package.Part.XmlData XmlDataStyles = factory.createPackagePartXmlData();
+    	
     	org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)stylesPart.getJaxbElement();
-    	wd.setStyles(styles);
+    	
+		XmlDataStyles.setStyles(styles);
+		pkgPartStyles.setXmlData(XmlDataStyles);
+		pkg.getPart().add(pkgPartStyles);    	
+    	
     	// Now marshall it
 		JAXBContext jc = Context.jc;
 		Marshaller marshaller=jc.createMarshaller();
 		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 
-		marshaller.marshal(wd, doc);
+		marshaller.marshal(pkg, doc);
 		
 		log.info("wordDocument created for PDF rendering!");
 
@@ -248,7 +272,6 @@ public class WordprocessingMLPackage extends Package {
 		// Use the factory to create a template containing the xsl file
 		javax.xml.transform.Templates template = tfactory.newTemplates(
 				new javax.xml.transform.stream.StreamSource(is));
-		
 		// Use the template to create a transformer
 		javax.xml.transform.Transformer xformer = template.newTransformer();
 		
@@ -268,7 +291,6 @@ public class WordprocessingMLPackage extends Package {
 		}
 		xformer.setParameter("substituterInstance", fontSubstituter);
 		xformer.setParameter("fontFamilyStack", fontFamilyStack);
-		
 		
 		//DEBUGGING 
 		// use the identity transform if you want to send wordDocument;
