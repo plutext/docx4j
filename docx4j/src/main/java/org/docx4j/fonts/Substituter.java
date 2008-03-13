@@ -59,19 +59,17 @@ import org.docx4j.wml.Fonts;
 public class Substituter {
 	protected static Logger log = Logger.getLogger(Substituter.class);
 	
+	protected static FontCache fontCache;
+	
 	/** This map is the one that the others are used
 	 *  to produce.
 	 */
 	private final static Map<String, FontMapping> fontMappings;
-	public static Map<String, FontMapping> getFontMappings() {
-		return fontMappings;
-	}
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
 	private final static Map<String, FontSubstitutions.Replace> replaceMap;
-	protected static FontCache fontCache;
 	private final static Map<String, EmbedFontInfo> physicalFontMap;
-	private final static Map<String, String> awtFontFamilyNames;
+	//private final static Map<String, String> awtFontFamilyNames;
 
 	private final static java.lang.CharSequence target;
     private final static java.lang.CharSequence replacement;
@@ -107,8 +105,8 @@ public class Substituter {
 
 			// //////////////////////////////////////////////////////////////////////////////////
 			// What fonts are available to AWT
-			awtFontFamilyNames = new HashMap<String, String>();
-			setupAwtFontFamilyNames();
+			//awtFontFamilyNames = new HashMap<String, String>();
+			//setupAwtFontFamilyNames();
 		} catch (Exception exc) {
 			throw new RuntimeException(exc);
 		}
@@ -250,11 +248,11 @@ public class Substituter {
 		//((sun.awt.X11GraphicsEnvironment)ge).loadFontFiles();
 		
 		//java.awt.Font[] geFonts = ge.getAllFonts();
-		String[] geFonts = ge.getAvailableFontFamilyNames();
-		for (int i=0; i<geFonts.length; i++) {
+		//String[] geFonts = ge.getAvailableFontFamilyNames();
+		//for (int i=0; i<geFonts.length; i++) {
 			//System.out.println( geFonts[i] );
-			awtFontFamilyNames.put(normalise(geFonts[i]), geFonts[i]);
-	    }
+			//awtFontFamilyNames.put(normalise(geFonts[i]), geFonts[i]);
+	   // }
 	}
 	
 	
@@ -320,7 +318,7 @@ public class Substituter {
 			return "noMappingFor" + normalise(documentStyleId);
 		}
 		
-		log.error(documentStyleId + " -> " + fontMapping.getTripletName());
+		log.info(documentStyleId + " -> " + fontMapping.getTripletName());
 		
 		if (fontFamilyStack) {
 			
@@ -632,23 +630,24 @@ public class Substituter {
 
 				// AWT				
 				// TODO - replace this.  See http://www.krugle.org/examples/p-xGdIjpq67jXKmBJt/FreeStandingAndSystemFonts.txt				
-				for (int x = 0; x < tokens.length; x++) {
+				//for (int x = 0; x < tokens.length; x++) {
 					// System.out.println(tokens[x]);
-					if (awtFontFamilyNames.get(tokens[x]) != null) {
-						log.debug("AWT: " + tokens[x] );
-						fm.setAwtSubstituteFont(tokens[x]);
-						foundAwtMapping = true;
-						break;
-					} else {
+					//if (awtFontFamilyNames.get(tokens[x]) != null) {
+						//log.debug("AWT: " + tokens[x] );
+						//fm.setAwtSubstituteFont(tokens[x]);
+						//foundAwtMapping = true;
+						//break;
+					//} else {
 						//log.debug("AWT: !" + fontName );
-					}
-				}
+					//}
+				//}
 				
 				
-				if (!foundAwtMapping) {
-					log.debug("AWT: !" + fontName  + " -->  Couldn't find any of "
-							+ replacement.getSubstFonts());
-				}
+				//if (!foundAwtMapping) {
+				//	log.debug("AWT: !" + fontName  + " -->  Couldn't find any of "
+				//			+ replacement.getSubstFonts());
+				//}
+				
 				if (!foundPdfMapping) {
 					log.debug("PDF: !" + fontName  + " -->  Couldn't find any of "
 							+ replacement.getSubstFonts());
@@ -667,6 +666,10 @@ public class Substituter {
 		}
 		
 		
+	}
+	
+	public Map<String, FontMapping> getFontMappings() {
+		return fontMappings;
 	}
 	
 	public class FontMapping {
