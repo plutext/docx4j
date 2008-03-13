@@ -39,12 +39,18 @@ public class Context {
 	
 	public static JAXBContext jc;
 	public static JAXBContext jcThemePart;
+	public static JAXBContext jcDocPropsCore;
+	public static JAXBContext jcDocPropsCustom;
+	public static JAXBContext jcDocPropsExtended;
 	
 	static {
 		
 		try {		
 			jc = JAXBContext.newInstance("org.docx4j.wml");
 			jcThemePart = JAXBContext.newInstance("org.docx4j.dml");
+			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core");
+			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom");
+			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}				

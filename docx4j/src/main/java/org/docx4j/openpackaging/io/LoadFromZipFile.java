@@ -377,6 +377,21 @@ public class LoadFromZipFile extends Load {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcThemePart);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
+				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart ) {
+
+						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsCore);
+						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+						
+				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsCustomPart ) {
+
+						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsCustom);
+						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+						
+				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsExtendedPart ) {
+
+						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsExtended);
+						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+					
 				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 					// MainDocument part, Styles part, Font part etc

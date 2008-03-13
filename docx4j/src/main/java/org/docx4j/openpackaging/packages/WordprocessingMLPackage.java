@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
+import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
@@ -144,6 +145,10 @@ public class WordprocessingMLPackage extends Package {
 		} else if (relationshipType.equals(Namespaces.PROPERTIES_EXTENDED)) {
 			docPropsExtendedPart = (DocPropsExtendedPart)part;
 			log.info("Set shortcut for docPropsExtendedPart");
+			return true;			
+		} else if (relationshipType.equals(Namespaces.PROPERTIES_CUSTOM)) {
+			docPropsCustomPart = (DocPropsCustomPart)part;
+			log.info("Set shortcut for docPropsCustomPart");
 			return true;			
 		} else if (relationshipType.equals(Namespaces.DOCUMENT)) {
 			mainDoc = (MainDocumentPart)part;
