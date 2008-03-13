@@ -23,6 +23,7 @@ package org.docx4j.samples;
 import java.io.File;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 
 /**
@@ -34,21 +35,37 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 public class CreateWordprocessingMLDocument {
 
 	public static void main(String[] args) throws Exception {
-//		DemoCore demoCore = new DemoCore();
-//
-//		File outputDocument = new File(demoCore.getTestRootPath()
-//				+ "sample_output_zip.docx");
-//
-//		System.out.println( "Target to save: " + demoCore.getTestRootPath()
-//				+ "sample_output_zip.docx" );
 		
 		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createTestPackage();
 		System.out.println( ".. done!");
 		
+		//injectDocPropsCustomPart(wordMLPackage);
+		
 		// Now save it 
-		wordMLPackage.save(new java.io.File("/home/jharrop/tmp/created-rels2.docx") );
+		wordMLPackage.save(new java.io.File("/tmp/result.docx") );
+		
+		System.out.println("Done.");
 				
+	}
+	
+	public static void injectDocPropsCustomPart(WordprocessingMLPackage wordMLPackage) {
+		
+		try {
+			org.docx4j.openpackaging.parts.DocPropsCustomPart docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
+			
+			java.io.InputStream is = new java.io.FileInputStream("/tmp/custompart.xml" );
+			
+			docPropsCustomPart.unmarshal(is);
+			
+			wordMLPackage.addTargetPart(docPropsCustomPart);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 	
 }
