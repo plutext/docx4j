@@ -21,17 +21,22 @@ package org.docx4j.openpackaging.packages;
 
 
 import java.io.OutputStream;
-
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import org.apache.fop.fonts.EmbedFontInfo;
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.contenttype.ContentType;
+import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io.LoadFromZipFile;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -40,17 +45,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import org.docx4j.openpackaging.contenttype.ContentType;
-import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.xhtmlrenderer.pdf.ITextRenderer;
-
-import com.lowagie.text.DocumentException;
 
 
 
@@ -292,7 +286,7 @@ public class WordprocessingMLPackage extends Package {
 		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
 		//     possibly via an extension function in the XSLT
 		if (fontSubstituter==null) {
-			setFontSubstituter();
+			setFontSubstituter(new Substituter());
 		}
 		xformer.setParameter("substituterInstance", fontSubstituter);
 		xformer.setParameter("fontFamilyStack", fontFamilyStack);
@@ -308,21 +302,24 @@ public class WordprocessingMLPackage extends Package {
     	
     }
     
-    public void setFontSubstituter() throws Exception {
-    	
+    public void setFontSubstituter(Substituter fs) throws Exception {
+    	if (fs == null) {
+    		throw new IllegalArgumentException("Font Substituter cannot be null.");
+    	}
 		// 1.  Get a list of all the fonts in the document
 		java.util.Map fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
 		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
 		//     - do this in a general way, since docx4all needs this as well to display fonts		
-		fontSubstituter = new Substituter();
+		fontSubstituter = fs;
 		org.docx4j.wml.Fonts fonts = null;
 		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();	
 		
 		if (fontTablePart==null) {
 			log.warn("FontTable missing; creating default part.");
 			fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
-			fontTablePart.unmarshalDefaultFonts();					
+			fontTablePart.unmarshalDefaultFonts();
+			fontTablePart.processEmbeddings();
 		}
 		
 		fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
