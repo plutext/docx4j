@@ -247,20 +247,64 @@ public class WordprocessingMLPackage extends Package {
 /*		
  * 		We want to use plain old Xalan J, not xsltc
  * 
- * 		Following is not necessary provided Xalan is on the classpath.
- * 								   ==================================
+ * 		Following would not be necessary provided Xalan is on the classpath
  * 
 		System.setProperty("javax.xml.transform.TransformerFactory", "FQCN");
 
 		examples of FQCN:
 		
-		  org.apache.xalan.transformer.TransformerImpl (this is the one we want)
+		  org.apache.xalan.processor.TransformerFactoryImpl (this is the one we want)
 		  com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
 		  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
+		  net.sf.saxon.TransformerFactoryImpl
+		  
+		  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
+		   so we have to bundle xalan jar, which is 2.7 MB
+		   
+		   But we can make it smaller:
+		   
+		   	org/apache/xalan/lib$ rm sql -rf
+		    org/apache/xalan$ rm xsltc -rf
+
+          That gets us from 2.7 MB to 1.85 MB.
+          
+          But Sun already has:
+          
+			com.sun.org.apache.xpath;			
+			com.sun.org.apache.xml.internal.dtm;			
+			com.sun.org.apache.xalan.internal.extensions|lib|res|templates
+		   
+		  So why not refactor Xalan and leave all that out as well?
+		  
+		  
+		HOWEVER, docx4all encounters http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+		
+			java.util.prefs.FileSystemPreferences syncWorld
+			WARNING: Couldn't flush user prefs: java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
+		
+		every 30 seconds
+
+		The workaround implemented is to remove META-INF/services from the xalan jar 
+		to prevent xalan being picked up as the default provider for jaxp transform,
+		so we have to use it explicitly.
+		
+		.. which means 
+
+			System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
 			
 */		
-		// Now transform this into XHTML
+		
+		
 		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
+		String originalFactory = tfactory.getClass().getName();
+		System.out.println("original TransformerFactory: " + originalFactory);
+		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl resolves the syncWorld problem
+		// net.sf.saxon.TransformerFactoryImpl is no good.
+		
+		System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+		
+		// Now transform this into XHTML
+		tfactory = javax.xml.transform.TransformerFactory.newInstance();
 		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
 
 		// Get the xslt file
@@ -273,6 +317,13 @@ public class WordprocessingMLPackage extends Package {
 				new javax.xml.transform.stream.StreamSource(is));
 		// Use the template to create a transformer
 		javax.xml.transform.Transformer xformer = template.newTransformer();
+		
+		
+		// Finished with the factory, so set it back again!
+		// The "Not supported: indent-number" problem will only occur if a user creates 
+		// a new document during the time between these 2 calls to setProperty
+		// (and syncWorld is called?)
+		System.setProperty("javax.xml.transform.TransformerFactory", originalFactory);
 		
 		if (!xformer.getClass().getName().equals("org.apache.xalan.transformer.TransformerImpl")) {
 			log.error("Detected " + xformer.getClass().getName() 
