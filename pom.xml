@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.plutext</groupId>
   <artifactId>docx4j</artifactId>
@@ -78,11 +80,22 @@
       <artifactId>commons-io</artifactId>
       <version>1.3.1</version>
     </dependency>
+    <!-- required for transforming to xhtml 
+		
+		 But we use a patched copy as a workaround
+		 for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+
+		 remove META-INF/services from the xalan jar to prevent xalan 
+		 being picked up as the default provider for jaxp transform.
+
+		 6396599 has been fixed in the on-going release JDK7. 
+		 6396599 has also been committed to backport to 6u release 6u10 		
+		
     <dependency>
-      <!-- required for transforming to xhtml -->
       <groupId>xalan</groupId>
       <artifactId>xalan</artifactId>
       <version>2.7.0</version>
-    </dependency>
+    </dependency> 
+		-->
   </dependencies>
 </project>
