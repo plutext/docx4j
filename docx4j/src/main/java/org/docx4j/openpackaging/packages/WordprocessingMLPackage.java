@@ -258,25 +258,6 @@ public class WordprocessingMLPackage extends Package {
 		  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
 		  net.sf.saxon.TransformerFactoryImpl
 		  
-		  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
-		   so we have to bundle xalan jar, which is 2.7 MB
-		   
-		   But we can make it smaller:
-		   
-		   	org/apache/xalan/lib$ rm sql -rf
-		    org/apache/xalan$ rm xsltc -rf
-
-          That gets us from 2.7 MB to 1.85 MB.
-          
-          But Sun already has:
-          
-			com.sun.org.apache.xpath;			
-			com.sun.org.apache.xml.internal.dtm;			
-			com.sun.org.apache.xalan.internal.extensions|lib|res|templates
-		   
-		  So why not refactor Xalan and leave all that out as well?
-		  
-		  
 		HOWEVER, docx4all encounters http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
 		
 			java.util.prefs.FileSystemPreferences syncWorld
@@ -291,9 +272,36 @@ public class WordprocessingMLPackage extends Package {
 		.. which means 
 
 			System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+
+		  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
+		   so we have to bundle xalan jar, which is 2.7 MB
+		   
+		   But we can make it smaller:
+		   
+		   	org/apache/xalan/lib$ rm sql -rf
+		    org/apache/xalan$ rm xsltc -rf
+
+          That gets us from 2.7 MB to 1.85 MB.
+          
+          Sun already has:
+          
+			com.sun.org.apache.xpath;			
+			com.sun.org.apache.xml.internal.dtm;			
+			com.sun.org.apache.xalan.internal.extensions|lib|res
+		   
+		  so you might think we can refactor Xalan to point to those, and them out of our jar.
+		  
+		  well, it turns out that its too messy leaving out org.apache.xpath or xalan.extensions	 
+		  
+		  so you have to keep xalan.extensions, processor, serialize, trace, transformer
+
+		  leaving out just org.apache.xalan.resources and org.apache.xpath.resources
+		  only gets us down to 1.5 MB. (and that's with just jar cvf xalan-minimal.jar org/apache/xalan org/apache/xpath
+			- we'd still need to include org/apache/xml)
+			
+			ie once you include the whole of org.apache.xpath, you may as well just go with the 1.85 MB  :(
 			
 */		
-		
 		
 		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
 		String originalFactory = tfactory.getClass().getName();
