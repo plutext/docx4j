@@ -18,6 +18,7 @@
  */
 package org.docx4j.fonts;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +43,8 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.wml.Fonts;
+
+import com.lowagie.text.pdf.BaseFont;
 
 /**
  * 
@@ -135,9 +138,8 @@ public class Substituter {
 		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
 		
 		for (MicrosoftFonts.Font font : msFontsList ) {
-			log.debug( "put font.getName()=" + font.getName() );
+			//log.debug( "put font.getName()=" + font.getName() );
 			msFontsFilenames.put(font.getName(), font);
-				//System.out.println( "put " + font.getName() );
 		}
 		
 	}
@@ -200,8 +202,9 @@ public class Substituter {
             setupPhysicalFont(fontResolver, fontUrl, finder);
         }
         
-        fontCache.save();
+        //fontCache.save();
         
+        //panoseReportOnPhysicalFonts(physicalFontMap);
 	}
 
 	/**
@@ -220,12 +223,35 @@ public class Substituter {
 				FontTriplet triplet = (FontTriplet)iterIn.next(); 
 		    	
 		        String lower = fontInfo.getEmbedFile().toLowerCase();
+		        
+		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
+		        // can handle
+		        // .otf, .ttf, .ttc, .pfb
 		        if (lower.endsWith(".otf") || lower.endsWith(".ttf")) {
 		    		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
 		        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
+		        } else if (lower.endsWith(".pfb") ) {
+		        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
+		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
+					String afm = lower.substring(5, lower.length()-4 ) + ".afm";  // drop the 'file:'
+					log.info("Looking for: " + afm);					
+					File f = new File(afm);
+			        if (f.exists()) {				
+			        	log.info("Got it");
+			        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
+			        } else {
+			        	// Should we be doing afm first, or pfm?
+						String pfm = lower.substring(5, lower.length()-4 ) + ".pfm";  // drop the 'file:'
+						log.info("Looking for: " + pfm);
+						f = new File(pfm);
+				        if (f.exists()) {				
+				        	log.info("Got it");
+				        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
+				        } else {
+				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
+				        }
+			        }
 		        } else {                    	
-		        	// .pfb isn't supported in org.xhtmlrenderer.pdf.ITextFontResolver.addFont
-		        	// so don't consider them any further.
 		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
 		        }
 		    	
@@ -233,6 +259,35 @@ public class Substituter {
 				// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
 			}            	
 		}
+	}
+	
+	public static void panoseReportOnPhysicalFonts( Map<String, EmbedFontInfo>physicalFontMap ) {
+		Iterator fontIterator = physicalFontMap.entrySet().iterator();
+	    while (fontIterator.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)fontIterator.next();
+	        
+	        if(pairs.getKey()==null) {
+	        	log.info("Skipped null key");
+	        	pairs = (Map.Entry)fontIterator.next();
+	        }
+	        
+	        String fontName = (String)pairs.getKey();
+
+			EmbedFontInfo nfontInfo = (EmbedFontInfo)pairs.getValue();
+			
+			org.apache.fop.fonts.Panose fopPanose = nfontInfo.getPanose();
+			
+				if (fopPanose == null ) {
+					System.out.println(fontName + " .. lacks Panose!");					
+				} else if (fopPanose!=null ) {
+					
+					System.out.println(fontName + " .. OK");					
+					fopPanose.validPanose(fopPanose.getPanoseArray() );
+					
+				}
+//				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
+//						System.out.println(".. panose distance: " + pd);					
+	    }
 	}
 	
 	private final static void setupAwtFontFamilyNames() {

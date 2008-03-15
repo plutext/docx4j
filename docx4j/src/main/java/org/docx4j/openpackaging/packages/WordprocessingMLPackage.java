@@ -20,6 +20,7 @@
 package org.docx4j.openpackaging.packages;
 
 
+import java.io.File;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -45,6 +46,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+
+import com.lowagie.text.pdf.BaseFont;
 
 
 
@@ -444,17 +447,47 @@ public class WordprocessingMLPackage extends Package {
 			log.info("Substituting " + fontName + " with " + fm.getTripletName() + " from " + fm.getEmbeddedFile() );
 			if (fm.getEmbeddedFile()!=null) {
 				try {
-					renderer.getFontResolver().addFont(fm.getEmbeddedFile(), true);
-				} catch (com.lowagie.text.DocumentException e) {
-					log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
+					if (fm.getEmbeddedFile().endsWith(".pfb")) {
+						
+						String afm = fm.getEmbeddedFile().substring(5, fm.getEmbeddedFile().length()-4 ) + ".afm";  // drop the 'file:'
+						log.info("Looking for: " + afm);
+						
+						// Given the check in substituter, we expect to find one or the other.
+						File f = new File(afm);
+				        if (f.exists()) {				
+				        	log.info("Got it");
+				        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, fm.getEmbeddedFile().substring(5));  // drop the 'file:'	
+				        } else {
+				        	// Should we be doing afm first, or pfm?
+							String pfm = fm.getEmbeddedFile().substring(5, fm.getEmbeddedFile().length()-4 ) + ".pfm";  // drop the 'file:'
+							log.info("Looking for: " + pfm);
+							f = new File(pfm);
+					        if (f.exists()) {				
+					        	log.info("Got it");
+					        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, fm.getEmbeddedFile().substring(5));  // drop the 'file:'
+					        } else {
+					        	// Shouldn't happen.
+					        	log.error("Couldn't find afm or pfm corresponding to " + fm.getEmbeddedFile());
+					        }
+				        }
+					} else {				
+						renderer.getFontResolver().addFont(fm.getEmbeddedFile(), true);
+					}
 				} catch (java.io.IOException e) {
 				
 				/* 
 				 * [AWT-EventQueue-0] INFO  packages.WordprocessingMLPackage - Substituting symbol with standardsymbolsl from file:/usr/share/fonts/type1/gsfonts/s050000l.pfb 
 java.io.IOException: Unsupported font type
 	at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
+	
+	.pfb not supported, even with iText 2.0.8
+	
 				 */
+					e.printStackTrace();
 					log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + fm.getEmbeddedFile()); 
+				} catch (Exception e) {
+					e.printStackTrace();
+					log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
 				}
 			} else {
 				log.warn("Can't addFont for: " + fontName); 
