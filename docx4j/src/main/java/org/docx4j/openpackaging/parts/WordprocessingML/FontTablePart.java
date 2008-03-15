@@ -154,7 +154,7 @@ public final class FontTablePart extends JaxbXmlPart {
     private void getObfuscatedFontFromRelationship(String fontName, FontRel fontRel) {
     
     	if (fontRel == null) {
-    		log.info("fontRel not found.");
+    		log.debug("fontRel not found for '" + fontName + "'");
     		return;
     	}
     	
