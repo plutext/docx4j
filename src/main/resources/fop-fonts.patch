@@ -2,12 +2,93 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(working copy)
-@@ -133,6 +133,8 @@
+@@ -62,11 +62,33 @@
+             log.trace("Font: " + customFont.getFullName() 
+                     + ", family: " + customFont.getFamilyNames() 
+                     + ", PS: " + customFont.getFontName() 
+-                    + ", EmbedName: " + customFont.getEmbedFontName());
++                    + ", EmbedName: " + customFont.getEmbedFontName()
++                    + ", subFamily: " + customFont.getFontSubName()                    
++            );
+         }
+ 
++//        System.out.println("Font: " + customFont.getFullName() 
++//                + ", family: " + customFont.getFamilyNames() 
++//                + ", PS: " + customFont.getFontName() 
++//                //+ ", EmbedName: " + customFont.getEmbedFontName() //Same as getFontName
++//                //+ ", subFamily: " + customFont.getFontSubName()  // Seems to be null always                  
++//        );
++        
++        /* Examples:
++         * 
++         * Font: URW Bookman L Demi Bold Italic, family: [URW Bookman L], PS: URWBookmanL-DemiBoldItal, EmbedName: URWBookmanL-DemiBoldItal, subFamily: null
++
++Font: Century Schoolbook L Bold, family: [Century Schoolbook L], PS: CenturySchL-Bold, EmbedName: CenturySchL-Bold, subFamily: null
++
++
++         * 
++         */
++                
+         // default style and weight triplet vales (fallback)
+         String strippedName = stripQuotes(customFont.getStrippedFontName());
++        	// This is almost always the PS name
++        
++        
+         //String subName = customFont.getFontSubName();
+         String fullName = stripQuotes(customFont.getFullName());
+         String searchName = fullName.toLowerCase();
+@@ -80,25 +102,26 @@
+ 
+         //Full Name usually includes style/weight info so don't use these traits
+         //If we still want to use these traits, we have to make FontInfo.fontLookup() smarter
+-        triplets.add(new FontTriplet(fullName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
+-        if (!fullName.equals(strippedName)) {
++//        triplets.add(new FontTriplet(fullName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
++//        System.out.println( fullName + " -- full name");
++//        if (!fullName.equals(strippedName)) {
+             triplets.add(new FontTriplet(strippedName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
+-        }
+-        Set familyNames = customFont.getFamilyNames();
+-        Iterator iter = familyNames.iterator();
+-        while (iter.hasNext()) {
+-            String familyName = stripQuotes((String)iter.next());
+-            if (!fullName.equals(familyName)) {
+-                /* Heuristic:
+-                 *   The more similar the family name to the full font name,
+-                 *   the higher the priority of its triplet.
+-                 * (Lower values indicate higher priorities.) */
+-                int priority = fullName.startsWith(familyName)
+-                    ? fullName.length() - familyName.length()
+-                    : fullName.length();
+-                triplets.add(new FontTriplet(familyName, style, weight, priority));
+-            }
+-        }
++//        }
++//        Set familyNames = customFont.getFamilyNames();
++//        Iterator iter = familyNames.iterator();
++//        while (iter.hasNext()) {
++//            String familyName = stripQuotes((String)iter.next());
++//            if (!fullName.equals(familyName)) {
++//                /* Heuristic:
++//                 *   The more similar the family name to the full font name,
++//                 *   the higher the priority of its triplet.
++//                 * (Lower values indicate higher priorities.) */
++//                int priority = fullName.startsWith(familyName)
++//                    ? fullName.length() - familyName.length()
++//                    : fullName.length();
++//                triplets.add(new FontTriplet(familyName, style, weight, priority));
++//            }
++//        }
+     }
+     
+     private final Pattern quotePattern = Pattern.compile("'");
+@@ -133,6 +156,9 @@
          embedUrl = fontUrl.toExternalForm();
          EmbedFontInfo fontInfo = new EmbedFontInfo(null, customFont.isKerningEnabled(),
                  fontTripletList, embedUrl);
 +        fontInfo.setPanose(customFont.getPanose());
 +        fontInfo.setEmbeddable(customFont.isEmbeddable());
++        fontInfo.setPostScriptName(customFont.getFontName());
          if (fontCache != null) {
              fontCache.addFont(fontInfo);
          }
@@ -52,7 +133,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(working copy)
-@@ -38,6 +38,25 @@
+@@ -38,6 +38,32 @@
      protected boolean kerning;
      /** the list of associated font triplets */
      protected List fontTriplets;
@@ -75,6 +156,13 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
 +		this.panose = panose;
 +	}
 +    
++	protected String postScriptName = null;
++	public String getPostScriptName() {
++		return postScriptName;
++	}
++	public void setPostScriptName(String postScriptName) {
++		this.postScriptName = postScriptName;
++	}
        
      /**
       * Main constructor
@@ -82,6 +170,17 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByte
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(working copy)
+@@ -40,8 +40,9 @@
+     private String namePrefix = null;    // Quasi unique prefix
+ 
+     private BFEntry[] bfentries = null;
++    
+ 
+-    /**
++	/**
+      * Default constructor
+      */
+     public MultiByteFont() {
 @@ -133,12 +134,16 @@
          }
      }
@@ -301,7 +400,18 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
      private boolean hasSerifs = true;
      /**
       * Table directory
-@@ -743,6 +747,7 @@
+@@ -549,8 +553,10 @@
+      */
+     public String getPostScriptName() {
+         if (postScriptName.length() == 0) {
++//        	System.out.println("TTFFile - Hmmm, Composed postscript name from fullname.");
+             return FontUtil.stripWhiteSpace(getFullName());
+         } else {
++//        	System.out.println("TTFFile - Cool, there was a proper postScript name.");
+             return postScriptName;
+         }
+     }
+@@ -743,6 +749,7 @@
       * @return boolean True if it may be embedded
       */
      public boolean isEmbeddable() {
@@ -309,7 +419,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
          return isEmbeddable;
      }
  
-@@ -988,7 +993,10 @@
+@@ -988,7 +995,10 @@
          if (dirTabs.get("OS/2") != null) {
              seekTab(in, "OS/2", 2 * 2);
              this.usWeightClass = in.readTTFUShort();
@@ -320,7 +430,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              int fsType = in.readTTFUShort();
              if (fsType == 2) {
                  isEmbeddable = false;
-@@ -996,10 +1004,21 @@
+@@ -996,10 +1006,21 @@
                  isEmbeddable = true;
              }
              in.skip(11 * 2);
@@ -343,7 +453,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              int v;
              os2Ascender = in.readTTFShort(); //sTypoAscender
              log.debug("sTypoAscender: " + os2Ascender 
-@@ -1568,4 +1587,8 @@
+@@ -1568,4 +1589,8 @@
              ioe.printStackTrace(System.err);
          }
      }

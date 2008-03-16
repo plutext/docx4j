@@ -444,7 +444,7 @@ public class WordprocessingMLPackage extends Package {
 	        String fontName = (String)pairs.getKey();
 	        Substituter.FontMapping fm = (Substituter.FontMapping)pairs.getValue();
 	        
-			log.info("Substituting " + fontName + " with " + fm.getTripletName() + " from " + fm.getEmbeddedFile() );
+			log.info("Substituting " + fontName + " with " + fm.getPostScriptName() + " from " + fm.getEmbeddedFile() );
 			if (fm.getEmbeddedFile()!=null) {
 				try {
 					if (fm.getEmbeddedFile().endsWith(".pfb")) {

@@ -72,6 +72,9 @@ public class Substituter {
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
 	private final static Map<String, FontSubstitutions.Replace> replaceMap;
 	private final static Map<String, EmbedFontInfo> physicalFontMap;
+	int lastSeenNumberOfPhysicalFonts = 0;
+	
+	
 	//private final static Map<String, String> awtFontFamilyNames;
 
 	private final static java.lang.CharSequence target;
@@ -223,7 +226,7 @@ public class Substituter {
 				FontTriplet triplet = (FontTriplet)iterIn.next(); 
 		    	
 		        String lower = fontInfo.getEmbedFile().toLowerCase();
-		        
+		        		        
 		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 		        // can handle
 		        // .otf, .ttf, .ttc, .pfb
@@ -234,18 +237,20 @@ public class Substituter {
 		        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
 					String afm = lower.substring(5, lower.length()-4 ) + ".afm";  // drop the 'file:'
-					log.info("Looking for: " + afm);					
+					//log.debug("Looking for: " + afm);					
 					File f = new File(afm);
 			        if (f.exists()) {				
-			        	log.info("Got it");
+			        	//log.debug("Got it");
+			    		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
 			        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
 			        } else {
 			        	// Should we be doing afm first, or pfm?
 						String pfm = lower.substring(5, lower.length()-4 ) + ".pfm";  // drop the 'file:'
-						log.info("Looking for: " + pfm);
+						//log.debug("Looking for: " + pfm);
 						f = new File(pfm);
 				        if (f.exists()) {				
-				        	log.info("Got it");
+				        	//log.debug("Got it");
+				    		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
 				        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
 				        } else {
 				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
@@ -255,6 +260,9 @@ public class Substituter {
 		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
 		        }
 		    	
+		        //log.debug("Style: " + triplet.getStyle() ); // normal, italic etc
+		        //log.debug("Weight: " + triplet.getWeight() ); // 
+		        
 		    	// Uncomment this to see ...
 				// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
 			}            	
@@ -373,7 +381,7 @@ public class Substituter {
 			return "noMappingFor" + normalise(documentStyleId);
 		}
 		
-		log.info(documentStyleId + " -> " + fontMapping.getTripletName());
+		log.info(documentStyleId + " -> " + fontMapping.getPostScriptName());
 		
 		if (fontFamilyStack) {
 			
@@ -394,9 +402,9 @@ public class Substituter {
 			// populateFontMappings, and added to the 
 			// FontMapping objects.
 			
-			return fontMapping.getTripletName();
+			return fontMapping.getPostScriptName();
 		} else {
-			return fontMapping.getTripletName();
+			return fontMapping.getPostScriptName();
 		}
 		
 	}
@@ -440,11 +448,23 @@ public class Substituter {
 	        
 	        String fontName = (String)pairs.getKey();
 
-			log.info("\n\n" + fontName);
+			log.debug("\n\n" + fontName);
 	        
 	        String normalisedFontName = normalise(fontName);
-	        if (fontMappings.get(normalisedFontName) != null) {
-	        	continue;
+	        
+	        // Since docx4all invokes this method when opening
+	        // each new document, the mapping may have been done
+	        // last time.  We don't need to do it again, unless
+	        // new physical fonts have been added (eg via
+	        // an embedding)
+	        if (fontMappings.get(normalisedFontName) != null ) {
+	        	log.info(normalisedFontName + " already mapped.");
+        		if ( lastSeenNumberOfPhysicalFonts == physicalFontMap.size() ) {
+    	        	log.info(".. and no need to check again.");
+    	        	continue;
+        		} else {
+    	        	log.info(".. but checking again, since physical fonts have changed.");
+        		}
 	        }
 	        
 			boolean foundAwtMapping = false;
@@ -469,10 +489,10 @@ public class Substituter {
 			org.apache.fop.fonts.Panose fopPanose = null;
 			if (panose!=null && panose.getVal()!=null ) {
 				fopPanose = new org.apache.fop.fonts.Panose(panose.getVal() );
-				System.out.println(".. " + fopPanose.toString() );					
+				//log.debug(".. " + fopPanose.toString() );					
 				
 			} else {
-				System.out.println(".. no panose info!!!");															
+				log.debug(".. no panose info!!!");															
 			}
 			
 			
@@ -500,7 +520,7 @@ public class Substituter {
 //		        	log.info(fontName + " is not embeddable; skipping.");
 		        } else {
 				
-					System.out.println(fontName + " --> NATIVE");
+					log.debug(fontName + " --> NATIVE");
 		        	// if so ..
 		        	foundPdfMapping = true;
 		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getEmbedFile());
@@ -509,17 +529,18 @@ public class Substituter {
 					// a font could conceivably have the same name
 					// but quite different content)				
 					if (nfontInfo.getPanose() == null ) {
-						System.out.println(".. and lacking Panose!");					
+						log.debug(".. and lacking Panose!");					
 					} else if (fopPanose!=null ) {
 					        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
-							System.out.println(".. panose distance: " + pd);					
+							log.debug(".. panose distance: " + pd);					
 					}
 		        	
 					// We're done with this font.
-		        	fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getFontTriplets(), normalise(fontName) );				
+		        	//fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getFontTriplets(), normalise(fontName) );	
+					fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getPostScriptName() );
 					fontMappings.put(normalisedFontName, fm);
 					
-					log.info("Entry added for: " +  normalisedFontName);
+					log.info("native: " + normalisedFontName + " --> " + fm.getEmbeddedFile() );
 					continue;
 		        }
 			} 
@@ -532,11 +553,14 @@ public class Substituter {
 				
 				// NB org.apache.fop.fonts.Panose only exists in our patched FOP
 				
-				if (!org.apache.fop.fonts.Panose.validPanose(panose.getVal())) {
-					System.out.println("INVALID !");					
+				if (!org.apache.fop.fonts.Panose.validPanose(panose.getVal())) {														
+					log.debug("INVALID !");					
+					//This is the case for 'Impact' which has 
+					//Invalid value 9 > 8 in position 5 of 2 11 8 6 3 9 2 5 2 4 
+
 				}
 								
-				System.out.println(" --> " + fopPanose);				
+				//log.debug(" --> " + fopPanose);				
 				
 				// Logic to search panose space for closest matching physical 
 				// font file
@@ -583,7 +607,7 @@ public class Substituter {
 			        	matchingPanoseString = fontInfo.getPanose().toString();
 			        	panoseKey = physicalFontKey;
 			        	
-			        	//System.out.println("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
+			        	//log.debug("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
 			        	
 			        	if (bestPanoseMatchValue==0) {
 			        		
@@ -593,40 +617,39 @@ public class Substituter {
 			        	
 			        	
 			        } else {
-			        	//System.out.println("not small " + panoseMatchValue + "  " + fontInfo.getPanose().toString() );
+			        	//log.debug("not small " + panoseMatchValue + "  " + fontInfo.getPanose().toString() );
 			        	
 			        }
 			    }
 
 				if (panoseKey!=null && bestPanoseMatchValue < org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
-					log.info("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);					
-					log.debug(fontName + " --> " + ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile() );
+					log.debug("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);					
+					log.info("panose: " + fontName + " --> " + ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile() );
 					
 		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile());					
 					
-		        	fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getFontTriplets(), panoseKey );		        	
+		        	//fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getFontTriplets(), panoseKey );
+		        	fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(panoseKey)).getPostScriptName() );
 		        	
 					// Out of interest, is this match in font substitutions table?
 					FontSubstitutions.Replace rtmp = (FontSubstitutions.Replace) replaceMap.get(normalise(fontName));
 					if (rtmp!=null && rtmp.getSubstFonts()!=null) {
 						if (rtmp.getSubstFonts().contains(panoseKey) ) {
-							System.out.println("(consistent with explicit substitutes)");
+							log.debug("(consistent with explicit substitutes)");
 						} else {
-							System.out.println("(lucky, since this is missing from explicit substitutes)");							
+							log.debug("(lucky, since this is missing from explicit substitutes)");							
 						}
 						
 					}
 					
-					// TODO - add corresponding AWT font
-					
 					fontMappings.put(normalisedFontName, fm);
-					log.info("Entry added for: " +  normalisedFontName);
+					log.debug("Entry added for: " +  normalisedFontName);
 					continue; // we're done
 				} 
 				
 				
 			} else {
-				System.out.println(" --> null Panose");				
+				log.debug(" --> null Panose");				
 			}
 	        
 			// Finally, try explicit font substitutions
@@ -635,7 +658,7 @@ public class Substituter {
 			FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) replaceMap
 					.get(normalise(fontName));
 			if (replacement != null) {
-				// System.out.println( "\n" + fontName + " found." );
+				// log.debug( "\n" + fontName + " found." );
 				// String subsFonts = replacement.getSubstFonts();
 
 				// Is there anything in subsFonts we can use?
@@ -644,7 +667,7 @@ public class Substituter {
 				// PDF
 				if (!foundPdfMapping) {
 					for (int x = 0; x < tokens.length; x++) {
-						// System.out.println(tokens[x]);
+						// log.debug(tokens[x]);
 						if (physicalFontMap.get(tokens[x]) != null) {
 							
 							EmbedFontInfo embedFontInfo = (EmbedFontInfo)physicalFontMap.get(tokens[x]);
@@ -656,13 +679,14 @@ public class Substituter {
 								log.debug("PDF: " + fontName + " --> "
 										+ physicalFontFile);
 								foundPdfMapping = true;
-					        	fm.setTripletName( embedFontInfo.getFontTriplets(), tokens[x] );				
+					        	//fm.setTripletName( embedFontInfo.getFontTriplets(), tokens[x] );
+					        	fm.setPostScriptName(embedFontInfo.getPostScriptName() );
 					        	fm.setEmbeddedFile( physicalFontFile);
 								
 								// Out of interest, does this have a Panose value?
 								// And what is the distance?
 								if (embedFontInfo.getPanose() == null ) {
-									System.out.println(".. as expected, lacking Panose");					
+									log.debug(".. as expected, lacking Panose");					
 								} else if (fopPanose!=null  ) {
 								        long pd = fopPanose.difference(embedFontInfo.getPanose().getPanoseArray());
 								        
@@ -677,31 +701,11 @@ public class Substituter {
 								break;
 					        }
 						} else {
-							// System.out.println("no match on token " + x + ":"
+							// log.debug("no match on token " + x + ":"
 							// + tokens[x]);
 						}	
 					}
 				}
-
-				// AWT				
-				// TODO - replace this.  See http://www.krugle.org/examples/p-xGdIjpq67jXKmBJt/FreeStandingAndSystemFonts.txt				
-				//for (int x = 0; x < tokens.length; x++) {
-					// System.out.println(tokens[x]);
-					//if (awtFontFamilyNames.get(tokens[x]) != null) {
-						//log.debug("AWT: " + tokens[x] );
-						//fm.setAwtSubstituteFont(tokens[x]);
-						//foundAwtMapping = true;
-						//break;
-					//} else {
-						//log.debug("AWT: !" + fontName );
-					//}
-				//}
-				
-				
-				//if (!foundAwtMapping) {
-				//	log.debug("AWT: !" + fontName  + " -->  Couldn't find any of "
-				//			+ replacement.getSubstFonts());
-				//}
 				
 				if (!foundPdfMapping) {
 					log.debug("PDF: !" + fontName  + " -->  Couldn't find any of "
@@ -709,7 +713,7 @@ public class Substituter {
 				}
 
 			} else {
-				System.out.println("Nothing in FontSubstitutions.xml for: "
+				log.debug("Nothing in FontSubstitutions.xml for: "
 						+ fontName);
 				
 				// TODO - add default fallback values
@@ -717,10 +721,10 @@ public class Substituter {
 			}
 			
 			fontMappings.put(normalisedFontName, fm);
-			log.info("Entry added for: " +  normalisedFontName);
+			log.info("subtable: " + normalisedFontName + " --> " + fm.getEmbeddedFile() );
 		}
 		
-		
+	    lastSeenNumberOfPhysicalFonts = physicalFontMap.size();
 	}
 	
 	public Map<String, FontMapping> getFontMappings() {
@@ -734,35 +738,50 @@ public class Substituter {
 		// Get rid of this?  The AWT font is created from the 
 		// same TTF as we use for PDF.
 		// See See http://www.krugle.org/examples/p-xGdIjpq67jXKmBJt/FreeStandingAndSystemFonts.txt
-		String awtSubstituteFont;
-				
-		String embeddedFile;
+//		String awtSubstituteFont;
+
+		String postScriptName;
+		public String getPostScriptName() {
+			return postScriptName;
+		}
+		public void setPostScriptName(String postScriptName) {
+			this.postScriptName = postScriptName;
+		}
 		
-		/** The actual name of the font, used for embedding. */
-		String tripletName;
-
-		public String getTripletName() {
-			return tripletName;
+		
+		String embeddedFile;
+		public String getEmbeddedFile() {
+			return embeddedFile;
 		}
-
-		public void setTripletName(String tripletName) {
-			this.tripletName = tripletName;
+		public void setEmbeddedFile(String embeddedFile) {
+			this.embeddedFile = embeddedFile;
 		}
-
-		public String setTripletName(List fontTriplets, String normalisedFontName) {
-			            
-        	for (Iterator iterIn = fontTriplets.iterator() ; iterIn.hasNext();) {
-        		FontTriplet triplet = (FontTriplet)iterIn.next();
-        		
-        		if (normalise(triplet.getName()).equals(normalisedFontName) ) {
-        			this.tripletName = triplet.getName();
-            		log.debug("Real name for " + normalisedFontName + " --> " + triplet.getName() );
-        			return triplet.getName();
-        		}
-        	}
-    		log.error("Couldn't get Real name for " + normalisedFontName );
-    		return null;        	
-        }
+		
+//		/** The actual name of the font, used for embedding. */
+//		String tripletName;
+//
+////		public String getTripletName() {
+//			return tripletName;
+//		}
+//
+//		public void setTripletName(String tripletName) {
+//			this.tripletName = tripletName;
+//		}
+//
+//		public String setTripletName(List fontTriplets, String normalisedFontName) {
+//			            
+//        	for (Iterator iterIn = fontTriplets.iterator() ; iterIn.hasNext();) {
+//        		FontTriplet triplet = (FontTriplet)iterIn.next();
+//        		
+//        		if (normalise(triplet.getName()).equals(normalisedFontName) ) {
+//        			this.tripletName = triplet.getName();
+//            		log.debug("Real name for " + normalisedFontName + " --> " + triplet.getName() );
+//        			return triplet.getName();
+//        		}
+//        	}
+//    		log.error("Couldn't get Real name for " + normalisedFontName );
+//    		return null;        	
+//        }
 		
 		
 //		public String getMicrosoftFontName() {
@@ -773,22 +792,16 @@ public class Substituter {
 //			this.microsoftFontName = microsoftFontName;
 //		}
 
-		public String getAwtSubstituteFont() {
-			return awtSubstituteFont;
-		}
+//		public String getAwtSubstituteFont() {
+//			return awtSubstituteFont;
+//		}
+//
+//		public void setAwtSubstituteFont(String awtSubstituteFont) {
+//			this.awtSubstituteFont = awtSubstituteFont;
+//		}
 
-		public void setAwtSubstituteFont(String awtSubstituteFont) {
-			this.awtSubstituteFont = awtSubstituteFont;
-		}
 
 
-		public String getEmbeddedFile() {
-			return embeddedFile;
-		}
-
-		public void setEmbeddedFile(String embeddedFile) {
-			this.embeddedFile = embeddedFile;
-		}
 	}
 
 }
