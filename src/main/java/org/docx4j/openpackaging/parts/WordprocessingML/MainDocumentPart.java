@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.dml.BaseStyles;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
 
@@ -149,7 +150,7 @@ public class MainDocumentPart extends DocumentPart  {
 		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
 
 	// Add default font
-		String defaultFont = getDefaultFont(); 
+		String defaultFont = getDefaultFont(this.getStyleDefinitionsPart(), this.getThemePart()); 
 		log.debug("fontsDiscovered.put:" + defaultFont);
 		fontsDiscovered.put( defaultFont, defaultFont  );
 		
@@ -161,7 +162,7 @@ public class MainDocumentPart extends DocumentPart  {
 	        log.debug("Inspecting style: " + styleName );
             org.docx4j.wml.Styles.Style existingStyle = (org.docx4j.wml.Styles.Style)stylesDefined.get(styleName);
             if (existingStyle!=null) {
-            	String fontName = getFontnameFromStyle(stylesDefined, existingStyle); 
+            	String fontName = getFontnameFromStyle(stylesDefined, this.getThemePart(), existingStyle); 
             	log.debug(styleName + " uses font " + fontName);
             	fontsDiscovered.put(fontName, fontName);
             } else {
@@ -172,28 +173,13 @@ public class MainDocumentPart extends DocumentPart  {
 		return fontsDiscovered;
     }
     
-	private org.docx4j.dml.BaseStyles.FontScheme fontScheme = null;
-    private void setFontScheme() {
-    	
-    	if (fontScheme==null) {  // ie we haven't done this already
-    		if (this.getThemePart() != null) {
-				org.docx4j.dml.Theme theme = 
-					(org.docx4j.dml.Theme) this.getThemePart().getJaxbElement();
-				if (theme.getThemeElements() != null
-						&& theme.getThemeElements().getFontScheme() != null) {
-					fontScheme = theme.getThemeElements().getFontScheme();
-				}
-			}
-    	}
-    	
-    }
     
 	/**
 	 * Returns default document font, by attempting to look at styles/docDefaults/rPrDefault/rPr/rFonts.
 	 * 
 	 * @return default document font. 
 	 */
-	public String getDefaultFont() {
+	public static String getDefaultFont(StyleDefinitionsPart styleDefinitionsPart, ThemePart themePart) {
 		
 		// First look at the defaults
 		// 3 look at styles/rPrDefault 
@@ -202,7 +188,7 @@ public class MainDocumentPart extends DocumentPart  {
 		//	   (there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
 		//	   in this case Calibri and Cambria)
 		// 3.2 if there is no rFonts element, default to Times New Roman.
-		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
+		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();
 		
 		if (styles==null) {
 			log.info("No styles - default to Times New Roman");
@@ -224,8 +210,8 @@ public class MainDocumentPart extends DocumentPart  {
 						if (rFonts.getAsciiTheme()!=null ) {
 							// for example minorHAnsi, which I think translates to minorFont/latin 
 							if (rFonts.getAsciiTheme().equals(org.docx4j.wml.ThemeFontEnumeration.MINOR_H_ANSI)) {
-								if (this.getThemePart()!=null) {
-									setFontScheme();
+								if (themePart!=null) {
+									org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
 									if (fontScheme.getMinorFont()!=null
 											&& fontScheme.getMinorFont().getLatin()!=null) {
 																				
@@ -291,8 +277,25 @@ public class MainDocumentPart extends DocumentPart  {
      * @see getDefaultFont
      */	
     public String getFontnameFromStyle(org.docx4j.wml.Styles.Style style) {
+    	
+    	return getFontnameFromStyle(styleDefinitionsPart, themePart, style); 
+    	
+    }
+	
+    /**
+     * Determine the font used in this style, using the inheritance rules.
+     * 
+     * @return the font name, or null if there is no rFonts element in any style
+     * in the style inheritance hierarchy (ie
+     * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
+     * or from there, the theme part - see getDefaultFont to do that).
+     * 
+     * @see getDefaultFont
+     */	
+    public static String getFontnameFromStyle(StyleDefinitionsPart styleDefinitionsPart, ThemePart themePart,  org.docx4j.wml.Styles.Style style) {
 
-		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
+		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();
+//		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
 
 		// It is convenient to have a HashMap of styles
 		Map stylesDefined = new java.util.HashMap();
@@ -301,7 +304,7 @@ public class MainDocumentPart extends DocumentPart  {
 	            stylesDefined.put(s.getStyleId(), s);
 	     }
 	     
-	    return getFontnameFromStyle(stylesDefined, style);
+	    return getFontnameFromStyle(stylesDefined, themePart, style);
     }
     /**
      * 
@@ -310,7 +313,7 @@ public class MainDocumentPart extends DocumentPart  {
      * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
      * or from there, the theme part).
      */
-    private String getFontnameFromStyle(Map stylesDefined, org.docx4j.wml.Styles.Style style) {
+    private static String getFontnameFromStyle(Map stylesDefined, ThemePart themePart, org.docx4j.wml.Styles.Style style) {
     	
 		/*
 		a paragraph style does not inherit anything from its linked character style.
@@ -342,7 +345,6 @@ public class MainDocumentPart extends DocumentPart  {
 		For efficiency reasons, we don't do 3 in this method.
 		 */
     	
-    	setFontScheme();
 
         // 1 does it have its own rPr which contains rFonts?
     	org.docx4j.wml.RPr rPr = style.getRPr();
@@ -350,10 +352,11 @@ public class MainDocumentPart extends DocumentPart  {
     		if (rPr.getRFonts().getAscii()!=null) {
         		return rPr.getRFonts().getAscii();
     		} else if (rPr.getRFonts().getAsciiTheme()!=null 
-    					&& this.getThemePart() != null) {
+    					&& themePart != null) {
     			log.debug("Encountered rFonts/AsciiTheme: " + rPr.getRFonts().getAsciiTheme() );
     			
-				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)this.getThemePart().getJaxbElement();
+				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)themePart.getJaxbElement();
+				org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
 				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.ThemeFontEnumeration.MINOR_H_ANSI)) {
 					if (fontScheme != null && fontScheme.getMinorFont().getLatin() != null) {
 						fontScheme = theme.getThemeElements().getFontScheme();
@@ -387,16 +390,16 @@ public class MainDocumentPart extends DocumentPart  {
     	
     	if (style.getBasedOn()!=null && style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();    		
-    		log.debug("recursing into basedOn:" + basedOnStyleName);
+    		//log.debug("recursing into basedOn:" + basedOnStyleName);
             org.docx4j.wml.Styles.Style candidateStyle = (org.docx4j.wml.Styles.Style)stylesDefined.get(basedOnStyleName);
             if (candidateStyle != null && candidateStyle.getStyleId().equals(basedOnStyleName)) {
-            	return getFontnameFromStyle(stylesDefined, candidateStyle);
+            	return getFontnameFromStyle(stylesDefined, themePart, candidateStyle);
             }
     	     // If we get here the style is missing!
      		log.error("couldn't find basedOn:" + basedOnStyleName);    	     
     	     return null;
     	} else {
-    		log.debug("No basedOn set for: " + style.getStyleId() );
+    		//log.debug("No basedOn set for: " + style.getStyleId() );
     		return null;
     	}
     	
