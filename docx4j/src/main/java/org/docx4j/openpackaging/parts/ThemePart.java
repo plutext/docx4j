@@ -57,7 +57,21 @@ public final class ThemePart extends JaxbXmlPart {
 		
 	}
 
-    /**
+	private org.docx4j.dml.BaseStyles.FontScheme fontScheme = null;
+    
+    public org.docx4j.dml.BaseStyles.FontScheme getFontScheme() {
+    	if (fontScheme == null) { // ie we haven't done this already
+			org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme) this
+					.getJaxbElement();
+			if (theme.getThemeElements() != null
+					&& theme.getThemeElements().getFontScheme() != null) {
+				fontScheme = theme.getThemeElements().getFontScheme();
+			}
+		}
+    	return fontScheme;
+	}
+
+	/**
      * Unmarshal XML data from the specified InputStream and return the 
      * resulting content tree.  Validation event location information may
      * be incomplete when using this form of the unmarshal API.
