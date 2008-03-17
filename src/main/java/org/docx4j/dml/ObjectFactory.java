@@ -51,35 +51,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link FontCollection.Font }
+     * Create an instance of {@link BaseStyles.FmtScheme }
      * 
      */
-    public FontCollection.Font createFontCollectionFont() {
-        return new FontCollection.Font();
+    public BaseStyles.FmtScheme createBaseStylesFmtScheme() {
+        return new BaseStyles.FmtScheme();
     }
 
     /**
-     * Create an instance of {@link FontCollection }
+     * Create an instance of {@link BaseStyles.ExtLst }
      * 
      */
-    public FontCollection createFontCollection() {
-        return new FontCollection();
-    }
-
-    /**
-     * Create an instance of {@link BaseStyles }
-     * 
-     */
-    public BaseStyles createBaseStyles() {
-        return new BaseStyles();
-    }
-
-    /**
-     * Create an instance of {@link Theme }
-     * 
-     */
-    public Theme createTheme() {
-        return new Theme();
+    public BaseStyles.ExtLst createBaseStylesExtLst() {
+        return new BaseStyles.ExtLst();
     }
 
     /**
@@ -91,11 +75,91 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link FontCollection }
+     * 
+     */
+    public FontCollection createFontCollection() {
+        return new FontCollection();
+    }
+
+    /**
+     * Create an instance of {@link Theme.ExtLst }
+     * 
+     */
+    public Theme.ExtLst createThemeExtLst() {
+        return new Theme.ExtLst();
+    }
+
+    /**
+     * Create an instance of {@link BaseStyles.ClrScheme }
+     * 
+     */
+    public BaseStyles.ClrScheme createBaseStylesClrScheme() {
+        return new BaseStyles.ClrScheme();
+    }
+
+    /**
+     * Create an instance of {@link BaseStyles }
+     * 
+     */
+    public BaseStyles createBaseStyles() {
+        return new BaseStyles();
+    }
+
+    /**
+     * Create an instance of {@link Theme.ObjectDefaults }
+     * 
+     */
+    public Theme.ObjectDefaults createThemeObjectDefaults() {
+        return new Theme.ObjectDefaults();
+    }
+
+    /**
+     * Create an instance of {@link Theme.ExtraClrSchemeLst }
+     * 
+     */
+    public Theme.ExtraClrSchemeLst createThemeExtraClrSchemeLst() {
+        return new Theme.ExtraClrSchemeLst();
+    }
+
+    /**
+     * Create an instance of {@link BaseStyles.FontScheme.ExtLst }
+     * 
+     */
+    public BaseStyles.FontScheme.ExtLst createBaseStylesFontSchemeExtLst() {
+        return new BaseStyles.FontScheme.ExtLst();
+    }
+
+    /**
+     * Create an instance of {@link Theme.CustClrLst }
+     * 
+     */
+    public Theme.CustClrLst createThemeCustClrLst() {
+        return new Theme.CustClrLst();
+    }
+
+    /**
      * Create an instance of {@link TextFont }
      * 
      */
     public TextFont createTextFont() {
         return new TextFont();
+    }
+
+    /**
+     * Create an instance of {@link FontCollection.Font }
+     * 
+     */
+    public FontCollection.Font createFontCollectionFont() {
+        return new FontCollection.Font();
+    }
+
+    /**
+     * Create an instance of {@link Theme }
+     * 
+     */
+    public Theme createTheme() {
+        return new Theme();
     }
 
 }
