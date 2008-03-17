@@ -48,7 +48,7 @@ public class Context {
 		try {		
 			jc = JAXBContext.newInstance("org.docx4j.wml");
 			jcThemePart = JAXBContext.newInstance("org.docx4j.dml");
-			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core");
+			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms");
 			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom");
 			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended");
 		} catch (Exception ex) {
