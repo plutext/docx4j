@@ -208,7 +208,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-@@ -0,0 +1,331 @@
+@@ -0,0 +1,367 @@
 +/*
 + * Copyright 2006 The FOray Project.
 + *      http://www.foray.org
@@ -432,7 +432,43 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +        }
 +        return difference;
 +    }
++    
++    public static Panose getBold(Panose thisPanose) {
++    	
++    	byte[] panoseArray = thisPanose.getPanoseArray();
++    	
++    	if (panoseArray[2]==11) {
++    		// Already the maximum value - do nothing
++    	} else if (panoseArray[2]<8) {
++    		panoseArray[2]=8; // 8 = bold
++    	} else {
++    		// Make bolder
++    		panoseArray[2]++;
++    	}
++    	
++		return Panose.makeInstance(panoseArray);
++    	
++    }
 +
++    public static Panose getItalic(Panose thisPanose) {
++    	
++    	byte[] panoseArray = thisPanose.getPanoseArray();
++    	
++    	if (panoseArray[7]==15) {
++    		// Already the maximum value - do nothing
++    	} else if (panoseArray[7]<9) {
++    		panoseArray[7]=11; // 11 = Oblique/Boxed
++    	} else {
++    		// Increase the Letterform setting 
++    		// (does this make sense?)
++    		panoseArray[7]++;
++    	}
++    	
++		return Panose.makeInstance(panoseArray);
++    	
++    }
++    
++    
 +    /**
 +     * Examines an array of weights, throwing various unchecked exceptions if the data is not valid.
 +     * @param weights The array of weights to be tested.
