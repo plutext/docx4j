@@ -208,7 +208,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-@@ -0,0 +1,165 @@
+@@ -0,0 +1,331 @@
 +/*
 + * Copyright 2006 The FOray Project.
 + *      http://www.foray.org
@@ -239,13 +239,103 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +
 +package org.apache.fop.fonts;
 +
++
 +/**
 + * A PANOSE classification number.
++ * 
++ * <p>References:</p>
++ * <ul>
++ *   <li><a href="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">The TTF OS/2 Table
++ * doc</a></li>
++ *   <li><a href="http://www.w3.org/Fonts/Panose/pan2.html#StaticDigits">Panose 2.0 White
++ * Paper</a></li>
++ *   <li><a href="http://www.byte.com/art/9405/sec12/art1.htm">The Panose Typeface-Matching
++ * System</a></li>
++ *   <li>Michael S. De Laurentis, PANOSE 1.0 Core Mapper Services, Hewlett-Packard Document
++ * EWC-93-0023b, Hewlett-Packard Corporation, 101 Stewart, Suite 700, Seattle, WA 98101 (1993).</li>
++ *   <li><a href="www.fonts.com/hp/panose/greybook">The "Grey Book"</a></li>
++ * </ul>
 + */
 +public class Panose {
 +
-+    /** Constant indicating the size of the "panose" field, in bytes. */
-+    public static final byte ARRAY_SIZE = 10;
++    /**
++     * Enumeration of the fields that comprise a PANOSE description.
++     * @see "http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html"
++     */
++    public enum Field {
++        /** The bFamilyType field. */
++        FAMILY_TYPE ((byte) 0, (byte) 5),
++
++        /** The bSerifStyle field. */
++        SERIF_STYLE ((byte) 1, (byte) 15),
++
++        /** The bWeight field. */
++        WEIGHT ((byte) 2, (byte) 11),
++
++        /** The bProportion field. */
++        PROPORTION ((byte) 3, (byte) 9),
++
++        /** The bContrast field. */
++        CONTRAST ((byte) 4, (byte) 9),
++
++        /** The bStrokeVariatoon field. */
++        STROKE_VARIATION ((byte) 5, (byte) 8),
++
++        /** The bArmStyle field. */
++        ARM_STYLE ((byte) 6, (byte) 11),
++
++        /** The bLetterform field. */
++        LETTERFORM ((byte) 7, (byte) 15),
++
++        /** The bMidline field. */
++        MIDLINE ((byte) 8, (byte) 13),
++
++        /** The bXHeight field. */
++        X_HEIGHT ((byte) 9, (byte) 7);
++
++        /** The 0-based index of this element in the PANOSE array. */
++        private byte index;
++
++        /** The maximum value that is permissible for this element. */
++        private byte maxValue;
++
++        /**
++         * Private Constructor.
++         * @param index The 0-based index of this element in the PANOSE array.
++         * @param maxValue The maximum value that is permissible for this element.
++         */
++        private Field(final byte index, final byte maxValue) {
++            this.index = index;
++            this.maxValue = maxValue;
++        }
++
++        /**
++         * Returns the 0-based index of this element in the PANOSE array.
++         * @return The 0-based index of this element in the PANOSE array.
++         */
++        public byte getIndex() {
++            return this.index;
++        }
++
++        /**
++         * Returns the maximum valid value for this field.
++         * @return The maximum valid value for this field.
++         */
++        public byte getMaxValue() {
++            return this.maxValue;
++        }
++
++    }
++	
++    /** An array of weights indicating that all elements in a comparison between two PANOSE values
++     * shall be considered to be of the same weight. */
++    private static final byte[] NEUTRAL_WEIGHTS = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
++    /* Caveat: It is tempting to make NEUTRAL_WEIGHTS public and allow client apps to use it as a
++     * parameter. However, there is no way to protect the data inside it from corruption, so we
++     * have elected to keep it private and to allow "null" to be interpreted as the same value. */
++	
++//    /** Constant indicating the size of the "panose" field, in bytes. */
++//    public static final byte ARRAY_SIZE = 10;
 +
 +    /** Max difference for it to be considered an acceptable match.
 +     *  Note that this value will depend on the weights in the
@@ -254,123 +344,199 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +    public static final int MATCH_THRESHOLD = 30;
 +    
 +    
-+    /** The array of PANOSE numbers. */
++    /** The encapsulated array of PANOSE numbers. */
 +    private byte[] panoseArray;
 +    
-+    // bFamilyType 5
-+    // bSerifStyle 15
-+    // bWeight 11
-+    // bProportion 9
-+    // bContrast 9
-+    // bStrokeVariatoon 8
-+    // bArmStyle 11
-+    // bLetterform 15
-+    // bMidline 13
-+    // bXHeight 7
-+    // See http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html
-+    private final static int[] validMaxValues = { 5, 15, 11, 9, 9, 8, 11, 15, 13, 7 };    
++
++    /**
++     * Private Constructor. Use {@link #makeInstance(byte[])} to create an instance of this class.
++     * @param panoseArray The array of bytes recording the PANOSE classification.
++     */
++    private Panose(final byte[] panoseArray) {
++        this.panoseArray = panoseArray;
++    }
 +
 +    /**
 +     * Creates a new Panose instance.
 +     * @param panoseArray The array of bytes recording the PANOSE
 +     * classification.
++     * @return The newly-created instance.
 +     */
-+    public Panose(final byte[] panoseArray) {
-+        this.panoseArray = panoseArray;
++    public static Panose makeInstance(final byte[] panoseArray) {
++        final String panoseValidationMessage = Panose.validPanose(panoseArray);
++        if (panoseValidationMessage != null) {
++            throw new IllegalArgumentException("Illegal Panose Array: " + panoseValidationMessage);
++        }
++        return new Panose(panoseArray);
 +    }
 +
 +    /**
-+     * Returns the array of bytes representing the PANOSE number.
++     * Returns a clone of the the array of bytes representing the PANOSE number.
++     * To avoid the cost of this cloning operation, use {@link #getElement(int)} to obtain the
++     * value of individual elements in the array.
 +     * @return The PANOSE array.
 +     */
 +    public byte[] getPanoseArray() {
-+        return this.panoseArray;
++        return this.panoseArray.clone();
++    }
++
++    /**
++     * Returns a given element from the underlying Panose array.
++     * @param index The index to the element desired.
++     * @return The value of the element at <code>index</code>.
++     */
++    public byte getElement(final int index) {
++        return this.panoseArray[index];
++    }
++
++    /**
++     * Returns a given element from the underlying Panose array.
++     * @param field The field for which the value is desired.
++     * @return The value of the element at <code>field</code>.
++     */
++    public byte getElement(final Panose.Field field) {
++        final int index = field.getIndex();
++        return getElement(index);
 +    }
 +
 +    /**
 +     * Computes the weighted "closeness" of another Panose to this value.
-+     * @param panoseDescription An array of Panose values to compare to this.
++     * @param otherPanose Another Panose instance which is being compared to this.
++     * @param weights 10-element byte array of weights that should be used for each of the elements
++     * in the comparison.
++     * Values in this array must be between 0 and 127 inclusive.
++     * (This constant is documented at http://www.w3.org/Fonts/Panose/pan2.html#StaticDigits).
++     * Use null if all elements are to be weighted equally.
 +     * @return The weighted difference between the two Panose values.
 +     * A smaller value indicates that the two values are closer, and a larger
 +     * value indicates that they are farther apart.
-+     * A return value of {@link Long#MAX_VALUE} indicates that the input was
-+     * invalid or that some other aspect of the comparison was invalid.
 +     */
-+    public long difference(final byte[] panoseDescription) {
-+        if (! validPanose(panoseDescription)) {
-+            return Long.MAX_VALUE;
++    public long difference(final Panose otherPanose, final byte[] weights) {
++        /* This is a partial implementation of the "PANOSE Matching Heuristic" documented at:
++         * http://www.w3.org/Fonts/Panose/pan2.html#Heuristic. **/
++        byte[] weightsToUse = null;
++        if (weights == null) {
++            weightsToUse = Panose.NEUTRAL_WEIGHTS;
++        } else {
++            validateWeights(weights);
++            weightsToUse = weights;
 +        }
-+        /* We don't really know how to do this. Each byte is supposed to have
-+         * a weight, and those weights do not appear to be documented anywhere.
-+         * 
-+         * Called "Panose match value" or "PANOSE Matching Heuristic"
-+         * - see http://www.w3.org/Fonts/Panose/pan2.html#Heuristic
-+         **/
 +        long difference = 0;
-+        for (int i = 0; i < panoseDescription.length; i++) {
++        for (int i = 0; i < Panose.Field.values().length; i++) {
 +//            final int digit = panoseDescription.length - i;
 +//            final int weight = (int) Math.round(Math.pow(2, digit - 1));
-+            final int weight = 1;
-+            
-+            final int thisDifference = (this.panoseArray[i] - panoseDescription[i]);
++            final int weight = weightsToUse[i];
++
++            final int thisDifference = this.getElement(i) - otherPanose.getElement(i);
 +            difference += weight * thisDifference * thisDifference;
 +        }
 +        return difference;
 +    }
 +
 +    /**
++     * Examines an array of weights, throwing various unchecked exceptions if the data is not valid.
++     * @param weights The array of weights to be tested.
++     */
++    private static void validateWeights(final byte[] weights) {
++        if (weights == null) {
++            throw new NullPointerException("Weights may not be null");
++        }
++        if (weights.length != Panose.Field.values().length) {
++            throw new IllegalArgumentException("Weights size expected: "
++                    + Panose.Field.values().length + ", actual: " + weights.length);
++        }
++        for (int i = 0; i < weights.length; i++) {
++            final byte weight = weights[i];
++            if (weight < 0
++                    || weight > Byte.MAX_VALUE) {
++                throw new IllegalArgumentException("Weight element " + i + " is outside the range "
++                        + "of 0 thru 127.");
++            }
++        }
++    }
++    
++//    /**
++//     * Tests the validity of a panose description.
++//     * @param panoseDescription The panose values to be tested.
++//     * @return True for a valid PANOSE description, or false if the input is
++//     * null, does not have 10 elements, or any of the elements do not contain
++//     * valid ASCII numerals (0 through 9).
++//     */
++//    public static boolean validPanose(final byte[] panoseDescription) {
++//        if (panoseDescription == null) {
++//        	System.out.println("null byte[]" );
++//            return false;
++//        }
++//        if (panoseDescription.length != Panose.ARRAY_SIZE) {
++//        	System.out.println("Invalid length " + panoseDescription.length );
++//            return false;
++//        }
++//        for (int i = 0; i < panoseDescription.length; i++) {
++//            final byte theByte = panoseDescription[i];
++//            String s = Byte.toString(theByte);            
++//            int n = Integer.parseInt(s);
++//            if (n < 0) {
++//            	//System.out.println("Invalid value (too small) " + theByte + " in position " + i + " of " + toString(panoseDescription) );
++//                return false;
++//            }
++//                        
++//            if (n > validMaxValues[i]) {
++//            	System.out.println("Invalid value " + n + " > " + validMaxValues[i] + " in position " + i + " of " + toString(panoseDescription) );
++//                return false;
++//            }
++//        }
++//        return true;
++//    }
++
++    
++    
++    /**
 +     * Tests the validity of a panose description.
 +     * @param panoseDescription The panose values to be tested.
-+     * @return True for a valid PANOSE description, or false if the input is
-+     * null, does not have 10 elements, or any of the elements do not contain
-+     * valid ASCII numerals (0 through 9).
++     * @return Null for a valid PANOSE description. For an invalid PANOSE description, returns a
++     * descriptive message indicating which element is invalid.
 +     */
-+    public static boolean validPanose(final byte[] panoseDescription) {
++    public static String validPanose(final byte[] panoseDescription) {
 +        if (panoseDescription == null) {
-+        	System.out.println("null byte[]" );
-+            return false;
++            return "Panose description cannot be null.";
 +        }
-+        if (panoseDescription.length != Panose.ARRAY_SIZE) {
-+        	System.out.println("Invalid length " + panoseDescription.length );
-+            return false;
++        if (panoseDescription.length != Panose.Field.values().length) {
++            return "Illegal Panose description size: " + panoseDescription.length;
 +        }
 +        for (int i = 0; i < panoseDescription.length; i++) {
 +            final byte theByte = panoseDescription[i];
-+            String s = Byte.toString(theByte);            
-+            int n = Integer.parseInt(s);
-+            if (n < 0) {
-+            	//System.out.println("Invalid value (too small) " + theByte + " in position " + i + " of " + toString(panoseDescription) );
-+                return false;
-+            }
-+                        
-+            if (n > validMaxValues[i]) {
-+            	System.out.println("Invalid value " + n + " > " + validMaxValues[i] + " in position " + i + " of " + toString(panoseDescription) );
-+                return false;
++            final Panose.Field panoseField = Panose.Field.values()[i];
++            final byte maxValue = panoseField.getMaxValue();
++            if (theByte < 0
++                    || theByte > maxValue) {
++                return "Invalid value " + theByte + " > " + maxValue + " in position " + i
++                        + " of " + toString(panoseDescription);
 +            }
 +        }
-+        return true;
++        return null;
 +    }
 +
++    /**
++     * {@inheritDoc}
++     */
 +    public String toString() {
-+        return toString(this.panoseArray);    	
++        return toString(this.panoseArray);      
 +    }
 +
-+    public static String toString(byte[] panoseArray) {
-+
-+        if (panoseArray.length != Panose.ARRAY_SIZE) {
-+
-+        	System.out.println("Unexpected length: " + panoseArray.length);
-+        }
-+    	        
-+        StringBuilder sb = new StringBuilder(20);
-+    	
++    /**
++     * Returns a String representation of a Panose array.
++     * @param panoseArray The Panose array to be expressed as a String.
++     * @return The String representation of <code>panoseArray</code>.
++     */
++    private static String toString(final byte[] panoseArray) {
++        final StringBuilder sb = new StringBuilder(30);
++        sb.append("[ ");
 +        for (int i = 0; i < panoseArray.length; i++) {
 +            final byte theByte = panoseArray[i];
-+            
 +            sb.append(theByte + " ");
 +        }
-+    	
-+        return sb.toString();    	
++        sb.append("]");
++        return sb.toString();       
 +    }
 +    
 +}
@@ -437,11 +603,11 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
 -            in.skip(10); //panose array
 +            
 +            //in.skip(10); //panose array
-+            final byte[] panoseArray = new byte[Panose.ARRAY_SIZE];
++            final byte[] panoseArray = new byte[10];
 +            for (int i = 0; i < panoseArray.length; i++) {
 +                panoseArray[i] = in.read();
 +            }
-+            this.panose = new Panose(panoseArray);
++            this.panose = Panose.makeInstance(panoseArray);
 +            
 +            
 +            /* Skip ulUnicodeRange1 - 4. */            
