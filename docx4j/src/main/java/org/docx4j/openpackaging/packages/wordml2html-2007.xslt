@@ -2632,9 +2632,13 @@ Changes since version 1.2:
 
 <xsl:template match="WX:font" mode="rpr">font-family:<xsl:value-of select="@WX:val"/>;</xsl:template>
 
-<!-- JHarrop 20080222
-
-       Basic support for fonts -->
+<!-- JHarrop 
+	
+	 20080222  Basic support for fonts
+	 20080310  Extension function to substitute appropriate PDF font
+	 20080319  Support for bold and italic (but only in the rPr element)
+	 
+	  -->
 
 
 <!-- 
@@ -2643,8 +2647,32 @@ Changes since version 1.2:
 	
 <xsl:template match="w:rFonts" mode="rpr">
 	<xsl:variable name="documentFont"><xsl:value-of select="string(@w:ascii)"/></xsl:variable>
-	<xsl:variable name="targetFont" select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, string($documentFont), boolean($fontFamilyStack))" />
-	font-family:'<xsl:value-of select="$targetFont"/>';
+	<xsl:choose>
+		<xsl:when test="count(../w:b)=1 and count(../w:i)=1">
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), 'bolditalic', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';						
+		</xsl:when>
+		<xsl:when test="count(../w:b)=1">
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), 'bold', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';									
+		</xsl:when>
+		<xsl:when test="count(../w:i)=1">
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), 'italic', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';									
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), '', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';			
+		</xsl:otherwise>		
+	</xsl:choose>
 </xsl:template>
 
 

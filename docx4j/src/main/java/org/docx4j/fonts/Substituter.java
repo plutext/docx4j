@@ -101,7 +101,7 @@ public class Substituter {
     
     public final static String BOLD   = "bold";
     public final static String ITALIC = "italic";
-    public final static String BOLD_ITALIC = "italic";
+    public final static String BOLD_ITALIC = "bolditalic";
     
 	
 	static {
@@ -301,17 +301,20 @@ public class Substituter {
 	
 	
 	// For Xalan
-	public static String getSubstituteFontXsltExtension(Substituter s, String documentStyleId, boolean fontFamilyStack) {
+	public static String getSubstituteFontXsltExtension(Substituter s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
 		
-		return s.getSubstituteFontXsltExtension(documentStyleId, fontFamilyStack);
+		return s.getSubstituteFontXsltExtension(documentStyleId, bolditalic, fontFamilyStack);
 	}
 	
-	public String getSubstituteFontXsltExtension(String documentStyleId, boolean fontFamilyStack) {
+	public String getSubstituteFontXsltExtension(String documentStyleId, String bolditalic, boolean fontFamilyStack) {
 				
 		if (documentStyleId==null) {
 			log.error("passed null documentStyleId");
 			return "nullInputToExtension";
 		}
+		
+		// Concat bold italic modifier
+		documentStyleId = documentStyleId + bolditalic;
 		
 		FontMapping fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId));
 
@@ -476,7 +479,7 @@ public class Substituter {
 					} else if (documentFontPanose!=null ) {
 						
 						org.apache.fop.fonts.Panose physicalFontPanose = null; 
-				        long pd = 999; // inititaliase to a non-match
+				        long pd = 999; // initialise to a non-match
 						try {
 							physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(physicalfontInfo.getPanose().getPanoseArray() );
 					        pd = documentFontPanose.difference(physicalFontPanose, null);
