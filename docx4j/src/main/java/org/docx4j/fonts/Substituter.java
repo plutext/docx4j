@@ -410,7 +410,9 @@ public class Substituter {
     	        	log.info(".. but checking again, since physical fonts have changed.");
         		}
 	        }
-	        			
+	
+	        boolean normalFormFound = false;
+	        
 			FontMapping fm = new FontMapping();
 			fm.setDocumentFont(documentFontName);
 			
@@ -487,29 +489,39 @@ public class Substituter {
 						log.debug(".. panose distance: " + pd);					
 					}
 		        	
-					// We're done with this font.
+					// We're done with this font (except for bold, italic, bolditalic forms)
 					fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(normalise(documentFontName))).getPostScriptName() );
 					fontMappings.put(normalisedFontName, fm);
 					
 					log.info("native: " + normalisedFontName + " --> " + fm.getEmbeddedFile() );
-					continue;
+//					continue;
+					normalFormFound = true; // but we still need to do bold, italic etc
 		        }
 			} 
-	        
+
+			if (normalFormFound && documentFontPanose==null ) {
+				log.debug("documentFontPanose==null");
+				continue;
+			}
+			
 			// Second, what about a panose match?
 	        // TODO - only do this for latin fonts!
 			if (documentFontPanose!=null ) {
 								
 				// Is the Panose value valid?
-				if (org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray())!=null) {														
+				if (log.isDebugEnabled() &&  org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray())!=null) {														
 					// NB org.apache.fop.fonts.Panose only exists in our patched FOP
 					log.debug(documentFontName + " : " + org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray()));					
 					//This is the case for 'Impact' which has 
 					//Invalid value 9 > 8 in position 5 of 2 11 8 6 3 9 2 5 2 4 
 				}
 				
-				String panoseKey = findClosestPanoseMatch(documentFontPanose); 
-				if ( panoseKey!=null ) {
+				String panoseKey = null;
+				if ( !normalFormFound) {
+					panoseKey = findClosestPanoseMatch(documentFontPanose);
+				}
+				
+				if ( panoseKey!=null) {
 					log.info("panose: " + fm.getDocumentFont() + " --> " + ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile() );
 		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile());										
 		        	fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(panoseKey)).getPostScriptName() );
@@ -527,53 +539,54 @@ public class Substituter {
 					}
 					fontMappings.put(normalise(fm.getDocumentFont()), fm);
 					log.debug("Entry added for: " +  normalise(fm.getDocumentFont()) );
+				}
 					
-					// So we found a match for this document font
-					// What about bold, italic, and bolditalic?
+				// However we found our match for the normal form of
+				// this document font, we still need to do
+				// bold, italic, and bolditalic?
 
-					MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(normalisedFontName);
-					
-					if (msFont==null) {
-						log.warn("Font not found in MicrosoftFonts.xml");
-						continue; 
-					} 
-					
-					FontMapping fmTmp = null;
-					org.apache.fop.fonts.Panose tmpPanose = null; 
-					if (msFont.getBold()!=null) {
-						log.debug("this font has a bold form");
-						tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
-						fmTmp = getFontMapping(tmpPanose);
-						if (fmTmp!=null) {
-							fontMappings.put(normalise(fm.getDocumentFont()+BOLD), fmTmp);
-						}
-					} 
-					
-					fmTmp = null;
-					tmpPanose = null; 
-					if (msFont.getItalic()!=null) {
-						log.debug("this font has an italic form");
-						tmpPanose = org.apache.fop.fonts.Panose.getItalic(documentFontPanose);
-						fmTmp = getFontMapping(tmpPanose);
-						if (fmTmp!=null) {
-							fontMappings.put(normalise(fm.getDocumentFont()+ITALIC), fmTmp);
-						}						
-					} 
-					
-					fmTmp = null;
-					tmpPanose = null; 
-					if (msFont.getBolditalic()!=null) {
-						log.debug("this font has a bold italic form");												
-						tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
-						tmpPanose = org.apache.fop.fonts.Panose.getItalic(tmpPanose);
-						fmTmp = getFontMapping(tmpPanose);
-						if (fmTmp!=null) {
-							fontMappings.put(normalise(fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
-						}						
+				MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(normalisedFontName);
+				
+				if (msFont==null) {
+					log.warn("Font not found in MicrosoftFonts.xml");
+					continue; 
+				} 
+				
+				FontMapping fmTmp = null;
+				org.apache.fop.fonts.Panose tmpPanose = null; 
+				if (msFont.getBold()!=null) {
+					log.debug("this font has a bold form");
+					tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
+					fmTmp = getFontMapping(tmpPanose);
+					if (fmTmp!=null) {
+						fontMappings.put(normalise(fm.getDocumentFont()+BOLD), fmTmp);
 					}
-					
-					continue; // we're done with this document font
-				}				
+				} 
+				
+				fmTmp = null;
+				tmpPanose = null; 
+				if (msFont.getItalic()!=null) {
+					log.debug("this font has an italic form");
+					tmpPanose = org.apache.fop.fonts.Panose.getItalic(documentFontPanose);
+					fmTmp = getFontMapping(tmpPanose);
+					if (fmTmp!=null) {
+						fontMappings.put(normalise(fm.getDocumentFont()+ITALIC), fmTmp);
+					}						
+				} 
+				
+				fmTmp = null;
+				tmpPanose = null; 
+				if (msFont.getBolditalic()!=null) {
+					log.debug("this font has a bold italic form");												
+					tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
+					tmpPanose = org.apache.fop.fonts.Panose.getItalic(tmpPanose);
+					fmTmp = getFontMapping(tmpPanose);
+					if (fmTmp!=null) {
+						fontMappings.put(normalise(fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
+					}						
+				}
+				
+				continue; // we're done with this document font
 				
 			} else {
 				log.debug(" --> null Panose");				
@@ -581,6 +594,13 @@ public class Substituter {
 	        
 			// Finally, try explicit font substitutions
 			// - most likely to be useful for a font that doesn't have panose entries
+			if ( normalFormFound) {
+				continue;
+			}
+			
+			// Don't bother trying this for bold, italic if you've already
+			// got the normal form
+			
 			log.debug("So try explicit font substitutions table");					        
 			FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) explicitSubstitutionsMap
 					.get(normalise(documentFontName));
@@ -808,8 +828,8 @@ public class Substituter {
 
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
-		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
+		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
+		String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
 		
