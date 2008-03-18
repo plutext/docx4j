@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.fop.fonts.EmbedFontInfo;
@@ -39,6 +40,7 @@ import org.apache.fop.fonts.autodetect.FontInfoFinder;
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.substitutions.FontSubstitutions;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
@@ -77,6 +79,9 @@ public class Substituter {
 	/** This map is the one that the others are used
 	 *  to produce. */
 	private final static Map<String, FontMapping> fontMappings;
+	public Map<String, FontMapping> getFontMappings() {
+		return fontMappings;
+	}	
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
 	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
@@ -93,6 +98,11 @@ public class Substituter {
 	
 	private final static java.lang.CharSequence target;
     private final static java.lang.CharSequence replacement;
+    
+    public final static String BOLD   = "bold";
+    public final static String ITALIC = "italic";
+    public final static String BOLD_ITALIC = "italic";
+    
 	
 	static {
 		fontMappings = Collections.synchronizedMap(new HashMap<String, FontMapping>());
@@ -153,9 +163,9 @@ public class Substituter {
 		
 		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
 		
-		for (MicrosoftFonts.Font font : msFontsList ) {
-			//log.debug( "put font.getName()=" + font.getName() );
-			msFontsFilenames.put(font.getName(), font);
+		for (MicrosoftFonts.Font font : msFontsList ) {			
+			msFontsFilenames.put( normalise(font.getName()), font); // 20080318 - normalised
+			//log.debug( "put msFontsFilenames: " + normalise(font.getName()) );
 		}
 		
 	}
@@ -193,7 +203,7 @@ public class Substituter {
         //fontCache.save();
         // TODO - reenable the cache
         
-        //panoseReportOnPhysicalFonts(physicalFontMap);
+        panoseDebugReportOnPhysicalFonts(physicalFontMap);
 	}
 
 	/**
@@ -380,11 +390,11 @@ public class Substituter {
 	        	pairs = (Map.Entry)documentFontIterator.next();
 	        }
 	        
-	        String fontName = (String)pairs.getKey();
+	        String documentFontName = (String)pairs.getKey();
 
-			log.debug("\n\n" + fontName);
+			log.debug("\n\n" + documentFontName);
 	        
-	        String normalisedFontName = normalise(fontName);
+	        String normalisedFontName = normalise(documentFontName);
 	        
 	        // Since docx4all invokes this method when opening
 	        // each new document, the mapping may have been done
@@ -400,23 +410,15 @@ public class Substituter {
     	        	log.info(".. but checking again, since physical fonts have changed.");
         		}
 	        }
-	        
-			boolean foundAwtMapping = false;
-			boolean foundPdfMapping = false;
-			
+	        			
 			FontMapping fm = new FontMapping();
-			// This will be the key
-			
-//			fm.setMicrosoftFontName(normalisedFontName);
+			fm.setDocumentFont(documentFontName);
 			
 			// Panose setup
 			org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = null;
 			Fonts.Font font = fontsInFontTable.get(normalisedFontName);
 			if (font==null) {
 				log.error("Font " + normalisedFontName + "not found in font table!");
-				
-				// TODO - should keep a reasonably complete font table we can use
-				// to get Panose values if the one in the document is missing or incomplete
 			} else {
 				wmlFontPanoseForDocumentFont = font.getPanose1();
 			}
@@ -453,17 +455,16 @@ public class Substituter {
 	        }
 	        
 	        // 1B
-	        if (physicalFontMap.get(normalise(fontName)) != null) {
-				EmbedFontInfo physicalfontInfo = ((EmbedFontInfo)physicalFontMap.get(normalise(fontName)));
+	        if (physicalFontMap.get(normalise(documentFontName)) != null) {
+				EmbedFontInfo physicalfontInfo = ((EmbedFontInfo)physicalFontMap.get(normalise(documentFontName)));
 
 		        if (!physicalfontInfo.isEmbeddable() ) {
 //		        	log.info(fontName + " is not embeddable; skipping.");
 		        } else {
 				
-					log.debug(fontName + " --> NATIVE");
+					log.debug(documentFontName + " --> NATIVE");
 		        	// if so ..
-		        	foundPdfMapping = true;
-		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getEmbedFile());
+		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(documentFontName))).getEmbedFile());
 		        	
 					// sanity check using Panose (since 
 					// a font could conceivably have the same name
@@ -487,8 +488,7 @@ public class Substituter {
 					}
 		        	
 					// We're done with this font.
-		        	//fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getFontTriplets(), normalise(fontName) );	
-					fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(normalise(fontName))).getPostScriptName() );
+					fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(normalise(documentFontName))).getPostScriptName() );
 					fontMappings.put(normalisedFontName, fm);
 					
 					log.info("native: " + normalisedFontName + " --> " + fm.getEmbeddedFile() );
@@ -498,98 +498,25 @@ public class Substituter {
 	        
 			// Second, what about a panose match?
 	        // TODO - only do this for latin fonts!
-			String physicalFontKey = null;
-			String panoseKey = null;
 			if (documentFontPanose!=null ) {
 								
 				// Is the Panose value valid?
 				if (org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray())!=null) {														
 					// NB org.apache.fop.fonts.Panose only exists in our patched FOP
-					log.debug(fontName + " : " + org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray()));					
+					log.debug(documentFontName + " : " + org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray()));					
 					//This is the case for 'Impact' which has 
 					//Invalid value 9 > 8 in position 5 of 2 11 8 6 3 9 2 5 2 4 
 				}
-								
 				
-				// Logic to search panose space for closest matching physical 
-				// font file
-				Iterator it = physicalFontMap.entrySet().iterator();
-				long bestPanoseMatchValue = -1;		
-				String matchingPanoseString = null;
-			    while (it.hasNext()) {
-			        Map.Entry mapPairs = (Map.Entry)it.next();
-			        			        
-			        physicalFontKey = (String)mapPairs.getKey();
-			        EmbedFontInfo fontInfo = (EmbedFontInfo)mapPairs.getValue();
-			        
-			        if (!fontInfo.isEmbeddable() ) {			        	
-						// NB isEmbeddable() only exists in our patched FOP
-			        
-						/*
-						 * No point looking at this font, since if we tried to use it,
-						 * later, we'd get:
-						 *  
-						 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
-							at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
-							at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
-							at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
-							at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
-							at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
-							
-							will be thrown if os_2.fsType == 2
-							
-						 */
-//			        	log.info(physicalFontKey + " is not embeddable; skipping.");
-			        	continue;
-			        } 
-			        
-			        if (fontInfo.getPanose() == null ) {			        	
-			        	//log.info(physicalFontKey + " has no Panose data; skipping.");
-			        	continue;
-			        }
-					org.apache.fop.fonts.Panose physicalFontPanose = null;
-			        long panoseMatchValue = org.apache.fop.fonts.Panose.MATCH_THRESHOLD + 1; // inititaliase to a non-match
-					try {
-						physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(fontInfo.getPanose().getPanoseArray() );
-				        panoseMatchValue = documentFontPanose.difference(physicalFontPanose, null);
-					} catch (IllegalArgumentException e) {					
-						log.error(e.getMessage());
-						// For example:
-						// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-					}			        
-			        
-			        if (bestPanoseMatchValue==-1 || panoseMatchValue < bestPanoseMatchValue ) {
-			        	
-			        	bestPanoseMatchValue = panoseMatchValue;
-			        	matchingPanoseString = fontInfo.getPanose().toString();
-			        	panoseKey = physicalFontKey;
-			        	
-			        	//log.debug("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
-			        	
-			        	if (bestPanoseMatchValue==0) {
-			        		
-			        		// Can't do any better than this!
-			        		continue; // this is just the inner while
-			        	}
-			        	
-			        	
-			        } else {
-			        	//log.debug("not small " + panoseMatchValue + "  " + fontInfo.getPanose().toString() );
-			        	
-			        }
-			    }
-
-				if (panoseKey!=null && bestPanoseMatchValue < org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
-					log.debug("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);					
-					log.info("panose: " + fontName + " --> " + ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile() );
-					
-		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile());					
-					
-		        	//fm.setTripletName( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getFontTriplets(), panoseKey );
+				String panoseKey = findClosestPanoseMatch(documentFontPanose); 
+				if ( panoseKey!=null ) {
+					log.info("panose: " + fm.getDocumentFont() + " --> " + ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile() );
+		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(panoseKey)).getEmbedFile());										
 		        	fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(panoseKey)).getPostScriptName() );
 		        	
 					// Out of interest, is this match in font substitutions table?
-					FontSubstitutions.Replace rtmp = (FontSubstitutions.Replace) explicitSubstitutionsMap.get(normalise(fontName));
+					FontSubstitutions.Replace rtmp 
+						= (FontSubstitutions.Replace) explicitSubstitutionsMap.get(normalise(fm.getDocumentFont()));
 					if (rtmp!=null && rtmp.getSubstFonts()!=null) {
 						if (rtmp.getSubstFonts().contains(panoseKey) ) {
 							log.debug("(consistent with explicit substitutes)");
@@ -598,12 +525,55 @@ public class Substituter {
 						}
 						
 					}
+					fontMappings.put(normalise(fm.getDocumentFont()), fm);
+					log.debug("Entry added for: " +  normalise(fm.getDocumentFont()) );
 					
-					fontMappings.put(normalisedFontName, fm);
-					log.debug("Entry added for: " +  normalisedFontName);
-					continue; // we're done
-				} 
-				
+					// So we found a match for this document font
+					// What about bold, italic, and bolditalic?
+
+					MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(normalisedFontName);
+					
+					if (msFont==null) {
+						log.warn("Font not found in MicrosoftFonts.xml");
+						continue; 
+					} 
+					
+					FontMapping fmTmp = null;
+					org.apache.fop.fonts.Panose tmpPanose = null; 
+					if (msFont.getBold()!=null) {
+						log.debug("this font has a bold form");
+						tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
+						fmTmp = getFontMapping(tmpPanose);
+						if (fmTmp!=null) {
+							fontMappings.put(normalise(fm.getDocumentFont()+BOLD), fmTmp);
+						}
+					} 
+					
+					fmTmp = null;
+					tmpPanose = null; 
+					if (msFont.getItalic()!=null) {
+						log.debug("this font has an italic form");
+						tmpPanose = org.apache.fop.fonts.Panose.getItalic(documentFontPanose);
+						fmTmp = getFontMapping(tmpPanose);
+						if (fmTmp!=null) {
+							fontMappings.put(normalise(fm.getDocumentFont()+ITALIC), fmTmp);
+						}						
+					} 
+					
+					fmTmp = null;
+					tmpPanose = null; 
+					if (msFont.getBolditalic()!=null) {
+						log.debug("this font has a bold italic form");												
+						tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
+						tmpPanose = org.apache.fop.fonts.Panose.getItalic(tmpPanose);
+						fmTmp = getFontMapping(tmpPanose);
+						if (fmTmp!=null) {
+							fontMappings.put(normalise(fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
+						}						
+					}
+					
+					continue; // we're done with this document font
+				}				
 				
 			} else {
 				log.debug(" --> null Panose");				
@@ -613,7 +583,7 @@ public class Substituter {
 			// - most likely to be useful for a font that doesn't have panose entries
 			log.debug("So try explicit font substitutions table");					        
 			FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) explicitSubstitutionsMap
-					.get(normalise(fontName));
+					.get(normalise(documentFontName));
 			if (replacement != null) {
 				// log.debug( "\n" + fontName + " found." );
 				// String subsFonts = replacement.getSubstFonts();
@@ -621,76 +591,75 @@ public class Substituter {
 				// Is there anything in subsFonts we can use?
 				String[] tokens = replacement.getSubstFonts().split(";");
 				
-				// PDF
-				if (!foundPdfMapping) {
-					for (int x = 0; x < tokens.length; x++) {
-						// log.debug(tokens[x]);
-						if (physicalFontMap.get(tokens[x]) != null) {
-							
-							EmbedFontInfo embedFontInfo = (EmbedFontInfo)physicalFontMap.get(tokens[x]);
+	        	boolean foundMapping = false;
+				for (int x = 0; x < tokens.length; x++) {
+					// log.debug(tokens[x]);
+					if (physicalFontMap.get(tokens[x]) != null) {
+						
+						EmbedFontInfo embedFontInfo = (EmbedFontInfo)physicalFontMap.get(tokens[x]);
 
-					        if (!embedFontInfo.isEmbeddable() ) {			        	
+				        if (!embedFontInfo.isEmbeddable() ) {			        	
 //					        	log.info(tokens[x] + " is not embeddable; skipping.");
-					        } else {
-								String physicalFontFile = embedFontInfo.getEmbedFile();
-								log.debug("PDF: " + fontName + " --> "
-										+ physicalFontFile);
-								foundPdfMapping = true;
-					        	//fm.setTripletName( embedFontInfo.getFontTriplets(), tokens[x] );
-					        	fm.setPostScriptName(embedFontInfo.getPostScriptName() );
-					        	fm.setEmbeddedFile( physicalFontFile);
+				        } else {
+							String physicalFontFile = embedFontInfo.getEmbedFile();
+							log.debug("PDF: " + documentFontName + " --> "
+									+ physicalFontFile);
+							foundMapping = true;
+				        	//fm.setTripletName( embedFontInfo.getFontTriplets(), tokens[x] );
+				        	fm.setPostScriptName(embedFontInfo.getPostScriptName() );
+				        	fm.setEmbeddedFile( physicalFontFile);
+							
+							// Out of interest, does this have a Panose value?
+							// And what is the distance?
+							if (embedFontInfo.getPanose() == null ) {
+								log.debug(".. as expected, lacking Panose");					
+							} else if (documentFontPanose!=null  ) {
+								org.apache.fop.fonts.Panose physicalFontPanose = null;
+								try {
+									physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(embedFontInfo
+													.getPanose()
+													.getPanoseArray());
+								} catch (IllegalArgumentException e) {					
+									log.error(e.getMessage());
+									// For example:
+									// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
+								}
 								
-								// Out of interest, does this have a Panose value?
-								// And what is the distance?
-								if (embedFontInfo.getPanose() == null ) {
-									log.debug(".. as expected, lacking Panose");					
-								} else if (documentFontPanose!=null  ) {
-									org.apache.fop.fonts.Panose physicalFontPanose = null;
-									try {
-										physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(embedFontInfo
-														.getPanose()
-														.getPanoseArray());
-									} catch (IllegalArgumentException e) {					
-										log.error(e.getMessage());
-										// For example:
-										// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-									}
-									
-									if (physicalFontPanose != null) {
-										long pd = documentFontPanose
-												.difference(physicalFontPanose,
-														null);
+								if (physicalFontPanose != null) {
+									long pd = documentFontPanose
+											.difference(physicalFontPanose,
+													null);
 
-										if (pd >= org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
-											log
-													.debug(".. with a panose distance exceeding threshold: "
-															+ pd);
-										} else {
-											// Sanity check
-											log
-													.error(".. with a low panose distance (! How did we get here?) : "
-															+ pd);
-										}
-									} 
+									if (pd >= org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
+										log
+												.debug(".. with a panose distance exceeding threshold: "
+														+ pd);
+									} else {
+										// Sanity check
+										log
+												.error(".. with a low panose distance (! How did we get here?) : "
+														+ pd);
+									}
 								} 
-												        	
-								break;
-					        }
-						} else {
-							// log.debug("no match on token " + x + ":"
-							// + tokens[x]);
-						}	
-					}
+							} 
+											        	
+							break;
+				        }
+					} else {
+						// log.debug("no match on token " + x + ":"
+						// + tokens[x]);
+					}	
 				}
 				
-				if (!foundPdfMapping) {
-					log.debug("PDF: !" + fontName  + " -->  Couldn't find any of "
+				
+				if (!foundMapping) {
+					log.debug( documentFontName  + " -->  Couldn't find any of "
 							+ replacement.getSubstFonts());
 				}
 
 			} else {
 				log.debug("Nothing in FontSubstitutions.xml for: "
-						+ fontName);
+						+ documentFontName);
 				
 				// TODO - add default fallback values
 				
@@ -702,13 +671,121 @@ public class Substituter {
 		
 	    lastSeenNumberOfPhysicalFonts = physicalFontMap.size();
 	}
-	
-	public Map<String, FontMapping> getFontMappings() {
-		return fontMappings;
+
+
+	/**
+	 * @param fm
+	 * @param boldPanose
+	 */
+	private FontMapping getFontMapping(org.apache.fop.fonts.Panose boldPanose) {
+		FontMapping fmBold = new FontMapping();
+		//fm.setDocumentFont(documentFontName); ???
+		String boldPanoseKey = findClosestPanoseMatch(boldPanose); 
+		if ( boldPanoseKey!=null ) {
+			log.info("--> " + ((EmbedFontInfo)physicalFontMap.get(boldPanoseKey)).getEmbedFile() );
+			fmBold.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(boldPanoseKey)).getEmbedFile());										
+			fmBold.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(boldPanoseKey)).getPostScriptName() );
+			return fmBold;
+		}  else {
+			return null;
+		}
 	}
+	
+	/** Logic to search panose space for closest matching physical 
+		font file. */
+	private String findClosestPanoseMatch(org.apache.fop.fonts.Panose documentFontPanose) {
+		
+		String physicalFontKey = null;
+		String panoseKey = null;
+		
+		Iterator it = physicalFontMap.entrySet().iterator();
+		long bestPanoseMatchValue = -1;		
+		String matchingPanoseString = null;
+	    while (it.hasNext()) {
+	        Map.Entry mapPairs = (Map.Entry)it.next();
+	        			        
+	        physicalFontKey = (String)mapPairs.getKey();
+	        EmbedFontInfo fontInfo = (EmbedFontInfo)mapPairs.getValue();
+	        
+	        if (!fontInfo.isEmbeddable() ) {			        	
+				// NB isEmbeddable() only exists in our patched FOP
+	        
+				/*
+				 * No point looking at this font, since if we tried to use it,
+				 * later, we'd get:
+				 *  
+				 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
+					at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
+					at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
+					at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
+					at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
+					at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
+					
+					will be thrown if os_2.fsType == 2
+					
+				 */
+//	        	log.info(physicalFontKey + " is not embeddable; skipping.");
+	        	continue;
+	        } 
+	        
+	        if (fontInfo.getPanose() == null ) {			        	
+	        	//log.info(physicalFontKey + " has no Panose data; skipping.");
+	        	continue;
+	        }
+			org.apache.fop.fonts.Panose physicalFontPanose = null;
+	        long panoseMatchValue = org.apache.fop.fonts.Panose.MATCH_THRESHOLD + 1; // inititaliase to a non-match
+			try {
+				physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(fontInfo.getPanose().getPanoseArray() );
+		        panoseMatchValue = documentFontPanose.difference(physicalFontPanose, null);
+			} catch (IllegalArgumentException e) {					
+				log.error(e.getMessage());
+				// For example:
+				// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
+			}			        
+	        
+	        if (bestPanoseMatchValue==-1 || panoseMatchValue < bestPanoseMatchValue ) {
+	        	
+	        	bestPanoseMatchValue = panoseMatchValue;
+	        	matchingPanoseString = fontInfo.getPanose().toString();
+	        	panoseKey = physicalFontKey;
+	        	
+	        	//log.debug("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
+	        	
+	        	if (bestPanoseMatchValue==0) {
+	        		
+	        		// Can't do any better than this!
+	        		continue; // this is just the inner while
+	        	}
+	        } else {
+	        	//log.debug("not small " + panoseMatchValue + "  " + fontInfo.getPanose().toString() );	        	
+	        }
+	    }
+
+		if (panoseKey!=null && bestPanoseMatchValue < org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
+			log.debug("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);					
+			
+			return panoseKey;
+		}  else {
+			return null;
+		}
+		
+		
+		
+	}
+	
 	
 	public class FontMapping {
 
+		// The document font.  This, normalised, is the
+		// key under which this font mapping can be found
+		String documentFont;
+		public String getDocumentFont() {
+			return documentFont;
+		}
+		public void setDocumentFont(String documentFont) {
+			this.documentFont = documentFont;
+		}
+		
 
 		String postScriptName;
 		public String getPostScriptName() {
@@ -755,6 +832,8 @@ public class Substituter {
 //			}
 //		}
 		
+		//panoseDebugReportOnMicrosoftFonts( fonts );
+		
 		s.populateFontMappings(wordMLPackage.getMainDocumentPart().fontsInUse(), fonts );
 	}
 	
@@ -778,8 +857,12 @@ public class Substituter {
 					System.out.println(fontName + " .. lacks Panose!");					
 				} else if (fopPanose!=null ) {
 					
-					System.out.println(fontName + " .. OK");					
-					fopPanose.validPanose(fopPanose.getPanoseArray() );
+					if (//fontName.indexOf("bold")>0 ||
+							 fontName.indexOf("italic")>0) {
+						System.out.println( fontName + fopPanose 
+								//+ " bold " + fopPanose.getElement(2)
+								+ " ital " + fopPanose.getElement(5) + fopPanose.getElement(6) + fopPanose.getElement(7) );						
+					}
 					
 				}
 //				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
@@ -787,6 +870,34 @@ public class Substituter {
 	    }
 	}
 
+//	private static void panoseDebugReportOnMicrosoftFonts(org.docx4j.wml.Fonts wmlFonts ) {
+//				
+//		List<Fonts.Font> fontList = wmlFonts.getFont();
+//		for (Fonts.Font font : fontList ) {
+//			
+//			org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = 
+//				wmlFontPanoseForDocumentFont = font.getPanose1();
+//			
+//			org.apache.fop.fonts.Panose documentFontPanose = null;
+//			if (wmlFontPanoseForDocumentFont!=null && wmlFontPanoseForDocumentFont.getVal()!=null ) {
+//				try {
+//					documentFontPanose = org.apache.fop.fonts.Panose.makeInstance(wmlFontPanoseForDocumentFont.getVal() );
+//					
+//					System.out.println( font.getName() + documentFontPanose);
+//					
+//				} catch (IllegalArgumentException e) {					
+//					log.error(e.getMessage());
+//					// For example:
+//					// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
+//				}
+//				//log.debug(".. " + fopPanose.toString() );					
+//				
+//			} else {
+//				log.debug(".. no panose info!!!");															
+//			}
+//			
+//	    }
+//	}
 	
 //	private final static void setupAwtFontFamilyNames() {
 //		
