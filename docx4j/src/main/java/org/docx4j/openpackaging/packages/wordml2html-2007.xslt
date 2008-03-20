@@ -2649,21 +2649,24 @@ Changes since version 1.2:
 	<xsl:variable name="documentFont"><xsl:value-of select="string(@w:ascii)"/></xsl:variable>
 	<xsl:choose>
 		<xsl:when test="count(../w:b)=1 and count(../w:i)=1">
+			<!-- 'BoldItalic' is iText magic string -->
 			<xsl:variable name="targetFont" 
 				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
-							string($documentFont), 'bolditalic', boolean($fontFamilyStack))" />
+							string($documentFont), 'BoldItalic', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';						
 		</xsl:when>
 		<xsl:when test="count(../w:b)=1">
+			<!-- 'Bold' is iText magic string -->
 			<xsl:variable name="targetFont" 
 				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
-							string($documentFont), 'bold', boolean($fontFamilyStack))" />
+							string($documentFont), 'Bold', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';									
 		</xsl:when>
 		<xsl:when test="count(../w:i)=1">
+			<!-- 'Italic' is iText magic string -->
 			<xsl:variable name="targetFont" 
 				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
-							string($documentFont), 'italic', boolean($fontFamilyStack))" />
+							string($documentFont), 'Italic', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';									
 		</xsl:when>
 		<xsl:otherwise>

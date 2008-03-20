@@ -30,6 +30,7 @@ import javax.xml.bind.Marshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.Substituter;
+import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -444,34 +445,38 @@ public class WordprocessingMLPackage extends Package {
 	        String fontName = (String)pairs.getKey();
 	        Substituter.FontMapping fm = (Substituter.FontMapping)pairs.getValue();
 	        
-			log.info("Substituting " + fontName + " with " + fm.getPostScriptName() + " from " + fm.getEmbeddedFile() );
-			if (fm.getEmbeddedFile()!=null) {
+			log.info("Substituting " + fontName + " with " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
+			if (fm.getPhysicalFont()!=null) {
 				try {
-					if (fm.getEmbeddedFile().endsWith(".pfb")) {
+					if (fm.getPhysicalFont().getEmbeddedFile().endsWith(".pfb")) {
 						
-						String afm = fm.getEmbeddedFile().substring(5, fm.getEmbeddedFile().length()-4 ) + ".afm";  // drop the 'file:'
+//						String afm = fm.getPhysicalFont().getEmbeddedFile().substring(5, fm.getPhysicalFont().getEmbeddedFile().length()-4 ) + ".afm";  // drop the 'file:'
+						String afm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
+						afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
 						log.info("Looking for: " + afm);
 						
 						// Given the check in substituter, we expect to find one or the other.
 						File f = new File(afm);
 				        if (f.exists()) {				
 				        	log.info("Got it");
-				        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, fm.getEmbeddedFile().substring(5));  // drop the 'file:'	
+				        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
 				        } else {
 				        	// Should we be doing afm first, or pfm?
-							String pfm = fm.getEmbeddedFile().substring(5, fm.getEmbeddedFile().length()-4 ) + ".pfm";  // drop the 'file:'
+							String pfm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
+							pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
 							log.info("Looking for: " + pfm);
 							f = new File(pfm);
 					        if (f.exists()) {				
 					        	log.info("Got it");
-					        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, fm.getEmbeddedFile().substring(5));  // drop the 'file:'
+					        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
 					        } else {
 					        	// Shouldn't happen.
-					        	log.error("Couldn't find afm or pfm corresponding to " + fm.getEmbeddedFile());
+					        	log.error("Couldn't find afm or pfm corresponding to " + fm.getPhysicalFont().getEmbeddedFile());
 					        }
 				        }
-					} else {				
-						renderer.getFontResolver().addFont(fm.getEmbeddedFile(), true);
+					} else {
+						
+						renderer.getFontResolver().addFont(FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()), true);
 					}
 				} catch (java.io.IOException e) {
 				
@@ -484,7 +489,7 @@ java.io.IOException: Unsupported font type
 	
 				 */
 					e.printStackTrace();
-					log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + fm.getEmbeddedFile()); 
+					log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + fm.getPhysicalFont().getEmbeddedFile()); 
 				} catch (Exception e) {
 					e.printStackTrace();
 					log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
