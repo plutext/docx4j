@@ -255,7 +255,7 @@ public class Substituter {
 			 return;
 		 }
 			
-		PhysicalFont pf = null; 
+		PhysicalFont pf; 
 		
 		for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
 			FontTriplet triplet = (FontTriplet)iterIn.next(); 
@@ -266,12 +266,11 @@ public class Substituter {
 	    	
 	        String lower = fontInfo.getEmbedFile().toLowerCase();
 	        		        
+	        pf = null;
 	        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 	        // can handle
 	        // .otf, .ttf, .ttc, .pfb
 	        if (lower.endsWith(".otf") || lower.endsWith(".ttf")) {
-//		    		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
-//		        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
 	        	pf = new PhysicalFont(fontInfo);
 	        } else if (lower.endsWith(".pfb") ) {
 	        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
@@ -281,9 +280,6 @@ public class Substituter {
 				//log.debug("Looking for: " + afm);					
 				File f = new File(afm);
 		        if (f.exists()) {				
-		        	//log.debug("Got it");
-		    		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
-//			        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
 		        	pf = new PhysicalFont(fontInfo);
 		        } else {
 		        	// Should we be doing afm first, or pfm?
@@ -292,9 +288,6 @@ public class Substituter {
 					//log.debug("Looking for: " + pfm);
 					f = new File(pfm);
 			        if (f.exists()) {				
-			        	//log.debug("Got it");
-			    		log.debug("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());                	
-//				        	physicalFontMap.put(normalise(triplet.getName()), fontInfo );
 			        	pf = new PhysicalFont(fontInfo);
 			        } else {
 			    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
@@ -304,16 +297,12 @@ public class Substituter {
 	    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
 	        }
 	    	
-	        //log.debug("Style: " + triplet.getStyle() ); // normal, italic etc
-	        //log.debug("Weight: " + triplet.getWeight() ); // 
-	        
-	    	// Uncomment this to see ...
-			// System.out.println("Added " + triplet.getName() + " -> " + fontInfo.getEmbedFile());
 	        
 	        if (pf!=null) {
 	        	
 	        	// Add it to the map
 	        	physicalFontMap.put(pf.getName(), pf);
+	    		//log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
 	        	
 	        	// Handle the font family bit - this is critical, since
 	        	// it is what iText uses
@@ -590,7 +579,7 @@ public class Substituter {
 				
 				String panoseKey = null;
 //				if ( !normalFormFound) 
-					panoseKey = findClosestPanoseMatch(documentFontPanose);
+					panoseKey = findClosestPanoseMatch(documentFontName, documentFontPanose, physicalFontMap);
 				
 				if ( panoseKey!=null) {
 					log.info("panose: " + fm.getDocumentFont() + " --> " + physicalFontMap.get(panoseKey).getEmbeddedFile() );
@@ -609,6 +598,8 @@ public class Substituter {
 					}
 					fontMappings.put(normalise(fm.getDocumentFont()), fm);
 					log.debug("Entry added for: " +  normalise(fm.getDocumentFont()) );
+				} else {
+					log.debug(fm.getDocumentFont() + " -->  no panose match");
 				}
 					
 				// However we found our match for the normal form of
@@ -623,34 +614,34 @@ public class Substituter {
 				} 
 				
 				FontMapping fmTmp = null;
-				org.apache.fop.fonts.Panose tmpPanose = null; 
+				org.apache.fop.fonts.Panose seekingPanose = null; 
 				if (msFont.getBold()!=null) {
 					log.debug("this font has a bold form");
-					tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
-					fmTmp = getFontMapping(tmpPanose); // TODO - need a way to restrict the search to this font family.					
+					seekingPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
+					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose); 					
 					if (fmTmp!=null) {
 						fontMappings.put(normalise(fm.getDocumentFont()+BOLD), fmTmp);
 					}
 				} 
 				
 				fmTmp = null;
-				tmpPanose = null; 
+				seekingPanose = null; 
 				if (msFont.getItalic()!=null) {
 					log.debug("this font has an italic form");
-					tmpPanose = org.apache.fop.fonts.Panose.getItalic(documentFontPanose);
-					fmTmp = getFontMapping(tmpPanose);
+					seekingPanose = org.apache.fop.fonts.Panose.getItalic(documentFontPanose);
+					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose);
 					if (fmTmp!=null) {
 						fontMappings.put(normalise(fm.getDocumentFont()+ITALIC), fmTmp);
 					}						
 				} 
 				
 				fmTmp = null;
-				tmpPanose = null; 
+				seekingPanose = null; 
 				if (msFont.getBolditalic()!=null) {
 					log.debug("this font has a bold italic form");												
-					tmpPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
-					tmpPanose = org.apache.fop.fonts.Panose.getItalic(tmpPanose);
-					fmTmp = getFontMapping(tmpPanose);
+					seekingPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
+					seekingPanose = org.apache.fop.fonts.Panose.getItalic(seekingPanose);
+					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose);
 					if (fmTmp!=null) {
 						fontMappings.put(normalise(fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
 					}						
@@ -762,17 +753,42 @@ public class Substituter {
 
 	/**
 	 * @param fm
-	 * @param panose
+	 * @param soughtPanose
 	 */
-	private FontMapping getFontMapping(org.apache.fop.fonts.Panose panose) {
+	private FontMapping getAssociatedFontMapping(String documentFontName, String orignalKey, org.apache.fop.fonts.Panose soughtPanose) {
+
 		FontMapping fm = new FontMapping();
+		String resultingPanoseKey;
+		
+		// First try panose space restricted to this font family
+		if (orignalKey!=null) {
+			PhysicalFontFamily thisFamily = 
+				physicalFontFamiliesMap.get( physicalFontMap.get(orignalKey).getFamilyName() );					
+			
+			log.debug("Searching within family:" + thisFamily.getFamilyName() );
+			
+			resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, thisFamily.getPhysicalFonts());   // Make the list into a little map 
+			if ( resultingPanoseKey!=null ) {
+				log.info("--> " + physicalFontMap.get(resultingPanoseKey).getEmbeddedFile() );
+	        	fm.setPhysicalFont( physicalFontMap.get(resultingPanoseKey) );													
+				return fm;
+			}  else {
+				log.warn("No match in immediate font family");
+			}
+		} else {
+			log.debug("originalKey was null.");
+		}
+		
+		// Well, that failed, so search the whole space
+		
 		//fm.setDocumentFont(documentFontName); ???
-		String panoseKey = findClosestPanoseMatch(panose); 
-		if ( panoseKey!=null ) {
-			log.info("--> " + physicalFontMap.get(panoseKey).getEmbeddedFile() );
-        	fm.setPhysicalFont( physicalFontMap.get(panoseKey) );													
+		resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, physicalFontMap); 
+		if ( resultingPanoseKey!=null ) {
+			log.info("--> " + physicalFontMap.get(resultingPanoseKey).getEmbeddedFile() );
+        	fm.setPhysicalFont( physicalFontMap.get(resultingPanoseKey) );													
 			return fm;
 		}  else {
+			log.warn("No match in panose space");
 			return null;
 		}
 	}
@@ -781,12 +797,20 @@ public class Substituter {
 		font file. 
 		
 		Returns key of matching font in physicalFontMap. */
-	private String findClosestPanoseMatch(org.apache.fop.fonts.Panose documentFontPanose) {
+	private String findClosestPanoseMatch(String documentFontName, org.apache.fop.fonts.Panose documentFontPanose, 
+			Map<String, PhysicalFont> physicalFontSpace) {
+		
+		// documentFontName enables us to use a name match to break a tie;
+		// otherwise it would not be required
+		String keywordToMatch = documentFontName.toLowerCase();		 
+		if (documentFontName.indexOf(" ")>-1 ) {
+			keywordToMatch = keywordToMatch.substring(0, keywordToMatch.indexOf(" "));
+		}
 		
 		String physicalFontKey = null;
 		String panoseKey = null;
 		
-		Iterator it = physicalFontMap.entrySet().iterator();
+		Iterator it = physicalFontSpace.entrySet().iterator();
 		long bestPanoseMatchValue = -1;		
 		String matchingPanoseString = null;
 	    while (it.hasNext()) {
@@ -808,9 +832,29 @@ public class Substituter {
 				log.error(e.getMessage());
 				// For example:
 				// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-			}			        
+			}
+			
+			// Doesn't make much difference ..
+			boolean trump = false;
+			if (panoseMatchValue == bestPanoseMatchValue) {
+				//log.debug("tie .. checking " + keywordToMatch  + " against " +  physicalFont.getName().toLowerCase());
+				if (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>0) {
+					trump = true;
+					log.debug("trump!");
+				}
+			}
+			
+//			if (log.isDebugEnabled() ) {
+//				if ((panoseMatchValue > bestPanoseMatchValue) 
+//						&& (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>0) ) {
+//					log.debug("Despite name match, " + physicalFont.getName() 
+//							+ physicalFont.getPanose()
+//							+ " is too far from " + documentFontPanose
+//							+ " .. " + panoseMatchValue + " > " + bestPanoseMatchValue);
+//				}
+//			}
 	        
-	        if (bestPanoseMatchValue==-1 || panoseMatchValue < bestPanoseMatchValue ) {
+	        if (trump || bestPanoseMatchValue==-1 || panoseMatchValue < bestPanoseMatchValue ) {
 	        	
 	        	bestPanoseMatchValue = panoseMatchValue;
 	        	matchingPanoseString = physicalFont.getPanose().toString();
@@ -855,10 +899,15 @@ public class Substituter {
 		// We want this, so that when were are searching panose space
 		// for bold, bolditalic, italic, we can restrict the search
 		// to this list
-		List<PhysicalFont> physicalFonts = new java.util.ArrayList<PhysicalFont>();
+		Map<String, PhysicalFont> physicalFonts = new HashMap<String, PhysicalFont> ();
 		void addFont(PhysicalFont physicalFont){
-			physicalFonts.add(physicalFont);
+			physicalFonts.put(physicalFont.getName(), physicalFont);
 		}
+		
+		Map<String, PhysicalFont> getPhysicalFonts() {
+			return physicalFonts;
+		}
+		
 	}
 	
 	

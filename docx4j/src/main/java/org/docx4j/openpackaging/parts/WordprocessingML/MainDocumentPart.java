@@ -461,12 +461,12 @@ public class MainDocumentPart extends DocumentPart  {
     private void inspectRPr(org.docx4j.wml.RPr rPr, Map fontsDiscovered, Map stylesInUse) {
     	if (rPr.getRFonts()!=null) {
     		// 	Note the font - just Ascii for now
-    		log.debug("put font " + rPr.getRFonts().getAscii());
+    		//log.debug("put font " + rPr.getRFonts().getAscii());
     		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
     	}
     	if (rPr.getRStyle()!=null) {
     		// 	Note this run style
-    		log.debug("put style " + rPr.getRStyle().getVal() );
+    		//log.debug("put style " + rPr.getRStyle().getVal() );
     		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
     	}
 }
