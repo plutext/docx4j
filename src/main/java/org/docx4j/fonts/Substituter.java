@@ -59,15 +59,18 @@ import com.lowagie.text.pdf.BaseFont;
  * @author jharrop
  *
  */
-/**
- * @author jharrop
- *
- */
-/**
- * @author jharrop
- *
- */
 public class Substituter {
+	
+	/*
+	 * TODO
+	 * - handle Cambria & Cambria Math TTC
+	 * - Re-enable font cache
+	 * 
+	 * 
+	 */
+	
+	
+	
 	protected static Logger log = Logger.getLogger(Substituter.class);
 
 	public Substituter() {
@@ -213,7 +216,7 @@ public class Substituter {
         //fontCache.save();
         // TODO - reenable the cache
         
-        //panoseDebugReportOnPhysicalFonts(physicalFontMap);
+        panoseDebugReportOnPhysicalFonts(physicalFontMap);
 	}
 
 	/**
@@ -494,78 +497,26 @@ public class Substituter {
 					// For example:
 					// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
 				}
-				//log.debug(".. " + fopPanose.toString() );					
+				if (documentFontPanose!=null) {
+					log.debug(".. " + documentFontPanose.toString() );
+				}
 				
 			} else {
 				log.debug(".. no panose info!!!");															
 			}
 			
 			
-			// First, is the actual font available?
-			// 1A Windows - Is the actual font available?
-	        if (System.getProperty("os.name").toUpperCase().indexOf("WINDOWS")>-1) {
-	        	// Windows
-	        	
-	        	// TODO
-	        	// Filename f = new java.util.
-	        	
-	        		// Does it exist?
-	        	
-	        	// if so ..
-//	        	foundPdfMapping = true;
-//	        	fm.setPdfSubstituteFont();
-//	        	fm.setPdfEmbeddedFile()
-	        }
-	        
-//	        // 1B
-//	        if (physicalFontMap.get(normalise(documentFontName)) != null) {
-//				EmbedFontInfo physicalfontInfo = ((EmbedFontInfo)physicalFontMap.get(normalise(documentFontName)));
-//
-//		        if (!physicalfontInfo.isEmbeddable() ) {
-////		        	log.info(fontName + " is not embeddable; skipping.");
-//		        } else {
-//				
-//					log.debug(documentFontName + " --> NATIVE");
-//		        	// if so ..
-//		        	fm.setEmbeddedFile( ((EmbedFontInfo)physicalFontMap.get(normalise(documentFontName))).getEmbedFile());
-//		        	
-//					// sanity check using Panose (since 
-//					// a font could conceivably have the same name
-//					// but quite different content)				
-//					if (physicalfontInfo.getPanose() == null ) {
-//						log.debug(".. and lacking Panose!");					
-//					} else if (documentFontPanose!=null ) {
-//						
-//						org.apache.fop.fonts.Panose physicalFontPanose = null; 
-//				        long pd = 999; // initialise to a non-match
-//						try {
-//							physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(physicalfontInfo.getPanose().getPanoseArray() );
-//					        pd = documentFontPanose.difference(physicalFontPanose, null);
-//						} catch (IllegalArgumentException e) {					
-//							log.error(e.getMessage());
-//							// For example:
-//							// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
-//						}
-//												
-//						log.debug(".. panose distance: " + pd);					
-//					}
-//		        	
-//					// We're done with this font (except for bold, italic, bolditalic forms)
-//					fm.setPostScriptName(((EmbedFontInfo)physicalFontMap.get(normalise(documentFontName))).getPostScriptName() );
-//					fontMappings.put(normalisedFontName, fm);
-//					
-//					log.info("native: " + normalisedFontName + " --> " + fm.getEmbeddedFile() );
-////					continue;
-//					normalFormFound = true; // but we still need to do bold, italic etc
-//		        }
-//			} 
-//
-//			if (normalFormFound && documentFontPanose==null ) {
-//				log.debug("documentFontPanose==null");
-//				continue;
-//			}
-			
-			// Second, what about a panose match?
+			/* What about a panose match?
+			 * 
+			 * We rely on this almost exclusively at present.  It works very well, with the following exceptions:
+			 * 
+			 * Garamond-Bold .. [ 2 2 8 4 3 3 7 1 8 3 ]
+     				Looking for [ 2 2 8 4 3 3 1 1 8 3 ]
+                                              ^----------- stuffs us up
+                                              
+                                              
+			 * 
+			 */  
 	        // TODO - only do this for latin fonts!
 			if (documentFontPanose!=null ) {
 								
@@ -759,6 +710,8 @@ public class Substituter {
 	 */
 	private FontMapping getAssociatedFontMapping(String documentFontName, String orignalKey, org.apache.fop.fonts.Panose soughtPanose) {
 
+		log.debug("Looking for " + soughtPanose);
+		
 		FontMapping fm = new FontMapping();
 		String resultingPanoseKey;
 		
@@ -838,25 +791,29 @@ public class Substituter {
 				// Illegal Panose Array: Invalid value 10 > 8 in position 5 of [ 4 2 7 5 4 10 2 6 7 2 ]
 			}
 			
-			// Doesn't make much difference ..
+			// Verdana and Tahoma have the same panose value,
+			// and without this code, one may be used for the other
+			// TODO - Garamond and Garamond-Italic also have the same
+			// panose values, but this code is not smart enough to
+			// pick the correct one.  
 			boolean trump = false;
 			if (panoseMatchValue == bestPanoseMatchValue) {
 				//log.debug("tie .. checking " + keywordToMatch  + " against " +  physicalFont.getName().toLowerCase());
 				if (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>-1) {
 					trump = true;
-					log.debug("trump!");
+					log.debug("trumped previous best (which was " + panoseKey + ")");
 				}
 			}
 			
-//			if (log.isDebugEnabled() ) {
-//				if ((panoseMatchValue > bestPanoseMatchValue) 
-//						&& (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>0) ) {
-//					log.debug("Despite name match, " + physicalFont.getName() 
-//							+ physicalFont.getPanose()
-//							+ " is too far from " + documentFontPanose
-//							+ " .. " + panoseMatchValue + " > " + bestPanoseMatchValue);
-//				}
-//			}
+			if (log.isDebugEnabled() ) {
+				if ((panoseMatchValue > bestPanoseMatchValue) 
+						&& (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>0) ) {
+					log.debug("Despite name match, " + physicalFont.getName() 
+							+ physicalFont.getPanose()
+							+ " is too far from " + documentFontPanose
+							+ " .. " + panoseMatchValue + " > " + bestPanoseMatchValue);
+				}
+			}
 	        
 	        if (trump || bestPanoseMatchValue==-1 || panoseMatchValue < bestPanoseMatchValue ) {
 	        	
@@ -866,17 +823,18 @@ public class Substituter {
 	        	
 	        	//log.debug("Candidate " + panoseMatchValue + "  (" + panoseKey + ") " + matchingPanoseString);
 	        	
-	        	if (bestPanoseMatchValue==0) {
-	        		
-	        		// Can't do any better than this!
-	        		continue; // this is just the inner while
-	        	}
+	        	// Verdana and Tahoma seem to have the same panose value
+	        	// so we can't use this optimisation
+	        	//if (bestPanoseMatchValue==0) {
+	        	//	// Can't do any better than this!
+	        	//	continue; // this is just the inner while
+	        	//}
 	        } else {
 	        	//log.debug("not small " + panoseMatchValue + "  " + fontInfo.getPanose().toString() );	        	
 	        }
 	    }
 
-		if (panoseKey!=null && bestPanoseMatchValue < org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
+		if (panoseKey!=null && bestPanoseMatchValue < matchThreshold) {
 			log.debug("MATCHED " + panoseKey + " --> " + matchingPanoseString + " distance " + bestPanoseMatchValue);					
 			
 			return panoseKey;
@@ -1002,8 +960,8 @@ public class Substituter {
 
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
-		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
+		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
+		String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
 		
@@ -1031,7 +989,7 @@ public class Substituter {
 		s.populateFontMappings(wordMLPackage.getMainDocumentPart().fontsInUse(), fonts );
 	}
 	
-	private static void panoseDebugReportOnPhysicalFonts( Map<String, EmbedFontInfo>physicalFontMap ) {
+	private static void panoseDebugReportOnPhysicalFonts( Map<String, PhysicalFont>physicalFontMap ) {
 		Iterator fontIterator = physicalFontMap.entrySet().iterator();
 	    while (fontIterator.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)fontIterator.next();
@@ -1043,21 +1001,14 @@ public class Substituter {
 	        
 	        String fontName = (String)pairs.getKey();
 
-			EmbedFontInfo nfontInfo = (EmbedFontInfo)pairs.getValue();
+			PhysicalFont pf = (PhysicalFont)pairs.getValue();
 			
-			org.apache.fop.fonts.Panose fopPanose = nfontInfo.getPanose();
+			org.apache.fop.fonts.Panose fopPanose = pf.getPanose();
 			
 				if (fopPanose == null ) {
 					System.out.println(fontName + " .. lacks Panose!");					
 				} else if (fopPanose!=null ) {
-					
-					if (//fontName.indexOf("bold")>0 ||
-							 fontName.indexOf("italic")>0) {
-						System.out.println( fontName + fopPanose 
-								//+ " bold " + fopPanose.getElement(2)
-								+ " ital " + fopPanose.getElement(5) + fopPanose.getElement(6) + fopPanose.getElement(7) );						
-					}
-					
+					System.out.println(fontName + " .. " + fopPanose);
 				}
 //				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
 //						System.out.println(".. panose distance: " + pd);					
