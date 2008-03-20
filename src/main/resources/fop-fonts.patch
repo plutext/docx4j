@@ -2,7 +2,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(working copy)
-@@ -62,11 +62,33 @@
+@@ -62,11 +62,47 @@
              log.trace("Font: " + customFont.getFullName() 
                      + ", family: " + customFont.getFamilyNames() 
                      + ", PS: " + customFont.getFontName() 
@@ -12,7 +12,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 +            );
          }
  
-+//        System.out.println("Font: " + customFont.getFullName() 
++//System.out.println("Font: " + customFont.getFullName() 
 +//                + ", family: " + customFont.getFamilyNames() 
 +//                + ", PS: " + customFont.getFontName() 
 +//                //+ ", EmbedName: " + customFont.getEmbedFontName() //Same as getFontName
@@ -25,6 +25,20 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 +
 +Font: Century Schoolbook L Bold, family: [Century Schoolbook L], PS: CenturySchL-Bold, EmbedName: CenturySchL-Bold, subFamily: null
 +
++			Examples of family names (note the square brackets):
++			
++				Font: , family: [DejaVu Sans]
++				Font: , family: [OpenSymbol]
++				Font: , family: [Cambria]
++				Font: , family: [Calibri]
++				Font: , family: [Times New Roman]
++				Font: , family: [FreeMono]
++			
++			Multiple values are comma separated.
++			
++				Font: , family: [DejaVu Sans Condensed, DejaVu Sans]
++				Font: , family: [Hor, ae_Hor]
++				Font: , family: [padmaa-Bold.1.1, padmaa, padmmaa]
 +
 +         * 
 +         */
@@ -37,52 +51,21 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          //String subName = customFont.getFontSubName();
          String fullName = stripQuotes(customFont.getFullName());
          String searchName = fullName.toLowerCase();
-@@ -80,25 +102,26 @@
- 
+@@ -81,9 +117,10 @@
          //Full Name usually includes style/weight info so don't use these traits
          //If we still want to use these traits, we have to make FontInfo.fontLookup() smarter
--        triplets.add(new FontTriplet(fullName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
+         triplets.add(new FontTriplet(fullName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
 -        if (!fullName.equals(strippedName)) {
-+//        triplets.add(new FontTriplet(fullName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
+-            triplets.add(new FontTriplet(strippedName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
+-        }
 +//        System.out.println( fullName + " -- full name");
 +//        if (!fullName.equals(strippedName)) {
-             triplets.add(new FontTriplet(strippedName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
--        }
--        Set familyNames = customFont.getFamilyNames();
--        Iterator iter = familyNames.iterator();
--        while (iter.hasNext()) {
--            String familyName = stripQuotes((String)iter.next());
--            if (!fullName.equals(familyName)) {
--                /* Heuristic:
--                 *   The more similar the family name to the full font name,
--                 *   the higher the priority of its triplet.
--                 * (Lower values indicate higher priorities.) */
--                int priority = fullName.startsWith(familyName)
--                    ? fullName.length() - familyName.length()
--                    : fullName.length();
--                triplets.add(new FontTriplet(familyName, style, weight, priority));
--            }
--        }
++//            triplets.add(new FontTriplet(strippedName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
 +//        }
-+//        Set familyNames = customFont.getFamilyNames();
-+//        Iterator iter = familyNames.iterator();
-+//        while (iter.hasNext()) {
-+//            String familyName = stripQuotes((String)iter.next());
-+//            if (!fullName.equals(familyName)) {
-+//                /* Heuristic:
-+//                 *   The more similar the family name to the full font name,
-+//                 *   the higher the priority of its triplet.
-+//                 * (Lower values indicate higher priorities.) */
-+//                int priority = fullName.startsWith(familyName)
-+//                    ? fullName.length() - familyName.length()
-+//                    : fullName.length();
-+//                triplets.add(new FontTriplet(familyName, style, weight, priority));
-+//            }
-+//        }
-     }
-     
-     private final Pattern quotePattern = Pattern.compile("'");
-@@ -133,6 +156,9 @@
+         Set familyNames = customFont.getFamilyNames();
+         Iterator iter = familyNames.iterator();
+         while (iter.hasNext()) {
+@@ -133,6 +170,9 @@
          embedUrl = fontUrl.toExternalForm();
          EmbedFontInfo fontInfo = new EmbedFontInfo(null, customFont.isKerningEnabled(),
                  fontTripletList, embedUrl);
@@ -208,7 +191,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-@@ -0,0 +1,367 @@
+@@ -0,0 +1,391 @@
 +/*
 + * Copyright 2006 The FOray Project.
 + *      http://www.foray.org
@@ -433,6 +416,33 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +        return difference;
 +    }
 +    
++    /*
++     *  consolas           [ 2 11 6 9 2 2 4 3 2 4 ] bold 6 ital 3
++		consolas-bold      [ 2 11 7 9 2 2 4 3 2 4 ] bold 7 ital 3
++		consolas-italic    [ 2 11 6 9 2 2 4 10 2 4 ] bold 6 ital 10
++		consolas-bolditalic[ 2 11 7 9 2 2 4 10 2 4 ] bold 7 ital 10
++		
++		cordianew           [ 2 11 3 4 2 2 2 2 2 4 ] bold 3 ital 2
++		cordianew-bolditalic[ 2 11 6 4 2 2 2 9 2 4 ] bold 6 ital 9
++		
++		calibri             [ 2 15 5 2 2 2 4 3 2 4 ] bold 5 ital 3
++		calibri-bold        [ 2 15 7 2 3 4 4 3 2 4 ] bold 7 ital 3
++		calibri-bolditalic  [ 2 15 7 2 3 4 4 10 2 4 ] bold 7 ital 10
++		
++		constantia          [ 2 3 6 2 5 3 6 3 3 3 ] bold 6 ital 3
++		constantia-bold     [ 2 3 7 2 6 3 6 3 3 3 ] bold 7 ital 3
++		                              ^ note this
++		constantia-italic   [ 2 3 6 2 5 3 6 10 3 3 ] bold 6 ital 10
++		
++		candara-bold        [ 2 14 7 2 3 3 3 2 2 4 ] bold 7 ital 2
++		candara-italic      [ 2 14 5 2 3 3 3 9 2 4 ] bold 5 ital 9
++		candara-bolditalic  [ 2 14 7 2 3 3 3 9 2 4 ] bold 7 ital 9
++		
++		cambria-bold        [ 2 4 8 3 5 4 6 3 2 4 ] bold 8 ital 3
++		cambria-italic      [ 2 4 5 3 5 4 6 10 2 4 ] bold 5 ital 10
++
++     */
++    
 +    public static Panose getBold(Panose thisPanose) {
 +    	
 +    	byte[] panoseArray = thisPanose.getPanoseArray();
@@ -440,10 +450,9 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +    	if (panoseArray[2]==11) {
 +    		// Already the maximum value - do nothing
 +    	} else if (panoseArray[2]<8) {
-+    		panoseArray[2]=8; // 8 = bold
++    		panoseArray[2]=7; // 8 = bold, but most of the MS ClearType Collection fonts have 7 here.
 +    	} else {
-+    		// Make bolder
-+    		panoseArray[2]++;
++    		// Do nothing, rather than increase the Weight
 +    	}
 +    	
 +		return Panose.makeInstance(panoseArray);
@@ -457,11 +466,9 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +    	if (panoseArray[7]==15) {
 +    		// Already the maximum value - do nothing
 +    	} else if (panoseArray[7]<9) {
-+    		panoseArray[7]=11; // 11 = Oblique/Boxed
++    		panoseArray[7]=9; // Most fonts have 9 or 10 here.
 +    	} else {
-+    		// Increase the Letterform setting 
-+    		// (does this make sense?)
-+    		panoseArray[7]++;
++    		// Do nothing, rather than increase the Letterform setting 
 +    	}
 +    	
 +		return Panose.makeInstance(panoseArray);
@@ -606,10 +613,10 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
       */
      public String getPostScriptName() {
          if (postScriptName.length() == 0) {
-+//        	System.out.println("TTFFile - Hmmm, Composed postscript name from fullname.");
++        	System.out.println("TTFFile - Hmmm, Composed postscript name from fullname.");
              return FontUtil.stripWhiteSpace(getFullName());
          } else {
-+//        	System.out.println("TTFFile - Cool, there was a proper postScript name.");
++//        	System.out.println("TTFFile - Cool, there was a proper postScript name, namely: " + postScriptName);
              return postScriptName;
          }
      }
