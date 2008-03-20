@@ -579,7 +579,8 @@ public class Substituter {
 				
 				String panoseKey = null;
 //				if ( !normalFormFound) 
-					panoseKey = findClosestPanoseMatch(documentFontName, documentFontPanose, physicalFontMap);
+					panoseKey = findClosestPanoseMatch(documentFontName, documentFontPanose, 
+							physicalFontMap, org.apache.fop.fonts.Panose.MATCH_THRESHOLD);
 				
 				if ( panoseKey!=null) {
 					log.info("panose: " + fm.getDocumentFont() + " --> " + physicalFontMap.get(panoseKey).getEmbeddedFile() );
@@ -750,6 +751,7 @@ public class Substituter {
 	    lastSeenNumberOfPhysicalFonts = physicalFontMap.size();
 	}
 
+	private final static int MATCH_THRESHOLD_INTRA_FAMILY = 4;
 
 	/**
 	 * @param fm
@@ -767,7 +769,8 @@ public class Substituter {
 			
 			log.debug("Searching within family:" + thisFamily.getFamilyName() );
 			
-			resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, thisFamily.getPhysicalFonts());   // Make the list into a little map 
+			resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, 
+					thisFamily.getPhysicalFonts(), MATCH_THRESHOLD_INTRA_FAMILY);    
 			if ( resultingPanoseKey!=null ) {
 				log.info("--> " + physicalFontMap.get(resultingPanoseKey).getEmbeddedFile() );
 	        	fm.setPhysicalFont( physicalFontMap.get(resultingPanoseKey) );													
@@ -782,7 +785,8 @@ public class Substituter {
 		// Well, that failed, so search the whole space
 		
 		//fm.setDocumentFont(documentFontName); ???
-		resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, physicalFontMap); 
+		resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, physicalFontMap,
+				org.apache.fop.fonts.Panose.MATCH_THRESHOLD); 
 		if ( resultingPanoseKey!=null ) {
 			log.info("--> " + physicalFontMap.get(resultingPanoseKey).getEmbeddedFile() );
         	fm.setPhysicalFont( physicalFontMap.get(resultingPanoseKey) );													
@@ -798,7 +802,7 @@ public class Substituter {
 		
 		Returns key of matching font in physicalFontMap. */
 	private String findClosestPanoseMatch(String documentFontName, org.apache.fop.fonts.Panose documentFontPanose, 
-			Map<String, PhysicalFont> physicalFontSpace) {
+			Map<String, PhysicalFont> physicalFontSpace, int matchThreshold) {
 		
 		// documentFontName enables us to use a name match to break a tie;
 		// otherwise it would not be required
@@ -838,7 +842,7 @@ public class Substituter {
 			boolean trump = false;
 			if (panoseMatchValue == bestPanoseMatchValue) {
 				//log.debug("tie .. checking " + keywordToMatch  + " against " +  physicalFont.getName().toLowerCase());
-				if (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>0) {
+				if (physicalFont.getName().toLowerCase().indexOf(keywordToMatch)>-1) {
 					trump = true;
 					log.debug("trump!");
 				}
