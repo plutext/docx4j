@@ -2,15 +2,16 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java	(working copy)
-@@ -78,7 +78,7 @@
+@@ -78,8 +78,7 @@
      protected static IOFileFilter getFileFilter() {
          return FileFilterUtils.andFileFilter(
                  FileFilterUtils.fileFileFilter(),
 -                new WildcardFileFilter(new String[] {"*.ttf", "*.otf", "*.pfb"}, IOCase.INSENSITIVE)
+-                //TODO Add *.ttc when support for it has been added to the auto-detection mech.
 +                new WildcardFileFilter(new String[] {"*.ttf", "*.otf", "*.pfb", "*.ttc"}, IOCase.INSENSITIVE)
-                 //TODO Add *.ttc when support for it has been added to the auto-detection mech.
          );
      }
+     
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 631408)
@@ -130,17 +131,41 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          long fileLastModified = -1;
          if (fontCache != null) {
              try {
-@@ -170,7 +221,8 @@
+@@ -168,13 +219,28 @@
+             }
+             // firstly try and fetch it from cache before loading/parsing the font file
              if (fontCache.containsFont(embedUrl)) {
-                 CachedFontInfo fontInfo = fontCache.getFont(embedUrl);
-                 if (fontInfo.lastModified() == fileLastModified) {
+-                CachedFontInfo fontInfo = fontCache.getFont(embedUrl);
+-                if (fontInfo.lastModified() == fileLastModified) {
 -                    return fontInfo;
-+                	embedFontInfoList.add(fontInfo);
-+                    return embedFontInfoList;
++                
++                FontCache.CachedFontFile cachedFontInfos =  fontCache.getFontFile(embedUrl);
++                boolean allUpToDate = true; // until proven otherwise
++                for (CachedFontInfo fontInfo : cachedFontInfos.getFilefontsMap().values()) {
++                
++	                if (fontInfo.lastModified() == fileLastModified) {
++	                	embedFontInfoList.add(fontInfo);
++	                } else {
++	                    // out of date cache item
++	                    fontCache.removeFont(embedUrl);
++	                    allUpToDate = false;
++	                    continue;
++	                }
++                }
++                
++                if (allUpToDate) {
++                	return embedFontInfoList;
                  } else {
-                     // out of date cache item
-                     fontCache.removeFont(embedUrl);
-@@ -184,20 +236,75 @@
+-                    // out of date cache item
+-                    fontCache.removeFont(embedUrl);
++                	// Start again
++                	embedFontInfoList = new java.util.ArrayList<EmbedFontInfo>();                	
+                 }
++                
+             // is this a previously failed parsed font?
+             } else if (fontCache.isFailedFont(embedUrl, fileLastModified)) {
+                 if (log.isDebugEnabled()) {
+@@ -184,20 +250,75 @@
              }
          }
          
@@ -226,6 +251,23 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 +
      }
  }
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CachedFontInfo.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CachedFontInfo.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CachedFontInfo.java	(working copy)
+@@ -86,6 +86,12 @@
+      */
+     public CachedFontInfo(EmbedFontInfo fontInfo) {
+         super(fontInfo.metricsFile, fontInfo.kerning, fontInfo.fontTriplets, fontInfo.embedFile);
++        
++        // We need to cache our extra stuff as well!
++        setEmbeddable(fontInfo.isEmbeddable());
++        setPanose(fontInfo.getPanose());
++        setPostScriptName(fontInfo.getPostScriptName());        
++        
+         // try and determine modified date
+         File fontFile = getFileFromUrls(new String[] {embedFile, metricsFile});
+         if (fontFile != null ) {
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 631408)
@@ -300,6 +342,155 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
        
      /**
       * Main constructor
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache.java	(working copy)
+@@ -27,6 +27,9 @@
+ import java.io.OutputStream;
+ import java.io.Serializable;
+ import java.util.Map;
++import java.util.ArrayList;
++import java.util.List;
++
+ 
+ import org.apache.commons.io.IOUtils;
+ import org.apache.commons.logging.Log;
+@@ -61,11 +64,15 @@
+     /** change lock */
+     private transient Object changeLock = new Object();
+     
+-    /** master mapping of font url -> font info */
+-    private Map fontMap = new java.util.HashMap();
++    /** master mapping of font url -> font info.  This needs to be
++     *  a list, since a TTC file may contain more than 1 font. */
++    private Map<String, CachedFontFile> fontfileMap 
++    			= new java.util.HashMap<String, CachedFontFile>();
+ 
+     /** mapping of font url -> file modified date */
+     private Map failedFontMap = new java.util.HashMap();
++	// Really, its a failed URL map
++
+ 
+     /**
+      * Default constructor
+@@ -216,7 +223,7 @@
+      */
+     public boolean containsFont(String embedUrl) {
+         if (embedUrl != null) {
+-            return fontMap.containsKey(embedUrl);
++            return fontfileMap.containsKey(embedUrl);
+         }
+         return false;
+     }
+@@ -228,7 +235,7 @@
+      */
+     public boolean containsFont(EmbedFontInfo fontInfo) {
+         if (fontInfo != null) {
+-            return fontMap.containsKey(getCacheKey(fontInfo));
++            return fontfileMap.containsKey(getCacheKey(fontInfo));
+         }
+         return false;
+     }
+@@ -240,7 +247,14 @@
+     public void addFont(EmbedFontInfo fontInfo) {
+         String cacheKey = getCacheKey(fontInfo);
+         synchronized (changeLock) {
+-            if (!containsFont(cacheKey)) {
++        	CachedFontFile cachedFontFile;
++        	if (containsFont(cacheKey)) {
++        		cachedFontFile = fontfileMap.get(cacheKey);        		
++        		if (!cachedFontFile.containsFont(fontInfo.getPostScriptName() ) ) {
++        			cachedFontFile.put(new CachedFontInfo(fontInfo));	
++        		}        	
++        	} else {
++        		cachedFontFile = new CachedFontFile();
+                 if (log.isTraceEnabled()) {
+                     log.trace("Font added to cache: " + cacheKey);
+                 }
+@@ -245,10 +259,11 @@
+                     log.trace("Font added to cache: " + cacheKey);
+                 }
+                 if (fontInfo instanceof CachedFontInfo) {
+-                    fontMap.put(cacheKey, fontInfo);
++                	cachedFontFile.put((CachedFontInfo)fontInfo);
+                 } else {
+-                    fontMap.put(cacheKey, new CachedFontInfo(fontInfo));
++                	cachedFontFile.put(new CachedFontInfo(fontInfo));                	
+                 }
++                fontfileMap.put(cacheKey, cachedFontFile);
+                 changed = true;
+             }
+         }
+@@ -257,11 +272,11 @@
+     /**
+      * returns a font from the cache
+      * @param embedUrl font info
+-     * @return boolean
++     * @return CachedFontFile object 
+      */
+-    public CachedFontInfo getFont(String embedUrl) {
++    public CachedFontFile getFontFile(String embedUrl) {
+         if (containsFont(embedUrl)) {
+-            return (CachedFontInfo)fontMap.get(embedUrl);
++            return fontfileMap.get(embedUrl);
+         }
+         return null;
+     }
+@@ -276,7 +291,7 @@
+                 if (log.isTraceEnabled()) {
+                     log.trace("Font removed from cache: " + embedUrl);
+                 }
+-                fontMap.remove(embedUrl);
++                fontfileMap.remove(embedUrl);
+                 changed = true;
+             }
+         }
+@@ -289,6 +304,7 @@
+      * @return whether this is a failed font
+      */
+     public boolean isFailedFont(String embedUrl, long lastModified) {
++    	    	
+         if (failedFontMap.containsKey(embedUrl)) {
+             synchronized (changeLock) {
+                 long failedLastModified = ((Long)failedFontMap.get(embedUrl)).longValue();
+@@ -326,7 +342,7 @@
+             if (log.isTraceEnabled()) {
+                 log.trace("Font cache cleared.");
+             }
+-            fontMap.clear();
++            fontfileMap.clear();
+             failedFontMap.clear();
+             changed = true;
+         }
+@@ -331,4 +347,27 @@
+             changed = true;
+         }
+     }
++    
++    public class CachedFontFile implements Serializable {
++    	
++        private Map<String, CachedFontInfo> filefontsMap 
++			= new java.util.HashMap<String, CachedFontInfo>();
++        
++        void put(CachedFontInfo efi) {
++        	filefontsMap.put(efi.getPostScriptName(), efi);
++        }
++    	
++        public boolean containsFont(String fontName) {
++            if (fontName != null) {
++                return filefontsMap.containsKey(fontName);
++            }
++            return false;
++        }
++
++		public Map<String, CachedFontInfo> getFilefontsMap() {
++			return filefontsMap;
++		}
++        
++    	
++    }
+ }
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoader.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoader.java	(revision 631408)
@@ -355,7 +546,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-@@ -0,0 +1,396 @@
+@@ -0,0 +1,404 @@
 +/*
 + * Copyright 2006 The FOray Project.
 + *      http://www.foray.org
@@ -386,6 +577,8 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +
 +package org.apache.fop.fonts;
 +
++import java.io.Serializable;
++
 +
 +/**
 + * A PANOSE classification number.
@@ -403,8 +596,14 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 + *   <li><a href="www.fonts.com/hp/panose/greybook">The "Grey Book"</a></li>
 + * </ul>
 + */
-+public class Panose {
++public class Panose implements Serializable {
 +
++    /**
++     * Serialization Version UID. Change this value if you want to make sure the user's cache
++     * file is purged after an update.
++     */
++    private static final long serialVersionUID = 605232520271754718L;
++	
 +    /**
 +     * Enumeration of the fields that comprise a PANOSE description.
 +     * @see "http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html"
@@ -614,7 +813,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +    	if (panoseArray[2]==11) {
 +    		// Already the maximum value - do nothing
 +    	} else if (panoseArray[2]<8) {
-+    		panoseArray[2]=8; 
++    		panoseArray[2]=9; 
 +    		// 8 = bold, and even though most of the MS ClearType Collection fonts have 7 here,
 +    		// experience (Times New Roman) shows it is better to be on the high side, to stop
 +    		// this Panose array from being equidistant between the normal weight and the
@@ -954,3 +1153,43 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
          multiFont.setCIDType(CIDFontType.CIDTYPE2);
          int[] wx = ttf.getWidths();
          multiFont.setWidthArray(wx);
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/render/PrintRendererConfigurator.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/render/PrintRendererConfigurator.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/render/PrintRendererConfigurator.java	(working copy)
+@@ -230,10 +230,19 @@
+             URL fontUrl = (URL)iter.next();
+             // parse font to ascertain font info
+             FontInfoFinder finder = new FontInfoFinder();
+-            EmbedFontInfo fontInfo = finder.find(fontUrl, resolver, fontCache);
+-            if (fontInfo != null) {
+-                fontInfoList.add(fontInfo);                
+-            }
++            //EmbedFontInfo fontInfo = finder.find(fontUrl, resolver, fontCache);
++    		List<EmbedFontInfo> embedFontInfoList = finder.find(fontUrl, resolver, fontCache);		
++    		
++    		if (embedFontInfoList==null) {
++    			return;
++    		}
++    		
++    		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
++            
++	            if (fontInfo != null) {
++	                fontInfoList.add(fontInfo);                
++	            }
++    		}
+         }
+     }
+ 
+@@ -307,7 +316,10 @@
+             }
+             if (fontFile != null) {
+                 FontInfoFinder finder = new FontInfoFinder();
+-                return finder.find(fontUrl, fontResolver, fontCache);
++                return finder.find(fontUrl, fontResolver, fontCache).get(0);
++                	// TODO - fixme.  This is a quick hack.  If it is a TTC,
++                	// it will only return the EmbedFontInfo corresponding 
++                	// to the first font.
+             } else {
+                 return null;
+             }

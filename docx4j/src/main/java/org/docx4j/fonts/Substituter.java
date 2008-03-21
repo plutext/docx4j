@@ -63,13 +63,12 @@ public class Substituter {
 	
 	/*
 	 * TODO
-	 * - handle Cambria & Cambria Math TTC; currently org.apache.fop.fonts.autodetect.FontFileFinder 
-	 *   says "TODO Add *.ttc when support for it has been added to the auto-detection mech."; we
-	 *   need that first.
 	 *   
 	 * - Re-enable font cache
 	 * 
+	 * - Exclude non latin fonts from Panose match eg Segoe UI matching file:/usr/share/fonts/truetype/ttf-tamil-fonts/TAMu_Kalyani.ttf
 	 * 
+	 * - Look at Unsupport CMap format: 6 in Sun's PDF stuff. 
 	 */
 	
 	
@@ -216,7 +215,7 @@ public class Substituter {
             setupPhysicalFont(fontResolver, fontUrl, finder);
         }
         
-        //fontCache.save();
+        fontCache.save();
         // TODO - reenable the cache
         
         panoseDebugReportOnPhysicalFonts(physicalFontMap);
@@ -889,6 +888,13 @@ public class Substituter {
 
 		
 		PhysicalFont(EmbedFontInfo fontInfo) {
+			
+			// Sanity check
+			if (fontInfo.getPostScriptName()==null) {
+				log.error("Not set!");
+				//log.error(((org.apache.fop.fonts.FontTriplet)fontInfo.getFontTriplets().get(0)).getName());
+			}
+			
 	    	setName(fontInfo.getPostScriptName());
 	    	setEmbeddedFile(fontInfo.getEmbedFile());
 	    	setPanose(fontInfo.getPanose());		
@@ -1008,7 +1014,15 @@ public class Substituter {
 	        
 	        if(pairs.getKey()==null) {
 	        	log.info("Skipped null key");
-	        	pairs = (Map.Entry)fontIterator.next();
+	        	if (pairs.getValue()!=null) {
+	        		log.error(((PhysicalFont)pairs.getValue()).getEmbeddedFile());
+	        	}
+	        	
+	        	if (fontIterator.hasNext() ) {
+	        		pairs = (Map.Entry)fontIterator.next();
+	        	} else {
+	        		return;
+	        	}
 	        }
 	        
 	        String fontName = (String)pairs.getKey();
