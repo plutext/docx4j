@@ -197,18 +197,18 @@ public class Substituter {
         FontResolver fontResolver = FontSetup.createMinimalFontResolver();        
         FontFileFinder fontFileFinder = new FontFileFinder();
         
-//        // Automagically finds a list of font files on local system
-//        // based on os.name
-//        List fontFileList = fontFileFinder.find();                
-//        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-//            URL fontUrl = (URL)iter.next();
-//            // parse font to ascertain font info
-//            FontInfoFinder finder = new FontInfoFinder();
-//            setupPhysicalFont(fontResolver, fontUrl, finder);
-//        }
+        // Automagically finds a list of font files on local system
+        // based on os.name
+        List fontFileList = fontFileFinder.find();                
+        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+            URL fontUrl = (URL)iter.next();
+            // parse font to ascertain font info
+            FontInfoFinder finder = new FontInfoFinder();
+            setupPhysicalFont(fontResolver, fontUrl, finder);
+        }
 
         // Add fonts from our Temporary Embedded Fonts dir
-        List fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
+        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
         for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
             URL fontUrl = (URL)iter.next();
             // parse font to ascertain font info
@@ -233,6 +233,10 @@ public class Substituter {
 			URL fontUrl, FontInfoFinder fontInfoFinder) {
 		
 		List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
+		
+		if (embedFontInfoList==null) {
+			return;
+		}
 		
 		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
 			
@@ -802,7 +806,8 @@ public class Substituter {
 			// and without this code, one may be used for the other
 			// TODO - Garamond and Garamond-Italic also have the same
 			// panose values, but this code is not smart enough to
-			// pick the correct one.  
+			// pick the correct one.  Similar confusion between
+			// Cambria and Cambria Math
 			boolean trump = false;
 			if (panoseMatchValue == bestPanoseMatchValue) {
 				//log.debug("tie .. checking " + keywordToMatch  + " against " +  physicalFont.getName().toLowerCase());
