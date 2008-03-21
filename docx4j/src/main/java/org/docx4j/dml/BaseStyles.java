@@ -50,6 +50,7 @@ import org.w3c.dom.Element;
  *                 &lt;sequence>
  *                   &lt;any/>
  *                 &lt;/sequence>
+ *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -85,6 +86,7 @@ import org.w3c.dom.Element;
  *                 &lt;sequence>
  *                   &lt;any/>
  *                 &lt;/sequence>
+ *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -234,6 +236,7 @@ public class BaseStyles {
      *       &lt;sequence>
      *         &lt;any/>
      *       &lt;/sequence>
+     *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -249,6 +252,8 @@ public class BaseStyles {
 
         @XmlAnyElement
         protected List<Element> any;
+        @XmlAttribute(required = true)
+        protected String name;
 
         /**
          * Gets the value of the any property.
@@ -277,6 +282,30 @@ public class BaseStyles {
                 any = new ArrayList<Element>();
             }
             return this.any;
+        }
+
+        /**
+         * Gets the value of the name property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Sets the value of the name property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setName(String value) {
+            this.name = value;
         }
 
     }
@@ -354,6 +383,7 @@ public class BaseStyles {
      *       &lt;sequence>
      *         &lt;any/>
      *       &lt;/sequence>
+     *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -369,6 +399,8 @@ public class BaseStyles {
 
         @XmlAnyElement
         protected List<Element> any;
+        @XmlAttribute(required = true)
+        protected String name;
 
         /**
          * Gets the value of the any property.
@@ -397,6 +429,30 @@ public class BaseStyles {
                 any = new ArrayList<Element>();
             }
             return this.any;
+        }
+
+        /**
+         * Gets the value of the name property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Sets the value of the name property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setName(String value) {
+            this.name = value;
         }
 
     }
