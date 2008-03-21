@@ -55,7 +55,14 @@
 						@secondary="true"	
 	 
 	 Each of the fonts in this file now has an entry in FontSubstitutions.xml, but 
-	 only the ones above are populated for sure.	
+	 only the ones above are populated for sure.
+	
+	 Not that FontSubstitutions.xml matters much, since we rely mainly on Panose to find
+	 a suitable substitute font.  In due course though, we might add an attribute in
+	 FontSubstitutions which allows it to specifically override a Panose match.
+	
+	 Note also that the file names included below aren't actually used (as at 2008 03 21)
+	 since we use the panose matching, even on Windows.
 -->
 
 <!-- "When a user starts the 2007 Microsoft Office system application 
@@ -371,8 +378,9 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Lucida Handwriting" filename="LHANDW.TTF"/>
 
+<!-- missing on Vista, and currently no panose information in our 
+	 sample fonts part -->
 <font name="Lucida Sans" filename="lsans.ttf">
-<!-- missing on Vista! -->
 		<bold filename="lsansd.ttf"/>
 		<italic filename="lsansi.ttf"/>
 		<bolditalic filename="lsansdi.ttf"/>
