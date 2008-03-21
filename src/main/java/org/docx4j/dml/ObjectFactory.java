@@ -51,22 +51,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link BaseStyles.FmtScheme }
-     * 
-     */
-    public BaseStyles.FmtScheme createBaseStylesFmtScheme() {
-        return new BaseStyles.FmtScheme();
-    }
-
-    /**
-     * Create an instance of {@link BaseStyles.ExtLst }
-     * 
-     */
-    public BaseStyles.ExtLst createBaseStylesExtLst() {
-        return new BaseStyles.ExtLst();
-    }
-
-    /**
      * Create an instance of {@link BaseStyles.FontScheme }
      * 
      */
@@ -75,19 +59,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link FontCollection }
+     * Create an instance of {@link BaseStyles.FmtScheme }
      * 
      */
-    public FontCollection createFontCollection() {
-        return new FontCollection();
-    }
-
-    /**
-     * Create an instance of {@link Theme.ExtLst }
-     * 
-     */
-    public Theme.ExtLst createThemeExtLst() {
-        return new Theme.ExtLst();
+    public BaseStyles.FmtScheme createBaseStylesFmtScheme() {
+        return new BaseStyles.FmtScheme();
     }
 
     /**
@@ -99,43 +75,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link BaseStyles }
+     * Create an instance of {@link BaseStyles.ExtLst }
      * 
      */
-    public BaseStyles createBaseStyles() {
-        return new BaseStyles();
-    }
-
-    /**
-     * Create an instance of {@link Theme.ObjectDefaults }
-     * 
-     */
-    public Theme.ObjectDefaults createThemeObjectDefaults() {
-        return new Theme.ObjectDefaults();
-    }
-
-    /**
-     * Create an instance of {@link Theme.ExtraClrSchemeLst }
-     * 
-     */
-    public Theme.ExtraClrSchemeLst createThemeExtraClrSchemeLst() {
-        return new Theme.ExtraClrSchemeLst();
-    }
-
-    /**
-     * Create an instance of {@link BaseStyles.FontScheme.ExtLst }
-     * 
-     */
-    public BaseStyles.FontScheme.ExtLst createBaseStylesFontSchemeExtLst() {
-        return new BaseStyles.FontScheme.ExtLst();
-    }
-
-    /**
-     * Create an instance of {@link Theme.CustClrLst }
-     * 
-     */
-    public Theme.CustClrLst createThemeCustClrLst() {
-        return new Theme.CustClrLst();
+    public BaseStyles.ExtLst createBaseStylesExtLst() {
+        return new BaseStyles.ExtLst();
     }
 
     /**
@@ -147,11 +91,51 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link FontCollection.Font }
+     * Create an instance of {@link BaseStyles.FontScheme.ExtLst }
      * 
      */
-    public FontCollection.Font createFontCollectionFont() {
-        return new FontCollection.Font();
+    public BaseStyles.FontScheme.ExtLst createBaseStylesFontSchemeExtLst() {
+        return new BaseStyles.FontScheme.ExtLst();
+    }
+
+    /**
+     * Create an instance of {@link Theme.ExtLst }
+     * 
+     */
+    public Theme.ExtLst createThemeExtLst() {
+        return new Theme.ExtLst();
+    }
+
+    /**
+     * Create an instance of {@link Theme.CustClrLst }
+     * 
+     */
+    public Theme.CustClrLst createThemeCustClrLst() {
+        return new Theme.CustClrLst();
+    }
+
+    /**
+     * Create an instance of {@link Theme.ObjectDefaults }
+     * 
+     */
+    public Theme.ObjectDefaults createThemeObjectDefaults() {
+        return new Theme.ObjectDefaults();
+    }
+
+    /**
+     * Create an instance of {@link FontCollection }
+     * 
+     */
+    public FontCollection createFontCollection() {
+        return new FontCollection();
+    }
+
+    /**
+     * Create an instance of {@link Theme.ExtraClrSchemeLst }
+     * 
+     */
+    public Theme.ExtraClrSchemeLst createThemeExtraClrSchemeLst() {
+        return new Theme.ExtraClrSchemeLst();
     }
 
     /**
@@ -160,6 +144,22 @@ public class ObjectFactory {
      */
     public Theme createTheme() {
         return new Theme();
+    }
+
+    /**
+     * Create an instance of {@link BaseStyles }
+     * 
+     */
+    public BaseStyles createBaseStyles() {
+        return new BaseStyles();
+    }
+
+    /**
+     * Create an instance of {@link FontCollection.Font }
+     * 
+     */
+    public FontCollection.Font createFontCollectionFont() {
+        return new FontCollection.Font();
     }
 
 }
