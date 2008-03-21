@@ -63,7 +63,10 @@ public class Substituter {
 	
 	/*
 	 * TODO
-	 * - handle Cambria & Cambria Math TTC
+	 * - handle Cambria & Cambria Math TTC; currently org.apache.fop.fonts.autodetect.FontFileFinder 
+	 *   says "TODO Add *.ttc when support for it has been added to the auto-detection mech."; we
+	 *   need that first.
+	 *   
 	 * - Re-enable font cache
 	 * 
 	 * 
@@ -194,18 +197,18 @@ public class Substituter {
         FontResolver fontResolver = FontSetup.createMinimalFontResolver();        
         FontFileFinder fontFileFinder = new FontFileFinder();
         
-        // Automagically finds a list of font files on local system
-        // based on os.name
-        List fontFileList = fontFileFinder.find();                
-        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            URL fontUrl = (URL)iter.next();
-            // parse font to ascertain font info
-            FontInfoFinder finder = new FontInfoFinder();
-            setupPhysicalFont(fontResolver, fontUrl, finder);
-        }
+//        // Automagically finds a list of font files on local system
+//        // based on os.name
+//        List fontFileList = fontFileFinder.find();                
+//        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+//            URL fontUrl = (URL)iter.next();
+//            // parse font to ascertain font info
+//            FontInfoFinder finder = new FontInfoFinder();
+//            setupPhysicalFont(fontResolver, fontUrl, finder);
+//        }
 
         // Add fonts from our Temporary Embedded Fonts dir
-        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
+        List fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
         for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
             URL fontUrl = (URL)iter.next();
             // parse font to ascertain font info
@@ -224,105 +227,109 @@ public class Substituter {
 	 * 
 	 * @param fontResolver
 	 * @param fontUrl
-	 * @param finder
+	 * @param fontInfoFinder
 	 */
 	public static void setupPhysicalFont(FontResolver fontResolver,
-			URL fontUrl, FontInfoFinder finder) {
-		EmbedFontInfo fontInfo = finder.find(fontUrl, fontResolver, fontCache);
+			URL fontUrl, FontInfoFinder fontInfoFinder) {
 		
+		List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
 		
-		if (fontInfo == null) {
-			return;
-		}
-		 if (!fontInfo.isEmbeddable() ) {			        	
-//	        	log.info(tokens[x] + " is not embeddable; skipping.");
-			 
-				// NB isEmbeddable() only exists in our patched FOP
-		        
-				/*
-				 * No point looking at this font, since if we tried to use it,
-				 * later, we'd get:
-				 *  
-				 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
-					at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
-					at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
-					at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
-					at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
-					at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
-					
-					will be thrown if os_2.fsType == 2
-					
-				 */
-//	        	log.info(physicalFontKey + " is not embeddable; skipping.");
-			 
-			 return;
-		 }
+		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
 			
-		PhysicalFont pf; 
-		
-		for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
-			FontTriplet triplet = (FontTriplet)iterIn.next(); 
-			// There is one triplet for each of the font family names
-			// this font has, and we create a PhysicalFont object 
-			// for each of them.  For our purposes though, each of
-			// these physical font objects contains the same info
-	    	
-	        String lower = fontInfo.getEmbedFile().toLowerCase();
-	        		        
-	        pf = null;
-	        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
-	        // can handle
-	        // .otf, .ttf, .ttc, .pfb
-	        if (lower.endsWith(".otf") || lower.endsWith(".ttf")) {
-	        	pf = new PhysicalFont(fontInfo);
-	        } else if (lower.endsWith(".pfb") ) {
-	        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
-	        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
-				String afm = FontUtils.pathFromURL(lower);
-				afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
-				//log.debug("Looking for: " + afm);					
-				File f = new File(afm);
-		        if (f.exists()) {				
+			
+			if (fontInfo == null) {
+				return;
+			}
+			 if (!fontInfo.isEmbeddable() ) {			        	
+	//	        	log.info(tokens[x] + " is not embeddable; skipping.");
+				 
+					// NB isEmbeddable() only exists in our patched FOP
+			        
+					/*
+					 * No point looking at this font, since if we tried to use it,
+					 * later, we'd get:
+					 *  
+					 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
+						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
+						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
+						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
+						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
+						at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
+						
+						will be thrown if os_2.fsType == 2
+						
+					 */
+	//	        	log.info(physicalFontKey + " is not embeddable; skipping.");
+				 
+				 return;
+			 }
+				
+			PhysicalFont pf; 
+			
+			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
+				FontTriplet triplet = (FontTriplet)iterIn.next(); 
+				// There is one triplet for each of the font family names
+				// this font has, and we create a PhysicalFont object 
+				// for each of them.  For our purposes though, each of
+				// these physical font objects contains the same info
+		    	
+		        String lower = fontInfo.getEmbedFile().toLowerCase();
+		        		        
+		        pf = null;
+		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
+		        // can handle
+		        // .otf, .ttf, .ttc, .pfb
+		        if (lower.endsWith(".otf") || lower.endsWith(".ttf") || lower.endsWith(".ttc") ) {
 		        	pf = new PhysicalFont(fontInfo);
-		        } else {
-		        	// Should we be doing afm first, or pfm?
-					String pfm = FontUtils.pathFromURL(lower);
-					pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
-					//log.debug("Looking for: " + pfm);
-					f = new File(pfm);
+		        } else if (lower.endsWith(".pfb") ) {
+		        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
+		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
+					String afm = FontUtils.pathFromURL(lower);
+					afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
+					//log.debug("Looking for: " + afm);					
+					File f = new File(afm);
 			        if (f.exists()) {				
 			        	pf = new PhysicalFont(fontInfo);
 			        } else {
-			    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
+			        	// Should we be doing afm first, or pfm?
+						String pfm = FontUtils.pathFromURL(lower);
+						pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
+						//log.debug("Looking for: " + pfm);
+						f = new File(pfm);
+				        if (f.exists()) {				
+				        	pf = new PhysicalFont(fontInfo);
+				        } else {
+				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
+				        }
 			        }
+		        } else {                    	
+		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
 		        }
-	        } else {                    	
-	    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
-	        }
-	    	
-	        
-	        if (pf!=null) {
-	        	
-	        	// Add it to the map
-	        	physicalFontMap.put(pf.getName(), pf);
-	    		//log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
-	        	
-	        	// Handle the font family bit - this is critical, since
-	        	// it is what iText uses
-	        	String familyName = triplet.getName();
-	        	pf.setFamilyName(familyName);
-	        	
-	        	PhysicalFontFamily pff;
-	        	if (physicalFontFamiliesMap.get(familyName)==null) {
-	        		pff = new PhysicalFontFamily(familyName);
-	        		physicalFontFamiliesMap.put(familyName, pff);
-	        	} else {
-	        		pff = physicalFontFamiliesMap.get(familyName);
-	        	}
-	        	pff.addFont(pf);
-	        	
-	        }
-		}            	
+		    	
+		        
+		        if (pf!=null) {
+		        	
+		        	// Add it to the map
+		        	physicalFontMap.put(pf.getName(), pf);
+		    		//log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
+		        	
+		        	// Handle the font family bit - this is critical, since
+		        	// it is what iText uses
+		        	String familyName = triplet.getName();
+		        	pf.setFamilyName(familyName);
+		        	
+		        	PhysicalFontFamily pff;
+		        	if (physicalFontFamiliesMap.get(familyName)==null) {
+		        		pff = new PhysicalFontFamily(familyName);
+		        		physicalFontFamiliesMap.put(familyName, pff);
+		        	} else {
+		        		pff = physicalFontFamiliesMap.get(familyName);
+		        	}
+		        	pff.addFont(pf);
+		        	
+		        }
+			}            	
+		}
 	}
 	
 	
@@ -960,8 +967,8 @@ public class Substituter {
 
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
-		String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
+		String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
+		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
 		

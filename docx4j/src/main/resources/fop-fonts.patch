@@ -1,8 +1,42 @@
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java	(working copy)
+@@ -78,7 +78,7 @@
+     protected static IOFileFilter getFileFilter() {
+         return FileFilterUtils.andFileFilter(
+                 FileFilterUtils.fileFileFilter(),
+-                new WildcardFileFilter(new String[] {"*.ttf", "*.otf", "*.pfb"}, IOCase.INSENSITIVE)
++                new WildcardFileFilter(new String[] {"*.ttf", "*.otf", "*.pfb", "*.ttc"}, IOCase.INSENSITIVE)
+                 //TODO Add *.ttc when support for it has been added to the auto-detection mech.
+         );
+     }
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(working copy)
-@@ -62,11 +62,47 @@
+@@ -20,8 +20,10 @@
+ package org.apache.fop.fonts.autodetect;
+ 
+ import java.io.IOException;
++import java.io.InputStream;
+ import java.net.URL;
+ import java.net.URLConnection;
++import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Iterator;
+ import java.util.List;
+@@ -41,6 +43,9 @@
+ import org.apache.fop.fonts.FontResolver;
+ import org.apache.fop.fonts.FontTriplet;
+ import org.apache.fop.fonts.FontUtil;
++import org.apache.fop.fonts.truetype.FontFileReader;
++import org.apache.fop.fonts.truetype.TTFFile;
++import org.apache.fop.fonts.truetype.TTFFontLoader;
+ 
+ /**
+  * Attempts to determine correct FontInfo
+@@ -62,11 +67,47 @@
              log.trace("Font: " + customFont.getFullName() 
                      + ", family: " + customFont.getFamilyNames() 
                      + ", PS: " + customFont.getFontName() 
@@ -51,7 +85,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          //String subName = customFont.getFontSubName();
          String fullName = stripQuotes(customFont.getFullName());
          String searchName = fullName.toLowerCase();
-@@ -81,9 +117,10 @@
+@@ -81,9 +122,10 @@
          //Full Name usually includes style/weight info so don't use these traits
          //If we still want to use these traits, we have to make FontInfo.fontLookup() smarter
          triplets.add(new FontTriplet(fullName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
@@ -65,7 +99,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          Set familyNames = customFont.getFamilyNames();
          Iterator iter = familyNames.iterator();
          while (iter.hasNext()) {
-@@ -133,6 +170,9 @@
+@@ -133,6 +175,9 @@
          embedUrl = fontUrl.toExternalForm();
          EmbedFontInfo fontInfo = new EmbedFontInfo(null, customFont.isKerningEnabled(),
                  fontTripletList, embedUrl);
@@ -75,6 +109,123 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          if (fontCache != null) {
              fontCache.addFont(fontInfo);
          }
+@@ -145,12 +190,18 @@
+      * @param fontUrl font URL. Assumed to be local.
+      * @param resolver font resolver used to resolve font
+      * @param fontCache font cache (may be null)
+-     * @return newly created embed font info
++     * @return list of newly created embed font info.  Generally, this list
++     *         will have only one entry, unless the fontUrl is a TTC
+      */
+-    public EmbedFontInfo find(URL fontUrl, FontResolver resolver, FontCache fontCache) {
++    public List<EmbedFontInfo> find(URL fontUrl, FontResolver resolver, FontCache fontCache) {
++    	
++    	List<EmbedFontInfo> embedFontInfoList = new java.util.ArrayList<EmbedFontInfo>();
++    	
+         String embedUrl = null;
+         embedUrl = fontUrl.toExternalForm();
+         
++        System.out.println(embedUrl);
++        
+         long fileLastModified = -1;
+         if (fontCache != null) {
+             try {
+@@ -170,7 +221,8 @@
+             if (fontCache.containsFont(embedUrl)) {
+                 CachedFontInfo fontInfo = fontCache.getFont(embedUrl);
+                 if (fontInfo.lastModified() == fileLastModified) {
+-                    return fontInfo;
++                	embedFontInfoList.add(fontInfo);
++                    return embedFontInfoList;
+                 } else {
+                     // out of date cache item
+                     fontCache.removeFont(embedUrl);
+@@ -184,20 +236,75 @@
+             }
+         }
+         
++        
+         // try to determine triplet information from font file
+         CustomFont customFont = null;
+-        try {
+-            customFont = FontLoader.loadFont(fontUrl, resolver);
+-        } catch (Exception e) {
+-            //TODO Too verbose (it's an error but we don't care if some fonts can't be loaded)
+-            if (log.isErrorEnabled()) {
+-                log.error("Unable to load font file: " + embedUrl + ". Reason: " + e.getMessage());
++        
++        if (fontUrl.toExternalForm().endsWith(".ttc")) {
++        	
++        	// Get a list of the TTC Font names
++        	List<String> ttcNames = null;
++        	String fontFileURI = fontUrl.toExternalForm().trim();
++        	TTFFontLoader ttfLoader = new TTFFontLoader(fontFileURI, resolver);
++            InputStream in = null;         	
++            try {
++            	in = FontLoader.openFontUri(resolver, fontFileURI);
++                TTFFile ttf = new TTFFile();
++                FontFileReader reader = new FontFileReader(in);
++                ttcNames = ttf.getTTCnames(reader);
++            } catch (Exception e) {
++            	log.error(e);
++            } finally {
++                IOUtils.closeQuietly(in);
+             }
+-            if (fontCache != null) {
+-                fontCache.registerFailedFont(embedUrl, fileLastModified);
++        	
++        	// For each font name ...
++        	for (String fontName : ttcNames) {
++
++        		log.debug("Loading " + fontName);
++	            try {
++	            	ttfLoader = new TTFFontLoader(fontFileURI, resolver);
++	                ttfLoader.read(fontName);
++	                customFont = ttfLoader.getFont();
++	            } catch (Exception e) {
++	                //TODO Too verbose (it's an error but we don't care if some fonts can't be loaded)
++	                //if (log.isErrorEnabled()) {
++	                    log.error("Unable to load font file: " + embedUrl + ". Reason: " + e.getMessage());
++	                //}
++	                if (fontCache != null) {
++	                    fontCache.registerFailedFont(embedUrl, fileLastModified);
++	                }
++	                continue;
++	            }
++	            EmbedFontInfo fi = fontInfoFromCustomFont(fontUrl, customFont, fontCache);
++	            if (fi!=null) {
++	            	embedFontInfoList.add(fi);
++	            } 
++        	}
++        	return embedFontInfoList;
++        } else {
++        	// The normal case
++            try {
++                customFont = FontLoader.loadFont(fontUrl, resolver);
++            } catch (Exception e) {
++                //TODO Too verbose (it's an error but we don't care if some fonts can't be loaded)
++                //if (log.isErrorEnabled()) {
++                    log.error("Unable to load font file: " + embedUrl + ". Reason: " + e.getMessage());
++                //}
++                if (fontCache != null) {
++                    fontCache.registerFailedFont(embedUrl, fileLastModified);
++                }
++                return null;
+             }
+-            return null;
++            EmbedFontInfo fi = fontInfoFromCustomFont(fontUrl, customFont, fontCache);
++            if (fi!=null) {
++            	embedFontInfoList.add(fi);
++                return embedFontInfoList;        	
++            } else {
++            	return null;
++            }        	
+         }
+-        return fontInfoFromCustomFont(fontUrl, customFont, fontCache);     
++        
++
+     }
+ }
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 631408)
@@ -149,6 +300,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
        
      /**
       * Main constructor
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoader.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoader.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoader.java	(working copy)
+@@ -121,7 +121,7 @@
+      * @throws IOException In case of an I/O error
+      * @throws MalformedURLException If an invalid URL is built
+      */
+-    protected static InputStream openFontUri(FontResolver resolver, String uri) 
++    public static InputStream openFontUri(FontResolver resolver, String uri) 
+                     throws IOException, MalformedURLException {
+         InputStream in = null;
+         if (resolver != null) {
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(revision 631408)
@@ -191,7 +355,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-@@ -0,0 +1,391 @@
+@@ -0,0 +1,396 @@
 +/*
 + * Copyright 2006 The FOray Project.
 + *      http://www.foray.org
@@ -450,7 +614,12 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +    	if (panoseArray[2]==11) {
 +    		// Already the maximum value - do nothing
 +    	} else if (panoseArray[2]<8) {
-+    		panoseArray[2]=7; // 8 = bold, but most of the MS ClearType Collection fonts have 7 here.
++    		panoseArray[2]=8; 
++    		// 8 = bold, and even though most of the MS ClearType Collection fonts have 7 here,
++    		// experience (Times New Roman) shows it is better to be on the high side, to stop
++    		// this Panose array from being equidistant between the normal weight and the
++    		// bold weight.
++    		
 +    	} else {
 +    		// Do nothing, rather than increase the Weight
 +    	}
@@ -466,7 +635,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +    	if (panoseArray[7]==15) {
 +    		// Already the maximum value - do nothing
 +    	} else if (panoseArray[7]<9) {
-+    		panoseArray[7]=9; // Most fonts have 9 or 10 here.
++    		panoseArray[7]=10; // Most fonts have 9 or 10 here, so use 10 on the same reasoning as above.
 +    	} else {
 +    		// Do nothing, rather than increase the Letterform setting 
 +    	}
@@ -587,15 +756,17 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(working copy)
-@@ -31,6 +31,7 @@
+@@ -30,7 +30,9 @@
+ 
  import org.apache.xmlgraphics.fonts.Glyphs;
  
++import org.apache.fop.fonts.EmbedFontInfo;
  import org.apache.fop.fonts.FontUtil;
 +import org.apache.fop.fonts.Panose;
  
  /**
   * Reads a TrueType file or a TrueType Collection.
-@@ -48,9 +49,12 @@
+@@ -48,9 +50,12 @@
      public static final boolean TRACE_ENABLED = false;
  
      private String encoding = "WinAnsiEncoding";    // Default encoding
@@ -609,7 +780,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
      private boolean hasSerifs = true;
      /**
       * Table directory
-@@ -549,8 +553,10 @@
+@@ -549,8 +554,10 @@
       */
      public String getPostScriptName() {
          if (postScriptName.length() == 0) {
@@ -620,7 +791,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              return postScriptName;
          }
      }
-@@ -743,6 +749,7 @@
+@@ -743,6 +750,7 @@
       * @return boolean True if it may be embedded
       */
      public boolean isEmbeddable() {
@@ -628,7 +799,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
          return isEmbeddable;
      }
  
-@@ -988,7 +995,10 @@
+@@ -988,7 +996,10 @@
          if (dirTabs.get("OS/2") != null) {
              seekTab(in, "OS/2", 2 * 2);
              this.usWeightClass = in.readTTFUShort();
@@ -639,7 +810,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              int fsType = in.readTTFUShort();
              if (fsType == 2) {
                  isEmbeddable = false;
-@@ -996,10 +1006,21 @@
+@@ -996,10 +1007,21 @@
                  isEmbeddable = true;
              }
              in.skip(11 * 2);
@@ -662,7 +833,74 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              int v;
              os2Ascender = in.readTTFShort(); //sTypoAscender
              log.debug("sTypoAscender: " + os2Ascender 
-@@ -1568,4 +1589,8 @@
+@@ -1474,6 +1496,66 @@
+         }
+     }
+ 
++    /**
++     * Return TTC font names
++     * @param in FontFileReader to read from
++     * @return True if not collection or font name present, false otherwise
++     * @throws IOException In case of an I/O problem
++     */
++    public final List<String> getTTCnames(FontFileReader in) throws IOException {
++    	
++    	List<String> fontNames = new java.util.ArrayList<String>();
++    	
++        String tag = in.readTTFString(4);
++
++        if ("ttcf".equals(tag)) {
++            // This is a TrueType Collection
++            in.skip(4);
++
++            // Read directory offsets
++            int numDirectories = (int)in.readTTFULong();
++            // int numDirectories=in.readTTFUShort();
++            long[] dirOffsets = new long[numDirectories];
++            for (int i = 0; i < numDirectories; i++) {
++                dirOffsets[i] = in.readTTFULong();
++            }
++
++            log.info("This is a TrueType collection file with "
++                                   + numDirectories + " fonts");
++            log.info("Containing the following fonts: ");
++            // Read all the directories and name tables to check
++            // If the font exists - this is a bit ugly, but...
++            boolean found = false;
++
++            // Iterate through all name tables even if font
++            // Is found, just to show all the names
++            long dirTabOffset = 0;
++            for (int i = 0; (i < numDirectories); i++) {
++                in.seekSet(dirOffsets[i]);
++                readDirTabs(in);
++
++                readName(in);
++
++                log.info(fullName);
++                fontNames.add(fullName);
++
++                // Reset names
++                notice = "";
++                fullName = "";
++                familyNames.clear();
++                postScriptName = "";
++                subFamilyName = "";
++            }
++
++            in.seekSet(0);
++            return fontNames;
++        } else {
++        	log.error("Not a TTC!");
++        	return null;
++        }
++    }
++    
++    
+     /*
+      * Helper classes, they are not very efficient, but that really
+      * doesn't matter...
+@@ -1568,4 +1650,8 @@
              ioe.printStackTrace(System.err);
          }
      }
@@ -676,7 +914,37 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(working copy)
-@@ -92,6 +92,9 @@
+@@ -51,6 +51,10 @@
+     
+     /** {@inheritDoc} */
+     protected void read() throws IOException {
++        read(null);
++    }
++
++    public void read(String ttcFontName) throws IOException {
+         InputStream in = openFontUri(resolver, this.fontFileURI);
+         try {
+             TTFFile ttf = new TTFFile();
+@@ -55,7 +59,7 @@
+         try {
+             TTFFile ttf = new TTFFile();
+             FontFileReader reader = new FontFileReader(in);
+-            boolean supported = ttf.readFont(reader, null);
++            boolean supported = ttf.readFont(reader, ttcFontName);
+             if (!supported) {
+                 throw new IOException("TrueType font is not supported: " + fontFileURI);
+             }
+@@ -65,7 +69,8 @@
+             IOUtils.closeQuietly(in);
+         }
+     }
+-
++    
++    
+     private void buildFont(TTFFile ttf) {
+         if (ttf.isCFF()) {
+             throw new UnsupportedOperationException(
+@@ -92,6 +97,9 @@
          returnFont.setMissingWidth(0);
          returnFont.setWeight(ttf.getWeightClass());
          
