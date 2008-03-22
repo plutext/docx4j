@@ -350,7 +350,10 @@ public class WordprocessingMLPackage extends Package {
 		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
 		//     possibly via an extension function in the XSLT
 		if (fontSubstituter==null) {
+			log.debug("Creating new Substituter.");
 			setFontSubstituter(new Substituter());
+		} else {
+			log.debug("Using existing Substituter.");
 		}
 		xformer.setParameter("substituterInstance", fontSubstituter);
 		xformer.setParameter("fontFamilyStack", fontFamilyStack);
@@ -435,8 +438,9 @@ public class WordprocessingMLPackage extends Package {
 		org.xhtmlrenderer.extend.FontResolver resolver = renderer.getFontResolver();		
 				
 		Map fontMappings = fontSubstituter.getFontMappings();
-		Iterator fontMappingsIterator = fontMappings.entrySet().iterator();
-	    while (fontMappingsIterator.hasNext()) {
+		Map fontsInUse = this.getMainDocumentPart().fontsInUse();
+		Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
+		while (fontMappingsIterator.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
 	        if(pairs.getKey()==null) {
 	        	log.info("Skipped null key");
@@ -444,61 +448,13 @@ public class WordprocessingMLPackage extends Package {
 	        }
 	        
 	        String fontName = (String)pairs.getKey();
-	        Substituter.FontMapping fm = (Substituter.FontMapping)pairs.getValue();
+	        embed(renderer, Substituter.normalise(fontName), fontMappings);	        
+	        // For any font we embed, also embed the bold, italic, and bold italic substitute
+	        // .. at present, we can't tell which of these forms are actually used, so add them all
+	        embed(renderer, Substituter.normalise(fontName + Substituter.BOLD), fontMappings);
+	        embed(renderer, Substituter.normalise(fontName + Substituter.ITALIC), fontMappings);
+	        embed(renderer, Substituter.normalise(fontName + Substituter.BOLD_ITALIC), fontMappings);
 	        
-			if (fm.getPhysicalFont()!=null) {
-				try {
-					if (fm.getPhysicalFont().getEmbeddedFile().endsWith(".pfb")) {
-						
-//						String afm = fm.getPhysicalFont().getEmbeddedFile().substring(5, fm.getPhysicalFont().getEmbeddedFile().length()-4 ) + ".afm";  // drop the 'file:'
-						String afm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
-						afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
-						log.info("Looking for: " + afm);
-						
-						// Given the check in substituter, we expect to find one or the other.
-						File f = new File(afm);
-				        if (f.exists()) {				
-				        	log.info("Got it");
-				        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
-							log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
-				        } else {
-				        	// Should we be doing afm first, or pfm?
-							String pfm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
-							pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
-							log.info("Looking for: " + pfm);
-							f = new File(pfm);
-					        if (f.exists()) {				
-					        	log.info("Got it");
-					        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
-								log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
-					        } else {
-					        	// Shouldn't happen.
-					        	log.error("Couldn't find afm or pfm corresponding to " + fm.getPhysicalFont().getEmbeddedFile());
-					        }
-				        }
-					} else {				
-						renderer.getFontResolver().addFont(FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()), true);
-						log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
-					}
-				} catch (java.io.IOException e) {
-				
-				/* 
-				 * [AWT-EventQueue-0] INFO  packages.WordprocessingMLPackage - Substituting symbol with standardsymbolsl from file:/usr/share/fonts/type1/gsfonts/s050000l.pfb 
-java.io.IOException: Unsupported font type
-	at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
-	
-	.pfb not supported, even with iText 2.0.8
-	
-				 */
-					e.printStackTrace();
-					log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + fm.getPhysicalFont().getEmbeddedFile()); 
-				} catch (Exception e) {
-					e.printStackTrace();
-					log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
-				}
-			} else {
-				log.warn("Can't addFont for: " + fontName); 
-			}
 	    }
 		
 	    // TESTING
@@ -518,6 +474,71 @@ java.io.IOException: Unsupported font type
 		
 		renderer.createPDF(os);
 		
+	}
+	/**
+	 * @param renderer
+	 * @param fontName
+	 * @param fm
+	 */
+	private void embed(org.xhtmlrenderer.pdf.ITextRenderer renderer,
+			String fontName, Map fontMappings) {
+		Substituter.FontMapping fm = (Substituter.FontMapping)fontMappings.get( fontName );
+		
+		if (fm == null) {
+			log.warn("No mapping found for: " + fontName);
+		} else if (fm.getPhysicalFont()!=null) {
+			try {
+				if (fm.getPhysicalFont().getEmbeddedFile().endsWith(".pfb")) {
+					
+//						String afm = fm.getPhysicalFont().getEmbeddedFile().substring(5, fm.getPhysicalFont().getEmbeddedFile().length()-4 ) + ".afm";  // drop the 'file:'
+					String afm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
+					afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
+					log.info("Looking for: " + afm);
+					
+					// Given the check in substituter, we expect to find one or the other.
+					File f = new File(afm);
+			        if (f.exists()) {				
+			        	log.info("Got it");
+			        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
+						log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
+			        } else {
+			        	// Should we be doing afm first, or pfm?
+						String pfm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
+						pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
+						log.info("Looking for: " + pfm);
+						f = new File(pfm);
+				        if (f.exists()) {				
+				        	log.info("Got it");
+				        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
+							log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
+				        } else {
+				        	// Shouldn't happen.
+				        	log.error("Couldn't find afm or pfm corresponding to " + fm.getPhysicalFont().getEmbeddedFile());
+				        }
+			        }
+				} else {				
+					renderer.getFontResolver().addFont(FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()), true);
+					log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
+				}
+			} catch (java.io.IOException e) {
+			
+			/* 
+			 * [AWT-EventQueue-0] INFO  packages.WordprocessingMLPackage - Substituting symbol with standardsymbolsl from file:/usr/share/fonts/type1/gsfonts/s050000l.pfb 
+java.io.IOException: Unsupported font type
+at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
+
+.pfb not supported, even with iText 2.0.8
+
+			 */
+				e.printStackTrace();
+				log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + fm.getPhysicalFont().getEmbeddedFile()); 
+			} catch (Exception e) {
+				e.printStackTrace();
+				log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
+			}
+		} else {
+			log.warn("Can't addFont for: " + fontName); 
+		}
 	}	
 	
 
