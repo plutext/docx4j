@@ -27,6 +27,7 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.Substituter;
@@ -445,7 +446,6 @@ public class WordprocessingMLPackage extends Package {
 	        String fontName = (String)pairs.getKey();
 	        Substituter.FontMapping fm = (Substituter.FontMapping)pairs.getValue();
 	        
-			log.info("Substituting " + fontName + " with " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
 			if (fm.getPhysicalFont()!=null) {
 				try {
 					if (fm.getPhysicalFont().getEmbeddedFile().endsWith(".pfb")) {
@@ -460,6 +460,7 @@ public class WordprocessingMLPackage extends Package {
 				        if (f.exists()) {				
 				        	log.info("Got it");
 				        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
+							log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
 				        } else {
 				        	// Should we be doing afm first, or pfm?
 							String pfm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
@@ -469,14 +470,15 @@ public class WordprocessingMLPackage extends Package {
 					        if (f.exists()) {				
 					        	log.info("Got it");
 					        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
+								log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
 					        } else {
 					        	// Shouldn't happen.
 					        	log.error("Couldn't find afm or pfm corresponding to " + fm.getPhysicalFont().getEmbeddedFile());
 					        }
 				        }
-					} else {
-						
+					} else {				
 						renderer.getFontResolver().addFont(FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()), true);
+						log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
 					}
 				} catch (java.io.IOException e) {
 				
@@ -499,6 +501,18 @@ java.io.IOException: Unsupported font type
 			}
 	    }
 		
+	    // TESTING
+//	    xhtmlDoc = org.docx4j.XmlUtils.neww3cDomDocument();
+//	    try {
+//			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+//			dbf.setNamespaceAware(true);
+//			dbf.newDocumentBuilder().newDocument();
+//	    	
+//			xhtmlDoc = dbf.newDocumentBuilder().parse(new File("C:\\Users\\jharrop\\workspace\\docx4all\\sample-docs\\comic.html"));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } 	    
+	    
 		renderer.setDocument(xhtmlDoc, null);
 		renderer.layout();
 		
