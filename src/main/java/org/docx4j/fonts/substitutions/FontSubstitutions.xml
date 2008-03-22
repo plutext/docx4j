@@ -15,6 +15,28 @@
 	
 	SubstFontsMS is not used and will be removed.  -->
 	
+	<!-- Suggestions from http://www.oooninja.com/2008/01/calibri-linux-vista-fonts-download.html
+		
+		Arial -> FreeSans, Liberation Sans, Caslon Roman, URW Helvetica or Nimbus Sans
+
+Times New Roman -> FreeSerif, Liberation Serif, Linux Libertine or Nimbus Roman (or Gentium if you want something a little more Garamondesque)
+
+Georgia -> Bitstream Vera Serif or DejaVu Serif
+
+Trebuchet MS -> Lucida Sans
+
+Lucida Console -> Bitstream Vera Sans Mono, DejaVu Sans Mono, Liberation Mono, Lucida Sans Typewriter
+
+Courier New -> FreeMono, URW Courier
+
+Book Antiqua/Palatino -> URW Palladio/Palatino
+
+Tahoma -> DejaVu Sans Condensed or Toga Sans
+
+Verdana -> Bitstream Vera Sans or DejaVu Sans
+		
+		-->
+	
 	<!-- Microsoft core web fonts -->
 	<replace name="arial">
 		<SubstFonts>
