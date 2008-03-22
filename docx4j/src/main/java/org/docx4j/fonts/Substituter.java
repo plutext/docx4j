@@ -64,8 +64,6 @@ public class Substituter {
 	/*
 	 * TODO
 	 *   
-	 * - Re-enable font cache
-	 * 
 	 * - Exclude non latin fonts from Panose match eg Segoe UI matching file:/usr/share/fonts/truetype/ttf-tamil-fonts/TAMu_Kalyani.ttf
 	 * 
 	 * - Look at Unsupport CMap format: 6 in Sun's PDF stuff. 
@@ -377,7 +375,8 @@ public class Substituter {
 		return s.getSubstituteFontXsltExtension(documentStyleId, bolditalic, fontFamilyStack);
 	}
 	
-	public String getSubstituteFontXsltExtension(String documentStyleId, String bolditalic, boolean fontFamilyStack) {
+	public String getSubstituteFontXsltExtension(String documentStyleId, 
+			String bolditalic, boolean fontFamilyStack) {
 				
 		if (documentStyleId==null) {
 			log.error("passed null documentStyleId");

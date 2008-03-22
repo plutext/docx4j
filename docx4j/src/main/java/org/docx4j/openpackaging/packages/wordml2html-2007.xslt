@@ -2646,24 +2646,32 @@ Changes since version 1.2:
 -->
 	
 <xsl:template match="w:rFonts" mode="rpr">
+	
+	<!-- xhtml renderer probably is smart enough to convert <b> into a bold font?
+		
+		 But what if we don't have the corresponding bold font on the system?
+		
+		 Substituter will substitute something else.  This logic ensures that can happen.
+		
+		 But it assumes the single rPr element contains both the font and the b or i. This isn't
+		 good enough ... but eventually we'll replace this stylesheet with writing
+		 PDF using iText directly. -->
+	
 	<xsl:variable name="documentFont"><xsl:value-of select="string(@w:ascii)"/></xsl:variable>
 	<xsl:choose>
 		<xsl:when test="count(../w:b)=1 and count(../w:i)=1">
-			<!-- 'BoldItalic' is iText magic string -->
 			<xsl:variable name="targetFont" 
 				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
 							string($documentFont), 'BoldItalic', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';						
 		</xsl:when>
 		<xsl:when test="count(../w:b)=1">
-			<!-- 'Bold' is iText magic string -->
 			<xsl:variable name="targetFont" 
 				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
 							string($documentFont), 'Bold', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';									
 		</xsl:when>
 		<xsl:when test="count(../w:i)=1">
-			<!-- 'Italic' is iText magic string -->
 			<xsl:variable name="targetFont" 
 				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
 							string($documentFont), 'Italic', boolean($fontFamilyStack))" />
