@@ -71,12 +71,15 @@
 		<path refid="EARLibraries.libraryclasspath"/>
 		<path refid="MavenDependencies.libraryclasspath"/>
 		<!--path refid="JavaFX.userclasspath"/-->
-		<pathelement location="lib/parent-pointer-plugin-1.0-SNAPSHOT.jar"/>
-		<pathelement location="lib/core-renderer.jar"/>
-		<pathelement location="lib/core-renderer-minimal.jar"/>
-		<pathelement location="lib/itext-paulo-155.jar"/>
-		<pathelement location="lib/minium.jar"/>
-		<pathelement location="lib/PDFRenderer.jar"/>
+        <pathelement location="${docx4j.location}/lib/core-renderer-cvs.jar"/>
+        <!--<pathelement location="${docx4j.location}/lib/core-renderer-minimal.jar"/>-->
+        <pathelement location="${docx4j.location}/lib/fop-fonts.jar"/>
+        <pathelement location="/home/jharrop/xhtmlrenderer/xhtmlrenderer/lib/iText-2.0.8.jar"/>
+        <pathelement location="${docx4j.location}/lib/minium.jar"/>
+        <pathelement location="${docx4j.location}/lib/parent-pointer-plugin-1.0-SNAPSHOT.jar"/>
+		<pathelement location="${docx4j.location}/lib/xalan-2.7.0-patched-6396599-stripped.jar"/>
+        <pathelement location="${docx4j.location}/lib/PDFRenderer.jar"/>
+		<pathelement location="${docx4j.location}/lib/xmlgraphics-commons-1.3svn.jar"/>
 	</path>
 	<target name="init">
 		<mkdir dir="bin"/>
