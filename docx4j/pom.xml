@@ -97,5 +97,23 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/ma
       <version>2.7.0</version>
     </dependency> 
 		-->
+		
+    <!-- To enable webdav file system in Commons-VFS we need:
+           commons-vfs-1.1-SNAPSHOT, commons-vfs-sandbox-1.1-SNAPSHOT, 
+           jakarta-slide-webdavlib, jdom, and commons-httpclient2.0.2.
+           commons-httpclient2.0.2 is currently the only library 
+           we can get from maven repository.
+    -->
+	<dependency>
+      <groupId>jdom</groupId>
+      <artifactId>jdom</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+	
   </dependencies>
 </project>
