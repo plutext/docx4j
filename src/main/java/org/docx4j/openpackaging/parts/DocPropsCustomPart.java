@@ -44,6 +44,10 @@ import org.dom4j.tree.DefaultElement;
 
 
 
+/**
+ * @author jharrop
+ *
+ */
 public class DocPropsCustomPart extends JaxbXmlPart {
 	
 	/* Specification > Shared ML > Metadata > Custom Properties
@@ -145,6 +149,64 @@ public class DocPropsCustomPart extends JaxbXmlPart {
 		return jaxbElement;
     	
     }
+    
+    public String getProperty(String propName) {
+    	
+		// NB, at present this assumes the property is a string
+
+    	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
+		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
+			
+			System.out.println(prop.getName());
+			
+			if (prop.getName().equals(propName)) {
+				log.info("GOT IT! returning " + prop.getLpwstr());
+				return prop.getLpwstr();
+			}
+			
+		}
+		return null;    	
+    }
+    
+    public void setProperty(String propName, String propValue) {
+    	
+		// NB, at present this assumes the property is a string
+    	
+		// Ok, let's add one.
+		org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
+		org.docx4j.docProps.custom.Properties.Property newProp = factory.createPropertiesProperty();
+		
+		// .. set it up
+		newProp.setName("mynewcustomprop");
+		newProp.setFmtid(this.fmtidValLpwstr ); // Magic string
+		newProp.setPid( getNextPid() ); 
+		newProp.setLpwstr("SomeValue");
+		
+		// .. add it
+    	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
+		customProps.getProperty().add(newProp);
+    	
+    	
+    }
+    
+    /**
+     * Find the first available Pid 
+     *  
+     * @return
+     */
+    public int getNextPid() {
+    	
+    	int highestSeen = 0;
+    	
+    	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
+		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {			
+			if (prop.getPid()>highestSeen) {
+				highestSeen =prop.getPid();  				
+			}
+		}
+		log.debug("Returning " +  highestSeen+1);
+		return highestSeen+1;    	
+    }
 	
 		
 //	/* Create a Java object tree from the XML document 
@@ -193,7 +255,7 @@ public class DocPropsCustomPart extends JaxbXmlPart {
 //		
 //	
 //	/* Create an XML document from the Java object tree
-//	 * 
+//	 *  
 //	 */
 //	private Document marshall() {
 //
