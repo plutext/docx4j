@@ -177,10 +177,10 @@ public class DocPropsCustomPart extends JaxbXmlPart {
 		org.docx4j.docProps.custom.Properties.Property newProp = factory.createPropertiesProperty();
 		
 		// .. set it up
-		newProp.setName("mynewcustomprop");
+		newProp.setName(propName);
 		newProp.setFmtid(this.fmtidValLpwstr ); // Magic string
 		newProp.setPid( getNextPid() ); 
-		newProp.setLpwstr("SomeValue");
+		newProp.setLpwstr(propValue);
 		
 		// .. add it
     	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
