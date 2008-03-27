@@ -13,73 +13,36 @@
 	
 	<property name="m2Repository" value="../../.m2/repository"/>
 	<path id="MavenDependencies.libraryclasspath">
-	
-		<pathelement
-			location="${m2Repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
-		<pathelement
-			location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
-		<pathelement
-			location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
-		<pathelement
-			location="${m2Repository}/xerces/xercesImpl/2.8.1/xercesImpl-2.8.1.jar"/>
-		<pathelement
-			location="${m2Repository}/xml-apis/xml-apis/1.3.03/xml-apis-1.3.03.jar"/>
-	
-<!-- Jackrabbit dependencies no longer required (2008 01 18)
-	
-			<pathelement
-			location="${m2Repository}/commons-collections/commons-collections/3.1/commons-collections-3.1.jar"/>
-		<pathelement
-			location="${m2Repository}/concurrent/concurrent/1.3.4/concurrent-1.3.4.jar"/>
-	
-			<pathelement
-			location="${m2Repository}/nekohtml/nekohtml/0.9.4/nekohtml-0.9.4.jar"/>
-		<pathelement
-			location="${m2Repository}/org/apache/derby/derby/10.2.1.6/derby-10.2.1.6.jar"/>
-		<pathelement
-			location="${m2Repository}/org/apache/geronimo/specs/geronimo-jta_1.0.1B_spec/1.0.1/geronimo-jta_1.0.1B_spec-1.0.1.jar"/>
-		<pathelement
-			location="${m2Repository}/org/apache/jackrabbit/jackrabbit-api/1.3/jackrabbit-api-1.3.jar"/>
-		<pathelement
-			location="${m2Repository}/org/apache/jackrabbit/jackrabbit-core/1.3/jackrabbit-core-1.3.jar"/>
-		<pathelement
-			location="${m2Repository}/org/apache/jackrabbit/jackrabbit-jcr-commons/1.3/jackrabbit-jcr-commons-1.3.jar"/>
-		<pathelement
-			location="${m2Repository}/org/apache/jackrabbit/jackrabbit-text-extractors/1.3/jackrabbit-text-extractors-1.3.jar"/>
-		<pathelement
-			location="${m2Repository}/org/apache/lucene/lucene-core/2.0.0/lucene-core-2.0.0.jar"/>
-		<pathelement
-			location="${m2Repository}/org/slf4j/slf4j-api/1.3.0/slf4j-api-1.3.0.jar"/>
-		<pathelement
-			location="${m2Repository}/org/textmining/tm-extractors/0.4/tm-extractors-0.4.jar"/>
-		<pathelement
-			location="${m2Repository}/pdfbox/pdfbox/0.6.4/pdfbox-0.6.4.jar"/>
-		<pathelement
-			location="${m2Repository}/poi/poi/2.5.1-final-20040804/poi-2.5.1-final-20040804.jar"/>
--->
-			
+        <pathelement location="${m2Repository}/avalon-framework/avalon-framework/4.1.3/avalon-framework-4.1.3.jar"/>
+        <pathelement location="${m2Repository}/commons-httpclient/commons-httpclient/2.0.2/commons-httpclient-2.0.2.jar"/>
+        <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+        <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1/commons-logging-1.1.jar"/>	
+		<pathelement location="${m2Repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
+		<pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
+        <pathelement location="${m2Repository}/javax/servlet/servlet-api/2.3/servlet-api-2.3.jar"/>
+        <pathelement location="${m2Repository}/jdom/jdom/1.0/jdom-1.0.jar"/>		
+		<pathelement location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
+        <pathelement location="${m2Repository}/logkit/logkit/1.0.1/logkit-1.0.1.jar"/>		
+		<pathelement location="${m2Repository}/xerces/xercesImpl/2.8.1/xercesImpl-2.8.1.jar"/>
+		<pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.03/xml-apis-1.3.03.jar"/>
 	</path>
-	<!--	
-	<path id="JavaFX.userclasspath">
-	<pathelement location="../../.eclipse/org.eclipse.platform_3.3.0_1606436040/configuration/eclipse/plugins/javafx.eclipse.f3editor_0.0.2/lib/javafxrt.jar"/>
-	<pathelement location="../../.eclipse/org.eclipse.platform_3.3.0_1606436040/configuration/eclipse/plugins/javafx.eclipse.f3editor_0.0.2/lib/Filters.jar"/>
-	<pathelement location="../../.eclipse/org.eclipse.platform_3.3.0_1606436040/configuration/eclipse/plugins/javafx.eclipse.f3editor_0.0.2/lib/swing-layout.jar"/>
-	</path>
-	-->
 	<path id="docx4j-001.classpath">
 		<pathelement location="bin"/>
-		<path refid="EARLibraries.libraryclasspath"/>
 		<path refid="MavenDependencies.libraryclasspath"/>
 		<!--path refid="JavaFX.userclasspath"/-->
         <pathelement location="${docx4j.location}/lib/core-renderer-cvs.jar"/>
         <!--<pathelement location="${docx4j.location}/lib/core-renderer-minimal.jar"/>-->
-        <pathelement location="${docx4j.location}/lib/fop-fonts.jar"/>
-        <pathelement location="/home/jharrop/xhtmlrenderer/xhtmlrenderer/lib/iText-2.0.8.jar"/>
         <pathelement location="${docx4j.location}/lib/minium.jar"/>
         <pathelement location="${docx4j.location}/lib/parent-pointer-plugin-1.0-SNAPSHOT.jar"/>
+        <pathelement location="${docx4j.location}/lib/PDFRenderer.jar"/>		
+        <pathelement location="${docx4j.location}/lib/fop-fonts.jar"/>
+        <pathelement location="${docx4j.location}/lib/iText-2.0.8.jar"/>
 		<pathelement location="${docx4j.location}/lib/xalan-2.7.0-patched-6396599-stripped.jar"/>
-        <pathelement location="${docx4j.location}/lib/PDFRenderer.jar"/>
 		<pathelement location="${docx4j.location}/lib/xmlgraphics-commons-1.3svn.jar"/>
+        <pathelement location="${docx4j.location}/commons-vfs-1.1-SNAPSHOT.jar"/>
+        <pathelement location="${docx4j.location}/commons-vfs-sandbox-1.1-SNAPSHOT.jar"/>
+        <pathelement location="${docx4j.location}/jakarta-slide-webdavlib-20050629.161100.jar"/>
+		
 	</path>
 	<target name="init">
 		<mkdir dir="bin"/>
