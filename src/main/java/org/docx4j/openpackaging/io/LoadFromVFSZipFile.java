@@ -32,6 +32,7 @@ import java.util.zip.ZipFile;
 
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
+import org.apache.commons.vfs.FileType;
 import org.apache.commons.vfs.VFS;
 import org.apache.commons.vfs.provider.zip.ZipFileObject;
 import org.apache.log4j.Logger;
@@ -65,9 +66,7 @@ public class LoadFromVFSZipFile extends Load {
 
 	// Testing
 	public static void main(String[] args) throws Exception {
-		//String filepath = "zip:file:///C:/Users/jojada/Documents/This%20is%20Heading1.docx";
-		String filepath = 
-			"zip:webdav://jojada:jojada@192.168.23.129:8080/alfresco/webdav/User%20Homes/jojada/This%20is%20Heading1.docx";
+		String filepath = "zip:file:///C:/Users/jojada/Documents/This%20is%20Heading1.docx";
 		log.info("Path: " + filepath );
 		LoadFromVFSZipFile loader = new LoadFromVFSZipFile();
 		loader.get(filepath);		
@@ -350,8 +349,8 @@ public class LoadFromVFSZipFile extends Load {
 		String relPart = PartName.getRelationshipsPartName(part.getPartName()
 				.getName().substring(1));
 		try {
-			FileObject fo = zf.getChild(relPart);
-			if (fo != null) {
+			FileObject fo = zf.resolveFile(relPart);
+			if (fo != null && fo.getType() == FileType.FILE) {
 				log.info("Found relationships " + relPart);
 				log.info("Recursing ... ");
 				rrp = getRelationshipsPartFromZip(part, zf, relPart);
