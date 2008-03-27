@@ -30,17 +30,17 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for CT_BaseStyles complex type.
+ * <p>Java class for CT_BaseStylesOverride complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_BaseStyles">
+ * &lt;complexType name="CT_BaseStylesOverride">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="clrScheme" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ColorScheme"/>
- *         &lt;element name="fontScheme">
+ *         &lt;element name="clrScheme" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ColorScheme" minOccurs="0"/>
+ *         &lt;element name="fontScheme" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -54,8 +54,7 @@ import javax.xml.bind.annotation.XmlType;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="fmtScheme" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_StyleMatrix"/>
- *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
+ *         &lt;element name="fmtScheme" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_StyleMatrix" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -65,21 +64,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_BaseStyles", propOrder = {
+@XmlType(name = "CT_BaseStylesOverride", propOrder = {
     "clrScheme",
     "fontScheme",
-    "fmtScheme",
-    "extLst"
+    "fmtScheme"
 })
-public class BaseStyles {
+public class CTBaseStylesOverride {
 
-    @XmlElement(required = true)
     protected CTColorScheme clrScheme;
-    @XmlElement(required = true)
-    protected BaseStyles.FontScheme fontScheme;
-    @XmlElement(required = true)
+    protected CTBaseStylesOverride.FontScheme fontScheme;
     protected CTStyleMatrix fmtScheme;
-    protected CTOfficeArtExtensionList extLst;
 
     /**
      * Gets the value of the clrScheme property.
@@ -110,10 +104,10 @@ public class BaseStyles {
      * 
      * @return
      *     possible object is
-     *     {@link BaseStyles.FontScheme }
+     *     {@link CTBaseStylesOverride.FontScheme }
      *     
      */
-    public BaseStyles.FontScheme getFontScheme() {
+    public CTBaseStylesOverride.FontScheme getFontScheme() {
         return fontScheme;
     }
 
@@ -122,10 +116,10 @@ public class BaseStyles {
      * 
      * @param value
      *     allowed object is
-     *     {@link BaseStyles.FontScheme }
+     *     {@link CTBaseStylesOverride.FontScheme }
      *     
      */
-    public void setFontScheme(BaseStyles.FontScheme value) {
+    public void setFontScheme(CTBaseStylesOverride.FontScheme value) {
         this.fontScheme = value;
     }
 
@@ -151,30 +145,6 @@ public class BaseStyles {
      */
     public void setFmtScheme(CTStyleMatrix value) {
         this.fmtScheme = value;
-    }
-
-    /**
-     * Gets the value of the extLst property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTOfficeArtExtensionList }
-     *     
-     */
-    public CTOfficeArtExtensionList getExtLst() {
-        return extLst;
-    }
-
-    /**
-     * Sets the value of the extLst property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTOfficeArtExtensionList }
-     *     
-     */
-    public void setExtLst(CTOfficeArtExtensionList value) {
-        this.extLst = value;
     }
 
 
