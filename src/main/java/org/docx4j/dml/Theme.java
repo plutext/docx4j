@@ -22,16 +22,12 @@
 
 package org.docx4j.dml;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.w3c.dom.Element;
 
 
 /**
@@ -45,50 +41,10 @@ import org.w3c.dom.Element;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="themeElements" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_BaseStyles"/>
- *         &lt;element name="objectDefaults" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;any/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="extraClrSchemeLst" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;any/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="custClrLst" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;any/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="extLst" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;any/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
+ *         &lt;element name="objectDefaults" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ObjectStyleDefaults" minOccurs="0"/>
+ *         &lt;element name="extraClrSchemeLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ColorSchemeList" minOccurs="0"/>
+ *         &lt;element name="custClrLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_CustomColorList" minOccurs="0"/>
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
  *     &lt;/restriction>
@@ -111,10 +67,10 @@ public class Theme {
 
     @XmlElement(required = true)
     protected BaseStyles themeElements;
-    protected Theme.ObjectDefaults objectDefaults;
-    protected Theme.ExtraClrSchemeLst extraClrSchemeLst;
-    protected Theme.CustClrLst custClrLst;
-    protected Theme.ExtLst extLst;
+    protected CTObjectStyleDefaults objectDefaults;
+    protected CTColorSchemeList extraClrSchemeLst;
+    protected CTCustomColorList custClrLst;
+    protected CTOfficeArtExtensionList extLst;
     @XmlAttribute
     protected String name;
 
@@ -147,10 +103,10 @@ public class Theme {
      * 
      * @return
      *     possible object is
-     *     {@link Theme.ObjectDefaults }
+     *     {@link CTObjectStyleDefaults }
      *     
      */
-    public Theme.ObjectDefaults getObjectDefaults() {
+    public CTObjectStyleDefaults getObjectDefaults() {
         return objectDefaults;
     }
 
@@ -159,10 +115,10 @@ public class Theme {
      * 
      * @param value
      *     allowed object is
-     *     {@link Theme.ObjectDefaults }
+     *     {@link CTObjectStyleDefaults }
      *     
      */
-    public void setObjectDefaults(Theme.ObjectDefaults value) {
+    public void setObjectDefaults(CTObjectStyleDefaults value) {
         this.objectDefaults = value;
     }
 
@@ -171,10 +127,10 @@ public class Theme {
      * 
      * @return
      *     possible object is
-     *     {@link Theme.ExtraClrSchemeLst }
+     *     {@link CTColorSchemeList }
      *     
      */
-    public Theme.ExtraClrSchemeLst getExtraClrSchemeLst() {
+    public CTColorSchemeList getExtraClrSchemeLst() {
         return extraClrSchemeLst;
     }
 
@@ -183,10 +139,10 @@ public class Theme {
      * 
      * @param value
      *     allowed object is
-     *     {@link Theme.ExtraClrSchemeLst }
+     *     {@link CTColorSchemeList }
      *     
      */
-    public void setExtraClrSchemeLst(Theme.ExtraClrSchemeLst value) {
+    public void setExtraClrSchemeLst(CTColorSchemeList value) {
         this.extraClrSchemeLst = value;
     }
 
@@ -195,10 +151,10 @@ public class Theme {
      * 
      * @return
      *     possible object is
-     *     {@link Theme.CustClrLst }
+     *     {@link CTCustomColorList }
      *     
      */
-    public Theme.CustClrLst getCustClrLst() {
+    public CTCustomColorList getCustClrLst() {
         return custClrLst;
     }
 
@@ -207,10 +163,10 @@ public class Theme {
      * 
      * @param value
      *     allowed object is
-     *     {@link Theme.CustClrLst }
+     *     {@link CTCustomColorList }
      *     
      */
-    public void setCustClrLst(Theme.CustClrLst value) {
+    public void setCustClrLst(CTCustomColorList value) {
         this.custClrLst = value;
     }
 
@@ -219,10 +175,10 @@ public class Theme {
      * 
      * @return
      *     possible object is
-     *     {@link Theme.ExtLst }
+     *     {@link CTOfficeArtExtensionList }
      *     
      */
-    public Theme.ExtLst getExtLst() {
+    public CTOfficeArtExtensionList getExtLst() {
         return extLst;
     }
 
@@ -231,10 +187,10 @@ public class Theme {
      * 
      * @param value
      *     allowed object is
-     *     {@link Theme.ExtLst }
+     *     {@link CTOfficeArtExtensionList }
      *     
      */
-    public void setExtLst(Theme.ExtLst value) {
+    public void setExtLst(CTOfficeArtExtensionList value) {
         this.extLst = value;
     }
 
@@ -264,246 +220,6 @@ public class Theme {
      */
     public void setName(String value) {
         this.name = value;
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;any/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "any"
-    })
-    public static class CustClrLst {
-
-        @XmlAnyElement
-        protected List<Element> any;
-
-        /**
-         * Gets the value of the any property.
-         * 
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the any property.
-         * 
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getAny().add(newItem);
-         * </pre>
-         * 
-         * 
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link Element }
-         * 
-         * 
-         */
-        public List<Element> getAny() {
-            if (any == null) {
-                any = new ArrayList<Element>();
-            }
-            return this.any;
-        }
-
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;any/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "any"
-    })
-    public static class ExtLst {
-
-        @XmlAnyElement
-        protected List<Element> any;
-
-        /**
-         * Gets the value of the any property.
-         * 
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the any property.
-         * 
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getAny().add(newItem);
-         * </pre>
-         * 
-         * 
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link Element }
-         * 
-         * 
-         */
-        public List<Element> getAny() {
-            if (any == null) {
-                any = new ArrayList<Element>();
-            }
-            return this.any;
-        }
-
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;any/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "any"
-    })
-    public static class ExtraClrSchemeLst {
-
-        @XmlAnyElement
-        protected List<Element> any;
-
-        /**
-         * Gets the value of the any property.
-         * 
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the any property.
-         * 
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getAny().add(newItem);
-         * </pre>
-         * 
-         * 
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link Element }
-         * 
-         * 
-         */
-        public List<Element> getAny() {
-            if (any == null) {
-                any = new ArrayList<Element>();
-            }
-            return this.any;
-        }
-
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;any/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "any"
-    })
-    public static class ObjectDefaults {
-
-        @XmlAnyElement
-        protected List<Element> any;
-
-        /**
-         * Gets the value of the any property.
-         * 
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the any property.
-         * 
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getAny().add(newItem);
-         * </pre>
-         * 
-         * 
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link Element }
-         * 
-         * 
-         */
-        public List<Element> getAny() {
-            if (any == null) {
-                any = new ArrayList<Element>();
-            }
-            return this.any;
-        }
-
     }
 
 }

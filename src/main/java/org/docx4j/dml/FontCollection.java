@@ -49,16 +49,12 @@ import javax.xml.bind.annotation.XmlType;
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;attribute name="script" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="typeface" use="required">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
+ *                 &lt;attribute name="typeface" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextTypeface" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
+ *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_OfficeArtExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -72,7 +68,8 @@ import javax.xml.bind.annotation.XmlType;
     "latin",
     "ea",
     "cs",
-    "font"
+    "font",
+    "extLst"
 })
 public class FontCollection {
 
@@ -83,6 +80,7 @@ public class FontCollection {
     @XmlElement(required = true)
     protected TextFont cs;
     protected List<FontCollection.Font> font;
+    protected CTOfficeArtExtensionList extLst;
 
     /**
      * Gets the value of the latin property.
@@ -185,6 +183,30 @@ public class FontCollection {
         return this.font;
     }
 
+    /**
+     * Gets the value of the extLst property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTOfficeArtExtensionList }
+     *     
+     */
+    public CTOfficeArtExtensionList getExtLst() {
+        return extLst;
+    }
+
+    /**
+     * Sets the value of the extLst property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTOfficeArtExtensionList }
+     *     
+     */
+    public void setExtLst(CTOfficeArtExtensionList value) {
+        this.extLst = value;
+    }
+
 
     /**
      * <p>Java class for anonymous complex type.
@@ -196,12 +218,7 @@ public class FontCollection {
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;attribute name="script" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="typeface" use="required">
-     *         &lt;simpleType>
-     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-     *           &lt;/restriction>
-     *         &lt;/simpleType>
-     *       &lt;/attribute>
+     *       &lt;attribute name="typeface" use="required" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_TextTypeface" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
