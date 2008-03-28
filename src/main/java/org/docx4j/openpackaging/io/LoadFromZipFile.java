@@ -26,33 +26,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
+import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
-import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.samples.DemoCore;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
-
-import org.apache.log4j.Logger;
 
 
 /**
@@ -173,6 +168,12 @@ public class LoadFromZipFile extends Load {
 		     log.info( key + "  " + unusedZipEntries.get(key));
 		 }
 		 
+		 try {
+			 zf.close();
+		 } catch (IOException exc) {
+			 exc.printStackTrace();
+		 }
+		 
 		 return p;
 		
 	}
@@ -190,14 +191,29 @@ public class LoadFromZipFile extends Load {
 //		// debugPrint(contents);
 //		// TODO - why don't any of the part names in this document start with "/"?
 //		return new RelationshipsPart( p, new PartName("/" + partName), contents );	
+		
+		RelationshipsPart thePart = null;
+		
+		InputStream is = null;
 		try {
-			InputStream is =  getInputStreamFromZippedPart( zf,  partName);
-			return new RelationshipsPart( p, new PartName("/" + partName), is );	
+			is =  getInputStreamFromZippedPart( zf,  partName);
+			thePart = new RelationshipsPart( p, new PartName("/" + partName), is );
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Docx4JException("Error getting document from Zipped Part:" + partName, e);
 			
-		} 
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException exc) {
+					exc.printStackTrace();
+				}
+			}
+		}
+		
+		return thePart;
 	// debugPrint(contents);
 	// TODO - why don't any of the part names in this document start with "/"?
 	}
@@ -226,6 +242,14 @@ public class LoadFromZipFile extends Load {
 			log.error("DocumentException on " + partName + " . Check this is binary content."); 
 			//e.printStackTrace() ;
 			throw e;
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException exc) {
+					exc.printStackTrace();
+				}
+			}
 		}
 		return contents;		
 	}
@@ -364,13 +388,14 @@ public class LoadFromZipFile extends Load {
 			throws Docx4JException {
 		Part part = null;
 		
+		InputStream is = null;
 		try {
 			try {
 
 				// Get a subclass of Part appropriate for this content type				
 				part = ctm.getPart("/" + resolvedPartUri);
 				
-				InputStream is = getInputStreamFromZippedPart( zf,  resolvedPartUri);
+				is = getInputStreamFromZippedPart( zf,  resolvedPartUri);
 
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 
@@ -416,20 +441,28 @@ public class LoadFromZipFile extends Load {
 					// Exception.
 					
 					log.error("No suitable part found for: " + resolvedPartUri);
-					return null;					
+					part = null;					
 				}
 			
 			} catch (DocumentException e) {
 
 				// Try to get it as a binary part
-				return getBinaryPart(zf, ctm, resolvedPartUri);
-				
+				part = getBinaryPart(zf, ctm, resolvedPartUri);
 			}
 		} catch (Exception ex) {
 			// IOException, URISyntaxException
 			ex.printStackTrace();
 			throw new Docx4JException("Failed to getPart", ex);			
-		} 
+			
+		} finally {
+			if (is != null) {
+				try {
+					is.close();
+				} catch (IOException exc) {
+					exc.printStackTrace();
+				}
+			}
+		}
 		return part;
 	}
 	
@@ -447,7 +480,15 @@ public class LoadFromZipFile extends Load {
 			
 		} catch (IOException ioe) {
 			ioe.printStackTrace() ;
-		}	
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException exc) {
+					exc.printStackTrace();
+				}
+			}
+		}
 		return part;
 	}	
 	
@@ -471,6 +512,14 @@ public class LoadFromZipFile extends Load {
 			} catch (DocumentException e) {
 				// Will land here for binary files eg gif file
 				e.printStackTrace() ;
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException exc) {
+						exc.printStackTrace();
+					}
+				}
 			}
 			debugPrint(xmlDoc);
 			
