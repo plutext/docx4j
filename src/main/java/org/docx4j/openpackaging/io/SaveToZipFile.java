@@ -27,29 +27,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import java.util.Iterator;
-
-import javax.jcr.Node;
-
 import org.apache.log4j.Logger;
-
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.samples.DemoCore;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
@@ -137,7 +129,7 @@ public class SaveToZipFile {
 			// to work, but when you open the zip file you'll get an error
 			// "End-of-central-directory signature not found."
 	        out.close();
-	        
+	        realOS.close();
 	    } catch (Exception e) {
 			e.printStackTrace() ;
 			if (e instanceof Docx4JException) {
