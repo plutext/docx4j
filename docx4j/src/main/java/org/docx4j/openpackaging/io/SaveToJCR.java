@@ -342,6 +342,26 @@ public class SaveToJCR {
 	        cmContentNode.setProperty("jcr:mimeType", "text/plain");
 //	        contentNode.setProperty("jcr:encoding", "");
 	        
+	        if (partName.indexOf("/")>0 ) {
+	        	cmContentNode.setProperty("cm:name", partName.substring(partName.lastIndexOf("/")+1));
+	        	/* Slashes in cm:name upset PropertiesIntegrityEvent.  
+	        	 * 
+	        	 * org.alfresco.repo.node.integrity.IntegrityException: Found 1 integrity violations:
+	        		Invalid property value: 
+	        		   Node: workspace://SpacesStore/73b7fe1a-c5c1-11dc-8423-e977704507ee
+	        		   Type: {http://www.alfresco.org/model/content/1.0}content
+	        		   Property: {http://www.alfresco.org/model/content/1.0}name
+	        		   Constraint: Value 'word/_rels/document.xml.rels' matches regular expression: (.*[\"\*\\\>\<\?\/\:\|]+.*)|(.*[\.]?.*[\.]+$)|(.*[ ]+$)		        		   
+	        	 */
+	        	log.info("Truncated cm:name from " + partName + " to " + partName.substring(partName.lastIndexOf("/")+1) );
+	        	// eg Truncated cm:name from word/_rels/document.xml.rels to document.xml.rels
+
+	        }
+	        cmContentNode.setProperty("cm:title", partName);
+	        log.info("Set cm:name and cm:title: " + partName);
+	        
+	        
+	        
 	        // Maybe this will just work in Alfreso?
 	        // If not, use setJcrDataProperty
 //	        cmContentNode.setProperty("jcr:data", new OutputEngineInputStream(engine) );
