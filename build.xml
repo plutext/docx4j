@@ -1,161 +1,78 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="docx4j-001">
-	<property environment="env"/>
-	<!--
-	<property name="docx4all.location" value="../docx4all"/>
-	<property name="plutext-server.location" value="../plutext-server"/>
-	-->
-	<property name="ECLIPSE_HOME" value="../../../../eclipse"/>
-	<property name="debuglevel" value="source,lines,vars"/>
-	<property name="target" value="1.6"/>
-	<property name="source" value="1.6"/>
-	<path id="EARLibraries.libraryclasspath"/>
+<project basedir="." default="build" name="docx4j">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
 	
-	<property name="m2Repository" value="../../.m2/repository"/>
-	<path id="MavenDependencies.libraryclasspath">
-        <pathelement location="${m2Repository}/avalon-framework/avalon-framework/4.1.3/avalon-framework-4.1.3.jar"/>
+	<property name="m2Repository" value="../../.m2/repository"/>	
+    <path id="Maven Dependencies.libraryclasspath">
         <pathelement location="${m2Repository}/commons-httpclient/commons-httpclient/2.0.2/commons-httpclient-2.0.2.jar"/>
         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
-        <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1/commons-logging-1.1.jar"/>	
-		<pathelement location="${m2Repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
-		<pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
-        <pathelement location="${m2Repository}/javax/servlet/servlet-api/2.3/servlet-api-2.3.jar"/>
-        <pathelement location="${m2Repository}/jdom/jdom/1.0/jdom-1.0.jar"/>		
-		<pathelement location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
-        <pathelement location="${m2Repository}/logkit/logkit/1.0.1/logkit-1.0.1.jar"/>		
-		<pathelement location="${m2Repository}/xerces/xercesImpl/2.8.1/xercesImpl-2.8.1.jar"/>
-		<pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.03/xml-apis-1.3.03.jar"/>
-	</path>
-	<path id="docx4j-001.classpath">
-		<pathelement location="bin"/>
-		<path refid="MavenDependencies.libraryclasspath"/>
-		<!--path refid="JavaFX.userclasspath"/-->
-        <pathelement location="${docx4j.location}/lib/core-renderer-cvs.jar"/>
-        <!--<pathelement location="${docx4j.location}/lib/core-renderer-minimal.jar"/>-->
-        <pathelement location="${docx4j.location}/lib/minium.jar"/>
-        <pathelement location="${docx4j.location}/lib/parent-pointer-plugin-1.0-SNAPSHOT.jar"/>
-        <pathelement location="${docx4j.location}/lib/PDFRenderer.jar"/>		
-        <pathelement location="${docx4j.location}/lib/fop-fonts.jar"/>
-        <pathelement location="${docx4j.location}/lib/iText-2.0.8.jar"/>
-		<pathelement location="${docx4j.location}/lib/xalan-2.7.0-patched-6396599-stripped.jar"/>
-		<pathelement location="${docx4j.location}/lib/xmlgraphics-commons-1.3svn.jar"/>
-        <pathelement location="${docx4j.location}/commons-vfs-1.1-SNAPSHOT.jar"/>
-        <pathelement location="${docx4j.location}/commons-vfs-sandbox-1.1-SNAPSHOT.jar"/>
-        <pathelement location="${docx4j.location}/jakarta-slide-webdavlib-20050629.161100.jar"/>
-		
-	</path>
-	<target name="init">
-		<mkdir dir="bin"/>
-		<copy includeemptydirs="false" todir="bin">
-			<fileset dir="src/main/java" excludes="**/*.launch, **/*.java"/>
-		</copy>
-		<copy includeemptydirs="false" todir="bin">
-			<fileset dir="src/main/resources" excludes="**/*.launch, **/*.java"/>
-		</copy>
-	</target>
-	<target name="clean">
-		<delete dir="bin"/>
-	</target>
-	<target depends="clean" name="cleanall"/>
-	<target depends="build-subprojects,build-project" name="build"/>
-	<target name="build-subprojects"/>
+        <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
+        <pathelement location="${m2Repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
+        <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
+        <pathelement location="${m2Repository}/jdom/jdom/1.0/jdom-1.0.jar"/>
+        <pathelement location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
+        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar"/>
+    </path>
+    <path id="docx4j.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="lib/core-renderer.jar"/>
+        <pathelement location="lib/minium.jar"/>
+        <pathelement location="lib/parent-pointer-plugin-1.0-SNAPSHOT.jar"/>
+        <pathelement location="lib/PDFRenderer.jar"/>
+        <path refid="Maven Dependencies.libraryclasspath"/>
+        <pathelement location="lib/fop-fonts.jar"/>
+        <pathelement location="lib/iText-2.0.8.jar"/>
+        <pathelement location="lib/xalan-2.7.0-patched-6396599-stripped.jar"/>
+        <pathelement location="lib/commons-vfs-1.1-SNAPSHOT.jar"/>
+        <pathelement location="lib/commons-vfs-sandbox-1.1-SNAPSHOT.jar"/>
+        <pathelement location="lib/jakarta-slide-webdavlib-20050629.161100.jar"/>
+        <pathelement location="lib/xmlgraphics-commons-1.3svn.jar"/>
+    </path>
 	
-	<target name="build-project" depends="init">
-		<echo message="${ant.project.name}: ${ant.file}"/>
-		<javac debug="true" debuglevel="${debuglevel}" destdir="bin"
-			source="${source}" target="${target}">
-			<src path="src/main/java"/>
-			<exclude name="org/docx4j/document/wordprocessingml/Paragraph.java"/>
-			<exclude
-				name="org/docx4j/document/wordprocessingml/ParagraphProperties.java"/>
-			<exclude name="org/docx4j/document/wordprocessingml/PStyle.java"/>
-			<exclude name="org/docx4j/document/wordprocessingml/rStyle.java"/>
-			<exclude name="org/docx4j/document/wordprocessingml/Run.java"/>
-			<exclude
-				name="org/docx4j/document/wordprocessingml/RunProperties.java"/>
-			<exclude
-				name="org/docx4j/document/wordprocessingml/SdtProperties.java"/>
-			<exclude
-				name="org/docx4j/document/wordprocessingml/StructuredDocumentTag.java"/>
-			<classpath refid="docx4j-001.classpath"/>
-		</javac>
-		<javac debug="true" debuglevel="${debuglevel}" destdir="bin"
-			source="${source}" target="${target}">
-			<src path="src/main/resources"/>
-			<classpath refid="docx4j-001.classpath"/>
-		</javac>
-	</target>
+	<path id="jre.libs" description="Java runtime libraries">
+	  <pathelement location="${java.home}\lib" />
+	 </path>	
 	
-	<target depends="build-project" name="dist">
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src/main/java" excludes="**/*.launch, **/*.java"/>
+        </copy>
+    </target>
+	
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+   
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src/main/java"/>
+            <classpath refid="docx4j.classpath"/>
+        </javac>
+    </target>
+ 
+    <target name="dist"  depends="clean, build-project" >
 		
-		<jar destfile="lib-dist/docx4j-20080117.jar" basedir="bin"/>
+		<property name="lib" value="./dist"/>
 		
-		<copy todir="lib-dist" flatten="true">
+        <mkdir dir="${lib}"/>
+				
+		<jar destfile="${lib}/docx4j.jar" basedir="./bin"/>		
+		
+		<!-- copy all the jar files! -->
+		<copy todir="${lib}" flatten="true">
 			<!-- requires Ant 1.7.0 -->
 			<path>
-				<path refid="docx4j-001.classpath"/>
+			    <path refid="docx4j.classpath"/>
 			</path>
-		</copy>
-	</target>
+		</copy>		
+					
+    </target>	
 	
-	<!--	
-	<target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
-	<ant antfile="${docx4all.location}/build.xml" inheritAll="false" target="clean"/>
-	<ant antfile="${docx4all.location}/build.xml" inheritAll="false" target="build">
-	<propertyset>
-	<propertyref name="build.compiler"/>
-	</propertyset>
-	</ant>
-	<ant antfile="${plutext-server.location}/build.xml" inheritAll="false" target="clean"/>
-	<ant antfile="${plutext-server.location}/build.xml" inheritAll="false" target="build">
-	<propertyset>
-	<propertyref name="build.compiler"/>
-	</propertyset>
-	</ant>
-	</target>
-	-->
-	<target description="copy Eclipse compiler jars to ant lib directory"
-		name="init-eclipse-compiler">
-		<copy todir="${ant.library.dir}">
-			<fileset dir="${ECLIPSE_HOME}/plugins"
-				includes="org.eclipse.jdt.core_*.jar"/>
-		</copy>
-		<unzip dest="${ant.library.dir}">
-			<patternset includes="jdtCompilerAdapter.jar"/>
-			<fileset dir="${ECLIPSE_HOME}/plugins"
-				includes="org.eclipse.jdt.core_*.jar"/>
-		</unzip>
-	</target>
-	<target description="compile project with Eclipse compiler"
-		name="build-eclipse-compiler">
-		<property name="build.compiler"
-			value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
-		<antcall target="build"/>
-	</target>
-	<target name="CreateHtml">
-		<java classname="org.docx4j.samples.CreateHtml" failonerror="true"
-			fork="yes">
-			<classpath refid="docx4j-001.classpath"/>
-		</java>
-	</target>
-	<target name="CreateWordprocessingMLDocument">
-		<java classname="org.docx4j.samples.CreateWordprocessingMLDocument"
-			failonerror="true" fork="yes">
-			<arg line="-Dlog4j.configuration=src/main/resources/log4j.xml"/>
-			<classpath refid="docx4j-001.classpath"/>
-		</java>
-	</target>
-	<target name="CreatePdf">
-		<java classname="org.docx4j.samples.CreatePdf" failonerror="true"
-			fork="yes">
-			<classpath refid="docx4j-001.classpath"/>
-		</java>
-	</target>
-	<target name="OpenMainDocumentAndTraverse (2)">
-		<java classname="org.docx4j.samples.OpenMainDocumentAndTraverse"
-			failonerror="true" fork="yes">
-			<arg line="-Dlog4j.configuration=src/main/resources/log4j.xml"/>
-			<classpath refid="docx4j-001.classpath"/>
-		</java>
-	</target>
+   
 </project>
