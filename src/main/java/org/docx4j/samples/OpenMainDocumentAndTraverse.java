@@ -145,8 +145,8 @@ public class OpenMainDocumentAndTraverse {
 					System.out.println("      " +  t.getValue() );					
 				}
 				
-			} else if ( o instanceof org.apache.xerces.dom.ElementNSImpl) {
-				System.out.println("      " +  ((org.apache.xerces.dom.ElementNSImpl)o).getNodeName() );					
+			} else if (o instanceof org.w3c.dom.Node) {
+				System.out.println(" IGNORED " + ((org.w3c.dom.Node)o).getNodeName() );					
 			} else if ( o instanceof org.docx4j.wml.R) {
 				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
 				if (run.getRPr()!=null) {

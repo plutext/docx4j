@@ -29,12 +29,9 @@ package org.docx4j.JcrNodeMapper;
 
 import java.util.Collection;
 
-//import org.alfresco.service.namespace.NamespaceException;
-//import org.alfresco.service.namespace.NamespacePrefixResolver;
-//import org.alfresco.service.namespace.NamespaceService;
-//import org.alfresco.service.namespace.QName;
 
-import org.apache.xerces.util.XMLChar;
+//import org.apache.xerces.util.XMLChar;
+import com.sun.org.apache.xerces.internal.util.XMLChar;
 
 /**
  * Support for the ISO 9075 encoding of XML element names.
@@ -43,6 +40,7 @@ import org.apache.xerces.util.XMLChar;
  */
 public class ISO9075
 {
+	
     /*
      * Mask for hex encoding
      */
