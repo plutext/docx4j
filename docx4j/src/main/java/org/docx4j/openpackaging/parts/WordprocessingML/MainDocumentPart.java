@@ -420,11 +420,14 @@ public class MainDocumentPart extends DocumentPart  {
 
 				// don't need to traverse run.getRunContent()
 				
-			} else if (o instanceof org.apache.xerces.dom.ElementNSImpl) {
+			} else if (o instanceof org.w3c.dom.Node) {
+				
+				// If Xerces is on the path, this will be a org.apache.xerces.dom.NodeImpl;
+				// otherwise, it will be com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 				
 				// Ignore these, eg w:bookmarkStart
 				
-				log.debug("not traversing into unhandled: " +  ((org.apache.xerces.dom.ElementNSImpl)o).getNodeName() );
+				log.debug("not traversing into unhandled Node: " + ((org.w3c.dom.Node)o).getNodeName() );
 				
 			} else if ( o instanceof javax.xml.bind.JAXBElement) {
 					
