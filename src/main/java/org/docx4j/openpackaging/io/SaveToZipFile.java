@@ -192,7 +192,7 @@ public class SaveToZipFile {
 			// return an instance of one of the above, or throw an
 			// Exception.
 			
-			log.error("No suitable part found for: " + partName);
+			log.error("PROBLEM - No suitable part found for: " + partName);
 		}		
 		
 		
@@ -253,6 +253,12 @@ public class SaveToZipFile {
 					
 					Part part = p.getParts().get(new PartName("/" + resolvedPartUri));
 					
+					if (part==null) {
+						log.error("Part " + resolvedPartUri + " not found!");
+					} else {
+						log.info(part.getClass().getName() );
+					}
+					
 					savePart(out, part);
 					
 				}
@@ -279,7 +285,7 @@ public class SaveToZipFile {
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 		
-		if (part instanceof BinaryPart) {
+		if (part instanceof BinaryPart ) {
 			log.info(".. saving binary stuff" );
 			saveRawBinaryPart( out, part );
 			
