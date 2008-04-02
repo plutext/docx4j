@@ -38,6 +38,7 @@ public class DocProps {
 	 */
 	public static void main(String[] args) throws Exception {
 
+		//String path = System.getProperty("user.dir") + "/sample-docs/docProps.docx";		
 		String path = System.getProperty("user.dir") + "/sample-docs/docProps.docx";		
 
 		// Do we want to save output? 
@@ -57,6 +58,14 @@ public class DocProps {
 		System.out.println("'dc:title' is " + coreProps.getTitle().getValue().getContent().get(0));
 			// Yuck! TODO: Simplify the dc schema.
 
+		System.out.println(coreProps.getTitle().getValue().getClass().getName() );
+		// returns org.docx4j.docProps.core.dc.elements.SimpleLiteral as expected
+		
+		System.out.println("'dcterms:created' is " + coreProps.getCreated().getClass().getName() );
+		
+		
+		//System.out.println(coreProps.getTitle().getValue() instanceof )
+		
 		
 		// Let's look at the extended properties
 		org.docx4j.openpackaging.parts.DocPropsExtendedPart docPropsExtendedPart = wordMLPackage.getDocPropsExtendedPart();
@@ -100,9 +109,10 @@ public class DocProps {
 		if (save) {		
 			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 			saver.save(out);
+			System.out.println("Document saved as " + out);
 		}
 		
-		System.out.println("Document saved as " + out);
+		System.out.println("Done.");
 		
 	}
 	
