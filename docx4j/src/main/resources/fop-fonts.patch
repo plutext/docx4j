@@ -1,8 +1,36 @@
+Index: /home/jharrop/workspace200711/fop/build.xml
+===================================================================
+--- /home/jharrop/workspace200711/fop/build.xml	(revision 631178)
++++ /home/jharrop/workspace200711/fop/build.xml	(working copy)
+@@ -178,7 +178,10 @@
+   <property name="user.hyph.dir" value="${basedir}/hyph"/>
+ 
+   <property name="build.dir" value="${basedir}/build"/>
+-  <property name="build.gensrc.dir" value="${build.dir}/gensrc"/>
++  <property name="build.gensrc.dir" value="${src.dir}/java"/>
++	<!--
++	  <property name="build.gensrc.dir" value="${build.dir}/gensrc"/>
++	  -->
+   <property name="build.classes.dir" value="${build.dir}/classes"/>
+   <property name="build.sandbox-classes.dir" value="${build.dir}/sandbox-classes"/>
+   <property name="build.codegen-classes.dir" value="${build.dir}/codegen-classes"/>
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java	(working copy)
-@@ -78,8 +78,7 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts.autodetect;
+ 
+ import java.io.File;
+@@ -78,8 +83,7 @@
      protected static IOFileFilter getFileFilter() {
          return FileFilterUtils.andFileFilter(
                  FileFilterUtils.fileFileFilter(),
@@ -16,7 +44,15 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(working copy)
-@@ -20,8 +20,10 @@
+@@ -17,11 +17,18 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
  package org.apache.fop.fonts.autodetect;
  
  import java.io.IOException;
@@ -27,7 +63,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
  import java.util.Collection;
  import java.util.Iterator;
  import java.util.List;
-@@ -41,6 +43,9 @@
+@@ -41,6 +48,9 @@
  import org.apache.fop.fonts.FontResolver;
  import org.apache.fop.fonts.FontTriplet;
  import org.apache.fop.fonts.FontUtil;
@@ -37,7 +73,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
  
  /**
   * Attempts to determine correct FontInfo
-@@ -62,11 +67,47 @@
+@@ -62,11 +72,47 @@
              log.trace("Font: " + customFont.getFullName() 
                      + ", family: " + customFont.getFamilyNames() 
                      + ", PS: " + customFont.getFontName() 
@@ -86,7 +122,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          //String subName = customFont.getFontSubName();
          String fullName = stripQuotes(customFont.getFullName());
          String searchName = fullName.toLowerCase();
-@@ -81,9 +122,10 @@
+@@ -81,9 +127,10 @@
          //Full Name usually includes style/weight info so don't use these traits
          //If we still want to use these traits, we have to make FontInfo.fontLookup() smarter
          triplets.add(new FontTriplet(fullName, Font.STYLE_NORMAL, Font.WEIGHT_NORMAL, 0));
@@ -100,7 +136,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          Set familyNames = customFont.getFamilyNames();
          Iterator iter = familyNames.iterator();
          while (iter.hasNext()) {
-@@ -133,6 +175,9 @@
+@@ -133,6 +180,9 @@
          embedUrl = fontUrl.toExternalForm();
          EmbedFontInfo fontInfo = new EmbedFontInfo(null, customFont.isKerningEnabled(),
                  fontTripletList, embedUrl);
@@ -110,7 +146,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          if (fontCache != null) {
              fontCache.addFont(fontInfo);
          }
-@@ -145,12 +190,18 @@
+@@ -145,12 +195,18 @@
       * @param fontUrl font URL. Assumed to be local.
       * @param resolver font resolver used to resolve font
       * @param fontCache font cache (may be null)
@@ -131,7 +167,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
          long fileLastModified = -1;
          if (fontCache != null) {
              try {
-@@ -168,13 +219,28 @@
+@@ -168,13 +224,28 @@
              }
              // firstly try and fetch it from cache before loading/parsing the font file
              if (fontCache.containsFont(embedUrl)) {
@@ -165,7 +201,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetec
              // is this a previously failed parsed font?
              } else if (fontCache.isFailedFont(embedUrl, fileLastModified)) {
                  if (log.isDebugEnabled()) {
-@@ -184,20 +250,75 @@
+@@ -184,20 +255,75 @@
              }
          }
          
@@ -255,7 +291,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CachedFon
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CachedFontInfo.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CachedFontInfo.java	(working copy)
-@@ -86,6 +86,12 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+ import java.io.File;
+@@ -86,6 +91,12 @@
       */
      public CachedFontInfo(EmbedFontInfo fontInfo) {
          super(fontInfo.metricsFile, fontInfo.kerning, fontInfo.fontTriplets, fontInfo.embedFile);
@@ -272,7 +320,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFon
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(working copy)
-@@ -57,6 +57,26 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+ import java.io.IOException;
+@@ -57,6 +62,26 @@
      private Map kerning;
  
      private boolean useKerning = true;
@@ -299,7 +359,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFon
  
      /** {@inheritDoc} */
      public String getFontName() {
-@@ -448,4 +468,5 @@
+@@ -448,4 +473,5 @@
          }
      }
  
@@ -309,7 +369,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(working copy)
-@@ -38,6 +38,32 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+  
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+ import java.io.Serializable;
+@@ -38,6 +43,32 @@
      protected boolean kerning;
      /** the list of associated font triplets */
      protected List fontTriplets;
@@ -346,7 +418,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache.java	(working copy)
-@@ -27,6 +27,9 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+ import java.io.File;
+@@ -27,6 +32,9 @@
  import java.io.OutputStream;
  import java.io.Serializable;
  import java.util.Map;
@@ -356,7 +440,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
  
  import org.apache.commons.io.IOUtils;
  import org.apache.commons.logging.Log;
-@@ -61,11 +64,15 @@
+@@ -61,11 +69,15 @@
      /** change lock */
      private transient Object changeLock = new Object();
      
@@ -374,7 +458,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
  
      /**
       * Default constructor
-@@ -216,7 +223,7 @@
+@@ -216,7 +228,7 @@
       */
      public boolean containsFont(String embedUrl) {
          if (embedUrl != null) {
@@ -383,7 +467,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
          }
          return false;
      }
-@@ -228,7 +235,7 @@
+@@ -228,7 +240,7 @@
       */
      public boolean containsFont(EmbedFontInfo fontInfo) {
          if (fontInfo != null) {
@@ -392,7 +476,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
          }
          return false;
      }
-@@ -240,7 +247,14 @@
+@@ -240,7 +252,14 @@
      public void addFont(EmbedFontInfo fontInfo) {
          String cacheKey = getCacheKey(fontInfo);
          synchronized (changeLock) {
@@ -408,7 +492,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
                  if (log.isTraceEnabled()) {
                      log.trace("Font added to cache: " + cacheKey);
                  }
-@@ -245,10 +259,11 @@
+@@ -245,10 +264,11 @@
                      log.trace("Font added to cache: " + cacheKey);
                  }
                  if (fontInfo instanceof CachedFontInfo) {
@@ -422,7 +506,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
                  changed = true;
              }
          }
-@@ -257,11 +272,11 @@
+@@ -257,11 +277,11 @@
      /**
       * returns a font from the cache
       * @param embedUrl font info
@@ -437,7 +521,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
          }
          return null;
      }
-@@ -276,7 +291,7 @@
+@@ -276,7 +296,7 @@
                  if (log.isTraceEnabled()) {
                      log.trace("Font removed from cache: " + embedUrl);
                  }
@@ -446,7 +530,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
                  changed = true;
              }
          }
-@@ -289,6 +304,7 @@
+@@ -289,6 +309,7 @@
       * @return whether this is a failed font
       */
      public boolean isFailedFont(String embedUrl, long lastModified) {
@@ -454,7 +538,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
          if (failedFontMap.containsKey(embedUrl)) {
              synchronized (changeLock) {
                  long failedLastModified = ((Long)failedFontMap.get(embedUrl)).longValue();
-@@ -326,7 +342,7 @@
+@@ -326,7 +347,7 @@
              if (log.isTraceEnabled()) {
                  log.trace("Font cache cleared.");
              }
@@ -463,7 +547,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache
              failedFontMap.clear();
              changed = true;
          }
-@@ -331,4 +347,27 @@
+@@ -331,4 +352,27 @@
              changed = true;
          }
      }
@@ -495,7 +579,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoade
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoader.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoader.java	(working copy)
-@@ -121,7 +121,7 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+ import java.io.File;
+@@ -121,7 +126,7 @@
       * @throws IOException In case of an I/O error
       * @throws MalformedURLException If an invalid URL is built
       */
@@ -508,7 +604,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByte
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(working copy)
-@@ -40,8 +40,9 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+ //Java
+@@ -40,8 +45,9 @@
      private String namePrefix = null;    // Quasi unique prefix
  
      private BFEntry[] bfentries = null;
@@ -519,7 +627,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByte
       * Default constructor
       */
      public MultiByteFont() {
-@@ -133,12 +134,16 @@
+@@ -133,12 +139,16 @@
          }
      }
  
@@ -546,7 +654,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-@@ -0,0 +1,404 @@
+@@ -0,0 +1,409 @@
 +/*
 + * Copyright 2006 The FOray Project.
 + *      http://www.foray.org
@@ -573,6 +681,11 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 + * $LastChangedRevision: 10097 $
 + * $LastChangedDate: 2007-07-24 15:05:09 -0600 (Tue, 24 Jul 2007) $
 + * $LastChangedBy$
++ */
++
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
 + */
 +
 +package org.apache.fop.fonts;
@@ -955,7 +1068,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(working copy)
-@@ -30,7 +30,9 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts.truetype;
+ 
+ import java.io.IOException;
+@@ -30,7 +35,9 @@
  
  import org.apache.xmlgraphics.fonts.Glyphs;
  
@@ -965,7 +1090,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
  
  /**
   * Reads a TrueType file or a TrueType Collection.
-@@ -48,9 +50,12 @@
+@@ -48,9 +55,12 @@
      public static final boolean TRACE_ENABLED = false;
  
      private String encoding = "WinAnsiEncoding";    // Default encoding
@@ -979,7 +1104,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
      private boolean hasSerifs = true;
      /**
       * Table directory
-@@ -549,8 +554,10 @@
+@@ -549,8 +559,10 @@
       */
      public String getPostScriptName() {
          if (postScriptName.length() == 0) {
@@ -990,7 +1115,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              return postScriptName;
          }
      }
-@@ -743,6 +750,7 @@
+@@ -743,6 +755,7 @@
       * @return boolean True if it may be embedded
       */
      public boolean isEmbeddable() {
@@ -998,7 +1123,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
          return isEmbeddable;
      }
  
-@@ -988,7 +996,10 @@
+@@ -988,7 +1001,10 @@
          if (dirTabs.get("OS/2") != null) {
              seekTab(in, "OS/2", 2 * 2);
              this.usWeightClass = in.readTTFUShort();
@@ -1009,7 +1134,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              int fsType = in.readTTFUShort();
              if (fsType == 2) {
                  isEmbeddable = false;
-@@ -996,10 +1007,21 @@
+@@ -996,10 +1012,21 @@
                  isEmbeddable = true;
              }
              in.skip(11 * 2);
@@ -1032,7 +1157,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              int v;
              os2Ascender = in.readTTFShort(); //sTypoAscender
              log.debug("sTypoAscender: " + os2Ascender 
-@@ -1474,6 +1496,66 @@
+@@ -1474,6 +1501,66 @@
          }
      }
  
@@ -1099,7 +1224,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
      /*
       * Helper classes, they are not very efficient, but that really
       * doesn't matter...
-@@ -1568,4 +1650,8 @@
+@@ -1568,4 +1655,8 @@
              ioe.printStackTrace(System.err);
          }
      }
@@ -1113,7 +1238,19 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(revision 631408)
 +++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(working copy)
-@@ -51,6 +51,10 @@
+@@ -17,6 +17,11 @@
+ 
+ /* $Id$ */
+ 
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts.truetype;
+ 
+ import java.io.IOException;
+@@ -51,6 +56,10 @@
      
      /** {@inheritDoc} */
      protected void read() throws IOException {
@@ -1124,7 +1261,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
          InputStream in = openFontUri(resolver, this.fontFileURI);
          try {
              TTFFile ttf = new TTFFile();
-@@ -55,7 +59,7 @@
+@@ -55,7 +64,7 @@
          try {
              TTFFile ttf = new TTFFile();
              FontFileReader reader = new FontFileReader(in);
@@ -1133,7 +1270,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
              if (!supported) {
                  throw new IOException("TrueType font is not supported: " + fontFileURI);
              }
-@@ -65,7 +69,8 @@
+@@ -65,7 +74,8 @@
              IOUtils.closeQuietly(in);
          }
      }
@@ -1143,7 +1280,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
      private void buildFont(TTFFile ttf) {
          if (ttf.isCFF()) {
              throw new UnsupportedOperationException(
-@@ -92,6 +97,9 @@
+@@ -92,6 +102,9 @@
          returnFont.setMissingWidth(0);
          returnFont.setWeight(ttf.getWeightClass());
          
