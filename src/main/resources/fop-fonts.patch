@@ -1,19 +1,3 @@
-Index: /home/jharrop/workspace200711/fop/build.xml
-===================================================================
---- /home/jharrop/workspace200711/fop/build.xml	(revision 631178)
-+++ /home/jharrop/workspace200711/fop/build.xml	(working copy)
-@@ -178,7 +178,10 @@
-   <property name="user.hyph.dir" value="${basedir}/hyph"/>
- 
-   <property name="build.dir" value="${basedir}/build"/>
--  <property name="build.gensrc.dir" value="${build.dir}/gensrc"/>
-+  <property name="build.gensrc.dir" value="${src.dir}/java"/>
-+	<!--
-+	  <property name="build.gensrc.dir" value="${build.dir}/gensrc"/>
-+	  -->
-   <property name="build.classes.dir" value="${build.dir}/classes"/>
-   <property name="build.sandbox-classes.dir" value="${build.dir}/sandbox-classes"/>
-   <property name="build.codegen-classes.dir" value="${build.dir}/codegen-classes"/>
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/autodetect/FontFileFinder.java	(revision 631408)
@@ -316,6 +300,27 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CachedFon
          // try and determine modified date
          File fontFile = getFileFromUrls(new String[] {embedFile, metricsFile});
          if (fontFile != null ) {
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CIDFontType.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CIDFontType.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CIDFontType.java	(working copy)
+@@ -17,9 +17,15 @@
+ 
+ /* $Id$ */
+  
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+-import org.apache.avalon.framework.ValuedEnum;
++//import org.apache.avalon.framework.ValuedEnum;
++import org.apache.fop.fonts.ValuedEnum;
+ 
+ /**
+  * This class enumerates all supported CID font types.
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 631408)
@@ -414,6 +419,193 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
        
      /**
       * Main constructor
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java	(revision 0)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java	(revision 0)
+@@ -0,0 +1,182 @@
++/*
++ * Copyright 1997-2004 The Apache Software Foundation
++ * 
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
++// moved from avalon.framework
++package org.apache.fop.fonts;
++
++import java.util.Map;
++
++/**
++ * Basic enum class for type-safe enums. Should be used as an abstract base. For example:
++ *
++ * <pre>
++ * import org.apache.avalon.framework.Enum;
++ *
++ * public final class Color extends Enum {
++ *   public static final Color RED = new Color( "Red" );
++ *   public static final Color GREEN = new Color( "Green" );
++ *   public static final Color BLUE = new Color( "Blue" );
++ *
++ *   private Color( final String color )
++ *   {
++ *     super( color );
++ *   }
++ * }
++ * </pre>
++ *
++ * If further operations, such as iterating over all items, are required, the
++ * {@link #Enum(String, Map)} constructor can be used to populate a <code>Map</code>, from which
++ * further functionality can be derived:
++ * <pre>
++ * public final class Color extends Enum {
++ *   static final Map map = new HashMap();
++ *
++ *   public static final Color RED = new Color( "Red", map );
++ *   public static final Color GREEN = new Color( "Green", map );
++ *   public static final Color BLUE = new Color( "Blue", map );
++ *
++ *   private Color( final String color, final Map map )
++ *   {
++ *     super( color, map );
++ *   }
++ *
++ *   public static Iterator iterator()
++ *   {
++ *     return map.values().iterator();
++ *   }
++ * }
++ * </pre>
++ *
++ * <p>
++ * <em>NOTE:</em> between 4.0 and 4.1, the constructors' access has been changed
++ * from <code>public</code> to <code>protected</code>. This is to prevent users
++ * of the Enum breaking type-safety by defining new Enum items. All Enum items
++ * should be defined in the Enum class, as shown above.
++ * </p>
++ *
++ *
++ * @author <a href="mailto:dev@avalon.apache.org">Avalon Development Team</a>
++ * @version CVS $Revision: 1.28 $ $Date: 2004/02/11 14:34:24 $
++ */
++public abstract class Enum
++{
++    /**
++     * The string representation of the Enum.
++     */
++    private final String m_name;
++
++    /**
++     * Constructor to add a new named item.
++     * <p>
++     * <em>Note:</em> access changed from <code>public</code> to
++     * <code>protected</code> after 4.0. See class description.
++     * </p>
++     *
++     * @param name Name of the item.
++     */
++    protected Enum( final String name )
++    {
++        this( name, null );
++    }
++
++    /**
++     * Constructor to add a new named item.
++     * <p>
++     * <em>Note:</em> access changed from <code>public</code> to
++     * <code>protected</code> after 4.0. See class description.
++     * </p>
++     *
++     * @param name Name of the item.
++     * @param map A <code>Map</code>, to which will be added a pointer to the newly constructed
++     * object.
++     */
++    protected Enum( final String name, final Map map )
++    {
++        m_name = name;
++        if( null != map )
++        {
++            map.put( name, this );
++        }
++    }
++
++    /**
++     * Tests for equality. Two Enum:s are considered equal
++     * if they are of the same class and have the same names.
++     * The method is also declared final - I (LSutic) did this to
++     * allow the JIT to inline it easily.
++     *
++     * @param o the other object
++     * @return the equality status
++     */
++    public final boolean equals( Object o )
++    {
++        if( this == o )
++            return true;
++        if( !(o instanceof Enum) )
++            return false;
++
++        final Enum enumb = (Enum)o;
++
++        if( !getClass().equals( enumb.getClass() ) )
++            return false;
++        if( m_name != null ? !m_name.equals( enumb.m_name ) : enumb.m_name != null )
++            return false;
++
++        return true;
++    }
++
++    public int hashCode()
++    {
++        int result;
++        result = (m_name != null ? m_name.hashCode() : 0);
++        result = 29 * result + getClass().hashCode();
++        return result;
++    }
++
++    /**
++     * Returns a hash code value for the object.
++     *
++     * @return a hash code value for this object
++     */
++    /*public int hashCode()
++    {
++        return m_name.hashCode() ^ this.getClass().getName().hashCode();
++    }*/
++
++    /**
++     * Retrieve the name of this Enum item, set in the constructor.
++     * @return the name <code>String</code> of this Enum item
++     */
++    public final String getName()
++    {
++        return m_name;
++    }
++
++    /**
++     * Human readable description of this Enum item. For use when debugging.
++     * @return String in the form <code>type[name]</code>, eg.:
++     * <code>Color[Red]</code>.
++     */
++    public String toString()
++    {
++        return getClass().getName() + "[" + m_name + "]";
++    }
++}
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontCache.java	(revision 631408)
@@ -600,6 +792,27 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontLoade
                      throws IOException, MalformedURLException {
          InputStream in = null;
          if (resolver != null) {
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontType.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontType.java	(revision 631408)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/FontType.java	(working copy)
+@@ -17,9 +17,15 @@
+ 
+ /* $Id$ */
+  
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
+ package org.apache.fop.fonts;
+ 
+-import org.apache.avalon.framework.ValuedEnum;
++//import org.apache.avalon.framework.ValuedEnum;
++import org.apache.fop.fonts.ValuedEnum;
+ 
+ /**
+  * This class enumerates all supported font types.
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(revision 631408)
@@ -1290,6 +1503,216 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/
          multiFont.setCIDType(CIDFontType.CIDTYPE2);
          int[] wx = ttf.getWidths();
          multiFont.setWidthArray(wx);
+Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnum.java
+===================================================================
+--- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnum.java	(revision 0)
++++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnum.java	(revision 0)
+@@ -0,0 +1,205 @@
++/*
++ * Copyright 1997-2004 The Apache Software Foundation
++ * 
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
++ * 
++ * This notice is included to meet the condition in clause 4(b) of the License. 
++ */
++
++// moved from avalon.framework
++package org.apache.fop.fonts;
++
++import java.util.Map;
++
++/**
++ * Basic enum class for type-safe enums with values. Valued enum items can be compared and ordered
++ * with the provided methods. Should be used as an abstract base. For example:
++ *
++ * <pre>
++ * import org.apache.avalon.framework.ValuedEnum;
++ *
++ * public final class JavaVersion
++ *   extends ValuedEnum
++ * {
++ *   //standard enums for version of JVM
++ *   public static final JavaVersion  JAVA1_0  = new JavaVersion( "Java 1.0", 100 );
++ *   public static final JavaVersion  JAVA1_1  = new JavaVersion( "Java 1.1", 110 );
++ *   public static final JavaVersion  JAVA1_2  = new JavaVersion( "Java 1.2", 120 );
++ *   public static final JavaVersion  JAVA1_3  = new JavaVersion( "Java 1.3", 130 );
++ *
++ *   private JavaVersion( final String name, final int value )
++ *   {
++ *     super( name, value );
++ *   }
++ * }
++ * </pre>
++ *
++ * The above class could then be used as follows:
++ * <pre>
++ * import org.apache.avalon.framework.context.Context;
++ * import org.apache.avalon.framework.context.Contextualizable;
++ * import org.apache.avalon.framework.context.ContextException;
++ *
++ * public class MyComponent implements Contextualizable
++ * {
++ *   JavaVersion requiredVer = JavaVersion.JAVA1_2;
++ *
++ *   public void contextualize(Context context)
++ *       throws ContextException
++ *   {
++ *     JavaVersion ver = (JavaVersion)context.get("java.version");
++ *     if ( ver.isLessThan( requiredVer ) )
++ *     {
++ *       throw new RuntimeException( requiredVer.getName()+" or higher required" );
++ *     }
++ *   }
++ * }
++ * </pre>
++ *
++ * As with <code>Enum</code>, the {@link #ValuedEnum(String, int, Map)} constructor can be used to
++ * populate a <code>Map</code>, from which further functionality can be derived.
++ *
++ * <p>
++ * <em>NOTE:</em> between 4.0 and 4.1, the constructors' access has been changed
++ * from <code>public</code> to <code>protected</code>. This is to prevent users
++ * of the Enum breaking type-safety by defining new Enum items. All Enum items
++ * should be defined in the Enum class, as shown above.
++ * </p>
++ *
++ * @author <a href="mailto:dev@avalon.apache.org">Avalon Development Team</a>
++ * @version CVS $Revision: 1.21 $ $Date: 2004/02/11 14:34:24 $
++ */
++public abstract class ValuedEnum
++    extends Enum
++{
++    /**
++     * The value contained in enum.
++     */
++    private final int m_value;
++
++    /**
++     * Constructor for enum item.
++     *
++     * <p>
++     * <em>Note:</em> access changed from <code>public</code> to
++     * <code>protected</code> after 4.0. See class description.
++     * </p>
++     *
++     *
++     * @param name the name of enum item.
++     * @param value the value of enum item.
++     */
++    protected ValuedEnum( final String name, final int value )
++    {
++        this( name, value, null );
++    }
++
++    /**
++     * Constructor for enum item so that it gets added to Map at creation.
++     * Adding to a map is useful for implementing find...() style methods.
++     *
++     * </p>
++     * <em>Note:</em> access changed from <code>public</code> to
++     * <code>protected</code> after 4.0. See class description.
++     * </p>
++     *
++     * @param name the name of enum item.
++     * @param value the value of enum item.
++     * @param map the <code>Map</code> to add enum item to.
++     */
++    protected ValuedEnum( final String name, final int value, final Map map )
++    {
++        super( name, map );
++        m_value = value;
++    }
++
++    /**
++     * Get value of enum item.
++     *
++     * @return the enum item's value.
++     */
++    public final int getValue()
++    {
++        return m_value;
++    }
++
++    /**
++     * Test if enum item is equal in value to other enum.
++     *
++     * @param other the other enum
++     * @return true if equal
++     */
++    public final boolean isEqualTo( final ValuedEnum other )
++    {
++        return m_value == other.m_value;
++    }
++
++    /**
++     * Test if enum item is greater than in value to other enum.
++     *
++     * @param other the other enum
++     * @return true if greater than
++     */
++    public final boolean isGreaterThan( final ValuedEnum other )
++    {
++        return m_value > other.m_value;
++    }
++
++    /**
++     * Test if enum item is greater than or equal in value to other enum.
++     *
++     * @param other the other enum
++     * @return true if greater than or equal
++     */
++    public final boolean isGreaterThanOrEqual( final ValuedEnum other )
++    {
++        return m_value >= other.m_value;
++    }
++
++    /**
++     * Test if enum item is less than in value to other enum.
++     *
++     * @param other the other enum
++     * @return true if less than
++     */
++    public final boolean isLessThan( final ValuedEnum other )
++    {
++        return m_value < other.m_value;
++    }
++
++    /**
++     * Test if enum item is less than or equal in value to other enum.
++     *
++     * @param other the other enum
++     * @return true if less than or equal
++     */
++    public final boolean isLessThanOrEqual( final ValuedEnum other )
++    {
++        return m_value <= other.m_value;
++    }
++
++    /**
++     * Override toString method to produce human readable description.
++     *
++     * @return String in the form <code>type[name=value]</code>, eg.:
++     * <code>JavaVersion[Java 1.0=100]</code>.
++     */
++    public String toString()
++    {
++        return getClass().getName() + "[" + getName() + "=" + m_value + "]";
++    }
++}
++
 Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/render/PrintRendererConfigurator.java
 ===================================================================
 --- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/render/PrintRendererConfigurator.java	(revision 631408)
