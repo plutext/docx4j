@@ -1,20 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+    You may obtain a copy of the License at 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.wml;
@@ -52,7 +53,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                           &lt;sequence>
- *                             &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rPr" minOccurs="0"/>
+ *                             &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_RPr" minOccurs="0"/>
  *                           &lt;/sequence>
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
@@ -63,7 +64,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                           &lt;sequence>
- *                             &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr" minOccurs="0"/>
+ *                             &lt;element name="pPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_PPr" minOccurs="0"/>
  *                           &lt;/sequence>
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
@@ -79,32 +80,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;sequence>
- *                   &lt;element name="lsdException" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="name" use="required">
- *                             &lt;simpleType>
- *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                               &lt;/restriction>
- *                             &lt;/simpleType>
- *                           &lt;/attribute>
- *                           &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                           &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
- *                           &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                           &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                           &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
+ *                   &lt;element name="lsdException" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LsdException" maxOccurs="unbounded" minOccurs="0"/>
  *                 &lt;/sequence>
  *                 &lt;attribute name="defLockedState" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                 &lt;attribute name="defUIPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                 &lt;attribute name="defUIPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *                 &lt;attribute name="defSemiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *                 &lt;attribute name="defUnhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                 &lt;attribute name="defQFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                 &lt;attribute name="count" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                 &lt;attribute name="defQFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+ *                 &lt;attribute name="count" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -118,7 +101,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -127,7 +110,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -136,7 +119,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -145,7 +128,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -154,14 +137,41 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
  *                   &lt;/element>
- *                   &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
- *                   &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr" minOccurs="0"/>
- *                   &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rPr" minOccurs="0"/>
+ *                   &lt;element name="autoRedefine" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="hidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="uiPriority" minOccurs="0">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;attribute name="val" use="required">
+ *                             &lt;simpleType>
+ *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+ *                               &lt;/restriction>
+ *                             &lt;/simpleType>
+ *                           &lt;/attribute>
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
+ *                   &lt;element name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultFalse" minOccurs="0"/>
+ *                   &lt;element name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="personal" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="personalCompose" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="personalReply" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *                   &lt;element name="rsid" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LongHexNumber" minOccurs="0"/>
+ *                   &lt;element name="pPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_PPr" minOccurs="0"/>
+ *                   &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_RPr" minOccurs="0"/>
+ *                   &lt;element name="tblPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblPrBase" minOccurs="0"/>
+ *                   &lt;element name="trPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrPr" minOccurs="0"/>
+ *                   &lt;element name="tcPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TcPr" minOccurs="0"/>
+ *                   &lt;element name="tblStylePr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblStylePr" maxOccurs="unbounded" minOccurs="0"/>
  *                 &lt;/sequence>
  *                 &lt;attribute name="type">
  *                   &lt;simpleType>
@@ -173,13 +183,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;/restriction>
  *                   &lt;/simpleType>
  *                 &lt;/attribute>
- *                 &lt;attribute name="styleId">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *                 &lt;attribute name="default" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                 &lt;attribute name="styleId" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *                 &lt;attribute name="default" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *                 &lt;attribute name="customStyle" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
@@ -329,7 +334,7 @@ public class Styles
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *                 &lt;sequence>
-     *                   &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rPr" minOccurs="0"/>
+     *                   &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_RPr" minOccurs="0"/>
      *                 &lt;/sequence>
      *               &lt;/restriction>
      *             &lt;/complexContent>
@@ -340,7 +345,7 @@ public class Styles
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *                 &lt;sequence>
-     *                   &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr" minOccurs="0"/>
+     *                   &lt;element name="pPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_PPr" minOccurs="0"/>
      *                 &lt;/sequence>
      *               &lt;/restriction>
      *             &lt;/complexContent>
@@ -453,7 +458,7 @@ public class Styles
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;sequence>
-         *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr" minOccurs="0"/>
+         *         &lt;element name="pPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_PPr" minOccurs="0"/>
          *       &lt;/sequence>
          *     &lt;/restriction>
          *   &lt;/complexContent>
@@ -537,7 +542,7 @@ public class Styles
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;sequence>
-         *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rPr" minOccurs="0"/>
+         *         &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_RPr" minOccurs="0"/>
          *       &lt;/sequence>
          *     &lt;/restriction>
          *   &lt;/complexContent>
@@ -623,32 +628,14 @@ public class Styles
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;element name="lsdException" maxOccurs="unbounded" minOccurs="0">
-     *           &lt;complexType>
-     *             &lt;complexContent>
-     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="name" use="required">
-     *                   &lt;simpleType>
-     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-     *                     &lt;/restriction>
-     *                   &lt;/simpleType>
-     *                 &lt;/attribute>
-     *                 &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *                 &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
-     *                 &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *                 &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *                 &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *               &lt;/restriction>
-     *             &lt;/complexContent>
-     *           &lt;/complexType>
-     *         &lt;/element>
+     *         &lt;element name="lsdException" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LsdException" maxOccurs="unbounded" minOccurs="0"/>
      *       &lt;/sequence>
      *       &lt;attribute name="defLockedState" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *       &lt;attribute name="defUIPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
+     *       &lt;attribute name="defUIPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *       &lt;attribute name="defSemiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *       &lt;attribute name="defUnhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *       &lt;attribute name="defQFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *       &lt;attribute name="count" type="{http://www.w3.org/2001/XMLSchema}integer" />
+     *       &lt;attribute name="defQFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+     *       &lt;attribute name="count" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -664,7 +651,7 @@ public class Styles
         implements Child
     {
 
-        protected List<Styles.LatentStyles.LsdException> lsdException;
+        protected List<CTLsdException> lsdException;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean defLockedState;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -698,13 +685,13 @@ public class Styles
          * 
          * <p>
          * Objects of the following type(s) are allowed in the list
-         * {@link Styles.LatentStyles.LsdException }
+         * {@link CTLsdException }
          * 
          * 
          */
-        public List<Styles.LatentStyles.LsdException> getLsdException() {
+        public List<CTLsdException> getLsdException() {
             if (lsdException == null) {
-                lsdException = new ArrayList<Styles.LatentStyles.LsdException>();
+                lsdException = new ArrayList<CTLsdException>();
             }
             return this.lsdException;
         }
@@ -827,7 +814,7 @@ public class Styles
          */
         public boolean isDefQFormat() {
             if (defQFormat == null) {
-                return true;
+                return false;
             } else {
                 return defQFormat;
             }
@@ -895,243 +882,6 @@ public class Styles
             setParent(parent);
         }
 
-
-        /**
-         * <p>Java class for anonymous complex type.
-         * 
-         * <p>The following schema fragment specifies the expected content contained within this class.
-         * 
-         * <pre>
-         * &lt;complexType>
-         *   &lt;complexContent>
-         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="name" use="required">
-         *         &lt;simpleType>
-         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-         *           &lt;/restriction>
-         *         &lt;/simpleType>
-         *       &lt;/attribute>
-         *       &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-         *       &lt;attribute name="uiPriority" type="{http://www.w3.org/2001/XMLSchema}integer" />
-         *       &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-         *       &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-         *       &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-         *     &lt;/restriction>
-         *   &lt;/complexContent>
-         * &lt;/complexType>
-         * </pre>
-         * 
-         * 
-         */
-        @XmlAccessorType(XmlAccessType.FIELD)
-        @XmlType(name = "")
-        public static class LsdException
-            implements Child
-        {
-
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-            protected String name;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected Boolean locked;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected BigInteger uiPriority;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected Boolean semiHidden;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected Boolean unhideWhenUsed;
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-            protected Boolean qFormat;
-            @XmlTransient
-            private Object parent;
-
-            /**
-             * Gets the value of the name property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link String }
-             *     
-             */
-            public String getName() {
-                return name;
-            }
-
-            /**
-             * Sets the value of the name property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link String }
-             *     
-             */
-            public void setName(String value) {
-                this.name = value;
-            }
-
-            /**
-             * Gets the value of the locked property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Boolean }
-             *     
-             */
-            public boolean isLocked() {
-                if (locked == null) {
-                    return true;
-                } else {
-                    return locked;
-                }
-            }
-
-            /**
-             * Sets the value of the locked property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Boolean }
-             *     
-             */
-            public void setLocked(Boolean value) {
-                this.locked = value;
-            }
-
-            /**
-             * Gets the value of the uiPriority property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link BigInteger }
-             *     
-             */
-            public BigInteger getUiPriority() {
-                return uiPriority;
-            }
-
-            /**
-             * Sets the value of the uiPriority property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link BigInteger }
-             *     
-             */
-            public void setUiPriority(BigInteger value) {
-                this.uiPriority = value;
-            }
-
-            /**
-             * Gets the value of the semiHidden property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Boolean }
-             *     
-             */
-            public boolean isSemiHidden() {
-                if (semiHidden == null) {
-                    return true;
-                } else {
-                    return semiHidden;
-                }
-            }
-
-            /**
-             * Sets the value of the semiHidden property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Boolean }
-             *     
-             */
-            public void setSemiHidden(Boolean value) {
-                this.semiHidden = value;
-            }
-
-            /**
-             * Gets the value of the unhideWhenUsed property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Boolean }
-             *     
-             */
-            public boolean isUnhideWhenUsed() {
-                if (unhideWhenUsed == null) {
-                    return true;
-                } else {
-                    return unhideWhenUsed;
-                }
-            }
-
-            /**
-             * Sets the value of the unhideWhenUsed property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Boolean }
-             *     
-             */
-            public void setUnhideWhenUsed(Boolean value) {
-                this.unhideWhenUsed = value;
-            }
-
-            /**
-             * Gets the value of the qFormat property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Boolean }
-             *     
-             */
-            public boolean isQFormat() {
-                if (qFormat == null) {
-                    return true;
-                } else {
-                    return qFormat;
-                }
-            }
-
-            /**
-             * Sets the value of the qFormat property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Boolean }
-             *     
-             */
-            public void setQFormat(Boolean value) {
-                this.qFormat = value;
-            }
-
-            /**
-             * Gets the parent object in the object tree representing the unmarshalled xml document.
-             * 
-             * @return
-             *     The parent object.
-             */
-            public Object getParent() {
-                return this.parent;
-            }
-
-            public void setParent(Object parent) {
-                this.parent = parent;
-            }
-
-            /**
-             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-             * 
-             * @param parent
-             *     The parent object in the object tree.
-             * @param unmarshaller
-             *     The unmarshaller that generated the instance.
-             */
-            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-                setParent(parent);
-            }
-
-        }
-
     }
 
 
@@ -1149,7 +899,7 @@ public class Styles
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -1158,7 +908,7 @@ public class Styles
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -1167,7 +917,7 @@ public class Styles
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -1176,7 +926,7 @@ public class Styles
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -1185,14 +935,41 @@ public class Styles
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
      *         &lt;/element>
-     *         &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
-     *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr" minOccurs="0"/>
-     *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}rPr" minOccurs="0"/>
+     *         &lt;element name="autoRedefine" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="hidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="uiPriority" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="val" use="required">
+     *                   &lt;simpleType>
+     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+     *                     &lt;/restriction>
+     *                   &lt;/simpleType>
+     *                 &lt;/attribute>
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *         &lt;element name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultFalse" minOccurs="0"/>
+     *         &lt;element name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="personal" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="personalCompose" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="personalReply" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+     *         &lt;element name="rsid" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LongHexNumber" minOccurs="0"/>
+     *         &lt;element name="pPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_PPr" minOccurs="0"/>
+     *         &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_RPr" minOccurs="0"/>
+     *         &lt;element name="tblPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblPrBase" minOccurs="0"/>
+     *         &lt;element name="trPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrPr" minOccurs="0"/>
+     *         &lt;element name="tcPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TcPr" minOccurs="0"/>
+     *         &lt;element name="tblStylePr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblStylePr" maxOccurs="unbounded" minOccurs="0"/>
      *       &lt;/sequence>
      *       &lt;attribute name="type">
      *         &lt;simpleType>
@@ -1204,13 +981,8 @@ public class Styles
      *           &lt;/restriction>
      *         &lt;/simpleType>
      *       &lt;/attribute>
-     *       &lt;attribute name="styleId">
-     *         &lt;simpleType>
-     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-     *           &lt;/restriction>
-     *         &lt;/simpleType>
-     *       &lt;/attribute>
-     *       &lt;attribute name="default" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *       &lt;attribute name="styleId" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+     *       &lt;attribute name="default" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
      *       &lt;attribute name="customStyle" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
@@ -1226,9 +998,23 @@ public class Styles
         "basedOn",
         "next",
         "link",
+        "autoRedefine",
+        "hidden",
+        "uiPriority",
+        "semiHidden",
+        "unhideWhenUsed",
         "qFormat",
+        "locked",
+        "personal",
+        "personalCompose",
+        "personalReply",
+        "rsid",
         "pPr",
-        "rPr"
+        "rPr",
+        "tblPr",
+        "trPr",
+        "tcPr",
+        "tblStylePr"
     })
     public static class Style
         implements Child
@@ -1239,9 +1025,23 @@ public class Styles
         protected Styles.Style.BasedOn basedOn;
         protected Styles.Style.Next next;
         protected Styles.Style.Link link;
-        protected BooleanDefaultTrue qFormat;
+        protected BooleanDefaultTrue autoRedefine;
+        protected BooleanDefaultTrue hidden;
+        protected Styles.Style.UiPriority uiPriority;
+        protected BooleanDefaultTrue semiHidden;
+        protected BooleanDefaultTrue unhideWhenUsed;
+        protected BooleanDefaultFalse qFormat;
+        protected BooleanDefaultTrue locked;
+        protected BooleanDefaultTrue personal;
+        protected BooleanDefaultTrue personalCompose;
+        protected BooleanDefaultTrue personalReply;
+        protected CTLongHexNumber rsid;
         protected PPr pPr;
         protected RPr rPr;
+        protected CTTblPrBase tblPr;
+        protected CTTrPr trPr;
+        protected CTTcPr tcPr;
+        protected List<CTTblStylePr> tblStylePr;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String type;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -1374,14 +1174,134 @@ public class Styles
         }
 
         /**
-         * Gets the value of the qFormat property.
+         * Gets the value of the autoRedefine property.
          * 
          * @return
          *     possible object is
          *     {@link BooleanDefaultTrue }
          *     
          */
-        public BooleanDefaultTrue getQFormat() {
+        public BooleanDefaultTrue getAutoRedefine() {
+            return autoRedefine;
+        }
+
+        /**
+         * Sets the value of the autoRedefine property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setAutoRedefine(BooleanDefaultTrue value) {
+            this.autoRedefine = value;
+        }
+
+        /**
+         * Gets the value of the hidden property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public BooleanDefaultTrue getHidden() {
+            return hidden;
+        }
+
+        /**
+         * Sets the value of the hidden property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setHidden(BooleanDefaultTrue value) {
+            this.hidden = value;
+        }
+
+        /**
+         * Gets the value of the uiPriority property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Styles.Style.UiPriority }
+         *     
+         */
+        public Styles.Style.UiPriority getUiPriority() {
+            return uiPriority;
+        }
+
+        /**
+         * Sets the value of the uiPriority property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Styles.Style.UiPriority }
+         *     
+         */
+        public void setUiPriority(Styles.Style.UiPriority value) {
+            this.uiPriority = value;
+        }
+
+        /**
+         * Gets the value of the semiHidden property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public BooleanDefaultTrue getSemiHidden() {
+            return semiHidden;
+        }
+
+        /**
+         * Sets the value of the semiHidden property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setSemiHidden(BooleanDefaultTrue value) {
+            this.semiHidden = value;
+        }
+
+        /**
+         * Gets the value of the unhideWhenUsed property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public BooleanDefaultTrue getUnhideWhenUsed() {
+            return unhideWhenUsed;
+        }
+
+        /**
+         * Sets the value of the unhideWhenUsed property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setUnhideWhenUsed(BooleanDefaultTrue value) {
+            this.unhideWhenUsed = value;
+        }
+
+        /**
+         * Gets the value of the qFormat property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultFalse }
+         *     
+         */
+        public BooleanDefaultFalse getQFormat() {
             return qFormat;
         }
 
@@ -1390,16 +1310,135 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link BooleanDefaultTrue }
+         *     {@link BooleanDefaultFalse }
          *     
          */
-        public void setQFormat(BooleanDefaultTrue value) {
+        public void setQFormat(BooleanDefaultFalse value) {
             this.qFormat = value;
         }
 
         /**
-         * Style Paragraph
-         * 										Properties
+         * Gets the value of the locked property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public BooleanDefaultTrue getLocked() {
+            return locked;
+        }
+
+        /**
+         * Sets the value of the locked property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setLocked(BooleanDefaultTrue value) {
+            this.locked = value;
+        }
+
+        /**
+         * Gets the value of the personal property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public BooleanDefaultTrue getPersonal() {
+            return personal;
+        }
+
+        /**
+         * Sets the value of the personal property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setPersonal(BooleanDefaultTrue value) {
+            this.personal = value;
+        }
+
+        /**
+         * Gets the value of the personalCompose property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public BooleanDefaultTrue getPersonalCompose() {
+            return personalCompose;
+        }
+
+        /**
+         * Sets the value of the personalCompose property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setPersonalCompose(BooleanDefaultTrue value) {
+            this.personalCompose = value;
+        }
+
+        /**
+         * Gets the value of the personalReply property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public BooleanDefaultTrue getPersonalReply() {
+            return personalReply;
+        }
+
+        /**
+         * Sets the value of the personalReply property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BooleanDefaultTrue }
+         *     
+         */
+        public void setPersonalReply(BooleanDefaultTrue value) {
+            this.personalReply = value;
+        }
+
+        /**
+         * Gets the value of the rsid property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTLongHexNumber }
+         *     
+         */
+        public CTLongHexNumber getRsid() {
+            return rsid;
+        }
+
+        /**
+         * Sets the value of the rsid property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTLongHexNumber }
+         *     
+         */
+        public void setRsid(CTLongHexNumber value) {
+            this.rsid = value;
+        }
+
+        /**
+         * Gets the value of the pPr property.
          * 
          * @return
          *     possible object is
@@ -1423,8 +1462,7 @@ public class Styles
         }
 
         /**
-         * Run
-         * 										Properties
+         * Gets the value of the rPr property.
          * 
          * @return
          *     possible object is
@@ -1445,6 +1483,107 @@ public class Styles
          */
         public void setRPr(RPr value) {
             this.rPr = value;
+        }
+
+        /**
+         * Gets the value of the tblPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTTblPrBase }
+         *     
+         */
+        public CTTblPrBase getTblPr() {
+            return tblPr;
+        }
+
+        /**
+         * Sets the value of the tblPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTTblPrBase }
+         *     
+         */
+        public void setTblPr(CTTblPrBase value) {
+            this.tblPr = value;
+        }
+
+        /**
+         * Gets the value of the trPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTTrPr }
+         *     
+         */
+        public CTTrPr getTrPr() {
+            return trPr;
+        }
+
+        /**
+         * Sets the value of the trPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTTrPr }
+         *     
+         */
+        public void setTrPr(CTTrPr value) {
+            this.trPr = value;
+        }
+
+        /**
+         * Gets the value of the tcPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTTcPr }
+         *     
+         */
+        public CTTcPr getTcPr() {
+            return tcPr;
+        }
+
+        /**
+         * Sets the value of the tcPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTTcPr }
+         *     
+         */
+        public void setTcPr(CTTcPr value) {
+            this.tcPr = value;
+        }
+
+        /**
+         * Gets the value of the tblStylePr property.
+         * 
+         * <p>
+         * This accessor method returns a reference to the live list,
+         * not a snapshot. Therefore any modification you make to the
+         * returned list will be present inside the JAXB object.
+         * This is why there is not a <CODE>set</CODE> method for the tblStylePr property.
+         * 
+         * <p>
+         * For example, to add a new item, do as follows:
+         * <pre>
+         *    getTblStylePr().add(newItem);
+         * </pre>
+         * 
+         * 
+         * <p>
+         * Objects of the following type(s) are allowed in the list
+         * {@link CTTblStylePr }
+         * 
+         * 
+         */
+        public List<CTTblStylePr> getTblStylePr() {
+            if (tblStylePr == null) {
+                tblStylePr = new ArrayList<CTTblStylePr>();
+            }
+            return this.tblStylePr;
         }
 
         /**
@@ -1505,7 +1644,7 @@ public class Styles
          */
         public boolean isDefault() {
             if (_default == null) {
-                return true;
+                return false;
             } else {
                 return _default;
             }
@@ -1587,7 +1726,7 @@ public class Styles
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1601,7 +1740,7 @@ public class Styles
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -1668,7 +1807,7 @@ public class Styles
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1682,7 +1821,7 @@ public class Styles
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -1749,7 +1888,7 @@ public class Styles
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1763,7 +1902,7 @@ public class Styles
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -1830,7 +1969,7 @@ public class Styles
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1844,7 +1983,7 @@ public class Styles
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -1911,7 +2050,7 @@ public class Styles
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attGroup ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_String"/>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1925,7 +2064,7 @@ public class Styles
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -1951,6 +2090,92 @@ public class Styles
              *     
              */
             public void setVal(String value) {
+                this.val = value;
+            }
+
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="val" use="required">
+         *         &lt;simpleType>
+         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+         *           &lt;/restriction>
+         *         &lt;/simpleType>
+         *       &lt;/attribute>
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class UiPriority
+            implements Child
+        {
+
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            protected BigInteger val;
+            @XmlTransient
+            private Object parent;
+
+            /**
+             * Gets the value of the val property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link BigInteger }
+             *     
+             */
+            public BigInteger getVal() {
+                return val;
+            }
+
+            /**
+             * Sets the value of the val property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link BigInteger }
+             *     
+             */
+            public void setVal(BigInteger value) {
                 this.val = value;
             }
 
