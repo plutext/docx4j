@@ -58,7 +58,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "sdtEndPr",
     "sdtContent"
 })
-public class SdtBlock implements Child
+public class SdtBlock
+    implements Child
 {
 
 	private static Logger log = Logger.getLogger(SdtBlock.class);		
