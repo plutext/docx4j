@@ -70,6 +70,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlRootElement(name = "p")
 public class P implements Child
 {
+	
+	private static Logger log = Logger.getLogger(P.class);
+	
 
     protected PPr pPr;
     @XmlElementRefs({
@@ -361,18 +364,18 @@ public class P implements Child
 			if ( o instanceof org.docx4j.wml.R) {
 //		    	System.out.println("Hit R");
 				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
-		    	List<JAXBElement<?>> runContent = run.getRunContent();
-				for (JAXBElement o2 : runContent ) {					
-					//if ( o2 instanceof javax.xml.bind.JAXBElement) {
+		    	List runContent = run.getRunContent();
+				for (Object o2 : runContent ) {					
+					if ( o2 instanceof javax.xml.bind.JAXBElement) {
 						// TODO - unmarshall directly to Text.
 						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
 //					    	System.out.println("Found Text");
 							org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o2).getValue();
 							result.append( t.getValue() );					
 						}
-					//} else {
+					} else {
 //				    	System.out.println(o2.getClass().getName());						
-					//}
+					}
 				}
 			} 
 		}
