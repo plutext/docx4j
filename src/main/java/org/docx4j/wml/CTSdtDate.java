@@ -68,7 +68,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "storeMappedDataAs",
     "calendar"
 })
-public class CTSdtDate implements Child
+public class CTSdtDate
+    implements Child
 {
 
     protected CTSdtDate.DateFormat dateFormat;

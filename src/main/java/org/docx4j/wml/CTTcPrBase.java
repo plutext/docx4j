@@ -151,7 +151,7 @@ public class CTTcPrBase
     protected CTShd shd;
     protected BooleanDefaultTrue noWrap;
     protected CTTcMar tcMar;
-    protected CTTextDirection textDirection;
+    protected TextDirection textDirection;
     protected BooleanDefaultTrue tcFitText;
     protected CTVerticalJc vAlign;
     protected BooleanDefaultTrue hideMark;
@@ -379,10 +379,10 @@ public class CTTcPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTextDirection }
+     *     {@link TextDirection }
      *     
      */
-    public CTTextDirection getTextDirection() {
+    public TextDirection getTextDirection() {
         return textDirection;
     }
 
@@ -391,10 +391,10 @@ public class CTTcPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTextDirection }
+     *     {@link TextDirection }
      *     
      */
-    public void setTextDirection(CTTextDirection value) {
+    public void setTextDirection(TextDirection value) {
         this.textDirection = value;
     }
 

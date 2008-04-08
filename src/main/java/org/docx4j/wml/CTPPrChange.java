@@ -58,7 +58,7 @@ public class CTPPrChange
 {
 
     @XmlElement(required = true)
-    protected CTPPrBase pPr;
+    protected PPrBase pPr;
     @XmlTransient
     private Object parent;
 
@@ -67,10 +67,10 @@ public class CTPPrChange
      * 
      * @return
      *     possible object is
-     *     {@link CTPPrBase }
+     *     {@link PPrBase }
      *     
      */
-    public CTPPrBase getPPr() {
+    public PPrBase getPPr() {
         return pPr;
     }
 
@@ -79,10 +79,10 @@ public class CTPPrChange
      * 
      * @param value
      *     allowed object is
-     *     {@link CTPPrBase }
+     *     {@link PPrBase }
      *     
      */
-    public void setPPr(CTPPrBase value) {
+    public void setPPr(PPrBase value) {
         this.pPr = value;
     }
 

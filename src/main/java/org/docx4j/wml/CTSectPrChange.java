@@ -56,7 +56,7 @@ public class CTSectPrChange
     implements Child
 {
 
-    protected CTSectPrBase sectPr;
+    protected SectPrBase sectPr;
     @XmlTransient
     private Object parent;
 
@@ -65,10 +65,10 @@ public class CTSectPrChange
      * 
      * @return
      *     possible object is
-     *     {@link CTSectPrBase }
+     *     {@link SectPrBase }
      *     
      */
-    public CTSectPrBase getSectPr() {
+    public SectPrBase getSectPr() {
         return sectPr;
     }
 
@@ -77,10 +77,10 @@ public class CTSectPrChange
      * 
      * @param value
      *     allowed object is
-     *     {@link CTSectPrBase }
+     *     {@link SectPrBase }
      *     
      */
-    public void setSectPr(CTSectPrBase value) {
+    public void setSectPr(SectPrBase value) {
         this.sectPr = value;
     }
 

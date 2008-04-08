@@ -24,31 +24,30 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Shd complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Shd">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Shd" />
- *       &lt;attribute name="color" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_HexColor" />
- *       &lt;attribute name="themeColor" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_ThemeColor" />
- *       &lt;attribute name="themeTint" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
- *       &lt;attribute name="themeShade" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
- *       &lt;attribute name="fill" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_HexColor" />
- *       &lt;attribute name="themeFill" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_ThemeColor" />
- *       &lt;attribute name="themeFillTint" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
- *       &lt;attribute name="themeFillShade" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
+ *       &lt;attribute name="hint" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Hint" />
+ *       &lt;attribute name="ascii" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *       &lt;attribute name="hAnsi" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *       &lt;attribute name="eastAsia" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *       &lt;attribute name="cs" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *       &lt;attribute name="asciiTheme" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Theme" />
+ *       &lt;attribute name="hAnsiTheme" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Theme" />
+ *       &lt;attribute name="eastAsiaTheme" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Theme" />
+ *       &lt;attribute name="cstheme" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_Theme" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -57,250 +56,247 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Shd")
-public class CTShd
+@XmlType(name = "")
+@XmlRootElement(name = "rFonts")
+public class RFonts
     implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    protected STShd val;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected String color;
+    protected STHint hint;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected STThemeColor themeColor;
+    protected String ascii;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] themeTint;
+    protected String hAnsi;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] themeShade;
+    protected String eastAsia;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected String fill;
+    protected String cs;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected STThemeColor themeFill;
+    protected STTheme asciiTheme;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] themeFillTint;
+    protected STTheme hAnsiTheme;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] themeFillShade;
+    protected STTheme eastAsiaTheme;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected STTheme cstheme;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the val property.
+     * Gets the value of the hint property.
      * 
      * @return
      *     possible object is
-     *     {@link STShd }
+     *     {@link STHint }
      *     
      */
-    public STShd getVal() {
-        return val;
+    public STHint getHint() {
+        return hint;
     }
 
     /**
-     * Sets the value of the val property.
+     * Sets the value of the hint property.
      * 
      * @param value
      *     allowed object is
-     *     {@link STShd }
+     *     {@link STHint }
      *     
      */
-    public void setVal(STShd value) {
-        this.val = value;
+    public void setHint(STHint value) {
+        this.hint = value;
     }
 
     /**
-     * Gets the value of the color property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getColor() {
-        return color;
-    }
-
-    /**
-     * Sets the value of the color property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setColor(String value) {
-        this.color = value;
-    }
-
-    /**
-     * Gets the value of the themeColor property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link STThemeColor }
-     *     
-     */
-    public STThemeColor getThemeColor() {
-        return themeColor;
-    }
-
-    /**
-     * Sets the value of the themeColor property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link STThemeColor }
-     *     
-     */
-    public void setThemeColor(STThemeColor value) {
-        this.themeColor = value;
-    }
-
-    /**
-     * Gets the value of the themeTint property.
+     * Gets the value of the ascii property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public byte[] getThemeTint() {
-        return themeTint;
+    public String getAscii() {
+        return ascii;
     }
 
     /**
-     * Sets the value of the themeTint property.
+     * Sets the value of the ascii property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setThemeTint(byte[] value) {
-        this.themeTint = ((byte[]) value);
+    public void setAscii(String value) {
+        this.ascii = value;
     }
 
     /**
-     * Gets the value of the themeShade property.
+     * Gets the value of the hAnsi property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public byte[] getThemeShade() {
-        return themeShade;
+    public String getHAnsi() {
+        return hAnsi;
     }
 
     /**
-     * Sets the value of the themeShade property.
+     * Sets the value of the hAnsi property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setThemeShade(byte[] value) {
-        this.themeShade = ((byte[]) value);
+    public void setHAnsi(String value) {
+        this.hAnsi = value;
     }
 
     /**
-     * Gets the value of the fill property.
+     * Gets the value of the eastAsia property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getFill() {
-        return fill;
+    public String getEastAsia() {
+        return eastAsia;
     }
 
     /**
-     * Sets the value of the fill property.
+     * Sets the value of the eastAsia property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setFill(String value) {
-        this.fill = value;
+    public void setEastAsia(String value) {
+        this.eastAsia = value;
     }
 
     /**
-     * Gets the value of the themeFill property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link STThemeColor }
-     *     
-     */
-    public STThemeColor getThemeFill() {
-        return themeFill;
-    }
-
-    /**
-     * Sets the value of the themeFill property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link STThemeColor }
-     *     
-     */
-    public void setThemeFill(STThemeColor value) {
-        this.themeFill = value;
-    }
-
-    /**
-     * Gets the value of the themeFillTint property.
+     * Gets the value of the cs property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public byte[] getThemeFillTint() {
-        return themeFillTint;
+    public String getCs() {
+        return cs;
     }
 
     /**
-     * Sets the value of the themeFillTint property.
+     * Sets the value of the cs property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setThemeFillTint(byte[] value) {
-        this.themeFillTint = ((byte[]) value);
+    public void setCs(String value) {
+        this.cs = value;
     }
 
     /**
-     * Gets the value of the themeFillShade property.
+     * Gets the value of the asciiTheme property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTheme }
      *     
      */
-    public byte[] getThemeFillShade() {
-        return themeFillShade;
+    public STTheme getAsciiTheme() {
+        return asciiTheme;
     }
 
     /**
-     * Sets the value of the themeFillShade property.
+     * Sets the value of the asciiTheme property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTheme }
      *     
      */
-    public void setThemeFillShade(byte[] value) {
-        this.themeFillShade = ((byte[]) value);
+    public void setAsciiTheme(STTheme value) {
+        this.asciiTheme = value;
+    }
+
+    /**
+     * Gets the value of the hAnsiTheme property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTheme }
+     *     
+     */
+    public STTheme getHAnsiTheme() {
+        return hAnsiTheme;
+    }
+
+    /**
+     * Sets the value of the hAnsiTheme property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTheme }
+     *     
+     */
+    public void setHAnsiTheme(STTheme value) {
+        this.hAnsiTheme = value;
+    }
+
+    /**
+     * Gets the value of the eastAsiaTheme property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTheme }
+     *     
+     */
+    public STTheme getEastAsiaTheme() {
+        return eastAsiaTheme;
+    }
+
+    /**
+     * Sets the value of the eastAsiaTheme property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTheme }
+     *     
+     */
+    public void setEastAsiaTheme(STTheme value) {
+        this.eastAsiaTheme = value;
+    }
+
+    /**
+     * Gets the value of the cstheme property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTheme }
+     *     
+     */
+    public STTheme getCstheme() {
+        return cstheme;
+    }
+
+    /**
+     * Sets the value of the cstheme property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTheme }
+     *     
+     */
+    public void setCstheme(STTheme value) {
+        this.cstheme = value;
     }
 
     /**

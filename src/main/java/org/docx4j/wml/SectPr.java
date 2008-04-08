@@ -86,8 +86,8 @@ public class SectPr
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "footerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "headerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "headerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "footerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<JAXBElement<CTHdrFtrRef>> egHdrFtrReferences;
     protected CTFtnProps footnotePr;
@@ -104,7 +104,7 @@ public class SectPr
     protected CTVerticalJc vAlign;
     protected BooleanDefaultTrue noEndnote;
     protected BooleanDefaultTrue titlePg;
-    protected CTTextDirection textDirection;
+    protected TextDirection textDirection;
     protected BooleanDefaultTrue bidi;
     protected BooleanDefaultTrue rtlGutter;
     protected CTDocGrid docGrid;
@@ -492,10 +492,10 @@ public class SectPr
      * 
      * @return
      *     possible object is
-     *     {@link CTTextDirection }
+     *     {@link TextDirection }
      *     
      */
-    public CTTextDirection getTextDirection() {
+    public TextDirection getTextDirection() {
         return textDirection;
     }
 
@@ -504,10 +504,10 @@ public class SectPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTextDirection }
+     *     {@link TextDirection }
      *     
      */
-    public void setTextDirection(CTTextDirection value) {
+    public void setTextDirection(TextDirection value) {
         this.textDirection = value;
     }
 

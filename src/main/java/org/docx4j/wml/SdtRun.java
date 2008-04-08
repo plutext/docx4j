@@ -23,94 +23,118 @@ package org.docx4j.wml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Text complex type.
+ * <p>Java class for CT_SdtRun complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Text">
- *   &lt;simpleContent>
- *     &lt;extension base="&lt;http://schemas.openxmlformats.org/wordprocessingml/2006/main>ST_String">
- *       &lt;attribute ref="{http://www.w3.org/XML/1998/namespace}space"/>
- *     &lt;/extension>
- *   &lt;/simpleContent>
+ * &lt;complexType name="CT_SdtRun">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="sdtPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtPr" minOccurs="0"/>
+ *         &lt;element name="sdtEndPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtEndPr" minOccurs="0"/>
+ *         &lt;element name="sdtContent" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtContentRun" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Text", propOrder = {
-    "value"
+@XmlType(name = "CT_SdtRun", propOrder = {
+    "sdtPr",
+    "sdtEndPr",
+    "sdtContent"
 })
-public class Text implements Child
+public class SdtRun
+    implements Child
 {
 
-    @XmlValue
-    protected String value;
-    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    protected String space;
+    protected SdtPr sdtPr;
+    protected CTSdtEndPr sdtEndPr;
+    protected CTSdtContentRun sdtContent;
     @XmlTransient
     private Object parent;
 
     /**
-     * String
+     * Gets the value of the sdtPr property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link SdtPr }
      *     
      */
-    public String getValue() {
-        return value;
+    public SdtPr getSdtPr() {
+        return sdtPr;
     }
 
     /**
-     * Sets the value of the value property.
+     * Sets the value of the sdtPr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link SdtPr }
      *     
      */
-    public void setValue(String value) {
-        this.value = value;
+    public void setSdtPr(SdtPr value) {
+        this.sdtPr = value;
     }
 
     /**
-     * Content Contains Significant
-     * 							Whitespace
+     * Gets the value of the sdtEndPr property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link CTSdtEndPr }
      *     
      */
-    public String getSpace() {
-        return space;
+    public CTSdtEndPr getSdtEndPr() {
+        return sdtEndPr;
     }
 
     /**
-     * Sets the value of the space property.
+     * Sets the value of the sdtEndPr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link CTSdtEndPr }
      *     
      */
-    public void setSpace(String value) {
-        this.space = value;
+    public void setSdtEndPr(CTSdtEndPr value) {
+        this.sdtEndPr = value;
+    }
+
+    /**
+     * Gets the value of the sdtContent property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTSdtContentRun }
+     *     
+     */
+    public CTSdtContentRun getSdtContent() {
+        return sdtContent;
+    }
+
+    /**
+     * Sets the value of the sdtContent property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTSdtContentRun }
+     *     
+     */
+    public void setSdtContent(CTSdtContentRun value) {
+        this.sdtContent = value;
     }
 
     /**

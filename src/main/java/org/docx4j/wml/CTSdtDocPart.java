@@ -72,7 +72,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "docPartCategory",
     "docPartUnique"
 })
-public class CTSdtDocPart implements Child
+public class CTSdtDocPart
+    implements Child
 {
 
     protected CTSdtDocPart.DocPartGallery docPartGallery;

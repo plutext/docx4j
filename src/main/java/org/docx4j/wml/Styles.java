@@ -80,7 +80,20 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;sequence>
- *                   &lt;element name="lsdException" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LsdException" maxOccurs="unbounded" minOccurs="0"/>
+ *                   &lt;element name="lsdException" maxOccurs="unbounded" minOccurs="0">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *                           &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                           &lt;attribute name="uiPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+ *                           &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                           &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+ *                           &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
  *                 &lt;/sequence>
  *                 &lt;attribute name="defLockedState" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *                 &lt;attribute name="defUIPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
@@ -628,7 +641,20 @@ public class Styles
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;element name="lsdException" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LsdException" maxOccurs="unbounded" minOccurs="0"/>
+     *         &lt;element name="lsdException" maxOccurs="unbounded" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+     *                 &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *                 &lt;attribute name="uiPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+     *                 &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *                 &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+     *                 &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
      *       &lt;/sequence>
      *       &lt;attribute name="defLockedState" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *       &lt;attribute name="defUIPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
@@ -651,7 +677,7 @@ public class Styles
         implements Child
     {
 
-        protected List<CTLsdException> lsdException;
+        protected List<Styles.LatentStyles.LsdException> lsdException;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected Boolean defLockedState;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -685,13 +711,13 @@ public class Styles
          * 
          * <p>
          * Objects of the following type(s) are allowed in the list
-         * {@link CTLsdException }
+         * {@link Styles.LatentStyles.LsdException }
          * 
          * 
          */
-        public List<CTLsdException> getLsdException() {
+        public List<Styles.LatentStyles.LsdException> getLsdException() {
             if (lsdException == null) {
-                lsdException = new ArrayList<CTLsdException>();
+                lsdException = new ArrayList<Styles.LatentStyles.LsdException>();
             }
             return this.lsdException;
         }
@@ -880,6 +906,238 @@ public class Styles
          */
         public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
             setParent(parent);
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+         *       &lt;attribute name="locked" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+         *       &lt;attribute name="uiPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+         *       &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+         *       &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
+         *       &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class LsdException
+            implements Child
+        {
+
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            protected String name;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected Boolean locked;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected BigInteger uiPriority;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected Boolean semiHidden;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected Boolean unhideWhenUsed;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected Boolean qFormat;
+            @XmlTransient
+            private Object parent;
+
+            /**
+             * Gets the value of the name property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getName() {
+                return name;
+            }
+
+            /**
+             * Sets the value of the name property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setName(String value) {
+                this.name = value;
+            }
+
+            /**
+             * Gets the value of the locked property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Boolean }
+             *     
+             */
+            public boolean isLocked() {
+                if (locked == null) {
+                    return true;
+                } else {
+                    return locked;
+                }
+            }
+
+            /**
+             * Sets the value of the locked property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Boolean }
+             *     
+             */
+            public void setLocked(Boolean value) {
+                this.locked = value;
+            }
+
+            /**
+             * Gets the value of the uiPriority property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link BigInteger }
+             *     
+             */
+            public BigInteger getUiPriority() {
+                return uiPriority;
+            }
+
+            /**
+             * Sets the value of the uiPriority property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link BigInteger }
+             *     
+             */
+            public void setUiPriority(BigInteger value) {
+                this.uiPriority = value;
+            }
+
+            /**
+             * Gets the value of the semiHidden property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Boolean }
+             *     
+             */
+            public boolean isSemiHidden() {
+                if (semiHidden == null) {
+                    return true;
+                } else {
+                    return semiHidden;
+                }
+            }
+
+            /**
+             * Sets the value of the semiHidden property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Boolean }
+             *     
+             */
+            public void setSemiHidden(Boolean value) {
+                this.semiHidden = value;
+            }
+
+            /**
+             * Gets the value of the unhideWhenUsed property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Boolean }
+             *     
+             */
+            public boolean isUnhideWhenUsed() {
+                if (unhideWhenUsed == null) {
+                    return true;
+                } else {
+                    return unhideWhenUsed;
+                }
+            }
+
+            /**
+             * Sets the value of the unhideWhenUsed property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Boolean }
+             *     
+             */
+            public void setUnhideWhenUsed(Boolean value) {
+                this.unhideWhenUsed = value;
+            }
+
+            /**
+             * Gets the value of the qFormat property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Boolean }
+             *     
+             */
+            public boolean isQFormat() {
+                if (qFormat == null) {
+                    return false;
+                } else {
+                    return qFormat;
+                }
+            }
+
+            /**
+             * Sets the value of the qFormat property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Boolean }
+             *     
+             */
+            public void setQFormat(Boolean value) {
+                this.qFormat = value;
+            }
+
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
         }
 
     }
