@@ -72,7 +72,7 @@ public class CTTblPrExBase
 {
 
     protected CTTblWidth tblW;
-    protected CTJc jc;
+    protected Jc jc;
     protected CTTblWidth tblCellSpacing;
     protected CTTblWidth tblInd;
     protected CTTblBorders tblBorders;
@@ -112,10 +112,10 @@ public class CTTblPrExBase
      * 
      * @return
      *     possible object is
-     *     {@link CTJc }
+     *     {@link Jc }
      *     
      */
-    public CTJc getJc() {
+    public Jc getJc() {
         return jc;
     }
 
@@ -124,10 +124,10 @@ public class CTTblPrExBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTJc }
+     *     {@link Jc }
      *     
      */
-    public void setJc(CTJc value) {
+    public void setJc(Jc value) {
         this.jc = value;
     }
 

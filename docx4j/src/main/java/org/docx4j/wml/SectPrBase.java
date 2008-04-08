@@ -71,7 +71,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "docGrid",
     "printerSettings"
 })
-public class CTSectPrBase
+public class SectPrBase
     implements Child
 {
 
@@ -89,7 +89,7 @@ public class CTSectPrBase
     protected CTVerticalJc vAlign;
     protected BooleanDefaultTrue noEndnote;
     protected BooleanDefaultTrue titlePg;
-    protected CTTextDirection textDirection;
+    protected TextDirection textDirection;
     protected BooleanDefaultTrue bidi;
     protected BooleanDefaultTrue rtlGutter;
     protected CTDocGrid docGrid;
@@ -446,10 +446,10 @@ public class CTSectPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTextDirection }
+     *     {@link TextDirection }
      *     
      */
-    public CTTextDirection getTextDirection() {
+    public TextDirection getTextDirection() {
         return textDirection;
     }
 
@@ -458,10 +458,10 @@ public class CTSectPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTextDirection }
+     *     {@link TextDirection }
      *     
      */
-    public void setTextDirection(CTTextDirection value) {
+    public void setTextDirection(TextDirection value) {
         this.textDirection = value;
     }
 

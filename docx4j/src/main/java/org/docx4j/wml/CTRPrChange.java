@@ -20,12 +20,20 @@
 
 package org.docx4j.wml;
 
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -39,7 +47,17 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *   &lt;complexContent>
  *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrackChange">
  *       &lt;sequence>
- *         &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_RPrOriginal"/>
+ *         &lt;element name="rPr">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_RPrBase" maxOccurs="unbounded" minOccurs="0"/>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -58,7 +76,7 @@ public class CTRPrChange
 {
 
     @XmlElement(required = true)
-    protected CTRPrOriginal rPr;
+    protected CTRPrChange.RPr rPr;
     @XmlTransient
     private Object parent;
 
@@ -67,10 +85,10 @@ public class CTRPrChange
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrOriginal }
+     *     {@link CTRPrChange.RPr }
      *     
      */
-    public CTRPrOriginal getRPr() {
+    public CTRPrChange.RPr getRPr() {
         return rPr;
     }
 
@@ -79,10 +97,10 @@ public class CTRPrChange
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrOriginal }
+     *     {@link CTRPrChange.RPr }
      *     
      */
-    public void setRPr(CTRPrOriginal value) {
+    public void setRPr(CTRPrChange.RPr value) {
         this.rPr = value;
     }
 
@@ -110,6 +128,655 @@ public class CTRPrChange
      */
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         setParent(parent);
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_RPrBase" maxOccurs="unbounded" minOccurs="0"/>
+     *       &lt;/sequence>
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "egrPrBase"
+    })
+    public static class RPr
+        implements Child
+    {
+
+        @XmlElementRefs({
+            @XmlElementRef(name = "strike", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "imprint", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "eastAsianLayout", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "b", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "shadow", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "smallCaps", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "bCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "bdr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "snapToGrid", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "vertAlign", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "em", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "webHidden", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "caps", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "position", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "fitText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "specVanish", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "effect", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "rFonts", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "i", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "outline", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "dstrike", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "iCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "emboss", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "lang", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "kern", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "color", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "w", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "cs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "spacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "u", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "highlight", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "shd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "vanish", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "rtl", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "noProof", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "szCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+            @XmlElementRef(name = "rStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RStyle.class),
+            @XmlElementRef(name = "sz", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        })
+        protected List<Object> egrPrBase;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the egrPrBase property.
+         * 
+         * <p>
+         * This accessor method returns a reference to the live list,
+         * not a snapshot. Therefore any modification you make to the
+         * returned list will be present inside the JAXB object.
+         * This is why there is not a <CODE>set</CODE> method for the egrPrBase property.
+         * 
+         * <p>
+         * For example, to add a new item, do as follows:
+         * <pre>
+         *    getEGRPrBase().add(newItem);
+         * </pre>
+         * 
+         * 
+         * <p>
+         * Objects of the following type(s) are allowed in the list
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTEastAsianLayout }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTBorder }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTVerticalAlignRun }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTEm }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTSignedHpsMeasure }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTFitText }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTextEffect }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link Object }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTLanguage }{@code >}
+         * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTRPrChange.RPr.Color }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTTextScale }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTSignedTwipsMeasure }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTRPrChange.RPr.U }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTShd }{@code >}
+         * {@link JAXBElement }{@code <}{@link CTRPrChange.RPr.Highlight }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+         * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
+         * {@link RStyle }
+         * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
+         * 
+         * 
+         */
+        public List<Object> getEGRPrBase() {
+            if (egrPrBase == null) {
+                egrPrBase = new ArrayList<Object>();
+            }
+            return this.egrPrBase;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_HexColor" />
+         *       &lt;attribute name="themeColor" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_ThemeColor" />
+         *       &lt;attribute name="themeTint" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
+         *       &lt;attribute name="themeShade" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Color
+            implements Child
+        {
+
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            protected String val;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected STThemeColor themeColor;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+            protected byte[] themeTint;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+            protected byte[] themeShade;
+            @XmlTransient
+            private Object parent;
+
+            /**
+             * Gets the value of the val property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getVal() {
+                return val;
+            }
+
+            /**
+             * Sets the value of the val property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setVal(String value) {
+                this.val = value;
+            }
+
+            /**
+             * Gets the value of the themeColor property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link STThemeColor }
+             *     
+             */
+            public STThemeColor getThemeColor() {
+                return themeColor;
+            }
+
+            /**
+             * Sets the value of the themeColor property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link STThemeColor }
+             *     
+             */
+            public void setThemeColor(STThemeColor value) {
+                this.themeColor = value;
+            }
+
+            /**
+             * Gets the value of the themeTint property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public byte[] getThemeTint() {
+                return themeTint;
+            }
+
+            /**
+             * Sets the value of the themeTint property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setThemeTint(byte[] value) {
+                this.themeTint = ((byte[]) value);
+            }
+
+            /**
+             * Gets the value of the themeShade property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public byte[] getThemeShade() {
+                return themeShade;
+            }
+
+            /**
+             * Sets the value of the themeShade property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setThemeShade(byte[] value) {
+                this.themeShade = ((byte[]) value);
+            }
+
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="val" use="required">
+         *         &lt;simpleType>
+         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+         *             &lt;enumeration value="black"/>
+         *             &lt;enumeration value="blue"/>
+         *             &lt;enumeration value="cyan"/>
+         *             &lt;enumeration value="green"/>
+         *             &lt;enumeration value="magenta"/>
+         *             &lt;enumeration value="red"/>
+         *             &lt;enumeration value="yellow"/>
+         *             &lt;enumeration value="white"/>
+         *             &lt;enumeration value="darkBlue"/>
+         *             &lt;enumeration value="darkCyan"/>
+         *             &lt;enumeration value="darkGreen"/>
+         *             &lt;enumeration value="darkMagenta"/>
+         *             &lt;enumeration value="darkRed"/>
+         *             &lt;enumeration value="darkYellow"/>
+         *             &lt;enumeration value="darkGray"/>
+         *             &lt;enumeration value="lightGray"/>
+         *             &lt;enumeration value="none"/>
+         *           &lt;/restriction>
+         *         &lt;/simpleType>
+         *       &lt;/attribute>
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Highlight
+            implements Child
+        {
+
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            protected String val;
+            @XmlTransient
+            private Object parent;
+
+            /**
+             * Gets the value of the val property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getVal() {
+                return val;
+            }
+
+            /**
+             * Sets the value of the val property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setVal(String value) {
+                this.val = value;
+            }
+
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="val">
+         *         &lt;simpleType>
+         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+         *             &lt;enumeration value="single"/>
+         *             &lt;enumeration value="words"/>
+         *             &lt;enumeration value="double"/>
+         *             &lt;enumeration value="thick"/>
+         *             &lt;enumeration value="dotted"/>
+         *             &lt;enumeration value="dottedHeavy"/>
+         *             &lt;enumeration value="dash"/>
+         *             &lt;enumeration value="dashedHeavy"/>
+         *             &lt;enumeration value="dashLong"/>
+         *             &lt;enumeration value="dashLongHeavy"/>
+         *             &lt;enumeration value="dotDash"/>
+         *             &lt;enumeration value="dashDotHeavy"/>
+         *             &lt;enumeration value="dotDotDash"/>
+         *             &lt;enumeration value="dashDotDotHeavy"/>
+         *             &lt;enumeration value="wave"/>
+         *             &lt;enumeration value="wavyHeavy"/>
+         *             &lt;enumeration value="wavyDouble"/>
+         *             &lt;enumeration value="none"/>
+         *           &lt;/restriction>
+         *         &lt;/simpleType>
+         *       &lt;/attribute>
+         *       &lt;attribute name="color" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_HexColor" />
+         *       &lt;attribute name="themeColor" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_ThemeColor" />
+         *       &lt;attribute name="themeTint" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
+         *       &lt;attribute name="themeShade" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class U
+            implements Child
+        {
+
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected String val;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected String color;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            protected STThemeColor themeColor;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+            protected byte[] themeTint;
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+            @XmlJavaTypeAdapter(HexBinaryAdapter.class)
+            protected byte[] themeShade;
+            @XmlTransient
+            private Object parent;
+
+            /**
+             * Gets the value of the val property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getVal() {
+                return val;
+            }
+
+            /**
+             * Sets the value of the val property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setVal(String value) {
+                this.val = value;
+            }
+
+            /**
+             * Gets the value of the color property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getColor() {
+                return color;
+            }
+
+            /**
+             * Sets the value of the color property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setColor(String value) {
+                this.color = value;
+            }
+
+            /**
+             * Gets the value of the themeColor property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link STThemeColor }
+             *     
+             */
+            public STThemeColor getThemeColor() {
+                return themeColor;
+            }
+
+            /**
+             * Sets the value of the themeColor property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link STThemeColor }
+             *     
+             */
+            public void setThemeColor(STThemeColor value) {
+                this.themeColor = value;
+            }
+
+            /**
+             * Gets the value of the themeTint property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public byte[] getThemeTint() {
+                return themeTint;
+            }
+
+            /**
+             * Sets the value of the themeTint property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setThemeTint(byte[] value) {
+                this.themeTint = ((byte[]) value);
+            }
+
+            /**
+             * Gets the value of the themeShade property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public byte[] getThemeShade() {
+                return themeShade;
+            }
+
+            /**
+             * Sets the value of the themeShade property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setThemeShade(byte[] value) {
+                this.themeShade = ((byte[]) value);
+            }
+
+            /**
+             * Gets the parent object in the object tree representing the unmarshalled xml document.
+             * 
+             * @return
+             *     The parent object.
+             */
+            public Object getParent() {
+                return this.parent;
+            }
+
+            public void setParent(Object parent) {
+                this.parent = parent;
+            }
+
+            /**
+             * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+             * 
+             * @param parent
+             *     The parent object in the object tree.
+             * @param unmarshaller
+             *     The unmarshaller that generated the instance.
+             */
+            public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+                setParent(parent);
+            }
+
+        }
+
     }
 
 }

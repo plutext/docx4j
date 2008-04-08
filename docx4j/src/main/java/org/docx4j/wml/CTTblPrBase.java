@@ -126,7 +126,7 @@ public class CTTblPrBase
     protected CTTblPrBase.TblStyleRowBandSize tblStyleRowBandSize;
     protected CTTblPrBase.TblStyleColBandSize tblStyleColBandSize;
     protected CTTblWidth tblW;
-    protected CTJc jc;
+    protected Jc jc;
     protected CTTblWidth tblCellSpacing;
     protected CTTblWidth tblInd;
     protected CTTblBorders tblBorders;
@@ -310,10 +310,10 @@ public class CTTblPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTJc }
+     *     {@link Jc }
      *     
      */
-    public CTJc getJc() {
+    public Jc getJc() {
         return jc;
     }
 
@@ -322,10 +322,10 @@ public class CTTblPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTJc }
+     *     {@link Jc }
      *     
      */
-    public void setJc(CTJc value) {
+    public void setJc(Jc value) {
         this.jc = value;
     }
 

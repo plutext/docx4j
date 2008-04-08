@@ -26,91 +26,73 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Text complex type.
+ * <p>Java class for CT_Jc complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Text">
- *   &lt;simpleContent>
- *     &lt;extension base="&lt;http://schemas.openxmlformats.org/wordprocessingml/2006/main>ST_String">
- *       &lt;attribute ref="{http://www.w3.org/XML/1998/namespace}space"/>
- *     &lt;/extension>
- *   &lt;/simpleContent>
+ * &lt;complexType name="CT_Jc">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;attribute name="val" use="required">
+ *         &lt;simpleType>
+ *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *             &lt;enumeration value="left"/>
+ *             &lt;enumeration value="center"/>
+ *             &lt;enumeration value="right"/>
+ *             &lt;enumeration value="both"/>
+ *             &lt;enumeration value="mediumKashida"/>
+ *             &lt;enumeration value="distribute"/>
+ *             &lt;enumeration value="numTab"/>
+ *             &lt;enumeration value="highKashida"/>
+ *             &lt;enumeration value="lowKashida"/>
+ *             &lt;enumeration value="thaiDistribute"/>
+ *           &lt;/restriction>
+ *         &lt;/simpleType>
+ *       &lt;/attribute>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Text", propOrder = {
-    "value"
-})
-public class Text implements Child
+@XmlType(name = "CT_Jc")
+public class Jc implements Child
 {
 
-    @XmlValue
-    protected String value;
-    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    protected String space;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    protected String val;
     @XmlTransient
     private Object parent;
 
     /**
-     * String
+     * Gets the value of the val property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getValue() {
-        return value;
+    public String getVal() {
+        return val;
     }
 
     /**
-     * Sets the value of the value property.
+     * Sets the value of the val property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    /**
-     * Content Contains Significant
-     * 							Whitespace
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSpace() {
-        return space;
-    }
-
-    /**
-     * Sets the value of the space property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSpace(String value) {
-        this.space = value;
+    public void setVal(String value) {
+        this.val = value;
     }
 
     /**

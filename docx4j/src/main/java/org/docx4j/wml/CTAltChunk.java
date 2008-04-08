@@ -53,7 +53,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_AltChunk", propOrder = {
     "altChunkPr"
 })
-public class CTAltChunk implements Child
+public class CTAltChunk
+    implements Child
 {
 
     protected CTAltChunkPr altChunkPr;

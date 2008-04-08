@@ -56,11 +56,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "pPrChange"
 })
 public class PPr
-    extends CTPPrBase
+    extends PPrBase
     implements Child
 {
 
-    protected CTParaRPr rPr;
+    protected ParaRPr rPr;
     protected SectPr sectPr;
     protected CTPPrChange pPrChange;
     @XmlTransient
@@ -71,10 +71,10 @@ public class PPr
      * 
      * @return
      *     possible object is
-     *     {@link CTParaRPr }
+     *     {@link ParaRPr }
      *     
      */
-    public CTParaRPr getRPr() {
+    public ParaRPr getRPr() {
         return rPr;
     }
 
@@ -83,10 +83,10 @@ public class PPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTParaRPr }
+     *     {@link ParaRPr }
      *     
      */
-    public void setRPr(CTParaRPr value) {
+    public void setRPr(ParaRPr value) {
         this.rPr = value;
     }
 

@@ -173,7 +173,7 @@ public class Lvl
     protected Lvl.LvlText lvlText;
     protected Lvl.LvlPicBulletId lvlPicBulletId;
     protected Lvl.Legacy legacy;
-    protected CTJc lvlJc;
+    protected Jc lvlJc;
     protected PPr pPr;
     protected RPr rPr;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
@@ -406,10 +406,10 @@ public class Lvl
      * 
      * @return
      *     possible object is
-     *     {@link CTJc }
+     *     {@link Jc }
      *     
      */
-    public CTJc getLvlJc() {
+    public Jc getLvlJc() {
         return lvlJc;
     }
 
@@ -418,10 +418,10 @@ public class Lvl
      * 
      * @param value
      *     allowed object is
-     *     {@link CTJc }
+     *     {@link Jc }
      *     
      */
-    public void setLvlJc(CTJc value) {
+    public void setLvlJc(Jc value) {
         this.lvlJc = value;
     }
 

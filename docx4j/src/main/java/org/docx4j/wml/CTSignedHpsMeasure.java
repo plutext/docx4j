@@ -49,7 +49,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_SignedHpsMeasure")
-public class CTSignedHpsMeasure implements Child
+public class CTSignedHpsMeasure
+    implements Child
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)

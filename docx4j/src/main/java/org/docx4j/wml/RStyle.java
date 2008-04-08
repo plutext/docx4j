@@ -24,93 +24,62 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Text complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Text">
- *   &lt;simpleContent>
- *     &lt;extension base="&lt;http://schemas.openxmlformats.org/wordprocessingml/2006/main>ST_String">
- *       &lt;attribute ref="{http://www.w3.org/XML/1998/namespace}space"/>
- *     &lt;/extension>
- *   &lt;/simpleContent>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Text", propOrder = {
-    "value"
-})
-public class Text implements Child
+@XmlType(name = "")
+@XmlRootElement(name = "rStyle")
+public class RStyle implements Child
 {
 
-    @XmlValue
-    protected String value;
-    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    protected String space;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String val;
     @XmlTransient
     private Object parent;
 
     /**
-     * String
+     * Gets the value of the val property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getValue() {
-        return value;
+    public String getVal() {
+        return val;
     }
 
     /**
-     * Sets the value of the value property.
+     * Sets the value of the val property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    /**
-     * Content Contains Significant
-     * 							Whitespace
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSpace() {
-        return space;
-    }
-
-    /**
-     * Sets the value of the space property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSpace(String value) {
-        this.space = value;
+    public void setVal(String value) {
+        this.val = value;
     }
 
     /**

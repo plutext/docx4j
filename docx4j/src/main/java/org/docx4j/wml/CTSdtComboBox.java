@@ -55,7 +55,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_SdtComboBox", propOrder = {
     "listItem"
 })
-public class CTSdtComboBox implements Child
+public class CTSdtComboBox
+    implements Child
 {
 
     protected List<CTSdtListItem> listItem;

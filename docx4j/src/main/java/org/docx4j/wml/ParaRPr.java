@@ -29,16 +29,18 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_RPr complex type.
+ * <p>Java class for CT_ParaRPr complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_RPr">
+ * &lt;complexType name="CT_ParaRPr">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_RPrContent" minOccurs="0"/>
+ *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_ParaRPrTrackChanges" minOccurs="0"/>
+ *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_RPrBase" minOccurs="0"/>
+ *         &lt;element name="rPrChange" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_ParaRPrChange" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -48,7 +50,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_RPr", propOrder = {
+@XmlType(name = "CT_ParaRPr", propOrder = {
+    "ins",
+    "del",
+    "moveFrom",
+    "moveTo",
     "rStyle",
     "rFonts",
     "b",
@@ -90,10 +96,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "oMath",
     "rPrChange"
 })
-public class RPr
+public class ParaRPr
     implements Child
 {
 
+    protected CTTrackChange ins;
+    protected CTTrackChange del;
+    protected CTTrackChange moveFrom;
+    protected CTTrackChange moveTo;
     protected RStyle rStyle;
     protected Object rFonts;
     protected BooleanDefaultTrue b;
@@ -112,15 +122,15 @@ public class RPr
     protected BooleanDefaultTrue snapToGrid;
     protected BooleanDefaultTrue vanish;
     protected BooleanDefaultTrue webHidden;
-    protected CTRPrChange.RPr.Color color;
+    protected org.docx4j.wml.CTRPrChange.RPr.Color color;
     protected CTSignedTwipsMeasure spacing;
     protected CTTextScale w;
     protected HpsMeasure kern;
     protected CTSignedHpsMeasure position;
     protected HpsMeasure sz;
     protected HpsMeasure szCs;
-    protected CTRPrChange.RPr.Highlight highlight;
-    protected CTRPrChange.RPr.U u;
+    protected org.docx4j.wml.CTRPrChange.RPr.Highlight highlight;
+    protected org.docx4j.wml.CTRPrChange.RPr.U u;
     protected CTTextEffect effect;
     protected CTBorder bdr;
     protected CTShd shd;
@@ -133,9 +143,105 @@ public class RPr
     protected CTEastAsianLayout eastAsianLayout;
     protected BooleanDefaultTrue specVanish;
     protected BooleanDefaultTrue oMath;
-    protected CTRPrChange rPrChange;
+    protected ParaRPrChange rPrChange;
     @XmlTransient
     private Object parent;
+
+    /**
+     * Gets the value of the ins property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public CTTrackChange getIns() {
+        return ins;
+    }
+
+    /**
+     * Sets the value of the ins property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public void setIns(CTTrackChange value) {
+        this.ins = value;
+    }
+
+    /**
+     * Gets the value of the del property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public CTTrackChange getDel() {
+        return del;
+    }
+
+    /**
+     * Sets the value of the del property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public void setDel(CTTrackChange value) {
+        this.del = value;
+    }
+
+    /**
+     * Gets the value of the moveFrom property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public CTTrackChange getMoveFrom() {
+        return moveFrom;
+    }
+
+    /**
+     * Sets the value of the moveFrom property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public void setMoveFrom(CTTrackChange value) {
+        this.moveFrom = value;
+    }
+
+    /**
+     * Gets the value of the moveTo property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public CTTrackChange getMoveTo() {
+        return moveTo;
+    }
+
+    /**
+     * Sets the value of the moveTo property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public void setMoveTo(CTTrackChange value) {
+        this.moveTo = value;
+    }
 
     /**
      * Gets the value of the rStyle property.
@@ -574,10 +680,10 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrChange.RPr.Color }
+     *     {@link org.docx4j.wml.CTRPrChange.RPr.Color }
      *     
      */
-    public CTRPrChange.RPr.Color getColor() {
+    public org.docx4j.wml.CTRPrChange.RPr.Color getColor() {
         return color;
     }
 
@@ -586,10 +692,10 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrChange.RPr.Color }
+     *     {@link org.docx4j.wml.CTRPrChange.RPr.Color }
      *     
      */
-    public void setColor(CTRPrChange.RPr.Color value) {
+    public void setColor(org.docx4j.wml.CTRPrChange.RPr.Color value) {
         this.color = value;
     }
 
@@ -742,10 +848,10 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrChange.RPr.Highlight }
+     *     {@link org.docx4j.wml.CTRPrChange.RPr.Highlight }
      *     
      */
-    public CTRPrChange.RPr.Highlight getHighlight() {
+    public org.docx4j.wml.CTRPrChange.RPr.Highlight getHighlight() {
         return highlight;
     }
 
@@ -754,10 +860,10 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrChange.RPr.Highlight }
+     *     {@link org.docx4j.wml.CTRPrChange.RPr.Highlight }
      *     
      */
-    public void setHighlight(CTRPrChange.RPr.Highlight value) {
+    public void setHighlight(org.docx4j.wml.CTRPrChange.RPr.Highlight value) {
         this.highlight = value;
     }
 
@@ -766,10 +872,10 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrChange.RPr.U }
+     *     {@link org.docx4j.wml.CTRPrChange.RPr.U }
      *     
      */
-    public CTRPrChange.RPr.U getU() {
+    public org.docx4j.wml.CTRPrChange.RPr.U getU() {
         return u;
     }
 
@@ -778,10 +884,10 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrChange.RPr.U }
+     *     {@link org.docx4j.wml.CTRPrChange.RPr.U }
      *     
      */
-    public void setU(CTRPrChange.RPr.U value) {
+    public void setU(org.docx4j.wml.CTRPrChange.RPr.U value) {
         this.u = value;
     }
 
@@ -1078,10 +1184,10 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrChange }
+     *     {@link ParaRPrChange }
      *     
      */
-    public CTRPrChange getRPrChange() {
+    public ParaRPrChange getRPrChange() {
         return rPrChange;
     }
 
@@ -1090,10 +1196,10 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrChange }
+     *     {@link ParaRPrChange }
      *     
      */
-    public void setRPrChange(CTRPrChange value) {
+    public void setRPrChange(ParaRPrChange value) {
         this.rPrChange = value;
     }
 

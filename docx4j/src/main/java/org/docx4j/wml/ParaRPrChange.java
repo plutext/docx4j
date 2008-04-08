@@ -23,94 +23,67 @@ package org.docx4j.wml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Text complex type.
+ * <p>Java class for CT_ParaRPrChange complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Text">
- *   &lt;simpleContent>
- *     &lt;extension base="&lt;http://schemas.openxmlformats.org/wordprocessingml/2006/main>ST_String">
- *       &lt;attribute ref="{http://www.w3.org/XML/1998/namespace}space"/>
+ * &lt;complexType name="CT_ParaRPrChange">
+ *   &lt;complexContent>
+ *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrackChange">
+ *       &lt;sequence>
+ *         &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_ParaRPrOriginal"/>
+ *       &lt;/sequence>
  *     &lt;/extension>
- *   &lt;/simpleContent>
+ *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Text", propOrder = {
-    "value"
+@XmlType(name = "CT_ParaRPrChange", propOrder = {
+    "rPr"
 })
-public class Text implements Child
+public class ParaRPrChange
+    extends CTTrackChange
+    implements Child
 {
 
-    @XmlValue
-    protected String value;
-    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    protected String space;
+    @XmlElement(required = true)
+    protected CTParaRPrOriginal rPr;
     @XmlTransient
     private Object parent;
 
     /**
-     * String
+     * Gets the value of the rPr property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link CTParaRPrOriginal }
      *     
      */
-    public String getValue() {
-        return value;
+    public CTParaRPrOriginal getRPr() {
+        return rPr;
     }
 
     /**
-     * Sets the value of the value property.
+     * Sets the value of the rPr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link CTParaRPrOriginal }
      *     
      */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    /**
-     * Content Contains Significant
-     * 							Whitespace
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSpace() {
-        return space;
-    }
-
-    /**
-     * Sets the value of the space property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSpace(String value) {
-        this.space = value;
+    public void setRPr(CTParaRPrOriginal value) {
+        this.rPr = value;
     }
 
     /**

@@ -55,7 +55,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_SdtDropDownList", propOrder = {
     "listItem"
 })
-public class CTSdtDropDownList implements Child
+public class CTSdtDropDownList
+    implements Child
 {
 
     protected List<CTSdtListItem> listItem;

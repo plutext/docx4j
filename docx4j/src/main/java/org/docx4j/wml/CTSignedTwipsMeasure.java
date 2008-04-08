@@ -49,7 +49,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_SignedTwipsMeasure")
-public class CTSignedTwipsMeasure implements Child
+public class CTSignedTwipsMeasure
+    implements Child
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)

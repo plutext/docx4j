@@ -61,7 +61,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Placeholder", propOrder = {
     "docPart"
 })
-public class CTPlaceholder implements Child
+public class CTPlaceholder
+    implements Child
 {
 
     @XmlElement(required = true)
