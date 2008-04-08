@@ -64,45 +64,45 @@ public class CTRPrOriginal
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "color", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "specVanish", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "webHidden", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "eastAsianLayout", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "effect", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "iCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "strike", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "imprint", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "szCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "shd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "position", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "dstrike", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "kern", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "caps", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "noProof", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "vertAlign", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "u", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "vanish", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "emboss", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "snapToGrid", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "color", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "w", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "rFonts", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "bdr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "spacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "caps", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "lang", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "rStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "bCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "highlight", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "snapToGrid", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "b", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "spacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "outline", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "w", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "em", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "position", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "vanish", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "noProof", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dstrike", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "eastAsianLayout", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "szCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "rStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "effect", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "cs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "shadow", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sz", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "kern", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "imprint", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "smallCaps", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "fitText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "iCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "i", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sz", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "rtl", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "em", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "highlight", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "b", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "emboss", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "u", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bCs", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "shd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "webHidden", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "shadow", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "specVanish", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "vertAlign", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "i", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> egrPrBase;
     @XmlTransient
@@ -126,45 +126,45 @@ public class CTRPrOriginal
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.Color }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTEastAsianLayout }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTextEffect }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTShd }{@code >}
-     * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSignedHpsMeasure }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.U }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTVerticalAlignRun }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTBorder }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFonts }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTLanguage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSignedTwipsMeasure }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.RStyle }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.Highlight }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link CTTextScale }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.Color }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFonts }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBorder }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSignedTwipsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTLanguage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTEm }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSignedHpsMeasure }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFitText }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.RStyle }{@code >}
+     * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTEastAsianLayout }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTextEffect }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTEm }{@code >}
+     * {@link JAXBElement }{@code <}{@link HpsMeasure }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFitText }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.Highlight }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRPrOriginal.U }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTShd }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTVerticalAlignRun }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * 
      * 
      */
