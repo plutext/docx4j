@@ -1,0 +1,472 @@
+Index: C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/src/main/java/org/apache/commons/vfs/provider/http/ThreadLocalHttpConnectionManager.java
+===================================================================
+--- C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/src/main/java/org/apache/commons/vfs/provider/http/ThreadLocalHttpConnectionManager.java	(revision 645753)
++++ C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/src/main/java/org/apache/commons/vfs/provider/http/ThreadLocalHttpConnectionManager.java	(working copy)
+@@ -19,6 +19,7 @@
+ import org.apache.commons.httpclient.HostConfiguration;
+ import org.apache.commons.httpclient.HttpConnection;
+ import org.apache.commons.httpclient.HttpConnectionManager;
++import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
+ 
+ import java.io.IOException;
+ import java.io.InputStream;
+@@ -40,26 +41,40 @@
+  */
+ public class ThreadLocalHttpConnectionManager implements HttpConnectionManager
+ {
+-    private static class ConnectionParameters
+-    {
+-        private boolean staleCheck;
++	
++/*
++ * Revision 209275 was compatible with HttpClient 3.0.1
++ * Revision 209411 reverted back to HttpClient 2.0.2 
++ * on the basis that HttpClient 3.0-rc3 and WebDavLib were not compatible,
++ * which was the case at the time (July 2005), but ceased being the case
++ * in Dec 2006 - see https://issues.apache.org/bugzilla/show_bug.cgi?id=35213
++ * 
++ * This version effectively applies the patch which takes you 
++ * from 209411 to 209275.
++ * 
++ */
++	
++	
++//    private static class ConnectionParameters
++//    {
++//        private boolean staleCheck;
++//
++//        public boolean isStaleCheckingEnabled()
++//        {
++//            return staleCheck;
++//        }
++//
++//        public void setStaleCheckingEnabled(boolean b)
++//        {
++//            staleCheck = b;
++//        }
++//
++//        public void populateParameters(HttpConnection connection)
++//        {
++//            connection.setStaleCheckingEnabled(staleCheck);
++//        }
++//    }
+ 
+-        public boolean isStaleCheckingEnabled()
+-        {
+-            return staleCheck;
+-        }
+-
+-        public void setStaleCheckingEnabled(boolean b)
+-        {
+-            staleCheck = b;
+-        }
+-
+-        public void populateParameters(HttpConnection connection)
+-        {
+-            connection.setStaleCheckingEnabled(staleCheck);
+-        }
+-    }
+-
+     /**
+      * Since the same connection is about to be reused, make sure the
+      * previous request was completely processed, and if not
+@@ -99,7 +114,8 @@
+     /**
+      * Collection of parameters associated with this connection manager.
+      */
+-    private ConnectionParameters params = new ConnectionParameters();
++    //private ConnectionParameters params = new ConnectionParameters();
++    private HttpConnectionManagerParams params = new HttpConnectionManagerParams();
+ 
+     /**
+      * release the connection of the current thread
+@@ -181,7 +197,7 @@
+     }
+ 
+     /**
+-     * @see HttpConnectionManager#getConnection(HostConfiguration, long)
++     * @see HttpConnectionManager#getConnectionWithTimeout(HostConfiguration, long)
+      * @since 3.0
+      */
+     public HttpConnection getConnectionWithTimeout(
+@@ -194,7 +210,9 @@
+             httpConnection = new HttpConnection(hostConfiguration);
+             setLocalHttpConnection(httpConnection);
+             httpConnection.setHttpConnectionManager(this);
+-            this.params.populateParameters(httpConnection);
++//            this.params.populateParameters(httpConnection);
++            httpConnection.getParams().setDefaults(this.params);
++            
+         }
+         else
+         {
+@@ -257,6 +275,34 @@
+     }
+ 
+     /**
++     * Returns {@link HttpConnectionManagerParams parameters} associated
++     * with this connection manager.
++     *
++     * @see HttpConnectionManagerParams
++     * @since 2.1
++     */
++    public HttpConnectionManagerParams getParams()
++    {
++        return this.params;
++    }
++
++    /**
++     * Assigns {@link HttpConnectionManagerParams parameters} for this
++     * connection manager.
++     *
++     * @see HttpConnectionManagerParams
++     * @since 2.1
++     */
++    public void setParams(final HttpConnectionManagerParams params)
++    {
++        if (params == null)
++        {
++            throw new IllegalArgumentException("Parameters may not be null");
++        }
++        this.params = params;
++    }    
++    
++    /**
+      * @since 3.0
+      */
+     public void closeIdleConnections(long idleTimeout)
+Index: C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/src/main/java/org/apache/commons/vfs/provider/AbstractFileObject.java
+===================================================================
+--- C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/src/main/java/org/apache/commons/vfs/provider/AbstractFileObject.java	(revision 645753)
++++ C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/src/main/java/org/apache/commons/vfs/provider/AbstractFileObject.java	(working copy)
+@@ -1342,6 +1342,7 @@
+             }
+             catch (Exception exc)
+             {
++            	exc.printStackTrace();
+                 throw new FileSystemException("vfs.provider/get-type.error", new Object[]{name}, exc);
+             }
+ 
+Index: C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/pom.xml
+===================================================================
+--- C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/pom.xml	(revision 645753)
++++ C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/core/pom.xml	(working copy)
+@@ -74,7 +74,7 @@
+ 		<dependency>
+ 			<groupId>commons-httpclient</groupId>
+ 			<artifactId>commons-httpclient</artifactId>
+-			<version>2.0.2</version>
++			<version>3.0.1</version>
+ 			<optional>true</optional>
+ 		</dependency>
+ 		<dependency>
+Index: C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/pom.xml
+===================================================================
+--- C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/pom.xml	(revision 645753)
++++ C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/pom.xml	(working copy)
+@@ -142,6 +142,92 @@
+     </repository>
+   </repositories>
+ 
++	<dependencies>
++		<dependency>
++			<groupId>commons-logging</groupId>
++			<artifactId>commons-logging</artifactId>
++			<version>1.0.4</version>
++		</dependency>
++		<dependency>
++			<groupId>ant</groupId>
++			<artifactId>ant</artifactId>
++			<version>1.6.2</version>
++			<optional>true</optional>
++		</dependency>
++		<dependency>
++			<groupId>commons-net</groupId>
++			<artifactId>commons-net</artifactId>
++			<version>1.4.1</version>
++			<optional>true</optional>
++		</dependency>
++		<!--TODO:Revert to [compress] if/when released
++			<dependency>
++			  <groupId>commons-compress</groupId>
++			  <artifactId>commons-compress</artifactId>
++			  <version>SNAPSHOT</version>
++			  <optional>true</optional>
++			</dependency-->
++		<dependency>
++			<groupId>commons-collections</groupId>
++			<artifactId>commons-collections</artifactId>
++			<version>3.1</version>
++			<optional>true</optional>
++		</dependency>
++		<dependency>
++			<groupId>jdom</groupId>
++			<artifactId>jdom</artifactId>
++			<version>1.0</version>
++			<optional>true</optional>
++		</dependency>
++		<!--
++		<dependency>
++			<groupId>commons-httpclient</groupId>
++			<artifactId>commons-httpclient</artifactId>
++			<version>3.0.1</version>
++			<optional>true</optional>
++		</dependency> -->
++			<!--
++			<version>2.0.2</version>
++				-->
++		<dependency>
++			<groupId>com.jcraft</groupId>
++			<artifactId>jsch</artifactId>
++			<version>0.1.31</version>
++			<optional>true</optional>
++		</dependency>
++		<dependency>
++			<groupId>xml-apis</groupId>
++			<artifactId>xml-apis</artifactId>
++			<version>1.0.b2</version>
++			<optional>true</optional>
++		</dependency>
++		<dependency>
++			<groupId>oro</groupId>
++			<artifactId>oro</artifactId>
++			<version>2.0.8</version>
++			<optional>true</optional>
++		</dependency>
++		<dependency>
++			<groupId>junit</groupId>
++			<artifactId>junit</artifactId>
++			<version>3.8.1</version>
++			<scope>test</scope>
++		</dependency>
++	<!-- sandbox -->
++		<dependency>
++			<groupId>jcifs</groupId>
++			<artifactId>jcifs</artifactId>
++			<version>0.8.3</version>
++			<optional>true</optional>
++		</dependency>
++		<dependency>
++			<groupId>javax.mail</groupId>
++			<artifactId>mail</artifactId>
++			<version>1.4</version>
++			<optional>true</optional>
++		</dependency>
++	</dependencies>
++		
+   <distributionManagement>
+     <repository>
+       <id>apache.releases</id>
+Index: C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/sandbox/src/main/java/org/apache/commons/vfs/provider/webdav/WebdavFileObject.java
+===================================================================
+--- C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/sandbox/src/main/java/org/apache/commons/vfs/provider/webdav/WebdavFileObject.java	(revision 645753)
++++ C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/sandbox/src/main/java/org/apache/commons/vfs/provider/webdav/WebdavFileObject.java	(working copy)
+@@ -16,6 +16,20 @@
+  */
+ package org.apache.commons.vfs.provider.webdav;
+ 
++import java.io.DataInputStream;
++import java.io.FilterInputStream;
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.OutputStream;
++import java.net.HttpURLConnection;
++import java.util.ArrayList;
++import java.util.Enumeration;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++import java.util.TreeSet;
++
+ import org.apache.commons.httpclient.HttpException;
+ import org.apache.commons.httpclient.HttpMethodBase;
+ import org.apache.commons.httpclient.HttpStatus;
+@@ -26,10 +40,9 @@
+ import org.apache.commons.vfs.NameScope;
+ import org.apache.commons.vfs.RandomAccessContent;
+ import org.apache.commons.vfs.provider.AbstractFileObject;
+-import org.apache.commons.vfs.provider.AbstractRandomAccessContent;
++import org.apache.commons.vfs.provider.AbstractRandomAccessStreamContent;
+ import org.apache.commons.vfs.provider.GenericFileName;
+ import org.apache.commons.vfs.provider.URLFileName;
+-import org.apache.commons.vfs.provider.AbstractRandomAccessStreamContent;
+ import org.apache.commons.vfs.util.FileObjectUtils;
+ import org.apache.commons.vfs.util.MonitorOutputStream;
+ import org.apache.commons.vfs.util.RandomAccessMode;
+@@ -37,23 +50,10 @@
+ import org.apache.webdav.lib.WebdavResource;
+ import org.apache.webdav.lib.methods.DepthSupport;
+ import org.apache.webdav.lib.methods.OptionsMethod;
++import org.apache.webdav.lib.methods.PropFindMethod;
+ import org.apache.webdav.lib.methods.XMLResponseMethodBase;
+ import org.apache.webdav.lib.properties.ResourceTypeProperty;
+ 
+-import java.io.DataInputStream;
+-import java.io.FilterInputStream;
+-import java.io.IOException;
+-import java.io.InputStream;
+-import java.io.OutputStream;
+-import java.net.HttpURLConnection;
+-import java.util.ArrayList;
+-import java.util.Enumeration;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.TreeSet;
+-
+ /**
+  * A WebDAV file.
+  *
+@@ -114,6 +114,7 @@
+      */
+     private void setDavResource(WebdavResource resource) throws Exception
+     {
++    	
+         redirectionResolved = false;
+ 
+         final URLFileName name = (URLFileName) getName();
+@@ -136,7 +137,14 @@
+         {
+             /* now fill the dav properties */
+             String pathEncoded = name.getPathQueryEncoded(urlCharset);
+-            final OptionsMethod optionsMethod = new OptionsMethod(pathEncoded);
++            
++           // We only execute the options method in order to
++           // setAllowedMethods. Haven't looked to see how important doing that is.
++            
++           // Existence is determined separately (see existsTest).
++            
++            
++           final OptionsMethod optionsMethod = new OptionsMethod(pathEncoded);
+             configureMethod(optionsMethod);
+             try
+             {
+@@ -160,44 +168,44 @@
+                 }
+                 // handle the (maybe) redirected url
+                 redirectionResolved = true;
+-                resource.getHttpURL().setEscapedPath(optionsMethod.getURI().getPath());
++                System.out.println(optionsMethod.getURI().getPath());
++//                resource.getHttpURL().setEscapedPath(optionsMethod.getURI().getPath());
++                resource.getHttpURL().setEscapedPath(optionsMethod.getURI().getEscapedPath());
+ 
+                 setAllowedMethods(optionsMethod.getAllowedMethods());
+-                boolean exists = false;
+-                for (Enumeration enumeration = optionsMethod.getAllowedMethods(); enumeration.hasMoreElements();)
+-                {
+-                    final String method = (String) enumeration.nextElement();
+-                    // IIS allows GET even if the file is non existend - so changed to COPY
+-                    // if (method.equals("GET"))
+-                    if (method.equals("COPY"))
+-                    {
+-                        exists = true;
+-                        break;
+-                    }
+-                }
++                
++                boolean exists = existsTest(pathEncoded);
+                 if (!exists)
+                 {
+                     injectType(FileType.IMAGINARY);
+                     return;
+                 }
+-
++                
+                 try
+                 {
+                     resource.setProperties(WebdavResource.DEFAULT, 1);
+                 }
+                 catch (IOException e)
+                 {
++                	e.printStackTrace();
++                	
+                     throw new FileSystemException(e);
+                 }
+             }
+             finally
+             {
+-                optionsMethod.releaseConnection();
++            	optionsMethod.releaseConnection();
+             }
+         }
+ 
+         ResourceTypeProperty resourceType = resource.getResourceType();
+-        if (resourceType.isCollection())
++        if (resourceType == null) {
++        	//This should not happen because resource has been checked for its existence
++        	//and DAV:resourcetype property MUST be defined on all DAV compliant resources.
++        	//However there may be a non-compliant server.
++        	injectType(FileType.FILE_OR_FOLDER);
++        	
++        } else if (resourceType.isCollection())
+         {
+             injectType(FileType.FOLDER);
+         }
+@@ -206,6 +214,28 @@
+             injectType(FileType.FILE);
+         }
+     }
++    
++    private boolean existsTest(String pathEncoded) throws IOException {
++    	
++        final PropFindMethod propFindMethod = new PropFindMethod(pathEncoded);
++        configureMethod(propFindMethod);
++        try
++        {
++        	propFindMethod.setFollowRedirects(true);
++            final int status = fileSystem.getClient().executeMethod(propFindMethod);
++            if (status < 200 || status > 299)
++            {
++                //injectType(FileType.IMAGINARY);
++                return false;
++            } else {
++            	return true;
++            }
++        }
++        finally
++        {
++        	propFindMethod.releaseConnection();
++        }    	
++    }
+ 
+     protected void configureMethod(HttpMethodBase httpMethod)
+     {
+@@ -468,6 +498,7 @@
+             // final boolean ok = resource.putMethod(outstr.toByteArray());
+             try
+             {
++            	System.out.println("In onClose");
+                 final boolean ok = resource.putMethod(webdavTmp.getContent().getInputStream());
+                 if (!ok)
+                 {
+@@ -485,6 +516,7 @@
+ 
+     protected void handleCreate(final FileType newType) throws Exception
+     {
++    	System.out.println("In handleCreate");
+         // imario@apache.org: this is to reread the webdav internal state
+         // Ill treat this as workaround
+         reattach();
+Index: C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/sandbox/pom.xml
+===================================================================
+--- C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/sandbox/pom.xml	(revision 645753)
++++ C:/Users/jojada/workspace/Eclipse3.3/Jason/Commons-VFS/sandbox/pom.xml	(working copy)
+@@ -50,6 +50,7 @@
+ 		<dependency>
+ 			<groupId>slide</groupId>
+ 			<artifactId>jakarta-slide-webdavlib</artifactId>
++			<!-- FIXME: this snapshot is too old; you need one from Dec 06 or later --> 
+ 			<version>20050629.161100</version>
+ 			<optional>true</optional>
+ 		</dependency>
+@@ -62,7 +63,7 @@
+ 		<dependency>
+ 			<groupId>commons-httpclient</groupId>
+ 			<artifactId>commons-httpclient</artifactId>
+-			<version>2.0.2</version>
++			<version>3.0.1</version>
+ 			<optional>true</optional>
+ 		</dependency>
+ 		<dependency>
