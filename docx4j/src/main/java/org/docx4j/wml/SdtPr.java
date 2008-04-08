@@ -245,7 +245,7 @@ public class SdtPr
     public Id getId() {
     	
     	for (Object o : rPrOrAliasOrLock) {
-    		if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtPr.Id") {
+    		if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtPr.Id") ) {
     			log.debug("found id");
     			return (Id)((JAXBElement)o).getValue();
     		} else {
