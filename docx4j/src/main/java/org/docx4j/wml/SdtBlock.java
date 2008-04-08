@@ -55,7 +55,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "sdtEndPr",
     "sdtContent"
 })
-public class CTSdtBlock implements Child
+public class SdtBlock implements Child
 {
 
     protected SdtPr sdtPr;
