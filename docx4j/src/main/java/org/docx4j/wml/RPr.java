@@ -95,7 +95,7 @@ public class RPr
 {
 
     protected RStyle rStyle;
-    protected Object rFonts;
+    protected RFonts rFonts;
     protected BooleanDefaultTrue b;
     protected BooleanDefaultTrue bCs;
     protected BooleanDefaultTrue i;
@@ -169,7 +169,7 @@ public class RPr
      *     {@link Object }
      *     
      */
-    public Object getRFonts() {
+    public RFonts getRFonts() {
         return rFonts;
     }
 
@@ -181,7 +181,7 @@ public class RPr
      *     {@link Object }
      *     
      */
-    public void setRFonts(Object value) {
+    public void setRFonts(RFonts value) {
         this.rFonts = value;
     }
 
