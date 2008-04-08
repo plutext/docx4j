@@ -1,20 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+    You may obtain a copy of the License at 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.wml;
@@ -42,7 +43,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BlockLevelElements" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_BlockLevelElts" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="sectPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SectPr" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -54,7 +55,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Body", propOrder = {
-    "blockLevelElements",
+    "egBlockLevelElts",
     "sectPr"
 })
 public class Body
@@ -62,48 +63,94 @@ public class Body
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "p", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "altChunk", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "tbl", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Sdt.class)
+        @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "permEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "p", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
-    protected List<Object> blockLevelElements;
+    protected List<JAXBElement<?>> egBlockLevelElts;
     protected SectPr sectPr;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the blockLevelElements property.
+     * Gets the value of the egBlockLevelElts property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the blockLevelElements property.
+     * This is why there is not a <CODE>set</CODE> method for the egBlockLevelElts property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getBlockLevelElements().add(newItem);
+     *    getEGBlockLevelElts().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link P }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTAltChunk }{@code >}
+     * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtBlock }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
      * {@link JAXBElement }{@code <}{@link Tbl }{@code >}
-     * {@link Sdt }
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPerm }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCustomXmlBlock }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link ProofError }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link P }{@code >}
      * 
      * 
      */
-    public List<Object> getBlockLevelElements() {
-        if (blockLevelElements == null) {
-            blockLevelElements = new ArrayList<Object>();
+    public List<JAXBElement<?>> getEGBlockLevelElts() {
+        if (egBlockLevelElts == null) {
+            egBlockLevelElts = new ArrayList<JAXBElement<?>>();
         }
-        return this.blockLevelElements;
+        return this.egBlockLevelElts;
     }
 
     /**

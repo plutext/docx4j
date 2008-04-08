@@ -1,20 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+    You may obtain a copy of the License at 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.wml;
@@ -25,6 +26,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -44,9 +46,14 @@ import javax.xml.bind.annotation.XmlAnyElement;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pPr" minOccurs="0"/>
+ *         &lt;element name="pPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_PPr" minOccurs="0"/>
  *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_PContent" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
+ *       &lt;attribute name="rsidRPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
+ *       &lt;attribute name="rsidR" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
+ *       &lt;attribute name="rsidDel" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
+ *       &lt;attribute name="rsidP" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
+ *       &lt;attribute name="rsidRDefault" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_LongHexNumber" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -59,20 +66,53 @@ import javax.xml.bind.annotation.XmlAnyElement;
     "pPr",
     "paragraphContent"
 })
-@XmlRootElement(name = "p")
-public class P
-    implements Child
+public class P implements Child
 {
 
     protected PPr pPr;
-    
-    @XmlAnyElement    
     @XmlElementRefs({
+        @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "smartTag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "fldSimple", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "subDoc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
-        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hyperlink", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "permEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<Object> paragraphContent;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String rsidRPr;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String rsidR;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String rsidDel;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String rsidP;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String rsidRDefault;
     @XmlTransient
     private Object parent;
 
@@ -118,9 +158,36 @@ public class P
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSmartTagRun }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSimpleField }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCustomXmlRun }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link ProofError }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRel }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
      * {@link R }
-     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTHyperlink }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPerm }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtRun }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
      * 
      * 
      */
@@ -129,6 +196,126 @@ public class P
             paragraphContent = new ArrayList<Object>();
         }
         return this.paragraphContent;
+    }
+
+    /**
+     * Gets the value of the rsidRPr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRsidRPr() {
+        return rsidRPr;
+    }
+
+    /**
+     * Sets the value of the rsidRPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRsidRPr(String value) {
+        this.rsidRPr = value;
+    }
+
+    /**
+     * Gets the value of the rsidR property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRsidR() {
+        return rsidR;
+    }
+
+    /**
+     * Sets the value of the rsidR property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRsidR(String value) {
+        this.rsidR = value;
+    }
+
+    /**
+     * Gets the value of the rsidDel property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRsidDel() {
+        return rsidDel;
+    }
+
+    /**
+     * Sets the value of the rsidDel property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRsidDel(String value) {
+        this.rsidDel = value;
+    }
+
+    /**
+     * Gets the value of the rsidP property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRsidP() {
+        return rsidP;
+    }
+
+    /**
+     * Sets the value of the rsidP property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRsidP(String value) {
+        this.rsidP = value;
+    }
+
+    /**
+     * Gets the value of the rsidRDefault property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRsidRDefault() {
+        return rsidRDefault;
+    }
+
+    /**
+     * Sets the value of the rsidRDefault property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRsidRDefault(String value) {
+        this.rsidRDefault = value;
     }
 
     /**

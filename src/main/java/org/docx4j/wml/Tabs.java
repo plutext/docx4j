@@ -1,20 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+    You may obtain a copy of the License at 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.wml;
@@ -40,7 +41,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tab" maxOccurs="unbounded"/>
+ *         &lt;element name="tab" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TabStop" maxOccurs="unbounded"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -58,7 +59,7 @@ public class Tabs
 {
 
     @XmlElement(required = true)
-    protected List<Tab> tab;
+    protected List<CTTabStop> tab;
     @XmlTransient
     private Object parent;
 
@@ -80,13 +81,13 @@ public class Tabs
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Tab }
+     * {@link CTTabStop }
      * 
      * 
      */
-    public List<Tab> getTab() {
+    public List<CTTabStop> getTab() {
         if (tab == null) {
-            tab = new ArrayList<Tab>();
+            tab = new ArrayList<CTTabStop>();
         }
         return this.tab;
     }

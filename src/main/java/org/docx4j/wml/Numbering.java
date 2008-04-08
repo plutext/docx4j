@@ -1,20 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+    You may obtain a copy of the License at 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.wml;
@@ -47,12 +48,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="numPicBulletId" use="required">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
+ *                 &lt;sequence>
+ *                   &lt;element name="pict" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Picture"/>
+ *                 &lt;/sequence>
+ *                 &lt;attribute name="numPicBulletId" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -85,12 +84,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="val" use="required">
- *                             &lt;simpleType>
- *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                               &lt;/restriction>
- *                             &lt;/simpleType>
- *                           &lt;/attribute>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -99,12 +93,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="val" use="required">
- *                             &lt;simpleType>
- *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                               &lt;/restriction>
- *                             &lt;/simpleType>
- *                           &lt;/attribute>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -113,24 +102,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="val" use="required">
- *                             &lt;simpleType>
- *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                               &lt;/restriction>
- *                             &lt;/simpleType>
- *                           &lt;/attribute>
+ *                           &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
  *                   &lt;/element>
  *                   &lt;element name="lvl" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Lvl" maxOccurs="9" minOccurs="0"/>
  *                 &lt;/sequence>
- *                 &lt;attribute name="abstractNumId" use="required">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
+ *                 &lt;attribute name="abstractNumId" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -144,7 +123,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                           &lt;attribute name="val" use="required">
+ *                             &lt;simpleType>
+ *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+ *                               &lt;/restriction>
+ *                             &lt;/simpleType>
+ *                           &lt;/attribute>
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -158,30 +142,25 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                               &lt;complexType>
  *                                 &lt;complexContent>
  *                                   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                                     &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                                     &lt;attribute name="val" use="required">
+ *                                       &lt;simpleType>
+ *                                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+ *                                         &lt;/restriction>
+ *                                       &lt;/simpleType>
+ *                                     &lt;/attribute>
  *                                   &lt;/restriction>
  *                                 &lt;/complexContent>
  *                               &lt;/complexType>
  *                             &lt;/element>
  *                             &lt;element name="lvl" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Lvl" minOccurs="0"/>
  *                           &lt;/sequence>
- *                           &lt;attribute name="ilvl" use="required">
- *                             &lt;simpleType>
- *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
- *                               &lt;/restriction>
- *                             &lt;/simpleType>
- *                           &lt;/attribute>
+ *                           &lt;attribute name="ilvl" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
  *                   &lt;/element>
  *                 &lt;/sequence>
- *                 &lt;attribute name="numId" use="required">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
+ *                 &lt;attribute name="numId" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -190,7 +169,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+ *                 &lt;attribute name="val" use="required">
+ *                   &lt;simpleType>
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+ *                     &lt;/restriction>
+ *                   &lt;/simpleType>
+ *                 &lt;/attribute>
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -393,12 +377,7 @@ public class Numbering
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="val" use="required">
-     *                   &lt;simpleType>
-     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-     *                     &lt;/restriction>
-     *                   &lt;/simpleType>
-     *                 &lt;/attribute>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -407,12 +386,7 @@ public class Numbering
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="val" use="required">
-     *                   &lt;simpleType>
-     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-     *                     &lt;/restriction>
-     *                   &lt;/simpleType>
-     *                 &lt;/attribute>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -421,24 +395,14 @@ public class Numbering
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="val" use="required">
-     *                   &lt;simpleType>
-     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-     *                     &lt;/restriction>
-     *                   &lt;/simpleType>
-     *                 &lt;/attribute>
+     *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
      *         &lt;/element>
      *         &lt;element name="lvl" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Lvl" maxOccurs="9" minOccurs="0"/>
      *       &lt;/sequence>
-     *       &lt;attribute name="abstractNumId" use="required">
-     *         &lt;simpleType>
-     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
-     *           &lt;/restriction>
-     *         &lt;/simpleType>
-     *       &lt;/attribute>
+     *       &lt;attribute name="abstractNumId" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -794,12 +758,7 @@ public class Numbering
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="val" use="required">
-         *         &lt;simpleType>
-         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-         *           &lt;/restriction>
-         *         &lt;/simpleType>
-         *       &lt;/attribute>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -813,7 +772,7 @@ public class Numbering
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -880,12 +839,7 @@ public class Numbering
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="val" use="required">
-         *         &lt;simpleType>
-         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-         *           &lt;/restriction>
-         *         &lt;/simpleType>
-         *       &lt;/attribute>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -899,7 +853,7 @@ public class Numbering
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -966,12 +920,7 @@ public class Numbering
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="val" use="required">
-         *         &lt;simpleType>
-         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-         *           &lt;/restriction>
-         *         &lt;/simpleType>
-         *       &lt;/attribute>
+         *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -985,7 +934,7 @@ public class Numbering
             implements Child
         {
 
-            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+            @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
             protected String val;
             @XmlTransient
             private Object parent;
@@ -1059,7 +1008,12 @@ public class Numbering
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+     *                 &lt;attribute name="val" use="required">
+     *                   &lt;simpleType>
+     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+     *                     &lt;/restriction>
+     *                   &lt;/simpleType>
+     *                 &lt;/attribute>
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -1073,30 +1027,25 @@ public class Numbering
      *                     &lt;complexType>
      *                       &lt;complexContent>
      *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                           &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+     *                           &lt;attribute name="val" use="required">
+     *                             &lt;simpleType>
+     *                               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+     *                               &lt;/restriction>
+     *                             &lt;/simpleType>
+     *                           &lt;/attribute>
      *                         &lt;/restriction>
      *                       &lt;/complexContent>
      *                     &lt;/complexType>
      *                   &lt;/element>
      *                   &lt;element name="lvl" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Lvl" minOccurs="0"/>
      *                 &lt;/sequence>
-     *                 &lt;attribute name="ilvl" use="required">
-     *                   &lt;simpleType>
-     *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
-     *                     &lt;/restriction>
-     *                   &lt;/simpleType>
-     *                 &lt;/attribute>
+     *                 &lt;attribute name="ilvl" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
      *         &lt;/element>
      *       &lt;/sequence>
-     *       &lt;attribute name="numId" use="required">
-     *         &lt;simpleType>
-     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
-     *           &lt;/restriction>
-     *         &lt;/simpleType>
-     *       &lt;/attribute>
+     *       &lt;attribute name="numId" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -1226,10 +1175,6 @@ public class Numbering
 
 
         /**
-         * Abstract Numbering
-         * 											Definition
-         * 											Reference
-         * 
          * <p>Java class for anonymous complex type.
          * 
          * <p>The following schema fragment specifies the expected content contained within this class.
@@ -1238,7 +1183,12 @@ public class Numbering
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+         *       &lt;attribute name="val" use="required">
+         *         &lt;simpleType>
+         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+         *           &lt;/restriction>
+         *         &lt;/simpleType>
+         *       &lt;/attribute>
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1324,19 +1274,19 @@ public class Numbering
          *           &lt;complexType>
          *             &lt;complexContent>
          *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *                 &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+         *                 &lt;attribute name="val" use="required">
+         *                   &lt;simpleType>
+         *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+         *                     &lt;/restriction>
+         *                   &lt;/simpleType>
+         *                 &lt;/attribute>
          *               &lt;/restriction>
          *             &lt;/complexContent>
          *           &lt;/complexType>
          *         &lt;/element>
          *         &lt;element name="lvl" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Lvl" minOccurs="0"/>
          *       &lt;/sequence>
-         *       &lt;attribute name="ilvl" use="required">
-         *         &lt;simpleType>
-         *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
-         *           &lt;/restriction>
-         *         &lt;/simpleType>
-         *       &lt;/attribute>
+         *       &lt;attribute name="ilvl" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1460,10 +1410,6 @@ public class Numbering
 
 
             /**
-             * Numbering
-             * 														Level Starting Value
-             * 														Override
-             * 
              * <p>Java class for anonymous complex type.
              * 
              * <p>The following schema fragment specifies the expected content contained within this class.
@@ -1472,7 +1418,12 @@ public class Numbering
              * &lt;complexType>
              *   &lt;complexContent>
              *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-             *       &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+             *       &lt;attribute name="val" use="required">
+             *         &lt;simpleType>
+             *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+             *           &lt;/restriction>
+             *         &lt;/simpleType>
+             *       &lt;/attribute>
              *     &lt;/restriction>
              *   &lt;/complexContent>
              * &lt;/complexType>
@@ -1549,9 +1500,6 @@ public class Numbering
 
 
     /**
-     * Last Reviewed Abstract Numbering
-     * 								Definition
-     * 
      * <p>Java class for anonymous complex type.
      * 
      * <p>The following schema fragment specifies the expected content contained within this class.
@@ -1560,7 +1508,12 @@ public class Numbering
      * &lt;complexType>
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="val" use="required" type="{http://www.w3.org/2001/XMLSchema}integer" />
+     *       &lt;attribute name="val" use="required">
+     *         &lt;simpleType>
+     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
+     *           &lt;/restriction>
+     *         &lt;/simpleType>
+     *       &lt;/attribute>
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -1641,12 +1594,10 @@ public class Numbering
      * &lt;complexType>
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="numPicBulletId" use="required">
-     *         &lt;simpleType>
-     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
-     *           &lt;/restriction>
-     *         &lt;/simpleType>
-     *       &lt;/attribute>
+     *       &lt;sequence>
+     *         &lt;element name="pict" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Picture"/>
+     *       &lt;/sequence>
+     *       &lt;attribute name="numPicBulletId" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -1655,15 +1606,43 @@ public class Numbering
      * 
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
+    @XmlType(name = "", propOrder = {
+        "pict"
+    })
     public static class NumPicBullet
         implements Child
     {
 
+        @XmlElement(required = true)
+        protected CTPicture pict;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger numPicBulletId;
         @XmlTransient
         private Object parent;
+
+        /**
+         * Gets the value of the pict property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTPicture }
+         *     
+         */
+        public CTPicture getPict() {
+            return pict;
+        }
+
+        /**
+         * Sets the value of the pict property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTPicture }
+         *     
+         */
+        public void setPict(CTPicture value) {
+            this.pict = value;
+        }
 
         /**
          * Gets the value of the numPicBulletId property.

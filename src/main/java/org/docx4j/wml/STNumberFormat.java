@@ -1,20 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+    You may obtain a copy of the License at 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.wml;
@@ -110,28 +111,32 @@ public enum STNumberFormat {
     DECIMAL("decimal"),
 
     /**
-     * Uppercase Roman Numerals
+     * Uppercase Roman
+     * 						Numerals
      * 
      */
     @XmlEnumValue("upperRoman")
     UPPER_ROMAN("upperRoman"),
 
     /**
-     * Lowercase Roman Numerals
+     * Lowercase Roman
+     * 						Numerals
      * 
      */
     @XmlEnumValue("lowerRoman")
     LOWER_ROMAN("lowerRoman"),
 
     /**
-     * Uppercase Latin Alphabet
+     * Uppercase Latin
+     * 						Alphabet
      * 
      */
     @XmlEnumValue("upperLetter")
     UPPER_LETTER("upperLetter"),
 
     /**
-     * Lowercase Latin Alphabet
+     * Lowercase Latin
+     * 						Alphabet
      * 
      */
     @XmlEnumValue("lowerLetter")
@@ -180,7 +185,8 @@ public enum STNumberFormat {
     IDEOGRAPH_DIGITAL("ideographDigital"),
 
     /**
-     * Japanese Counting System
+     * Japanese Counting
+     * 						System
      * 
      */
     @XmlEnumValue("japaneseCounting")
@@ -201,63 +207,72 @@ public enum STNumberFormat {
     IROHA("iroha"),
 
     /**
-     * Double Byte Arabic Numerals
+     * Double Byte Arabic
+     * 						Numerals
      * 
      */
     @XmlEnumValue("decimalFullWidth")
     DECIMAL_FULL_WIDTH("decimalFullWidth"),
 
     /**
-     * Single Byte Arabic Numerals
+     * Single Byte Arabic
+     * 						Numerals
      * 
      */
     @XmlEnumValue("decimalHalfWidth")
     DECIMAL_HALF_WIDTH("decimalHalfWidth"),
 
     /**
-     * Japanese Legal Numbering
+     * Japanese Legal
+     * 						Numbering
      * 
      */
     @XmlEnumValue("japaneseLegal")
     JAPANESE_LEGAL("japaneseLegal"),
 
     /**
-     * Japanese Digital Ten Thousand Counting System
+     * Japanese Digital Ten Thousand Counting
+     * 						System
      * 
      */
     @XmlEnumValue("japaneseDigitalTenThousand")
     JAPANESE_DIGITAL_TEN_THOUSAND("japaneseDigitalTenThousand"),
 
     /**
-     * Decimal Numbers Enclosed in a Circle
+     * Decimal Numbers Enclosed in a
+     * 						Circle
      * 
      */
     @XmlEnumValue("decimalEnclosedCircle")
     DECIMAL_ENCLOSED_CIRCLE("decimalEnclosedCircle"),
 
     /**
-     * Double Byte Arabic Numerals Alternate
+     * Double Byte Arabic Numerals
+     * 						Alternate
      * 
      */
     @XmlEnumValue("decimalFullWidth2")
     DECIMAL_FULL_WIDTH_2("decimalFullWidth2"),
 
     /**
-     * Full-Width AIUEO Order Hiragana
+     * Full-Width AIUEO Order
+     * 						Hiragana
      * 
      */
     @XmlEnumValue("aiueoFullWidth")
     AIUEO_FULL_WIDTH("aiueoFullWidth"),
 
     /**
-     * Full-Width Iroha Ordered Katakana
+     * Full-Width Iroha Ordered
+     * 						Katakana
      * 
      */
     @XmlEnumValue("irohaFullWidth")
     IROHA_FULL_WIDTH("irohaFullWidth"),
 
     /**
-     * Initial Zero Arabic Numerals
+     * Initial Zero Arabic
+     * 						Numerals
      * 
      */
     @XmlEnumValue("decimalZero")
@@ -278,42 +293,48 @@ public enum STNumberFormat {
     GANADA("ganada"),
 
     /**
-     * Korean Chosung Numbering
+     * Korean Chosung
+     * 						Numbering
      * 
      */
     @XmlEnumValue("chosung")
     CHOSUNG("chosung"),
 
     /**
-     * Decimal Numbers Followed by a Period
+     * Decimal Numbers Followed by a
+     * 						Period
      * 
      */
     @XmlEnumValue("decimalEnclosedFullstop")
     DECIMAL_ENCLOSED_FULLSTOP("decimalEnclosedFullstop"),
 
     /**
-     * Decimal Numbers Enclosed in Parenthesis
+     * Decimal Numbers Enclosed in
+     * 						Parenthesis
      * 
      */
     @XmlEnumValue("decimalEnclosedParen")
     DECIMAL_ENCLOSED_PAREN("decimalEnclosedParen"),
 
     /**
-     * Decimal Numbers Enclosed in a Circle
+     * Decimal Numbers Enclosed in a
+     * 						Circle
      * 
      */
     @XmlEnumValue("decimalEnclosedCircleChinese")
     DECIMAL_ENCLOSED_CIRCLE_CHINESE("decimalEnclosedCircleChinese"),
 
     /**
-     * Ideographs Enclosed in a Circle
+     * Ideographs Enclosed in a
+     * 						Circle
      * 
      */
     @XmlEnumValue("ideographEnclosedCircle")
     IDEOGRAPH_ENCLOSED_CIRCLE("ideographEnclosedCircle"),
 
     /**
-     * Traditional Ideograph Format
+     * Traditional Ideograph
+     * 						Format
      * 
      */
     @XmlEnumValue("ideographTraditional")
@@ -327,35 +348,40 @@ public enum STNumberFormat {
     IDEOGRAPH_ZODIAC("ideographZodiac"),
 
     /**
-     * Traditional Zodiac Ideograph Format
+     * Traditional Zodiac Ideograph
+     * 						Format
      * 
      */
     @XmlEnumValue("ideographZodiacTraditional")
     IDEOGRAPH_ZODIAC_TRADITIONAL("ideographZodiacTraditional"),
 
     /**
-     * Taiwanese Counting System
+     * Taiwanese Counting
+     * 						System
      * 
      */
     @XmlEnumValue("taiwaneseCounting")
     TAIWANESE_COUNTING("taiwaneseCounting"),
 
     /**
-     * Traditional Legal Ideograph Format
+     * Traditional Legal Ideograph
+     * 						Format
      * 
      */
     @XmlEnumValue("ideographLegalTraditional")
     IDEOGRAPH_LEGAL_TRADITIONAL("ideographLegalTraditional"),
 
     /**
-     * Taiwanese Counting Thousand System
+     * Taiwanese Counting Thousand
+     * 						System
      * 
      */
     @XmlEnumValue("taiwaneseCountingThousand")
     TAIWANESE_COUNTING_THOUSAND("taiwaneseCountingThousand"),
 
     /**
-     * Taiwanese Digital Counting System
+     * Taiwanese Digital Counting
+     * 						System
      * 
      */
     @XmlEnumValue("taiwaneseDigital")
@@ -369,21 +395,24 @@ public enum STNumberFormat {
     CHINESE_COUNTING("chineseCounting"),
 
     /**
-     * Chinese Legal Simplified Format
+     * Chinese Legal Simplified
+     * 						Format
      * 
      */
     @XmlEnumValue("chineseLegalSimplified")
     CHINESE_LEGAL_SIMPLIFIED("chineseLegalSimplified"),
 
     /**
-     * Chinese Counting Thousand System
+     * Chinese Counting Thousand
+     * 						System
      * 
      */
     @XmlEnumValue("chineseCountingThousand")
     CHINESE_COUNTING_THOUSAND("chineseCountingThousand"),
 
     /**
-     * Korean Digital Counting System
+     * Korean Digital Counting
+     * 						System
      * 
      */
     @XmlEnumValue("koreanDigital")
@@ -404,7 +433,8 @@ public enum STNumberFormat {
     KOREAN_LEGAL("koreanLegal"),
 
     /**
-     * Korean Digital Counting System Alternate
+     * Korean Digital Counting System
+     * 						Alternate
      * 
      */
     @XmlEnumValue("koreanDigital2")
@@ -418,14 +448,16 @@ public enum STNumberFormat {
     VIETNAMESE_COUNTING("vietnameseCounting"),
 
     /**
-     * Lowercase Russian Alphabet
+     * Lowercase Russian
+     * 						Alphabet
      * 
      */
     @XmlEnumValue("russianLower")
     RUSSIAN_LOWER("russianLower"),
 
     /**
-     * Uppercase Russian Alphabet
+     * Uppercase Russian
+     * 						Alphabet
      * 
      */
     @XmlEnumValue("russianUpper")
