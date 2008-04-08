@@ -30,6 +30,8 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.log4j.Logger;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -52,11 +54,13 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_SdtContentBlock", propOrder = {
-    "egContentBlockContent"
+    "contents"
 })
 public class SdtContentBlock
     implements Child
 {
+	
+	private static Logger log = Logger.getLogger(SdtContentBlock.class);				
 
     @XmlElementRefs({
         @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -87,12 +91,12 @@ public class SdtContentBlock
         @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
-    protected List<JAXBElement<?>> egContentBlockContent;
+    protected List<JAXBElement<?>> contents;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the egContentBlockContent property.
+     * Gets the value of the contents property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
@@ -139,11 +143,11 @@ public class SdtContentBlock
      * 
      * 
      */
-    public List<JAXBElement<?>> getEGContentBlockContent() {
-        if (egContentBlockContent == null) {
-            egContentBlockContent = new ArrayList<JAXBElement<?>>();
+    public List<JAXBElement<?>> getContents() {
+        if (contents == null) {
+        	contents = new ArrayList<JAXBElement<?>>();
         }
-        return this.egContentBlockContent;
+        return this.contents;
     }
 
     /**
@@ -172,4 +176,39 @@ public class SdtContentBlock
         setParent(parent);
     }
 
+    public void replaceElement(Object current, List insertions) {
+
+    	int index = contents.indexOf(current);    	
+    	if (index > -1 ) {    		
+    		contents.addAll(index+1, insertions);  
+    		Object removed = contents.remove(index);
+    		// sanity check
+    		if (!current.equals(removed)) {
+    			log.error("removed wrong object?");
+    		}    		
+    	} else {
+    		// Not found
+    		log.error("Couldn't find replacement target.");
+    	}
+
+/*    	
+    	List<Object> newList = new ArrayList<Object>();
+    	
+    	for (Object o : getBlockLevelElements() ) {
+    		
+    		if (o.equals(current)) {
+    			log.debug(".. found target ");
+    			for (Object o2 : insertions ) {
+    				newList.add(o2);
+        			log.debug(".. .. inserted ");
+    			}
+    		} else {
+				newList.add(o);
+    		}
+    	}
+    	
+    	blockLevelElements = newList;
+    	*/ 
+    }
+    
 }

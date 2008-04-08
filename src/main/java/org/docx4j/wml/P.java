@@ -32,6 +32,8 @@ import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.log4j.Logger;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 import javax.xml.bind.annotation.XmlAnyElement;
@@ -69,6 +71,8 @@ import javax.xml.bind.annotation.XmlAnyElement;
 public class P implements Child
 {
 
+	private static Logger log = Logger.getLogger(P.class);			
+	
     protected PPr pPr;
     @XmlElementRefs({
         @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -359,18 +363,18 @@ public class P implements Child
 			if ( o instanceof org.docx4j.wml.R) {
 //		    	System.out.println("Hit R");
 				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
-		    	List<Object> runContent = run.getRunContent();
-				for (Object o2 : runContent ) {					
-					if ( o2 instanceof javax.xml.bind.JAXBElement) {
+		    	List<JAXBElement<?>> runContent = run.getRunContent();
+				for (JAXBElement o2 : runContent ) {					
+					//if ( o2 instanceof javax.xml.bind.JAXBElement) {
 						// TODO - unmarshall directly to Text.
 						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
 //					    	System.out.println("Found Text");
 							org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o2).getValue();
 							result.append( t.getValue() );					
 						}
-					} else {
+					//} else {
 //				    	System.out.println(o2.getClass().getName());						
-					}
+					//}
 				}
 			} 
 		}
@@ -378,4 +382,20 @@ public class P implements Child
     	
     }
 
+    public void replaceElement(Object current, List insertions) {
+
+    	int index = paragraphContent.indexOf(current);    	
+    	if (index > -1 ) {    		
+    		paragraphContent.addAll(index+1, insertions);  
+    		Object removed = paragraphContent.remove(index);
+    		// sanity check
+    		if (!current.equals(removed)) {
+    			log.error("removed wrong object?");
+    		}    		
+    	} else {
+    		// Not found
+    		log.error("Couldn't find replacement target.");
+    	}
+    }    
+    
 }
