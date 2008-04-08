@@ -146,7 +146,7 @@ public class Body
      * 
      * 
      */
-    public List<Object> getEGBlockLevelElts() {
+    public List<Object> getBlockLevelElements() {
         if (egBlockLevelElts == null) {
             egBlockLevelElts = new ArrayList<Object>();
         }
