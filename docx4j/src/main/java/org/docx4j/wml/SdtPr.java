@@ -141,7 +141,8 @@ import org.apache.log4j.Logger;
 public class SdtPr
     implements Child
 {
-
+	private static Logger log = Logger.getLogger(SdtPr.class);
+	
     @XmlElementRefs({
         @XmlElementRef(name = "dataBinding", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "comboBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -258,9 +259,9 @@ public class SdtPr
         		rPrOrAliasOrLock.remove(existingId);
     		}    	
     	} else {
-    		ObjectFactory factory = new ObjectFactory();
-    		JAXBElement idWrapper = factory.createSdtPrId(value);
-    		rPrOrAliasOrLock.add(idWrapper);
+    		//ObjectFactory factory = new ObjectFactory();
+    		//JAXBElement idWrapper = factory.createSdtPrId(value);
+    		rPrOrAliasOrLock.add(value);
     	}
     }
     
