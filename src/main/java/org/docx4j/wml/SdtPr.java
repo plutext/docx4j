@@ -155,6 +155,8 @@ import org.apache.log4j.Logger;
 public class SdtPr
     implements Child
 {
+	
+	private static Logger log = Logger.getLogger(SdtPr.class);		
 
     @XmlElementRefs({
         @XmlElementRef(name = "docPartObj", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -231,6 +233,85 @@ public class SdtPr
         }
         return this.rPrOrAliasOrLock;
     }
+    
+    /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Id }
+     *     
+     */
+    public Id getId() {
+    	
+    	for (Object o : rPrOrAliasOrLock) {
+    		if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtPr.Id") {
+    			log.debug("found id");
+    			return (Id)((JAXBElement)o).getValue();
+    		} else {
+    			log.debug("Skipping " + ((JAXBElement)o).getDeclaredType().getName() );
+    		}
+    	}
+    	
+        return null;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Id }
+     *     
+     */
+    public void setId(Id value) {
+    	
+    	Id existingId = getId(); 
+    	
+    	if (existingId!=null) {
+    		if (!existingId.equals(value)) {
+    			log.debug("Changing SDT ID from " + existingId + " to " + value);
+        		rPrOrAliasOrLock.remove(existingId);
+    		}    	
+    	} else {
+    		ObjectFactory factory = new ObjectFactory();
+    		JAXBElement idWrapper = factory.createSdtPrId(value);
+    		rPrOrAliasOrLock.add(idWrapper);
+    	}
+    }
+    
+    // Not generated!
+    public void setId() {
+
+    	Id id = new Id();
+    	id.setVal( java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt())) );
+    	setId(id);    	
+    }
+
+//    /**
+//     * Gets the value of the tag property.
+//     * 
+//     * @return
+//     *     possible object is
+//     *     {@link SdtPr.Tag }
+//     *     
+//     */
+//    public SdtPr.Tag getTag() {
+//        return tag;
+//    }
+//
+//    /**
+//     * Sets the value of the tag property.
+//     * 
+//     * @param value
+//     *     allowed object is
+//     *     {@link SdtPr.Tag }
+//     *     
+//     */
+//    public void setTag(SdtPr.Tag value) {
+//        this.tag = value;
+//    }
+    
 
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
@@ -633,6 +714,21 @@ public class SdtPr
             setParent(parent);
         }
 
+        public boolean equals(Object obj) {
+    	if (obj instanceof Id) {
+	    		return val.equals( ((Id)obj).getVal() ); 
+	    	} else {
+	    		return false;
+	    	}
+	    }
+	   
+	    public int hashCode() {
+	    	
+	    	// Natural and good enough...
+	    	return val.intValue();	    	
+	    }
+        
+        
     }
 
 
