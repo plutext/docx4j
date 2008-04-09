@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -564,7 +565,7 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 		para.getParagraphContent().add(run);
 		
 		org.docx4j.wml.Body  body = factory.createBody();
-		body.getBlockLevelElements().add(para);
+		body.getEGBlockLevelElts().add(para);
 		
 		org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
 		wmlDocumentEl.setBody(body);
