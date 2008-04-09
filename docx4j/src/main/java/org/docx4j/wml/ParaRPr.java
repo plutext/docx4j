@@ -96,7 +96,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "oMath",
     "rPrChange"
 })
-public class ParaRPr  // it would be nice just to extend RPr, but no can do with JAXB 2.0
+public class ParaRPr
     implements Child
 {
 
@@ -104,8 +104,6 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
     protected CTTrackChange del;
     protected CTTrackChange moveFrom;
     protected CTTrackChange moveTo;
-    
-    // The rest is the same as RPr
     protected RStyle rStyle;
     protected RFonts rFonts;
     protected BooleanDefaultTrue b;

@@ -41,30 +41,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val">
- *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="single"/>
- *             &lt;enumeration value="words"/>
- *             &lt;enumeration value="double"/>
- *             &lt;enumeration value="thick"/>
- *             &lt;enumeration value="dotted"/>
- *             &lt;enumeration value="dottedHeavy"/>
- *             &lt;enumeration value="dash"/>
- *             &lt;enumeration value="dashedHeavy"/>
- *             &lt;enumeration value="dashLong"/>
- *             &lt;enumeration value="dashLongHeavy"/>
- *             &lt;enumeration value="dotDash"/>
- *             &lt;enumeration value="dashDotHeavy"/>
- *             &lt;enumeration value="dotDotDash"/>
- *             &lt;enumeration value="dashDotDotHeavy"/>
- *             &lt;enumeration value="wave"/>
- *             &lt;enumeration value="wavyHeavy"/>
- *             &lt;enumeration value="wavyDouble"/>
- *             &lt;enumeration value="none"/>
- *           &lt;/restriction>
- *         &lt;/simpleType>
- *       &lt;/attribute>
+ *       &lt;attribute name="val" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}UnderlineEnumeration" />
  *       &lt;attribute name="color" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_HexColor" />
  *       &lt;attribute name="themeColor" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_ThemeColor" />
  *       &lt;attribute name="themeTint" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_UcharHexNumber" />
@@ -83,7 +60,7 @@ public class U implements Child
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected String val;
+    protected UnderlineEnumeration val;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected String color;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -102,10 +79,10 @@ public class U implements Child
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link UnderlineEnumeration }
      *     
      */
-    public String getVal() {
+    public UnderlineEnumeration getVal() {
         return val;
     }
 
@@ -114,10 +91,10 @@ public class U implements Child
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link UnderlineEnumeration }
      *     
      */
-    public void setVal(String value) {
+    public void setVal(UnderlineEnumeration value) {
         this.val = value;
     }
 
