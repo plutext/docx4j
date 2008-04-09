@@ -1,23 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    If you need the right to use it under a different license, please
-    contact Plutext.
+    You may obtain a copy of the License at 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+        http://www.apache.org/licenses/LICENSE-2.0 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.docProps.core.dc.terms;
@@ -88,107 +86,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Period }
-     * 
-     */
-    public Period createPeriod() {
-        return new Period();
-    }
-
-    /**
      * Create an instance of {@link ISO6392 }
      * 
      */
     public ISO6392 createISO6392() {
         return new ISO6392();
-    }
-
-    /**
-     * Create an instance of {@link ElementOrRefinementContainer }
-     * 
-     */
-    public ElementOrRefinementContainer createElementOrRefinementContainer() {
-        return new ElementOrRefinementContainer();
-    }
-
-    /**
-     * Create an instance of {@link URI }
-     * 
-     */
-    public URI createURI() {
-        return new URI();
-    }
-
-    /**
-     * Create an instance of {@link MESH }
-     * 
-     */
-    public MESH createMESH() {
-        return new MESH();
-    }
-
-    /**
-     * Create an instance of {@link W3CDTF }
-     * 
-     */
-    public W3CDTF createW3CDTF() {
-        return new W3CDTF();
-    }
-
-    /**
-     * Create an instance of {@link TGN }
-     * 
-     */
-    public TGN createTGN() {
-        return new TGN();
-    }
-
-    /**
-     * Create an instance of {@link ISO3166 }
-     * 
-     */
-    public ISO3166 createISO3166() {
-        return new ISO3166();
-    }
-
-    /**
-     * Create an instance of {@link UDC }
-     * 
-     */
-    public UDC createUDC() {
-        return new UDC();
-    }
-
-    /**
-     * Create an instance of {@link DCMIType }
-     * 
-     */
-    public DCMIType createDCMIType() {
-        return new DCMIType();
-    }
-
-    /**
-     * Create an instance of {@link Point }
-     * 
-     */
-    public Point createPoint() {
-        return new Point();
-    }
-
-    /**
-     * Create an instance of {@link LCSH }
-     * 
-     */
-    public LCSH createLCSH() {
-        return new LCSH();
-    }
-
-    /**
-     * Create an instance of {@link DDC }
-     * 
-     */
-    public DDC createDDC() {
-        return new DDC();
     }
 
     /**
@@ -200,6 +102,22 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link Period }
+     * 
+     */
+    public Period createPeriod() {
+        return new Period();
+    }
+
+    /**
+     * Create an instance of {@link Point }
+     * 
+     */
+    public Point createPoint() {
+        return new Point();
+    }
+
+    /**
      * Create an instance of {@link Box }
      * 
      */
@@ -208,11 +126,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link RFC1766 }
+     * Create an instance of {@link LCC }
      * 
      */
-    public RFC1766 createRFC1766() {
-        return new RFC1766();
+    public LCC createLCC() {
+        return new LCC();
+    }
+
+    /**
+     * Create an instance of {@link UDC }
+     * 
+     */
+    public UDC createUDC() {
+        return new UDC();
+    }
+
+    /**
+     * Create an instance of {@link LCSH }
+     * 
+     */
+    public LCSH createLCSH() {
+        return new LCSH();
+    }
+
+    /**
+     * Create an instance of {@link W3CDTF }
+     * 
+     */
+    public W3CDTF createW3CDTF() {
+        return new W3CDTF();
+    }
+
+    /**
+     * Create an instance of {@link DCMIType }
+     * 
+     */
+    public DCMIType createDCMIType() {
+        return new DCMIType();
     }
 
     /**
@@ -224,11 +174,59 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link LCC }
+     * Create an instance of {@link MESH }
      * 
      */
-    public LCC createLCC() {
-        return new LCC();
+    public MESH createMESH() {
+        return new MESH();
+    }
+
+    /**
+     * Create an instance of {@link TGN }
+     * 
+     */
+    public TGN createTGN() {
+        return new TGN();
+    }
+
+    /**
+     * Create an instance of {@link URI }
+     * 
+     */
+    public URI createURI() {
+        return new URI();
+    }
+
+    /**
+     * Create an instance of {@link ISO3166 }
+     * 
+     */
+    public ISO3166 createISO3166() {
+        return new ISO3166();
+    }
+
+    /**
+     * Create an instance of {@link DDC }
+     * 
+     */
+    public DDC createDDC() {
+        return new DDC();
+    }
+
+    /**
+     * Create an instance of {@link ElementOrRefinementContainer }
+     * 
+     */
+    public ElementOrRefinementContainer createElementOrRefinementContainer() {
+        return new ElementOrRefinementContainer();
+    }
+
+    /**
+     * Create an instance of {@link RFC1766 }
+     * 
+     */
+    public RFC1766 createRFC1766() {
+        return new RFC1766();
     }
 
     /**
