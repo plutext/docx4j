@@ -99,17 +99,19 @@ public class MainDocumentPart extends DocumentPart  {
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 			
-			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );
+//			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );			
+//			jaxbElement = (org.docx4j.wml.Document)root.getValue();
 			
-			jaxbElement = (org.docx4j.wml.Document)root.getValue();
+			jaxbElement =  u.unmarshal( is );
+			return jaxbElement;
 			
-			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+			//System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();
+			return null;
 		}
     	
-		return jaxbElement;
     	
     }
 
@@ -145,7 +147,7 @@ public class MainDocumentPart extends DocumentPart  {
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getBlockLevelElements();
+		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
 		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
 
@@ -203,13 +205,13 @@ public class MainDocumentPart extends DocumentPart  {
 			if (rPrDefault!=null) {
 				org.docx4j.wml.RPr rPr = rPrDefault.getRPr();
 				if ( rPr!=null ) {
-					org.docx4j.wml.RPr.RFonts rFonts = rPr.getRFonts();
+					org.docx4j.wml.RFonts rFonts = rPr.getRFonts();
 					if (rFonts!=null) {
 						
 						// Usual case
 						if (rFonts.getAsciiTheme()!=null ) {
 							// for example minorHAnsi, which I think translates to minorFont/latin 
-							if (rFonts.getAsciiTheme().equals(org.docx4j.wml.ThemeFontEnumeration.MINOR_H_ANSI)) {
+							if (rFonts.getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
 								if (themePart!=null) {
 									org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
 									if (fontScheme.getMinorFont()!=null
@@ -357,7 +359,7 @@ public class MainDocumentPart extends DocumentPart  {
     			
 				org.docx4j.dml.Theme theme = (org.docx4j.dml.Theme)themePart.getJaxbElement();
 				org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
-				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.ThemeFontEnumeration.MINOR_H_ANSI)) {
+				if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MINOR_H_ANSI)) {
 					if (fontScheme != null && fontScheme.getMinorFont().getLatin() != null) {
 						fontScheme = theme.getThemeElements().getFontScheme();
 						org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
@@ -368,7 +370,7 @@ public class MainDocumentPart extends DocumentPart  {
 						log.info("No minorFont/latin in theme part - default to Calibri");
 						return ("Calibri");
 					}
-				} else if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.ThemeFontEnumeration.MAJOR_H_ANSI)) {
+				} else if (rPr.getRFonts().getAsciiTheme().equals(org.docx4j.wml.STTheme.MAJOR_H_ANSI)) {
 					if (fontScheme != null && fontScheme.getMajorFont().getLatin() != null) {
 						fontScheme = theme.getThemeElements().getFontScheme();
 						org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
@@ -461,17 +463,45 @@ public class MainDocumentPart extends DocumentPart  {
 		}
 	}
 	
-    private void inspectRPr(org.docx4j.wml.RPr rPr, Map fontsDiscovered, Map stylesInUse) {
-    	if (rPr.getRFonts()!=null) {
-    		// 	Note the font - just Ascii for now
-    		//log.debug("put font " + rPr.getRFonts().getAscii());
-    		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
+    private void inspectRPr(Object rPrObj, Map fontsDiscovered, Map stylesInUse) {
+    	
+    	if ( rPrObj instanceof org.docx4j.wml.RPr) {
+
+    		org.docx4j.wml.RPr rPr =  (org.docx4j.wml.RPr)rPrObj;
+    		
+        	if (rPr.getRFonts()!=null) {
+        		// 	Note the font - just Ascii for now
+        		//log.debug("put font " + rPr.getRFonts().getAscii());
+        		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
+        	}
+        	if (rPr.getRStyle()!=null) {
+        		// 	Note this run style
+        		//log.debug("put style " + rPr.getRStyle().getVal() );
+        		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
+        	}
+    		
+    		
+    	} else if ( rPrObj instanceof org.docx4j.wml.RPr) {
+
+    		org.docx4j.wml.ParaRPr rPr =  (org.docx4j.wml.ParaRPr)rPrObj;
+    		
+        	if (rPr.getRFonts()!=null) {
+        		// 	Note the font - just Ascii for now
+        		//log.debug("put font " + rPr.getRFonts().getAscii());
+        		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
+        	}
+        	if (rPr.getRStyle()!=null) {
+        		// 	Note this run style
+        		//log.debug("put style " + rPr.getRStyle().getVal() );
+        		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
+        	}
+    		
+    		
+    	} else {
+    		
+    		log.error("Expected some kind of rPr, not " + rPrObj.getClass().getName() );    		
     	}
-    	if (rPr.getRStyle()!=null) {
-    		// 	Note this run style
-    		//log.debug("put style " + rPr.getRStyle().getVal() );
-    		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
-    	}
+    	
 }
 
 	private void debugPrint( Document coreDoc) {
