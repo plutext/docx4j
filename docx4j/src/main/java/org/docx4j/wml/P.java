@@ -70,6 +70,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlRootElement(name = "p")
 public class P implements Child
 {
+	
+	private static Logger log = Logger.getLogger(P.class);	
 
     protected PPr pPr;
     @XmlElementRefs({
