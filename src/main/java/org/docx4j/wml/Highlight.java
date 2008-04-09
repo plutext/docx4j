@@ -20,27 +20,48 @@
 
 package org.docx4j.wml;
 
-import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_FtnEdnRef complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_FtnEdnRef">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="customMarkFollows" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+ *       &lt;attribute name="val" use="required">
+ *         &lt;simpleType>
+ *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *             &lt;enumeration value="black"/>
+ *             &lt;enumeration value="blue"/>
+ *             &lt;enumeration value="cyan"/>
+ *             &lt;enumeration value="green"/>
+ *             &lt;enumeration value="magenta"/>
+ *             &lt;enumeration value="red"/>
+ *             &lt;enumeration value="yellow"/>
+ *             &lt;enumeration value="white"/>
+ *             &lt;enumeration value="darkBlue"/>
+ *             &lt;enumeration value="darkCyan"/>
+ *             &lt;enumeration value="darkGreen"/>
+ *             &lt;enumeration value="darkMagenta"/>
+ *             &lt;enumeration value="darkRed"/>
+ *             &lt;enumeration value="darkYellow"/>
+ *             &lt;enumeration value="darkGray"/>
+ *             &lt;enumeration value="lightGray"/>
+ *             &lt;enumeration value="none"/>
+ *           &lt;/restriction>
+ *         &lt;/simpleType>
+ *       &lt;/attribute>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -49,68 +70,38 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_FtnEdnRef")
-public class CTFtnEdnRef
-    implements Child
+@XmlType(name = "")
+@XmlRootElement(name = "highlight")
+public class Highlight implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected Boolean customMarkFollows;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    protected BigInteger id;
+    protected String val;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the customMarkFollows property.
+     * Gets the value of the val property.
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link String }
      *     
      */
-    public boolean isCustomMarkFollows() {
-        if (customMarkFollows == null) {
-            return true;
-        } else {
-            return customMarkFollows;
-        }
+    public String getVal() {
+        return val;
     }
 
     /**
-     * Sets the value of the customMarkFollows property.
+     * Sets the value of the val property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link String }
      *     
      */
-    public void setCustomMarkFollows(Boolean value) {
-        this.customMarkFollows = value;
-    }
-
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
-    public BigInteger getId() {
-        return id;
-    }
-
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
-     */
-    public void setId(BigInteger value) {
-        this.id = value;
+    public void setVal(String value) {
+        this.val = value;
     }
 
     /**

@@ -53,7 +53,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Text", propOrder = {
     "value"
 })
-public class Text implements Child
+public class Text
+    implements Child
 {
 
     @XmlValue
