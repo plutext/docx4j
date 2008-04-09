@@ -59,7 +59,6 @@ public class CTRubyContent
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
         @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -70,6 +69,7 @@ public class CTRubyContent
         @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = R.class),
         @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -106,7 +106,6 @@ public class CTRubyContent
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link R }
      * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
@@ -118,6 +117,7 @@ public class CTRubyContent
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link ProofError }{@code >}
      * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+     * {@link R }
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}

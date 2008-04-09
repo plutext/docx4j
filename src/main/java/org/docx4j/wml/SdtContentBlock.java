@@ -59,9 +59,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class SdtContentBlock
     implements Child
 {
-	
-	private static Logger log = Logger.getLogger(SdtContentBlock.class);		
 
+	private static Logger log = Logger.getLogger(SdtContentBlock.class);	
+	
     @XmlElementRefs({
         @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
