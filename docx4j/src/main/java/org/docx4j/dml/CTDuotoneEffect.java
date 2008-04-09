@@ -1,23 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    If you need the right to use it under a different license, please
-    contact Plutext.
+    You may obtain a copy of the License at 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+        http://www.apache.org/licenses/LICENSE-2.0 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.dml;
@@ -57,12 +55,12 @@ import javax.xml.bind.annotation.XmlType;
 public class CTDuotoneEffect {
 
     @XmlElements({
-        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
         @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
-        @XmlElement(name = "hslClr", type = CTHslColor.class),
-        @XmlElement(name = "prstClr", type = CTPresetColor.class),
         @XmlElement(name = "sysClr", type = CTSystemColor.class),
-        @XmlElement(name = "schemeClr", type = CTSchemeColor.class)
+        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
+        @XmlElement(name = "hslClr", type = CTHslColor.class),
+        @XmlElement(name = "schemeClr", type = CTSchemeColor.class),
+        @XmlElement(name = "prstClr", type = CTPresetColor.class)
     })
     protected List<Object> egColorChoice;
 
@@ -84,12 +82,12 @@ public class CTDuotoneEffect {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTSRgbColor }
      * {@link CTScRgbColor }
-     * {@link CTHslColor }
-     * {@link CTPresetColor }
      * {@link CTSystemColor }
+     * {@link CTSRgbColor }
+     * {@link CTHslColor }
      * {@link CTSchemeColor }
+     * {@link CTPresetColor }
      * 
      * 
      */

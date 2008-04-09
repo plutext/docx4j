@@ -1,23 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    If you need the right to use it under a different license, please
-    contact Plutext.
+    You may obtain a copy of the License at 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+        http://www.apache.org/licenses/LICENSE-2.0 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.dml;
@@ -80,23 +78,23 @@ import javax.xml.bind.annotation.XmlType;
 public class CTBlip {
 
     @XmlElements({
-        @XmlElement(name = "hsl", type = CTHSLEffect.class),
-        @XmlElement(name = "blur", type = CTBlurEffect.class),
-        @XmlElement(name = "alphaInv", type = CTAlphaInverseEffect.class),
-        @XmlElement(name = "alphaModFix", type = CTAlphaModulateFixedEffect.class),
-        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
         @XmlElement(name = "alphaFloor", type = CTAlphaFloorEffect.class),
-        @XmlElement(name = "tint", type = CTTintEffect.class),
-        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
+        @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
+        @XmlElement(name = "alphaInv", type = CTAlphaInverseEffect.class),
+        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
         @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class),
         @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
-        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class),
-        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
-        @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
+        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
         @XmlElement(name = "lum", type = CTLuminanceEffect.class),
-        @XmlElement(name = "biLevel", type = CTBiLevelEffect.class),
+        @XmlElement(name = "hsl", type = CTHSLEffect.class),
+        @XmlElement(name = "clrChange", type = CTColorChangeEffect.class),
+        @XmlElement(name = "tint", type = CTTintEffect.class),
+        @XmlElement(name = "blur", type = CTBlurEffect.class),
         @XmlElement(name = "alphaCeiling", type = CTAlphaCeilingEffect.class),
-        @XmlElement(name = "clrChange", type = CTColorChangeEffect.class)
+        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class),
+        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
+        @XmlElement(name = "biLevel", type = CTBiLevelEffect.class),
+        @XmlElement(name = "alphaModFix", type = CTAlphaModulateFixedEffect.class)
     })
     protected List<Object> alphaBiLevelOrAlphaCeilingOrAlphaFloor;
     protected CTOfficeArtExtensionList extLst;
@@ -125,23 +123,23 @@ public class CTBlip {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTHSLEffect }
-     * {@link CTBlurEffect }
-     * {@link CTAlphaInverseEffect }
-     * {@link CTAlphaModulateFixedEffect }
-     * {@link CTColorReplaceEffect }
      * {@link CTAlphaFloorEffect }
-     * {@link CTTintEffect }
-     * {@link CTAlphaReplaceEffect }
+     * {@link CTFillOverlayEffect }
+     * {@link CTAlphaInverseEffect }
+     * {@link CTDuotoneEffect }
      * {@link CTAlphaModulateEffect }
      * {@link CTGrayscaleEffect }
-     * {@link CTAlphaBiLevelEffect }
-     * {@link CTDuotoneEffect }
-     * {@link CTFillOverlayEffect }
+     * {@link CTAlphaReplaceEffect }
      * {@link CTLuminanceEffect }
-     * {@link CTBiLevelEffect }
-     * {@link CTAlphaCeilingEffect }
+     * {@link CTHSLEffect }
      * {@link CTColorChangeEffect }
+     * {@link CTTintEffect }
+     * {@link CTBlurEffect }
+     * {@link CTAlphaCeilingEffect }
+     * {@link CTAlphaBiLevelEffect }
+     * {@link CTColorReplaceEffect }
+     * {@link CTBiLevelEffect }
+     * {@link CTAlphaModulateFixedEffect }
      * 
      * 
      */

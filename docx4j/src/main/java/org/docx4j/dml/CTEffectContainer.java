@@ -1,23 +1,21 @@
 /*
- *  Copyright 2007, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
-    docx4j is free software: you can use it, redistribute it and/or modify
-    it under the terms of version 3 of the GNU Affero General Public License 
-    as published by the Free Software Foundation.
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-    If you need the right to use it under a different license, please
-    contact Plutext.
+    You may obtain a copy of the License at 
 
-    docx4j is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
+        http://www.apache.org/licenses/LICENSE-2.0 
 
-    You should have received a copy of the GNU Affero General Public License   
-    along with docx4j.  If not, see <http://www.fsf.org/licensing/licenses/>.
-    
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 
 package org.docx4j.dml;
@@ -61,36 +59,36 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class CTEffectContainer {
 
     @XmlElements({
-        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
-        @XmlElement(name = "lum", type = CTLuminanceEffect.class),
-        @XmlElement(name = "blend", type = CTBlendEffect.class),
-        @XmlElement(name = "effect", type = CTEffectReference.class),
-        @XmlElement(name = "innerShdw", type = CTInnerShadowEffect.class),
-        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class),
-        @XmlElement(name = "reflection", type = CTReflectionEffect.class),
-        @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
-        @XmlElement(name = "softEdge", type = CTSoftEdgesEffect.class),
-        @XmlElement(name = "fill", type = CTFillEffect.class),
-        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
-        @XmlElement(name = "tint", type = CTTintEffect.class),
-        @XmlElement(name = "prstShdw", type = CTPresetShadowEffect.class),
-        @XmlElement(name = "alphaFloor", type = CTAlphaFloorEffect.class),
-        @XmlElement(name = "cont", type = CTEffectContainer.class),
-        @XmlElement(name = "biLevel", type = CTBiLevelEffect.class),
-        @XmlElement(name = "alphaCeiling", type = CTAlphaCeilingEffect.class),
         @XmlElement(name = "clrChange", type = CTColorChangeEffect.class),
-        @XmlElement(name = "alphaInv", type = CTAlphaInverseEffect.class),
-        @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class),
-        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
-        @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
-        @XmlElement(name = "xfrm", type = CTTransformEffect.class),
-        @XmlElement(name = "relOff", type = CTRelativeOffsetEffect.class),
-        @XmlElement(name = "hsl", type = CTHSLEffect.class),
+        @XmlElement(name = "blend", type = CTBlendEffect.class),
         @XmlElement(name = "outerShdw", type = CTOuterShadowEffect.class),
+        @XmlElement(name = "relOff", type = CTRelativeOffsetEffect.class),
+        @XmlElement(name = "alphaFloor", type = CTAlphaFloorEffect.class),
         @XmlElement(name = "alphaModFix", type = CTAlphaModulateFixedEffect.class),
+        @XmlElement(name = "cont", type = CTEffectContainer.class),
+        @XmlElement(name = "fill", type = CTFillEffect.class),
+        @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
+        @XmlElement(name = "softEdge", type = CTSoftEdgesEffect.class),
+        @XmlElement(name = "prstShdw", type = CTPresetShadowEffect.class),
+        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
+        @XmlElement(name = "effect", type = CTEffectReference.class),
+        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
+        @XmlElement(name = "tint", type = CTTintEffect.class),
+        @XmlElement(name = "glow", type = CTGlowEffect.class),
+        @XmlElement(name = "lum", type = CTLuminanceEffect.class),
+        @XmlElement(name = "alphaInv", type = CTAlphaInverseEffect.class),
+        @XmlElement(name = "innerShdw", type = CTInnerShadowEffect.class),
         @XmlElement(name = "blur", type = CTBlurEffect.class),
         @XmlElement(name = "alphaOutset", type = CTAlphaOutsetEffect.class),
-        @XmlElement(name = "glow", type = CTGlowEffect.class)
+        @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
+        @XmlElement(name = "hsl", type = CTHSLEffect.class),
+        @XmlElement(name = "biLevel", type = CTBiLevelEffect.class),
+        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class),
+        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
+        @XmlElement(name = "alphaCeiling", type = CTAlphaCeilingEffect.class),
+        @XmlElement(name = "reflection", type = CTReflectionEffect.class),
+        @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class),
+        @XmlElement(name = "xfrm", type = CTTransformEffect.class)
     })
     protected List<Object> egEffect;
     @XmlAttribute
@@ -118,36 +116,36 @@ public class CTEffectContainer {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTDuotoneEffect }
-     * {@link CTLuminanceEffect }
-     * {@link CTBlendEffect }
-     * {@link CTEffectReference }
-     * {@link CTInnerShadowEffect }
-     * {@link CTAlphaBiLevelEffect }
-     * {@link CTReflectionEffect }
-     * {@link CTFillOverlayEffect }
-     * {@link CTSoftEdgesEffect }
-     * {@link CTFillEffect }
-     * {@link CTAlphaReplaceEffect }
-     * {@link CTTintEffect }
-     * {@link CTPresetShadowEffect }
-     * {@link CTAlphaFloorEffect }
-     * {@link CTEffectContainer }
-     * {@link CTBiLevelEffect }
-     * {@link CTAlphaCeilingEffect }
      * {@link CTColorChangeEffect }
-     * {@link CTAlphaInverseEffect }
-     * {@link CTAlphaModulateEffect }
-     * {@link CTColorReplaceEffect }
-     * {@link CTGrayscaleEffect }
-     * {@link CTTransformEffect }
-     * {@link CTRelativeOffsetEffect }
-     * {@link CTHSLEffect }
+     * {@link CTBlendEffect }
      * {@link CTOuterShadowEffect }
+     * {@link CTRelativeOffsetEffect }
+     * {@link CTAlphaFloorEffect }
      * {@link CTAlphaModulateFixedEffect }
+     * {@link CTEffectContainer }
+     * {@link CTFillEffect }
+     * {@link CTGrayscaleEffect }
+     * {@link CTSoftEdgesEffect }
+     * {@link CTPresetShadowEffect }
+     * {@link CTDuotoneEffect }
+     * {@link CTEffectReference }
+     * {@link CTColorReplaceEffect }
+     * {@link CTTintEffect }
+     * {@link CTGlowEffect }
+     * {@link CTLuminanceEffect }
+     * {@link CTAlphaInverseEffect }
+     * {@link CTInnerShadowEffect }
      * {@link CTBlurEffect }
      * {@link CTAlphaOutsetEffect }
-     * {@link CTGlowEffect }
+     * {@link CTFillOverlayEffect }
+     * {@link CTHSLEffect }
+     * {@link CTBiLevelEffect }
+     * {@link CTAlphaBiLevelEffect }
+     * {@link CTAlphaReplaceEffect }
+     * {@link CTAlphaCeilingEffect }
+     * {@link CTReflectionEffect }
+     * {@link CTAlphaModulateEffect }
+     * {@link CTTransformEffect }
      * 
      * 
      */
