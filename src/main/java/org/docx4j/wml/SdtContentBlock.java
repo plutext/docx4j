@@ -60,6 +60,8 @@ public class SdtContentBlock
     implements Child
 {
 
+	private static Logger log = Logger.getLogger(SdtContentBlock.class);	
+	
     @XmlElementRefs({
         @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -176,10 +178,10 @@ public class SdtContentBlock
 
     public void replaceElement(Object current, List insertions) {
 
-    	int index = contents.indexOf(current);    	
+    	int index = egContentBlockContent.indexOf(current);    	
     	if (index > -1 ) {    		
-    		contents.addAll(index+1, insertions);  
-    		Object removed = contents.remove(index);
+    		egContentBlockContent.addAll(index+1, insertions);  
+    		Object removed = egContentBlockContent.remove(index);
     		// sanity check
     		if (!current.equals(removed)) {
     			log.error("removed wrong object?");

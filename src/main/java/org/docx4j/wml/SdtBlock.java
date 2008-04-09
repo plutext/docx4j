@@ -192,11 +192,11 @@ public class SdtBlock
 //	    		
 //	    		Object o = it.next();
 	    		
-	    	for (Object o : sdtContent.getContents() ) {
+	    	for (Object o : sdtContent.getEGContentBlockContent() ) {
 	    		
 	    		if (o instanceof SdtBlock) { // A block level SDT - but this doesn't happen
 	    			log.debug("Interesting .. detected BLOCK level nested sdt: " + ((SdtBlock)o).sdtPr.getId().toString() );
-	    			sdtContent.replaceElement(o, ((SdtBlock)o).getSdtContent().getContents() );
+	    			sdtContent.replaceElement(o, ((SdtBlock)o).getSdtContent().getEGContentBlockContent() );
 	    			// need to refresh the list we are iterating
 	    			startAgain = true;
 	    			break;

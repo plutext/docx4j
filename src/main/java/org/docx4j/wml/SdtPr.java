@@ -142,6 +142,8 @@ public class SdtPr
     implements Child
 {
 
+	private static Logger log = Logger.getLogger(SdtPr.class);	
+	
     @XmlElementRefs({
         @XmlElementRef(name = "comboBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "picture", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
