@@ -56,7 +56,8 @@ import org.w3c.dom.Element;
 @XmlType(name = "CT_PictureBase", propOrder = {
     "anyAndAny"
 })
-public class CTPictureBase implements Child
+public class CTPictureBase
+    implements Child
 {
 
     @XmlAnyElement(lax = true)
@@ -82,8 +83,8 @@ public class CTPictureBase implements Child
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Element }
      * {@link Object }
+     * {@link Element }
      * 
      * 
      */

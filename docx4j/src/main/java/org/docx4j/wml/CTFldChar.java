@@ -59,7 +59,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "ffData",
     "numberingChange"
 })
-public class CTFldChar implements Child
+public class CTFldChar
+    implements Child
 {
 
     protected Text fldData;

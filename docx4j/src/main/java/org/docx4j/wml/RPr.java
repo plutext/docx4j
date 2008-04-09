@@ -112,15 +112,15 @@ public class RPr
     protected BooleanDefaultTrue snapToGrid;
     protected BooleanDefaultTrue vanish;
     protected BooleanDefaultTrue webHidden;
-    protected CTRPrChange.RPr.Color color;
+    protected Color color;
     protected CTSignedTwipsMeasure spacing;
     protected CTTextScale w;
     protected HpsMeasure kern;
     protected CTSignedHpsMeasure position;
     protected HpsMeasure sz;
     protected HpsMeasure szCs;
-    protected CTRPrChange.RPr.Highlight highlight;
-    protected CTRPrChange.RPr.U u;
+    protected Highlight highlight;
+    protected U u;
     protected CTTextEffect effect;
     protected CTBorder bdr;
     protected CTShd shd;
@@ -166,7 +166,7 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link Object }
+     *     {@link RFonts }
      *     
      */
     public RFonts getRFonts() {
@@ -178,7 +178,7 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link Object }
+     *     {@link RFonts }
      *     
      */
     public void setRFonts(RFonts value) {
@@ -574,10 +574,10 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrChange.RPr.Color }
+     *     {@link Color }
      *     
      */
-    public CTRPrChange.RPr.Color getColor() {
+    public Color getColor() {
         return color;
     }
 
@@ -586,10 +586,10 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrChange.RPr.Color }
+     *     {@link Color }
      *     
      */
-    public void setColor(CTRPrChange.RPr.Color value) {
+    public void setColor(Color value) {
         this.color = value;
     }
 
@@ -742,10 +742,10 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrChange.RPr.Highlight }
+     *     {@link Highlight }
      *     
      */
-    public CTRPrChange.RPr.Highlight getHighlight() {
+    public Highlight getHighlight() {
         return highlight;
     }
 
@@ -754,10 +754,10 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrChange.RPr.Highlight }
+     *     {@link Highlight }
      *     
      */
-    public void setHighlight(CTRPrChange.RPr.Highlight value) {
+    public void setHighlight(Highlight value) {
         this.highlight = value;
     }
 
@@ -766,10 +766,10 @@ public class RPr
      * 
      * @return
      *     possible object is
-     *     {@link CTRPrChange.RPr.U }
+     *     {@link U }
      *     
      */
-    public CTRPrChange.RPr.U getU() {
+    public U getU() {
         return u;
     }
 
@@ -778,10 +778,10 @@ public class RPr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTRPrChange.RPr.U }
+     *     {@link U }
      *     
      */
-    public void setU(CTRPrChange.RPr.U value) {
+    public void setU(U value) {
         this.u = value;
     }
 

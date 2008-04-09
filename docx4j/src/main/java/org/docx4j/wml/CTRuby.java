@@ -56,7 +56,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "rt",
     "rubyBase"
 })
-public class CTRuby implements Child
+public class CTRuby
+    implements Child
 {
 
     @XmlElement(required = true)

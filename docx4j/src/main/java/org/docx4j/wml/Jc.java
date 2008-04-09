@@ -38,22 +38,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_Jc">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" use="required">
- *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="left"/>
- *             &lt;enumeration value="center"/>
- *             &lt;enumeration value="right"/>
- *             &lt;enumeration value="both"/>
- *             &lt;enumeration value="mediumKashida"/>
- *             &lt;enumeration value="distribute"/>
- *             &lt;enumeration value="numTab"/>
- *             &lt;enumeration value="highKashida"/>
- *             &lt;enumeration value="lowKashida"/>
- *             &lt;enumeration value="thaiDistribute"/>
- *           &lt;/restriction>
- *         &lt;/simpleType>
- *       &lt;/attribute>
+ *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}JcEnumeration" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -67,7 +52,7 @@ public class Jc implements Child
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    protected String val;
+    protected JcEnumeration val;
     @XmlTransient
     private Object parent;
 
@@ -76,10 +61,10 @@ public class Jc implements Child
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link JcEnumeration }
      *     
      */
-    public String getVal() {
+    public JcEnumeration getVal() {
         return val;
     }
 
@@ -88,10 +73,10 @@ public class Jc implements Child
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link JcEnumeration }
      *     
      */
-    public void setVal(String value) {
+    public void setVal(JcEnumeration value) {
         this.val = value;
     }
 

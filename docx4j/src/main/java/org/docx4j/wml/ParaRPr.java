@@ -124,15 +124,15 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
     protected BooleanDefaultTrue snapToGrid;
     protected BooleanDefaultTrue vanish;
     protected BooleanDefaultTrue webHidden;
-    protected org.docx4j.wml.CTRPrChange.RPr.Color color;
+    protected Color color;
     protected CTSignedTwipsMeasure spacing;
     protected CTTextScale w;
     protected HpsMeasure kern;
     protected CTSignedHpsMeasure position;
     protected HpsMeasure sz;
     protected HpsMeasure szCs;
-    protected org.docx4j.wml.CTRPrChange.RPr.Highlight highlight;
-    protected org.docx4j.wml.CTRPrChange.RPr.U u;
+    protected Highlight highlight;
+    protected U u;
     protected CTTextEffect effect;
     protected CTBorder bdr;
     protected CTShd shd;
@@ -274,7 +274,7 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @return
      *     possible object is
-     *     {@link Object }
+     *     {@link RFonts }
      *     
      */
     public RFonts getRFonts() {
@@ -286,7 +286,7 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @param value
      *     allowed object is
-     *     {@link Object }
+     *     {@link RFonts }
      *     
      */
     public void setRFonts(RFonts value) {
@@ -682,10 +682,10 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @return
      *     possible object is
-     *     {@link org.docx4j.wml.CTRPrChange.RPr.Color }
+     *     {@link Color }
      *     
      */
-    public org.docx4j.wml.CTRPrChange.RPr.Color getColor() {
+    public Color getColor() {
         return color;
     }
 
@@ -694,10 +694,10 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @param value
      *     allowed object is
-     *     {@link org.docx4j.wml.CTRPrChange.RPr.Color }
+     *     {@link Color }
      *     
      */
-    public void setColor(org.docx4j.wml.CTRPrChange.RPr.Color value) {
+    public void setColor(Color value) {
         this.color = value;
     }
 
@@ -850,10 +850,10 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @return
      *     possible object is
-     *     {@link org.docx4j.wml.CTRPrChange.RPr.Highlight }
+     *     {@link Highlight }
      *     
      */
-    public org.docx4j.wml.CTRPrChange.RPr.Highlight getHighlight() {
+    public Highlight getHighlight() {
         return highlight;
     }
 
@@ -862,10 +862,10 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @param value
      *     allowed object is
-     *     {@link org.docx4j.wml.CTRPrChange.RPr.Highlight }
+     *     {@link Highlight }
      *     
      */
-    public void setHighlight(org.docx4j.wml.CTRPrChange.RPr.Highlight value) {
+    public void setHighlight(Highlight value) {
         this.highlight = value;
     }
 
@@ -874,10 +874,10 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @return
      *     possible object is
-     *     {@link org.docx4j.wml.CTRPrChange.RPr.U }
+     *     {@link U }
      *     
      */
-    public org.docx4j.wml.CTRPrChange.RPr.U getU() {
+    public U getU() {
         return u;
     }
 
@@ -886,10 +886,10 @@ public class ParaRPr  // it would be nice just to extend RPr, but no can do with
      * 
      * @param value
      *     allowed object is
-     *     {@link org.docx4j.wml.CTRPrChange.RPr.U }
+     *     {@link U }
      *     
      */
-    public void setU(org.docx4j.wml.CTRPrChange.RPr.U value) {
+    public void setU(U value) {
         this.u = value;
     }
 

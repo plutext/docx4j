@@ -58,8 +58,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "")
 @XmlRootElement(name = "rFonts")
-public class RFonts
-    implements Child
+public class RFonts implements Child
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
