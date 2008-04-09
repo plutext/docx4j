@@ -27,8 +27,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -63,11 +61,9 @@ public class Color implements Child
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STThemeColor themeColor;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] themeTint;
+    protected String themeTint;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] themeShade;
+    protected String themeShade;
     @XmlTransient
     private Object parent;
 
@@ -127,7 +123,7 @@ public class Color implements Child
      *     {@link String }
      *     
      */
-    public byte[] getThemeTint() {
+    public String getThemeTint() {
         return themeTint;
     }
 
@@ -139,8 +135,8 @@ public class Color implements Child
      *     {@link String }
      *     
      */
-    public void setThemeTint(byte[] value) {
-        this.themeTint = ((byte[]) value);
+    public void setThemeTint(String value) {
+        this.themeTint = value;
     }
 
     /**
@@ -151,7 +147,7 @@ public class Color implements Child
      *     {@link String }
      *     
      */
-    public byte[] getThemeShade() {
+    public String getThemeShade() {
         return themeShade;
     }
 
@@ -163,8 +159,8 @@ public class Color implements Child
      *     {@link String }
      *     
      */
-    public void setThemeShade(byte[] value) {
-        this.themeShade = ((byte[]) value);
+    public void setThemeShade(String value) {
+        this.themeShade = value;
     }
 
     /**

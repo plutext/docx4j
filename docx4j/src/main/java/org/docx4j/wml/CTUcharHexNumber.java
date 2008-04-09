@@ -26,8 +26,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -55,8 +53,7 @@ public class CTUcharHexNumber
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    @XmlJavaTypeAdapter(HexBinaryAdapter.class)
-    protected byte[] val;
+    protected String val;
     @XmlTransient
     private Object parent;
 
@@ -68,7 +65,7 @@ public class CTUcharHexNumber
      *     {@link String }
      *     
      */
-    public byte[] getVal() {
+    public String getVal() {
         return val;
     }
 
@@ -80,8 +77,8 @@ public class CTUcharHexNumber
      *     {@link String }
      *     
      */
-    public void setVal(byte[] value) {
-        this.val = ((byte[]) value);
+    public void setVal(String value) {
+        this.val = value;
     }
 
     /**
