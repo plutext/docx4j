@@ -39,10 +39,10 @@ public class OpenMainDocumentAndTraverse {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/jharrop/tmp/simple.docx";
-		String inputfilepath = "/home/jharrop/tmp/Styles-lots.docx";
+		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
 		
-		boolean save = false;
-		String outputfilepath = "/home/jharrop/tmp/simple-out.docx";
+		boolean save = true;
+		String outputfilepath = "/home/dev/tmp/test-out.docx";
 		
 		
 		
@@ -60,18 +60,19 @@ public class OpenMainDocumentAndTraverse {
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getBlockLevelElements();
+		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
 		walkJAXBElements(bodyChildren);
 			
 //		// Change something
-		org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)bodyChildren.get(2)).getValue();
+//		org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)bodyChildren.get(2)).getValue();
+		org.docx4j.wml.P p = (org.docx4j.wml.P)bodyChildren.get(2);
 		
 		//walkList(p.getParagraphContent());
 		
 		org.docx4j.wml.PPr pPr = p.getPPr();
 		
-		if (pPr!=null) {
+		if (pPr!=null && pPr.getPStyle()!=null) {
 			System.out.println( "Style: " + pPr.getPStyle().getVal() );
 		}		
 		
@@ -111,22 +112,37 @@ public class OpenMainDocumentAndTraverse {
 	static void walkJAXBElements(List <Object> bodyChildren){
 	
 		for (Object o : bodyChildren ) {
-						
-			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
+
+			if ( o instanceof javax.xml.bind.JAXBElement) {
+			
+				// Not used as of 20080408
+				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
+					System.out.println( "Paragraph object: ");
+					org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
+					
+	//				if (p.getPPr()!=null) {
+	//					System.out.println( "Properties...");					
+	//				}
+					
+					walkList(p.getParagraphContent());
+					
+					
+				} else {
+					System.out.println( o.getClass().getName() );
+					System.out.println( ((JAXBElement)o).getName() );
+					System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
+				}
+			} else if (o instanceof org.docx4j.wml.P) {
 				System.out.println( "Paragraph object: ");
-				org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
 				
-//				if (p.getPPr()!=null) {
-//					System.out.println( "Properties...");					
-//				}
+				if (((org.docx4j.wml.P)o).getPPr() != null
+						&& ((org.docx4j.wml.P)o).getPPr().getRPr() != null
+						&& ((org.docx4j.wml.P)o).getPPr().getRPr().getB() !=null) {
+					System.out.println( "For a ParaRPr bold!");
+				}
 				
-				walkList(p.getParagraphContent());
 				
-				
-			} else {
-				System.out.println( o.getClass().getName() );
-				System.out.println( ((JAXBElement)o).getName() );
-				System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
+				//walkList( ((org.docx4j.wml.P)o).getParagraphContent());
 			}
 		}
 	}
