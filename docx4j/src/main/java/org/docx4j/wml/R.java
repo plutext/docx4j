@@ -311,6 +311,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "annotationRef")
     public static class AnnotationRef
         implements Child
     {
@@ -365,6 +366,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "continuationSeparator")
     public static class ContinuationSeparator
         implements Child
     {
@@ -419,6 +421,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "cr")    
     public static class Cr
         implements Child
     {
@@ -473,6 +476,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "dayLong")    
     public static class DayLong
         implements Child
     {
@@ -527,6 +531,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "dayShort")    
     public static class DayShort
         implements Child
     {
@@ -581,6 +586,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "endnoteRef")    
     public static class EndnoteRef
         implements Child
     {
@@ -635,6 +641,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "footnoteRef")    
     public static class FootnoteRef
         implements Child
     {
@@ -689,6 +696,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "lastRenderedPageBreak")    
     public static class LastRenderedPageBreak
         implements Child
     {
@@ -743,6 +751,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "monthLong")    
     public static class MonthLong
         implements Child
     {
@@ -797,6 +806,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "monthShort")        
     public static class MonthShort
         implements Child
     {
@@ -851,6 +861,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "noBreakHyphen")        
     public static class NoBreakHyphen
         implements Child
     {
@@ -905,6 +916,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "pgNum")            
     public static class PgNum
         implements Child
     {
@@ -962,6 +974,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "ptab")            
     public static class Ptab
         implements Child
     {
@@ -1094,6 +1107,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "separator")            
     public static class Separator
         implements Child
     {
@@ -1148,6 +1162,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "softHyphen")            
     public static class SoftHyphen
         implements Child
     {
@@ -1204,6 +1219,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "sym")            
     public static class Sym
         implements Child
     {
@@ -1310,6 +1326,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "tab")            
     public static class Tab
         implements Child
     {
@@ -1364,6 +1381,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "yearLong")            
     public static class YearLong
         implements Child
     {
@@ -1418,6 +1436,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "yearShort")            
     public static class YearShort
         implements Child
     {
