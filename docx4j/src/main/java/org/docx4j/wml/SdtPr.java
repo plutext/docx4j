@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -130,6 +131,7 @@ import org.apache.log4j.Logger;
 @XmlType(name = "CT_SdtPr", propOrder = {
     "rPrOrAliasOrLock"
 })
+@XmlRootElement(name = "sdtPr")
 public class SdtPr
     implements Child
 {
@@ -221,13 +223,11 @@ public class SdtPr
      */
     public Id getId() {
     	
-    	for (Object o : rPrOrAliasOrLock) {
-    		if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtPr.Id") ) {
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		if ( o instanceof Id ) {
     			log.debug("found id");
-    			return (Id)((JAXBElement)o).getValue();
-    		} else {
-    			log.debug("Skipping " + ((JAXBElement)o).getDeclaredType().getName() );
-    		}
+    			return (Id)o;
+    		} 
     	}
     	
         return null;
@@ -249,7 +249,9 @@ public class SdtPr
     		if (!existingId.equals(value)) {
     			log.debug("Changing SDT ID from " + existingId + " to " + value);
         		rPrOrAliasOrLock.remove(existingId);
+        		rPrOrAliasOrLock.add(value);
     		}    	
+    		// else - they are the same, so do nothing
     	} else {
     		//ObjectFactory factory = new ObjectFactory();
     		//JAXBElement idWrapper = factory.createSdtPrId(value);
@@ -265,29 +267,53 @@ public class SdtPr
     	setId(id);    	
     }
 
-//    /**
-//     * Gets the value of the tag property.
-//     * 
-//     * @return
-//     *     possible object is
-//     *     {@link SdtPr.Tag }
-//     *     
-//     */
-//    public SdtPr.Tag getTag() {
-//        return tag;
-//    }
-//
-//    /**
-//     * Sets the value of the tag property.
-//     * 
-//     * @param value
-//     *     allowed object is
-//     *     {@link SdtPr.Tag }
-//     *     
-//     */
-//    public void setTag(SdtPr.Tag value) {
-//        this.tag = value;
-//    }
+    /**
+     * Gets the value of the tag property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link SdtPr.Tag }
+     *     
+     */
+    public Tag getTag() {
+    	
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		if ( o instanceof Tag ) {
+    			log.debug("found tag");
+    			return (Tag)o;
+    		} 
+    	}
+    	
+        return null;
+    }
+
+    /**
+     * Sets the value of the tag property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link SdtPr.Tag }
+     *     
+     */
+    public void setTag(Tag value) {
+        
+    	Tag existingTag = getTag(); 
+    	
+    	if (existingTag!=null) {
+    		if (!existingTag.equals(value)) {
+    			log.debug("Changing SDT ID from " + existingTag + " to " + value);
+        		rPrOrAliasOrLock.remove(existingTag);
+        		rPrOrAliasOrLock.add(value);
+    		}
+    		// else - they are the same, so do nothing
+    	} else {
+    		//ObjectFactory factory = new ObjectFactory();
+    		//JAXBElement idWrapper = factory.createSdtPrId(value);
+    		rPrOrAliasOrLock.add(value);
+    	}
+        
+        
+    }
     
 
     /**
