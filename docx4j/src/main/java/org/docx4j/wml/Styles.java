@@ -89,7 +89,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                           &lt;attribute name="uiPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *                           &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *                           &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *                           &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+ *                           &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -650,7 +650,7 @@ public class Styles
      *                 &lt;attribute name="uiPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
      *                 &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
      *                 &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-     *                 &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+     *                 &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -923,7 +923,7 @@ public class Styles
          *       &lt;attribute name="uiPriority" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
          *       &lt;attribute name="semiHidden" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
          *       &lt;attribute name="unhideWhenUsed" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
-         *       &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+         *       &lt;attribute name="qFormat" type="{http://www.w3.org/2001/XMLSchema}boolean" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -1092,12 +1092,13 @@ public class Styles
              *     {@link Boolean }
              *     
              */
-            public boolean isQFormat() {
-                if (qFormat == null) {
-                    return false;
-                } else {
-                    return qFormat;
-                }
+            public Boolean isQFormat() {
+            	
+            	if (qFormat==null) {
+            		return ((Styles.LatentStyles)this.parent).isDefQFormat();
+            	} else {            	
+            		return qFormat;
+            	}
             }
 
             /**
