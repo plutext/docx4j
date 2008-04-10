@@ -61,15 +61,7 @@ import org.apache.log4j.Logger;
  *         &lt;element name="dataBinding" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_DataBinding" minOccurs="0"/>
  *         &lt;element name="temporary" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}id" minOccurs="0"/>
- *         &lt;element name="tag" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
+ *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tag" minOccurs="0"/>
  *         &lt;choice minOccurs="0">
  *           &lt;element name="equation">
  *             &lt;complexType>
@@ -141,31 +133,30 @@ import org.apache.log4j.Logger;
 public class SdtPr
     implements Child
 {
-
-	private static Logger log = Logger.getLogger(SdtPr.class);	
+	private static Logger log = Logger.getLogger(SdtPr.class);
 	
     @XmlElementRefs({
-        @XmlElementRef(name = "dataBinding", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "date", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "rPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "docPartObj", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "comboBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "docPartList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "lock", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "equation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "showingPlcHdr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "temporary", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "alias", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "placeholder", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "picture", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "dropDownList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "tag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "citation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "text", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Id.class),
+        @XmlElementRef(name = "date", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "group", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "text", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "comboBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "lock", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "citation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dropDownList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "rPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "equation", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "docPartObj", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "placeholder", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "temporary", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "id", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Id.class),
         @XmlElementRef(name = "bibliography", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "richText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "alias", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "richText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dataBinding", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "tag", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Tag.class),
+        @XmlElementRef(name = "docPartList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<Object> rPrOrAliasOrLock;
     @XmlTransient
@@ -189,27 +180,27 @@ public class SdtPr
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTDataBinding }{@code >}
-     * {@link JAXBElement }{@code <}{@link RPr }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Picture }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Group }{@code >}
      * {@link JAXBElement }{@code <}{@link CTSdtDate }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtDocPart }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtText }{@code >}
+     * {@link JAXBElement }{@code <}{@link RPr }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtDropDownList }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Citation }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTLock }{@code >}
      * {@link JAXBElement }{@code <}{@link CTSdtComboBox }{@code >}
      * {@link JAXBElement }{@code <}{@link CTSdtDocPart }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTLock }{@code >}
      * {@link JAXBElement }{@code <}{@link SdtPr.Equation }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPlaceholder }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Alias }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Picture }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtDropDownList }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Tag }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Citation }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSdtText }{@code >}
      * {@link Id }
-     * {@link JAXBElement }{@code <}{@link SdtPr.Bibliography }{@code >}
-     * {@link JAXBElement }{@code <}{@link SdtPr.Group }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link Tag }
+     * {@link JAXBElement }{@code <}{@link CTDataBinding }{@code >}
      * {@link JAXBElement }{@code <}{@link SdtPr.RichText }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Alias }{@code >}
+     * {@link JAXBElement }{@code <}{@link SdtPr.Bibliography }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSdtDocPart }{@code >}
      * 
      * 
      */
@@ -701,87 +692,6 @@ public class SdtPr
 
         @XmlTransient
         private Object parent;
-
-        /**
-         * Gets the parent object in the object tree representing the unmarshalled xml document.
-         * 
-         * @return
-         *     The parent object.
-         */
-        public Object getParent() {
-            return this.parent;
-        }
-
-        public void setParent(Object parent) {
-            this.parent = parent;
-        }
-
-        /**
-         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-         * 
-         * @param parent
-         *     The parent object in the object tree.
-         * @param unmarshaller
-         *     The unmarshaller that generated the instance.
-         */
-        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-            setParent(parent);
-        }
-
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class Tag
-        implements Child
-    {
-
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String val;
-        @XmlTransient
-        private Object parent;
-
-        /**
-         * Gets the value of the val property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getVal() {
-            return val;
-        }
-
-        /**
-         * Sets the value of the val property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setVal(String value) {
-            this.val = value;
-        }
 
         /**
          * Gets the parent object in the object tree representing the unmarshalled xml document.
