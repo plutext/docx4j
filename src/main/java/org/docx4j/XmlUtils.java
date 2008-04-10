@@ -34,6 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
 
 import org.dom4j.Element;
@@ -41,6 +42,8 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 
 public class XmlUtils {
+	
+	private static Logger log = Logger.getLogger(XmlUtils.class);	
 		
 	/** Make a dom4j element into something JAXB can unmarshall */
 	private static java.io.InputStream getInputStreamFromDom4jEl(Element el) {
@@ -257,6 +260,16 @@ public class XmlUtils {
 	/** Clone this JAXB object */ 
 	public static Object deepCopy(Object in) {
 
+		log.debug("Attempting to clone: " + in.getClass().getName() );
+
+		// This isn't strictly necessary,
+		// but it makes debugging easier, because it causes
+		// any missing @XmlRootElement to be identified in the stack trace.
+		if (in instanceof javax.xml.bind.JAXBElement) {
+			in = ((javax.xml.bind.JAXBElement)in).getValue();
+			log.debug("Attempting to clone: " + in.getClass().getName() );
+		}
+		
 		JAXBContext jc = Context.jc;
 		
 		Object o = null;
@@ -267,6 +280,8 @@ public class XmlUtils {
 			// Temp
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
+			//javax.xml.bind.util.JAXBSource source = new javax.xml.bind.util.JAXBSource(jc, in); 
+			
 			o = u.unmarshal( new javax.xml.bind.util.JAXBSource(jc, in) );
 
 		} catch (Exception ex) {
