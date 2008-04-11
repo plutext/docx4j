@@ -173,7 +173,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *                   &lt;/element>
  *                   &lt;element name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *                   &lt;element name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
- *                   &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultFalse" minOccurs="0"/>
+ *                   &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *                   &lt;element name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *                   &lt;element name="personal" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *                   &lt;element name="personalCompose" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
@@ -1217,7 +1217,7 @@ public class Styles
      *         &lt;/element>
      *         &lt;element name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
      *         &lt;element name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
-     *         &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultFalse" minOccurs="0"/>
+     *         &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
      *         &lt;element name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
      *         &lt;element name="personal" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
      *         &lt;element name="personalCompose" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
@@ -1289,7 +1289,7 @@ public class Styles
         protected Styles.Style.UiPriority uiPriority;
         protected BooleanDefaultTrue semiHidden;
         protected BooleanDefaultTrue unhideWhenUsed;
-        protected BooleanDefaultFalse qFormat;
+        protected BooleanDefaultTrue qFormat;
         protected BooleanDefaultTrue locked;
         protected BooleanDefaultTrue personal;
         protected BooleanDefaultTrue personalCompose;
@@ -1557,10 +1557,14 @@ public class Styles
          * 
          * @return
          *     possible object is
-         *     {@link BooleanDefaultFalse }
+         *     {@link BooleanDefaultTrue }
          *     
          */
-        public BooleanDefaultFalse getQFormat() {
+        public BooleanDefaultTrue getQFormat() {
+        	if (qFormat==null) {
+        		qFormat = new BooleanDefaultTrue();
+        		qFormat.setVal( Boolean.FALSE);
+        	}
             return qFormat;
         }
 
@@ -1569,10 +1573,10 @@ public class Styles
          * 
          * @param value
          *     allowed object is
-         *     {@link BooleanDefaultFalse }
+         *     {@link BooleanDefaultTrue }
          *     
          */
-        public void setQFormat(BooleanDefaultFalse value) {
+        public void setQFormat(BooleanDefaultTrue value) {
             this.qFormat = value;
         }
 
