@@ -202,16 +202,24 @@ public class SdtBlock
 	    			// need to refresh the list we are iterating
 	    			startAgain = true;
 	    			break;
-	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
+	    		} else if ( o instanceof org.docx4j.wml.P ) {
+    				log.debug( "Paragraph object: ");
+    				org.docx4j.wml.P p = (org.docx4j.wml.P)o;   				
+    				flattenP(p);
+ 	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
 	    			
-	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
-	    				log.debug( "Paragraph object: ");
-	    				org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
+//	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
+//	    				log.debug( "Paragraph object: ");
+//	    				org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
+//	    				
+//	    				flattenP(p);
+//	    				// Is this necessary?
+//	    				((JAXBElement)o).setValue(p);
+//	    			} else {
 	    				
-	    				flattenP(p);
-	    				// Is this necessary?
-	    				((JAXBElement)o).setValue(p);
-	    			}
+	    				log.debug( "JAXB: " + ((JAXBElement)o).getValue().getClass().getName() );
+	    				
+//	    			}
 	    				
 	    		} else {
 	    			log.debug(o.getClass().getName() + ".. not an sdt");
@@ -235,15 +243,21 @@ public class SdtBlock
         	startAgain = false;
 	    	for (Object o : p.getParagraphContent() ) {
 	    		
-	    		if (o instanceof CTSdtContentRun) { 
-	    			log.debug(".. detected nested sdt: " );
-	    			p.replaceElement(o, ((CTSdtContentRun)o).getParagraphContent() );
+	    		if (o instanceof SdtRun) {  // This code path not used
+	    			log.debug(".. detected nested sdt " );
+	    			p.replaceElement(o, ((SdtRun)o).getSdtContent().getParagraphContent() );
 	    			// need to refresh the list we are iterating
 	    			startAgain = true;
 	    			break;
 	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
 	    			
-	    			log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. not an sdt");
+	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtRun") ) {
+	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. detected SdtRun");
+	    				org.docx4j.wml.SdtRun sdtRun = (org.docx4j.wml.SdtRun)((JAXBElement)o).getValue();
+	    				p.replaceElement(o, sdtRun.getSdtContent().getParagraphContent() );
+	    			} else {
+	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. not an sdt");	    				
+	    			}
 	    				
 	    		} else {
 	    			log.debug(o.getClass().getName() + ".. not an sdt");
