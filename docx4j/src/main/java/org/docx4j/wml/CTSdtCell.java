@@ -55,7 +55,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "sdtEndPr",
     "sdtContent"
 })
-public class CTSdtCell implements Child
+public class CTSdtCell
+    implements Child
 {
 
     protected SdtPr sdtPr;
