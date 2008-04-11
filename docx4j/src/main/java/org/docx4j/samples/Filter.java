@@ -32,7 +32,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 
-public class ExportInPackageFormat {
+public class Filter {
 
 	/**
 	 * @param args
@@ -48,8 +48,14 @@ public class ExportInPackageFormat {
 		
 		
 		// Open a document from the file system
-		// 1. Load the Package
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		
+		
+		// Apply the filter
+		WordprocessingMLPackage.FilterSettings filterSettings = new WordprocessingMLPackage.FilterSettings();
+		filterSettings.setRemoveProofErrors(false);
+		wordMLPackage.filter(filterSettings);
+		
 		
 	   	// Create a org.docx4j.wml.Package object
     	org.docx4j.wml.Package pkg = wordMLPackage.exportPkgXml();

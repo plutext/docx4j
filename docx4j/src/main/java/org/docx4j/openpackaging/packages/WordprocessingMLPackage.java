@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.packages;
 
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
@@ -49,6 +51,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import com.lowagie.text.pdf.BaseFont;
@@ -59,6 +62,10 @@ import com.lowagie.text.pdf.BaseFont;
 
 
 
+/**
+ * @author jharrop
+ *
+ */
 public class WordprocessingMLPackage extends Package {
 	
 	// What is a Word document these days?
@@ -166,40 +173,11 @@ public class WordprocessingMLPackage extends Package {
 	
 	
 
-	/** Create an html version of the document, using CSS font family
-	 *  stacks.  This is appropriate if the HTML is intended for
-	 *  viewing in a web browser, rather than an intermediate step
-	 *  on the way to generating PDF output. 
-	 * 
-	 * @param result
-	 *            The javax.xml.transform.Result object to transform into 
-	 * 
-	 * */ 
-    public void html(javax.xml.transform.Result result) throws Exception {
-
-    	html(result, true);
-    }
     
-	/** Create an html version of the document. 
+    /* Output in pck:package/pck:part format, as emitted by Word 2007.
 	 * 
-	 * @param result
-	 *            The javax.xml.transform.Result object to transform into 
-	 * 
-	 * */ 
-    public void html(javax.xml.transform.Result result, boolean fontFamilyStack) throws Exception {
-    	
-    	/*
-    	 * Given that word2html.xsl is freely available, we use the second
-    	 * approach.
-    	 * 
-    	 * The question then is how the stylesheet is made to work with
-    	 * our main document and style definition parts.
-    	 * 
-    	 * I've adapted the stylesheet to process the
-    	 * pck:package/pck:part stuff emitted by Word 2007.
-    	 * 
-    	 */
-    	
+	 */
+    public org.docx4j.wml.Package exportPkgXml() {
 		// so, put the 2 parts together into a single document 
     	// The JAXB object org.docx4j.wml.Package is
     	// custom built for this purpose.
@@ -240,7 +218,117 @@ public class WordprocessingMLPackage extends Package {
     	
 		XmlDataStyles.setStyles(styles);
 		pkgPartStyles.setXmlData(XmlDataStyles);
-		pkg.getPart().add(pkgPartStyles);    	
+		pkg.getPart().add(pkgPartStyles);
+		
+		return pkg;
+    	
+    }
+    
+    
+    /**
+     * Use an XSLT to alter the contents of this package.
+     * The output of the transformation must be valid
+     * pck:package/pck:part format, as emitted by Word 2007.
+     * 
+     * @param xslt
+     * @param transformParameters
+     * @throws Exception
+     */    
+    public void transform(java.io.InputStream xslt, 
+			  Map<String, Object> transformParameters) throws Exception {
+
+    	// Prepare in the input document
+    	org.docx4j.wml.Package pkg = exportPkgXml();
+		JAXBContext jc = Context.jc;
+		Marshaller marshaller=jc.createMarshaller();
+		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
+		marshaller.marshal(pkg, doc);
+    	
+		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
+		
+		// Perform the transformation
+		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
+		
+
+		org.docx4j.wml.Package wmlPackageEl = (org.docx4j.wml.Package)result.getResult(); 
+
+		org.docx4j.wml.Document wmlDocument = null;
+		org.docx4j.wml.Styles wmlStyles = null;
+		for (org.docx4j.wml.Package.Part p : wmlPackageEl.getPart() ) {
+			
+			if (p.getXmlData().getDocument()!= null) {
+				wmlDocument = p.getXmlData().getDocument();
+			}				
+			if (p.getXmlData().getStyles()!= null) {
+				wmlStyles = p.getXmlData().getStyles();
+			}				
+		}
+
+		// TODO - delete existing main document part
+		
+		// Create main document part
+		MainDocumentPart wordDocumentPart = new MainDocumentPart();		
+		// Put the content in the part				
+		wordDocumentPart.setJaxbElement(wmlDocument);
+		// Add the main document part to the package relationships
+		// (creating it if necessary)
+		this.addTargetPart(wordDocumentPart);
+		
+
+		// TODO - delete existing style part
+		
+		
+		// That handled the Main Document Part; now set the Style part.
+		StyleDefinitionsPart stylesPart = new StyleDefinitionsPart(); 
+		stylesPart.setJaxbElement(wmlStyles);
+		// Add the styles part to the main document part relationships
+		// (creating it if necessary)
+		wordDocumentPart.addTargetPart(stylesPart); // NB - add it to main doc part, not package!
+		
+    	
+    }
+    
+    public void filter( FilterSettings filterSettings ) throws Exception {
+
+		java.io.InputStream xslt 
+			= org.docx4j.utils.ResourceUtils.getResource(
+					"org/docx4j/openpackaging/packages/filter.xslt");
+    	
+    	transform(xslt, filterSettings.getSettings() );
+    	
+    }
+
+	/** Create an html version of the document, using CSS font family
+	 *  stacks.  This is appropriate if the HTML is intended for
+	 *  viewing in a web browser, rather than an intermediate step
+	 *  on the way to generating PDF output. 
+	 * 
+	 * @param result
+	 *            The javax.xml.transform.Result object to transform into 
+	 * 
+	 * */ 
+    public void html(javax.xml.transform.Result result) throws Exception {
+
+    	html(result, true);
+    }
+    
+    
+	/** Create an html version of the document. 
+	 * 
+	 * @param result
+	 *            The javax.xml.transform.Result object to transform into 
+	 * 
+	 * */ 
+    public void html(javax.xml.transform.Result result, boolean fontFamilyStack) throws Exception {
+    	
+    	/*
+    	 * Given that word2html.xsl is freely available, use a
+    	 * version of it adapted to process the
+    	 * pck:package/pck:part stuff emitted by Word 2007.
+    	 * 
+    	 */    	
+    	org.docx4j.wml.Package pkg = exportPkgXml();
+    	    	
     	
     	// Now marshall it
 		JAXBContext jc = Context.jc;
@@ -251,105 +339,13 @@ public class WordprocessingMLPackage extends Package {
 		
 		log.info("wordDocument created for PDF rendering!");
 
-/*		
- * 		We want to use plain old Xalan J, not xsltc
- * 
- * 		Following would not be necessary provided Xalan is on the classpath
- * 
-		System.setProperty("javax.xml.transform.TransformerFactory", "FQCN");
 
-		examples of FQCN:
+		// Get the xslt file - Works in Eclipse - note absence of leading '/'
+		java.io.InputStream xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/packages/wordml2html-2007.xslt");
 		
-		  org.apache.xalan.processor.TransformerFactoryImpl (this is the one we want)
-		  com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
-		  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
-		  net.sf.saxon.TransformerFactoryImpl
-		  
-		HOWEVER, docx4all encounters http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
-		
-			java.util.prefs.FileSystemPreferences syncWorld
-			WARNING: Couldn't flush user prefs: java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
-		
-		every 30 seconds
-
-		The workaround implemented is to remove META-INF/services from the xalan jar 
-		to prevent xalan being picked up as the default provider for jaxp transform,
-		so we have to use it explicitly.
-		
-		.. which means 
-
-			System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
-
-		  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
-		   so we have to bundle xalan jar, which is 2.7 MB
-		   
-		   But we can make it smaller:
-		   
-		   	org/apache/xalan/lib$ rm sql -rf
-		    org/apache/xalan$ rm xsltc -rf
-
-          That gets us from 2.7 MB to 1.85 MB.
-          
-          Sun already has:
-          
-			com.sun.org.apache.xpath;			
-			com.sun.org.apache.xml.internal.dtm;			
-			com.sun.org.apache.xalan.internal.extensions|lib|res
-		   
-		  so you might think we can refactor Xalan to point to those, and them out of our jar.
-		  
-		  well, it turns out that its too messy leaving out org.apache.xpath or xalan.extensions	 
-		  
-		  so you have to keep xalan.extensions, processor, serialize, trace, transformer
-
-		  leaving out just org.apache.xalan.resources and org.apache.xpath.resources
-		  only gets us down to 1.5 MB. (and that's with just jar cvf xalan-minimal.jar org/apache/xalan org/apache/xpath
-			- we'd still need to include org/apache/xml)
-			
-			ie once you include the whole of org.apache.xpath, you may as well just go with the 1.85 MB  :(
-			
-*/		
-		
-		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
-		String originalFactory = tfactory.getClass().getName();
-		System.out.println("original TransformerFactory: " + originalFactory);
-		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl resolves the syncWorld problem
-		// net.sf.saxon.TransformerFactoryImpl is no good.
-		
-		System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
-		
-		// Now transform this into XHTML
-		tfactory = javax.xml.transform.TransformerFactory.newInstance();
-		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
-
-		// Get the xslt file
-		java.io.InputStream is = null;
-			// Works in Eclipse - note absence of leading '/'
-			is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/packages/wordml2html-2007.xslt");
-				
-		// Use the factory to create a template containing the xsl file
-		javax.xml.transform.Templates template = tfactory.newTemplates(
-				new javax.xml.transform.stream.StreamSource(is));
-		// Use the template to create a transformer
-		javax.xml.transform.Transformer xformer = template.newTransformer();
-		
-		
-		// Finished with the factory, so set it back again!
-		// The "Not supported: indent-number" problem will only occur if a user creates 
-		// a new document during the time between these 2 calls to setProperty
-		// (and syncWorld is called?)
-		System.setProperty("javax.xml.transform.TransformerFactory", originalFactory);
-		
-		if (!xformer.getClass().getName().equals("org.apache.xalan.transformer.TransformerImpl")) {
-			log.error("Detected " + xformer.getClass().getName() 
-					+ ", but require org.apache.xalan.transformer.TransformerImpl. " +
-							"Ensure Xalan 2.7.0 is on your classpath!" );
-		}
-		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't work
-		// with our extension function.
-
-		
-		// 3.  Ensure that the font names in the XHTML have been mapped to these matches
+		// Prep parameters
+		Map<String, Object> transformParameters = new java.util.HashMap<String,Object>();
+		// ..Ensure that the font names in the XHTML have been mapped to these matches
 		//     possibly via an extension function in the XSLT
 		if (fontSubstituter==null) {
 			log.debug("Creating new Substituter.");
@@ -357,19 +353,19 @@ public class WordprocessingMLPackage extends Package {
 		} else {
 			log.debug("Using existing Substituter.");
 		}
-		xformer.setParameter("substituterInstance", fontSubstituter);
-		xformer.setParameter("fontFamilyStack", fontFamilyStack);
+		transformParameters.put("substituterInstance", fontSubstituter);
+		transformParameters.put("fontFamilyStack", fontFamilyStack);
 		
-		//DEBUGGING 
-		// use the identity transform if you want to send wordDocument;
-		// otherwise you'll get the XHTML
-		//javax.xml.transform.Transformer xformer = tfactory.newTransformer();
 		
-		xformer.transform(domSource, result);
-
+		// Now do the transformation
+		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
+		
 		log.info("wordDocument transformed to xhtml ..");
     	
     }
+    
+    
+    
     
     public void setFontSubstituter(Substituter fs) throws Exception {
     	if (fs == null) {
@@ -594,6 +590,24 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 		}
 		// Return the new package
 		return wmlPack;
+		
+	}
+	
+	public static class FilterSettings {
+		
+		Boolean removeProofErrors = Boolean.FALSE;		
+		public void setRemoveProofErrors(boolean val) {
+			removeProofErrors = new Boolean(val);
+		}
+		
+		Map<String, Object> getSettings() {
+			Map<String, Object> settings = new java.util.HashMap<String, Object>();
+			
+			settings.put("removeProofErrors", removeProofErrors);
+			
+			return settings;
+		}
+		
 		
 	}
 	
