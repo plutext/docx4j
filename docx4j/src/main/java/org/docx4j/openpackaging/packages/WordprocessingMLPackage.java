@@ -209,8 +209,8 @@ public class WordprocessingMLPackage extends Package {
 
     	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart = documentPart.getStyleDefinitionsPart();
     	
-    	pkgPartDocument.setName(stylesPart.getPartName().getName());
-    	pkgPartDocument.setContentType(stylesPart.getContentType() );
+    	pkgPartStyles.setName(stylesPart.getPartName().getName());
+    	pkgPartStyles.setContentType(stylesPart.getContentType() );
     	
     	org.docx4j.wml.Package.Part.XmlData XmlDataStyles = factory.createPackagePartXmlData();
     	
@@ -599,11 +599,25 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 		public void setRemoveProofErrors(boolean val) {
 			removeProofErrors = new Boolean(val);
 		}
+
+		Boolean removeContentControls = Boolean.FALSE;		
+		public void setRemoveContentControls(boolean val) {
+			removeContentControls = new Boolean(val);
+		}
+		
+		Boolean removeRsids = Boolean.FALSE;		
+		public void setRemoveRsids(boolean val) {
+			removeRsids = new Boolean(val);
+		}
 		
 		Map<String, Object> getSettings() {
 			Map<String, Object> settings = new java.util.HashMap<String, Object>();
 			
 			settings.put("removeProofErrors", removeProofErrors);
+			settings.put("removeContentControls", removeContentControls);
+			settings.put("removeRsids", removeRsids);
+			
+			
 			
 			return settings;
 		}
