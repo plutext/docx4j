@@ -18,13 +18,67 @@
 
 <!-- One line for each of the things in FilterSettings --> 		
 <xsl:param name="removeProofErrors"/> <!-- select="'passed in'"-->	
+<xsl:param name="removeContentControls"/>
+<xsl:param name="removeRsids"/>	
 	
+		
 <xsl:template match="@*|node()">
   <xsl:copy>
     <xsl:apply-templates select="@*|node()"/>
   </xsl:copy>
 </xsl:template>
 
+<xsl:template match="w:proofErr">
+	
+	<xsl:choose>
+		<xsl:when test="$removeProofErrors=true()">
+			<!-- ignore it -->
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
+
+<xsl:template match="w:sdt">
+	
+	<xsl:choose>
+		<xsl:when test="$removeContentControls=true()">
+			<xsl:apply-templates select="w:sdtContent/*"/>
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
+	
+
+<xsl:template match="@w:rsidRPr | @w:rsidDel | @w:rsidR | @w:rsidSect | @w:rsidTr | @w:rsidP | @w:rsidRDefault | w:rsids | w:rsidRoot | w:rsid  ">
+	<!-- rsids contains rsidRoot and rsid -->
+	
+	<xsl:choose>
+		<xsl:when test="$removeRsids=true()">
+			<!-- ignore it -->
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
+	
+		
+	
+		
+<!--	
 <xsl:template match="pkg:part[pkg:xmlData/w:document]">
    <pkg:part>
         <pkg:xmlData>	   
@@ -56,12 +110,6 @@
         </pkg:xmlData>
     </pkg:part>	 
 </xsl:template>
-
-	<!--
-				<xsl:variable name="targetFont" 
-				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
-							string($documentFont), 'BoldItalic', boolean($fontFamilyStack))" />
-			font-family:'<xsl:value-of select="$targetFont"/>';						
 -->
 
 

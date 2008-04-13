@@ -182,6 +182,11 @@ public class WordprocessingMLPackage extends Package {
     	// The JAXB object org.docx4j.wml.Package is
     	// custom built for this purpose.
     	
+    	// TODO - this method currently only puts the main document
+    	// part and the styles part into the pkg.  
+    	// Extend it so that it can optionally do the others as well.
+    	// Likewise, the converse.
+    	
     	// Create a org.docx4j.wml.Package object
     	org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
     	org.docx4j.wml.Package pkg = factory.createPackage();

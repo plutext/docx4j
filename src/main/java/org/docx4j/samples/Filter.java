@@ -39,7 +39,7 @@ public class Filter {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/qformat.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/contentcontrols.docx";
 				
 		// Do we want to save output? 
 		boolean save = false;
@@ -53,7 +53,9 @@ public class Filter {
 		
 		// Apply the filter
 		WordprocessingMLPackage.FilterSettings filterSettings = new WordprocessingMLPackage.FilterSettings();
-		filterSettings.setRemoveProofErrors(false);
+		filterSettings.setRemoveProofErrors(true);
+		filterSettings.setRemoveContentControls(true);
+		filterSettings.setRemoveRsids(true);
 		wordMLPackage.filter(filterSettings);
 		
 		
