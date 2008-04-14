@@ -23,6 +23,8 @@ package org.docx4j;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -305,6 +307,137 @@ public class XmlUtils {
 		}		
 		
 	}
+	
+    /**
+     * 
+     * Transform an input document using XSLT
+     * 
+     * @param doc
+     * @param xslt
+     * @param transformParameters
+     * @param result
+     * @throws Exception
+     */
+    public static void transform(org.w3c.dom.Document doc,
+    					  java.io.InputStream xslt, 
+    					  Map<String, Object> transformParameters, 
+    					  javax.xml.transform.Result result) throws Exception {
+
+    	/*		
+    	 * 		We want to use plain old Xalan J, not xsltc
+    	 * 
+    	 * 		Following would not be necessary provided Xalan is on the classpath
+    	 * 
+    			System.setProperty("javax.xml.transform.TransformerFactory", "FQCN");
+
+    			examples of FQCN:
+    			
+    			  org.apache.xalan.processor.TransformerFactoryImpl (this is the one we want)
+    			  com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+    			  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
+    			  net.sf.saxon.TransformerFactoryImpl
+    			  
+    			HOWEVER, docx4all encounters http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+    			
+    				java.util.prefs.FileSystemPreferences syncWorld
+    				WARNING: Couldn't flush user prefs: java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
+    			
+    			every 30 seconds
+
+    			The workaround implemented is to remove META-INF/services from the xalan jar 
+    			to prevent xalan being picked up as the default provider for jaxp transform,
+    			so we have to use it explicitly.
+    			
+    			.. which means 
+
+    				System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+
+    			  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
+    			   so we have to bundle xalan jar, which is 2.7 MB
+    			   
+    			   But we can make it smaller:
+    			   
+    			   	org/apache/xalan/lib$ rm sql -rf
+    			    org/apache/xalan$ rm xsltc -rf
+
+    	          That gets us from 2.7 MB to 1.85 MB.
+    	          
+    	          Sun already has:
+    	          
+    				com.sun.org.apache.xpath;			
+    				com.sun.org.apache.xml.internal.dtm;			
+    				com.sun.org.apache.xalan.internal.extensions|lib|res
+    			   
+    			  so you might think we can refactor Xalan to point to those, and them out of our jar.
+    			  
+    			  well, it turns out that its too messy leaving out org.apache.xpath or xalan.extensions	 
+    			  
+    			  so you have to keep xalan.extensions, processor, serialize, trace, transformer
+
+    			  leaving out just org.apache.xalan.resources and org.apache.xpath.resources
+    			  only gets us down to 1.5 MB. (and that's with just jar cvf xalan-minimal.jar org/apache/xalan org/apache/xpath
+    				- we'd still need to include org/apache/xml)
+    				
+    				ie once you include the whole of org.apache.xpath, you may as well just go with the 1.85 MB  :(
+    				
+    	*/		
+    			
+    			javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
+    			String originalFactory = tfactory.getClass().getName();
+    			System.out.println("original TransformerFactory: " + originalFactory);
+    			// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl resolves the syncWorld problem
+    			// net.sf.saxon.TransformerFactoryImpl is no good.
+    			
+    			System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+    			
+    			// Now transform this into XHTML
+    			tfactory = javax.xml.transform.TransformerFactory.newInstance();
+    			javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
+
+    					
+    			// Use the factory to create a template containing the xsl file
+    			javax.xml.transform.Templates template = tfactory.newTemplates(
+    					new javax.xml.transform.stream.StreamSource(xslt));
+    			// Use the template to create a transformer
+    			javax.xml.transform.Transformer xformer = template.newTransformer();
+    			
+    			
+    			// Finished with the factory, so set it back again!
+    			// The "Not supported: indent-number" problem will only occur if a user creates 
+    			// a new document during the time between these 2 calls to setProperty
+    			// (and syncWorld is called?)
+    			System.setProperty("javax.xml.transform.TransformerFactory", originalFactory);
+    			
+    			if (!xformer.getClass().getName().equals("org.apache.xalan.transformer.TransformerImpl")) {
+    				log.error("Detected " + xformer.getClass().getName() 
+    						+ ", but require org.apache.xalan.transformer.TransformerImpl. " +
+    								"Ensure Xalan 2.7.0 is on your classpath!" );
+    			}
+    			// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't work
+    			// with our extension function.
+
+    			Iterator parameterIterator = transformParameters.entrySet().iterator();
+    		    while (parameterIterator.hasNext()) {
+    		        Map.Entry pairs = (Map.Entry)parameterIterator.next();
+    		        
+    		        if(pairs.getKey()==null) {
+    		        	log.info("Skipped null key");
+    		        	pairs = (Map.Entry)parameterIterator.next();
+    		        }
+    		        
+    		        xformer.setParameter( (String)pairs.getKey(), pairs.getValue() );
+    		    }
+    			
+    			
+    			//DEBUGGING 
+    			// use the identity transform if you want to send wordDocument;
+    			// otherwise you'll get the XHTML
+    			//javax.xml.transform.Transformer xformer = tfactory.newTransformer();
+    			
+    			xformer.transform(domSource, result);
+    	
+    }
+	
 	
 	
 }
