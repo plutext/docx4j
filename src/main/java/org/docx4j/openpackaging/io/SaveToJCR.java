@@ -188,7 +188,7 @@ public class SaveToJCR {
 	}
 
 
-	public String saveRawXmlPart(Node baseNode, Part part) throws Docx4JException {
+	public Node saveRawXmlPart(Node baseNode, Part part) throws Docx4JException {
 		
 		// This is a neater signature and should be used where possible!
 		
@@ -231,9 +231,9 @@ public class SaveToJCR {
 	
 	/* @displayName - a human readable description for this content
 	 * object.  Pass null if you don't want the displayName property set. 
-	 * Returns the version number of the resource.
+	 * Returns the resource.
 	 */
-	public String saveRawXmlPart(Node baseNode, String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
+	public Node saveRawXmlPart(Node baseNode, String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
 
 		try {
 			// OLD COMMENT - IN COURSE OF BECOMING REDUNDANT (as of 18 Jan 2008)  
@@ -378,11 +378,9 @@ public class SaveToJCR {
 			
 			Version firstVersion = cmContentNode.checkin();
 
-			log.info( "PUT SUCCESS: " + partName +  "(" + cmContentNode.getPath() + ") VERSION " + cmContentNode.getBaseVersion().getName());		
+			log.info( "PUT SUCCESS: " + partName +  "(" + cmContentNode.getPath() + ") ");		
 			
-			return cmContentNode.getBaseVersion().getName();
-				// WARNING: this is JCR implementation specific
-				// TODO - fix for Alfresco
+			return cmContentNode;
 			
 		} catch (Exception e ) {
 			e.printStackTrace();

@@ -159,9 +159,25 @@ public class LoadFromJCR extends Load {
 			// 2. Create a new Package
 	//		Eventually, you'll only be able to create an Excel package etc
 	//		but only the WordML package exists at present
-	        Document ctmDocument = null; 
-	        ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper, docxContentNode, "[Content_Types].xml");	        	
-			debugPrint(ctmDocument);
+//	        Document ctmDocument = null; 
+//	        ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper, docxContentNode, "[Content_Types].xml");	        	
+//			debugPrint(ctmDocument);
+	        
+	        Node contentTypesPartNode = getPartNode(jcrSession, nodeMapper, docxContentNode, "[Content_Types].xml");
+
+	        // Document ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper, contentTypesPartNode);			
+			InputStream in = getInputStreamFromJCRPart(nodeMapper, contentTypesPartNode);
+			SAXReader xmlReader = new SAXReader();
+			Document ctmDocument = null;
+			try {
+				ctmDocument = xmlReader.read(in);
+				debugPrint(ctmDocument);				
+			} catch (DocumentException e) {
+				e.printStackTrace() ;
+				throw e;
+			}
+	        
+	        
 			ctm.parseContentTypesFile(ctmDocument);
 			p = ctm.createPackage();
 						
@@ -220,8 +236,13 @@ public class LoadFromJCR extends Load {
 			throws InvalidFormatException, Docx4JException {
 		
 		try {
-			InputStream is = getInputStreamFromJCRPart( jcrSession, nodeMapper, 
+//			InputStream is = getInputStreamFromJCRPart( jcrSession, nodeMapper, 
+//					docxNode,  partName);
+			
+			Node contentNode = getPartNode(jcrSession,nodeMapper,  
 					docxNode,  partName);
+			InputStream is = getInputStreamFromJCRPart( nodeMapper, contentNode); 
+			
 
 			return new RelationshipsPart(p, new PartName("/" + partName), is );
 			
@@ -285,53 +306,97 @@ public class LoadFromJCR extends Load {
 		
 	}
 	
-	private static InputStream getInputStreamFromJCRPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode, String partName) 
+//	// Deprecate, since it encourages inefficient use of JCR API,
+//	// which can't be afforded when using Alfresco
+//	private static InputStream getInputStreamFromJCRPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode, String partName) 
+//		throws DocumentException, RepositoryException, PathNotFoundException {
+//		
+//		InputStream in = null;
+//		log.info("Fetching " + encodeSlashes(nodeMapper, partName));
+//		Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, partName));
+////		Node contentNode = fileNode.getNode("jcr:content");
+//		Node contentNode = nodeMapper.getContentNode(fileNode);
+//		
+////		Property jcrData = contentNode.getProperty("jcr:data"); 
+//		Property jcrData = nodeMapper.getJcrData(contentNode);		
+//		in = jcrData.getStream();
+//		
+//		return in;		
+//	}
+	
+	// Newer, preferred form
+	public static InputStream getInputStreamFromJCRPart(NodeMapper nodeMapper, 
+			Node contentNode) 
+		throws DocumentException, RepositoryException, PathNotFoundException {
+	
+		try {		
+			
+	//		Property jcrData = contentNode.getProperty("jcr:data");
+			Property jcrData = nodeMapper.getJcrData(contentNode);
+			return jcrData.getStream();
+		} catch (PathNotFoundException e) {		
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public static Node getPartNode(Session jcrSession,
+			NodeMapper nodeMapper, Node docxNode, String partName) 
 		throws DocumentException, RepositoryException, PathNotFoundException {
 		
-		InputStream in = null;
-		log.info("Fetching " + encodeSlashes(nodeMapper, partName));
-		Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, partName));
-//		Node contentNode = fileNode.getNode("jcr:content");
-		Node contentNode = nodeMapper.getContentNode(fileNode);
-		
-//		Property jcrData = contentNode.getProperty("jcr:data"); 
-		Property jcrData = nodeMapper.getJcrData(contentNode);		
-		in = jcrData.getStream();
-		
-		return in;		
+		long startTime = 0;
+		try {
+			log.info("Fetching " + encodeSlashes(nodeMapper, partName));
+	        startTime = System.currentTimeMillis();    	        
+			
+			Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, partName));
+//			Node contentNode = fileNode.getNode("jcr:content");
+			Node contentNode = nodeMapper.getContentNode(fileNode);
+						
+	        long endTime = System.currentTimeMillis();
+	        long duration = endTime - startTime;	        
+	        log.info("Finding part node took " + duration + "ms");
+	        return contentNode;
+			
+		} catch (PathNotFoundException e) {
+			
+			e.printStackTrace();	
+			return null;
+		}		
 	}
 	
-	private static Document deprecatedGetDocumentFromJCRPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode, String partName) 
-	throws DocumentException, RepositoryException, PathNotFoundException {
 	
-	InputStream in = null;
-	log.info("Fetching " + encodeSlashes(nodeMapper, partName));
-	Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, partName));
-	
-//	Node contentNode = fileNode.getNode("jcr:content");
-	Node contentNode = nodeMapper.getContentNode(fileNode);
-	
-//	Property jcrData = contentNode.getProperty("jcr:data"); 
-	Property jcrData = nodeMapper.getJcrData(contentNode);
-	
-	in = jcrData.getStream();
-	
-	SAXReader xmlReader = new SAXReader();
-	Document contents = null;
-	try {
-		contents = xmlReader.read(in);
-//		log.info("\n\n" + partName + "\n ===================");
-//		debugPrint(contents);
-		
-	} catch (DocumentException e) {
-		// Will land here for binary files eg gif file
-		// These do get handled ..
-		log.error("DocumentException on " + partName + " . Check this is binary content."); 
-		//e.printStackTrace() ;
-		throw e;
-	}
-	return contents;		
-}
+//	private static Document deprecatedGetDocumentFromJCRPart(Session jcrSession, NodeMapper nodeMapper, Node docxNode, String partName) 
+//	throws DocumentException, RepositoryException, PathNotFoundException {
+//	
+//	InputStream in = null;
+//	log.info("Fetching " + encodeSlashes(nodeMapper, partName));
+//	Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, partName));
+//	
+////	Node contentNode = fileNode.getNode("jcr:content");
+//	Node contentNode = nodeMapper.getContentNode(fileNode);
+//	
+////	Property jcrData = contentNode.getProperty("jcr:data"); 
+//	Property jcrData = nodeMapper.getJcrData(contentNode);
+//	
+//	in = jcrData.getStream();
+//	
+//	SAXReader xmlReader = new SAXReader();
+//	Document contents = null;
+//	try {
+//		contents = xmlReader.read(in);
+////		log.info("\n\n" + partName + "\n ===================");
+////		debugPrint(contents);
+//		
+//	} catch (DocumentException e) {
+//		// Will land here for binary files eg gif file
+//		// These do get handled ..
+//		log.error("DocumentException on " + partName + " . Check this is binary content."); 
+//		//e.printStackTrace() ;
+//		throw e;
+//	}
+//	return contents;		
+//}
 	
 	/* recursively 
 	(i) create new Parts for each thing listed
@@ -480,8 +545,13 @@ public class LoadFromJCR extends Load {
 
 				part = ctm.getPart("/" + resolvedPartUri);
 								
-				InputStream is = getInputStreamFromJCRPart( jcrSession, 
-						nodeMapper, docxNode,  resolvedPartUri);
+//				InputStream is = getInputStreamFromJCRPart( jcrSession, 
+//						nodeMapper, docxNode,  resolvedPartUri);
+				
+				Node contentNode = getPartNode(jcrSession,nodeMapper,  
+						docxNode,  resolvedPartUri);
+				InputStream is = getInputStreamFromJCRPart( nodeMapper, contentNode); 
+				
 				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 
