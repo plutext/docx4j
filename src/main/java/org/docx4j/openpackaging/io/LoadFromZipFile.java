@@ -395,10 +395,13 @@ public class LoadFromZipFile extends Load {
 		try {
 			try {
 
-				// Get a subclass of Part appropriate for this content type				
-				part = ctm.getPart("/" + resolvedPartUri);
-				
 				is = getInputStreamFromZippedPart( zf,  resolvedPartUri);
+				
+				// Get a subclass of Part appropriate for this content type	
+				// This will throw UnrecognisedPartException in the absence of
+				// specific knowledge. Hence it is important to get the is
+				// first, as we do above.
+				part = ctm.getPart("/" + resolvedPartUri);				
 
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 
@@ -451,6 +454,7 @@ public class LoadFromZipFile extends Load {
 
 				// Try to get it as a binary part
 				part = getBinaryPart(zf, ctm, resolvedPartUri);
+				((BinaryPart)part).setBinaryData(is);
 			}
 		} catch (Exception ex) {
 			// IOException, URISyntaxException
