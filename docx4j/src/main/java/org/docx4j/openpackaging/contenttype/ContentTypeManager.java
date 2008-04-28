@@ -63,6 +63,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.*;
 import org.docx4j.openpackaging.parts.WordprocessingML.*;
@@ -160,11 +161,11 @@ public interface ContentTypeManager {
 
 	
 	/* Return a part of the appropriate sub class */
-	public  Part getPart(String partName) throws URISyntaxException, InvalidFormatException;
+	public  Part getPart(String partName) throws URISyntaxException, PartUnrecognisedException, InvalidFormatException;
 
 	/* Return a part appropriate to the content type */
 	public Part newPartForContentType(String contentType, String partName)
-		throws InvalidFormatException;
+		throws InvalidFormatException, PartUnrecognisedException;
 
 	public Part CreateDefaultPartObject(String partName)
 	throws InvalidFormatException;	

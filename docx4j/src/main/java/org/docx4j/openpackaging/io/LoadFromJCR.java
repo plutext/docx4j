@@ -60,6 +60,7 @@ import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 
 // Aim to remove dependency on any XML API from 
 // this package.
@@ -598,7 +599,7 @@ public class LoadFromJCR extends Load {
 					log.error("No suitable part found for: " + resolvedPartUri);
 					return null;					
 				}
-			} catch (Exception e) {
+			} catch (PartUnrecognisedException e) {
 				
 				// Try to get it as a binary part				
 				return getBinaryPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);

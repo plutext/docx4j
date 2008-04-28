@@ -40,12 +40,14 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -220,12 +222,12 @@ public class LoadFromZipFile extends Load {
 	}
 
 	private static InputStream getInputStreamFromZippedPart(ZipFile zf, String partName) 
-	throws DocumentException, IOException {
-	
-	InputStream in = null;
-	in = zf.getInputStream( zf.getEntry(partName ) );
-	return in;		
-}
+		throws DocumentException, IOException {
+		
+		InputStream in = null;
+		in = zf.getInputStream( zf.getEntry(partName ) );
+		return in;		
+	}
 	
 	
 	private static Document deprecatedGetDocumentFromZippedPart(ZipFile zf, String partName) 
@@ -445,7 +447,7 @@ public class LoadFromZipFile extends Load {
 					part = null;					
 				}
 			
-			} catch (DocumentException e) {
+			} catch (PartUnrecognisedException e) {
 
 				// Try to get it as a binary part
 				part = getBinaryPart(zf, ctm, resolvedPartUri);
