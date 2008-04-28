@@ -61,6 +61,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.*;
@@ -213,7 +214,8 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 	}
 	
 	/* Return a part of the appropriate sub class */
-	public  Part getPart(String partName) throws URISyntaxException, InvalidFormatException  {
+	public  Part getPart(String partName) throws URISyntaxException, PartUnrecognisedException,
+	 InvalidFormatException {
 		
 		Part p;
 
@@ -245,7 +247,7 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 	}
 	
 	public Part newPartForContentType(String contentType, String partName)
-		throws InvalidFormatException {
+		throws InvalidFormatException, PartUnrecognisedException {
 		
 		// TODO - a number of WordML parts aren't listed here!
 		if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) { 
@@ -294,7 +296,7 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			return CreateDefaultPartObject(partName );
 		} else {
 			log.error("No subclass found for " + partName);
-			throw new InvalidFormatException("No subclass found for " + partName);		
+			throw new PartUnrecognisedException("No subclass found for " + partName);		
 
 		}
 
