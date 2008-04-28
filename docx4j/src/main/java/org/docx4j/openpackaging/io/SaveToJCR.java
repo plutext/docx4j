@@ -476,7 +476,8 @@ public class SaveToJCR {
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 
-		InputStream bin = ((BinaryPart)part).getBinaryData();
+		InputStream bin = org.docx4j.utils.BufferUtil.newInputStream(
+							((BinaryPart)part).getBuffer() );
 		
 		try {
 		

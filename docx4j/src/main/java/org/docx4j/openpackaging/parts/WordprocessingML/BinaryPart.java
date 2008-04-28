@@ -20,13 +20,12 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-
-import org.dom4j.Document;
 
 
 public class BinaryPart extends Part {
@@ -41,15 +40,25 @@ public class BinaryPart extends Part {
 		
 	}
 	
-	private InputStream binaryData;
+//	private InputStream binaryData;
+//
+//	public InputStream getBinaryData() {
+//		return binaryData;
+//	}
 
-	public InputStream getBinaryData() {
-		return binaryData;
-	}
-
+	java.nio.ByteBuffer bb;
 	public void setBinaryData(InputStream binaryData) {
-		this.binaryData = binaryData;
-	}		
 		
-
+		try {
+			bb = org.docx4j.utils.BufferUtil.readInputStream(binaryData);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}	
+			
+	public java.nio.ByteBuffer getBuffer() {
+		return bb;
+	}
+		
 }

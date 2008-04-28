@@ -539,20 +539,20 @@ public class LoadFromJCR extends Load {
 			throws Docx4JException {
 		
 		Part part = null;
-				
+
+		InputStream is = null;		
 		try {
 						
 			try {
+				
+				// Get the input stream first, so it is available
+				// even if getPart throws PartUnrecognisedException.
+				Node contentNode = getPartNode(jcrSession,nodeMapper,  
+						docxNode,  resolvedPartUri);
+				is = getInputStreamFromJCRPart( nodeMapper, contentNode); 
 
 				part = ctm.getPart("/" + resolvedPartUri);
 								
-//				InputStream is = getInputStreamFromJCRPart( jcrSession, 
-//						nodeMapper, docxNode,  resolvedPartUri);
-				
-				Node contentNode = getPartNode(jcrSession,nodeMapper,  
-						docxNode,  resolvedPartUri);
-				InputStream is = getInputStreamFromJCRPart( nodeMapper, contentNode); 
-				
 				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 
@@ -602,7 +602,8 @@ public class LoadFromJCR extends Load {
 			} catch (PartUnrecognisedException e) {
 				
 				// Try to get it as a binary part				
-				return getBinaryPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);
+				part = getBinaryPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);
+				((BinaryPart)part).setBinaryData(is);
 					
 			}
 		} catch (Exception ex) {

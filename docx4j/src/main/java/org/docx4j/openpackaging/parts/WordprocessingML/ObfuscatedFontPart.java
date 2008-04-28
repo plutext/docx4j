@@ -95,34 +95,6 @@ public class ObfuscatedFontPart extends BinaryPart {
 		//setRelationshipType(Namespaces.);
 	}
 	
-
-	static final int BUFF_SIZE = 100000;
-	static final byte[] buffer = new byte[BUFF_SIZE];
-
-	public byte[] createFontDataByteArray() throws IOException{
-	   InputStream in = getBinaryData();
-	   ByteArrayOutputStream out = null;  
-	   try {
-		   out = new ByteArrayOutputStream();
-	      while (true) {
-	         synchronized (buffer) {
-	            int amountRead = in.read(buffer);
-	            if (amountRead == -1) {
-	               break;
-	            }
-	            out.write(buffer, 0, amountRead); 
-	         }
-	      } 
-	      return out.toByteArray();
-	   } finally {
-	      if (in != null) {
-	         in.close();
-	      }
-	      if (out != null) {
-	         out.close();
-	      }
-	   }
-	}	
 	
 	/**
 	 * deObfuscate this font, and save it using fontName
@@ -134,14 +106,12 @@ public class ObfuscatedFontPart extends BinaryPart {
 	 */
 	public void deObfuscate(String fontName, String fontKey ) {
 		
-		// Convert the input stream into a byte array
 		byte[] fontData = null;
-		try {
-			fontData = createFontDataByteArray();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+				
+        bb.clear();
+        fontData = new byte[bb.capacity()];
+        bb.get(fontData, 0, fontData.length);
+		
 		log.debug("bytes: " + fontData.length);
 		
 		log.info("deObfuscating with fontkey: " + fontKey);			
