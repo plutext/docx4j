@@ -45,9 +45,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_RangeMarkupElements" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="tblPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblPr"/>
  *         &lt;element name="tblGrid" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblGrid"/>
+ *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_ContentRowContent" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -58,84 +58,50 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Tbl", propOrder = {
-    "egRangeMarkupElements",
     "tblPr",
-    "tblGrid"
+    "tblGrid",
+    "egContentRowContent"
 })
 @XmlRootElement(name = "tbl")
 public class Tbl
     implements Child
 {
 
-    @XmlElementRefs({
-        @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "commentRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
-    })
-    protected List<JAXBElement<? extends CTMarkup>> egRangeMarkupElements;
     @XmlElement(required = true)
     protected TblPr tblPr;
     @XmlElement(required = true)
     protected CTTblGrid tblGrid;
+    @XmlElementRefs({
+        @XmlElementRef(name = "customXml", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = ProofErr.class),
+        @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "tr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Tr.class),
+        @XmlElementRef(name = "sdt", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "permEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+    })
+    protected List<Object> egContentRowContent;
     @XmlTransient
     private Object parent;
-
-    /**
-     * Gets the value of the egRangeMarkupElements property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the egRangeMarkupElements property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getEGRangeMarkupElements().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
-     * 
-     * 
-     */
-    public List<JAXBElement<? extends CTMarkup>> getEGRangeMarkupElements() {
-        if (egRangeMarkupElements == null) {
-            egRangeMarkupElements = new ArrayList<JAXBElement<? extends CTMarkup>>();
-        }
-        return this.egRangeMarkupElements;
-    }
 
     /**
      * Gets the value of the tblPr property.
@@ -183,6 +149,60 @@ public class Tbl
      */
     public void setTblGrid(CTTblGrid value) {
         this.tblGrid = value;
+    }
+
+    /**
+     * Gets the value of the egContentRowContent property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the egContentRowContent property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getEGContentRowContent().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link JAXBElement }{@code <}{@link CTCustomXmlRow }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
+     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link ProofErr }
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link Tr }
+     * {@link JAXBElement }{@code <}{@link CTSdtRow }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPerm }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * 
+     * 
+     */
+    public List<Object> getEGContentRowContent() {
+        if (egContentRowContent == null) {
+            egContentRowContent = new ArrayList<Object>();
+        }
+        return this.egContentRowContent;
     }
 
     /**
