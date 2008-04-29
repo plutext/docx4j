@@ -1,0 +1,354 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:simpleType name="ST_PresetCameraType">
+    <xsd:annotation>
+      <xsd:documentation>Preset Camera Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="legacyObliqueTopLeft">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Top Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueTop">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueTopRight">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueLeft">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueFront">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Front</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueRight">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueBottomLeft">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Bottom Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueBottom">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyObliqueBottomRight">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Oblique Bottom Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveTopLeft">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Top Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveTop">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveTopRight">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveLeft">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveFront">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Front</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveRight">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveBottomLeft">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Bottom Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveBottom">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPerspectiveBottomRight">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Perspective Bottom Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="orthographicFront">
+        <xsd:annotation>
+          <xsd:documentation>Orthographic Front</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricTopUp">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Top Up</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricTopDown">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Top Down</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricBottomUp">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Bottom Up</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricBottomDown">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Bottom Down</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricLeftUp">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Left Up</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricLeftDown">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Left Down</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricRightUp">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Right Up</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricRightDown">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Right Down</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis1Left">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 1 Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis1Right">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 1 Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis1Top">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 1 Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis2Left">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 2 Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis2Right">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 2 Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis2Top">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 2 Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis3Left">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 3 Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis3Right">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 3 Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis3Bottom">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 3 Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis4Left">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 4 Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis4Right">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 4 Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="isometricOffAxis4Bottom">
+        <xsd:annotation>
+          <xsd:documentation>Isometric Off Axis 4 Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueTopLeft">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Top Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueTop">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueTopRight">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueLeft">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueRight">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueBottomLeft">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Bottom Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueBottom">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="obliqueBottomRight">
+        <xsd:annotation>
+          <xsd:documentation>Oblique Bottom Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveFront">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Front</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveLeft">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveRight">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveAbove">
+        <xsd:annotation>
+          <xsd:documentation>Orthographic Above</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveBelow">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Below</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveAboveLeftFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Above Left Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveAboveRightFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Above Right Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveContrastingLeftFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Contrasting Left Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveContrastingRightFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Contrasting Right Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveHeroicLeftFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Heroic Left Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveHeroicRightFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Heroic Right Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveHeroicExtremeLeftFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Heroic Extreme Left Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveHeroicExtremeRightFacing">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Heroic Extreme Right Facing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveRelaxed">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Relaxed</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspectiveRelaxedModerately">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Relaxed Moderately</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FOVAngle">
+    <xsd:annotation>
+      <xsd:documentation>Field of View Angle</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Angle">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="10800000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Camera">
+    <xsd:sequence>
+      <xsd:element name="rot" type="CT_SphereCoords" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Rotation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="prst" type="ST_PresetCameraType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Preset Camera Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fov" type="ST_FOVAngle" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Field of View</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="zoom" type="ST_PositivePercentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Zoom</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+</xsd:schema>

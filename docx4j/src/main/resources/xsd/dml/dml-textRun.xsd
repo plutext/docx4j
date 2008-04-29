@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-textCharacter.xsd" />
+  <xsd:complexType name="CT_RegularTextRun">
+    <xsd:sequence>
+      <xsd:element name="rPr" type="CT_TextCharacterProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Character Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="t" type="xsd:string" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text String</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

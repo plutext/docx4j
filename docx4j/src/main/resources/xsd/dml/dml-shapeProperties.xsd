@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-shape3DStyles.xsd" />
+  <xsd:include schemaLocation="dml-shape3DScene.xsd" />
+  <xsd:include schemaLocation="dml-shapeGeometry.xsd" />
+  <xsd:include schemaLocation="dml-shapeEffects.xsd" />
+  <xsd:include schemaLocation="dml-shapeLineProperties.xsd" />
+  <xsd:complexType name="CT_ShapeProperties">
+    <xsd:sequence>
+      <xsd:element name="xfrm" type="CT_Transform2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>2D Transform for Individual Objects</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_Geometry" minOccurs="0" maxOccurs="1" />
+      <xsd:group ref="EG_FillProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="ln" type="CT_LineProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:group ref="EG_EffectProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="scene3d" type="CT_Scene3D" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="sp3d" type="CT_Shape3D" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="bwMode" type="ST_BlackWhiteMode" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Black and White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GroupShapeProperties">
+    <xsd:sequence>
+      <xsd:element name="xfrm" type="CT_GroupTransform2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>2D Transform for Grouped Objects</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_FillProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:group ref="EG_EffectProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="scene3d" type="CT_Scene3D" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="bwMode" type="ST_BlackWhiteMode" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Black and White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:simpleType name="ST_LightRigDirection">
+    <xsd:annotation>
+      <xsd:documentation>Light Rig Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="tl">
+        <xsd:annotation>
+          <xsd:documentation>Top Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tr">
+        <xsd:annotation>
+          <xsd:documentation>Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bl">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="br">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_LightRigType">
+    <xsd:annotation>
+      <xsd:documentation>Light Rig Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="legacyFlat1">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Flat 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyFlat2">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Flat 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyFlat3">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Flat 3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyFlat4">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Flat 4</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyNormal1">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Normal 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyNormal2">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Normal 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyNormal3">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Normal 3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyNormal4">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Normal 4</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyHarsh1">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Harsh 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyHarsh2">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Harsh 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyHarsh3">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Harsh 3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyHarsh4">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Harsh 4</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="threePt">
+        <xsd:annotation>
+          <xsd:documentation>Three Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="balanced">
+        <xsd:annotation>
+          <xsd:documentation>Light Rig Enum ( Balanced )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="soft">
+        <xsd:annotation>
+          <xsd:documentation>Soft</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="harsh">
+        <xsd:annotation>
+          <xsd:documentation>Harsh</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flood">
+        <xsd:annotation>
+          <xsd:documentation>Flood</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="contrasting">
+        <xsd:annotation>
+          <xsd:documentation>Contrasting</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="morning">
+        <xsd:annotation>
+          <xsd:documentation>Morning</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sunrise">
+        <xsd:annotation>
+          <xsd:documentation>Sunrise</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sunset">
+        <xsd:annotation>
+          <xsd:documentation>Sunset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chilly">
+        <xsd:annotation>
+          <xsd:documentation>Chilly</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="freezing">
+        <xsd:annotation>
+          <xsd:documentation>Freezing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flat">
+        <xsd:annotation>
+          <xsd:documentation>Flat</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="twoPt">
+        <xsd:annotation>
+          <xsd:documentation>Two Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="glow">
+        <xsd:annotation>
+          <xsd:documentation>Glow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="brightRoom">
+        <xsd:annotation>
+          <xsd:documentation>Bright Room</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LightRig">
+    <xsd:sequence>
+      <xsd:element name="rot" type="CT_SphereCoords" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Rotation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="rig" type="ST_LightRigType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Rig Preset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dir" type="ST_LightRigDirection" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+</xsd:schema>

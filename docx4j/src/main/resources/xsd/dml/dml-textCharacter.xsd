@@ -1,0 +1,393 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:include schemaLocation="dml-shapeEffects.xsd" />
+  <xsd:include schemaLocation="dml-shapeLineProperties.xsd" />
+  <xsd:simpleType name="ST_TextPoint">
+    <xsd:annotation>
+      <xsd:documentation>Text Point</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="-400000" />
+      <xsd:maxInclusive value="400000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextNonNegativePoint">
+    <xsd:annotation>
+      <xsd:documentation>Text Non-Negative Point</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="400000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextFontSize">
+    <xsd:annotation>
+      <xsd:documentation>Text Font Size</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="100" />
+      <xsd:maxInclusive value="400000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Panose">
+    <xsd:annotation>
+      <xsd:documentation>Panose Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:hexBinary">
+      <xsd:length value="10" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextTypeface">
+    <xsd:annotation>
+      <xsd:documentation>Text Typeface</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextFont">
+    <xsd:attribute name="typeface" type="ST_TextTypeface">
+      <xsd:annotation>
+        <xsd:documentation>Text Typeface</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="panose" type="ST_Panose" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Panose Setting</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="pitchFamily" type="xsd:byte" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Similar Font Family</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="charset" type="xsd:byte" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>Similar Character Set</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TextLanguageID">
+    <xsd:annotation>
+      <xsd:documentation>Language ID</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextUnderlineType">
+    <xsd:annotation>
+      <xsd:documentation>Text Underline Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( None )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="words">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Words )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sng">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Single )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dbl">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Double )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="heavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Heavy )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotted">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Dotted )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dottedHeavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Heavy Dotted  )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dash">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Dashed )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashHeavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Heavy Dashed )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashLong">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Long Dashed )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashLongHeavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Heavy Long Dashed )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotDash">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Dot Dash )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotDashHeavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Heavy Dot Dash )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotDotDash">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Dot Dot Dash )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotDotDashHeavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Heavy Dot Dot Dash )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Wavy )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wavyHeavy">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Heavy Wavy )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wavyDbl">
+        <xsd:annotation>
+          <xsd:documentation>Text Underline Enum ( Double Wavy )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextUnderlineLineFollowText"></xsd:complexType>
+  <xsd:complexType name="CT_TextUnderlineFillFollowText"></xsd:complexType>
+  <xsd:complexType name="CT_TextUnderlineFillGroupWrapper">
+    <xsd:group ref="EG_FillProperties" minOccurs="1" maxOccurs="1"></xsd:group>
+  </xsd:complexType>
+  <xsd:group name="EG_TextUnderlineLine">
+    <xsd:choice>
+      <xsd:element name="uLnTx" type="CT_TextUnderlineLineFollowText">
+        <xsd:annotation>
+          <xsd:documentation>Underline Follows Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="uLn" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Underline Stroke</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:group name="EG_TextUnderlineFill">
+    <xsd:choice>
+      <xsd:element name="uFillTx" type="CT_TextUnderlineFillFollowText">
+        <xsd:annotation>
+          <xsd:documentation>Underline Fill Properties Follow Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="uFill" type="CT_TextUnderlineFillGroupWrapper">
+        <xsd:annotation>
+          <xsd:documentation>Underline Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_TextStrikeType">
+    <xsd:annotation>
+      <xsd:documentation>Text Strike Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="noStrike">
+        <xsd:annotation>
+          <xsd:documentation>Text Strike Enum ( No Strike )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sngStrike">
+        <xsd:annotation>
+          <xsd:documentation>Text Strike Enum ( Single Strike )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dblStrike">
+        <xsd:annotation>
+          <xsd:documentation>Text Strike Enum ( Double Strike )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextCapsType">
+    <xsd:annotation>
+      <xsd:documentation>Text Cap Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>Text Caps Enum ( None )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="small">
+        <xsd:annotation>
+          <xsd:documentation>Text Caps Enum ( Small )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="all">
+        <xsd:annotation>
+          <xsd:documentation>Text Caps Enum ( All )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextCharacterProperties">
+    <xsd:sequence>
+      <xsd:element name="ln" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_FillProperties" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:group ref="EG_EffectProperties" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:element name="highlight" type="CT_Color" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Highlight Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_TextUnderlineLine" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:group ref="EG_TextUnderlineFill" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:element name="latin" type="CT_TextFont" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Latin Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ea" type="CT_TextFont" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>East Asian Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cs" type="CT_TextFont" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Complex Script Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sym" type="CT_TextFont" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Symbol Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hlinkClick" type="CT_Hyperlink" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Click Hyperlink</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hlinkMouseOver" type="CT_Hyperlink" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Mouse-Over Hyperlink</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="kumimoji" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Kumimoji</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lang" type="ST_TextLanguageID" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Language ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="altLang" type="ST_TextLanguageID" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Alternative Language</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sz" type="ST_TextFontSize" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Font Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="b" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Bold</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="i" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Italics</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="u" type="ST_TextUnderlineType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Underline</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="strike" type="ST_TextStrikeType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Strikethrough</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="kern" type="ST_TextNonNegativePoint" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Kerning</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cap" type="ST_TextCapsType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Capitalization</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="spc" type="ST_TextPoint" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Spacing</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="normalizeH" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Normalize Heights</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="baseline" type="ST_Percentage" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Baseline</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="noProof" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>No Proofing</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dirty" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Dirty</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="err" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Spelling Error</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="smtClean" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>SmartTag Clean</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="smtId" type="xsd:unsignedInt" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>SmartTag ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bmk" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Bookmark Link Target</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+</xsd:schema>

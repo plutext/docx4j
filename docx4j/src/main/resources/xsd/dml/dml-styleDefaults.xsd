@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-shapeProperties.xsd" />
+  <xsd:include schemaLocation="dml-shapeStyle.xsd" />
+  <xsd:include schemaLocation="dml-text.xsd" />
+  <xsd:complexType name="CT_DefaultShapeDefinition">
+    <xsd:sequence>
+      <xsd:element name="spPr" type="CT_ShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Visual Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bodyPr" type="CT_TextBodyProperties" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="lstStyle" type="CT_TextListStyle" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="style" type="CT_ShapeStyle" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ObjectStyleDefaults">
+    <xsd:sequence>
+      <xsd:element name="spDef" type="CT_DefaultShapeDefinition" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Default</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnDef" type="CT_DefaultShapeDefinition" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line Default</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="txDef" type="CT_DefaultShapeDefinition" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Default</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

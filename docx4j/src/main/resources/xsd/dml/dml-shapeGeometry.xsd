@@ -1,0 +1,1618 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:simpleType name="ST_ShapeType">
+    <xsd:annotation>
+      <xsd:documentation>Preset Shape Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="line">
+        <xsd:annotation>
+          <xsd:documentation>Line Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lineInv">
+        <xsd:annotation>
+          <xsd:documentation>Line Inverse Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="triangle">
+        <xsd:annotation>
+          <xsd:documentation>Triangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rtTriangle">
+        <xsd:annotation>
+          <xsd:documentation>Right Triangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rect">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diamond">
+        <xsd:annotation>
+          <xsd:documentation>Diamond Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="parallelogram">
+        <xsd:annotation>
+          <xsd:documentation>Parallelogram Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="trapezoid">
+        <xsd:annotation>
+          <xsd:documentation>Trapezoid Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="nonIsoscelesTrapezoid">
+        <xsd:annotation>
+          <xsd:documentation>Non-Isosceles Trapezoid Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pentagon">
+        <xsd:annotation>
+          <xsd:documentation>Pentagon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hexagon">
+        <xsd:annotation>
+          <xsd:documentation>Hexagon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="heptagon">
+        <xsd:annotation>
+          <xsd:documentation>Heptagon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="octagon">
+        <xsd:annotation>
+          <xsd:documentation>Octagon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="decagon">
+        <xsd:annotation>
+          <xsd:documentation>Decagon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dodecagon">
+        <xsd:annotation>
+          <xsd:documentation>Dodecagon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star4">
+        <xsd:annotation>
+          <xsd:documentation>Four Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star5">
+        <xsd:annotation>
+          <xsd:documentation>Five Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star6">
+        <xsd:annotation>
+          <xsd:documentation>Six Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star7">
+        <xsd:annotation>
+          <xsd:documentation>Seven Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star8">
+        <xsd:annotation>
+          <xsd:documentation>Eight Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star10">
+        <xsd:annotation>
+          <xsd:documentation>Ten Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star12">
+        <xsd:annotation>
+          <xsd:documentation>Twelve Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star16">
+        <xsd:annotation>
+          <xsd:documentation>Sixteen Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star24">
+        <xsd:annotation>
+          <xsd:documentation>Twenty Four Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star32">
+        <xsd:annotation>
+          <xsd:documentation>Thirty Two Pointed Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="roundRect">
+        <xsd:annotation>
+          <xsd:documentation>Round Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="round1Rect">
+        <xsd:annotation>
+          <xsd:documentation>One Round Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="round2SameRect">
+        <xsd:annotation>
+          <xsd:documentation>Two Same-side Round Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="round2DiagRect">
+        <xsd:annotation>
+          <xsd:documentation>Two Diagonal Round Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="snipRoundRect">
+        <xsd:annotation>
+          <xsd:documentation>One Snip One Round Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="snip1Rect">
+        <xsd:annotation>
+          <xsd:documentation>One Snip Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="snip2SameRect">
+        <xsd:annotation>
+          <xsd:documentation>Two Same-side Snip Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="snip2DiagRect">
+        <xsd:annotation>
+          <xsd:documentation>Two Diagonal Snip Corner Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plaque">
+        <xsd:annotation>
+          <xsd:documentation>Plaque Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ellipse">
+        <xsd:annotation>
+          <xsd:documentation>Ellipse Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="teardrop">
+        <xsd:annotation>
+          <xsd:documentation>Teardrop Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="homePlate">
+        <xsd:annotation>
+          <xsd:documentation>Home Plate Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chevron">
+        <xsd:annotation>
+          <xsd:documentation>Chevron Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pieWedge">
+        <xsd:annotation>
+          <xsd:documentation>Pie Wedge Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pie">
+        <xsd:annotation>
+          <xsd:documentation>Pie Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="blockArc">
+        <xsd:annotation>
+          <xsd:documentation>Block Arc Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="donut">
+        <xsd:annotation>
+          <xsd:documentation>Donut Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="noSmoking">
+        <xsd:annotation>
+          <xsd:documentation>No Smoking Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rightArrow">
+        <xsd:annotation>
+          <xsd:documentation>Right Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftArrow">
+        <xsd:annotation>
+          <xsd:documentation>Left Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="upArrow">
+        <xsd:annotation>
+          <xsd:documentation>Up Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="downArrow">
+        <xsd:annotation>
+          <xsd:documentation>Down Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stripedRightArrow">
+        <xsd:annotation>
+          <xsd:documentation>Striped Right Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="notchedRightArrow">
+        <xsd:annotation>
+          <xsd:documentation>Notched Right Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bentUpArrow">
+        <xsd:annotation>
+          <xsd:documentation>Bent Up Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftRightArrow">
+        <xsd:annotation>
+          <xsd:documentation>Left Right Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="upDownArrow">
+        <xsd:annotation>
+          <xsd:documentation>Up Down Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftUpArrow">
+        <xsd:annotation>
+          <xsd:documentation>Left Up Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftRightUpArrow">
+        <xsd:annotation>
+          <xsd:documentation>Left Right Up Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="quadArrow">
+        <xsd:annotation>
+          <xsd:documentation>Quad-Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftArrowCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Left Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rightArrowCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Right Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="upArrowCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Up Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="downArrowCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Down Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftRightArrowCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Left Right Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="upDownArrowCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Up Down Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="quadArrowCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Quad-Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bentArrow">
+        <xsd:annotation>
+          <xsd:documentation>Bent Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="uturnArrow">
+        <xsd:annotation>
+          <xsd:documentation>U-Turn Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="circularArrow">
+        <xsd:annotation>
+          <xsd:documentation>Circular Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftCircularArrow">
+        <xsd:annotation>
+          <xsd:documentation>Left Circular Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftRightCircularArrow">
+        <xsd:annotation>
+          <xsd:documentation>Left Right Circular Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedRightArrow">
+        <xsd:annotation>
+          <xsd:documentation>Curved Right Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedLeftArrow">
+        <xsd:annotation>
+          <xsd:documentation>Curved Left Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedUpArrow">
+        <xsd:annotation>
+          <xsd:documentation>Curved Up Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedDownArrow">
+        <xsd:annotation>
+          <xsd:documentation>Curved Down Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="swooshArrow">
+        <xsd:annotation>
+          <xsd:documentation>Swoosh Arrow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cube">
+        <xsd:annotation>
+          <xsd:documentation>Cube Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="can">
+        <xsd:annotation>
+          <xsd:documentation>Can Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lightningBolt">
+        <xsd:annotation>
+          <xsd:documentation>Lightning Bolt Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="heart">
+        <xsd:annotation>
+          <xsd:documentation>Heart Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sun">
+        <xsd:annotation>
+          <xsd:documentation>Sun Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="moon">
+        <xsd:annotation>
+          <xsd:documentation>Moon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="smileyFace">
+        <xsd:annotation>
+          <xsd:documentation>Smiley Face Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="irregularSeal1">
+        <xsd:annotation>
+          <xsd:documentation>Irregular Seal 1 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="irregularSeal2">
+        <xsd:annotation>
+          <xsd:documentation>Irregular Seal 2 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="foldedCorner">
+        <xsd:annotation>
+          <xsd:documentation>Folded Corner Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bevel">
+        <xsd:annotation>
+          <xsd:documentation>Bevel Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frame">
+        <xsd:annotation>
+          <xsd:documentation>Frame Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="halfFrame">
+        <xsd:annotation>
+          <xsd:documentation>Half Frame Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="corner">
+        <xsd:annotation>
+          <xsd:documentation>Corner Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diagStripe">
+        <xsd:annotation>
+          <xsd:documentation>Diagonal Stripe Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chord">
+        <xsd:annotation>
+          <xsd:documentation>Chord Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arc">
+        <xsd:annotation>
+          <xsd:documentation>Curved Arc Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftBracket">
+        <xsd:annotation>
+          <xsd:documentation>Left Bracket Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rightBracket">
+        <xsd:annotation>
+          <xsd:documentation>Right Bracket Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftBrace">
+        <xsd:annotation>
+          <xsd:documentation>Left Brace Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rightBrace">
+        <xsd:annotation>
+          <xsd:documentation>Right Brace Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bracketPair">
+        <xsd:annotation>
+          <xsd:documentation>Bracket Pair Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bracePair">
+        <xsd:annotation>
+          <xsd:documentation>Brace Pair Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="straightConnector1">
+        <xsd:annotation>
+          <xsd:documentation>Straight Connector 1 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bentConnector2">
+        <xsd:annotation>
+          <xsd:documentation>Bent Connector 2 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bentConnector3">
+        <xsd:annotation>
+          <xsd:documentation>Bent Connector 3 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bentConnector4">
+        <xsd:annotation>
+          <xsd:documentation>Bent Connector 4 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bentConnector5">
+        <xsd:annotation>
+          <xsd:documentation>Bent Connector 5 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedConnector2">
+        <xsd:annotation>
+          <xsd:documentation>Curved Connector 2 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedConnector3">
+        <xsd:annotation>
+          <xsd:documentation>Curved Connector 3 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedConnector4">
+        <xsd:annotation>
+          <xsd:documentation>Curved Connector 4 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curvedConnector5">
+        <xsd:annotation>
+          <xsd:documentation>Curved Connector 5 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="callout1">
+        <xsd:annotation>
+          <xsd:documentation>Callout 1 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="callout2">
+        <xsd:annotation>
+          <xsd:documentation>Callout 2 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="callout3">
+        <xsd:annotation>
+          <xsd:documentation>Callout 3 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accentCallout1">
+        <xsd:annotation>
+          <xsd:documentation>Callout 1 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accentCallout2">
+        <xsd:annotation>
+          <xsd:documentation>Callout 2 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accentCallout3">
+        <xsd:annotation>
+          <xsd:documentation>Callout 3 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="borderCallout1">
+        <xsd:annotation>
+          <xsd:documentation>Callout 1 with Border Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="borderCallout2">
+        <xsd:annotation>
+          <xsd:documentation>Callout 2 with Border Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="borderCallout3">
+        <xsd:annotation>
+          <xsd:documentation>Callout 3 with Border Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accentBorderCallout1">
+        <xsd:annotation>
+          <xsd:documentation>Callout 1 with Border and Accent Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accentBorderCallout2">
+        <xsd:annotation>
+          <xsd:documentation>Callout 2 with Border and Accent Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accentBorderCallout3">
+        <xsd:annotation>
+          <xsd:documentation>Callout 3 with Border and Accent Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wedgeRectCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Wedge Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wedgeRoundRectCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Wedge Round Rectangle Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wedgeEllipseCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Wedge Ellipse Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cloudCallout">
+        <xsd:annotation>
+          <xsd:documentation>Callout Cloud Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cloud">
+        <xsd:annotation>
+          <xsd:documentation>Cloud Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ribbon">
+        <xsd:annotation>
+          <xsd:documentation>Ribbon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ribbon2">
+        <xsd:annotation>
+          <xsd:documentation>Ribbon 2 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ellipseRibbon">
+        <xsd:annotation>
+          <xsd:documentation>Ellipse Ribbon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ellipseRibbon2">
+        <xsd:annotation>
+          <xsd:documentation>Ellipse Ribbon 2 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="leftRightRibbon">
+        <xsd:annotation>
+          <xsd:documentation>Left Right Ribbon Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="verticalScroll">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Scroll Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="horizontalScroll">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal Scroll Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wave">
+        <xsd:annotation>
+          <xsd:documentation>Wave Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="doubleWave">
+        <xsd:annotation>
+          <xsd:documentation>Double Wave Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plus">
+        <xsd:annotation>
+          <xsd:documentation>Plus Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartProcess">
+        <xsd:annotation>
+          <xsd:documentation>Process Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartDecision">
+        <xsd:annotation>
+          <xsd:documentation>Decision Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartInputOutput">
+        <xsd:annotation>
+          <xsd:documentation>Input Output Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartPredefinedProcess">
+        <xsd:annotation>
+          <xsd:documentation>Predefined Process Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartInternalStorage">
+        <xsd:annotation>
+          <xsd:documentation>Internal Storage Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartDocument">
+        <xsd:annotation>
+          <xsd:documentation>Document Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartMultidocument">
+        <xsd:annotation>
+          <xsd:documentation>Multi-Document Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartTerminator">
+        <xsd:annotation>
+          <xsd:documentation>Terminator Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartPreparation">
+        <xsd:annotation>
+          <xsd:documentation>Preparation Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartManualInput">
+        <xsd:annotation>
+          <xsd:documentation>Manual Input Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartManualOperation">
+        <xsd:annotation>
+          <xsd:documentation>Manual Operation Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartConnector">
+        <xsd:annotation>
+          <xsd:documentation>Connector Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartPunchedCard">
+        <xsd:annotation>
+          <xsd:documentation>Punched Card Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartPunchedTape">
+        <xsd:annotation>
+          <xsd:documentation>Punched Tape Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartSummingJunction">
+        <xsd:annotation>
+          <xsd:documentation>Summing Junction Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartOr">
+        <xsd:annotation>
+          <xsd:documentation>Or Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartCollate">
+        <xsd:annotation>
+          <xsd:documentation>Collate Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartSort">
+        <xsd:annotation>
+          <xsd:documentation>Sort Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartExtract">
+        <xsd:annotation>
+          <xsd:documentation>Extract Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartMerge">
+        <xsd:annotation>
+          <xsd:documentation>Merge Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartOfflineStorage">
+        <xsd:annotation>
+          <xsd:documentation>Offline Storage Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartOnlineStorage">
+        <xsd:annotation>
+          <xsd:documentation>Online Storage Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartMagneticTape">
+        <xsd:annotation>
+          <xsd:documentation>Magnetic Tape Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartMagneticDisk">
+        <xsd:annotation>
+          <xsd:documentation>Magnetic Disk Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartMagneticDrum">
+        <xsd:annotation>
+          <xsd:documentation>Magnetic Drum Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartDisplay">
+        <xsd:annotation>
+          <xsd:documentation>Display Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartDelay">
+        <xsd:annotation>
+          <xsd:documentation>Delay Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartAlternateProcess">
+        <xsd:annotation>
+          <xsd:documentation>Alternate Process Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowChartOffpageConnector">
+        <xsd:annotation>
+          <xsd:documentation>Off-Page Connector Flow Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonBlank">
+        <xsd:annotation>
+          <xsd:documentation>Blank Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonHome">
+        <xsd:annotation>
+          <xsd:documentation>Home Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonHelp">
+        <xsd:annotation>
+          <xsd:documentation>Help Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonInformation">
+        <xsd:annotation>
+          <xsd:documentation>Information Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonForwardNext">
+        <xsd:annotation>
+          <xsd:documentation>Forward or Next Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonBackPrevious">
+        <xsd:annotation>
+          <xsd:documentation>Back or Previous Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonEnd">
+        <xsd:annotation>
+          <xsd:documentation>End Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonBeginning">
+        <xsd:annotation>
+          <xsd:documentation>Beginning Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonReturn">
+        <xsd:annotation>
+          <xsd:documentation>Return Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonDocument">
+        <xsd:annotation>
+          <xsd:documentation>Document Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonSound">
+        <xsd:annotation>
+          <xsd:documentation>Sound Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="actionButtonMovie">
+        <xsd:annotation>
+          <xsd:documentation>Movie Button Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gear6">
+        <xsd:annotation>
+          <xsd:documentation>Gear 6 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gear9">
+        <xsd:annotation>
+          <xsd:documentation>Gear 9 Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="funnel">
+        <xsd:annotation>
+          <xsd:documentation>Funnel Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mathPlus">
+        <xsd:annotation>
+          <xsd:documentation>Plus Math Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mathMinus">
+        <xsd:annotation>
+          <xsd:documentation>Minus Math Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mathMultiply">
+        <xsd:annotation>
+          <xsd:documentation>Multiply Math Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mathDivide">
+        <xsd:annotation>
+          <xsd:documentation>Divide Math Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mathEqual">
+        <xsd:annotation>
+          <xsd:documentation>Equal Math Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mathNotEqual">
+        <xsd:annotation>
+          <xsd:documentation>Not Equal Math Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cornerTabs">
+        <xsd:annotation>
+          <xsd:documentation>Corner Tabs Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="squareTabs">
+        <xsd:annotation>
+          <xsd:documentation>Square Tabs Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plaqueTabs">
+        <xsd:annotation>
+          <xsd:documentation>Plaque Tabs Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chartX">
+        <xsd:annotation>
+          <xsd:documentation>Chart X Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chartStar">
+        <xsd:annotation>
+          <xsd:documentation>Chart Star Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chartPlus">
+        <xsd:annotation>
+          <xsd:documentation>Chart Plus Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextShapeType">
+    <xsd:annotation>
+      <xsd:documentation>Preset Text Shape Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="textNoShape">
+        <xsd:annotation>
+          <xsd:documentation>No Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textPlain">
+        <xsd:annotation>
+          <xsd:documentation>Plain Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textStop">
+        <xsd:annotation>
+          <xsd:documentation>Stop Sign Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textTriangle">
+        <xsd:annotation>
+          <xsd:documentation>Triangle Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textTriangleInverted">
+        <xsd:annotation>
+          <xsd:documentation>Inverted Triangle Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textChevron">
+        <xsd:annotation>
+          <xsd:documentation>Chevron Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textChevronInverted">
+        <xsd:annotation>
+          <xsd:documentation>Inverted Chevron Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textRingInside">
+        <xsd:annotation>
+          <xsd:documentation>Inside Ring Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textRingOutside">
+        <xsd:annotation>
+          <xsd:documentation>Outside Ring Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textArchUp">
+        <xsd:annotation>
+          <xsd:documentation>Upward Arch Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textArchDown">
+        <xsd:annotation>
+          <xsd:documentation>Downward Arch Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCircle">
+        <xsd:annotation>
+          <xsd:documentation>Circle Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textButton">
+        <xsd:annotation>
+          <xsd:documentation>Button Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textArchUpPour">
+        <xsd:annotation>
+          <xsd:documentation>Upward Pour Arch Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textArchDownPour">
+        <xsd:annotation>
+          <xsd:documentation>Downward Pour Arch Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCirclePour">
+        <xsd:annotation>
+          <xsd:documentation>Circle Pour Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textButtonPour">
+        <xsd:annotation>
+          <xsd:documentation>Button Pour Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCurveUp">
+        <xsd:annotation>
+          <xsd:documentation>Upward Curve Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCurveDown">
+        <xsd:annotation>
+          <xsd:documentation>Downward Curve Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCanUp">
+        <xsd:annotation>
+          <xsd:documentation>Upward Can Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCanDown">
+        <xsd:annotation>
+          <xsd:documentation>Downward Can Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textWave1">
+        <xsd:annotation>
+          <xsd:documentation>Wave 1 Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textWave2">
+        <xsd:annotation>
+          <xsd:documentation>Wave 2 Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textDoubleWave1">
+        <xsd:annotation>
+          <xsd:documentation>Double Wave 1 Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textWave4">
+        <xsd:annotation>
+          <xsd:documentation>Wave 4 Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textInflate">
+        <xsd:annotation>
+          <xsd:documentation>Inflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textDeflate">
+        <xsd:annotation>
+          <xsd:documentation>Deflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textInflateBottom">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Inflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textDeflateBottom">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Deflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textInflateTop">
+        <xsd:annotation>
+          <xsd:documentation>Top Inflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textDeflateTop">
+        <xsd:annotation>
+          <xsd:documentation>Top Deflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textDeflateInflate">
+        <xsd:annotation>
+          <xsd:documentation>Deflate-Inflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textDeflateInflateDeflate">
+        <xsd:annotation>
+          <xsd:documentation>Deflate-Inflate-Deflate Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textFadeRight">
+        <xsd:annotation>
+          <xsd:documentation>Right Fade Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textFadeLeft">
+        <xsd:annotation>
+          <xsd:documentation>Left Fade Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textFadeUp">
+        <xsd:annotation>
+          <xsd:documentation>Upward Fade Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textFadeDown">
+        <xsd:annotation>
+          <xsd:documentation>Downward Fade Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textSlantUp">
+        <xsd:annotation>
+          <xsd:documentation>Upward Slant Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textSlantDown">
+        <xsd:annotation>
+          <xsd:documentation>Downward Slant Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCascadeUp">
+        <xsd:annotation>
+          <xsd:documentation>Upward Cascade Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="textCascadeDown">
+        <xsd:annotation>
+          <xsd:documentation>Downward Cascade Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_GeomGuideName">
+    <xsd:annotation>
+      <xsd:documentation>Geometry Guide Name Properties</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_GeomGuideFormula">
+    <xsd:annotation>
+      <xsd:documentation>Geometry Guide Formula Properties</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_GeomGuide">
+    <xsd:attribute name="name" type="ST_GeomGuideName" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Shape Guide Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fmla" type="ST_GeomGuideFormula" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Shape Guide Formula</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GeomGuideList">
+    <xsd:sequence>
+      <xsd:element name="gd" type="CT_GeomGuide" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Shape Guide</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_AdjCoordinate">
+    <xsd:annotation>
+      <xsd:documentation>Adjustable Coordinate Methods</xsd:documentation>
+    </xsd:annotation>
+    <xsd:union memberTypes="ST_Coordinate ST_GeomGuideName" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AdjAngle">
+    <xsd:annotation>
+      <xsd:documentation>Adjustable Angle Methods</xsd:documentation>
+    </xsd:annotation>
+    <xsd:union memberTypes="ST_Angle ST_GeomGuideName" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_AdjPoint2D">
+    <xsd:attribute name="x" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>X-Coordinate</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="y" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Y-Coordinate</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GeomRect">
+    <xsd:attribute name="l" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Left</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="t" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Top</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="r" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Right</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="b" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Bottom Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_XYAdjustHandle">
+    <xsd:sequence>
+      <xsd:element name="pos" type="CT_AdjPoint2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="gdRefX" type="ST_GeomGuideName" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Adjustment Guide</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minX" type="ST_AdjCoordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Horizontal Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="maxX" type="ST_AdjCoordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Maximum Horizontal Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="gdRefY" type="ST_GeomGuideName" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Adjustment Guide</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minY" type="ST_AdjCoordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Vertical Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="maxY" type="ST_AdjCoordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Maximum Vertical Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PolarAdjustHandle">
+    <xsd:sequence>
+      <xsd:element name="pos" type="CT_AdjPoint2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Position Coordinate</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="gdRefR" type="ST_GeomGuideName" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Radial Adjustment Guide</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minR" type="ST_AdjCoordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Radial Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="maxR" type="ST_AdjCoordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Maximum Radial Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="gdRefAng" type="ST_GeomGuideName" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Angle Adjustment Guide</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minAng" type="ST_AdjAngle" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Angle Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="maxAng" type="ST_AdjAngle" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Maximum Angle Adjustment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ConnectionSite">
+    <xsd:sequence>
+      <xsd:element name="pos" type="CT_AdjPoint2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="ang" type="ST_AdjAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Connection Site Angle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AdjustHandleList">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="ahXY" type="CT_XYAdjustHandle" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>XY Adjust Handle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ahPolar" type="CT_PolarAdjustHandle" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Polar Adjust Handle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ConnectionSiteList">
+    <xsd:sequence>
+      <xsd:element name="cxn" type="CT_ConnectionSite" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Shape Connection Site</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Connection">
+    <xsd:attribute name="id" type="ST_DrawingElementId" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="idx" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path2DMoveTo">
+    <xsd:sequence>
+      <xsd:element name="pt" type="CT_AdjPoint2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Move end point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path2DLineTo">
+    <xsd:sequence>
+      <xsd:element name="pt" type="CT_AdjPoint2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line end point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path2DArcTo">
+    <xsd:attribute name="wR" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Shape Arc Width Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="hR" type="ST_AdjCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Shape Arc Height Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="stAng" type="ST_AdjAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Shape Arc Start Angle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="swAng" type="ST_AdjAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Shape Arc Swing Angle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path2DQuadBezierTo">
+    <xsd:sequence>
+      <xsd:element name="pt" type="CT_AdjPoint2D" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Shape Path Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path2DCubicBezierTo">
+    <xsd:sequence>
+      <xsd:element name="pt" type="CT_AdjPoint2D" minOccurs="3" maxOccurs="3">
+        <xsd:annotation>
+          <xsd:documentation>Control points and end point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path2DClose"></xsd:complexType>
+  <xsd:simpleType name="ST_PathFillMode">
+    <xsd:annotation>
+      <xsd:documentation>Path Fill Mode</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>No Path Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="norm">
+        <xsd:annotation>
+          <xsd:documentation>Normal Path Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lighten">
+        <xsd:annotation>
+          <xsd:documentation>Lighten Path Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lightenLess">
+        <xsd:annotation>
+          <xsd:documentation>Lighten Path Fill Less</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="darken">
+        <xsd:annotation>
+          <xsd:documentation>Darken Path Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="darkenLess">
+        <xsd:annotation>
+          <xsd:documentation>Darken Path Fill Less</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Path2D">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="close" type="CT_Path2DClose" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Close Shape Path</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="moveTo" type="CT_Path2DMoveTo" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Move Path To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnTo" type="CT_Path2DLineTo" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Draw Line To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="arcTo" type="CT_Path2DArcTo" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Draw Arc To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="quadBezTo" type="CT_Path2DQuadBezierTo" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Draw Quadratic Bezier Curve To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cubicBezTo" type="CT_Path2DCubicBezierTo" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Draw Cubic Bezier Curve To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+    <xsd:attribute name="w" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Path Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="h" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Path Height</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fill" type="ST_PathFillMode" use="optional" default="norm">
+      <xsd:annotation>
+        <xsd:documentation>Path Fill</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="stroke" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Path Stroke</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="extrusionOk" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>3D Extrusion Allowed</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path2DList">
+    <xsd:sequence>
+      <xsd:element name="path" type="CT_Path2D" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Shape Path</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PresetGeometry2D">
+    <xsd:sequence>
+      <xsd:element name="avLst" type="CT_GeomGuideList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Shape Adjust Values</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="prst" type="ST_ShapeType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Preset Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PresetTextShape">
+    <xsd:sequence>
+      <xsd:element name="avLst" type="CT_GeomGuideList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Adjust Value List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="prst" type="ST_TextShapeType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Preset Warp Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustomGeometry2D">
+    <xsd:sequence>
+      <xsd:element name="avLst" type="CT_GeomGuideList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Adjust Value List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="gdLst" type="CT_GeomGuideList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Shape Guides</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ahLst" type="CT_AdjustHandleList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Shape Adjust Handles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cxnLst" type="CT_ConnectionSiteList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Shape Connection Sites</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="rect" type="CT_GeomRect" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Text Rectangle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pathLst" type="CT_Path2DList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Shape Paths</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_Geometry">
+    <xsd:choice>
+      <xsd:element name="custGeom" type="CT_CustomGeometry2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Custom geometry</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="prstGeom" type="CT_PresetGeometry2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Preset geometry</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:group name="EG_TextGeometry">
+    <xsd:choice>
+      <xsd:element name="custGeom" type="CT_CustomGeometry2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Custom Geometry</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="prstTxWarp" type="CT_PresetTextShape" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Preset Text Warp</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+</xsd:schema>

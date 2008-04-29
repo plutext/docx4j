@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:complexType name="CT_Backdrop">
+    <xsd:sequence>
+      <xsd:element name="anchor" type="CT_Point3D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Anchor Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="norm" type="CT_Vector3D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Normal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="up" type="CT_Vector3D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Up Vector</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

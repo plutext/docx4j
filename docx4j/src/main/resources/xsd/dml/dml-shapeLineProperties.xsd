@@ -1,0 +1,372 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-shapeEffects.xsd" />
+  <xsd:simpleType name="ST_LineEndType">
+    <xsd:annotation>
+      <xsd:documentation>Line End Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="triangle">
+        <xsd:annotation>
+          <xsd:documentation>Triangle Arrow Head</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stealth">
+        <xsd:annotation>
+          <xsd:documentation>Stealth Arrow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diamond">
+        <xsd:annotation>
+          <xsd:documentation>Diamond</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="oval">
+        <xsd:annotation>
+          <xsd:documentation>Oval</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arrow">
+        <xsd:annotation>
+          <xsd:documentation>Arrow Head</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_LineEndWidth">
+    <xsd:annotation>
+      <xsd:documentation>Line End Width</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="sm">
+        <xsd:annotation>
+          <xsd:documentation>Small</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="med">
+        <xsd:annotation>
+          <xsd:documentation>Medium</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lg">
+        <xsd:annotation>
+          <xsd:documentation>Large</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_LineEndLength">
+    <xsd:annotation>
+      <xsd:documentation>Line End Length</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="sm">
+        <xsd:annotation>
+          <xsd:documentation>Small</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="med">
+        <xsd:annotation>
+          <xsd:documentation>Medium</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lg">
+        <xsd:annotation>
+          <xsd:documentation>Large</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LineEndProperties">
+    <xsd:attribute name="type" type="ST_LineEndType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line Head/End Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="w" type="ST_LineEndWidth" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Width of Head/End</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="len" type="ST_LineEndLength" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Length of Head/End</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_LineFillProperties">
+    <xsd:choice>
+      <xsd:element name="noFill" type="CT_NoFillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>No Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="solidFill" type="CT_SolidColorFillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Solid Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="gradFill" type="CT_GradientFillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gradient Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pattFill" type="CT_PatternFillProperties" minOccurs="1" maxOccurs="1" />
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_LineJoinBevel"></xsd:complexType>
+  <xsd:complexType name="CT_LineJoinRound"></xsd:complexType>
+  <xsd:complexType name="CT_LineJoinMiterProperties">
+    <xsd:attribute name="lim" type="ST_PositivePercentage" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Miter Join Limit</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_LineJoinProperties">
+    <xsd:choice>
+      <xsd:element name="round" type="CT_LineJoinRound" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Round Line Join</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bevel" type="CT_LineJoinBevel" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line Join Bevel</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="miter" type="CT_LineJoinMiterProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Miter Line Join</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_PresetLineDashVal">
+    <xsd:annotation>
+      <xsd:documentation>Preset Line Dash Value</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="solid">
+        <xsd:annotation>
+          <xsd:documentation>Solid</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dot">
+        <xsd:annotation>
+          <xsd:documentation>Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dash">
+        <xsd:annotation>
+          <xsd:documentation>Dash</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lgDash">
+        <xsd:annotation>
+          <xsd:documentation>Large Dash</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashDot">
+        <xsd:annotation>
+          <xsd:documentation>Dash Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lgDashDot">
+        <xsd:annotation>
+          <xsd:documentation>Large Dash Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lgDashDotDot">
+        <xsd:annotation>
+          <xsd:documentation>Large Dash Dot Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sysDash">
+        <xsd:annotation>
+          <xsd:documentation>System Dash</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sysDot">
+        <xsd:annotation>
+          <xsd:documentation>System Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sysDashDot">
+        <xsd:annotation>
+          <xsd:documentation>System Dash Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sysDashDotDot">
+        <xsd:annotation>
+          <xsd:documentation>System Dash Dot Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PresetLineDashProperties">
+    <xsd:attribute name="val" type="ST_PresetLineDashVal" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DashStop">
+    <xsd:attribute name="d" type="ST_PositivePercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Dash Length</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sp" type="ST_PositivePercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Space Length</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DashStopList">
+    <xsd:sequence>
+      <xsd:element name="ds" type="CT_DashStop" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Dash Stop</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_LineDashProperties">
+    <xsd:choice>
+      <xsd:element name="prstDash" type="CT_PresetLineDashProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Preset Dash</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="custDash" type="CT_DashStopList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Custom Dash</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_LineCap">
+    <xsd:annotation>
+      <xsd:documentation>End Line Cap</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="rnd">
+        <xsd:annotation>
+          <xsd:documentation>Round Line Cap</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sq">
+        <xsd:annotation>
+          <xsd:documentation>Square Line Cap</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flat">
+        <xsd:annotation>
+          <xsd:documentation>Flat Line Cap</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_LineWidth">
+    <xsd:annotation>
+      <xsd:documentation>Line Width</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Coordinate32">
+      <xsd:minInclusive value="0"></xsd:minInclusive>
+      <xsd:maxInclusive value="20116800"></xsd:maxInclusive>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_PenAlignment">
+    <xsd:annotation>
+      <xsd:documentation>Alignment Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="in">
+        <xsd:annotation>
+          <xsd:documentation>Inset Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_CompoundLine">
+    <xsd:annotation>
+      <xsd:documentation>Compound Line Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="sng">
+        <xsd:annotation>
+          <xsd:documentation>Single Line</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dbl">
+        <xsd:annotation>
+          <xsd:documentation>Double Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickThin">
+        <xsd:annotation>
+          <xsd:documentation>Thick Thin Double Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thinThick">
+        <xsd:annotation>
+          <xsd:documentation>Thin Thick Double Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tri">
+        <xsd:annotation>
+          <xsd:documentation>Thin Thick Thin Triple Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LineProperties">
+    <xsd:sequence>
+      <xsd:group ref="EG_LineFillProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:group ref="EG_LineDashProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:group ref="EG_LineJoinProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="headEnd" type="CT_LineEndProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line Head/End Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tailEnd" type="CT_LineEndProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tail line end style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="w" type="ST_LineWidth" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cap" type="ST_LineCap" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line Ending Cap Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cmpd" type="ST_CompoundLine" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Compound Line Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algn" type="ST_PenAlignment" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+</xsd:schema>

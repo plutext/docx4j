@@ -1,0 +1,236 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-shapeGeometry.xsd" />
+  <xsd:simpleType name="ST_BevelPresetType">
+    <xsd:annotation>
+      <xsd:documentation>Bevel Presets</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="relaxedInset">
+        <xsd:annotation>
+          <xsd:documentation>Relaxed Inset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="circle">
+        <xsd:annotation>
+          <xsd:documentation>Circle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="slope">
+        <xsd:annotation>
+          <xsd:documentation>Slope</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cross">
+        <xsd:annotation>
+          <xsd:documentation>Cross</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="angle">
+        <xsd:annotation>
+          <xsd:documentation>Angle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="softRound">
+        <xsd:annotation>
+          <xsd:documentation>Soft Round</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="convex">
+        <xsd:annotation>
+          <xsd:documentation>Convex</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="coolSlant">
+        <xsd:annotation>
+          <xsd:documentation>Cool Slant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="divot">
+        <xsd:annotation>
+          <xsd:documentation>Divot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="riblet">
+        <xsd:annotation>
+          <xsd:documentation>Riblet</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hardEdge">
+        <xsd:annotation>
+          <xsd:documentation>Hard Edge</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="artDeco">
+        <xsd:annotation>
+          <xsd:documentation>Art Deco</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Bevel">
+    <xsd:attribute name="w" type="ST_PositiveCoordinate" use="optional" default="76200">
+      <xsd:annotation>
+        <xsd:documentation>Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="h" type="ST_PositiveCoordinate" use="optional" default="76200">
+      <xsd:annotation>
+        <xsd:documentation>Height</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="prst" type="ST_BevelPresetType" use="optional" default="circle">
+      <xsd:annotation>
+        <xsd:documentation>Preset Bevel</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PresetMaterialType">
+    <xsd:annotation>
+      <xsd:documentation>Preset Material Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="legacyMatte">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Matte</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyPlastic">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Plastic</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyMetal">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Metal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="legacyWireframe">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Wireframe</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="matte">
+        <xsd:annotation>
+          <xsd:documentation>Matte</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plastic">
+        <xsd:annotation>
+          <xsd:documentation>Plastic</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="metal">
+        <xsd:annotation>
+          <xsd:documentation>Metal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="warmMatte">
+        <xsd:annotation>
+          <xsd:documentation>Warm Matte</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="translucentPowder">
+        <xsd:annotation>
+          <xsd:documentation>Translucent Powder</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="powder">
+        <xsd:annotation>
+          <xsd:documentation>Powder</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkEdge">
+        <xsd:annotation>
+          <xsd:documentation>Dark Edge</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="softEdge">
+        <xsd:annotation>
+          <xsd:documentation>Soft Edge</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="clear">
+        <xsd:annotation>
+          <xsd:documentation>Clear</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flat">
+        <xsd:annotation>
+          <xsd:documentation>Flat</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="softmetal">
+        <xsd:annotation>
+          <xsd:documentation>Soft Metal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Shape3D">
+    <xsd:sequence>
+      <xsd:element name="bevelT" type="CT_Bevel" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top Bevel</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bevelB" type="CT_Bevel" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Bevel</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extrusionClr" type="CT_Color" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Extrusion Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="contourClr" type="CT_Color" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Contour Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="z" type="ST_Coordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Shape Depth</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="extrusionH" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Extrusion Height</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="contourW" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Contour Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="prstMaterial" type="ST_PresetMaterialType" use="optional" default="warmMatte">
+      <xsd:annotation>
+        <xsd:documentation>Preset Material Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_FlatText">
+    <xsd:attribute name="z" type="ST_Coordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Z Coordinate</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_Text3D">
+    <xsd:choice>
+      <xsd:element name="sp3d" type="CT_Shape3D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Apply 3D shape properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="flatTx" type="CT_FlatText" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>No text in 3D scene</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+</xsd:schema>

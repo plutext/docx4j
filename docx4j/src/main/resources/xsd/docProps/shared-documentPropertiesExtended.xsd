@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" elementFormDefault="qualified" blockDefault="#all">
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" schemaLocation="shared-documentPropertiesVariantTypes.xsd" />
+  <xsd:element name="Properties" type="CT_Properties">
+    <xsd:annotation>
+      <xsd:documentation>Application Specific File Properties</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_Properties">
+    <xsd:all>
+      <xsd:element name="Template" minOccurs="0" maxOccurs="1" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Name of Document Template</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Manager" minOccurs="0" maxOccurs="1" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Name of Manager</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Company" minOccurs="0" maxOccurs="1" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Name of Company</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Pages" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Total Number of Pages</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Words" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Word Count</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Characters" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Total Number of Characters</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="PresentationFormat" minOccurs="0" maxOccurs="1" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Intended Format of Presentation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Lines" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Number of Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Paragraphs" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Total Number of Paragraphs</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Slides" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Slides Metadata Element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Notes" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Number of Slides Containing Notes</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="TotalTime" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Total Edit Time Metadata Element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="HiddenSlides" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Number of Hidden Slides</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="MMClips" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Total Number of Multimedia Clips</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ScaleCrop" minOccurs="0" maxOccurs="1" type="xsd:boolean">
+        <xsd:annotation>
+          <xsd:documentation>Thumbnail Display Mode</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="HeadingPairs" minOccurs="0" maxOccurs="1" type="CT_VectorVariant">
+        <xsd:annotation>
+          <xsd:documentation>Heading Pairs</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="TitlesOfParts" minOccurs="0" maxOccurs="1" type="CT_VectorLpstr">
+        <xsd:annotation>
+          <xsd:documentation>Part Titles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="LinksUpToDate" minOccurs="0" maxOccurs="1" type="xsd:boolean">
+        <xsd:annotation>
+          <xsd:documentation>Links Up-to-Date</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="CharactersWithSpaces" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Number of Characters (With Spaces)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="SharedDoc" minOccurs="0" maxOccurs="1" type="xsd:boolean">
+        <xsd:annotation>
+          <xsd:documentation>Shared Document</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="HyperlinkBase" minOccurs="0" maxOccurs="1" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Relative Hyperlink Base</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="HLinks" minOccurs="0" maxOccurs="1" type="CT_VectorVariant">
+        <xsd:annotation>
+          <xsd:documentation>Hyperlink List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="HyperlinksChanged" minOccurs="0" maxOccurs="1" type="xsd:boolean">
+        <xsd:annotation>
+          <xsd:documentation>Hyperlinks Changed</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="DigSig" minOccurs="0" maxOccurs="1" type="CT_DigSigBlob">
+        <xsd:annotation>
+          <xsd:documentation>Digital Signature</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="Application" minOccurs="0" maxOccurs="1" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Application Name</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="AppVersion" minOccurs="0" maxOccurs="1" type="xsd:string">
+        <xsd:annotation>
+          <xsd:documentation>Application Version</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="DocSecurity" minOccurs="0" maxOccurs="1" type="xsd:int">
+        <xsd:annotation>
+          <xsd:documentation>Document Security</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:all>
+  </xsd:complexType>
+  <xsd:complexType name="CT_VectorVariant">
+    <xsd:sequence minOccurs="1" maxOccurs="1">
+      <xsd:element ref="vt:vector">
+        <xsd:annotation>
+          <xsd:documentation>Vector</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_VectorLpstr">
+    <xsd:sequence minOccurs="1" maxOccurs="1">
+      <xsd:element ref="vt:vector">
+        <xsd:annotation>
+          <xsd:documentation>Vector</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DigSigBlob">
+    <xsd:sequence minOccurs="1" maxOccurs="1">
+      <xsd:element ref="vt:blob">
+        <xsd:annotation>
+          <xsd:documentation>Binary Blob</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

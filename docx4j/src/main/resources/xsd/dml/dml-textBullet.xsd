@@ -1,0 +1,353 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:include schemaLocation="dml-shapeEffects.xsd" />
+  <xsd:include schemaLocation="dml-textCharacter.xsd" />
+  <xsd:simpleType name="ST_TextBulletStartAtNum">
+    <xsd:annotation>
+      <xsd:documentation>Start Bullet At Number</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="32767" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextAutonumberScheme">
+    <xsd:annotation>
+      <xsd:documentation>Text Auto-number Schemes</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="alphaLcParenBoth">
+        <xsd:annotation>
+          <xsd:documentation>Autonumber Enum ( alphaLcParenBoth )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alphaUcParenBoth">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( alphaUcParenBoth )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alphaLcParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( alphaLcParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alphaUcParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( alphaUcParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alphaLcPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( alphaLcPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alphaUcPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( alphaUcPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabicParenBoth">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabicParenBoth )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabicParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabicParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabicPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabicPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabicPlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabicPlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="romanLcParenBoth">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( romanLcParenBoth )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="romanUcParenBoth">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( romanUcParenBoth )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="romanLcParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( romanLcParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="romanUcParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( romanUcParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="romanLcPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( romanLcPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="romanUcPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( romanUcPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="circleNumDbPlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( circleNumDbPlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="circleNumWdBlackPlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( circleNumWdBlackPlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="circleNumWdWhitePlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( circleNumWdWhitePlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabicDbPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabicDbPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabicDbPlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabicDbPlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ea1ChsPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( ea1ChsPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ea1ChsPlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( ea1ChsPlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ea1ChtPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( ea1ChtPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ea1ChtPlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( ea1ChtPlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ea1JpnChsDbPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( ea1JpnChsDbPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ea1JpnKorPlain">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( ea1JpnKorPlain )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ea1JpnKorPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( ea1JpnKorPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabic1Minus">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabic1Minus )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arabic2Minus">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( arabic2Minus )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hebrew2Minus">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( hebrew2Minus )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thaiAlphaPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( thaiAlphaPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thaiAlphaParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( thaiAlphaParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thaiAlphaParenBoth">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( thaiAlphaParenBoth )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thaiNumPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( thaiNumPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thaiNumParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( thaiNumParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thaiNumParenBoth">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( thaiNumParenBoth )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hindiAlphaPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( hindiAlphaPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hindiNumPeriod">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( hindiNumPeriod )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hindiNumParenR">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( hindiNumParenR )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hindiAlpha1Period">
+        <xsd:annotation>
+          <xsd:documentation>Autonumbering Enum ( hindiAlpha1Period )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextBulletColorFollowText"></xsd:complexType>
+  <xsd:group name="EG_TextBulletColor">
+    <xsd:choice>
+      <xsd:element name="buClrTx" type="CT_TextBulletColorFollowText" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Follow Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="buClr" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Color Specified</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_TextBulletSizePercent">
+    <xsd:annotation>
+      <xsd:documentation>Bullet Size Percentage</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Percentage">
+      <xsd:minInclusive value="25000" />
+      <xsd:maxInclusive value="400000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextBulletSizeFollowText"></xsd:complexType>
+  <xsd:complexType name="CT_TextBulletSizePercent">
+    <xsd:attribute name="val" type="ST_TextBulletSizePercent">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextBulletSizePoint">
+    <xsd:attribute name="val" type="ST_TextFontSize">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_TextBulletSize">
+    <xsd:choice>
+      <xsd:element name="buSzTx" type="CT_TextBulletSizeFollowText">
+        <xsd:annotation>
+          <xsd:documentation>Bullet Size Follows Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="buSzPct" type="CT_TextBulletSizePercent">
+        <xsd:annotation>
+          <xsd:documentation>Bullet Size Percentage</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="buSzPts" type="CT_TextBulletSizePoint">
+        <xsd:annotation>
+          <xsd:documentation>Bullet Size Points</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_TextBulletTypefaceFollowText"></xsd:complexType>
+  <xsd:group name="EG_TextBulletTypeface">
+    <xsd:choice>
+      <xsd:element name="buFontTx" type="CT_TextBulletTypefaceFollowText">
+        <xsd:annotation>
+          <xsd:documentation>Follow text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="buFont" type="CT_TextFont">
+        <xsd:annotation>
+          <xsd:documentation>Specified</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_TextAutonumberBullet">
+    <xsd:attribute name="type" type="ST_TextAutonumberScheme" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Bullet Autonumbering Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="startAt" type="ST_TextBulletStartAtNum" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>Start Numbering At</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextCharBullet">
+    <xsd:attribute name="char" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Bullet Character</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextBlipBullet">
+    <xsd:sequence>
+      <xsd:element name="blip" type="CT_Blip" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Blip</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextNoBullet"></xsd:complexType>
+  <xsd:group name="EG_TextBullet">
+    <xsd:choice>
+      <xsd:element name="buNone" type="CT_TextNoBullet">
+        <xsd:annotation>
+          <xsd:documentation>No Bullet</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="buAutoNum" type="CT_TextAutonumberBullet">
+        <xsd:annotation>
+          <xsd:documentation>Auto-Numbered Bullet</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="buChar" type="CT_TextCharBullet">
+        <xsd:annotation>
+          <xsd:documentation>Character Bullet</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="buBlip" type="CT_TextBlipBullet">
+        <xsd:annotation>
+          <xsd:documentation>Picture Bullet</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+</xsd:schema>

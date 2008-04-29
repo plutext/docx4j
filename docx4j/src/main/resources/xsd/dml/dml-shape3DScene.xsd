@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-shape3DCamera.xsd" />
+  <xsd:include schemaLocation="dml-shape3DLighting.xsd" />
+  <xsd:include schemaLocation="dml-shape3DScenePlane.xsd" />
+  <xsd:complexType name="CT_Scene3D">
+    <xsd:sequence>
+      <xsd:element name="camera" type="CT_Camera" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Camera</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lightRig" type="CT_LightRig" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Light Rig</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backdrop" type="CT_Backdrop" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Backdrop Plane</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

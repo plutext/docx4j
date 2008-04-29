@@ -1,0 +1,1798 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd" />
+  <xsd:complexType name="CT_OfficeArtExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" />
+    </xsd:sequence>
+    <xsd:attribute name="uri" type="xsd:token">
+      <xsd:annotation>
+        <xsd:documentation>Uniform Resource Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Coordinate">
+    <xsd:annotation>
+      <xsd:documentation>Coordinate</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:long">
+      <xsd:minInclusive value="-27273042329600" />
+      <xsd:maxInclusive value="27273042316900" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Coordinate32">
+    <xsd:annotation>
+      <xsd:documentation>Coordinate Point</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_PositiveCoordinate">
+    <xsd:annotation>
+      <xsd:documentation>Positive Coordinate</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:long">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="27273042316900" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_PositiveCoordinate32">
+    <xsd:annotation>
+      <xsd:documentation>Positive Coordinate Point</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Coordinate32">
+      <xsd:minInclusive value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Angle">
+    <xsd:annotation>
+      <xsd:documentation>Angle</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Angle">
+    <xsd:attribute name="val" type="ST_Angle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_FixedAngle">
+    <xsd:annotation>
+      <xsd:documentation>Fixed Angle</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Angle">
+      <xsd:minExclusive value="-5400000" />
+      <xsd:maxExclusive value="5400000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_PositiveFixedAngle">
+    <xsd:annotation>
+      <xsd:documentation>Positive Fixed Angle</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Angle">
+      <xsd:minInclusive value="0" />
+      <xsd:maxExclusive value="21600000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PositiveFixedAngle">
+    <xsd:attribute name="val" type="ST_PositiveFixedAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Percentage">
+    <xsd:annotation>
+      <xsd:documentation>Percentage</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Percentage">
+    <xsd:attribute name="val" type="ST_Percentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PositivePercentage">
+    <xsd:annotation>
+      <xsd:documentation>Positive Percentage</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Percentage">
+      <xsd:minInclusive value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PositivePercentage">
+    <xsd:attribute name="val" type="ST_PositivePercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_FixedPercentage">
+    <xsd:annotation>
+      <xsd:documentation>Fixed Percentage</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Percentage">
+      <xsd:minInclusive value="-100000" />
+      <xsd:maxInclusive value="100000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_FixedPercentage">
+    <xsd:attribute name="val" type="ST_FixedPercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PositiveFixedPercentage">
+    <xsd:annotation>
+      <xsd:documentation>Positive Fixed Percentage</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Percentage">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="100000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PositiveFixedPercentage">
+    <xsd:attribute name="val" type="ST_PositiveFixedPercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Ratio">
+    <xsd:attribute name="n" type="xsd:long" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Numerator</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="d" type="xsd:long" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Denominator</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Point2D">
+    <xsd:attribute name="x" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>X-Axis Coordinate</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="y" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Y-Axis Coordinate</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PositiveSize2D">
+    <xsd:attribute name="cx" type="ST_PositiveCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Extent Length</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cy" type="ST_PositiveCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Extent Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ComplementTransform"></xsd:complexType>
+  <xsd:complexType name="CT_InverseTransform"></xsd:complexType>
+  <xsd:complexType name="CT_GrayscaleTransform"></xsd:complexType>
+  <xsd:complexType name="CT_GammaTransform"></xsd:complexType>
+  <xsd:complexType name="CT_InverseGammaTransform"></xsd:complexType>
+  <xsd:group name="EG_ColorTransform">
+    <xsd:choice>
+      <xsd:element name="tint" type="CT_PositiveFixedPercentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tint</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="shade" type="CT_PositiveFixedPercentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shade</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="comp" type="CT_ComplementTransform" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Complement</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="inv" type="CT_InverseTransform" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Inverse</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="gray" type="CT_GrayscaleTransform" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gray</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alpha" type="CT_PositiveFixedPercentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaOff" type="CT_FixedPercentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaMod" type="CT_PositivePercentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Modulation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hue" type="CT_PositiveFixedAngle" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hue</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hueOff" type="CT_Angle" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hue Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hueMod" type="CT_PositivePercentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hue Modulate</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sat" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Saturation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="satOff" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Saturation Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="satMod" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Saturation Modulation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lum" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Luminance</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lumOff" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Luminance Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lumMod" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Luminance Modulation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="red" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Red</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="redOff" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Red Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="redMod" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Red Modulation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="green" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Green</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="greenOff" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Green Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="greenMod" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Green Modification</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="blue" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Blue</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="blueOff" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Blue Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="blueMod" type="CT_Percentage" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Blue Modification</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="gamma" type="CT_GammaTransform" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gamma</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="invGamma" type="CT_InverseGammaTransform" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Inverse Gamma</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_ScRgbColor">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorTransform" minOccurs="0" maxOccurs="unbounded"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="r" type="ST_Percentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Red</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="g" type="ST_Percentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Green</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="b" type="ST_Percentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Blue</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_HexBinary3">
+    <xsd:annotation>
+      <xsd:documentation>Hex Binary of Length 3</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:hexBinary">
+      <xsd:length value="3" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SRgbColor">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorTransform" minOccurs="0" maxOccurs="unbounded"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="val" type="ST_HexBinary3" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_HslColor">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorTransform" minOccurs="0" maxOccurs="unbounded"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="hue" type="ST_PositiveFixedAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Hue</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sat" type="ST_Percentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Saturation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lum" type="ST_Percentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Luminance</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SystemColorVal">
+    <xsd:annotation>
+      <xsd:documentation>System Color Value</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="scrollBar">
+        <xsd:annotation>
+          <xsd:documentation>Scroll Bar System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="background">
+        <xsd:annotation>
+          <xsd:documentation>Background System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="activeCaption">
+        <xsd:annotation>
+          <xsd:documentation>Active Caption System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="inactiveCaption">
+        <xsd:annotation>
+          <xsd:documentation>Inactive Caption System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="menu">
+        <xsd:annotation>
+          <xsd:documentation>Menu System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="window">
+        <xsd:annotation>
+          <xsd:documentation>Window System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="windowFrame">
+        <xsd:annotation>
+          <xsd:documentation>Window Frame System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="menuText">
+        <xsd:annotation>
+          <xsd:documentation>Menu Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="windowText">
+        <xsd:annotation>
+          <xsd:documentation>Window Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="captionText">
+        <xsd:annotation>
+          <xsd:documentation>Caption Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="activeBorder">
+        <xsd:annotation>
+          <xsd:documentation>Active Border System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="inactiveBorder">
+        <xsd:annotation>
+          <xsd:documentation>Inactive Border System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="appWorkspace">
+        <xsd:annotation>
+          <xsd:documentation>Application Workspace System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="highlight">
+        <xsd:annotation>
+          <xsd:documentation>Highlight System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="highlightText">
+        <xsd:annotation>
+          <xsd:documentation>Highlight Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="btnFace">
+        <xsd:annotation>
+          <xsd:documentation>Button Face System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="btnShadow">
+        <xsd:annotation>
+          <xsd:documentation>Button Shadow System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="grayText">
+        <xsd:annotation>
+          <xsd:documentation>Gray Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="btnText">
+        <xsd:annotation>
+          <xsd:documentation>Button Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="inactiveCaptionText">
+        <xsd:annotation>
+          <xsd:documentation>Inactive Caption Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="btnHighlight">
+        <xsd:annotation>
+          <xsd:documentation>Button Highlight System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="3dDkShadow">
+        <xsd:annotation>
+          <xsd:documentation>3D Dark System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="3dLight">
+        <xsd:annotation>
+          <xsd:documentation>3D Light System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="infoText">
+        <xsd:annotation>
+          <xsd:documentation>Info Text System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="infoBk">
+        <xsd:annotation>
+          <xsd:documentation>Info Back System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hotLight">
+        <xsd:annotation>
+          <xsd:documentation>Hot Light System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gradientActiveCaption">
+        <xsd:annotation>
+          <xsd:documentation>Gradient Active Caption System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gradientInactiveCaption">
+        <xsd:annotation>
+          <xsd:documentation>Gradient Inactive Caption System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="menuHighlight">
+        <xsd:annotation>
+          <xsd:documentation>Menu Highlight System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="menuBar">
+        <xsd:annotation>
+          <xsd:documentation>Menu Bar System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SystemColor">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorTransform" minOccurs="0" maxOccurs="unbounded"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="val" type="ST_SystemColorVal" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lastClr" type="ST_HexBinary3" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Last Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SchemeColorVal">
+    <xsd:annotation>
+      <xsd:documentation>Scheme Color</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="bg1">
+        <xsd:annotation>
+          <xsd:documentation>Background Color 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tx1">
+        <xsd:annotation>
+          <xsd:documentation>Text Color 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bg2">
+        <xsd:annotation>
+          <xsd:documentation>Background Color 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tx2">
+        <xsd:annotation>
+          <xsd:documentation>Text Color 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent1">
+        <xsd:annotation>
+          <xsd:documentation>Accent Color 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent2">
+        <xsd:annotation>
+          <xsd:documentation>Accent Color 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent3">
+        <xsd:annotation>
+          <xsd:documentation>Accent Color 3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent4">
+        <xsd:annotation>
+          <xsd:documentation>Accent Color 4</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent5">
+        <xsd:annotation>
+          <xsd:documentation>Accent Color 5</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent6">
+        <xsd:annotation>
+          <xsd:documentation>Accent Color 6</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hlink">
+        <xsd:annotation>
+          <xsd:documentation>Hyperlink Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="folHlink">
+        <xsd:annotation>
+          <xsd:documentation>Followed Hyperlink Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="phClr">
+        <xsd:annotation>
+          <xsd:documentation>Style Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dk1">
+        <xsd:annotation>
+          <xsd:documentation>Dark Color 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lt1">
+        <xsd:annotation>
+          <xsd:documentation>Light Color 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dk2">
+        <xsd:annotation>
+          <xsd:documentation>Dark Color 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lt2">
+        <xsd:annotation>
+          <xsd:documentation>Light Color 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SchemeColor">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorTransform" minOccurs="0" maxOccurs="unbounded"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="val" type="ST_SchemeColorVal" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PresetColorVal">
+    <xsd:annotation>
+      <xsd:documentation>Preset Color Value</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="aliceBlue">
+        <xsd:annotation>
+          <xsd:documentation>Alice Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="antiqueWhite">
+        <xsd:annotation>
+          <xsd:documentation>Antique White Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="aqua">
+        <xsd:annotation>
+          <xsd:documentation>Aqua Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="aquamarine">
+        <xsd:annotation>
+          <xsd:documentation>Aquamarine Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="azure">
+        <xsd:annotation>
+          <xsd:documentation>Azure Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="beige">
+        <xsd:annotation>
+          <xsd:documentation>Beige Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bisque">
+        <xsd:annotation>
+          <xsd:documentation>Bisque Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="black">
+        <xsd:annotation>
+          <xsd:documentation>Black Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="blanchedAlmond">
+        <xsd:annotation>
+          <xsd:documentation>Blanched Almond Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="blue">
+        <xsd:annotation>
+          <xsd:documentation>Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="blueViolet">
+        <xsd:annotation>
+          <xsd:documentation>Blue Violet Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="brown">
+        <xsd:annotation>
+          <xsd:documentation>Brown Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="burlyWood">
+        <xsd:annotation>
+          <xsd:documentation>Burly Wood Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cadetBlue">
+        <xsd:annotation>
+          <xsd:documentation>Cadet Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chartreuse">
+        <xsd:annotation>
+          <xsd:documentation>Chartreuse Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chocolate">
+        <xsd:annotation>
+          <xsd:documentation>Chocolate Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="coral">
+        <xsd:annotation>
+          <xsd:documentation>Coral Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cornflowerBlue">
+        <xsd:annotation>
+          <xsd:documentation>Cornflower Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cornsilk">
+        <xsd:annotation>
+          <xsd:documentation>Cornsilk Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="crimson">
+        <xsd:annotation>
+          <xsd:documentation>Crimson Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cyan">
+        <xsd:annotation>
+          <xsd:documentation>Cyan Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkBlue">
+        <xsd:annotation>
+          <xsd:documentation>Dark Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkCyan">
+        <xsd:annotation>
+          <xsd:documentation>Dark Cyan Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkGoldenrod">
+        <xsd:annotation>
+          <xsd:documentation>Dark Goldenrod Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkGray">
+        <xsd:annotation>
+          <xsd:documentation>Dark Gray Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkGreen">
+        <xsd:annotation>
+          <xsd:documentation>Dark Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkKhaki">
+        <xsd:annotation>
+          <xsd:documentation>Dark Khaki Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkMagenta">
+        <xsd:annotation>
+          <xsd:documentation>Dark Magenta Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkOliveGreen">
+        <xsd:annotation>
+          <xsd:documentation>Dark Olive Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkOrange">
+        <xsd:annotation>
+          <xsd:documentation>Dark Orange Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkOrchid">
+        <xsd:annotation>
+          <xsd:documentation>Dark Orchid Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkRed">
+        <xsd:annotation>
+          <xsd:documentation>Dark Red Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkSalmon">
+        <xsd:annotation>
+          <xsd:documentation>Dark Salmon Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkSeaGreen">
+        <xsd:annotation>
+          <xsd:documentation>Dark Sea Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkSlateBlue">
+        <xsd:annotation>
+          <xsd:documentation>Dark Slate Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkSlateGray">
+        <xsd:annotation>
+          <xsd:documentation>Dark Slate Gray Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkTurquoise">
+        <xsd:annotation>
+          <xsd:documentation>Dark Turquoise Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkViolet">
+        <xsd:annotation>
+          <xsd:documentation>Dark Violet Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="deepPink">
+        <xsd:annotation>
+          <xsd:documentation>Deep Pink Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="deepSkyBlue">
+        <xsd:annotation>
+          <xsd:documentation>Deep Sky Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dimGray">
+        <xsd:annotation>
+          <xsd:documentation>Dim Gray Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dodgerBlue">
+        <xsd:annotation>
+          <xsd:documentation>Dodger Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="firebrick">
+        <xsd:annotation>
+          <xsd:documentation>Firebrick Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="floralWhite">
+        <xsd:annotation>
+          <xsd:documentation>Floral White Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="forestGreen">
+        <xsd:annotation>
+          <xsd:documentation>Forest Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fuchsia">
+        <xsd:annotation>
+          <xsd:documentation>Fuchsia Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gainsboro">
+        <xsd:annotation>
+          <xsd:documentation>Gainsboro Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ghostWhite">
+        <xsd:annotation>
+          <xsd:documentation>Ghost White Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gold">
+        <xsd:annotation>
+          <xsd:documentation>Gold Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="goldenrod">
+        <xsd:annotation>
+          <xsd:documentation>Goldenrod Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gray">
+        <xsd:annotation>
+          <xsd:documentation>Gray Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="green">
+        <xsd:annotation>
+          <xsd:documentation>Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="greenYellow">
+        <xsd:annotation>
+          <xsd:documentation>Green Yellow Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="honeydew">
+        <xsd:annotation>
+          <xsd:documentation>Honeydew Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hotPink">
+        <xsd:annotation>
+          <xsd:documentation>Hot Pink Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="indianRed">
+        <xsd:annotation>
+          <xsd:documentation>Indian Red Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="indigo">
+        <xsd:annotation>
+          <xsd:documentation>Indigo Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ivory">
+        <xsd:annotation>
+          <xsd:documentation>Ivory Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="khaki">
+        <xsd:annotation>
+          <xsd:documentation>Khaki Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lavender">
+        <xsd:annotation>
+          <xsd:documentation>Lavender Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lavenderBlush">
+        <xsd:annotation>
+          <xsd:documentation>Lavender Blush Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lawnGreen">
+        <xsd:annotation>
+          <xsd:documentation>Lawn Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lemonChiffon">
+        <xsd:annotation>
+          <xsd:documentation>Lemon Chiffon Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltBlue">
+        <xsd:annotation>
+          <xsd:documentation>Light Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltCoral">
+        <xsd:annotation>
+          <xsd:documentation>Light Coral Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltCyan">
+        <xsd:annotation>
+          <xsd:documentation>Light Cyan Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltGoldenrodYellow">
+        <xsd:annotation>
+          <xsd:documentation>Light Goldenrod Yellow Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltGray">
+        <xsd:annotation>
+          <xsd:documentation>Light Gray Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltGreen">
+        <xsd:annotation>
+          <xsd:documentation>Light Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltPink">
+        <xsd:annotation>
+          <xsd:documentation>Light Pink Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltSalmon">
+        <xsd:annotation>
+          <xsd:documentation>Light Salmon Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltSeaGreen">
+        <xsd:annotation>
+          <xsd:documentation>Light Sea Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltSkyBlue">
+        <xsd:annotation>
+          <xsd:documentation>Light Sky Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltSlateGray">
+        <xsd:annotation>
+          <xsd:documentation>Light Slate Gray Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltSteelBlue">
+        <xsd:annotation>
+          <xsd:documentation>Light Steel Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltYellow">
+        <xsd:annotation>
+          <xsd:documentation>Light Yellow Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lime">
+        <xsd:annotation>
+          <xsd:documentation>Lime Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="limeGreen">
+        <xsd:annotation>
+          <xsd:documentation>Lime Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="linen">
+        <xsd:annotation>
+          <xsd:documentation>Linen Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="magenta">
+        <xsd:annotation>
+          <xsd:documentation>Magenta Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="maroon">
+        <xsd:annotation>
+          <xsd:documentation>Maroon Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medAquamarine">
+        <xsd:annotation>
+          <xsd:documentation>Medium Aquamarine Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medBlue">
+        <xsd:annotation>
+          <xsd:documentation>Medium Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medOrchid">
+        <xsd:annotation>
+          <xsd:documentation>Medium Orchid Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medPurple">
+        <xsd:annotation>
+          <xsd:documentation>Medium Purple Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medSeaGreen">
+        <xsd:annotation>
+          <xsd:documentation>Medium Sea Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medSlateBlue">
+        <xsd:annotation>
+          <xsd:documentation>Medium Slate Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medSpringGreen">
+        <xsd:annotation>
+          <xsd:documentation>Medium Spring Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medTurquoise">
+        <xsd:annotation>
+          <xsd:documentation>Medium Turquoise Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medVioletRed">
+        <xsd:annotation>
+          <xsd:documentation>Medium Violet Red Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="midnightBlue">
+        <xsd:annotation>
+          <xsd:documentation>Midnight Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mintCream">
+        <xsd:annotation>
+          <xsd:documentation>Mint Cream Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mistyRose">
+        <xsd:annotation>
+          <xsd:documentation>Misty Rose Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="moccasin">
+        <xsd:annotation>
+          <xsd:documentation>Moccasin Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="navajoWhite">
+        <xsd:annotation>
+          <xsd:documentation>Navajo White Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="navy">
+        <xsd:annotation>
+          <xsd:documentation>Navy Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="oldLace">
+        <xsd:annotation>
+          <xsd:documentation>Old Lace Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="olive">
+        <xsd:annotation>
+          <xsd:documentation>Olive Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="oliveDrab">
+        <xsd:annotation>
+          <xsd:documentation>Olive Drab Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="orange">
+        <xsd:annotation>
+          <xsd:documentation>Orange Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="orangeRed">
+        <xsd:annotation>
+          <xsd:documentation>Orange Red Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="orchid">
+        <xsd:annotation>
+          <xsd:documentation>Orchid Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="paleGoldenrod">
+        <xsd:annotation>
+          <xsd:documentation>Pale Goldenrod Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="paleGreen">
+        <xsd:annotation>
+          <xsd:documentation>Pale Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="paleTurquoise">
+        <xsd:annotation>
+          <xsd:documentation>Pale Turquoise Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="paleVioletRed">
+        <xsd:annotation>
+          <xsd:documentation>Pale Violet Red Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="papayaWhip">
+        <xsd:annotation>
+          <xsd:documentation>Papaya Whip Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="peachPuff">
+        <xsd:annotation>
+          <xsd:documentation>Peach Puff Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="peru">
+        <xsd:annotation>
+          <xsd:documentation>Peru Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pink">
+        <xsd:annotation>
+          <xsd:documentation>Pink Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plum">
+        <xsd:annotation>
+          <xsd:documentation>Plum Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="powderBlue">
+        <xsd:annotation>
+          <xsd:documentation>Powder Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="purple">
+        <xsd:annotation>
+          <xsd:documentation>Purple Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="red">
+        <xsd:annotation>
+          <xsd:documentation>Red Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rosyBrown">
+        <xsd:annotation>
+          <xsd:documentation>Rosy Brown Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="royalBlue">
+        <xsd:annotation>
+          <xsd:documentation>Royal Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="saddleBrown">
+        <xsd:annotation>
+          <xsd:documentation>Saddle Brown Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="salmon">
+        <xsd:annotation>
+          <xsd:documentation>Salmon Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sandyBrown">
+        <xsd:annotation>
+          <xsd:documentation>Sandy Brown Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="seaGreen">
+        <xsd:annotation>
+          <xsd:documentation>Sea Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="seaShell">
+        <xsd:annotation>
+          <xsd:documentation>Sea Shell Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sienna">
+        <xsd:annotation>
+          <xsd:documentation>Sienna Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="silver">
+        <xsd:annotation>
+          <xsd:documentation>Silver Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="skyBlue">
+        <xsd:annotation>
+          <xsd:documentation>Sky Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="slateBlue">
+        <xsd:annotation>
+          <xsd:documentation>Slate Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="slateGray">
+        <xsd:annotation>
+          <xsd:documentation>Slate Gray Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="snow">
+        <xsd:annotation>
+          <xsd:documentation>Snow Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="springGreen">
+        <xsd:annotation>
+          <xsd:documentation>Spring Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="steelBlue">
+        <xsd:annotation>
+          <xsd:documentation>Steel Blue Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tan">
+        <xsd:annotation>
+          <xsd:documentation>Tan Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="teal">
+        <xsd:annotation>
+          <xsd:documentation>Teal Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thistle">
+        <xsd:annotation>
+          <xsd:documentation>Thistle Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tomato">
+        <xsd:annotation>
+          <xsd:documentation>Tomato Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="turquoise">
+        <xsd:annotation>
+          <xsd:documentation>Turquoise Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="violet">
+        <xsd:annotation>
+          <xsd:documentation>Violet Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wheat">
+        <xsd:annotation>
+          <xsd:documentation>Wheat Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="white">
+        <xsd:annotation>
+          <xsd:documentation>White Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="whiteSmoke">
+        <xsd:annotation>
+          <xsd:documentation>White Smoke Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="yellow">
+        <xsd:annotation>
+          <xsd:documentation>Yellow Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="yellowGreen">
+        <xsd:annotation>
+          <xsd:documentation>Yellow Green Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PresetColor">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorTransform" minOccurs="0" maxOccurs="unbounded"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="val" type="ST_PresetColorVal">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_OfficeArtExtensionList">
+    <xsd:sequence>
+      <xsd:element name="ext" type="CT_OfficeArtExtension" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Extension</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_OfficeArtExtensionList">
+    <xsd:sequence>
+      <xsd:group ref="EG_OfficeArtExtensionList" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Scale2D">
+    <xsd:sequence>
+      <xsd:element name="sx" type="CT_Ratio" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal Ratio</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sy" type="CT_Ratio" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Ratio</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Transform2D">
+    <xsd:sequence>
+      <xsd:element name="off" type="CT_Point2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ext" type="CT_PositiveSize2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Extents</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="rot" type="ST_Angle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Rotation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="flipH" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Flip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="flipV" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Flip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GroupTransform2D">
+    <xsd:sequence>
+      <xsd:element name="off" type="CT_Point2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ext" type="CT_PositiveSize2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Extents</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="chOff" type="CT_Point2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Child Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="chExt" type="CT_PositiveSize2D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Child Extents</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="rot" type="ST_Angle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Rotation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="flipH" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Flip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="flipV" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Flip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Point3D">
+    <xsd:attribute name="x" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>X-Coordinate in 3D</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="y" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Y-Coordinate in 3D</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="z" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Z-Coordinate in 3D</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Vector3D">
+    <xsd:attribute name="dx" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Distance along X-axis in 3D</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dy" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Distance along Y-axis in 3D</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dz" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Distance along Z-axis in 3D</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SphereCoords">
+    <xsd:attribute name="lat" type="ST_PositiveFixedAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Latitude</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lon" type="ST_PositiveFixedAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Longitude</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rev" type="ST_PositiveFixedAngle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Revolution</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_RelativeRect">
+    <xsd:attribute name="l" type="ST_Percentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Left Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="t" type="ST_Percentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Top Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="r" type="ST_Percentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Right Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="b" type="ST_Percentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Bottom Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_RectAlignment">
+    <xsd:annotation>
+      <xsd:documentation>Rectangle Alignments</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="tl">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Top Left )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Top )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tr">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Top Right )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Left )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Center )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Right )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bl">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Bottom Left )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Bottom )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="br">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Alignment Enum ( Bottom Right )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Guid">
+    <xsd:annotation>
+      <xsd:documentation>GUID Method</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:pattern value="\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:group name="EG_ColorChoice">
+    <xsd:choice>
+      <xsd:element name="scrgbClr" type="CT_ScRgbColor" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>RGB Color Model - Percentage Variant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="srgbClr" type="CT_SRgbColor" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>RGB Color Model - Hex Variant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hslClr" type="CT_HslColor" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hue, Saturation, Luminance Color Model</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sysClr" type="CT_SystemColor" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>System Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="schemeClr" type="CT_SchemeColor" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Scheme Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="prstClr" type="CT_PresetColor" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Preset Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_Color">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ColorMRU">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="0" maxOccurs="10" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_BlackWhiteMode">
+    <xsd:annotation>
+      <xsd:documentation>Black and White Mode</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="clr">
+        <xsd:annotation>
+          <xsd:documentation>Color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="auto">
+        <xsd:annotation>
+          <xsd:documentation>Automatic</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gray">
+        <xsd:annotation>
+          <xsd:documentation>Gray</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltGray">
+        <xsd:annotation>
+          <xsd:documentation>Light Gray</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="invGray">
+        <xsd:annotation>
+          <xsd:documentation>Inverse Gray</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="grayWhite">
+        <xsd:annotation>
+          <xsd:documentation>Gray and White</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="blackGray">
+        <xsd:annotation>
+          <xsd:documentation>Black and Gray</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="blackWhite">
+        <xsd:annotation>
+          <xsd:documentation>Black and White</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="black">
+        <xsd:annotation>
+          <xsd:documentation>Black</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="white">
+        <xsd:annotation>
+          <xsd:documentation>White</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hidden">
+        <xsd:annotation>
+          <xsd:documentation>Hidden</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:attributeGroup name="AG_Blob">
+    <xsd:attribute ref="r:embed" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Embedded Picture Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:link" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Linked Picture Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:complexType name="CT_EmbeddedWAVAudioFile">
+    <xsd:attribute ref="r:embed" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Embedded Audio File Relationship ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="name" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Sound Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="builtIn" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Recognized Built-In Sound</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Hyperlink">
+    <xsd:sequence>
+      <xsd:element name="snd" type="CT_EmbeddedWAVAudioFile" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hyperlink Sound</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute ref="r:id" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Drawing Object Hyperlink Target</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="invalidUrl" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Invalid URL</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="action" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Action Setting</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="tgtFrame" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Target Frame</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="tooltip" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Hyperlink Tooltip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="history" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Add Hyperlink to Page History</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="highlightClick" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Highlight Click</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endSnd" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>End Sounds</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_DrawingElementId">
+    <xsd:annotation>
+      <xsd:documentation>Drawing Element ID</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedInt"></xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>
