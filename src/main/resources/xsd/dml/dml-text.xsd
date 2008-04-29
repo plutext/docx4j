@@ -1,0 +1,388 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-textParagraph.xsd" />
+  <xsd:include schemaLocation="dml-shape3DStyles.xsd" />
+  <xsd:include schemaLocation="dml-shape3DScene.xsd" />
+  <xsd:complexType name="CT_TextParagraph">
+    <xsd:sequence>
+      <xsd:element name="pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Paragraph Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_TextRun" minOccurs="0" maxOccurs="unbounded"></xsd:group>
+      <xsd:element name="endParaRPr" type="CT_TextCharacterProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>End Paragraph Run Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TextAnchoringType">
+    <xsd:annotation>
+      <xsd:documentation>Text Anchoring Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchoring Type Enum ( Top )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Enum ( Center )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Enum ( Bottom )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="just">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Enum ( Justified )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dist">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Enum ( Distributed )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextVertOverflowType">
+    <xsd:annotation>
+      <xsd:documentation>Text Vertical Overflow</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="overflow">
+        <xsd:annotation>
+          <xsd:documentation>Text Overflow Enum ( Overflow )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ellipsis">
+        <xsd:annotation>
+          <xsd:documentation>Text Overflow Enum ( Ellipsis )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="clip">
+        <xsd:annotation>
+          <xsd:documentation>Text Overflow Enum ( Clip )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextHorzOverflowType">
+    <xsd:annotation>
+      <xsd:documentation>Text Horizontal Overflow Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="overflow">
+        <xsd:annotation>
+          <xsd:documentation>Text Horizontal Overflow Enum ( Overflow )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="clip">
+        <xsd:annotation>
+          <xsd:documentation>Text Horizontal Overflow Enum ( Clip )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextVerticalType">
+    <xsd:annotation>
+      <xsd:documentation>Vertical Text Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="horz">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Text Type Enum ( Horizontal )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="vert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Text Type Enum ( Vertical )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="vert270">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Text Type Enum ( Vertical 270 )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wordArtVert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Text Type Enum ( WordArt Vertical )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="eaVert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Text Type Enum ( East Asian Vertical )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mongolianVert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Text Type Enum ( Mongolian Vertical )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wordArtVertRtl">
+        <xsd:annotation>
+          <xsd:documentation>Vertical WordArt Right to Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextWrappingType">
+    <xsd:annotation>
+      <xsd:documentation>Text Wrapping Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>Text Wrapping Type Enum ( None )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="square">
+        <xsd:annotation>
+          <xsd:documentation>Text Wrapping Type Enum ( Square )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextColumnCount">
+    <xsd:annotation>
+      <xsd:documentation>Text Column Count</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="16" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextListStyle">
+    <xsd:sequence>
+      <xsd:element name="defPPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Default Paragraph Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl1pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 1 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl2pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 2 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl3pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 3 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl4pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 4 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl5pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 5 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl6pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 6 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl7pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 7 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl8pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 8 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lvl9pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List Level 9 Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TextFontScalePercent">
+    <xsd:annotation>
+      <xsd:documentation>Text Font Scale Percentage</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Percentage">
+      <xsd:minInclusive value="1000" />
+      <xsd:maxInclusive value="100000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextNormalAutofit">
+    <xsd:attribute name="fontScale" type="ST_TextFontScalePercent" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Font Scale</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lnSpcReduction" type="ST_TextSpacingPercent" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Line Space Reduction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextShapeAutofit"></xsd:complexType>
+  <xsd:complexType name="CT_TextNoAutofit"></xsd:complexType>
+  <xsd:group name="EG_TextAutofit">
+    <xsd:choice>
+      <xsd:element name="noAutofit" type="CT_TextNoAutofit">
+        <xsd:annotation>
+          <xsd:documentation>No AutoFit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="normAutofit" type="CT_TextNormalAutofit">
+        <xsd:annotation>
+          <xsd:documentation>Normal AutoFit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spAutoFit" type="CT_TextShapeAutofit">
+        <xsd:annotation>
+          <xsd:documentation>Shape AutoFit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_TextBodyProperties">
+    <xsd:sequence>
+      <xsd:element name="prstTxWarp" type="CT_PresetTextShape" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Preset Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_TextAutofit" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:element name="scene3d" type="CT_Scene3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3D Scene Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_Text3D" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="rot" type="ST_Angle" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Rotation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="spcFirstLastPara" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Paragraph Spacing</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="vertOverflow" type="ST_TextVertOverflowType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Vertical Overflow</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="horzOverflow" type="ST_TextHorzOverflowType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Horizontal Overflow</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="vert" type="ST_TextVerticalType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Text</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="wrap" type="ST_TextWrappingType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Wrapping Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lIns" type="ST_Coordinate32" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Left Inset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="tIns" type="ST_Coordinate32" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Top Inset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rIns" type="ST_Coordinate32" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Right Inset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bIns" type="ST_Coordinate32" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Bottom Inset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="numCol" type="ST_TextColumnCount" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Number of Columns</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="spcCol" type="ST_PositiveCoordinate32" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Space Between Columns</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rtlCol" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Columns Right-To-Left</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fromWordArt" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>From WordArt</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="anchor" type="ST_TextAnchoringType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Anchor</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="anchorCtr" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Anchor Center</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="forceAA" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Force Anti-Alias</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="upright" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Text Upright</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="compatLnSpc" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Compatible Line Spacing</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextBody">
+    <xsd:sequence>
+      <xsd:element name="bodyPr" type="CT_TextBodyProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Body Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lstStyle" type="CT_TextListStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text List Styles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="p" type="CT_TextParagraph" minOccurs="1" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Text Paragraphs</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

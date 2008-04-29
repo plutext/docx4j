@@ -1,0 +1,344 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:include schemaLocation="dml-shapeGeometry.xsd" />
+  <xsd:include schemaLocation="dml-textBullet.xsd" />
+  <xsd:include schemaLocation="dml-textRun.xsd" />
+  <xsd:simpleType name="ST_TextSpacingPoint">
+    <xsd:annotation>
+      <xsd:documentation>Text Spacing Point</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="158400" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextSpacingPercent">
+    <xsd:annotation>
+      <xsd:documentation>Text Spacing Percent</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Percentage">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="13200000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextSpacingPercent">
+    <xsd:attribute name="val" type="ST_TextSpacingPercent" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextSpacingPoint">
+    <xsd:attribute name="val" type="ST_TextSpacingPoint" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TextMargin">
+    <xsd:annotation>
+      <xsd:documentation>Text Margin</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Coordinate32">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="51206400" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextIndent">
+    <xsd:annotation>
+      <xsd:documentation>Text Indentation</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="ST_Coordinate32">
+      <xsd:minInclusive value="-51206400" />
+      <xsd:maxInclusive value="51206400" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextTabAlignType">
+    <xsd:annotation>
+      <xsd:documentation>Text Tab Alignment Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Text Tab Alignment Enum ( Left)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Text Tab Alignment Enum ( Center )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Text Tab Alignment Enum ( Right )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dec">
+        <xsd:annotation>
+          <xsd:documentation>Text Tab Alignment Enum ( Decimal )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextTabStop">
+    <xsd:attribute name="pos" type="ST_Coordinate32" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Tab Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algn" type="ST_TextTabAlignType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Tab Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextTabStopList">
+    <xsd:sequence>
+      <xsd:element name="tab" type="CT_TextTabStop" minOccurs="0" maxOccurs="32">
+        <xsd:annotation>
+          <xsd:documentation>Tab Stop</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextLineBreak">
+    <xsd:sequence>
+      <xsd:element name="rPr" type="CT_TextCharacterProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Run Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextSpacing">
+    <xsd:choice>
+      <xsd:element name="spcPct" type="CT_TextSpacingPercent">
+        <xsd:annotation>
+          <xsd:documentation>Spacing Percent</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spcPts" type="CT_TextSpacingPoint">
+        <xsd:annotation>
+          <xsd:documentation>Spacing Points</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TextAlignType">
+    <xsd:annotation>
+      <xsd:documentation>Text Alignment Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment Enum ( Left )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment Enum ( Center )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment Enum ( Right )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="just">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment Enum ( Justified )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="justLow">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment Enum ( Justified Low )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dist">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment Enum ( Distributed )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thaiDist">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment Enum ( Thai Distributed )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextFontAlignType">
+    <xsd:annotation>
+      <xsd:documentation>Font Alignment Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="auto">
+        <xsd:annotation>
+          <xsd:documentation>Font Alignment Enum ( Automatic )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Font Alignment Enum ( Top )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Font Alignment Enum ( Center )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="base">
+        <xsd:annotation>
+          <xsd:documentation>Font Alignment Enum ( Baseline )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Font Alignment Enum ( Bottom )</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextIndentLevelType">
+    <xsd:annotation>
+      <xsd:documentation>Text Indent Level Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="8" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextParagraphProperties">
+    <xsd:sequence>
+      <xsd:element name="lnSpc" type="CT_TextSpacing" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line Spacing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spcBef" type="CT_TextSpacing" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Space Before</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spcAft" type="CT_TextSpacing" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Space After</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_TextBulletColor" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:group ref="EG_TextBulletSize" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:group ref="EG_TextBulletTypeface" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:group ref="EG_TextBullet" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:element name="tabLst" type="CT_TextTabStopList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tab List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="defRPr" type="CT_TextCharacterProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Default Text Run Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="marL" type="ST_TextMargin" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Left Margin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="marR" type="ST_TextMargin" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Right Margin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lvl" type="ST_TextIndentLevelType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Level</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="indent" type="ST_TextIndent" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Indent</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algn" type="ST_TextAlignType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="defTabSz" type="ST_Coordinate32" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Default Tab Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rtl" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Right To Left</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="eaLnBrk" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>East Asian Line Break</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fontAlgn" type="ST_TextFontAlignType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Font Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="latinLnBrk" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Latin Line Break</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="hangingPunct" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Hanging Punctuation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextField">
+    <xsd:sequence>
+      <xsd:element name="rPr" type="CT_TextCharacterProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Character Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pPr" type="CT_TextParagraphProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Paragraph Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="t" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="ST_Guid" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Field ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="type" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Field Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_TextRun">
+    <xsd:choice>
+      <xsd:element name="r" type="CT_RegularTextRun">
+        <xsd:annotation>
+          <xsd:documentation>Text Run</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="br" type="CT_TextLineBreak">
+        <xsd:annotation>
+          <xsd:documentation>Text Line Break</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fld" type="CT_TextField">
+        <xsd:annotation>
+          <xsd:documentation>Text Field</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+</xsd:schema>

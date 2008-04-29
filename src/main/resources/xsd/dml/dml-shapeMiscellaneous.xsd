@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:simpleType name="ST_ShapeID">
+    <xsd:annotation>
+      <xsd:documentation>Shape ID</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token" />
+  </xsd:simpleType>
+</xsd:schema>

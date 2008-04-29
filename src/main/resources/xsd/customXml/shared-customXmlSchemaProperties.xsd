@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns="http://schemas.openxmlformats.org/schemaLibrary/2006/main" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xsd:complexType name="CT_Schema">
+    <xsd:attribute name="uri" type="xsd:string" default="">
+      <xsd:annotation>
+        <xsd:documentation>Custom XML Schema Namespace</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="manifestLocation" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Resource File Location</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="schemaLocation" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Custom XML Schema Location</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SchemaLibrary">
+    <xsd:sequence>
+      <xsd:element name="schema" type="CT_Schema" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Custom XML Schema Reference</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="schemaLibrary" type="CT_SchemaLibrary">
+    <xsd:annotation>
+      <xsd:documentation>Embedded Custom XML Schema Supplementary Data</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

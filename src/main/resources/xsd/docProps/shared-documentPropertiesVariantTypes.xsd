@@ -1,0 +1,844 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes" xmlns:xsd="http://www.w3.org/2001/XMLSchema" blockDefault="#all" elementFormDefault="qualified">
+  <xsd:simpleType name="ST_VectorBaseType">
+    <xsd:annotation>
+      <xsd:documentation>Vector Base Type Simple Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="variant">
+        <xsd:annotation>
+          <xsd:documentation>Variant Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="i1">
+        <xsd:annotation>
+          <xsd:documentation>Vector Base Type Enumeration Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="i2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Signed Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="i4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Signed Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="i8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Signed Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ui1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Unsigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ui2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Unisigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ui4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Unsigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ui8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Unsigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Real Number Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Real Number Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lpstr">
+        <xsd:annotation>
+          <xsd:documentation>LPSTR Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lpwstr">
+        <xsd:annotation>
+          <xsd:documentation>LPWSTR Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bstr">
+        <xsd:annotation>
+          <xsd:documentation>Basic String Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="date">
+        <xsd:annotation>
+          <xsd:documentation>Date and Time Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="filetime">
+        <xsd:annotation>
+          <xsd:documentation>File Time Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bool">
+        <xsd:annotation>
+          <xsd:documentation>Boolean Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cy">
+        <xsd:annotation>
+          <xsd:documentation>Currency Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="error">
+        <xsd:annotation>
+          <xsd:documentation>Error Status Code Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="clsid">
+        <xsd:annotation>
+          <xsd:documentation>Class ID Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cf">
+        <xsd:annotation>
+          <xsd:documentation>Clipboard Data Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ArrayBaseType">
+    <xsd:annotation>
+      <xsd:documentation>Array Base Type Simple Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="variant">
+        <xsd:annotation>
+          <xsd:documentation>Variant Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="i1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Signed Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="i2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Signed Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="i4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Signed Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="int">
+        <xsd:annotation>
+          <xsd:documentation>Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ui1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Unsigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ui2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Unsigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ui4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Unsigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="uint">
+        <xsd:annotation>
+          <xsd:documentation>Unsigned Integer Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Real Number Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Real Number Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="decimal">
+        <xsd:annotation>
+          <xsd:documentation>Decimal Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bstr">
+        <xsd:annotation>
+          <xsd:documentation>Basic String Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="date">
+        <xsd:annotation>
+          <xsd:documentation>Date and Time Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bool">
+        <xsd:annotation>
+          <xsd:documentation>Boolean Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cy">
+        <xsd:annotation>
+          <xsd:documentation>Curency Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="error">
+        <xsd:annotation>
+          <xsd:documentation>Error Status Code Base Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Cy">
+    <xsd:annotation>
+      <xsd:documentation>Currency Simple Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="\s*[0-9]*\.[0-9]{4}\s*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Error">
+    <xsd:annotation>
+      <xsd:documentation>Error Status Code Simple Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="\s*0x[0-9A-Za-z]{8}\s*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Clsid">
+    <xsd:annotation>
+      <xsd:documentation>Class ID Simple Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="\s*\{[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\}\s*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Format">
+    <xsd:annotation>
+      <xsd:documentation>Format Simple Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:pattern value="\-1" />
+      <xsd:pattern value="\-2" />
+      <xsd:pattern value="\-3" />
+      <xsd:pattern value="[1-9]+" />
+      <xsd:pattern value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Empty"></xsd:complexType>
+  <xsd:complexType name="CT_Null"></xsd:complexType>
+  <xsd:complexType name="CT_Vector">
+    <xsd:choice minOccurs="1" maxOccurs="unbounded">
+      <xsd:element ref="variant">
+        <xsd:annotation>
+          <xsd:documentation>Variant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="r4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Real Number</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="r8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Real Number</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="lpstr">
+        <xsd:annotation>
+          <xsd:documentation>LPSTR</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="lpwstr">
+        <xsd:annotation>
+          <xsd:documentation>LPWSTR</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="bstr">
+        <xsd:annotation>
+          <xsd:documentation>Basic String</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="date">
+        <xsd:annotation>
+          <xsd:documentation>Date and Time</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="filetime">
+        <xsd:annotation>
+          <xsd:documentation>File Time</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="bool">
+        <xsd:annotation>
+          <xsd:documentation>Boolean</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="cy">
+        <xsd:annotation>
+          <xsd:documentation>Currency</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="error">
+        <xsd:annotation>
+          <xsd:documentation>Error Status Code</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="clsid">
+        <xsd:annotation>
+          <xsd:documentation>Class ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="cf">
+        <xsd:annotation>
+          <xsd:documentation>Clipboard Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+    <xsd:attribute name="baseType" type="ST_VectorBaseType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Vector Base Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="size" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Vector Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Array">
+    <xsd:choice minOccurs="1" maxOccurs="unbounded">
+      <xsd:element ref="variant">
+        <xsd:annotation>
+          <xsd:documentation>Variant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="int">
+        <xsd:annotation>
+          <xsd:documentation>Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="uint">
+        <xsd:annotation>
+          <xsd:documentation>Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="r4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Real Number</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="r8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Real Number</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="decimal">
+        <xsd:annotation>
+          <xsd:documentation>Decimal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="bstr">
+        <xsd:annotation>
+          <xsd:documentation>Basic String</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="date">
+        <xsd:annotation>
+          <xsd:documentation>Date and Time</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="bool">
+        <xsd:annotation>
+          <xsd:documentation>Boolean</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="error">
+        <xsd:annotation>
+          <xsd:documentation>Error Status Code</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="cy">
+        <xsd:annotation>
+          <xsd:documentation>Currency</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+    <xsd:attribute name="lBounds" type="xsd:int" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Array Lower Bounds Attribute</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="uBounds" type="xsd:int" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Array Upper Bounds Attribute</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="baseType" type="ST_ArrayBaseType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Array Base Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Variant">
+    <xsd:choice minOccurs="1" maxOccurs="1">
+      <xsd:element ref="variant">
+        <xsd:annotation>
+          <xsd:documentation>Variant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="vector">
+        <xsd:annotation>
+          <xsd:documentation>Vector</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="array">
+        <xsd:annotation>
+          <xsd:documentation>Array</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="blob">
+        <xsd:annotation>
+          <xsd:documentation>Binary Blob</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="oblob">
+        <xsd:annotation>
+          <xsd:documentation>Binary Blob Object</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="empty">
+        <xsd:annotation>
+          <xsd:documentation>Empty</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="null">
+        <xsd:annotation>
+          <xsd:documentation>Null</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="i8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Signed Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="int">
+        <xsd:annotation>
+          <xsd:documentation>Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui1">
+        <xsd:annotation>
+          <xsd:documentation>1-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui2">
+        <xsd:annotation>
+          <xsd:documentation>2-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ui8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="uint">
+        <xsd:annotation>
+          <xsd:documentation>Unsigned Integer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="r4">
+        <xsd:annotation>
+          <xsd:documentation>4-Byte Real Number</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="r8">
+        <xsd:annotation>
+          <xsd:documentation>8-Byte Real Number</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="decimal">
+        <xsd:annotation>
+          <xsd:documentation>Decimal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="lpstr">
+        <xsd:annotation>
+          <xsd:documentation>LPSTR</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="lpwstr">
+        <xsd:annotation>
+          <xsd:documentation>LPWSTR</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="bstr">
+        <xsd:annotation>
+          <xsd:documentation>Basic String</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="date">
+        <xsd:annotation>
+          <xsd:documentation>Date and Time</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="filetime">
+        <xsd:annotation>
+          <xsd:documentation>File Time</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="bool">
+        <xsd:annotation>
+          <xsd:documentation>Boolean</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="cy">
+        <xsd:annotation>
+          <xsd:documentation>Currency</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="error">
+        <xsd:annotation>
+          <xsd:documentation>Error Status Code</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="stream">
+        <xsd:annotation>
+          <xsd:documentation>Binary Stream</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ostream">
+        <xsd:annotation>
+          <xsd:documentation>Binary Stream Object</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="storage">
+        <xsd:annotation>
+          <xsd:documentation>Binary Storage</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="ostorage">
+        <xsd:annotation>
+          <xsd:documentation>Binary Storage Object</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="vstream">
+        <xsd:annotation>
+          <xsd:documentation>Binary Versioned Stream</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="clsid">
+        <xsd:annotation>
+          <xsd:documentation>Class ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="cf">
+        <xsd:annotation>
+          <xsd:documentation>Clipboard Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Vstream">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:base64Binary">
+        <xsd:attribute name="version" type="ST_Clsid">
+          <xsd:annotation>
+            <xsd:documentation>VSTREAM Version Attribute</xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Cf">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:base64Binary">
+        <xsd:attribute name="format" type="ST_Format">
+          <xsd:annotation>
+            <xsd:documentation>Format Attribute</xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:element name="variant" type="CT_Variant">
+    <xsd:annotation>
+      <xsd:documentation>Variant</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="vector" type="CT_Vector">
+    <xsd:annotation>
+      <xsd:documentation>Vector</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="array" type="CT_Array">
+    <xsd:annotation>
+      <xsd:documentation>Array</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="blob" type="xsd:base64Binary">
+    <xsd:annotation>
+      <xsd:documentation>Binary Blob</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="oblob" type="xsd:base64Binary">
+    <xsd:annotation>
+      <xsd:documentation>Binary Blob Object</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="empty" type="CT_Empty">
+    <xsd:annotation>
+      <xsd:documentation>Empty</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="null" type="CT_Null">
+    <xsd:annotation>
+      <xsd:documentation>Null</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="i1" type="xsd:byte">
+    <xsd:annotation>
+      <xsd:documentation>1-Byte Signed Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="i2" type="xsd:short">
+    <xsd:annotation>
+      <xsd:documentation>2-Byte Signed Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="i4" type="xsd:int">
+    <xsd:annotation>
+      <xsd:documentation>4-Byte Signed Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="i8" type="xsd:long">
+    <xsd:annotation>
+      <xsd:documentation>8-Byte Signed Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="int" type="xsd:int">
+    <xsd:annotation>
+      <xsd:documentation>Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="ui1" type="xsd:unsignedByte">
+    <xsd:annotation>
+      <xsd:documentation>1-Byte Unsigned Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="ui2" type="xsd:unsignedShort">
+    <xsd:annotation>
+      <xsd:documentation>2-Byte Unsigned Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="ui4" type="xsd:unsignedInt">
+    <xsd:annotation>
+      <xsd:documentation>4-Byte Unsigned Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="ui8" type="xsd:unsignedLong">
+    <xsd:annotation>
+      <xsd:documentation>8-Byte Unsigned Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="uint" type="xsd:unsignedInt">
+    <xsd:annotation>
+      <xsd:documentation>Unsigned Integer</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="r4" type="xsd:float">
+    <xsd:annotation>
+      <xsd:documentation>4-Byte Real Number</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="r8" type="xsd:double">
+    <xsd:annotation>
+      <xsd:documentation>8-Byte Real Number</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="decimal" type="xsd:decimal">
+    <xsd:annotation>
+      <xsd:documentation>Decimal</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="lpstr" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>LPSTR</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="lpwstr" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>LPWSTR</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="bstr" type="xsd:string">
+    <xsd:annotation>
+      <xsd:documentation>Basic String</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="date" type="xsd:dateTime">
+    <xsd:annotation>
+      <xsd:documentation>Date and Time</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="filetime" type="xsd:dateTime">
+    <xsd:annotation>
+      <xsd:documentation>File Time</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="bool" type="xsd:boolean">
+    <xsd:annotation>
+      <xsd:documentation>Boolean</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="cy" type="ST_Cy">
+    <xsd:annotation>
+      <xsd:documentation>Currency</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="error" type="ST_Error">
+    <xsd:annotation>
+      <xsd:documentation>Error Status Code</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="stream" type="xsd:base64Binary">
+    <xsd:annotation>
+      <xsd:documentation>Binary Stream</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="ostream" type="xsd:base64Binary">
+    <xsd:annotation>
+      <xsd:documentation>Binary Stream Object</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="storage" type="xsd:base64Binary">
+    <xsd:annotation>
+      <xsd:documentation>Binary Storage</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="ostorage" type="xsd:base64Binary">
+    <xsd:annotation>
+      <xsd:documentation>Binary Storage Object</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="vstream" type="CT_Vstream">
+    <xsd:annotation>
+      <xsd:documentation>Binary Versioned Stream</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="clsid" type="ST_Clsid">
+    <xsd:annotation>
+      <xsd:documentation>Class ID</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="cf" type="CT_Cf">
+    <xsd:annotation>
+      <xsd:documentation>Clipboard Data</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

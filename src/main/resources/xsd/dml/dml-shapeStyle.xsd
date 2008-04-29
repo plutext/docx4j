@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseStylesheet.xsd" />
+  <xsd:complexType name="CT_StyleMatrixReference">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="idx" type="ST_StyleMatrixColumnIndex" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Style Matrix Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_FontReference">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="idx" type="ST_FontCollectionIndex" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ShapeStyle">
+    <xsd:sequence>
+      <xsd:element name="lnRef" type="CT_StyleMatrixReference" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="fillRef" type="CT_StyleMatrixReference" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="effectRef" type="CT_StyleMatrixReference" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="fontRef" type="CT_FontReference" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Font Reference</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

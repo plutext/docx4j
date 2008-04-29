@@ -1,0 +1,334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:include schemaLocation="dml-shape3DScene.xsd" />
+  <xsd:include schemaLocation="dml-shape3DStyles.xsd" />
+  <xsd:include schemaLocation="dml-shapeEffects.xsd" />
+  <xsd:include schemaLocation="dml-shapeProperties.xsd" />
+  <xsd:include schemaLocation="dml-textCharacter.xsd" />
+  <xsd:simpleType name="ST_StyleMatrixColumnIndex">
+    <xsd:annotation>
+      <xsd:documentation>Style Matrix Column Index</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedInt" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FontCollectionIndex">
+    <xsd:annotation>
+      <xsd:documentation>Font Collection Index</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="major">
+        <xsd:annotation>
+          <xsd:documentation>Major Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="minor">
+        <xsd:annotation>
+          <xsd:documentation>Minor Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ColorSchemeIndex">
+    <xsd:annotation>
+      <xsd:documentation>Theme Color Reference</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="dk1">
+        <xsd:annotation>
+          <xsd:documentation>Dark 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lt1">
+        <xsd:annotation>
+          <xsd:documentation>Light 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dk2">
+        <xsd:annotation>
+          <xsd:documentation>Dark 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lt2">
+        <xsd:annotation>
+          <xsd:documentation>Light 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent1">
+        <xsd:annotation>
+          <xsd:documentation>Accent 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent2">
+        <xsd:annotation>
+          <xsd:documentation>Accent 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent3">
+        <xsd:annotation>
+          <xsd:documentation>Accent 3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent4">
+        <xsd:annotation>
+          <xsd:documentation>Accent 4</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent5">
+        <xsd:annotation>
+          <xsd:documentation>Accent 5</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="accent6">
+        <xsd:annotation>
+          <xsd:documentation>Accent 6</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hlink">
+        <xsd:annotation>
+          <xsd:documentation>Hyperlink</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="folHlink">
+        <xsd:annotation>
+          <xsd:documentation>Followed Hyperlink</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ColorScheme">
+    <xsd:sequence>
+      <xsd:element name="dk1" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Dark 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lt1" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Light 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dk2" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Dark 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lt2" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Light 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="accent1" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Accent 1</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="accent2" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Accent 2</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="accent3" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Accent 3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="accent4" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Accent 4</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="accent5" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Accent 5</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="accent6" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Accent 6</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hlink" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hyperlink</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="folHlink" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Followed Hyperlink</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustomColor">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SupplementalFont">
+    <xsd:attribute name="script" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Script</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="typeface" type="ST_TextTypeface" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Typeface</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustomColorList">
+    <xsd:sequence>
+      <xsd:element name="custClr" type="CT_CustomColor" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Custom color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_FontCollection">
+    <xsd:sequence>
+      <xsd:element name="latin" type="CT_TextFont" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Latin Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ea" type="CT_TextFont" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>East Asian Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cs" type="CT_TextFont" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Complex Script Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="font" type="CT_SupplementalFont" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_EffectStyleItem">
+    <xsd:sequence>
+      <xsd:group ref="EG_EffectProperties" minOccurs="1" maxOccurs="1"></xsd:group>
+      <xsd:element name="scene3d" type="CT_Scene3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3D Scene Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sp3d" type="CT_Shape3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3D properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_FontScheme">
+    <xsd:sequence>
+      <xsd:element name="majorFont" type="CT_FontCollection" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Major Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="minorFont" type="CT_FontCollection" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minor fonts</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_FillStyleList">
+    <xsd:sequence>
+      <xsd:group ref="EG_FillProperties" minOccurs="3" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_LineStyleList">
+    <xsd:sequence>
+      <xsd:element name="ln" type="CT_LineProperties" minOccurs="3" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_EffectStyleList">
+    <xsd:sequence>
+      <xsd:element name="effectStyle" type="CT_EffectStyleItem" minOccurs="3" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Effect Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BackgroundFillStyleList">
+    <xsd:sequence>
+      <xsd:group ref="EG_FillProperties" minOccurs="3" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StyleMatrix">
+    <xsd:sequence>
+      <xsd:element name="fillStyleLst" type="CT_FillStyleList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill Style List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnStyleLst" type="CT_LineStyleList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line Style List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="effectStyleLst" type="CT_EffectStyleList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect Style List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bgFillStyleLst" type="CT_BackgroundFillStyleList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Background Fill Style List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BaseStyles">
+    <xsd:sequence>
+      <xsd:element name="clrScheme" type="CT_ColorScheme" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="fontScheme" type="CT_FontScheme" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Font Scheme</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fmtScheme" type="CT_StyleMatrix" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Format Scheme</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

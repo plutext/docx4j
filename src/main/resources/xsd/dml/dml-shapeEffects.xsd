@@ -1,0 +1,1349 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:complexType name="CT_AlphaBiLevelEffect">
+    <xsd:attribute name="thresh" type="ST_PositiveFixedPercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Threshold</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AlphaCeilingEffect"></xsd:complexType>
+  <xsd:complexType name="CT_AlphaFloorEffect"></xsd:complexType>
+  <xsd:complexType name="CT_AlphaInverseEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="0" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AlphaModulateFixedEffect">
+    <xsd:attribute name="amt" type="ST_PositivePercentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Amount</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AlphaOutsetEffect">
+    <xsd:attribute name="rad" type="ST_Coordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AlphaReplaceEffect">
+    <xsd:attribute name="a" type="ST_PositiveFixedPercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Alpha</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BiLevelEffect">
+    <xsd:attribute name="thresh" type="ST_PositiveFixedPercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Threshold</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BlurEffect">
+    <xsd:attribute name="rad" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="grow" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Grow Bounds</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ColorChangeEffect">
+    <xsd:sequence>
+      <xsd:element name="clrFrom" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Change Color From</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="clrTo" type="CT_Color" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Change Color To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="useA" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Consider Alpha Values</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ColorReplaceEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DuotoneEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="2" maxOccurs="2" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GlowEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="rad" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GrayscaleEffect"></xsd:complexType>
+  <xsd:complexType name="CT_HSLEffect">
+    <xsd:attribute name="hue" type="ST_PositiveFixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Hue</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sat" type="ST_FixedPercentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Saturation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lum" type="ST_FixedPercentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Luminance</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_InnerShadowEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="blurRad" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Blur Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dist" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Distance</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dir" type="ST_PositiveFixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_LuminanceEffect">
+    <xsd:attribute name="bright" type="ST_FixedPercentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Brightness</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="contrast" type="ST_FixedPercentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Contrast</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_OuterShadowEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="blurRad" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Blur Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dist" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Offset Distance</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dir" type="ST_PositiveFixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sx" type="ST_Percentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Scaling Factor</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sy" type="ST_Percentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Scaling Factor</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="kx" type="ST_FixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Skew</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ky" type="ST_FixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Skew</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algn" type="ST_RectAlignment" use="optional" default="b">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rotWithShape" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Rotate With Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PresetShadowVal">
+    <xsd:annotation>
+      <xsd:documentation>Preset Shadow Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="shdw1">
+        <xsd:annotation>
+          <xsd:documentation>Top Left Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw2">
+        <xsd:annotation>
+          <xsd:documentation>Top Right Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw3">
+        <xsd:annotation>
+          <xsd:documentation>Back Left Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw4">
+        <xsd:annotation>
+          <xsd:documentation>Back Right Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw5">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Left Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw6">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Right Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw7">
+        <xsd:annotation>
+          <xsd:documentation>Front Left Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw8">
+        <xsd:annotation>
+          <xsd:documentation>Front Right Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw9">
+        <xsd:annotation>
+          <xsd:documentation>Top Left Small Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw10">
+        <xsd:annotation>
+          <xsd:documentation>Top Left Large Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw11">
+        <xsd:annotation>
+          <xsd:documentation>Back Left Long Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw12">
+        <xsd:annotation>
+          <xsd:documentation>Back Right Long Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw13">
+        <xsd:annotation>
+          <xsd:documentation>Top Left Double Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw14">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Right Small Drop Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw15">
+        <xsd:annotation>
+          <xsd:documentation>Front Left Long Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw16">
+        <xsd:annotation>
+          <xsd:documentation>Front Right LongPerspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw17">
+        <xsd:annotation>
+          <xsd:documentation>3D Outer Box Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw18">
+        <xsd:annotation>
+          <xsd:documentation>3D Inner Box Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw19">
+        <xsd:annotation>
+          <xsd:documentation>Back Center Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shdw20">
+        <xsd:annotation>
+          <xsd:documentation>Front Bottom Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PresetShadowEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="prst" type="ST_PresetShadowVal" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Preset Shadow</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dist" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Distance</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dir" type="ST_PositiveFixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ReflectionEffect">
+    <xsd:attribute name="blurRad" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Blur Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="stA" type="ST_PositiveFixedPercentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Start Opacity</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="stPos" type="ST_PositiveFixedPercentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Start Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endA" type="ST_PositiveFixedPercentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>End Alpha</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endPos" type="ST_PositiveFixedPercentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>End Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dist" type="ST_PositiveCoordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Distance</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dir" type="ST_PositiveFixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fadeDir" type="ST_PositiveFixedAngle" use="optional" default="5400000">
+      <xsd:annotation>
+        <xsd:documentation>Fade Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sx" type="ST_Percentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sy" type="ST_Percentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="kx" type="ST_FixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Skew</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ky" type="ST_FixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Skew</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algn" type="ST_RectAlignment" use="optional" default="b">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rotWithShape" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Rotate With Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_RelativeOffsetEffect">
+    <xsd:attribute name="tx" type="ST_Percentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Offset X</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ty" type="ST_Percentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Offset Y</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SoftEdgesEffect">
+    <xsd:attribute name="rad" type="ST_PositiveCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Radius</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TintEffect">
+    <xsd:attribute name="hue" type="ST_PositiveFixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Hue</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="amt" type="ST_FixedPercentage" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Amount</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TransformEffect">
+    <xsd:attribute name="sx" type="ST_Percentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sy" type="ST_Percentage" use="optional" default="100000">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="kx" type="ST_FixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Skew</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ky" type="ST_FixedAngle" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Skew</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="tx" type="ST_Coordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Shift</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ty" type="ST_Coordinate" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Shift</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NoFillProperties"></xsd:complexType>
+  <xsd:complexType name="CT_SolidColorFillProperties">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="0" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_LinearShadeProperties">
+    <xsd:attribute name="ang" type="ST_PositiveFixedAngle" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Angle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="scaled" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Scaled</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PathShadeType">
+    <xsd:annotation>
+      <xsd:documentation>Path Shade Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="shape">
+        <xsd:annotation>
+          <xsd:documentation>Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="circle">
+        <xsd:annotation>
+          <xsd:documentation>Circle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rect">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PathShadeProperties">
+    <xsd:sequence>
+      <xsd:element name="fillToRect" type="CT_RelativeRect" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill To Rectangle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="path" type="ST_PathShadeType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Gradient Fill Path</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_ShadeProperties">
+    <xsd:choice>
+      <xsd:element name="lin" type="CT_LinearShadeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Linear Gradient Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="path" type="CT_PathShadeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Path Gradient</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_TileFlipMode">
+    <xsd:annotation>
+      <xsd:documentation>Tile Flip Mode</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="x">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="y">
+        <xsd:annotation>
+          <xsd:documentation>Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="xy">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal and Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_GradientStop">
+    <xsd:sequence>
+      <xsd:group ref="EG_ColorChoice" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="pos" type="ST_PositiveFixedPercentage" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GradientStopList">
+    <xsd:sequence>
+      <xsd:element name="gs" type="CT_GradientStop" minOccurs="2" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Gradient stops</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GradientFillProperties">
+    <xsd:sequence>
+      <xsd:element name="gsLst" type="CT_GradientStopList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gradient Stop List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_ShadeProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="tileRect" type="CT_RelativeRect" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tile Rectangle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="flip" type="ST_TileFlipMode" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Tile Flip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rotWithShape" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Rotate With Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TileInfoProperties">
+    <xsd:attribute name="tx" type="ST_Coordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="ty" type="ST_Coordinate" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sx" type="ST_Percentage" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sy" type="ST_Percentage" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="flip" type="ST_TileFlipMode" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Tile Flipping</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algn" type="ST_RectAlignment" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StretchInfoProperties">
+    <xsd:sequence>
+      <xsd:element name="fillRect" type="CT_RelativeRect" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill Rectangle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_FillModeProperties">
+    <xsd:choice>
+      <xsd:element name="tile" type="CT_TileInfoProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tile</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="stretch" type="CT_StretchInfoProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Stretch</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_BlipCompression">
+    <xsd:annotation>
+      <xsd:documentation>Blip Compression Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="email">
+        <xsd:annotation>
+          <xsd:documentation>Email Compression</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="screen">
+        <xsd:annotation>
+          <xsd:documentation>Screen Viewing Compression</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="print">
+        <xsd:annotation>
+          <xsd:documentation>Printing Compression</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hqprint">
+        <xsd:annotation>
+          <xsd:documentation>High Quality Printing Compression</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>No Compression</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Blip">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="alphaBiLevel" type="CT_AlphaBiLevelEffect" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Alpha Bi-Level Effect</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="alphaCeiling" type="CT_AlphaCeilingEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="alphaFloor" type="CT_AlphaFloorEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="alphaInv" type="CT_AlphaInverseEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="alphaMod" type="CT_AlphaModulateEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="alphaModFix" type="CT_AlphaModulateFixedEffect" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Alpha Modulate Fixed Effect</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="alphaRepl" type="CT_AlphaReplaceEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="biLevel" type="CT_BiLevelEffect" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Bi-Level (Black/White) Effect</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="blur" type="CT_BlurEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="clrChange" type="CT_ColorChangeEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="clrRepl" type="CT_ColorReplaceEffect" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Solid Color Replacement</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="duotone" type="CT_DuotoneEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="fillOverlay" type="CT_FillOverlayEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="grayscl" type="CT_GrayscaleEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="hsl" type="CT_HSLEffect" minOccurs="1" maxOccurs="1" />
+        <xsd:element name="lum" type="CT_LuminanceEffect" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Luminance Effect</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="tint" type="CT_TintEffect" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Tint Effect</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_Blob"></xsd:attributeGroup>
+    <xsd:attribute name="cstate" type="ST_BlipCompression" use="optional" default="none">
+      <xsd:annotation>
+        <xsd:documentation>Compression State</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BlipFillProperties">
+    <xsd:sequence>
+      <xsd:element name="blip" type="CT_Blip" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="srcRect" type="CT_RelativeRect" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Source Rectangle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_FillModeProperties" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="dpi" type="xsd:unsignedInt" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>DPI Setting</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rotWithShape" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Rotate With Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PresetPatternVal">
+    <xsd:annotation>
+      <xsd:documentation>Preset Pattern Value</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="pct5">
+        <xsd:annotation>
+          <xsd:documentation>5%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct10">
+        <xsd:annotation>
+          <xsd:documentation>10%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct20">
+        <xsd:annotation>
+          <xsd:documentation>20%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct25">
+        <xsd:annotation>
+          <xsd:documentation>25%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct30">
+        <xsd:annotation>
+          <xsd:documentation>30%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct40">
+        <xsd:annotation>
+          <xsd:documentation>40%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct50">
+        <xsd:annotation>
+          <xsd:documentation>50%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct60">
+        <xsd:annotation>
+          <xsd:documentation>60%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct70">
+        <xsd:annotation>
+          <xsd:documentation>70%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct75">
+        <xsd:annotation>
+          <xsd:documentation>75%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct80">
+        <xsd:annotation>
+          <xsd:documentation>80%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pct90">
+        <xsd:annotation>
+          <xsd:documentation>90%</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="horz">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="vert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltHorz">
+        <xsd:annotation>
+          <xsd:documentation>Light Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltVert">
+        <xsd:annotation>
+          <xsd:documentation>Light Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkHorz">
+        <xsd:annotation>
+          <xsd:documentation>Dark Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkVert">
+        <xsd:annotation>
+          <xsd:documentation>Dark Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="narHorz">
+        <xsd:annotation>
+          <xsd:documentation>Narrow Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="narVert">
+        <xsd:annotation>
+          <xsd:documentation>Narrow Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashHorz">
+        <xsd:annotation>
+          <xsd:documentation>Dashed Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashVert">
+        <xsd:annotation>
+          <xsd:documentation>Dashed Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cross">
+        <xsd:annotation>
+          <xsd:documentation>Cross</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dnDiag">
+        <xsd:annotation>
+          <xsd:documentation>Downward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="upDiag">
+        <xsd:annotation>
+          <xsd:documentation>Upward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltDnDiag">
+        <xsd:annotation>
+          <xsd:documentation>Light Downward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ltUpDiag">
+        <xsd:annotation>
+          <xsd:documentation>Light Upward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkDnDiag">
+        <xsd:annotation>
+          <xsd:documentation>Dark Downward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dkUpDiag">
+        <xsd:annotation>
+          <xsd:documentation>Dark Upward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wdDnDiag">
+        <xsd:annotation>
+          <xsd:documentation>Wide Downward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wdUpDiag">
+        <xsd:annotation>
+          <xsd:documentation>Wide Upward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashDnDiag">
+        <xsd:annotation>
+          <xsd:documentation>Dashed Downward Diagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashUpDiag">
+        <xsd:annotation>
+          <xsd:documentation>Dashed Upward DIagonal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diagCross">
+        <xsd:annotation>
+          <xsd:documentation>Diagonal Cross</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="smCheck">
+        <xsd:annotation>
+          <xsd:documentation>Small Checker Board</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lgCheck">
+        <xsd:annotation>
+          <xsd:documentation>Large Checker Board</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="smGrid">
+        <xsd:annotation>
+          <xsd:documentation>Small Grid</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lgGrid">
+        <xsd:annotation>
+          <xsd:documentation>Large Grid</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotGrid">
+        <xsd:annotation>
+          <xsd:documentation>Dotted Grid</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="smConfetti">
+        <xsd:annotation>
+          <xsd:documentation>Small Confetti</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lgConfetti">
+        <xsd:annotation>
+          <xsd:documentation>Large Confetti</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="horzBrick">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal Brick</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diagBrick">
+        <xsd:annotation>
+          <xsd:documentation>Diagonal Brick</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="solidDmnd">
+        <xsd:annotation>
+          <xsd:documentation>Solid Diamond</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="openDmnd">
+        <xsd:annotation>
+          <xsd:documentation>Open Diamond</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotDmnd">
+        <xsd:annotation>
+          <xsd:documentation>Dotted Diamond</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plaid">
+        <xsd:annotation>
+          <xsd:documentation>Plaid</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sphere">
+        <xsd:annotation>
+          <xsd:documentation>Sphere</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="weave">
+        <xsd:annotation>
+          <xsd:documentation>Weave</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="divot">
+        <xsd:annotation>
+          <xsd:documentation>Divot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shingle">
+        <xsd:annotation>
+          <xsd:documentation>Shingle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wave">
+        <xsd:annotation>
+          <xsd:documentation>Wave</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="trellis">
+        <xsd:annotation>
+          <xsd:documentation>Trellis</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="zigZag">
+        <xsd:annotation>
+          <xsd:documentation>Zig Zag</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PatternFillProperties">
+    <xsd:sequence>
+      <xsd:element name="fgClr" type="CT_Color" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Foreground color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bgClr" type="CT_Color" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Background color</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="prst" type="ST_PresetPatternVal" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Preset Pattern</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GroupFillProperties"></xsd:complexType>
+  <xsd:group name="EG_FillProperties">
+    <xsd:choice>
+      <xsd:element name="noFill" type="CT_NoFillProperties" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="solidFill" type="CT_SolidColorFillProperties" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="gradFill" type="CT_GradientFillProperties" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="blipFill" type="CT_BlipFillProperties" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="pattFill" type="CT_PatternFillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Pattern Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="grpFill" type="CT_GroupFillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Group Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_FillProperties">
+    <xsd:sequence>
+      <xsd:group ref="EG_FillProperties" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_FillEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_FillProperties" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_BlendMode">
+    <xsd:annotation>
+      <xsd:documentation>Blend Mode</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="over">
+        <xsd:annotation>
+          <xsd:documentation>Overlay</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mult">
+        <xsd:annotation>
+          <xsd:documentation>Multiply</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="screen">
+        <xsd:annotation>
+          <xsd:documentation>Screen</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="darken">
+        <xsd:annotation>
+          <xsd:documentation>Darken</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lighten">
+        <xsd:annotation>
+          <xsd:documentation>Lighten</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_FillOverlayEffect">
+    <xsd:sequence>
+      <xsd:group ref="EG_FillProperties" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+    <xsd:attribute name="blend" type="ST_BlendMode" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Blend</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_EffectReference">
+    <xsd:attribute name="ref" type="xsd:token">
+      <xsd:annotation>
+        <xsd:documentation>Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_Effect">
+    <xsd:choice>
+      <xsd:element name="cont" type="CT_EffectContainer" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect Container</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="effect" type="CT_EffectReference" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaBiLevel" type="CT_AlphaBiLevelEffect" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="alphaCeiling" type="CT_AlphaCeilingEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Ceiling Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaFloor" type="CT_AlphaFloorEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Floor Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaInv" type="CT_AlphaInverseEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Inverse Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaMod" type="CT_AlphaModulateEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Modulate Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaModFix" type="CT_AlphaModulateFixedEffect" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="alphaOutset" type="CT_AlphaOutsetEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Inset/Outset Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="alphaRepl" type="CT_AlphaReplaceEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Alpha Replace Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="biLevel" type="CT_BiLevelEffect" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="blend" type="CT_BlendEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Blend Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="blur" type="CT_BlurEffect" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="clrChange" type="CT_ColorChangeEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Color Change Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="clrRepl" type="CT_ColorReplaceEffect" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="duotone" type="CT_DuotoneEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Duotone Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fill" type="CT_FillEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fillOverlay" type="CT_FillOverlayEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill Overlay Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="glow" type="CT_GlowEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Glow Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="grayscl" type="CT_GrayscaleEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gray Scale Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hsl" type="CT_HSLEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hue Saturation Luminance Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="innerShdw" type="CT_InnerShadowEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Inner Shadow Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lum" type="CT_LuminanceEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Luminance</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="outerShdw" type="CT_OuterShadowEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Outer Shadow Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="prstShdw" type="CT_PresetShadowEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Preset Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="reflection" type="CT_ReflectionEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Reflection Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="relOff" type="CT_RelativeOffsetEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Relative Offset Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="softEdge" type="CT_SoftEdgesEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Soft Edge Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tint" type="CT_TintEffect" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="xfrm" type="CT_TransformEffect" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Transform Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_EffectContainerType">
+    <xsd:annotation>
+      <xsd:documentation>Effect Container Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="sib">
+        <xsd:annotation>
+          <xsd:documentation>Sibling</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tree">
+        <xsd:annotation>
+          <xsd:documentation>Tree</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_EffectContainer">
+    <xsd:group ref="EG_Effect" minOccurs="0" maxOccurs="unbounded" />
+    <xsd:attribute name="type" type="ST_EffectContainerType" use="optional" default="sib">
+      <xsd:annotation>
+        <xsd:documentation>Effect Container Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="name" type="xsd:token" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AlphaModulateEffect">
+    <xsd:sequence>
+      <xsd:element name="cont" type="CT_EffectContainer" minOccurs="1" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BlendEffect">
+    <xsd:sequence>
+      <xsd:element name="cont" type="CT_EffectContainer" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect to blend</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="blend" type="ST_BlendMode" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Blend Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_EffectList">
+    <xsd:sequence>
+      <xsd:element name="blur" type="CT_BlurEffect" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Blur Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fillOverlay" type="CT_FillOverlayEffect" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="glow" type="CT_GlowEffect" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="innerShdw" type="CT_InnerShadowEffect" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="outerShdw" type="CT_OuterShadowEffect" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="prstShdw" type="CT_PresetShadowEffect" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="reflection" type="CT_ReflectionEffect" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="softEdge" type="CT_SoftEdgesEffect" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_EffectProperties">
+    <xsd:choice>
+      <xsd:element name="effectLst" type="CT_EffectList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect Container</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="effectDag" type="CT_EffectContainer" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect Container</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_EffectProperties">
+    <xsd:sequence>
+      <xsd:group ref="EG_EffectProperties" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="blip" type="CT_Blip" />
+</xsd:schema>
