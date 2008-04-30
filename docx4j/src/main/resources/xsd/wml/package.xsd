@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" 
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" 
+	attributeFormDefault="qualified" elementFormDefault="qualified" 
+	targetNamespace="http://schemas.microsoft.com/office/2006/xmlPackage" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" 
+	jaxb:version="2.1">
+<!-- 	jaxb:extensionBindingPrefixes="xjc" -->
+	
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	  schemaLocation="wml.xsd" />
+	
+	<!-- You need one schema document per namespace: 
+		
+	http://lists.xml.org/archives/xml-dev/200606/msg00155.html -->
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<!--
+			<jaxb:globalBindings generateElementClass="true"/>
+			-->
+			<!--
+			<jaxb:globalBindings>
+			<xjc:simple/>
+			</jaxb:globalBindings> 
+			-->
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+					<!-- Makes no difference. Could comment out. 
+					<jaxb:javaType name="java.lang.String" xmlType="xsd:string"
+					parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+					printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+					<jaxb:javaType name="java.lang.String" xmlType="xsd:string"
+					parseMethod="javax.xml.bind.DatatypeConverter.parseString"
+					printMethod="javax.xml.bind.DatatypeConverter.printString"/>
+					-->
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				<jaxb:package name="org.docx4j.wml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
+	
+  <xsd:element name="package">
+		<xsd:annotation>
+			<xsd:documentation>Based on Word 2007's ActiveDocument.WordOpenXML.
+				Used for PDF rendering; see
+				org.docx4j.openpackaging.packages.WordprocessingMLPackage.pdf()
+			Also used in docx4all for view source.</xsd:documentation>
+		</xsd:annotation>	  
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element maxOccurs="unbounded" name="part">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element name="xmlData">
+                <xsd:complexType>
+                  <xsd:sequence>
+                    <xsd:element minOccurs="0" ref="w:styles" />
+                    <xsd:element minOccurs="0" ref="w:document" />
+                  </xsd:sequence>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+            <xsd:attribute ref="pkg:name" use="required" />
+            <xsd:attribute ref="pkg:contentType" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:attribute name="name" type="xsd:string" />
+  <xsd:attribute name="contentType" type="xsd:string" />
+</xsd:schema>
