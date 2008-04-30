@@ -1,0 +1,623 @@
+diff -u -r ./org/docx4j/wml/Id.java ../patched-sources/org/docx4j/wml/Id.java
+--- ./org/docx4j/wml/Id.java	2008-04-28 18:29:07.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/Id.java	2008-04-28 18:31:45.000000000 +1000
+@@ -114,4 +114,20 @@
+         setParent(parent);
+     }
+ 
++    public boolean equals(Object obj) {
++    	if (obj instanceof Id) {
++	    		return val.equals( ((Id)obj).getVal() ); 
++	    	} else {
++	    		return false;
++	    	}
++	    }
++	   
++	    public int hashCode() {
++	    	
++	    	// Natural and good enough...
++	    	return val.intValue();	    	
++	    }
++        
++    
++    
+ }
+diff -u -r ./org/docx4j/wml/P.java ../patched-sources/org/docx4j/wml/P.java
+--- ./org/docx4j/wml/P.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/P.java	2008-04-28 18:31:45.000000000 +1000
+@@ -32,6 +32,8 @@
+ import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
++
++import org.apache.log4j.Logger;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+ 
+ 
+@@ -344,4 +348,54 @@
+         setParent(parent);
+     }
+ 
++    // Not generated
++    /** Get the text content of all runs in the P */
++    public String toString() {
++
++    	StringBuilder result = new StringBuilder();
++    	
++    	List<Object> children = getParagraphContent();
++    	
++//    	System.out.println("p.toString");
++    	
++		for (Object o : children ) {					
++//			System.out.println("  " + o.getClass().getName() );
++			if ( o instanceof org.docx4j.wml.R) {
++//		    	System.out.println("Hit R");
++				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
++		    	List runContent = run.getRunContent();
++				for (Object o2 : runContent ) {					
++					if ( o2 instanceof javax.xml.bind.JAXBElement) {
++						// TODO - unmarshall directly to Text.
++						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
++//					    	System.out.println("Found Text");
++							org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o2).getValue();
++							result.append( t.getValue() );					
++						}
++					} else {
++//				    	System.out.println(o2.getClass().getName());						
++					}
++				}
++			} 
++		}
++		return result.toString();
++    	
++    }
++
++    public void replaceElement(Object current, List insertions) {
++
++    	int index = paragraphContent.indexOf(current);    	
++    	if (index > -1 ) {    		
++    		paragraphContent.addAll(index+1, insertions);  
++    		Object removed = paragraphContent.remove(index);
++    		// sanity check
++    		if (!current.equals(removed)) {
++    			log.error("removed wrong object?");
++    		}    		
++    	} else {
++    		// Not found
++    		log.error("Couldn't find replacement target.");
++    	}
++    }    
++    
+ }
+diff -u -r ./org/docx4j/wml/R.java ../patched-sources/org/docx4j/wml/R.java
+--- ./org/docx4j/wml/R.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/R.java	2008-04-28 18:31:45.000000000 +1000
+@@ -311,6 +311,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "annotationRef")
+     public static class AnnotationRef
+         implements Child
+     {
+@@ -365,6 +366,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "continuationSeparator")
+     public static class ContinuationSeparator
+         implements Child
+     {
+@@ -419,6 +421,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "cr")    
+     public static class Cr
+         implements Child
+     {
+@@ -473,6 +476,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "dayLong")    
+     public static class DayLong
+         implements Child
+     {
+@@ -527,6 +531,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "dayShort")    
+     public static class DayShort
+         implements Child
+     {
+@@ -581,6 +586,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "endnoteRef")    
+     public static class EndnoteRef
+         implements Child
+     {
+@@ -635,6 +641,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "footnoteRef")    
+     public static class FootnoteRef
+         implements Child
+     {
+@@ -689,6 +696,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "lastRenderedPageBreak")    
+     public static class LastRenderedPageBreak
+         implements Child
+     {
+@@ -743,6 +751,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "monthLong")    
+     public static class MonthLong
+         implements Child
+     {
+@@ -797,6 +806,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "monthShort")        
+     public static class MonthShort
+         implements Child
+     {
+@@ -851,6 +861,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "noBreakHyphen")        
+     public static class NoBreakHyphen
+         implements Child
+     {
+@@ -905,6 +916,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "pgNum")            
+     public static class PgNum
+         implements Child
+     {
+@@ -962,6 +974,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "ptab")            
+     public static class Ptab
+         implements Child
+     {
+@@ -1094,6 +1107,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "separator")            
+     public static class Separator
+         implements Child
+     {
+@@ -1148,6 +1162,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "softHyphen")            
+     public static class SoftHyphen
+         implements Child
+     {
+@@ -1204,6 +1219,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "sym")            
+     public static class Sym
+         implements Child
+     {
+@@ -1310,6 +1326,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "tab")            
+     public static class Tab
+         implements Child
+     {
+@@ -1364,6 +1381,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "yearLong")            
+     public static class YearLong
+         implements Child
+     {
+@@ -1418,6 +1436,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "yearShort")            
+     public static class YearShort
+         implements Child
+     {
+diff -u -r ./org/docx4j/wml/SdtBlock.java ../patched-sources/org/docx4j/wml/SdtBlock.java
+--- ./org/docx4j/wml/SdtBlock.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/SdtBlock.java	2008-04-28 18:31:45.000000000 +1000
+@@ -20,11 +20,15 @@
+ 
+ package org.docx4j.wml;
+ 
++import javax.xml.bind.JAXBElement;
+ import javax.xml.bind.Unmarshaller;
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
++
++import org.apache.log4j.Logger;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+ 
+ 
+@@ -55,10 +59,13 @@
+     "sdtEndPr",
+     "sdtContent"
+ })
++@XmlRootElement(name = "sdt")
+ public class SdtBlock
+     implements Child
+ {
+ 
++	private static Logger log = Logger.getLogger(SdtBlock.class);		
++	
+     protected SdtPr sdtPr;
+     protected CTSdtEndPr sdtEndPr;
+     protected SdtContentBlock sdtContent;
+@@ -163,4 +170,103 @@
+         setParent(parent);
+     }
+ 
++    /* Replace any nested content controls with their content. */
++    public void flatten() {
++    	 
++		/*    	
++		<w:sdt xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
++			<w:sdtPr><w:tag w:val="30" /><w:id w:val="871785936" /></w:sdtPr>
++			<w:sdtContent>
++				<w:p w:rsidR="00283267" w:rsidRDefault="00E8712C">
++					<w:r><w:t>S</w:t></w:r>
++					<w:sdt><w:sdtPr><w:tag w:val="0" /><w:id w:val="589321610" /></w:sdtPr><w:sdtContent><w:r><w:t>Para1</w:t></w:r></w:sdtContent></w:sdt>
++				</w:p>
++			</w:sdtContent>
++		</w:sdt>
++		*/
++    	
++		log.info("Flattening sdt: " + sdtPr.getId().toString() );
++		boolean startAgain;
++    	do {
++        	startAgain = false;
++//        	java.util.Iterator it = sdtContent.getBlockLevelElements().iterator();
++//	    	while ( it.hasNext() ) {
++//	    		
++//	    		Object o = it.next();
++	    		
++	    	for (Object o : sdtContent.getEGContentBlockContent() ) {
++	    		
++	    		if (o instanceof SdtBlock) { // A block level SDT - but this doesn't happen
++	    			log.debug("Interesting .. detected BLOCK level nested sdt: " + ((SdtBlock)o).sdtPr.getId().toString() );
++	    			sdtContent.replaceElement(o, ((SdtBlock)o).getSdtContent().getEGContentBlockContent() );
++	    			// need to refresh the list we are iterating
++	    			startAgain = true;
++	    			break;
++	    		} else if ( o instanceof org.docx4j.wml.P ) {
++    				log.debug( "Paragraph object: ");
++    				org.docx4j.wml.P p = (org.docx4j.wml.P)o;   				
++    				flattenP(p);
++ 	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
++	    			
++//	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
++//	    				log.debug( "Paragraph object: ");
++//	    				org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
++//	    				
++//	    				flattenP(p);
++//	    				// Is this necessary?
++//	    				((JAXBElement)o).setValue(p);
++//	    			} else {
++	    				
++	    				log.debug( "JAXB: " + ((JAXBElement)o).getValue().getClass().getName() );
++	    				
++//	    			}
++	    				
++	    		} else {
++	    			log.debug(o.getClass().getName() + ".. not an sdt");
++	    		}
++	    	}
++    	} while (startAgain);
++    }
++    	
++    public void flattenP(org.docx4j.wml.P p) {
++    	
++		/*    	
++				<w:p w:rsidR="00283267" w:rsidRDefault="00E8712C">
++					<w:r><w:t>S</w:t></w:r>
++					<w:sdt><w:sdtPr><w:tag w:val="0" /><w:id w:val="589321610" /></w:sdtPr><w:sdtContent><w:r><w:t>Para1</w:t></w:r></w:sdtContent></w:sdt>
++				</w:p>
++		*/
++    	
++		log.info("Flattening nested p " );
++		boolean startAgain;
++    	do {
++        	startAgain = false;
++	    	for (Object o : p.getParagraphContent() ) {
++	    		
++	    		if (o instanceof SdtRun) {  // This code path not used
++	    			log.debug(".. detected nested sdt " );
++	    			p.replaceElement(o, ((SdtRun)o).getSdtContent().getParagraphContent() );
++	    			// need to refresh the list we are iterating
++	    			startAgain = true;
++	    			break;
++	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
++	    			
++	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtRun") ) {
++	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. detected SdtRun");
++	    				org.docx4j.wml.SdtRun sdtRun = (org.docx4j.wml.SdtRun)((JAXBElement)o).getValue();
++	    				p.replaceElement(o, sdtRun.getSdtContent().getParagraphContent() );
++	    			} else {
++	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. not an sdt");	    				
++	    			}
++	    				
++	    		} else {
++	    			log.debug(o.getClass().getName() + ".. not an sdt");
++	    		}
++	    	}
++    	} while (startAgain);
++    	
++    	
++    }
++    
++    
+ }
+diff -u -r ./org/docx4j/wml/SdtContentBlock.java ../patched-sources/org/docx4j/wml/SdtContentBlock.java
+--- ./org/docx4j/wml/SdtContentBlock.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/SdtContentBlock.java	2008-04-28 18:31:45.000000000 +1000
+@@ -28,8 +28,11 @@
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlElementRef;
+ import javax.xml.bind.annotation.XmlElementRefs;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
++
++import org.apache.log4j.Logger;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+ 
+ 
+@@ -172,4 +178,39 @@
+         setParent(parent);
+     }
+ 
++    public void replaceElement(Object current, List insertions) {
++
++    	int index = egContentBlockContent.indexOf(current);    	
++    	if (index > -1 ) {    		
++    		egContentBlockContent.addAll(index+1, insertions);  
++    		Object removed = egContentBlockContent.remove(index);
++    		// sanity check
++    		if (!current.equals(removed)) {
++    			log.error("removed wrong object?");
++    		}    		
++    	} else {
++    		// Not found
++    		log.error("Couldn't find replacement target.");
++    	}
++
++/*    	
++    	List<Object> newList = new ArrayList<Object>();
++    	
++    	for (Object o : getBlockLevelElements() ) {
++    		
++    		if (o.equals(current)) {
++    			log.debug(".. found target ");
++    			for (Object o2 : insertions ) {
++    				newList.add(o2);
++        			log.debug(".. .. inserted ");
++    			}
++    		} else {
++				newList.add(o);
++    		}
++    	}
++    	
++    	blockLevelElements = newList;
++    	*/ 
++    }
++    
+ }
+diff -u -r ./org/docx4j/wml/SdtPr.java ../patched-sources/org/docx4j/wml/SdtPr.java
+--- ./org/docx4j/wml/SdtPr.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/SdtPr.java	2008-04-28 18:31:45.000000000 +1000
+@@ -29,10 +29,12 @@
+ import javax.xml.bind.annotation.XmlAttribute;
+ import javax.xml.bind.annotation.XmlElementRef;
+ import javax.xml.bind.annotation.XmlElementRefs;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+ 
++import org.apache.log4j.Logger;
+ 
+ /**
+  * <p>Java class for CT_SdtPr complex type.
+@@ -208,6 +213,109 @@
+         }
+         return this.rPrOrAliasOrLock;
+     }
++    
++    /**
++     * Gets the value of the id property.
++     * 
++     * @return
++     *     possible object is
++     *     {@link Id }
++     *     
++     */
++    public Id getId() {
++    	
++    	for (Object o : getRPrOrAliasOrLock()) {
++    		if ( o instanceof Id ) {
++    			log.debug("found id");
++    			return (Id)o;
++    		} 
++    	}
++    	
++        return null;
++    }
++
++    /**
++     * Sets the value of the id property.
++     * 
++     * @param value
++     *     allowed object is
++     *     {@link Id }
++     *     
++     */
++    public void setId(Id value) {
++    	
++    	Id existingId = getId(); 
++    	
++    	if (existingId!=null) {
++    		if (!existingId.equals(value)) {
++    			log.debug("Changing SDT ID from " + existingId + " to " + value);
++        		rPrOrAliasOrLock.remove(existingId);
++        		rPrOrAliasOrLock.add(value);
++    		}    	
++    		// else - they are the same, so do nothing
++    	} else {
++    		//ObjectFactory factory = new ObjectFactory();
++    		//JAXBElement idWrapper = factory.createSdtPrId(value);
++    		rPrOrAliasOrLock.add(value);
++    	}
++    }
++    
++    // Not generated!
++    public void setId() {
++
++    	Id id = new Id();
++    	id.setVal( java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt())) );
++    	setId(id);    	
++    }
++
++    /**
++     * Gets the value of the tag property.
++     * 
++     * @return
++     *     possible object is
++     *     {@link SdtPr.Tag }
++     *     
++     */
++    public Tag getTag() {
++    	
++    	for (Object o : getRPrOrAliasOrLock()) {
++    		if ( o instanceof Tag ) {
++    			log.debug("found tag");
++    			return (Tag)o;
++    		} 
++    	}
++    	
++        return null;
++    }
++
++    /**
++     * Sets the value of the tag property.
++     * 
++     * @param value
++     *     allowed object is
++     *     {@link SdtPr.Tag }
++     *     
++     */
++    public void setTag(Tag value) {
++        
++    	Tag existingTag = getTag(); 
++    	
++    	if (existingTag!=null) {
++    		if (!existingTag.equals(value)) {
++    			log.debug("Changing SDT ID from " + existingTag + " to " + value);
++        		rPrOrAliasOrLock.remove(existingTag);
++        		rPrOrAliasOrLock.add(value);
++    		}
++    		// else - they are the same, so do nothing
++    	} else {
++    		//ObjectFactory factory = new ObjectFactory();
++    		//JAXBElement idWrapper = factory.createSdtPrId(value);
++    		rPrOrAliasOrLock.add(value);
++    	}
++        
++        
++    }
++    
+ 
+     /**
+      * Gets the parent object in the object tree representing the unmarshalled xml document.
+diff -u -r ./org/docx4j/wml/Styles.java ../patched-sources/org/docx4j/wml/Styles.java
+--- ./org/docx4j/wml/Styles.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/Styles.java	2008-04-28 18:31:45.000000000 +1000
+@@ -1093,7 +1093,12 @@
+              *     
+              */
+             public Boolean isQFormat() {
+-                return qFormat;
++            	
++            	if (qFormat==null) {
++            		return ((Styles.LatentStyles)this.parent).isDefQFormat();
++            	} else {            	
++            		return qFormat;
++            	}
+             }
+ 
+             /**
+@@ -1556,6 +1561,10 @@
+          *     
+          */
+         public BooleanDefaultTrue getQFormat() {
++        	if (qFormat==null) {
++        		qFormat = new BooleanDefaultTrue();
++        		qFormat.setVal( Boolean.FALSE);
++        	}
+             return qFormat;
+         }
+ 
+diff -u -r ./org/docx4j/wml/Tbl.java ../patched-sources/org/docx4j/wml/Tbl.java
+--- ./org/docx4j/wml/Tbl.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/Tbl.java	2008-04-28 18:31:45.000000000 +1000
+@@ -29,6 +29,7 @@
+ import javax.xml.bind.annotation.XmlElement;
+ import javax.xml.bind.annotation.XmlElementRef;
+ import javax.xml.bind.annotation.XmlElementRefs;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+diff -u -r ./org/docx4j/wml/Text.java ../patched-sources/org/docx4j/wml/Text.java
+--- ./org/docx4j/wml/Text.java	2008-04-28 18:29:08.000000000 +1000
++++ ../patched-sources/org/docx4j/wml/Text.java	2008-04-28 18:31:45.000000000 +1000
+@@ -23,6 +23,7 @@
+ import javax.xml.bind.Unmarshaller;
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlAttribute;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+@@ -53,6 +54,7 @@
+ @XmlType(name = "CT_Text", propOrder = {
+     "value"
+ })
++@XmlRootElement(name = "t")
+ public class Text
+     implements Child
+ {
+
