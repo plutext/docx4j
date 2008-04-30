@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://purl.org/dc/dcmitype/"
+           targetNamespace="http://purl.org/dc/dcmitype/"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+  <xs:annotation>
+    <xs:documentation xml:lang="en">
+      DCMI Type Vocabulary XML Schema
+      XML Schema for http://purl.org/dc/dcmitype/ namespace
+
+      Created 2003-04-02
+
+      Created by 
+
+      Tim Cole (t-cole3@uiuc.edu)
+      Tom Habing (thabing@uiuc.edu)
+      Jane Hunter (jane@dstc.edu.au)
+      Pete Johnston (p.johnston@ukoln.ac.uk),
+      Carl Lagoze (lagoze@cs.cornell.edu)
+
+      This schema defines a simpleType which enumerates
+      the allowable values for the DCMI Type Vocabulary.
+    </xs:documentation>
+
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				<jaxb:package name="org.docx4j.docProps.core.dc.terms"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+ 
+  </xs:annotation>
+
+
+  <xs:simpleType name="DCMIType">
+     <xs:union>
+        <xs:simpleType>
+           <xs:restriction base="xs:Name">
+		<xs:enumeration value="Collection"/>
+		<xs:enumeration value="Dataset"/>
+		<xs:enumeration value="Event"/>
+		<xs:enumeration value="Image"/>
+		<xs:enumeration value="InteractiveResource"/>
+		<xs:enumeration value="Service"/>
+		<xs:enumeration value="Software"/>
+		<xs:enumeration value="Sound"/>
+		<xs:enumeration value="Text"/>
+		<xs:enumeration value="PhysicalObject"/>
+            </xs:restriction>
+        </xs:simpleType> 
+     </xs:union>
+  </xs:simpleType>
+
+</xs:schema>
