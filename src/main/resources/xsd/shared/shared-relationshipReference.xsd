@@ -1,31 +1,54 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" blockDefault="#all" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <xsd:simpleType name="ST_RelationshipId">
-    <xsd:annotation>
-      <xsd:documentation>Explicit Relationship ID</xsd:documentation>
-    </xsd:annotation>
-    <xsd:restriction base="xsd:string" />
-  </xsd:simpleType>
-  <xsd:attribute name="id" type="ST_RelationshipId">
-    <xsd:annotation>
-      <xsd:documentation>Relationship ID</xsd:documentation>
-    </xsd:annotation>
-  </xsd:attribute>
-  <xsd:attribute name="embed" type="ST_RelationshipId">
-    <xsd:annotation>
-      <xsd:documentation>Embedded Image Relationship Target</xsd:documentation>
-    </xsd:annotation>
-  </xsd:attribute>
-  <xsd:attribute name="link" type="ST_RelationshipId" />
-  <xsd:attribute name="dm" type="ST_RelationshipId" default="" />
-  <xsd:attribute name="lo" type="ST_RelationshipId" default="" />
-  <xsd:attribute name="qs" type="ST_RelationshipId" default="" />
-  <xsd:attribute name="cs" type="ST_RelationshipId" default="" />
-  <xsd:attribute name="blip" type="ST_RelationshipId" default="" />
-  <xsd:attribute name="pict" type="ST_RelationshipId"></xsd:attribute>
-  <xsd:attribute name="href" type="ST_RelationshipId">
-    <xsd:annotation>
-      <xsd:documentation>Hyperlink Target Relationship ID</xsd:documentation>
-    </xsd:annotation>
-  </xsd:attribute>
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified"
+	targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	blockDefault="#all" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.rel"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+	
+	
+	<xsd:simpleType name="ST_RelationshipId">
+		<xsd:annotation>
+			<xsd:documentation>Explicit Relationship ID</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:attribute name="id" type="ST_RelationshipId">
+		<xsd:annotation>
+			<xsd:documentation>Relationship ID</xsd:documentation>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:attribute name="embed" type="ST_RelationshipId">
+		<xsd:annotation>
+			<xsd:documentation>Embedded Image Relationship
+				Target</xsd:documentation>
+		</xsd:annotation>
+	</xsd:attribute>
+	<xsd:attribute name="link" type="ST_RelationshipId"/>
+	<xsd:attribute name="dm" type="ST_RelationshipId" default=""/>
+	<xsd:attribute name="lo" type="ST_RelationshipId" default=""/>
+	<xsd:attribute name="qs" type="ST_RelationshipId" default=""/>
+	<xsd:attribute name="cs" type="ST_RelationshipId" default=""/>
+	<xsd:attribute name="blip" type="ST_RelationshipId" default=""/>
+	<xsd:attribute name="pict" type="ST_RelationshipId"></xsd:attribute>
+	<xsd:attribute name="href" type="ST_RelationshipId">
+		<xsd:annotation>
+			<xsd:documentation>Hyperlink Target Relationship ID</xsd:documentation>
+		</xsd:annotation>
+	</xsd:attribute>
 </xsd:schema>
