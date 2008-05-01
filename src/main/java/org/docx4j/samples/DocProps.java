@@ -98,7 +98,7 @@ public class DocProps {
 		// .. set it up
 		newProp.setName("mynewcustomprop");
 		newProp.setFmtid(docPropsCustomPart.fmtidValLpwstr ); // Magic string
-		newProp.setPid(3); // TODO - add method to allocate next number
+		newProp.setPid( customProps.getNextId() ); 
 		newProp.setLpwstr("SomeValue");
 		
 		// .. add it
