@@ -47,6 +47,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.openpackaging.parts.relationships.TargetMode;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -304,19 +305,48 @@ public class LoadFromZipFile extends Load {
 	private void getPart(ZipFile zf, Package pkg, RelationshipsPart rp, Relationship r)
 			throws Docx4JException, InvalidFormatException {
 		
-		Base source = r.getSource();
-		String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();		
+		Base source = null;
+		String resolvedPartUri = null;
+		
+		if (r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+			
+			// Usual case
+			
+			source = r.getSource();
+			resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();		
 
-		// Now drop leading "/'
-		resolvedPartUri = resolvedPartUri.substring(1);				
+			// Now drop leading "/'
+			resolvedPartUri = resolvedPartUri.substring(1);				
 
-		// Now normalise it .. ie abc/def/../ghi
-		// becomes abc/ghi
-		// Maybe this isn't necessary with a zip file,
-		// - ZipFile class may be smart enough to do it.
-		// But it is certainly necessary in the JCR case.
-//		resolvedPartUri = (new java.net.URI(resolvedPartUri)).normalize().toString();
-//		log.info("Normalised, it is " + resolvedPartUri );				
+			// Now normalise it .. ie abc/def/../ghi
+			// becomes abc/ghi
+			// Maybe this isn't necessary with a zip file,
+			// - ZipFile class may be smart enough to do it.
+			// But it is certainly necessary in the JCR case.
+//			resolvedPartUri = (new java.net.URI(resolvedPartUri)).normalize().toString();
+//			log.info("Normalised, it is " + resolvedPartUri );				
+			
+		} else {			
+			// EXTERNAL
+			/* "When set to External, the target attribute may be a relative
+			 *  reference or a URI.  If the target attribute is a relative
+			 *  reference, then that reference is interpreted relative to the
+			 *  location of the package."
+			 */
+
+			log.warn("Encountered external resource " + r.getTargetURI() 
+					   + " of type " + r.getRelationshipType() );
+			
+			// As of 1 May 2008, we don't do anything with these yet.
+			// No need to create a Part out of them until such time as
+			// we need to read the contents. (External resources don't
+			// seem to necessarily be described in [ContentTypes].xml )
+			
+			// When the document is saved, the relationship is simply
+			// written again.
+			
+			return;
+		}
 		
 		String relationshipType = r.getRelationshipType();		
 			

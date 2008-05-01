@@ -43,6 +43,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.openpackaging.parts.relationships.TargetMode;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
@@ -231,6 +232,20 @@ public class SaveToZipFile {
 		for (Iterator it = rp.iterator(); it.hasNext(); ) {
 			Relationship r = (Relationship)it.next();
 			log.info("For Relationship Id=" + r.getId() + " Source is " + r.getSource().getPartName() + ", Target is " + r.getTargetURI() );
+			
+			if (!r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+				
+				// ie its EXTERNAL
+				// As at 1 May 2008, we don't have a Part for these;
+				// there is just the relationship.
+
+				log.warn("Encountered external resource " + r.getTargetURI() 
+						   + " of type " + r.getRelationshipType() );
+				
+				// So
+				continue;				
+			}
+			
 			try {
 				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 
