@@ -23,26 +23,31 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
+import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.dom4j.Document;
 
 
 
 public final class GlossaryDocumentPart extends DocumentPart  {
 
 	
-	// A glossary document is a collection of docPart objects
+	private static Logger log = Logger.getLogger(GlossaryDocumentPart.class);
 	
-			// TO BE IMPLEMENTED
-	
-	/* A copy of the original document, for debug purposes only */
-	private org.dom4j.Document document;
-
 	public GlossaryDocumentPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init();		
+	}
+	
+	public GlossaryDocumentPart() throws InvalidFormatException {
+		super(new PartName("/word/glossary/document.xml"));
+		init();
+	}
+
+	public void init() {
 		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
@@ -52,15 +57,44 @@ public final class GlossaryDocumentPart extends DocumentPart  {
 		setRelationshipType(Namespaces.GLOSSARY_DOCUMENT);
 		
 	}
-	
-	
-    public void marshal( org.w3c.dom.Node node )
-    throws JAXBException {}
+		
+    /**
+     * Unmarshal XML data from the specified InputStream and return the 
+     * resulting content tree.  Validation event location information may
+     * be incomplete when using this form of the unmarshal API.
+     *
+     * <p>
+     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
+     * 
+     * @param is the InputStream to unmarshal XML data from
+     * @return the newly created root object of the java content tree 
+     *
+     * @throws JAXBException 
+     *     If any unexpected errors occur while unmarshalling
+     */
+    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+    	
+		try {
+		    		    
+			Unmarshaller u = jc.createUnmarshaller();
 
-    
-    public  Object unmarshal( java.io.InputStream is ) throws JAXBException {
-		// TODO Auto-generated method stub
-    	return null;
-	}
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);			
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			
+//			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );			
+//			jaxbElement = (org.docx4j.wml.Document)root.getValue();
+			
+			jaxbElement =  u.unmarshal( is );
+			return jaxbElement;
+			
+			//System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+
+		} catch (Exception e ) {
+			e.printStackTrace();
+			return null;
+		}
+    	
+    	
+    }
 	
 }
