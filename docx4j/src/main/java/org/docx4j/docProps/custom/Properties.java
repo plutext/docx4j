@@ -143,6 +143,22 @@ public class Properties {
         }
         return this.property;
     }
+    
+    public int getNextId() {
+    	
+    	int id = 1;
+    	
+    	for( Property prop : getProperty() ) {
+    		
+    		if (prop.getPid() > id ) {
+    			id = prop.getPid() + 1;
+    		}
+    		
+    	}
+    	
+    	return id;
+    	
+    }
 
 
     /**
