@@ -141,6 +141,10 @@ public class Package extends Base {
 			try {
 				Part docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
 				this.addTargetPart(docPropsCorePart);
+				org.docx4j.docProps.core.ObjectFactory factory = 
+					new org.docx4j.docProps.core.ObjectFactory();				
+				org.docx4j.docProps.core.CoreProperties properties = factory.createCoreProperties();
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJaxbElement((Object)properties);
 			} catch (InvalidFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -154,6 +158,11 @@ public class Package extends Base {
 			try {
 				Part docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
 				this.addTargetPart(docPropsExtendedPart);
+				org.docx4j.docProps.extended.ObjectFactory factory = 
+					new org.docx4j.docProps.extended.ObjectFactory();				
+				org.docx4j.docProps.extended.Properties properties = factory.createProperties();
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJaxbElement((Object)properties);
+				
 			} catch (InvalidFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -168,6 +177,13 @@ public class Package extends Base {
 			try {
 				Part docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
 				this.addTargetPart(docPropsCustomPart);
+				
+				org.docx4j.docProps.custom.ObjectFactory factory = 
+					new org.docx4j.docProps.custom.ObjectFactory();
+				
+				org.docx4j.docProps.custom.Properties properties = factory.createProperties();
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJaxbElement((Object)properties);
+				
 			} catch (InvalidFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
