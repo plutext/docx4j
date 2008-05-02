@@ -615,14 +615,19 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 			removeRsids = new Boolean(val);
 		}
 		
+		Boolean tidyForDocx4all = Boolean.FALSE;		
+		public void setTidyForDocx4all(boolean val) {
+			tidyForDocx4all = new Boolean(val);
+		}
+		
+		
 		Map<String, Object> getSettings() {
 			Map<String, Object> settings = new java.util.HashMap<String, Object>();
 			
 			settings.put("removeProofErrors", removeProofErrors);
 			settings.put("removeContentControls", removeContentControls);
 			settings.put("removeRsids", removeRsids);
-			
-			
+			settings.put("tidyForDocx4all", tidyForDocx4all);
 			
 			return settings;
 		}

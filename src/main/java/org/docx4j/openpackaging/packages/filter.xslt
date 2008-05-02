@@ -9,8 +9,9 @@
         xmlns:msxsl="urn:schemas-microsoft-com:xslt"
    	xmlns:ext="http://www.xmllab.net/wordml2html/ext"
 	xmlns:java="http://xml.apache.org/xalan/java"
+	xmlns:xml="http://www.w3.org/XML/1998/namespace"
 	version="1.0"
-        exclude-result-prefixes="java msxsl ext w o v WX aml w10">	
+        exclude-result-prefixes="java msxsl ext o v WX aml w10">	
 
 	
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
@@ -20,13 +21,70 @@
 <xsl:param name="removeProofErrors"/> <!-- select="'passed in'"-->	
 <xsl:param name="removeContentControls"/>
 <xsl:param name="removeRsids"/>	
-	
+<xsl:param name="tidyForDocx4all"/> <!--  this cleans up stuff not specifically supported by docx4all -->	
 		
 <xsl:template match="@*|node()">
   <xsl:copy>
     <xsl:apply-templates select="@*|node()"/>
   </xsl:copy>
 </xsl:template>
+
+
+<xsl:template match="w:hyperlink">
+	
+	<!--  <w:hyperlink ns2:id="rId4" w:history="true">
+                            <w:r>
+<w:rPr>
+    <w:rStyle w:val="Hyperlink"/>
+</w:rPr>
+<w:t>http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=CELEX:12002E081:EN:NOT</w:t>
+                            </w:r>
+                        </w:hyperlink>
+                         -->
+	
+	<xsl:choose>
+		<xsl:when test="$tidyForDocx4all=true()">
+			<xsl:apply-templates select="node()"/>
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
+
+<xsl:template match="w:lastRenderedPageBreak">
+	
+	<xsl:choose>
+		<xsl:when test="$tidyForDocx4all=true()">
+			<!-- ignore it -->
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
+
+<xsl:template match="w:tab">
+	
+	<xsl:choose>
+		<xsl:when test="$tidyForDocx4all=true()">
+			  <!-- ignore it, since replacing with w:t
+			       or <w:t xml:space="preserve"> causes an exception. -->
+		</xsl:when>
+		<xsl:otherwise>
+		  <xsl:copy>
+			<xsl:apply-templates select="@*|node()"/>
+		  </xsl:copy>
+		</xsl:otherwise>
+	</xsl:choose>
+	
+</xsl:template>	
 
 <xsl:template match="w:proofErr">
 	
