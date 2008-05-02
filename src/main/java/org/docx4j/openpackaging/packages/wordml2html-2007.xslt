@@ -5276,11 +5276,17 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
 </xsl:template>
 -->
 
+<xsl:template match="w:sdt">
+  <xsl:apply-templates select="w:sdtContent/*"/>
+</xsl:template>
+
+
 <xsl:template match="w:hdr|w:ftr">
   <xsl:apply-templates/>
 </xsl:template>
 
-<!-- Added by Oleg Tkachenko -->
+
+
 
 </xsl:stylesheet>
 
