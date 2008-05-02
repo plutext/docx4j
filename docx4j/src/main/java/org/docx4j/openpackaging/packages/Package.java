@@ -21,8 +21,11 @@
 
 package org.docx4j.openpackaging.packages;
 
+import javax.xml.bind.JAXBContext;
+
 import org.apache.log4j.Logger;
 
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -145,6 +148,7 @@ public class Package extends Base {
 					new org.docx4j.docProps.core.ObjectFactory();				
 				org.docx4j.docProps.core.CoreProperties properties = factory.createCoreProperties();
 				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJaxbElement((Object)properties);
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJAXBContext(Context.jcDocPropsCore);						
 			} catch (InvalidFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -162,7 +166,7 @@ public class Package extends Base {
 					new org.docx4j.docProps.extended.ObjectFactory();				
 				org.docx4j.docProps.extended.Properties properties = factory.createProperties();
 				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJaxbElement((Object)properties);
-				
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJAXBContext(Context.jcDocPropsExtended);										
 			} catch (InvalidFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -183,6 +187,8 @@ public class Package extends Base {
 				
 				org.docx4j.docProps.custom.Properties properties = factory.createProperties();
 				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJaxbElement((Object)properties);
+
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJAXBContext(Context.jcDocPropsCustom);										
 				
 			} catch (InvalidFormatException e) {
 				// TODO Auto-generated catch block
