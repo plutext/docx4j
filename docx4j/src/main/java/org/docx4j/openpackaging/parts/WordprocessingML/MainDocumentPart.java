@@ -414,7 +414,38 @@ public class MainDocumentPart extends DocumentPart  {
 						
 			//log.debug("object: " + o.getClass().getName() );
 			
-			if (o instanceof org.docx4j.wml.R) {
+			if (o instanceof org.docx4j.wml.P) {
+				
+				org.docx4j.wml.P p = (org.docx4j.wml.P) o;
+		
+				if (p.getPPr() != null && p.getPPr().getPStyle() != null) {
+					// Note this paragraph style
+					log.debug("put style "
+							+ p.getPPr().getPStyle().getVal());
+					stylesInUse.put(p.getPPr().getPStyle().getVal(), p
+							.getPPr().getPStyle().getVal());
+				}
+		
+				if (p.getPPr() != null && p.getPPr().getRPr() != null) {
+					// Inspect RPr
+					inspectRPr(p.getPPr().getRPr(), fontsDiscovered,
+							stylesInUse);
+				}
+		
+				traverseMainDocumentRecursive(p.getParagraphContent(),
+						fontsDiscovered, stylesInUse);
+		
+			} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
+
+				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) o;
+				
+				// Don't bother looking in SdtPr
+				
+				traverseMainDocumentRecursive(sdt.getSdtContent().getEGContentBlockContent(),
+						fontsDiscovered, stylesInUse);
+				
+				
+			} else if (o instanceof org.docx4j.wml.R) {
 
 				org.docx4j.wml.R run = (org.docx4j.wml.R) o;
 				if (run.getRPr() != null) {
@@ -433,30 +464,32 @@ public class MainDocumentPart extends DocumentPart  {
 				log.debug("not traversing into unhandled Node: " + ((org.w3c.dom.Node)o).getNodeName() );
 				
 			} else if ( o instanceof javax.xml.bind.JAXBElement) {
+
+				log.debug( "Encountered " + ((JAXBElement) o).getDeclaredType().getName() );
 					
-				if (((JAXBElement) o).getDeclaredType().getName().equals(
-						"org.docx4j.wml.P")) {
-					org.docx4j.wml.P p = (org.docx4j.wml.P) ((JAXBElement) o)
-							.getValue();
-
-					if (p.getPPr() != null && p.getPPr().getPStyle() != null) {
-						// Note this paragraph style
-						log.debug("put style "
-								+ p.getPPr().getPStyle().getVal());
-						stylesInUse.put(p.getPPr().getPStyle().getVal(), p
-								.getPPr().getPStyle().getVal());
-					}
-
-					if (p.getPPr() != null && p.getPPr().getRPr() != null) {
-						// Inspect RPr
-						inspectRPr(p.getPPr().getRPr(), fontsDiscovered,
-								stylesInUse);
-					}
-
-					traverseMainDocumentRecursive(p.getParagraphContent(),
-							fontsDiscovered, stylesInUse);
-
-				}
+//				if (((JAXBElement) o).getDeclaredType().getName().equals(
+//						"org.docx4j.wml.P")) {
+//					org.docx4j.wml.P p = (org.docx4j.wml.P) ((JAXBElement) o)
+//							.getValue();
+//
+//					if (p.getPPr() != null && p.getPPr().getPStyle() != null) {
+//						// Note this paragraph style
+//						log.debug("put style "
+//								+ p.getPPr().getPStyle().getVal());
+//						stylesInUse.put(p.getPPr().getPStyle().getVal(), p
+//								.getPPr().getPStyle().getVal());
+//					}
+//
+//					if (p.getPPr() != null && p.getPPr().getRPr() != null) {
+//						// Inspect RPr
+//						inspectRPr(p.getPPr().getRPr(), fontsDiscovered,
+//								stylesInUse);
+//					}
+//
+//					traverseMainDocumentRecursive(p.getParagraphContent(),
+//							fontsDiscovered, stylesInUse);
+//
+//				}
 				
 			} else {
 				log.error( "UNEXPECTED: " + o.getClass().getName() );
@@ -482,7 +515,7 @@ public class MainDocumentPart extends DocumentPart  {
         	}
     		
     		
-    	} else if ( rPrObj instanceof org.docx4j.wml.RPr) {
+    	} else if ( rPrObj instanceof org.docx4j.wml.ParaRPr) {
 
     		org.docx4j.wml.ParaRPr rPr =  (org.docx4j.wml.ParaRPr)rPrObj;
     		
