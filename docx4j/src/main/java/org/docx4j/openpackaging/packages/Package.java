@@ -137,14 +137,43 @@ public class Package extends Base {
 	}
 
 	public DocPropsCorePart getDocPropsCorePart() {
+		if (docPropsCorePart==null) {
+			try {
+				Part docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
+				this.addTargetPart(docPropsCorePart);
+			} catch (InvalidFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
 		return docPropsCorePart;
 	}
 
 	public DocPropsExtendedPart getDocPropsExtendedPart() {
+		if (docPropsExtendedPart==null) {
+			try {
+				Part docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
+				this.addTargetPart(docPropsExtendedPart);
+			} catch (InvalidFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
 		return docPropsExtendedPart;
 	}
 
 	public DocPropsCustomPart getDocPropsCustomPart() {
+		
+		if (docPropsCustomPart==null) {
+			try {
+				Part docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
+				this.addTargetPart(docPropsCustomPart);
+			} catch (InvalidFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
+		
 		return docPropsCustomPart;
 	}
 
