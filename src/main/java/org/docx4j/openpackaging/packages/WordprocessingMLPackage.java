@@ -198,32 +198,42 @@ public class WordprocessingMLPackage extends Package {
     	    	
 		MainDocumentPart documentPart = getMainDocumentPart(); 
 		
-    	pkgPartDocument.setName(documentPart.getPartName().getName());
-    	pkgPartDocument.setContentType(documentPart.getContentType() );
+		if (documentPart==null) {
+			log.warn("Main document part missing!");
+		} else {
 		
-    	org.docx4j.wml.Package.Part.XmlData XmlDataDoc = factory.createPackagePartXmlData();
-    	
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
-		
-		XmlDataDoc.setDocument(wmlDocumentEl);
-		pkgPartDocument.setXmlData(XmlDataDoc);
-		pkg.getPart().add(pkgPartDocument);
+	    	pkgPartDocument.setName(documentPart.getPartName().getName());
+	    	pkgPartDocument.setContentType(documentPart.getContentType() );
+			
+	    	org.docx4j.wml.Package.Part.XmlData XmlDataDoc = factory.createPackagePartXmlData();
+	    	
+			org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
+			
+			XmlDataDoc.setDocument(wmlDocumentEl);
+			pkgPartDocument.setXmlData(XmlDataDoc);
+			pkg.getPart().add(pkgPartDocument);
+		}
 				
     	// .. the style part
     	org.docx4j.wml.Package.Part pkgPartStyles = factory.createPackagePart();
 
     	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart = documentPart.getStyleDefinitionsPart();
+
+		if (stylesPart==null) {
+			log.warn("Style definitions part missing!");
+		} else {
     	
-    	pkgPartStyles.setName(stylesPart.getPartName().getName());
-    	pkgPartStyles.setContentType(stylesPart.getContentType() );
-    	
-    	org.docx4j.wml.Package.Part.XmlData XmlDataStyles = factory.createPackagePartXmlData();
-    	
-    	org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)stylesPart.getJaxbElement();
-    	
-		XmlDataStyles.setStyles(styles);
-		pkgPartStyles.setXmlData(XmlDataStyles);
-		pkg.getPart().add(pkgPartStyles);
+	    	pkgPartStyles.setName(stylesPart.getPartName().getName());
+	    	pkgPartStyles.setContentType(stylesPart.getContentType() );
+	    	
+	    	org.docx4j.wml.Package.Part.XmlData XmlDataStyles = factory.createPackagePartXmlData();
+	    	
+	    	org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)stylesPart.getJaxbElement();
+	    	
+			XmlDataStyles.setStyles(styles);
+			pkgPartStyles.setXmlData(XmlDataStyles);
+			pkg.getPart().add(pkgPartStyles);
+		}
 		
 		return pkg;
     	
@@ -269,27 +279,19 @@ public class WordprocessingMLPackage extends Package {
 			}				
 		}
 
-		// TODO - delete existing main document part
-		
-		// Create main document part
-		MainDocumentPart wordDocumentPart = new MainDocumentPart();		
-		// Put the content in the part				
-		wordDocumentPart.setJaxbElement(wmlDocument);
-		// Add the main document part to the package relationships
-		// (creating it if necessary)
-		this.addTargetPart(wordDocumentPart);
-		
-
-		// TODO - delete existing style part
-		
-		
-		// That handled the Main Document Part; now set the Style part.
-		StyleDefinitionsPart stylesPart = new StyleDefinitionsPart(); 
-		stylesPart.setJaxbElement(wmlStyles);
-		// Add the styles part to the main document part relationships
-		// (creating it if necessary)
-		wordDocumentPart.addTargetPart(stylesPart); // NB - add it to main doc part, not package!
-		
+		// This code assumes all the existing rels etc of 
+		// the existing main document part are still relevant.
+		if (wmlDocument==null) {
+			log.warn("Couldn't get main document part from package transform result!");			
+		} else {
+			this.getMainDocumentPart().setJaxbElement(wmlDocument);
+		}	
+				
+		if (wmlStyles==null) {
+			log.warn("Couldn't get style definitions part from package transform result!");			
+		} else {
+			this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(wmlStyles);
+		}
     	
     }
     
