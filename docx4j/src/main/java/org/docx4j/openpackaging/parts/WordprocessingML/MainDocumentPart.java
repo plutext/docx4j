@@ -139,7 +139,7 @@ public class MainDocumentPart extends DocumentPart  {
 		Map stylesDefined = new java.util.HashMap();
 		if (styles!=null) {
 		     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
-		            org.docx4j.wml.Styles.Style s = (org.docx4j.wml.Styles.Style)iter.next();
+		            org.docx4j.wml.Style s = (org.docx4j.wml.Style)iter.next();
 		            stylesDefined.put(s.getStyleId(), s);
 		     }
 		}
@@ -163,7 +163,7 @@ public class MainDocumentPart extends DocumentPart  {
 	        Map.Entry pairs = (Map.Entry)it.next();
 	        String styleName = (String)pairs.getKey();
 	        log.debug("Inspecting style: " + styleName );
-            org.docx4j.wml.Styles.Style existingStyle = (org.docx4j.wml.Styles.Style)stylesDefined.get(styleName);
+            org.docx4j.wml.Style existingStyle = (org.docx4j.wml.Style)stylesDefined.get(styleName);
             if (existingStyle!=null) {
             	String fontName = getFontnameFromStyle(stylesDefined, this.getThemePart(), existingStyle); 
             	log.debug(styleName + " uses font " + fontName);
@@ -279,7 +279,7 @@ public class MainDocumentPart extends DocumentPart  {
      * 
      * @see getDefaultFont
      */	
-    public String getFontnameFromStyle(org.docx4j.wml.Styles.Style style) {
+    public String getFontnameFromStyle(org.docx4j.wml.Style style) {
     	
     	return getFontnameFromStyle(styleDefinitionsPart, themePart, style); 
     	
@@ -295,7 +295,7 @@ public class MainDocumentPart extends DocumentPart  {
      * 
      * @see getDefaultFont
      */	
-    public static String getFontnameFromStyle(StyleDefinitionsPart styleDefinitionsPart, ThemePart themePart,  org.docx4j.wml.Styles.Style style) {
+    public static String getFontnameFromStyle(StyleDefinitionsPart styleDefinitionsPart, ThemePart themePart,  org.docx4j.wml.Style style) {
 
 		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();
 //		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
@@ -303,7 +303,7 @@ public class MainDocumentPart extends DocumentPart  {
 		// It is convenient to have a HashMap of styles
 		Map stylesDefined = new java.util.HashMap();
 	     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
-	            org.docx4j.wml.Styles.Style s = (org.docx4j.wml.Styles.Style)iter.next();
+	            org.docx4j.wml.Style s = (org.docx4j.wml.Style)iter.next();
 	            stylesDefined.put(s.getStyleId(), s);
 	     }
 	     
@@ -316,7 +316,7 @@ public class MainDocumentPart extends DocumentPart  {
      * this method does not look up styles/docDefaults/rPrDefault/rPr/rFonts
      * or from there, the theme part).
      */
-    private static String getFontnameFromStyle(Map stylesDefined, ThemePart themePart, org.docx4j.wml.Styles.Style style) {
+    private static String getFontnameFromStyle(Map stylesDefined, ThemePart themePart, org.docx4j.wml.Style style) {
     	
 		/*
 		a paragraph style does not inherit anything from its linked character style.
@@ -394,7 +394,7 @@ public class MainDocumentPart extends DocumentPart  {
     	if (style.getBasedOn()!=null && style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();    		
     		//log.debug("recursing into basedOn:" + basedOnStyleName);
-            org.docx4j.wml.Styles.Style candidateStyle = (org.docx4j.wml.Styles.Style)stylesDefined.get(basedOnStyleName);
+            org.docx4j.wml.Style candidateStyle = (org.docx4j.wml.Style)stylesDefined.get(basedOnStyleName);
             if (candidateStyle != null && candidateStyle.getStyleId().equals(basedOnStyleName)) {
             	return getFontnameFromStyle(stylesDefined, themePart, candidateStyle);
             }
