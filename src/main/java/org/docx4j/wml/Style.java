@@ -22,30 +22,28 @@
 package org.docx4j.wml;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_MailMerge complex type.
+ * <p>Java class for CT_Style complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_MailMerge">
+ * &lt;complexType name="CT_Style">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="mainDocumentType" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_MailMergeDocType"/>
- *         &lt;element name="linkToQuery" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
- *         &lt;element name="dataType" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_MailMergeDataType"/>
- *         &lt;element name="connectString" minOccurs="0">
+ *         &lt;element name="name" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -54,7 +52,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="query" minOccurs="0">
+ *         &lt;element name="aliases" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -63,11 +61,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="dataSource" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Rel" minOccurs="0"/>
- *         &lt;element name="headerSource" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Rel" minOccurs="0"/>
- *         &lt;element name="doNotSuppressBlankLines" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
- *         &lt;element name="destination" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_MailMergeDest" minOccurs="0"/>
- *         &lt;element name="addressFieldName" minOccurs="0">
+ *         &lt;element name="basedOn" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -76,7 +70,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="mailSubject" minOccurs="0">
+ *         &lt;element name="next" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -85,9 +79,18 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="mailAsAttachment" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
- *         &lt;element name="viewMergedData" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
- *         &lt;element name="activeRecord" minOccurs="0">
+ *         &lt;element name="link" minOccurs="0">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
+ *         &lt;element name="autoRedefine" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="hidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="uiPriority" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -101,22 +104,34 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="checkErrors" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="val" use="required">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="odso" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Odso" minOccurs="0"/>
+ *         &lt;element name="semiHidden" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="unhideWhenUsed" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="qFormat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="locked" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="personal" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="personalCompose" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="personalReply" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="rsid" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_LongHexNumber" minOccurs="0"/>
+ *         &lt;element name="pPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_PPr" minOccurs="0"/>
+ *         &lt;element name="rPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_RPr" minOccurs="0"/>
+ *         &lt;element name="tblPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblPrBase" minOccurs="0"/>
+ *         &lt;element name="trPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrPr" minOccurs="0"/>
+ *         &lt;element name="tcPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TcPr" minOccurs="0"/>
+ *         &lt;element name="tblStylePr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblStylePr" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
+ *       &lt;attribute name="type">
+ *         &lt;simpleType>
+ *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *             &lt;enumeration value="paragraph"/>
+ *             &lt;enumeration value="character"/>
+ *             &lt;enumeration value="table"/>
+ *             &lt;enumeration value="numbering"/>
+ *           &lt;/restriction>
+ *         &lt;/simpleType>
+ *       &lt;/attribute>
+ *       &lt;attribute name="styleId" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_String" />
+ *       &lt;attribute name="default" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
+ *       &lt;attribute name="customStyle" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -125,431 +140,707 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_MailMerge", propOrder = {
-    "mainDocumentType",
-    "linkToQuery",
-    "dataType",
-    "connectString",
-    "query",
-    "dataSource",
-    "headerSource",
-    "doNotSuppressBlankLines",
-    "destination",
-    "addressFieldName",
-    "mailSubject",
-    "mailAsAttachment",
-    "viewMergedData",
-    "activeRecord",
-    "checkErrors",
-    "odso"
+@XmlType(name = "CT_Style", propOrder = {
+    "name",
+    "aliases",
+    "basedOn",
+    "next",
+    "link",
+    "autoRedefine",
+    "hidden",
+    "uiPriority",
+    "semiHidden",
+    "unhideWhenUsed",
+    "qFormat",
+    "locked",
+    "personal",
+    "personalCompose",
+    "personalReply",
+    "rsid",
+    "pPr",
+    "rPr",
+    "tblPr",
+    "trPr",
+    "tcPr",
+    "tblStylePr"
 })
-public class CTMailMerge
+public class Style
     implements Child
 {
 
-    @XmlElement(required = true)
-    protected CTMailMergeDocType mainDocumentType;
-    protected BooleanDefaultTrue linkToQuery;
-    @XmlElement(required = true)
-    protected CTMailMergeDataType dataType;
-    protected CTMailMerge.ConnectString connectString;
-    protected CTMailMerge.Query query;
-    protected CTRel dataSource;
-    protected CTRel headerSource;
-    protected BooleanDefaultTrue doNotSuppressBlankLines;
-    protected CTMailMergeDest destination;
-    protected CTMailMerge.AddressFieldName addressFieldName;
-    protected CTMailMerge.MailSubject mailSubject;
-    protected BooleanDefaultTrue mailAsAttachment;
-    protected BooleanDefaultTrue viewMergedData;
-    protected CTMailMerge.ActiveRecord activeRecord;
-    protected CTMailMerge.CheckErrors checkErrors;
-    protected CTOdso odso;
+    protected Style.Name name;
+    protected Style.Aliases aliases;
+    protected Style.BasedOn basedOn;
+    protected Style.Next next;
+    protected Style.Link link;
+    protected BooleanDefaultTrue autoRedefine;
+    protected BooleanDefaultTrue hidden;
+    protected Style.UiPriority uiPriority;
+    protected BooleanDefaultTrue semiHidden;
+    protected BooleanDefaultTrue unhideWhenUsed;
+    protected BooleanDefaultTrue qFormat;
+    protected BooleanDefaultTrue locked;
+    protected BooleanDefaultTrue personal;
+    protected BooleanDefaultTrue personalCompose;
+    protected BooleanDefaultTrue personalReply;
+    protected CTLongHexNumber rsid;
+    protected PPr pPr;
+    protected RPr rPr;
+    protected CTTblPrBase tblPr;
+    protected CTTrPr trPr;
+    protected CTTcPr tcPr;
+    protected List<CTTblStylePr> tblStylePr;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String type;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected String styleId;
+    @XmlAttribute(name = "default", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected Boolean _default;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected Boolean customStyle;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the mainDocumentType property.
+     * Gets the value of the name property.
      * 
      * @return
      *     possible object is
-     *     {@link CTMailMergeDocType }
+     *     {@link Style.Name }
      *     
      */
-    public CTMailMergeDocType getMainDocumentType() {
-        return mainDocumentType;
+    public Style.Name getName() {
+        return name;
     }
 
     /**
-     * Sets the value of the mainDocumentType property.
+     * Sets the value of the name property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTMailMergeDocType }
+     *     {@link Style.Name }
      *     
      */
-    public void setMainDocumentType(CTMailMergeDocType value) {
-        this.mainDocumentType = value;
+    public void setName(Style.Name value) {
+        this.name = value;
     }
 
     /**
-     * Gets the value of the linkToQuery property.
+     * Gets the value of the aliases property.
      * 
      * @return
      *     possible object is
-     *     {@link BooleanDefaultTrue }
+     *     {@link Style.Aliases }
      *     
      */
-    public BooleanDefaultTrue getLinkToQuery() {
-        return linkToQuery;
+    public Style.Aliases getAliases() {
+        return aliases;
     }
 
     /**
-     * Sets the value of the linkToQuery property.
+     * Sets the value of the aliases property.
      * 
      * @param value
      *     allowed object is
-     *     {@link BooleanDefaultTrue }
+     *     {@link Style.Aliases }
      *     
      */
-    public void setLinkToQuery(BooleanDefaultTrue value) {
-        this.linkToQuery = value;
+    public void setAliases(Style.Aliases value) {
+        this.aliases = value;
     }
 
     /**
-     * Gets the value of the dataType property.
+     * Gets the value of the basedOn property.
      * 
      * @return
      *     possible object is
-     *     {@link CTMailMergeDataType }
+     *     {@link Style.BasedOn }
      *     
      */
-    public CTMailMergeDataType getDataType() {
-        return dataType;
+    public Style.BasedOn getBasedOn() {
+        return basedOn;
     }
 
     /**
-     * Sets the value of the dataType property.
+     * Sets the value of the basedOn property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTMailMergeDataType }
+     *     {@link Style.BasedOn }
      *     
      */
-    public void setDataType(CTMailMergeDataType value) {
-        this.dataType = value;
+    public void setBasedOn(Style.BasedOn value) {
+        this.basedOn = value;
     }
 
     /**
-     * Gets the value of the connectString property.
+     * Gets the value of the next property.
      * 
      * @return
      *     possible object is
-     *     {@link CTMailMerge.ConnectString }
+     *     {@link Style.Next }
      *     
      */
-    public CTMailMerge.ConnectString getConnectString() {
-        return connectString;
+    public Style.Next getNext() {
+        return next;
     }
 
     /**
-     * Sets the value of the connectString property.
+     * Sets the value of the next property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTMailMerge.ConnectString }
+     *     {@link Style.Next }
      *     
      */
-    public void setConnectString(CTMailMerge.ConnectString value) {
-        this.connectString = value;
+    public void setNext(Style.Next value) {
+        this.next = value;
     }
 
     /**
-     * Gets the value of the query property.
+     * Gets the value of the link property.
      * 
      * @return
      *     possible object is
-     *     {@link CTMailMerge.Query }
+     *     {@link Style.Link }
      *     
      */
-    public CTMailMerge.Query getQuery() {
-        return query;
+    public Style.Link getLink() {
+        return link;
     }
 
     /**
-     * Sets the value of the query property.
+     * Sets the value of the link property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTMailMerge.Query }
+     *     {@link Style.Link }
      *     
      */
-    public void setQuery(CTMailMerge.Query value) {
-        this.query = value;
+    public void setLink(Style.Link value) {
+        this.link = value;
     }
 
     /**
-     * Gets the value of the dataSource property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTRel }
-     *     
-     */
-    public CTRel getDataSource() {
-        return dataSource;
-    }
-
-    /**
-     * Sets the value of the dataSource property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTRel }
-     *     
-     */
-    public void setDataSource(CTRel value) {
-        this.dataSource = value;
-    }
-
-    /**
-     * Gets the value of the headerSource property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTRel }
-     *     
-     */
-    public CTRel getHeaderSource() {
-        return headerSource;
-    }
-
-    /**
-     * Sets the value of the headerSource property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTRel }
-     *     
-     */
-    public void setHeaderSource(CTRel value) {
-        this.headerSource = value;
-    }
-
-    /**
-     * Gets the value of the doNotSuppressBlankLines property.
+     * Gets the value of the autoRedefine property.
      * 
      * @return
      *     possible object is
      *     {@link BooleanDefaultTrue }
      *     
      */
-    public BooleanDefaultTrue getDoNotSuppressBlankLines() {
-        return doNotSuppressBlankLines;
+    public BooleanDefaultTrue getAutoRedefine() {
+        return autoRedefine;
     }
 
     /**
-     * Sets the value of the doNotSuppressBlankLines property.
+     * Sets the value of the autoRedefine property.
      * 
      * @param value
      *     allowed object is
      *     {@link BooleanDefaultTrue }
      *     
      */
-    public void setDoNotSuppressBlankLines(BooleanDefaultTrue value) {
-        this.doNotSuppressBlankLines = value;
+    public void setAutoRedefine(BooleanDefaultTrue value) {
+        this.autoRedefine = value;
     }
 
     /**
-     * Gets the value of the destination property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTMailMergeDest }
-     *     
-     */
-    public CTMailMergeDest getDestination() {
-        return destination;
-    }
-
-    /**
-     * Sets the value of the destination property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTMailMergeDest }
-     *     
-     */
-    public void setDestination(CTMailMergeDest value) {
-        this.destination = value;
-    }
-
-    /**
-     * Gets the value of the addressFieldName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTMailMerge.AddressFieldName }
-     *     
-     */
-    public CTMailMerge.AddressFieldName getAddressFieldName() {
-        return addressFieldName;
-    }
-
-    /**
-     * Sets the value of the addressFieldName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTMailMerge.AddressFieldName }
-     *     
-     */
-    public void setAddressFieldName(CTMailMerge.AddressFieldName value) {
-        this.addressFieldName = value;
-    }
-
-    /**
-     * Gets the value of the mailSubject property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTMailMerge.MailSubject }
-     *     
-     */
-    public CTMailMerge.MailSubject getMailSubject() {
-        return mailSubject;
-    }
-
-    /**
-     * Sets the value of the mailSubject property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTMailMerge.MailSubject }
-     *     
-     */
-    public void setMailSubject(CTMailMerge.MailSubject value) {
-        this.mailSubject = value;
-    }
-
-    /**
-     * Gets the value of the mailAsAttachment property.
+     * Gets the value of the hidden property.
      * 
      * @return
      *     possible object is
      *     {@link BooleanDefaultTrue }
      *     
      */
-    public BooleanDefaultTrue getMailAsAttachment() {
-        return mailAsAttachment;
+    public BooleanDefaultTrue getHidden() {
+        return hidden;
     }
 
     /**
-     * Sets the value of the mailAsAttachment property.
+     * Sets the value of the hidden property.
      * 
      * @param value
      *     allowed object is
      *     {@link BooleanDefaultTrue }
      *     
      */
-    public void setMailAsAttachment(BooleanDefaultTrue value) {
-        this.mailAsAttachment = value;
+    public void setHidden(BooleanDefaultTrue value) {
+        this.hidden = value;
     }
 
     /**
-     * Gets the value of the viewMergedData property.
+     * Gets the value of the uiPriority property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Style.UiPriority }
+     *     
+     */
+    public Style.UiPriority getUiPriority() {
+        return uiPriority;
+    }
+
+    /**
+     * Sets the value of the uiPriority property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Style.UiPriority }
+     *     
+     */
+    public void setUiPriority(Style.UiPriority value) {
+        this.uiPriority = value;
+    }
+
+    /**
+     * Gets the value of the semiHidden property.
      * 
      * @return
      *     possible object is
      *     {@link BooleanDefaultTrue }
      *     
      */
-    public BooleanDefaultTrue getViewMergedData() {
-        return viewMergedData;
+    public BooleanDefaultTrue getSemiHidden() {
+        return semiHidden;
     }
 
     /**
-     * Sets the value of the viewMergedData property.
+     * Sets the value of the semiHidden property.
      * 
      * @param value
      *     allowed object is
      *     {@link BooleanDefaultTrue }
      *     
      */
-    public void setViewMergedData(BooleanDefaultTrue value) {
-        this.viewMergedData = value;
+    public void setSemiHidden(BooleanDefaultTrue value) {
+        this.semiHidden = value;
     }
 
     /**
-     * Gets the value of the activeRecord property.
+     * Gets the value of the unhideWhenUsed property.
      * 
      * @return
      *     possible object is
-     *     {@link CTMailMerge.ActiveRecord }
+     *     {@link BooleanDefaultTrue }
      *     
      */
-    public CTMailMerge.ActiveRecord getActiveRecord() {
-        return activeRecord;
+    public BooleanDefaultTrue getUnhideWhenUsed() {
+        return unhideWhenUsed;
     }
 
     /**
-     * Sets the value of the activeRecord property.
+     * Sets the value of the unhideWhenUsed property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTMailMerge.ActiveRecord }
+     *     {@link BooleanDefaultTrue }
      *     
      */
-    public void setActiveRecord(CTMailMerge.ActiveRecord value) {
-        this.activeRecord = value;
+    public void setUnhideWhenUsed(BooleanDefaultTrue value) {
+        this.unhideWhenUsed = value;
     }
 
     /**
-     * Gets the value of the checkErrors property.
+     * Gets the value of the qFormat property.
      * 
      * @return
      *     possible object is
-     *     {@link CTMailMerge.CheckErrors }
+     *     {@link BooleanDefaultTrue }
      *     
      */
-    public CTMailMerge.CheckErrors getCheckErrors() {
-        return checkErrors;
+    public BooleanDefaultTrue getQFormat() {
+    	if (qFormat==null) {
+    		qFormat = new BooleanDefaultTrue();
+    		qFormat.setVal( Boolean.FALSE);
+    	}
+        return qFormat;
     }
+    
 
     /**
-     * Sets the value of the checkErrors property.
+     * Sets the value of the qFormat property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTMailMerge.CheckErrors }
+     *     {@link BooleanDefaultTrue }
      *     
      */
-    public void setCheckErrors(CTMailMerge.CheckErrors value) {
-        this.checkErrors = value;
+    public void setQFormat(BooleanDefaultTrue value) {
+        this.qFormat = value;
     }
 
     /**
-     * Gets the value of the odso property.
+     * Gets the value of the locked property.
      * 
      * @return
      *     possible object is
-     *     {@link CTOdso }
+     *     {@link BooleanDefaultTrue }
      *     
      */
-    public CTOdso getOdso() {
-        return odso;
+    public BooleanDefaultTrue getLocked() {
+        return locked;
     }
 
     /**
-     * Sets the value of the odso property.
+     * Sets the value of the locked property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTOdso }
+     *     {@link BooleanDefaultTrue }
      *     
      */
-    public void setOdso(CTOdso value) {
-        this.odso = value;
+    public void setLocked(BooleanDefaultTrue value) {
+        this.locked = value;
+    }
+
+    /**
+     * Gets the value of the personal property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getPersonal() {
+        return personal;
+    }
+
+    /**
+     * Sets the value of the personal property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setPersonal(BooleanDefaultTrue value) {
+        this.personal = value;
+    }
+
+    /**
+     * Gets the value of the personalCompose property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getPersonalCompose() {
+        return personalCompose;
+    }
+
+    /**
+     * Sets the value of the personalCompose property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setPersonalCompose(BooleanDefaultTrue value) {
+        this.personalCompose = value;
+    }
+
+    /**
+     * Gets the value of the personalReply property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public BooleanDefaultTrue getPersonalReply() {
+        return personalReply;
+    }
+
+    /**
+     * Sets the value of the personalReply property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDefaultTrue }
+     *     
+     */
+    public void setPersonalReply(BooleanDefaultTrue value) {
+        this.personalReply = value;
+    }
+
+    /**
+     * Gets the value of the rsid property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTLongHexNumber }
+     *     
+     */
+    public CTLongHexNumber getRsid() {
+        return rsid;
+    }
+
+    /**
+     * Sets the value of the rsid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTLongHexNumber }
+     *     
+     */
+    public void setRsid(CTLongHexNumber value) {
+        this.rsid = value;
+    }
+
+    /**
+     * Gets the value of the pPr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link PPr }
+     *     
+     */
+    public PPr getPPr() {
+        return pPr;
+    }
+
+    /**
+     * Sets the value of the pPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link PPr }
+     *     
+     */
+    public void setPPr(PPr value) {
+        this.pPr = value;
+    }
+
+    /**
+     * Gets the value of the rPr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link RPr }
+     *     
+     */
+    public RPr getRPr() {
+        return rPr;
+    }
+
+    /**
+     * Sets the value of the rPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link RPr }
+     *     
+     */
+    public void setRPr(RPr value) {
+        this.rPr = value;
+    }
+
+    /**
+     * Gets the value of the tblPr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTblPrBase }
+     *     
+     */
+    public CTTblPrBase getTblPr() {
+        return tblPr;
+    }
+
+    /**
+     * Sets the value of the tblPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTblPrBase }
+     *     
+     */
+    public void setTblPr(CTTblPrBase value) {
+        this.tblPr = value;
+    }
+
+    /**
+     * Gets the value of the trPr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTrPr }
+     *     
+     */
+    public CTTrPr getTrPr() {
+        return trPr;
+    }
+
+    /**
+     * Sets the value of the trPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTrPr }
+     *     
+     */
+    public void setTrPr(CTTrPr value) {
+        this.trPr = value;
+    }
+
+    /**
+     * Gets the value of the tcPr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTcPr }
+     *     
+     */
+    public CTTcPr getTcPr() {
+        return tcPr;
+    }
+
+    /**
+     * Sets the value of the tcPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTcPr }
+     *     
+     */
+    public void setTcPr(CTTcPr value) {
+        this.tcPr = value;
+    }
+
+    /**
+     * Gets the value of the tblStylePr property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the tblStylePr property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getTblStylePr().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link CTTblStylePr }
+     * 
+     * 
+     */
+    public List<CTTblStylePr> getTblStylePr() {
+        if (tblStylePr == null) {
+            tblStylePr = new ArrayList<CTTblStylePr>();
+        }
+        return this.tblStylePr;
+    }
+
+    /**
+     * Gets the value of the type property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getType() {
+        return type;
+    }
+
+    /**
+     * Sets the value of the type property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setType(String value) {
+        this.type = value;
+    }
+
+    /**
+     * Gets the value of the styleId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStyleId() {
+        return styleId;
+    }
+
+    /**
+     * Sets the value of the styleId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStyleId(String value) {
+        this.styleId = value;
+    }
+
+    /**
+     * Gets the value of the default property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public boolean isDefault() {
+        if (_default == null) {
+            return false;
+        } else {
+            return _default;
+        }
+    }
+
+    /**
+     * Sets the value of the default property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setDefault(Boolean value) {
+        this._default = value;
+    }
+
+    /**
+     * Gets the value of the customStyle property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public boolean isCustomStyle() {
+        if (customStyle == null) {
+            return true;
+        } else {
+            return customStyle;
+        }
+    }
+
+    /**
+     * Sets the value of the customStyle property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setCustomStyle(Boolean value) {
+        this.customStyle = value;
     }
 
     /**
@@ -588,12 +879,7 @@ public class CTMailMerge
      * &lt;complexType>
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="val" use="required">
-     *         &lt;simpleType>
-     *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}integer">
-     *           &lt;/restriction>
-     *         &lt;/simpleType>
-     *       &lt;/attribute>
+     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -603,12 +889,12 @@ public class CTMailMerge
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class ActiveRecord
+    public static class Aliases
         implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-        protected BigInteger val;
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String val;
         @XmlTransient
         private Object parent;
 
@@ -617,10 +903,10 @@ public class CTMailMerge
          * 
          * @return
          *     possible object is
-         *     {@link BigInteger }
+         *     {@link String }
          *     
          */
-        public BigInteger getVal() {
+        public String getVal() {
             return val;
         }
 
@@ -629,10 +915,10 @@ public class CTMailMerge
          * 
          * @param value
          *     allowed object is
-         *     {@link BigInteger }
+         *     {@link String }
          *     
          */
-        public void setVal(BigInteger value) {
+        public void setVal(String value) {
             this.val = value;
         }
 
@@ -684,7 +970,250 @@ public class CTMailMerge
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class AddressFieldName
+    public static class BasedOn
+        implements Child
+    {
+
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String val;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the val property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getVal() {
+            return val;
+        }
+
+        /**
+         * Sets the value of the val property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setVal(String value) {
+            this.val = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class Link
+        implements Child
+    {
+
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String val;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the val property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getVal() {
+            return val;
+        }
+
+        /**
+         * Sets the value of the val property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setVal(String value) {
+            this.val = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class Name
+        implements Child
+    {
+
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        protected String val;
+        @XmlTransient
+        private Object parent;
+
+        /**
+         * Gets the value of the val property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getVal() {
+            return val;
+        }
+
+        /**
+         * Sets the value of the val property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setVal(String value) {
+            this.val = value;
+        }
+
+        /**
+         * Gets the parent object in the object tree representing the unmarshalled xml document.
+         * 
+         * @return
+         *     The parent object.
+         */
+        public Object getParent() {
+            return this.parent;
+        }
+
+        public void setParent(Object parent) {
+            this.parent = parent;
+        }
+
+        /**
+         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+         * 
+         * @param parent
+         *     The parent object in the object tree.
+         * @param unmarshaller
+         *     The unmarshaller that generated the instance.
+         */
+        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+            setParent(parent);
+        }
+
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class Next
         implements Child
     {
 
@@ -770,7 +1299,7 @@ public class CTMailMerge
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class CheckErrors
+    public static class UiPriority
         implements Child
     {
 
@@ -800,249 +1329,6 @@ public class CTMailMerge
          *     
          */
         public void setVal(BigInteger value) {
-            this.val = value;
-        }
-
-        /**
-         * Gets the parent object in the object tree representing the unmarshalled xml document.
-         * 
-         * @return
-         *     The parent object.
-         */
-        public Object getParent() {
-            return this.parent;
-        }
-
-        public void setParent(Object parent) {
-            this.parent = parent;
-        }
-
-        /**
-         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-         * 
-         * @param parent
-         *     The parent object in the object tree.
-         * @param unmarshaller
-         *     The unmarshaller that generated the instance.
-         */
-        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-            setParent(parent);
-        }
-
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class ConnectString
-        implements Child
-    {
-
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String val;
-        @XmlTransient
-        private Object parent;
-
-        /**
-         * Gets the value of the val property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getVal() {
-            return val;
-        }
-
-        /**
-         * Sets the value of the val property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setVal(String value) {
-            this.val = value;
-        }
-
-        /**
-         * Gets the parent object in the object tree representing the unmarshalled xml document.
-         * 
-         * @return
-         *     The parent object.
-         */
-        public Object getParent() {
-            return this.parent;
-        }
-
-        public void setParent(Object parent) {
-            this.parent = parent;
-        }
-
-        /**
-         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-         * 
-         * @param parent
-         *     The parent object in the object tree.
-         * @param unmarshaller
-         *     The unmarshaller that generated the instance.
-         */
-        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-            setParent(parent);
-        }
-
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class MailSubject
-        implements Child
-    {
-
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String val;
-        @XmlTransient
-        private Object parent;
-
-        /**
-         * Gets the value of the val property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getVal() {
-            return val;
-        }
-
-        /**
-         * Sets the value of the val property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setVal(String value) {
-            this.val = value;
-        }
-
-        /**
-         * Gets the parent object in the object tree representing the unmarshalled xml document.
-         * 
-         * @return
-         *     The parent object.
-         */
-        public Object getParent() {
-            return this.parent;
-        }
-
-        public void setParent(Object parent) {
-            this.parent = parent;
-        }
-
-        /**
-         * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
-         * 
-         * @param parent
-         *     The parent object in the object tree.
-         * @param unmarshaller
-         *     The unmarshaller that generated the instance.
-         */
-        public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-            setParent(parent);
-        }
-
-    }
-
-
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "")
-    public static class Query
-        implements Child
-    {
-
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-        protected String val;
-        @XmlTransient
-        private Object parent;
-
-        /**
-         * Gets the value of the val property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getVal() {
-            return val;
-        }
-
-        /**
-         * Sets the value of the val property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setVal(String value) {
             this.val = value;
         }
 

@@ -18,6 +18,7 @@
 
  */
 
+
 package org.docx4j.wml;
 
 import java.util.ArrayList;
@@ -80,8 +81,8 @@ public class CTFrameset implements Child
     protected CTFramesetSplitbar framesetSplitbar;
     protected CTFrameLayout frameLayout;
     @XmlElements({
-        @XmlElement(name = "frame", type = CTFrame.class),
-        @XmlElement(name = "frameset", type = CTFrameset.class)
+        @XmlElement(name = "frameset", type = CTFrameset.class),
+        @XmlElement(name = "frame", type = CTFrame.class)
     })
     protected List<Object> framesetOrFrame;
     @XmlTransient
@@ -177,8 +178,8 @@ public class CTFrameset implements Child
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTFrame }
      * {@link CTFrameset }
+     * {@link CTFrame }
      * 
      * 
      */

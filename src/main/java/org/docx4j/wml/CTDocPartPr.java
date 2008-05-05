@@ -18,6 +18,7 @@
 
  */
 
+
 package org.docx4j.wml;
 
 import java.util.ArrayList;
@@ -83,13 +84,13 @@ public class CTDocPartPr
 {
 
     @XmlElements({
+        @XmlElement(name = "category", type = CTDocPartCategory.class),
         @XmlElement(name = "guid", type = CTGuid.class),
-        @XmlElement(name = "types", type = CTDocPartTypes.class),
+        @XmlElement(name = "style", type = CTDocPartPr.Style.class),
         @XmlElement(name = "behaviors", type = CTDocPartBehaviors.class),
         @XmlElement(name = "name", type = CTDocPartName.class),
         @XmlElement(name = "description", type = CTDocPartPr.Description.class),
-        @XmlElement(name = "category", type = CTDocPartCategory.class),
-        @XmlElement(name = "style", type = CTDocPartPr.Style.class)
+        @XmlElement(name = "types", type = CTDocPartTypes.class)
     })
     protected List<Object> nameOrStyleOrCategory;
     @XmlTransient
@@ -113,13 +114,13 @@ public class CTDocPartPr
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link CTDocPartCategory }
      * {@link CTGuid }
-     * {@link CTDocPartTypes }
+     * {@link CTDocPartPr.Style }
      * {@link CTDocPartBehaviors }
      * {@link CTDocPartName }
      * {@link CTDocPartPr.Description }
-     * {@link CTDocPartCategory }
-     * {@link CTDocPartPr.Style }
+     * {@link CTDocPartTypes }
      * 
      * 
      */
