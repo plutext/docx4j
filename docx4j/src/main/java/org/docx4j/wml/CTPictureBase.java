@@ -18,6 +18,7 @@
 
  */
 
+
 package org.docx4j.wml;
 
 import java.util.ArrayList;
@@ -83,8 +84,8 @@ public class CTPictureBase
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
      * {@link Element }
+     * {@link Object }
      * 
      * 
      */
