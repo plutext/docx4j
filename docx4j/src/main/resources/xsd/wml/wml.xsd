@@ -37,6 +37,10 @@ USAGE INSTRUCTIONS
   To generate the classes (from the same directory)	
 			
 	 sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh -classpath ~/jaxb/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer package.xsd -d ../java/ -no-header  -target 2.0
+	 
+  or jaxb-ri-20071219 (2.1.6).
+  
+  You can't just use the xjc included in Java 6, since it says unrecognized parameter -Xparent-pointer
 	
   (Note that we generate package.xsd - every time - otherwise it gets left out of object factory)
 	
@@ -13281,161 +13285,15 @@ PRINCIPLES:
 		</xsd:complexType>
 		
 	</xsd:element>
-	<xsd:element name="styles">
-		<xsd:annotation>
-			<xsd:documentation>Style Definitions</xsd:documentation>
+	
+	
+  <xsd:complexType name="CT_Style">
+  		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Style"/>
+			</xsd:appinfo>
 		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:sequence>
-				<xsd:element name="docDefaults" minOccurs="0">
-					<xsd:annotation>
-						<xsd:documentation>Document Default Paragraph and Run
-							Properties</xsd:documentation>
-					</xsd:annotation>
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element name="rPrDefault" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Default Run
-										Properties</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:sequence>
-										<xsd:element name="rPr" type="CT_RPr"
-											minOccurs="0"/>
-									</xsd:sequence>
-								</xsd:complexType>
-							</xsd:element>
-							<xsd:element name="pPrDefault" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Default Paragraph
-										Properties</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:sequence>
-										<xsd:element name="pPr" type="CT_PPr"
-											minOccurs="0"/>
-									</xsd:sequence>
-								</xsd:complexType>
-							</xsd:element>
-						</xsd:sequence>
-					</xsd:complexType>
-					
-				</xsd:element>
-				<xsd:element name="latentStyles" minOccurs="0" maxOccurs="1">
-					<xsd:annotation>
-						<xsd:documentation>Latent Style
-							Information</xsd:documentation>
-					</xsd:annotation>
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element name="lsdException" minOccurs="0"
-								maxOccurs="unbounded">
-								<xsd:annotation>
-									<xsd:documentation>Latent Style
-										Exception</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:attribute name="name" type="ST_String"
-										use="required">
-										<xsd:annotation>
-											<xsd:documentation>Primary Style
-												Name</xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-									<xsd:attribute name="locked"
-										type="xsd:boolean" default="true">
-										<xsd:annotation>
-											<xsd:documentation>Latent Style
-												Locking
-												Setting</xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-									<xsd:attribute name="uiPriority"
-										type="ST_DecimalNumber">
-										<xsd:annotation>
-											<xsd:documentation>Override default
-												sorting order</xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-									<xsd:attribute name="semiHidden"
-										type="xsd:boolean" default="true">
-										<xsd:annotation>
-											<xsd:documentation>Semi hidden text
-												override</xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-									<xsd:attribute name="unhideWhenUsed"
-										type="xsd:boolean" default="true">
-										<xsd:annotation>
-											<xsd:documentation>Unhide when
-												used</xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-									<xsd:attribute name="qFormat"
-										type="xsd:boolean" use="optional">
-										
-										<!-- if omitted, to be determined from ../@defQFormat -->
-										<xsd:annotation>
-											<xsd:documentation>Latent Style
-												Primary Style Setting. If omitted, to
-												be determined from
-												../@defQFormat</xsd:documentation>
-										</xsd:annotation>
-									</xsd:attribute>
-								</xsd:complexType>
-								
-							</xsd:element>
-						</xsd:sequence>
-						<xsd:attribute name="defLockedState" type="xsd:boolean"
-							default="true">
-							<xsd:annotation>
-								<xsd:documentation>Default Style Locking
-									Setting</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="defUIPriority"
-							type="ST_DecimalNumber">
-							<xsd:annotation>
-								<xsd:documentation>Default User Interface Priority
-									Setting</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="defSemiHidden" type="xsd:boolean"
-							default="true">
-							<xsd:annotation>
-								<xsd:documentation>Default Semi-Hidden
-									Setting</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="defUnhideWhenUsed" type="xsd:boolean"
-							default="true">
-							<xsd:annotation>
-								<xsd:documentation>Default Hidden Until Used
-									Setting</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="defQFormat" type="xsd:boolean"
-							default="false"> <!-- per the spec -->
-							<xsd:annotation>
-								<xsd:documentation>Default Primary Style
-									Setting</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="count" type="ST_DecimalNumber">
-							<xsd:annotation>
-								<xsd:documentation>Latent Style
-									Count</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-					</xsd:complexType>
-					
-				</xsd:element>
-				<xsd:element name="style" minOccurs="0" maxOccurs="unbounded">
-					<xsd:annotation>
-						<xsd:documentation>Style Definition</xsd:documentation>
-					</xsd:annotation>
-					<xsd:complexType>
+  
 						<xsd:sequence>
 							<xsd:element name="name" minOccurs="0" maxOccurs="1">
 								<xsd:annotation>
@@ -13661,7 +13519,6 @@ PRINCIPLES:
 						</xsd:attribute>
 						<xsd:attribute name="default" type="xsd:boolean"
 							default="false" use="optional">
-							<!-- per Jo, 2008 02 21 -->
 							<xsd:annotation>
 								<xsd:documentation>Default
 									Style</xsd:documentation>
@@ -13675,8 +13532,162 @@ PRINCIPLES:
 							</xsd:annotation>
 						</xsd:attribute>
 					</xsd:complexType>
+	
+	<xsd:element name="styles">
+		<xsd:annotation>
+			<xsd:documentation>Style Definitions</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="docDefaults" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>Document Default Paragraph and Run
+							Properties</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="rPrDefault" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>Default Run
+										Properties</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="rPr" type="CT_RPr"
+											minOccurs="0"/>
+									</xsd:sequence>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="pPrDefault" minOccurs="0">
+								<xsd:annotation>
+									<xsd:documentation>Default Paragraph
+										Properties</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:sequence>
+										<xsd:element name="pPr" type="CT_PPr"
+											minOccurs="0"/>
+									</xsd:sequence>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:sequence>
+					</xsd:complexType>
 					
 				</xsd:element>
+				<xsd:element name="latentStyles" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>Latent Style
+							Information</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="lsdException" minOccurs="0"
+								maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation>Latent Style
+										Exception</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType>
+									<xsd:attribute name="name" type="ST_String"
+										use="required">
+										<xsd:annotation>
+											<xsd:documentation>Primary Style
+												Name</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="locked"
+										type="xsd:boolean" default="true">
+										<xsd:annotation>
+											<xsd:documentation>Latent Style
+												Locking
+												Setting</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="uiPriority"
+										type="ST_DecimalNumber">
+										<xsd:annotation>
+											<xsd:documentation>Override default
+												sorting order</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="semiHidden"
+										type="xsd:boolean" default="true">
+										<xsd:annotation>
+											<xsd:documentation>Semi hidden text
+												override</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="unhideWhenUsed"
+										type="xsd:boolean" default="true">
+										<xsd:annotation>
+											<xsd:documentation>Unhide when
+												used</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute name="qFormat"
+										type="xsd:boolean" use="optional">
+										
+										<!-- if omitted, to be determined from ../@defQFormat -->
+										<xsd:annotation>
+											<xsd:documentation>Latent Style
+												Primary Style Setting. If omitted, to
+												be determined from
+												../@defQFormat</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+								</xsd:complexType>
+								
+							</xsd:element>
+						</xsd:sequence>
+						<xsd:attribute name="defLockedState" type="xsd:boolean"
+							default="true">
+							<xsd:annotation>
+								<xsd:documentation>Default Style Locking
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defUIPriority"
+							type="ST_DecimalNumber">
+							<xsd:annotation>
+								<xsd:documentation>Default User Interface Priority
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defSemiHidden" type="xsd:boolean"
+							default="true">
+							<xsd:annotation>
+								<xsd:documentation>Default Semi-Hidden
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defUnhideWhenUsed" type="xsd:boolean"
+							default="true">
+							<xsd:annotation>
+								<xsd:documentation>Default Hidden Until Used
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="defQFormat" type="xsd:boolean"
+							default="false"> <!-- per the spec -->
+							<xsd:annotation>
+								<xsd:documentation>Default Primary Style
+									Setting</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+						<xsd:attribute name="count" type="ST_DecimalNumber">
+							<xsd:annotation>
+								<xsd:documentation>Latent Style
+									Count</xsd:documentation>
+							</xsd:annotation>
+						</xsd:attribute>
+					</xsd:complexType>
+					
+				</xsd:element>
+      <xsd:element name="style" type="CT_Style" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Style Definition</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
 			</xsd:sequence>
 		</xsd:complexType>
 		
