@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" 
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage" 
+	attributeFormDefault="qualified" elementFormDefault="qualified" 
+	targetNamespace="http://www.plutext.org/transforms" 
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" 
+	jaxb:version="2.1">
+<!-- 	jaxb:extensionBindingPrefixes="xjc" -->
+	
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	  schemaLocation="wml.xsd" />
+	
+	<!-- You need one schema document per namespace: 
+		
+	http://lists.xml.org/archives/xml-dev/200606/msg00155.html -->
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.plutext.transforms"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
+	<xsd:element name="transforms">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element maxOccurs="unbounded" name="t">
+          <xsd:complexType>
+            <xsd:choice>
+              <xsd:element name="style"  type="w:CT_Style" />
+              <xsd:element name="sdt"    type="w:CT_SdtBlock" />
+            </xsd:choice>
+            <xsd:attribute name="tstamp" type="xsd:unsignedLong" use="required" />
+            <xsd:attribute name="snum"   type="xsd:unsignedByte" use="required" />
+            <xsd:attribute name="op"     type="xsd:string" use="required" />
+            <xsd:attribute name="idref"  type="xsd:unsignedByte" use="optional" />
+            <xsd:attribute name="after"  type="xsd:unsignedInt" use="optional" />
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+	
+</xsd:schema>
