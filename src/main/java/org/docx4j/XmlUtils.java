@@ -193,11 +193,16 @@ public class XmlUtils {
 		}
 		return null;				
 	}
-	
+
 	/** Marshal to a String */ 
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
 
 		JAXBContext jc = Context.jc;
+		return marshaltoString(o, suppressDeclaration, jc );
+	}
+	
+	/** Marshal to a String */ 
+	public static String marshaltoString(Object o, boolean suppressDeclaration, JAXBContext jc ) {
 				
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
 		 * 
