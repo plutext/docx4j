@@ -7762,7 +7762,8 @@ PRINCIPLES:
 						Element</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="sdt" type="CT_SdtBlock">
+<!--  			<xsd:element name="sdt" type="CT_SdtBlock"> -->
+			<xsd:element ref="sdt">
 				<xsd:annotation>
 					<xsd:documentation>Block-Level Structured Document
 						Tag</xsd:documentation>
@@ -7886,12 +7887,22 @@ PRINCIPLES:
 		<xsd:group ref="EG_ContentCellContent" minOccurs="0"
 			maxOccurs="unbounded"/>
 	</xsd:complexType>
-	<xsd:complexType name="CT_SdtBlock">
+	
+	<xsd:element name="sdt">
 		<xsd:annotation>
 			<xsd:appinfo>
 				<jaxb:class name="SdtBlock"/>
 			</xsd:appinfo>
 		</xsd:annotation>
+	<!-- 
+	<xsd:complexType name="CT_SdtBlock"> 
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SdtBlock"/>
+			</xsd:appinfo>
+		</xsd:annotation>
+		-->
+<xsd:complexType>		
 		<xsd:sequence>
 			<xsd:element name="sdtPr" type="CT_SdtPr" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -7915,6 +7926,8 @@ PRINCIPLES:
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
+	</xsd:element>
+	
 	<xsd:complexType name="CT_SdtRun">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -13289,14 +13302,8 @@ PRINCIPLES:
 		
 	</xsd:element>
 	
-	
-  <xsd:complexType name="CT_Style">
-  		<xsd:annotation>
-			<xsd:appinfo>
-				<jaxb:class name="Style"/>
-			</xsd:appinfo>
-		</xsd:annotation>
-  
+<xsd:element name="style">	
+  <xsd:complexType>
 						<xsd:sequence>
 							<xsd:element name="name" minOccurs="0" maxOccurs="1">
 								<xsd:annotation>
@@ -13535,6 +13542,7 @@ PRINCIPLES:
 							</xsd:annotation>
 						</xsd:attribute>
 					</xsd:complexType>
+				</xsd:element>
 	
 	<xsd:element name="styles">
 		<xsd:annotation>
@@ -13686,11 +13694,7 @@ PRINCIPLES:
 					</xsd:complexType>
 					
 				</xsd:element>
-      <xsd:element name="style" type="CT_Style" minOccurs="0" maxOccurs="unbounded">
-        <xsd:annotation>
-          <xsd:documentation>Style Definition</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
+      <xsd:element ref="style" minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 		

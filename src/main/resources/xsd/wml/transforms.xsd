@@ -36,8 +36,28 @@
         <xsd:element maxOccurs="unbounded" name="t">
           <xsd:complexType>
             <xsd:choice>
-              <xsd:element name="style"  type="w:CT_Style" />
-              <xsd:element name="sdt"    type="w:CT_SdtBlock" />
+              <xsd:element ref="w:style" />
+              <xsd:element ref="w:sdt"  />
+              
+              <!--  You can do something like:
+              
+        	            <xsd:element minOccurs="0" ref="w:document" />
+              
+              		but a reference to a complexType
+              
+		                <xsd:element name="sdt"    type="w:CT_SdtBlock" />
+
+					doesn't give you sdt in w: namespace (as you'd expect). 
+					
+					However:
+					              
+              			<xsd:element name="w:sdt"    type="w:CT_SdtBlock" />
+              			
+              		is not allowed.
+              		
+              		So, wml.xsd restructured to create elements sdt and style.
+					              
+               -->
             </xsd:choice>
             <xsd:attribute name="tstamp" type="xsd:unsignedLong" use="required" />
             <xsd:attribute name="snum"   type="xsd:unsignedByte" use="required" />
