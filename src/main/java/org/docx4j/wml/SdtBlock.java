@@ -18,6 +18,7 @@
 
  */
 
+
 package org.docx4j.wml;
 
 import javax.xml.bind.JAXBElement;
@@ -33,35 +34,36 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_SdtBlock complex type.
+ * <p>Java class for sdt element declaration.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_SdtBlock">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="sdtPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtPr" minOccurs="0"/>
- *         &lt;element name="sdtEndPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtEndPr" minOccurs="0"/>
- *         &lt;element name="sdtContent" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtContentBlock" minOccurs="0"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;element name="sdt">
+ *   &lt;complexType>
+ *     &lt;complexContent>
+ *       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *         &lt;sequence>
+ *           &lt;element name="sdtPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtPr" minOccurs="0"/>
+ *           &lt;element name="sdtEndPr" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtEndPr" minOccurs="0"/>
+ *           &lt;element name="sdtContent" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_SdtContentBlock" minOccurs="0"/>
+ *         &lt;/sequence>
+ *       &lt;/restriction>
+ *     &lt;/complexContent>
+ *   &lt;/complexType>
+ * &lt;/element>
  * </pre>
  * 
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_SdtBlock", propOrder = {
+@XmlType(name = "", propOrder = {
     "sdtPr",
     "sdtEndPr",
     "sdtContent"
 })
 @XmlRootElement(name = "sdt")
-public class SdtBlock
-    implements Child
+public class SdtBlock implements Child
 {
 
 	private static Logger log = Logger.getLogger(SdtBlock.class);		
