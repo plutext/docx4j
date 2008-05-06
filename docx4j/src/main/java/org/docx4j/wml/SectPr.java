@@ -87,8 +87,8 @@ public class SectPr
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "headerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "footerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "footerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "headerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<JAXBElement<CTHdrFtrRef>> egHdrFtrReferences;
     protected CTFtnProps footnotePr;

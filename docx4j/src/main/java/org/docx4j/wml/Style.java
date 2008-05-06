@@ -28,18 +28,19 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Style complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Style">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -140,7 +141,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Style", propOrder = {
+@XmlType(name = "", propOrder = {
     "name",
     "aliases",
     "basedOn",
@@ -164,6 +165,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "tcPr",
     "tblStylePr"
 })
+@XmlRootElement(name = "style")
 public class Style
     implements Child
 {
@@ -450,13 +452,8 @@ public class Style
      *     
      */
     public BooleanDefaultTrue getQFormat() {
-    	if (qFormat==null) {
-    		qFormat = new BooleanDefaultTrue();
-    		qFormat.setVal( Boolean.FALSE);
-    	}
         return qFormat;
     }
-    
 
     /**
      * Sets the value of the qFormat property.

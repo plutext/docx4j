@@ -106,7 +106,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="style" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Style" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}style" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
