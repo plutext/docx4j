@@ -30,15 +30,15 @@ USAGE INSTRUCTIONS
 	 
     mvn package 
 	
-  To CLEAN previously generated classes, from /src/main/resources$ 
+  To CLEAN previously generated classes: 
 
-	jharrop@jharrop-490:~/workspace200711/docx4j-001/src/main/resources$ rm ../java/org/docx4j/wml/*.java -rf
+	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/wml/*.java -rf
 	
   To generate the classes (from the same directory)	
 			
-	 sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh -classpath ~/jaxb/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer package.xsd -d ../java/ -no-header  -target 2.0
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/lib/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer package.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
 	 
-  or jaxb-ri-20071219 (2.1.6).
+  jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
   
   You can't just use the xjc included in Java 6, since it says unrecognized parameter -Xparent-pointer
 	
@@ -62,9 +62,7 @@ USAGE INSTRUCTIONS
 	
   Then apply our patches:	
 	
-	jharrop@jharrop-490:~/workspace200711/docx4j-001/src/main/java$ patch -p0  < xjc-diffs.txt 
-
-	
+	jharrop@jharrop-490:~/workspace200711/docx4j-001/src/main/java$ patch -p0  < wml-generated-package.patch	
 	
   To create patches:	
 	
@@ -4459,6 +4457,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_FldChar">
+  		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="FldChar"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:choice>
 			<xsd:element name="fldData" type="CT_Text" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
