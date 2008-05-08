@@ -374,6 +374,9 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	 *            The part name of the part to remove.
 	 */
 	public void removePart(PartName partName) {
+		
+		log.info("trying to removePart " + partName.getName() );
+		
 		if (partName == null)
 			throw new IllegalArgumentException("partName was null");
 		
@@ -383,32 +386,37 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 
 			// Remove the relationship for which it is a target from here
 			// Throw an error if this can't be found!
-			boolean found = false;
+			Relationship relToBeRemoved = null;
 			for (Relationship rel : relationshipsByID.values() ) {
 				
-				// TODO - test/debug this
-				// anticipate some minor adjustments may be required
-				log.debug("Comparing " + rel.getTargetURI() + " == " + partName.getName());
-				if (rel.getTargetURI().equals(partName.getName()) ) {
+				URI resolvedTargetURI = org.docx4j.openpackaging.URIHelper.resolvePartUri(   sourceP.partName.getURI(), rel.getTargetURI() );
+				log.debug("Comparing " + resolvedTargetURI + " == " + partName.getName());
+				
+				if (partName.getName().equals(resolvedTargetURI.toString()) ) { // was rel.getTargetURI()
+					
 					log.info("True - will delete relationship with target " + rel.getTargetURI());
-					removeRelationship(rel);
-					found = true;
+					relToBeRemoved = rel; // Avoid java.util.ConcurrentModificationException
+					break;
 				}
 				
 			}
-			if (!found) {
+			if (relToBeRemoved==null) {
 				// The Part may be in the package somewhere, but its not
 				// a target of this relationships part!
 				throw new IllegalArgumentException(partName + " is not a target of " + this.partName );
+			} else {
+				removeRelationship(relToBeRemoved);				
 			}
 						
 			// Remove parts it references
-			part.getRelationshipsPart().removeParts();
-			part.setRelationships(null);
+			if (part.getRelationshipsPart()!=null) {
+				part.getRelationshipsPart().removeParts();
+				
+				// part.setRelationships(null);  // Unnecessary
+			}			
 
 			// Remove from Content Type Manager
-				// TODO
-			
+				// TODO			
 			
 			// Delete the specified part from the package.
 			getPackage().getParts().remove(partName);						
