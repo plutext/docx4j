@@ -199,7 +199,9 @@ public class Substituter {
         // based on os.name
         List fontFileList = fontFileFinder.find();                
         for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            URL fontUrl = (URL)iter.next();
+        	
+        	URL fontUrl = getURL(iter.next());
+            
             // parse font to ascertain font info
             FontInfoFinder finder = new FontInfoFinder();
             setupPhysicalFont(fontResolver, fontUrl, finder);
@@ -208,7 +210,7 @@ public class Substituter {
         // Add fonts from our Temporary Embedded Fonts dir
         fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
         for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            URL fontUrl = (URL)iter.next();
+            URL fontUrl = getURL(iter.next());
             // parse font to ascertain font info
             FontInfoFinder finder = new FontInfoFinder();
             setupPhysicalFont(fontResolver, fontUrl, finder);
@@ -218,6 +220,19 @@ public class Substituter {
         // TODO - reenable the cache
         
         panoseDebugReportOnPhysicalFonts(physicalFontMap);
+	}
+	
+	private static URL getURL(Object o) throws Exception {
+		
+    	if (o instanceof java.io.File) {
+    		// Running in Tomcat
+    		java.io.File f = (java.io.File)o;
+    		return f.toURL();
+    	} else if (o instanceof java.net.URL) {
+    		return (URL)o;
+    	} else {
+    		throw new Exception("Unexpected object:" + o.getClass().getName() );
+    	}        	
 	}
 
 	/**
