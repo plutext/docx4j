@@ -318,7 +318,15 @@ public class WordprocessingMLPackage extends Package {
 
     	html(result, true);
     }
-    
+
+    public void html(javax.xml.transform.Result result, boolean fontFamilyStack) throws Exception {
+
+		// Prep parameters
+    	HtmlSettings htmlSettings = new HtmlSettings();
+    	htmlSettings.setFontFamilyStack(fontFamilyStack);
+    	
+		html(result, htmlSettings);
+    }
     
 	/** Create an html version of the document. 
 	 * 
@@ -326,7 +334,7 @@ public class WordprocessingMLPackage extends Package {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
-    public void html(javax.xml.transform.Result result, boolean fontFamilyStack) throws Exception {
+    public void html(javax.xml.transform.Result result, HtmlSettings htmlSettings) throws Exception {
     	
     	/*
     	 * Given that word2html.xsl is freely available, use a
@@ -351,21 +359,24 @@ public class WordprocessingMLPackage extends Package {
 		java.io.InputStream xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/packages/wordml2html-2007.xslt");
 		
 		// Prep parameters
-		Map<String, Object> transformParameters = new java.util.HashMap<String,Object>();
-		// ..Ensure that the font names in the XHTML have been mapped to these matches
-		//     possibly via an extension function in the XSLT
-		if (fontSubstituter==null) {
-			log.debug("Creating new Substituter.");
-			setFontSubstituter(new Substituter());
-		} else {
-			log.debug("Using existing Substituter.");
+		if (htmlSettings==null) {
+			htmlSettings = new HtmlSettings();
+			// ..Ensure that the font names in the XHTML have been mapped to these matches
+			//     possibly via an extension function in the XSLT
 		}
-		transformParameters.put("substituterInstance", fontSubstituter);
-		transformParameters.put("fontFamilyStack", fontFamilyStack);
 		
+		if (htmlSettings.getFontSubstituter()==null) {
+			if (fontSubstituter==null) {
+				log.debug("Creating new Substituter.");
+				setFontSubstituter(new Substituter());
+			} else {
+				log.debug("Using existing Substituter.");
+			}
+			htmlSettings.setFontSubstituter(fontSubstituter);
+		}
 		
 		// Now do the transformation
-		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
+		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
 		
 		log.info("wordDocument transformed to xhtml ..");
     	
@@ -634,6 +645,39 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 			return settings;
 		}
 		
+		
+	}
+
+	public static class HtmlSettings {
+		
+		Boolean fontFamilyStack = Boolean.FALSE;		
+		public void setFontFamilyStack(boolean val) {
+			fontFamilyStack = new Boolean(val);
+		}
+		
+		Boolean docxWiki = Boolean.FALSE;		
+		public void setDocxWiki(boolean val) {
+			docxWiki = new Boolean(val);
+		}
+
+		Substituter fontSubstituter = null;		
+		public void setFontSubstituter(Substituter fontSubstituter) {
+			this.fontSubstituter = fontSubstituter;
+		}
+		public Substituter getFontSubstituter() {
+			return fontSubstituter;
+		}
+		
+		
+		Map<String, Object> getSettings() {
+			Map<String, Object> settings = new java.util.HashMap<String, Object>();
+			
+			settings.put("fontFamilyStack", fontFamilyStack);
+			settings.put("docxWiki", docxWiki);
+			settings.put("substituterInstance", fontSubstituter);
+			
+			return settings;
+		}
 		
 	}
 	
