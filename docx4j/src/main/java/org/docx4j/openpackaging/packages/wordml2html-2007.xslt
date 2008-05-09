@@ -41,7 +41,9 @@ Changes since version 1.2:
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
 <xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->	
-	
+<xsl:param name="docxWiki"/>		
+<xsl:param name="docxWikiSdtID"/>		
+<xsl:param name="docID"/>
 
 <xsl:variable name="paraStyleID_Default">Normal</xsl:variable>
 <xsl:variable name="tblStyleID_Default">TableNormal</xsl:variable>
@@ -5094,7 +5096,7 @@ if (msoBrowserCheck())
 						<xsl:text disable-output-escaping="yes">&lt;![endif]</xsl:text>
 					</xsl:comment>
 					-->
-					<style type="print">						
+					<style> <!-- type="print" -->						
 						<xsl:comment>
 							/*font definitions*/
 							<!-- 2008 03 12: TODO font part currently not included in our pkg:package -->
@@ -5138,6 +5140,27 @@ if (msoBrowserCheck())
 								</xsl:for-each>
 								<xsl:text>} div.</xsl:text><xsl:value-of select="$sectName"/>{page:<xsl:value-of select="$sectName"/>;}
 							</xsl:for-each>
+							
+							<xsl:if test="$docxWiki=true()">
+								/*docxwiki*/
+								.docxwiki-headline {
+									color: black;
+									background: none;
+									font-weight: normal;
+									margin: 0;
+									padding-top: .5em;
+									padding-bottom: .17em;
+									border-bottom: 1px solid #aaa;
+								}
+								
+								.editsection { font-size: 80%; font-weight: normal; }
+								
+								div.editsection {
+									float: right;
+									margin-left: 5px;
+								}							
+							</xsl:if>
+							
 						</xsl:comment>
 					</style>
 				</head>
@@ -5277,7 +5300,49 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
 -->
 
 <xsl:template match="w:sdt">
-  <xsl:apply-templates select="w:sdtContent/*"/>
+
+<!-- 
+
+A mediawiki chunk starts with three things:
+1. anchor
+2. heading level
+   (i) editsection
+   (2) the actual heading (including line)
+
+<p><a name="Business_and_political_career_before_presidency" id="Business_and_political_career_before_presidency"></a></p>
+<h2><span class="editsection">[<a href="/w/index.php?title=Dmitry_Medvedev&amp;action=edit&amp;section=2" title="Edit section: Business and political career before presidency">edit</a>]</span> 
+    <span class="mw-headline">Business and political career before presidency</span></h2>
+
+ -->
+
+	<xsl:variable name="thisSdtID"><xsl:value-of select="string(./w:sdtPr/w:id/@w:val)"/></xsl:variable>
+
+	<xsl:choose>
+		<xsl:when test="$docxWiki='open'">
+			<div class="docxwiki-headline">
+				<a name="sub{./w:sdtPr/w:id/@w:val}" id="sub{./w:sdtPr/w:id/@w:val}"></a>
+				<div class="editsection">[<a href="/alfresco/docxwiki/edit{$docID}/{./w:sdtPr/w:id/@w:val}" title="Edit sdt {./w:sdtPr/w:id/@w:val}">edit</a>]</div>
+					<!--  Firefox 2 does not pass # to the server, so use / instead. --> 
+			    <span class="mw-headline">Something here</span>
+			</div>
+			<xsl:apply-templates select="w:sdtContent/*"/>
+		</xsl:when>
+		<xsl:when test="$docxWiki='edit'">
+			<xsl:choose>
+				<xsl:when test="$docxWikiSdtID=$thisSdtID">
+					<h1>Inline editor for {./w:sdtPr/w:id/@w:val}</h1>
+					<xsl:apply-templates select="w:sdtContent/*"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates select="w:sdtContent/*"/>				
+				</xsl:otherwise>
+			</xsl:choose>			
+		</xsl:when>
+		<xsl:otherwise>
+			<!--  The normal (ie non wiki) case -->
+			<xsl:apply-templates select="w:sdtContent/*"/>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 
 
