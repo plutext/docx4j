@@ -655,11 +655,22 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 			fontFamilyStack = new Boolean(val);
 		}
 		
-		Boolean docxWiki = Boolean.FALSE;		
-		public void setDocxWiki(boolean val) {
-			docxWiki = new Boolean(val);
+		String docxWiki = null;	// edit | open	
+		public void setDocxWiki(String docxWiki) {
+			this.docxWiki = docxWiki;
 		}
 
+		String docxWikiSdtID = null;	
+		public void setDocxWikiSdtID(String docxWikiSdtID) {
+			this.docxWikiSdtID = docxWikiSdtID;
+		}
+		
+		String docID = null;
+		public void setDocID(String docID) {
+			this.docID = docID;
+		}
+		
+		
 		Substituter fontSubstituter = null;		
 		public void setFontSubstituter(Substituter fontSubstituter) {
 			this.fontSubstituter = fontSubstituter;
@@ -674,6 +685,8 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 			
 			settings.put("fontFamilyStack", fontFamilyStack);
 			settings.put("docxWiki", docxWiki);
+			settings.put("docxWikiSdtID", docxWikiSdtID);
+			settings.put("docID", docID);
 			settings.put("substituterInstance", fontSubstituter);
 			
 			return settings;
