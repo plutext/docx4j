@@ -5330,8 +5330,43 @@ A mediawiki chunk starts with three things:
 		<xsl:when test="$docxWiki='edit'">
 			<xsl:choose>
 				<xsl:when test="$docxWikiSdtID=$thisSdtID">
-					<h1>Inline editor for {./w:sdtPr/w:id/@w:val}</h1>
-					<xsl:apply-templates select="w:sdtContent/*"/>
+					<form id="dialog" name="dialog" method="post" 
+					       action="/alfresco/docxwiki/save{$docID}/{./w:sdtPr/w:id/@w:val}" 
+					       accept-charset="UTF-8" 
+					       enctype="application/x-www-form-urlencoded">
+						<script language="javascript" type="text/javascript" src="/alfresco/scripts/tiny_mce/tiny_mce.js">//</script>
+							<!--  // to ensure the tag does not become self-closing, since this upsets browsers. -->
+						<script language="javascript" type="text/javascript">
+											
+							tinyMCE.init({
+							theme : "advanced",
+							mode : "exact",
+							relative_urls: false,
+							elements : "editor",
+							save_callback : "saveContent",
+							plugins : "table",
+							theme_advanced_toolbar_location : "top",
+							theme_advanced_toolbar_align : "left",
+							theme_advanced_buttons1_add : "fontselect,fontsizeselect",
+							theme_advanced_buttons2_add : "separator,forecolor,backcolor",
+							theme_advanced_buttons3_add_before : "tablecontrols,separator",
+							theme_advanced_disable: "styleselect",
+							extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
+							});
+							
+							function saveContent(id, content)
+							{
+							 //document.forms['edit-file']['edit-file:editorOutput'].value = content;
+							 document.getElementById("dialog:dialog-body:editorOutput").value=content;
+							}
+						
+						</script>	
+						<div id='editor' style='width:100%; height:360px'>
+							<xsl:apply-templates select="w:sdtContent/*"/>
+						</div>
+						<input type="hidden" id="dialog:dialog-body:editorOutput" name="dialog:dialog-body:editorOutput" value="" />
+						<input type="submit" name="submit"/>
+					</form>			
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:apply-templates select="w:sdtContent/*"/>				
