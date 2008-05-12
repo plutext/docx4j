@@ -22,6 +22,9 @@
 package org.docx4j;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.Map;
@@ -263,6 +266,46 @@ public class XmlUtils {
 		}
 		return null;				
 	}
+
+	public static java.io.InputStream marshaltoInputStream(Object o, boolean suppressDeclaration, JAXBContext jc ) {
+		
+		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
+		 * 
+		 * If you are writing to a file, a socket, or memory, then you should use
+		 * the version that takes OutputStream. Unless you change the target 
+		 * encoding to something else (default is UTF-8), there's a special 
+		 * marshaller codepath for OutputStream, which makes it run really fast.
+		 * You also don't have to use BufferedOutputStream, since the JAXB RI 
+		 * does the adequate buffering.
+		 * 
+		 */
+		
+		try {			
+			Marshaller m=jc.createMarshaller();
+
+			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+						
+			if (suppressDeclaration) {
+				m.setProperty(Marshaller.JAXB_FRAGMENT,true);
+			}
+			
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			m.marshal(o, os);			
+
+			// Now copy from the outputstream to inputstream
+			// See http://ostermiller.org/convert_java_outputstream_inputstream.html
+			
+			return new java.io.ByteArrayInputStream(os.toByteArray());
+			
+			
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;				
+	}
+	
 	
 	/** Clone this JAXB object */ 
 	public static Object deepCopy(Object in) {
@@ -312,6 +355,7 @@ public class XmlUtils {
 		}		
 		
 	}
+
 	
     /**
      * 
@@ -324,6 +368,27 @@ public class XmlUtils {
      * @throws Exception
      */
     public static void transform(org.w3c.dom.Document doc,
+    					  java.io.InputStream xslt, 
+    					  Map<String, Object> transformParameters, 
+    					  javax.xml.transform.Result result) throws Exception {
+    	
+		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
+
+		transform(domSource, xslt, transformParameters, result);
+    }
+    
+	
+    /**
+     * 
+     * Transform an input document using XSLT
+     * 
+     * @param doc
+     * @param xslt
+     * @param transformParameters
+     * @param result
+     * @throws Exception
+     */
+    public static void transform(javax.xml.transform.Source source,
     					  java.io.InputStream xslt, 
     					  Map<String, Object> transformParameters, 
     					  javax.xml.transform.Result result) throws Exception {
@@ -397,7 +462,7 @@ public class XmlUtils {
     			
     			// Now transform this into XHTML
     			tfactory = javax.xml.transform.TransformerFactory.newInstance();
-    			javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
+//    			javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
 
     					
     			// Use the factory to create a template containing the xsl file
@@ -421,25 +486,26 @@ public class XmlUtils {
     			// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't work
     			// with our extension function.
 
-    			Iterator parameterIterator = transformParameters.entrySet().iterator();
-    		    while (parameterIterator.hasNext()) {
-    		        Map.Entry pairs = (Map.Entry)parameterIterator.next();
-    		        
-    		        if(pairs.getKey()==null) {
-    		        	log.info("Skipped null key");
-    		        	pairs = (Map.Entry)parameterIterator.next();
-    		        }
-    		        
-    		        xformer.setParameter( (String)pairs.getKey(), pairs.getValue() );
-    		    }
-    			
+    			if (transformParameters!=null) {
+	    			Iterator parameterIterator = transformParameters.entrySet().iterator();
+	    		    while (parameterIterator.hasNext()) {
+	    		        Map.Entry pairs = (Map.Entry)parameterIterator.next();
+	    		        
+	    		        if(pairs.getKey()==null) {
+	    		        	log.info("Skipped null key");
+	    		        	pairs = (Map.Entry)parameterIterator.next();
+	    		        }
+	    		        
+	    		        xformer.setParameter( (String)pairs.getKey(), pairs.getValue() );
+	    		    }
+    			}
     			
     			//DEBUGGING 
     			// use the identity transform if you want to send wordDocument;
     			// otherwise you'll get the XHTML
     			//javax.xml.transform.Transformer xformer = tfactory.newTransformer();
     			
-    			xformer.transform(domSource, result);
+    			xformer.transform(source, result);
     	
     }
 	
