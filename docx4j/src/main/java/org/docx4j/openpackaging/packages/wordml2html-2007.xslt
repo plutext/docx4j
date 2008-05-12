@@ -5344,27 +5344,23 @@ A mediawiki chunk starts with three things:
 							relative_urls: false,
 							elements : "editor",
 							save_callback : "saveContent",
-							plugins : "table",
 							theme_advanced_toolbar_location : "top",
 							theme_advanced_toolbar_align : "left",
 							theme_advanced_buttons1_add : "fontselect,fontsizeselect",
-							theme_advanced_buttons2_add : "separator,forecolor,backcolor",
-							theme_advanced_buttons3_add_before : "tablecontrols,separator",
 							theme_advanced_disable: "styleselect",
 							extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
 							});
 							
 							function saveContent(id, content)
 							{
-							 //document.forms['edit-file']['edit-file:editorOutput'].value = content;
-							 document.getElementById("dialog:dialog-body:editorOutput").value=content;
+							 document.getElementById("editorOutput").value=content;
 							}
 						
 						</script>	
 						<div id='editor' style='width:100%; height:360px'>
 							<xsl:apply-templates select="w:sdtContent/*"/>
 						</div>
-						<input type="hidden" id="dialog:dialog-body:editorOutput" name="dialog:dialog-body:editorOutput" value="" />
+						<input type="hidden" id="editorOutput" name="editorOutput" value="" />
 						<input type="submit" name="submit"/>
 					</form>			
 				</xsl:when>
