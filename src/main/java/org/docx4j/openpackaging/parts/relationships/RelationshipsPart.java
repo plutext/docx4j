@@ -347,8 +347,14 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	 /** Remove all parts from this relationships
 	 *   part */ 
 	public void removeParts() {
-		
+
+		// Make a list in order to avoid concurrent modification exception
+		java.util.ArrayList<Relationship> relationshipsToGo = new java.util.ArrayList<Relationship>();
 		for (Relationship r : relationshipsByID.values() ) {
+			relationshipsToGo.add(r);
+		}
+
+		for (Relationship r : relationshipsToGo ) {
 			
 			String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 			
@@ -361,6 +367,7 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 				e.printStackTrace();
 			}
 		}
+	
 	}
 	
 	/**
