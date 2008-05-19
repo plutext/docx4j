@@ -146,11 +146,11 @@ public class Properties {
     
     public int getNextId() {
     	
-    	int id = 1;
+    	int id = 2;  // Lowest number Word 2007 seems to like is 2 (!)
     	
     	for( Property prop : getProperty() ) {
     		
-    		if (prop.getPid() > id ) {
+    		if (prop.getPid() >= id ) {
     			id = prop.getPid() + 1;
     		}
     		
