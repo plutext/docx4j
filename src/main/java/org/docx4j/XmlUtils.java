@@ -493,10 +493,15 @@ public class XmlUtils {
 	    		        
 	    		        if(pairs.getKey()==null) {
 	    		        	log.info("Skipped null key");
-	    		        	pairs = (Map.Entry)parameterIterator.next();
+	    		        	//pairs = (Map.Entry)parameterIterator.next();
+	    		        	continue;
 	    		        }
 	    		        
-	    		        xformer.setParameter( (String)pairs.getKey(), pairs.getValue() );
+	    		        if (pairs.getValue()==null) {
+	    		        	log.warn("parameter '" + pairs.getKey() + "' was null.");
+	    		        } else {
+	    		        	xformer.setParameter( (String)pairs.getKey(), pairs.getValue() );
+	    		        }
 	    		    }
     			}
     			
