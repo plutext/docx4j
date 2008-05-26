@@ -14,6 +14,12 @@
   <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	  schemaLocation="wml.xsd" />
 	
+<!--    To generate the classes (from the same directory)	
+			
+			 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer transforms.xsd -d tmp/ -no-header -target 2.0
+
+ -->	
+	
 	<!-- You need one schema document per namespace: 
 		
 	http://lists.xml.org/archives/xml-dev/200606/msg00155.html -->
@@ -59,11 +65,19 @@
 					              
                -->
             </xsd:choice>
-            <xsd:attribute name="tstamp" type="xsd:unsignedLong" use="required" />
-            <xsd:attribute name="snum"   type="xsd:unsignedByte" use="required" />
+            <xsd:attribute name="tstamp" type="xsd:unsignedInt" use="required" />
+            <xsd:attribute name="snum"   type="xsd:unsignedInt" use="required" />
             <xsd:attribute name="op"     type="xsd:string" use="required" />
-            <xsd:attribute name="idref"  type="xsd:unsignedByte" use="optional" />
+            <xsd:attribute name="idref"  type="xsd:unsignedInt" use="optional" />
             <xsd:attribute name="after"  type="xsd:unsignedInt" use="optional" />
+            
+            <!--  Type conversions:
+            
+            		xsd:unsignedByte becomes Java short (16 bit signed integer ie +/- 32767
+            		xsd:unsignedInt  becomes Java long  (64 bit signed integer)
+            		xsd:unsignedLong becomes Java BigInteger            
+            
+             -->
           </xsd:complexType>
         </xsd:element>
       </xsd:sequence>
