@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?><project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>webdavclient4j</groupId>
+  <artifactId>webdavclient4j-vfs</artifactId>
+  <version>0.92.1</version>
+</project>
