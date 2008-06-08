@@ -358,6 +358,8 @@ public class SaveToJCR {
 	        	log.info("Truncated cm:name from " + partName + " to " + partName.substring(partName.lastIndexOf("/")+1) );
 	        	// eg Truncated cm:name from word/_rels/document.xml.rels to document.xml.rels
 
+	        } else {
+	        	cmContentNode.setProperty("cm:name", partName);
 	        }
 	        cmContentNode.setProperty("cm:title", partName);
 	        log.info("Set cm:name and cm:title: " + partName);
