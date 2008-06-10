@@ -72,7 +72,7 @@ public class Tr implements Child
 {
 
     protected CTTblPrEx tblPrEx;
-    protected CTTrPr trPr;
+    protected TrPr trPr;
     @XmlElementRefs({
         @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
@@ -142,10 +142,10 @@ public class Tr implements Child
      * 
      * @return
      *     possible object is
-     *     {@link CTTrPr }
+     *     {@link TrPr }
      *     
      */
-    public CTTrPr getTrPr() {
+    public TrPr getTrPr() {
         return trPr;
     }
 
@@ -154,10 +154,10 @@ public class Tr implements Child
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTrPr }
+     *     {@link TrPr }
      *     
      */
-    public void setTrPr(CTTrPr value) {
+    public void setTrPr(TrPr value) {
         this.trPr = value;
     }
 
@@ -204,7 +204,7 @@ public class Tr implements Child
      * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
      * {@link JAXBElement }{@code <}{@link CTSdtCell }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTc }{@code >}
+     * {@link JAXBElement }{@code <}{@link Tc }{@code >}
      * 
      * 
      */

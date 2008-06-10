@@ -21,6 +21,8 @@
 
 package org.docx4j.wml;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -30,18 +32,18 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_TcPrInner complex type.
+ * <p>Java class for CT_TblGridBase complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TcPrInner">
+ * &lt;complexType name="CT_TblGridBase">
  *   &lt;complexContent>
- *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TcPrBase">
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_CellMarkupElements" minOccurs="0"/>
+ *         &lt;element name="gridCol" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblGridCol" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *     &lt;/extension>
+ *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -49,92 +51,44 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_TcPrInner", propOrder = {
-    "cellIns",
-    "cellDel",
-    "cellMerge"
+@XmlType(name = "CT_TblGridBase", propOrder = {
+    "gridCol"
 })
-public class CTTcPrInner
-    extends CTTcPrBase
+public class TblGridBase
     implements Child
 {
 
-    protected CTTrackChange cellIns;
-    protected CTTrackChange cellDel;
-    protected CTCellMergeTrackChange cellMerge;
+    protected List<TblGridCol> gridCol;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the cellIns property.
+     * Gets the value of the gridCol property.
      * 
-     * @return
-     *     possible object is
-     *     {@link CTTrackChange }
-     *     
-     */
-    public CTTrackChange getCellIns() {
-        return cellIns;
-    }
-
-    /**
-     * Sets the value of the cellIns property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the gridCol property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTrackChange }
-     *     
-     */
-    public void setCellIns(CTTrackChange value) {
-        this.cellIns = value;
-    }
-
-    /**
-     * Gets the value of the cellDel property.
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getGridCol().add(newItem);
+     * </pre>
      * 
-     * @return
-     *     possible object is
-     *     {@link CTTrackChange }
-     *     
-     */
-    public CTTrackChange getCellDel() {
-        return cellDel;
-    }
-
-    /**
-     * Sets the value of the cellDel property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTrackChange }
-     *     
-     */
-    public void setCellDel(CTTrackChange value) {
-        this.cellDel = value;
-    }
-
-    /**
-     * Gets the value of the cellMerge property.
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link TblGridCol }
      * 
-     * @return
-     *     possible object is
-     *     {@link CTCellMergeTrackChange }
-     *     
-     */
-    public CTCellMergeTrackChange getCellMerge() {
-        return cellMerge;
-    }
-
-    /**
-     * Sets the value of the cellMerge property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link CTCellMergeTrackChange }
-     *     
      */
-    public void setCellMerge(CTCellMergeTrackChange value) {
-        this.cellMerge = value;
+    public List<TblGridCol> getGridCol() {
+        if (gridCol == null) {
+            gridCol = new ArrayList<TblGridCol>();
+        }
+        return this.gridCol;
     }
 
     /**

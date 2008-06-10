@@ -21,27 +21,29 @@
 
 package org.docx4j.wml;
 
-import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_TblWidth complex type.
+ * <p>Java class for CT_TcMar complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TblWidth">
+ * &lt;complexType name="CT_TcMar">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="w" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
- *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_TblWidth" />
+ *       &lt;sequence>
+ *         &lt;element name="top" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
+ *         &lt;element name="left" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
+ *         &lt;element name="bottom" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
+ *         &lt;element name="right" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
+ *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -50,63 +52,117 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_TblWidth")
-public class CTTblWidth implements Child
+@XmlType(name = "CT_TcMar", propOrder = {
+    "top",
+    "left",
+    "bottom",
+    "right"
+})
+public class TcMar
+    implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected BigInteger w;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected STTblWidth type;
+    protected TblWidth top;
+    protected TblWidth left;
+    protected TblWidth bottom;
+    protected TblWidth right;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the w property.
+     * Gets the value of the top property.
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link TblWidth }
      *     
      */
-    public BigInteger getW() {
-        return w;
+    public TblWidth getTop() {
+        return top;
     }
 
     /**
-     * Sets the value of the w property.
+     * Sets the value of the top property.
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link TblWidth }
      *     
      */
-    public void setW(BigInteger value) {
-        this.w = value;
+    public void setTop(TblWidth value) {
+        this.top = value;
     }
 
     /**
-     * Gets the value of the type property.
+     * Gets the value of the left property.
      * 
      * @return
      *     possible object is
-     *     {@link STTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public STTblWidth getType() {
-        return type;
+    public TblWidth getLeft() {
+        return left;
     }
 
     /**
-     * Sets the value of the type property.
+     * Sets the value of the left property.
      * 
      * @param value
      *     allowed object is
-     *     {@link STTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setType(STTblWidth value) {
-        this.type = value;
+    public void setLeft(TblWidth value) {
+        this.left = value;
+    }
+
+    /**
+     * Gets the value of the bottom property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link TblWidth }
+     *     
+     */
+    public TblWidth getBottom() {
+        return bottom;
+    }
+
+    /**
+     * Sets the value of the bottom property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link TblWidth }
+     *     
+     */
+    public void setBottom(TblWidth value) {
+        this.bottom = value;
+    }
+
+    /**
+     * Gets the value of the right property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link TblWidth }
+     *     
+     */
+    public TblWidth getRight() {
+        return right;
+    }
+
+    /**
+     * Sets the value of the right property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link TblWidth }
+     *     
+     */
+    public void setRight(TblWidth value) {
+        this.right = value;
     }
 
     /**

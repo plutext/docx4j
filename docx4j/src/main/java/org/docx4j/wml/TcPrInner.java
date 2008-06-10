@@ -33,12 +33,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_TcPrBase complex type.
+ * <p>Java class for CT_TcPrInner complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TcPrBase">
+ * &lt;complexType name="CT_TcPrInner">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -115,6 +115,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="tcFitText" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *         &lt;element name="vAlign" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_VerticalJc" minOccurs="0"/>
  *         &lt;element name="hideMark" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;group ref="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}EG_CellMarkupElements" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -124,7 +125,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_TcPrBase", propOrder = {
+@XmlType(name = "CT_TcPrInner", propOrder = {
     "cnfStyle",
     "tcW",
     "gridSpan",
@@ -137,25 +138,31 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "textDirection",
     "tcFitText",
     "vAlign",
-    "hideMark"
+    "hideMark",
+    "cellIns",
+    "cellDel",
+    "cellMerge"
 })
-public class CTTcPrBase
+public class TcPrInner
     implements Child
 {
 
     protected CTCnf cnfStyle;
-    protected CTTblWidth tcW;
-    protected CTTcPrBase.GridSpan gridSpan;
-    protected CTTcPrBase.HMerge hMerge;
-    protected CTTcPrBase.VMerge vMerge;
-    protected CTTcPrBase.TcBorders tcBorders;
+    protected TblWidth tcW;
+    protected TcPrInner.GridSpan gridSpan;
+    protected TcPrInner.HMerge hMerge;
+    protected TcPrInner.VMerge vMerge;
+    protected TcPrInner.TcBorders tcBorders;
     protected CTShd shd;
     protected BooleanDefaultTrue noWrap;
-    protected CTTcMar tcMar;
+    protected TcMar tcMar;
     protected TextDirection textDirection;
     protected BooleanDefaultTrue tcFitText;
     protected CTVerticalJc vAlign;
     protected BooleanDefaultTrue hideMark;
+    protected CTTrackChange cellIns;
+    protected CTTrackChange cellDel;
+    protected CTCellMergeTrackChange cellMerge;
     @XmlTransient
     private Object parent;
 
@@ -188,10 +195,10 @@ public class CTTcPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getTcW() {
+    public TblWidth getTcW() {
         return tcW;
     }
 
@@ -200,10 +207,10 @@ public class CTTcPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setTcW(CTTblWidth value) {
+    public void setTcW(TblWidth value) {
         this.tcW = value;
     }
 
@@ -212,10 +219,10 @@ public class CTTcPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTcPrBase.GridSpan }
+     *     {@link TcPrInner.GridSpan }
      *     
      */
-    public CTTcPrBase.GridSpan getGridSpan() {
+    public TcPrInner.GridSpan getGridSpan() {
         return gridSpan;
     }
 
@@ -224,10 +231,10 @@ public class CTTcPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcPrBase.GridSpan }
+     *     {@link TcPrInner.GridSpan }
      *     
      */
-    public void setGridSpan(CTTcPrBase.GridSpan value) {
+    public void setGridSpan(TcPrInner.GridSpan value) {
         this.gridSpan = value;
     }
 
@@ -236,10 +243,10 @@ public class CTTcPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTcPrBase.HMerge }
+     *     {@link TcPrInner.HMerge }
      *     
      */
-    public CTTcPrBase.HMerge getHMerge() {
+    public TcPrInner.HMerge getHMerge() {
         return hMerge;
     }
 
@@ -248,10 +255,10 @@ public class CTTcPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcPrBase.HMerge }
+     *     {@link TcPrInner.HMerge }
      *     
      */
-    public void setHMerge(CTTcPrBase.HMerge value) {
+    public void setHMerge(TcPrInner.HMerge value) {
         this.hMerge = value;
     }
 
@@ -260,10 +267,10 @@ public class CTTcPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTcPrBase.VMerge }
+     *     {@link TcPrInner.VMerge }
      *     
      */
-    public CTTcPrBase.VMerge getVMerge() {
+    public TcPrInner.VMerge getVMerge() {
         return vMerge;
     }
 
@@ -272,10 +279,10 @@ public class CTTcPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcPrBase.VMerge }
+     *     {@link TcPrInner.VMerge }
      *     
      */
-    public void setVMerge(CTTcPrBase.VMerge value) {
+    public void setVMerge(TcPrInner.VMerge value) {
         this.vMerge = value;
     }
 
@@ -284,10 +291,10 @@ public class CTTcPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTcPrBase.TcBorders }
+     *     {@link TcPrInner.TcBorders }
      *     
      */
-    public CTTcPrBase.TcBorders getTcBorders() {
+    public TcPrInner.TcBorders getTcBorders() {
         return tcBorders;
     }
 
@@ -296,10 +303,10 @@ public class CTTcPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcPrBase.TcBorders }
+     *     {@link TcPrInner.TcBorders }
      *     
      */
-    public void setTcBorders(CTTcPrBase.TcBorders value) {
+    public void setTcBorders(TcPrInner.TcBorders value) {
         this.tcBorders = value;
     }
 
@@ -356,10 +363,10 @@ public class CTTcPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTcMar }
+     *     {@link TcMar }
      *     
      */
-    public CTTcMar getTcMar() {
+    public TcMar getTcMar() {
         return tcMar;
     }
 
@@ -368,10 +375,10 @@ public class CTTcPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcMar }
+     *     {@link TcMar }
      *     
      */
-    public void setTcMar(CTTcMar value) {
+    public void setTcMar(TcMar value) {
         this.tcMar = value;
     }
 
@@ -469,6 +476,78 @@ public class CTTcPrBase
      */
     public void setHideMark(BooleanDefaultTrue value) {
         this.hideMark = value;
+    }
+
+    /**
+     * Gets the value of the cellIns property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public CTTrackChange getCellIns() {
+        return cellIns;
+    }
+
+    /**
+     * Sets the value of the cellIns property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public void setCellIns(CTTrackChange value) {
+        this.cellIns = value;
+    }
+
+    /**
+     * Gets the value of the cellDel property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public CTTrackChange getCellDel() {
+        return cellDel;
+    }
+
+    /**
+     * Sets the value of the cellDel property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTrackChange }
+     *     
+     */
+    public void setCellDel(CTTrackChange value) {
+        this.cellDel = value;
+    }
+
+    /**
+     * Gets the value of the cellMerge property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTCellMergeTrackChange }
+     *     
+     */
+    public CTCellMergeTrackChange getCellMerge() {
+        return cellMerge;
+    }
+
+    /**
+     * Sets the value of the cellMerge property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTCellMergeTrackChange }
+     *     
+     */
+    public void setCellMerge(CTCellMergeTrackChange value) {
+        this.cellMerge = value;
     }
 
     /**

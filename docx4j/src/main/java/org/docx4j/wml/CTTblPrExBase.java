@@ -72,11 +72,11 @@ public class CTTblPrExBase
     implements Child
 {
 
-    protected CTTblWidth tblW;
+    protected TblWidth tblW;
     protected Jc jc;
-    protected CTTblWidth tblCellSpacing;
-    protected CTTblWidth tblInd;
-    protected CTTblBorders tblBorders;
+    protected TblWidth tblCellSpacing;
+    protected TblWidth tblInd;
+    protected TblBorders tblBorders;
     protected CTShd shd;
     protected CTTblLayoutType tblLayout;
     protected CTTblCellMar tblCellMar;
@@ -89,10 +89,10 @@ public class CTTblPrExBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getTblW() {
+    public TblWidth getTblW() {
         return tblW;
     }
 
@@ -101,10 +101,10 @@ public class CTTblPrExBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setTblW(CTTblWidth value) {
+    public void setTblW(TblWidth value) {
         this.tblW = value;
     }
 
@@ -137,10 +137,10 @@ public class CTTblPrExBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getTblCellSpacing() {
+    public TblWidth getTblCellSpacing() {
         return tblCellSpacing;
     }
 
@@ -149,10 +149,10 @@ public class CTTblPrExBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setTblCellSpacing(CTTblWidth value) {
+    public void setTblCellSpacing(TblWidth value) {
         this.tblCellSpacing = value;
     }
 
@@ -161,10 +161,10 @@ public class CTTblPrExBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getTblInd() {
+    public TblWidth getTblInd() {
         return tblInd;
     }
 
@@ -173,10 +173,10 @@ public class CTTblPrExBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setTblInd(CTTblWidth value) {
+    public void setTblInd(TblWidth value) {
         this.tblInd = value;
     }
 
@@ -185,10 +185,10 @@ public class CTTblPrExBase
      * 
      * @return
      *     possible object is
-     *     {@link CTTblBorders }
+     *     {@link TblBorders }
      *     
      */
-    public CTTblBorders getTblBorders() {
+    public TblBorders getTblBorders() {
         return tblBorders;
     }
 
@@ -197,10 +197,10 @@ public class CTTblPrExBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblBorders }
+     *     {@link TblBorders }
      *     
      */
-    public void setTblBorders(CTTblBorders value) {
+    public void setTblBorders(TblBorders value) {
         this.tblBorders = value;
     }
 

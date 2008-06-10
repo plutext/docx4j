@@ -59,7 +59,7 @@ public class CTTblGridChange
 {
 
     @XmlElement(required = true)
-    protected CTTblGridBase tblGrid;
+    protected TblGridBase tblGrid;
     @XmlTransient
     private Object parent;
 
@@ -68,10 +68,10 @@ public class CTTblGridChange
      * 
      * @return
      *     possible object is
-     *     {@link CTTblGridBase }
+     *     {@link TblGridBase }
      *     
      */
-    public CTTblGridBase getTblGrid() {
+    public TblGridBase getTblGrid() {
         return tblGrid;
     }
 
@@ -80,10 +80,10 @@ public class CTTblGridChange
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblGridBase }
+     *     {@link TblGridBase }
      *     
      */
-    public void setTblGrid(CTTblGridBase value) {
+    public void setTblGrid(TblGridBase value) {
         this.tblGrid = value;
     }
 

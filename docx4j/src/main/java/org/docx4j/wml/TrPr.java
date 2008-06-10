@@ -30,21 +30,20 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_TcMar complex type.
+ * <p>Java class for CT_TrPr complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TcMar">
+ * &lt;complexType name="CT_TrPr">
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrPrBase">
  *       &lt;sequence>
- *         &lt;element name="top" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
- *         &lt;element name="left" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
- *         &lt;element name="bottom" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
- *         &lt;element name="right" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblWidth" minOccurs="0"/>
+ *         &lt;element name="ins" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrackChange" minOccurs="0"/>
+ *         &lt;element name="del" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrackChange" minOccurs="0"/>
+ *         &lt;element name="trPrChange" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TrPrChange" minOccurs="0"/>
  *       &lt;/sequence>
- *     &lt;/restriction>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -52,117 +51,92 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_TcMar", propOrder = {
-    "top",
-    "left",
-    "bottom",
-    "right"
+@XmlType(name = "CT_TrPr", propOrder = {
+    "ins",
+    "del",
+    "trPrChange"
 })
-public class CTTcMar
+public class TrPr
+    extends CTTrPrBase
     implements Child
 {
 
-    protected CTTblWidth top;
-    protected CTTblWidth left;
-    protected CTTblWidth bottom;
-    protected CTTblWidth right;
+    protected CTTrackChange ins;
+    protected CTTrackChange del;
+    protected CTTrPrChange trPrChange;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the top property.
+     * Gets the value of the ins property.
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link CTTrackChange }
      *     
      */
-    public CTTblWidth getTop() {
-        return top;
+    public CTTrackChange getIns() {
+        return ins;
     }
 
     /**
-     * Sets the value of the top property.
+     * Sets the value of the ins property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link CTTrackChange }
      *     
      */
-    public void setTop(CTTblWidth value) {
-        this.top = value;
+    public void setIns(CTTrackChange value) {
+        this.ins = value;
     }
 
     /**
-     * Gets the value of the left property.
+     * Gets the value of the del property.
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link CTTrackChange }
      *     
      */
-    public CTTblWidth getLeft() {
-        return left;
+    public CTTrackChange getDel() {
+        return del;
     }
 
     /**
-     * Sets the value of the left property.
+     * Sets the value of the del property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link CTTrackChange }
      *     
      */
-    public void setLeft(CTTblWidth value) {
-        this.left = value;
+    public void setDel(CTTrackChange value) {
+        this.del = value;
     }
 
     /**
-     * Gets the value of the bottom property.
+     * Gets the value of the trPrChange property.
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link CTTrPrChange }
      *     
      */
-    public CTTblWidth getBottom() {
-        return bottom;
+    public CTTrPrChange getTrPrChange() {
+        return trPrChange;
     }
 
     /**
-     * Sets the value of the bottom property.
+     * Sets the value of the trPrChange property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link CTTrPrChange }
      *     
      */
-    public void setBottom(CTTblWidth value) {
-        this.bottom = value;
-    }
-
-    /**
-     * Gets the value of the right property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTblWidth }
-     *     
-     */
-    public CTTblWidth getRight() {
-        return right;
-    }
-
-    /**
-     * Sets the value of the right property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTblWidth }
-     *     
-     */
-    public void setRight(CTTblWidth value) {
-        this.right = value;
+    public void setTrPrChange(CTTrPrChange value) {
+        this.trPrChange = value;
     }
 
     /**

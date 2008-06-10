@@ -62,10 +62,10 @@ public class CTTblCellMar
     implements Child
 {
 
-    protected CTTblWidth top;
-    protected CTTblWidth left;
-    protected CTTblWidth bottom;
-    protected CTTblWidth right;
+    protected TblWidth top;
+    protected TblWidth left;
+    protected TblWidth bottom;
+    protected TblWidth right;
     @XmlTransient
     private Object parent;
 
@@ -74,10 +74,10 @@ public class CTTblCellMar
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getTop() {
+    public TblWidth getTop() {
         return top;
     }
 
@@ -86,10 +86,10 @@ public class CTTblCellMar
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setTop(CTTblWidth value) {
+    public void setTop(TblWidth value) {
         this.top = value;
     }
 
@@ -98,10 +98,10 @@ public class CTTblCellMar
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getLeft() {
+    public TblWidth getLeft() {
         return left;
     }
 
@@ -110,10 +110,10 @@ public class CTTblCellMar
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setLeft(CTTblWidth value) {
+    public void setLeft(TblWidth value) {
         this.left = value;
     }
 
@@ -122,10 +122,10 @@ public class CTTblCellMar
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getBottom() {
+    public TblWidth getBottom() {
         return bottom;
     }
 
@@ -134,10 +134,10 @@ public class CTTblCellMar
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setBottom(CTTblWidth value) {
+    public void setBottom(TblWidth value) {
         this.bottom = value;
     }
 
@@ -146,10 +146,10 @@ public class CTTblCellMar
      * 
      * @return
      *     possible object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public CTTblWidth getRight() {
+    public TblWidth getRight() {
         return right;
     }
 
@@ -158,10 +158,10 @@ public class CTTblCellMar
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTblWidth }
+     *     {@link TblWidth }
      *     
      */
-    public void setRight(CTTblWidth value) {
+    public void setRight(TblWidth value) {
         this.right = value;
     }
 

@@ -59,7 +59,7 @@ public class CTTcPrChange
 {
 
     @XmlElement(required = true)
-    protected CTTcPrInner tcPr;
+    protected TcPrInner tcPr;
     @XmlTransient
     private Object parent;
 
@@ -68,10 +68,10 @@ public class CTTcPrChange
      * 
      * @return
      *     possible object is
-     *     {@link CTTcPrInner }
+     *     {@link TcPrInner }
      *     
      */
-    public CTTcPrInner getTcPr() {
+    public TcPrInner getTcPr() {
         return tcPr;
     }
 
@@ -80,10 +80,10 @@ public class CTTcPrChange
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcPrInner }
+     *     {@link TcPrInner }
      *     
      */
-    public void setTcPr(CTTcPrInner value) {
+    public void setTcPr(TcPrInner value) {
         this.tcPr = value;
     }
 
