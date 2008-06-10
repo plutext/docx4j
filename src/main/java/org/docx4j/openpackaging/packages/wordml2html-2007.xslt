@@ -5323,7 +5323,7 @@ A mediawiki chunk starts with three things:
 				<a name="sub{./w:sdtPr/w:id/@w:val}" id="sub{./w:sdtPr/w:id/@w:val}"></a>
 				<div class="editsection">[<a href="/alfresco/docxwiki/edit{$docID}/{./w:sdtPr/w:id/@w:val}" title="Edit sdt {./w:sdtPr/w:id/@w:val}">edit</a>]</div>
 					<!--  Firefox 2 does not pass # to the server, so use / instead. --> 
-			    <span class="mw-headline">Something here</span>
+			    <span class="mw-headline">sub<xsl:value-of select="./w:sdtPr/w:id/@w:val"/>.xml</span>
 			</div>
 			<xsl:apply-templates select="w:sdtContent/*"/>
 		</xsl:when>

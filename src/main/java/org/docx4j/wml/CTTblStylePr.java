@@ -69,8 +69,8 @@ public class CTTblStylePr
     protected PPr pPr;
     protected RPr rPr;
     protected CTTblPrBase tblPr;
-    protected CTTrPr trPr;
-    protected CTTcPr tcPr;
+    protected TrPr trPr;
+    protected TcPr tcPr;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
     protected STTblStyleOverrideType type;
     @XmlTransient
@@ -153,10 +153,10 @@ public class CTTblStylePr
      * 
      * @return
      *     possible object is
-     *     {@link CTTrPr }
+     *     {@link TrPr }
      *     
      */
-    public CTTrPr getTrPr() {
+    public TrPr getTrPr() {
         return trPr;
     }
 
@@ -165,10 +165,10 @@ public class CTTblStylePr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTrPr }
+     *     {@link TrPr }
      *     
      */
-    public void setTrPr(CTTrPr value) {
+    public void setTrPr(TrPr value) {
         this.trPr = value;
     }
 
@@ -177,10 +177,10 @@ public class CTTblStylePr
      * 
      * @return
      *     possible object is
-     *     {@link CTTcPr }
+     *     {@link TcPr }
      *     
      */
-    public CTTcPr getTcPr() {
+    public TcPr getTcPr() {
         return tcPr;
     }
 
@@ -189,10 +189,10 @@ public class CTTblStylePr
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcPr }
+     *     {@link TcPr }
      *     
      */
-    public void setTcPr(CTTcPr value) {
+    public void setTcPr(TcPr value) {
         this.tcPr = value;
     }
 

@@ -49,19 +49,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SchemaLibrary.Schema }
-     * 
-     */
-    public SchemaLibrary.Schema createSchemaLibrarySchema() {
-        return new SchemaLibrary.Schema();
-    }
-
-    /**
      * Create an instance of {@link SchemaLibrary }
      * 
      */
     public SchemaLibrary createSchemaLibrary() {
         return new SchemaLibrary();
+    }
+
+    /**
+     * Create an instance of {@link SchemaLibrary.Schema }
+     * 
+     */
+    public SchemaLibrary.Schema createSchemaLibrarySchema() {
+        return new SchemaLibrary.Schema();
     }
 
 }

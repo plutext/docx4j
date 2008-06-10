@@ -84,13 +84,13 @@ public class CTDocPartPr
 {
 
     @XmlElements({
-        @XmlElement(name = "name", type = CTDocPartName.class),
-        @XmlElement(name = "category", type = CTDocPartCategory.class),
-        @XmlElement(name = "behaviors", type = CTDocPartBehaviors.class),
+        @XmlElement(name = "guid", type = CTGuid.class),
         @XmlElement(name = "description", type = CTDocPartPr.Description.class),
-        @XmlElement(name = "types", type = CTDocPartTypes.class),
+        @XmlElement(name = "category", type = CTDocPartCategory.class),
         @XmlElement(name = "style", type = CTDocPartPr.Style.class),
-        @XmlElement(name = "guid", type = CTGuid.class)
+        @XmlElement(name = "types", type = CTDocPartTypes.class),
+        @XmlElement(name = "name", type = CTDocPartName.class),
+        @XmlElement(name = "behaviors", type = CTDocPartBehaviors.class)
     })
     protected List<Object> nameOrStyleOrCategory;
     @XmlTransient
@@ -114,13 +114,13 @@ public class CTDocPartPr
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTDocPartName }
-     * {@link CTDocPartCategory }
-     * {@link CTDocPartBehaviors }
-     * {@link CTDocPartPr.Description }
-     * {@link CTDocPartTypes }
-     * {@link CTDocPartPr.Style }
      * {@link CTGuid }
+     * {@link CTDocPartPr.Description }
+     * {@link CTDocPartCategory }
+     * {@link CTDocPartPr.Style }
+     * {@link CTDocPartTypes }
+     * {@link CTDocPartName }
+     * {@link CTDocPartBehaviors }
      * 
      * 
      */

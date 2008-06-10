@@ -30,16 +30,16 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_TcPr complex type.
+ * <p>Java class for CT_TblGrid complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_TcPr">
+ * &lt;complexType name="CT_TblGrid">
  *   &lt;complexContent>
- *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TcPrInner">
+ *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblGridBase">
  *       &lt;sequence>
- *         &lt;element name="tcPrChange" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TcPrChange" minOccurs="0"/>
+ *         &lt;element name="tblGridChange" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblGridChange" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/extension>
  *   &lt;/complexContent>
@@ -49,40 +49,40 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_TcPr", propOrder = {
-    "tcPrChange"
+@XmlType(name = "CT_TblGrid", propOrder = {
+    "tblGridChange"
 })
-public class CTTcPr
-    extends CTTcPrInner
+public class TblGrid
+    extends TblGridBase
     implements Child
 {
 
-    protected CTTcPrChange tcPrChange;
+    protected CTTblGridChange tblGridChange;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the tcPrChange property.
+     * Gets the value of the tblGridChange property.
      * 
      * @return
      *     possible object is
-     *     {@link CTTcPrChange }
+     *     {@link CTTblGridChange }
      *     
      */
-    public CTTcPrChange getTcPrChange() {
-        return tcPrChange;
+    public CTTblGridChange getTblGridChange() {
+        return tblGridChange;
     }
 
     /**
-     * Sets the value of the tcPrChange property.
+     * Sets the value of the tblGridChange property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTTcPrChange }
+     *     {@link CTTblGridChange }
      *     
      */
-    public void setTcPrChange(CTTcPrChange value) {
-        this.tcPrChange = value;
+    public void setTblGridChange(CTTblGridChange value) {
+        this.tblGridChange = value;
     }
 
     /**

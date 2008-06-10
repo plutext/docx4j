@@ -62,7 +62,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "insideH",
     "insideV"
 })
-public class CTTblBorders
+public class TblBorders
     implements Child
 {
 

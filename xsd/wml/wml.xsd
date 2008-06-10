@@ -36,7 +36,7 @@ USAGE INSTRUCTIONS
 	
   To generate the classes (from the same directory)	
 			
- 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/lib/parent-pointer-plugin-1.0-SNAPSHOT.jar -Xparent-pointer package.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer package.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
 	 
   jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
   
@@ -8245,36 +8245,6 @@ PRINCIPLES:
 		</xsd:complexType>
 	</xsd:element>
 	
-	<xsd:simpleType name="ST_TblWidth">
-		<xsd:annotation>
-			<xsd:documentation>Table Width Units</xsd:documentation>
-		</xsd:annotation>
-		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="nil">
-				<xsd:annotation>
-					<xsd:documentation>No Width</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="pct">
-				<xsd:annotation>
-					<xsd:documentation>Width in Fiftieths of a
-						Percent</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="dxa">
-				<xsd:annotation>
-					<xsd:documentation>Width in Twentieths of a
-						Point</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-			<xsd:enumeration value="auto">
-				<xsd:annotation>
-					<xsd:documentation>Automatically Determined
-						Width</xsd:documentation>
-				</xsd:annotation>
-			</xsd:enumeration>
-		</xsd:restriction>
-	</xsd:simpleType>
 	<xsd:complexType name="CT_Height">
 		<xsd:attribute name="val" type="ST_TwipsMeasure">
 			<xsd:annotation>
@@ -8288,18 +8258,60 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblWidth">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblWidth"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:attribute name="w" type="ST_DecimalNumber">
 			<xsd:annotation>
 				<xsd:documentation>Table Width Value</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="type" type="ST_TblWidth">
+		<xsd:attribute name="type">
 			<xsd:annotation>
 				<xsd:documentation>Table Width Type</xsd:documentation>
 			</xsd:annotation>
+			<xsd:simpleType>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="nil">
+						<xsd:annotation>
+							<xsd:documentation>
+								No Width
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="pct">
+						<xsd:annotation>
+							<xsd:documentation>
+								Width in Fiftieths of a Percent
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="dxa">
+						<xsd:annotation>
+							<xsd:documentation>
+								Width in Twentieths of a Point
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+					<xsd:enumeration value="auto">
+						<xsd:annotation>
+							<xsd:documentation>
+								Automatically Determined Width
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:enumeration>
+				</xsd:restriction>
+			</xsd:simpleType>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_TblGridCol">
+	<xsd:complexType name="CT_TblGridCol">	
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblGridCol"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:attribute name="w" type="ST_TwipsMeasure">
 			<xsd:annotation>
 				<xsd:documentation>Grid Column Width</xsd:documentation>
@@ -8307,6 +8319,11 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblGridBase">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblGridBase"/>
+			</xsd:appinfo>
+		</xsd:annotation>		
 		<xsd:sequence>
 			<xsd:element name="gridCol" type="CT_TblGridCol" minOccurs="0"
 				maxOccurs="unbounded">
@@ -8317,6 +8334,11 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblGrid">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblGrid"/>
+			</xsd:appinfo>
+		</xsd:annotation>		
 		<xsd:complexContent>
 			<xsd:extension base="CT_TblGridBase">
 				<xsd:sequence>
@@ -8332,6 +8354,11 @@ PRINCIPLES:
 		</xsd:complexContent>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TcMar">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcMar"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:sequence>
 			<xsd:element name="top" type="CT_TblWidth" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -8361,7 +8388,32 @@ PRINCIPLES:
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_TcPrBase">
+	<xsd:complexType name="CT_TcPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>			
+		<xsd:complexContent>
+			<xsd:extension base="CT_TcPrInner">
+				<xsd:sequence>
+					<xsd:element name="tcPrChange" type="CT_TcPrChange"
+						minOccurs="0">
+						<xsd:annotation>
+							<xsd:documentation>Revision Information for Table Cell
+								Properties</xsd:documentation>
+						</xsd:annotation>
+					</xsd:element>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TcPrInner"> <!-- removed "CT_TcPrBase" -->
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TcPrInner"/>
+			</xsd:appinfo>
+		</xsd:annotation>			
 		<xsd:sequence>
 			<xsd:element name="cnfStyle" type="CT_Cnf" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -8557,34 +8609,16 @@ PRINCIPLES:
 						Calculation</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:complexType name="CT_TcPr">
-		<xsd:complexContent>
-			<xsd:extension base="CT_TcPrInner">
-				<xsd:sequence>
-					<xsd:element name="tcPrChange" type="CT_TcPrChange"
-						minOccurs="0">
-						<xsd:annotation>
-							<xsd:documentation>Revision Information for Table Cell
-								Properties</xsd:documentation>
-						</xsd:annotation>
-					</xsd:element>
-				</xsd:sequence>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
-	<xsd:complexType name="CT_TcPrInner">
-		<xsd:complexContent>
-			<xsd:extension base="CT_TcPrBase">
-				<xsd:sequence>
 					<xsd:group ref="EG_CellMarkupElements" minOccurs="0"
 						maxOccurs="1"></xsd:group>
-				</xsd:sequence>
-			</xsd:extension>
-		</xsd:complexContent>
+		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_Tc">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Tc"/>
+			</xsd:appinfo>
+		</xsd:annotation>			
 		<xsd:sequence>
 			<xsd:element name="tcPr" type="CT_TcPr" minOccurs="0" maxOccurs="1">
 				<xsd:annotation>
@@ -8711,6 +8745,11 @@ PRINCIPLES:
 		</xsd:choice>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TrPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TrPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>			
 		<xsd:complexContent>
 			<xsd:extension base="CT_TrPrBase">
 				<xsd:sequence>
@@ -8879,6 +8918,11 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblBorders"> <!-- used in 2 places -->
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="TblBorders"/>
+			</xsd:appinfo>
+		</xsd:annotation>			
 		<xsd:sequence>
 			<xsd:element name="top" type="CT_Border" minOccurs="0">
 				<xsd:annotation>
