@@ -69,7 +69,7 @@
             <xsd:attribute name="snum"   type="xsd:unsignedInt" use="required" />
             <xsd:attribute name="op"     type="xsd:string" use="required" />
             <xsd:attribute name="idref"  type="xsd:unsignedInt" use="optional" />
-            <xsd:attribute name="after"  type="xsd:unsignedInt" use="optional" />
+            <xsd:attribute name="position"  type="xsd:unsignedInt" use="optional" />
             
             <!--  Type conversions:
             
