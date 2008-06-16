@@ -1,0 +1,25 @@
+   <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+            <w:r>
+                <w:t xml:space="preserve">The green </w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:b />
+                    <w:sz w:val="28" />
+                    <w:szCs w:val="28" />
+                </w:rPr>
+                <w:t>parrot</w:t>
+            </w:r>
+            <w:r>
+                <w:t xml:space="preserve"> jumped over the </w:t>
+            </w:r>
+            <w:r>
+                <w:rPr>
+                    <w:u w:val="single" />
+                </w:rPr>
+                <w:t>lazy</w:t>
+            </w:r>
+            <w:r>
+                <w:t xml:space="preserve"> dog.</w:t>
+            </w:r>
+        </w:p>

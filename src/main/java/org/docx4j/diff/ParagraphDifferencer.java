@@ -55,6 +55,16 @@ import com.topologi.diffx.Main;
 import com.topologi.diffx.config.DiffXConfig;
 
 public class ParagraphDifferencer {
+	
+	/*
+	 * TODO:
+	 * 
+	 * - handle spaces properly (encode real spaces as something before splitting,
+	 *   and add back in at end
+	 *   
+	 * - encode real occurences of RUN_DELIMITER, and add back in at end
+	 * 
+	 */
 
 	public final static String RUN_DELIMITER = "|";
 	
@@ -68,10 +78,24 @@ public class ParagraphDifferencer {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
+		
+		
+		/*String[] runtContents = "|".split("\\" + RUN_DELIMITER);
+		System.out.println( "'|' " + runtContents.length );
+		
+		runtContents = " |".split("\\" + RUN_DELIMITER);
+		System.out.println( "' |' " + runtContents.length );
+
+		runtContents = "| ".split("\\" + RUN_DELIMITER);
+		System.out.println( "'| ' " + runtContents.length );
+		
+		runtContents = " | ".split("\\" + RUN_DELIMITER);
+		System.out.println( "' | ' " + runtContents.length );*/
+		
 
 		// Test setup
-		String paraL = "/home/dev/workspace/docx4j/sample-docs/diff/t3L";		
-		String paraR = "/home/dev/workspace/docx4j/sample-docs/diff/t3R";
+		String paraL = ParagraphDifferencerTest.BASE_DIR + "t2RR";		
+		String paraR = ParagraphDifferencerTest.BASE_DIR + "t3L";
 		P pl = loadParagraph(paraL);
 		P pr = loadParagraph(paraR);
 		
@@ -170,81 +194,107 @@ public class ParagraphDifferencer {
         	// each rd
         	
         	if (rd[x].kind() == RangeDifference.NOCHANGE) {
+        		// These are part of the string LCS,
+        		// (though they might not be part of the
+        		//  XML LCS once we've added their rPr 
+        		//  back in.)
         		
-        		if ( RUN_DELIMITER.equals( toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), false ) ) ) {
-        			
-        			// This is a boundary on both left and right objects
-        			
-        			// We're now on to the left paragraph's next w:t
-            		pLeftIndex++;
+            	String[] runtContents = toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), true )
+            								.split("\\" + RUN_DELIMITER);
+            	
+            	
+                for (int j=0; j<runtContents.length; j++) {
+                	
+                	System.out.println("Processing '" + runtContents[j] + "'");
+                	
+                	if (j>0 ) {
+                    	/*
+                    	 * 		'|'   0  <--- never happens
+        						' |'  1  <--- never happens
+        						'| '  2
+        						' | ' 2
+                    	 * 
+                    	 *  The 'true' above ensures that if RUN_DELIMITER is present, 
+                    	 *  runtContents.length will always be 2 or greater, which 
+                    	 *  in turn ensures these will get incremented
+                    	 */
 
-        			// We're now on to the right paragraph's next w:t
-            		pRightIndex++;
-            		
-        		} else {
-        			
+            			// This is a boundary on both left and right objects
+            			
+            			// We're now on to the left paragraph's next w:t
+                		pLeftIndex++;
+
+            			// We're now on to the right paragraph's next w:t
+                		pRightIndex++;
+                		
+                	}
+                	
+                	if ("".equals(runtContents[j])) 
+                		continue;
+                	
         			// Normal case        		
-	
-	        		org.docx4j.wml.R newLeftR = createRunStructure(left, rd[x].leftStart(), rd[x].leftLength(),
-	        				pl, pLeftIndex );	        		
+	        		org.docx4j.wml.R newLeftR = createRunStructure(runtContents[j], pl, pLeftIndex );	        		
 	        		pLeftReplacement.add( newLeftR );
 	        		
 	        		
-	        		org.docx4j.wml.R newRightR = createRunStructure(right, rd[x].rightStart(), rd[x].rightLength(),
-	        				pr, pRightIndex );	        		
+	        		org.docx4j.wml.R newRightR = createRunStructure(runtContents[j], pr, pRightIndex );	        		
 	        		pRightReplacement.add( newRightR );
-        		
-        		}
+                	                	
+                }
+                
         	} else if (rd[x].kind() == RangeDifference.CHANGE) {
+        		// These aren't part of the string LCS,
+        		// (so they are unlikely to be part of 
+        		//  the XML LCS)
         		
-        		if ( "".equals( toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), false ) )
-        				&& RUN_DELIMITER.equals( toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), false ) ) ) {
-        			// We're now on to the right paragraph's next w:t
-            		pRightIndex++;
-        			
-            		// .. and we need to insert an empty w:r/w:t structure in the left
-	        		//pLeftReplacement.add( emptyStructure );
-            		
-        		} else if ( "".equals( toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), false ) )
-        				&& ( toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), false ) )
-        						.endsWith(RUN_DELIMITER) ) {
-        			
-        			// ie something like "old |"
-	        		org.docx4j.wml.R newRightR = createRunStructure(right, rd[x].rightStart(), 
-	        				rd[x].rightLength()-2,  // drop RUN_DELIMITER and extra space
-	        				pr, pRightIndex );	        		
-	        		pRightReplacement.add( newRightR );        			
-        			
-        			// We're now on to the right paragraph's next w:t
-            		pRightIndex++;
-        			
-            		// .. and we need to insert an empty w:r/w:t structure in the left
-	        		//pLeftReplacement.add( emptyStructure );
-
-            		
-        		} else if ( RUN_DELIMITER.equals( toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), false ) )
-            				&& "".equals( toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), false ) ) ) {
-        			// We're now on to the left paragraph's next w:t
-            		pLeftIndex++;
-        			
-            		// .. and we need to insert an empty w:r/w:t structure in the right
-	        		//pRightReplacement.add( emptyStructure );
-            		
-        		} else {
-        			// both sides have changed
-        			
-	        		org.docx4j.wml.R newLeftR = createRunStructure(left, rd[x].leftStart(), rd[x].leftLength(),
-	        				pl, pLeftIndex );	        		
+        		/* Test case t2RR, t3L results in:
+        		 * 
+        		 *     parrot |  jumped CHANGEhigh
+        		 * 
+        		 */
+        		
+        		// Left hand side
+            	String[] runtContents = toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), true )
+				.split("\\" + RUN_DELIMITER);
+                for (int j=0; j<runtContents.length; j++) {
+                	
+                	System.out.println("Processing '" + runtContents[j] + "'");
+                	
+                	if (j>0 ) {            			
+            			// We're now on to the left paragraph's next w:t
+                		pLeftIndex++;
+                	}
+                	
+                	if ("".equals(runtContents[j])) 
+                		continue;
+                	
+        			// Normal case        		
+	        		org.docx4j.wml.R newLeftR = createRunStructure(runtContents[j], pl, pLeftIndex );	        		
 	        		pLeftReplacement.add( newLeftR );
-	        		
-	        		
-	        		org.docx4j.wml.R newRightR = createRunStructure(right, rd[x].rightStart(), rd[x].rightLength(),
-	        				pr, pRightIndex );	        		
+                	                	
+                }
+        		
+        		// Right hand side
+            	runtContents = toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), true )
+				.split("\\" + RUN_DELIMITER);
+                for (int j=0; j<runtContents.length; j++) {
+                	
+                	System.out.println("Processing '" + runtContents[j] + "'");
+                	
+                	if (j>0 ) {            			
+            			// We're now on to the left paragraph's next w:t
+                		pRightIndex++;
+                	}
+                	
+                	if ("".equals(runtContents[j])) 
+                		continue;
+                	
+        			// Normal case        		
+	        		org.docx4j.wml.R newRightR = createRunStructure(runtContents[j], pr, pRightIndex );	        		
 	        		pRightReplacement.add( newRightR );
-        			
-        		}
+                	                	
+                }        		
         	}
-
         }
 		
         
@@ -295,13 +345,13 @@ public class ParagraphDifferencer {
 	}
 	
 	
-	private static org.docx4j.wml.R createRunStructure(StringComparator sc, int rdStart, int rdLength,
+	private static org.docx4j.wml.R createRunStructure(String textVal,
 			P existingP, int rIndex ) {
 
 		org.docx4j.wml.R newR = wmlFactory.createR();
 		org.docx4j.wml.Text newT = wmlFactory.createText();
 		newR.getRunContent().add(newT);
-		newT.setValue(toRangeString( sc, rdStart, rdLength, true ));
+		newT.setValue(textVal);
 		org.docx4j.wml.RPr existingRPr = ((org.docx4j.wml.R)existingP.getParagraphContent().get(rIndex)).getRPr(); 
 		if ( existingRPr !=null )
 			newR.setRPr(existingRPr);
@@ -322,7 +372,7 @@ public class ParagraphDifferencer {
 		return result.toString();
 	}
 	
-	private static org.docx4j.wml.P loadParagraph(String filename) throws Exception {
+	protected static org.docx4j.wml.P loadParagraph(String filename) throws Exception {
 		
 		java.io.File f = new java.io.File(filename);
 		java.io.InputStream is = new java.io.FileInputStream(f);
