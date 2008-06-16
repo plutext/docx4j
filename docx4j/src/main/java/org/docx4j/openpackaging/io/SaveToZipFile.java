@@ -118,7 +118,9 @@ public class SaveToZipFile {
 			
 			String partName = "_rels/.rels";
 			RelationshipsPart rp = p.getRelationshipsPart();
-			deprecatedSaveRawXmlPart(out, partName, rp.getDocument() );
+			//deprecatedSaveRawXmlPart(out, partName, rp.getDocument() );
+			// 2008 06 12 - try this neater method
+			saveRawXmlPart(out, rp, partName );
 			
 			
 			// 5. Now recursively 
@@ -152,18 +154,24 @@ public class SaveToZipFile {
 		// This is a neater signature and should be used where possible!
 		
 		String partName = part.getPartName().getName().substring(1);
-				
+
+		saveRawXmlPart(out, part, partName);
+	}
+	
+	public void  saveRawXmlPart(ZipOutputStream out, Part part, String zipEntryName) throws Docx4JException {
+		
+						
 		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 			try {				
 		        // Add ZIP entry to output stream.
-		        out.putNextEntry(new ZipEntry(partName));		        
+		        out.putNextEntry(new ZipEntry(zipEntryName));		        
 
 		        ((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( out );
 		        
 		        // Complete the entry
 		        out.closeEntry();
-				log.info( "PUT SUCCESS: " + partName);		
+				log.info( "PUT SUCCESS: " + zipEntryName);		
 		        
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -174,7 +182,7 @@ public class SaveToZipFile {
 
 			try {
 		        // Add ZIP entry to output stream.
-		        out.putNextEntry(new ZipEntry(partName));		        
+		        out.putNextEntry(new ZipEntry(zipEntryName));		        
 		        
 		        // Do things the DOM4J way
 				OutputFormat format = OutputFormat.createPrettyPrint();
@@ -183,10 +191,10 @@ public class SaveToZipFile {
 			    writer.write( ((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).getDocument() );
 		        // Complete the entry
 		        out.closeEntry();
-				log.info( "PUT SUCCESS: " + partName);		
+				log.info( "PUT SUCCESS: " + zipEntryName);		
 			} catch (Exception e ) {
 				e.printStackTrace();
-				throw new Docx4JException("Failed to put " + partName, e);
+				throw new Docx4JException("Failed to put " + zipEntryName, e);
 			}		
 						
 		} else {
@@ -194,7 +202,7 @@ public class SaveToZipFile {
 			// return an instance of one of the above, or throw an
 			// Exception.
 			
-			log.error("PROBLEM - No suitable part found for: " + partName);
+			log.error("PROBLEM - No suitable part found for: " + zipEntryName);
 		}		
 		
 		
@@ -317,7 +325,10 @@ public class SaveToZipFile {
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
 			log.info("Cf constructed name " + relPart );
 			
-			deprecatedSaveRawXmlPart(out, relPart, rrp.getDocument() );
+			//deprecatedSaveRawXmlPart(out, relPart, rrp.getDocument() );
+			// 2008 06 12 - try this neater method
+			saveRawXmlPart(out, rrp, relPart );
+			
 			addPartsFromRelationships(out, rrp );
 		} else {
 			log.info("No relationships for " + resolvedPartUri );					
