@@ -6,12 +6,12 @@
     xmlns:ns2="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
     xmlns:ns4="http://schemas.openxmlformats.org/schemaLibrary/2006/main"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:java="http://xml.apache.org/xalan/java"    
   xmlns:xml="http://www.w3.org/XML/1998/namespace"
                 
-  version="1.0" >
+  version="1.0" 
+        exclude-result-prefixes="java">	
   
-  <!--
-        exclude-result-prefixes="java msxsl ext o v WX aml w10" -->
 
   <!-- 
   *  Copyright 2007, Plutext Pty Ltd.
@@ -34,6 +34,8 @@
   -->
 
   <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
+
+<xsl:param name="author"/>
 
 
   <xsl:template match="/ | @*|node()">
@@ -84,8 +86,12 @@
   </xsl:template>
 
   <xsl:template match="ins">
+  
+  			<xsl:variable name="id" 
+				select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+  
 
-    <w:ins>  <!-- hopefully, the attributes are optional -->
+    <w:ins w:id="{$id}" w:author="{$author}">  <!--  w:date is optional, so omit for now -->
 
       <w:r>
         <w:t>
