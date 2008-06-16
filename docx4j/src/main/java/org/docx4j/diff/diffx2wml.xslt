@@ -78,7 +78,7 @@
 	            <xsl:apply-templates/>
 	        </xsl:when>
 	        <xsl:otherwise>
-	            <xsl:copy-of select="."/>
+	            <xsl:copy-of select=".."/>
 	        </xsl:otherwise>
 	    </xsl:choose>
 	</xsl:for-each>        
