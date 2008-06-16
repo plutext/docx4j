@@ -6127,7 +6127,30 @@ PRINCIPLES:
 		</xsd:complexType>
 		
 	</xsd:element>
-	
+
+
+	<xsd:element name="delText">
+		<xsd:annotation>
+			<xsd:documentation>Deleted Text</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+
+			<xsd:simpleContent>
+				<xsd:extension base="ST_String">
+					<xsd:attribute ref="xml:space" use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Content Contains Significant Whitespace
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:simpleContent>
+		</xsd:complexType>
+
+	</xsd:element>
+
+
 	<xsd:group name="EG_RunInnerContent">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -6141,11 +6164,18 @@ PRINCIPLES:
 					<xsd:documentation>Text</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			<xsd:element ref="delText">
+				<xsd:annotation>
+					<xsd:documentation>Deleted Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+<!-- 			
 			<xsd:element name="delText" type="CT_Text">
 				<xsd:annotation>
 					<xsd:documentation>Deleted Text</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			 -->
 			<xsd:element name="instrText" type="CT_Text">
 				<xsd:annotation>
 					<xsd:documentation>Field Code</xsd:documentation>
@@ -7776,7 +7806,7 @@ PRINCIPLES:
 					<xsd:documentation>Table</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:group ref="EG_RunLevelElts" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:group ref="EG_RunLevelElts" minOccurs="0" maxOccurs="unbounded"/> <!--  BUG?  run level stuff at block level? -->
 		</xsd:choice>
 	</xsd:group>
 	<xsd:complexType name="CT_SdtContentBlock">
@@ -7887,47 +7917,52 @@ PRINCIPLES:
 		<xsd:group ref="EG_ContentCellContent" minOccurs="0"
 			maxOccurs="unbounded"/>
 	</xsd:complexType>
-	
+
 	<xsd:element name="sdt">
 		<xsd:annotation>
 			<xsd:appinfo>
-				<jaxb:class name="SdtBlock"/>
+				<jaxb:class name="SdtBlock" />
 			</xsd:appinfo>
 		</xsd:annotation>
-	<!-- 
-	<xsd:complexType name="CT_SdtBlock"> 
-		<xsd:annotation>
+		<!-- 
+			<xsd:complexType name="CT_SdtBlock"> 
+			<xsd:annotation>
 			<xsd:appinfo>
-				<jaxb:class name="SdtBlock"/>
+			<jaxb:class name="SdtBlock"/>
 			</xsd:appinfo>
-		</xsd:annotation>
+			</xsd:annotation>
 		-->
-<xsd:complexType>		
-		<xsd:sequence>
-			<xsd:element name="sdtPr" type="CT_SdtPr" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Structured Document Tag
-						Properties</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="sdtEndPr" type="CT_SdtEndPr" minOccurs="0"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Structured Document Tag End Character
-						Properties</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="sdtContent" type="CT_SdtContentBlock" minOccurs="0"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Block-Level Structured Document Tag
-						Content</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="sdtPr" type="CT_SdtPr" minOccurs="0"
+					maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Structured Document Tag Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="sdtEndPr" type="CT_SdtEndPr"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Structured Document Tag End Character
+							Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="sdtContent" type="CT_SdtContentBlock"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Block-Level Structured Document Tag Content
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
-	
+
 	<xsd:complexType name="CT_SdtRun">
 		<xsd:annotation>
 			<xsd:appinfo>
@@ -12278,6 +12313,48 @@ PRINCIPLES:
 			</xsd:element>
 		</xsd:choice>
 	</xsd:group>
+
+
+	<xsd:element name="ins">
+		<xsd:annotation>
+			<xsd:documentation>Inserted Run Content</xsd:documentation>
+			<xsd:appinfo>
+				<jaxb:class name="RunIns" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="CT_TrackChange">
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:group ref="EG_ContentRunContent"></xsd:group>
+						<!--<xsd:group ref="m:EG_OMathMathElements" />-->
+					</xsd:choice>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="del">
+		<xsd:annotation>
+			<xsd:documentation>Deleted Run Content</xsd:documentation>
+			<xsd:appinfo>
+				<jaxb:class name="RunDel" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="CT_TrackChange">
+					<xsd:choice minOccurs="0" maxOccurs="unbounded">
+						<xsd:group ref="EG_ContentRunContent"></xsd:group>
+						<!--<xsd:group ref="m:EG_OMathMathElements" />-->
+					</xsd:choice>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	
+	
 	<xsd:group name="EG_RunLevelElts">
 		<xsd:choice>
 			<xsd:element ref="proofErr" minOccurs="0"/>
@@ -12293,6 +12370,17 @@ PRINCIPLES:
 			</xsd:element>
 			<xsd:group ref="EG_RangeMarkupElements" minOccurs="0"
 				maxOccurs="unbounded"></xsd:group>
+			<xsd:element ref="ins" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Inserted Run Content</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element ref="del" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Deleted Run Content</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>			
+<!-- 				
 			<xsd:element name="ins" type="CT_RunTrackChange" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Inserted Run Content</xsd:documentation>
@@ -12302,7 +12390,8 @@ PRINCIPLES:
 				<xsd:annotation>
 					<xsd:documentation>Deleted Run Content</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element>
+			</xsd:element>			
+ -->			
 			<xsd:element name="moveFrom" type="CT_RunTrackChange">
 				<xsd:annotation>
 					<xsd:documentation>Move Source Run Content</xsd:documentation>
