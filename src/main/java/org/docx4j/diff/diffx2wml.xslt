@@ -52,7 +52,7 @@
        
        But if it occurs on w:p, w:r, or w:t, we will need to do better.
          -->
-  <xsl:template match="*[@dfx:delete='true']"/>
+  <xsl:template match="*[@dfx:delete='true' and parent::w:pPr] "/>
 
   <xsl:template match="@del:val"/>
 
@@ -69,19 +69,19 @@
 
   <xsl:template match="w:r">
 
-<xsl:for-each select="w:t">
-    <xsl:choose>
-        <xsl:when test="count(ins)">
-            <xsl:apply-templates/>
-        </xsl:when>
-        <xsl:when test="count(del)">
-            <xsl:apply-templates/>
-        </xsl:when>
-        <xsl:otherwise>
-            <xsl:copy-of select="."/>
-        </xsl:otherwise>
-    </xsl:choose>
-</xsl:for-each>        
+	<xsl:for-each select="w:t">
+	    <xsl:choose>
+	        <xsl:when test="count(ins)">
+	            <xsl:apply-templates/>
+	        </xsl:when>
+	        <xsl:when test="count(del)"> <!--  whether or not w:t[@dfx:delete='true'] -->
+	            <xsl:apply-templates/>
+	        </xsl:when>
+	        <xsl:otherwise>
+	            <xsl:copy-of select="."/>
+	        </xsl:otherwise>
+	    </xsl:choose>
+	</xsl:for-each>        
 
   </xsl:template>
 
