@@ -106,14 +106,22 @@ public class ParagraphDifferencer {
 		 * It will tell which of the w:t have been populated/deleted, and
 		 * what formatting has changed on their w:r elements.   
 		 */
+
+        String leftXmlOld = org.docx4j.XmlUtils.marshaltoString(pl, true);
+        String rightXmlOld = org.docx4j.XmlUtils.marshaltoString(pr, true);
 		
-		
+		System.out.println("\n\n Left input \n\n" );
+        System.out.println(leftXmlOld) ;
+
 		// Get their string content
 		String pLeftText = collateRuns(pl);
-		System.out.println(pLeftText);									
+		System.out.println("\n\n" + pLeftText);									
+                
+		System.out.println("\n\n Right input \n\n" );
+        System.out.println(rightXmlOld) ;
 
 		String pRightText = collateRuns(pr);
-		System.out.println(pRightText);									
+		System.out.println("\n\n" + pRightText);									
 		
 		// Compute LCS
 		StringComparator left = new StringComparator(pLeftText);
@@ -123,6 +131,7 @@ public class ParagraphDifferencer {
 		RangeDifference[] rd = RangeDifferencer.findRanges(settings, left, right); 
 		
 		// Debug Output
+		System.out.println("\n\n RangeDifferences \n\n");									
         for (int x=0; x<rd.length; x++) {    
         	System.out.println (
         			toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), true )
@@ -236,8 +245,6 @@ public class ParagraphDifferencer {
         // Debug purposes only!
         System.out.println("\n\n Compare naive difference \n\n" );
         
-        String leftXmlOld = org.docx4j.XmlUtils.marshaltoString(pl, true);
-        String rightXmlOld = org.docx4j.XmlUtils.marshaltoString(pr, true);
         String naive = getDiffxOutput(leftXmlOld, rightXmlOld);
         System.out.println(naive) ;
         
