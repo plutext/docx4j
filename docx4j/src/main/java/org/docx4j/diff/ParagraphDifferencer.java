@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 
 import javax.xml.bind.JAXBContext;
@@ -56,6 +57,10 @@ import com.topologi.diffx.config.DiffXConfig;
 public class ParagraphDifferencer {
 
 	public final static String RUN_DELIMITER = "|";
+	
+	public static String author = "unknown";
+	
+	public static Integer nextId = 0;
 
 	static org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory();
 	
@@ -65,8 +70,8 @@ public class ParagraphDifferencer {
 	public static void main(String[] args) throws Exception {
 
 		// Test setup
-		String paraL = "/home/dev/workspace/docx4j/sample-docs/diff/t2L";		
-		String paraR = "/home/dev/workspace/docx4j/sample-docs/diff/t2R";
+		String paraL = "/home/dev/workspace/docx4j/sample-docs/diff/t3L";		
+		String paraR = "/home/dev/workspace/docx4j/sample-docs/diff/t3R";
 		P pl = loadParagraph(paraL);
 		P pr = loadParagraph(paraR);
 		
@@ -75,6 +80,12 @@ public class ParagraphDifferencer {
 
 		// Run the diff
 		diff(pl, pr, result);
+		
+	}
+	
+	public final static Integer getId() {
+		
+		return ++nextId;
 		
 	}
 	
@@ -254,7 +265,9 @@ public class ParagraphDifferencer {
 			StreamSource src = new StreamSource(new StringReader(diffx));
 			java.io.InputStream xslt = 
 				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
-			XmlUtils.transform(src, xslt, null, result);
+			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+			transformParameters.put("author", author);
+			XmlUtils.transform(src, xslt, transformParameters, result);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();
@@ -432,6 +445,14 @@ public class ParagraphDifferencer {
 			ex.printStackTrace();
 		}
 		return null;
+	}
+
+	public static String getAuthor() {
+		return author;
+	}
+
+	public static void setAuthor(String author) {
+		ParagraphDifferencer.author = author;
 	}
 
 }
