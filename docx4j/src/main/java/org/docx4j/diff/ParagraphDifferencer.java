@@ -205,6 +205,23 @@ public class ParagraphDifferencer {
             		// .. and we need to insert an empty w:r/w:t structure in the left
 	        		//pLeftReplacement.add( emptyStructure );
             		
+        		} else if ( "".equals( toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), false ) )
+        				&& ( toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), false ) )
+        						.endsWith(RUN_DELIMITER) ) {
+        			
+        			// ie something like "old |"
+	        		org.docx4j.wml.R newRightR = createRunStructure(right, rd[x].rightStart(), 
+	        				rd[x].rightLength()-2,  // drop RUN_DELIMITER and extra space
+	        				pr, pRightIndex );	        		
+	        		pRightReplacement.add( newRightR );        			
+        			
+        			// We're now on to the right paragraph's next w:t
+            		pRightIndex++;
+        			
+            		// .. and we need to insert an empty w:r/w:t structure in the left
+	        		//pLeftReplacement.add( emptyStructure );
+
+            		
         		} else if ( RUN_DELIMITER.equals( toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), false ) )
             				&& "".equals( toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), false ) ) ) {
         			// We're now on to the left paragraph's next w:t
