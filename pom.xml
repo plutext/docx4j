@@ -155,6 +155,12 @@
 			
 			
 		-->
+		
+		<dependency>
+			<groupId>com.topologi</groupId>
+			<artifactId>diffx</artifactId>
+			<version>0.6</version>
+		</dependency>		
 
 		<dependency>
 			<groupId>com.lowagie</groupId>
