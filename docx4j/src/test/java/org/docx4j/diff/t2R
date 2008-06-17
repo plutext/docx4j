@@ -1,4 +1,5 @@
-   <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+   <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+   xmlns:xml="http://www.w3.org/XML/1998/namespace">
             <w:r>
                 <w:t xml:space="preserve">The quick brown </w:t>
             </w:r>
