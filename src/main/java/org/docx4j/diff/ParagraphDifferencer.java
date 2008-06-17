@@ -61,9 +61,7 @@ public class ParagraphDifferencer {
 	 * 
 	 * - handle spaces properly (encode real spaces as something before splitting,
 	 *   and add back in at end
-	 *   
-	 * - write xml:space="preserve" to generate w:t as necessary
-	 * 
+	 *    
 	 */
 
 	protected static Logger log = Logger.getLogger(ParagraphDifferencer.class);
@@ -110,7 +108,7 @@ public class ParagraphDifferencer {
 	 */
 	public static void diff(P pl, P pr, javax.xml.transform.Result result) {
 
-		diff(pl, pr, result, true);
+		diff(pl, pr, result, false);
 	}
 	
 	/**
@@ -529,6 +527,7 @@ public class ParagraphDifferencer {
 		org.docx4j.wml.Text newT = wmlFactory.createText();
 		newR.getRunContent().add(newT);
 		newT.setValue(textVal);
+		newT.setSpace("preserve");
 		org.docx4j.wml.RPr existingRPr = ((org.docx4j.wml.R)existingP.getParagraphContent().get(rIndex)).getRPr(); 
 		if ( existingRPr !=null )
 			newR.setRPr(existingRPr);
