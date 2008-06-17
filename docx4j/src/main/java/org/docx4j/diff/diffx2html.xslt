@@ -34,8 +34,18 @@
 
   -->
 
-  <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" 
+  <xsl:output method="html" encoding="utf-8" omit-xml-declaration="no" 
   indent="yes" xalan:indent-amount="4" />
+
+
+<!--  
+
+	WARNING: this xslt exists solely to help in testing the diff
+	output, by allowing it to be viewed easily as HTML.
+
+	It is not intended for production.
+
+ -->
 
 <xsl:param name="author"/>
 
@@ -68,53 +78,59 @@
   <xsl:template match="@dfx:insert" />
   
 
+  <xsl:template match="w:p">
+  
+  	<p>
+      <xsl:apply-templates select="@*|node()"/>  	
+  	</p>
+  
+  </xsl:template>
 
   <xsl:template match="w:r">
 
-	<xsl:for-each select="w:t">
-	    <xsl:choose>
-	        <xsl:when test="count(ins)">
-	            <xsl:apply-templates/>
-	        </xsl:when>
-	        <xsl:when test="count(del)"> <!--  whether or not w:t[@dfx:delete='true'] -->
-	            <xsl:apply-templates/>
-	        </xsl:when>
-	        <xsl:otherwise>
-	            <xsl:copy-of select=".."/>
-	        </xsl:otherwise>
-	    </xsl:choose>
-	</xsl:for-each>        
+     <xsl:apply-templates/>
 
   </xsl:template>
 
+  <xsl:template match="w:t[@dfx:insert='true']" >
+
+    <span style="text-decoration: underline;color:red;"> 
+
+     <xsl:apply-templates/>
+
+	</span>
+	    
+  </xsl:template>
+
+
   <xsl:template match="ins">
-  
-  			<xsl:variable name="id" 
-				select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
-  
 
-    <w:ins w:id="{$id}" w:author="{$author}">  <!--  w:date is optional, so omit for now -->
+    <span style="text-decoration: underline;color:red;"> 
 
-      <w:r>
-        <w:t>
           <xsl:value-of select="."/> <!-- assume this is just text in a diffx ins element-->
-        </w:t>
-      </w:r>
-    </w:ins>
-    
+
+	</span>
+	    
   </xsl:template>
 
   <xsl:template match="del">
 
-    <w:del>
+    <span style="text-decoration: line-through;color:red;"> 
 
-      <w:r>
-        <w:delText>
           <xsl:value-of select="."/>
-        </w:delText>
-      </w:r>
-    </w:del>
+          
+	</span>
 
+  </xsl:template>
+
+  <xsl:template match="w:t[@dfx:delete='true']" >
+
+    <span style="text-decoration: line-through;color:red;"> 
+
+     <xsl:apply-templates/>
+
+	</span>
+	    
   </xsl:template>
 
 
