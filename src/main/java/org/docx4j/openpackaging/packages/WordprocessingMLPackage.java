@@ -569,18 +569,8 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 		
 		// Create main document part content
 		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-
-		org.docx4j.wml.Text  t = factory.createText();
-		t.setValue("Hello world, from docx4j");
-
-		org.docx4j.wml.R  run = factory.createR();
-		run.getRunContent().add(t);		
-		
-		org.docx4j.wml.P  para = factory.createP();
-		para.getParagraphContent().add(run);
 		
 		org.docx4j.wml.Body  body = factory.createBody();
-		body.getEGBlockLevelElts().add(para);
 		
 		org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
 		wmlDocumentEl.setBody(body);
