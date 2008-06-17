@@ -201,11 +201,25 @@ public class XmlUtils {
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
 
 		JAXBContext jc = Context.jc;
-		return marshaltoString(o, suppressDeclaration, jc );
+		return marshaltoString(o, suppressDeclaration, false, jc );
+	}
+
+	/** Marshal to a String */ 
+	public static String marshaltoString(Object o, boolean suppressDeclaration, JAXBContext jc ) {
+
+		return marshaltoString(o, suppressDeclaration, false, jc );
+
 	}
 	
 	/** Marshal to a String */ 
-	public static String marshaltoString(Object o, boolean suppressDeclaration, JAXBContext jc ) {
+	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint ) {
+
+		JAXBContext jc = Context.jc;
+		return marshaltoString(o, suppressDeclaration, prettyprint, jc );
+	}
+	
+	/** Marshal to a String */ 
+	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint, JAXBContext jc ) {
 				
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
 		 * 
@@ -228,6 +242,10 @@ public class XmlUtils {
 
 			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
 					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			
+			if (prettyprint) {
+				m.setProperty("jaxb.formatted.output", true);
+			}
 			
 			/* Fix for:
 			 * 		<t tstamp='1198193417585' snum='1' op='update'>
