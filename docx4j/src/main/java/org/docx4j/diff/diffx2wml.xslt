@@ -35,8 +35,8 @@
   -->
 
   <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" 
-  indent="yes" xalan:indent-amount="4" />
-
+  indent="yes" xalan:indent-amount="4" />  
+  
 <xsl:param name="author"/>
 
 
@@ -93,9 +93,7 @@
 
       <w:r>
    		<xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
-        <w:t>
-          <xsl:value-of select="."/> <!-- assume this is just text in a diffx ins element-->
-        </w:t>
+        <w:t xml:space="preserve"><xsl:value-of select="."/></w:t>
       </w:r>
     </w:ins>
     
@@ -111,9 +109,7 @@
 
       <w:r>
       	<xsl:apply-templates select="../../w:rPr"/>
-        <w:delText>
-          <xsl:value-of select="."/>
-        </w:delText>
+        <w:delText><xsl:value-of select="."/></w:delText>
       </w:r>
     </w:del>
 
@@ -123,9 +119,7 @@
   
       <w:r>
    		<xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
-        <w:t>
-          <xsl:value-of select="."/> 
-        </w:t>
+        <w:t xml:space="preserve"><xsl:value-of select="."/></w:t>
       </w:r>
     
   </xsl:template>
