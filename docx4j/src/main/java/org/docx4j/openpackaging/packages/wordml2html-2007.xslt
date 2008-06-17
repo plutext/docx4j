@@ -4340,14 +4340,18 @@ Compiler warnings:
 	</xsl:apply-templates>
 	
 	<xsl:for-each select="w:tblGrid[1]">
+	<!-- 
 		<xsl:text disable-output-escaping="yes">&lt;![if !supportMisalignedColumns]&gt;</xsl:text>
+		 -->
 		<tr height="0">
 		<xsl:for-each select="w:gridCol">
 			<xsl:variable name="gridStyle">margin:0;padding:0;border:none;width:<xsl:call-template name="EvalTableWidth"/>;</xsl:variable>
 			<td style="{$gridStyle}"/>
 		</xsl:for-each>
 		</tr>
+		<!-- 
 		<xsl:text disable-output-escaping="yes">&lt;![endif]&gt;</xsl:text>
+		 -->
 	</xsl:for-each>
 	</table>
 </xsl:template>
