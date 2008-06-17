@@ -77,6 +77,11 @@
 	</repositories>
 	<dependencies>
 		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.4</version>
+		</dependency>
+		<dependency>
 			<groupId>javax.jcr</groupId>
 			<artifactId>jcr</artifactId>
 			<version>1.0</version>
@@ -159,10 +164,10 @@
 		<dependency>
 			<groupId>com.topologi</groupId>
 			<artifactId>diffx</artifactId>
-			<version>0.6</version>
-		</dependency>		
-
-		<dependency>
+			<version>0.61</version>
+		</dependency>
+				
+ 		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext-unsigned</artifactId>
 			<version>2.0.8</version>
