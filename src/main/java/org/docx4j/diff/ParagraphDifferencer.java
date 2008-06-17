@@ -82,7 +82,7 @@ public class ParagraphDifferencer {
 		
 		// Test setup
 		String paraL = ParagraphDifferencerTest.BASE_DIR + "t2R";		
-		String paraR = ParagraphDifferencerTest.BASE_DIR + "t4";
+		String paraR = ParagraphDifferencerTest.BASE_DIR + "t3L";
 		P pl = loadParagraph(paraL);
 		P pr = loadParagraph(paraR);
 		
@@ -99,7 +99,7 @@ public class ParagraphDifferencer {
 		return ++nextId;
 		
 	}
-	
+
 	/**
 	 * Compare 2 p objects, returning a result containing
 	 * w:ins and w:del elements  
@@ -109,6 +109,22 @@ public class ParagraphDifferencer {
 	 * @param result 
 	 */
 	public static void diff(P pl, P pr, javax.xml.transform.Result result) {
+
+		diff(pl, pr, result, true);
+	}
+	
+	/**
+	 * Compare 2 p objects, returning a result containing
+	 * w:ins and w:del elements  
+	 * 
+	 * @param pl - the left paragraph
+	 * @param pr - the right paragraph
+	 * @param result 
+	 */
+	public static void diff(P pl, P pr, javax.xml.transform.Result result,
+			boolean preProcess) {
+		
+		
 		
 		/* In order to get an optimal result when comparing 2 WML paragraphs,
 		 * it helps if each can be made to contain matching runs.
@@ -177,13 +193,39 @@ public class ParagraphDifferencer {
 		 * 
 		 */
 
-		// debug only
         String leftXmlOld = null;
         String rightXmlOld = null;
-        if (log.isInfoEnabled() ) {
+        if (!preProcess || log.isDebugEnabled() ) {
 	        leftXmlOld = org.docx4j.XmlUtils.marshaltoString(pl, true, true);
 	        rightXmlOld = org.docx4j.XmlUtils.marshaltoString(pr, true, true);
         }
+
+		if (!preProcess) {
+			
+	        String naive = getDiffxOutput(leftXmlOld, rightXmlOld);
+
+	        // Debug purposes only!
+	        log.debug("\n\n naive difference \n\n" );	        
+	        log.debug(naive) ;
+	        
+	        
+	        log.info("\n\n <p> difference without preprocessing </p> \n\n" );
+			try {
+				StreamSource src = new StreamSource(new StringReader(naive));
+				java.io.InputStream xslt = 
+					org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
+					//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
+				Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+				transformParameters.put("author", author);
+				XmlUtils.transform(src, xslt, transformParameters, result);
+				
+			} catch (Exception exc) {
+				exc.printStackTrace();
+			}			
+			
+			return;
+		}
+        
         
 		// Compute LCS
 		StringComparator left = new StringComparator(pl.toString());
@@ -402,19 +444,12 @@ public class ParagraphDifferencer {
         //String diffx = getDiffxOutput(rightXmlNew, leftXmlNew);
         log.debug(diffx) ;
 
-        // Debug purposes only!
-        log.debug("\n\n Compare naive difference \n\n" );
-        
-        String naive = getDiffxOutput(leftXmlOld, rightXmlOld);
-        log.debug(naive) ;
-        
-        
         log.info("\n\n <p> difference with pre-processing</p> \n\n" );
 		try {
 			StreamSource src = new StreamSource(new StringReader(diffx));
 			java.io.InputStream xslt = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
-				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
+				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 			transformParameters.put("author", author);
 			XmlUtils.transform(src, xslt, transformParameters, result);
@@ -423,19 +458,6 @@ public class ParagraphDifferencer {
 			exc.printStackTrace();
 		}
 
-        log.info("\n\n <p> difference without preprocessing </p> \n\n" );
-		try {
-			StreamSource src = new StreamSource(new StringReader(naive));
-			java.io.InputStream xslt = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
-			//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
-			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
-			transformParameters.put("author", author);
-			XmlUtils.transform(src, xslt, transformParameters, result);
-			
-		} catch (Exception exc) {
-			exc.printStackTrace();
-		}
 		
 		log.debug("\n\n Done!" );									
 		
