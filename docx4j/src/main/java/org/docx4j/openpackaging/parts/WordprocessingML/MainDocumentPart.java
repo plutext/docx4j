@@ -35,6 +35,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.SdtBlock;
 
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
@@ -547,8 +548,48 @@ public class MainDocumentPart extends DocumentPart  {
 			e.printStackTrace();
 		}	    
 	}
-			
+		
+	public void addParagraphOfText(String simpleText) {
+		
+		// Create content
+
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		
+		org.docx4j.wml.Text  t = factory.createText();
+		t.setValue(simpleText);
+
+		org.docx4j.wml.R  run = factory.createR();
+		run.getRunContent().add(t);		
+		
+		org.docx4j.wml.P  para = factory.createP();
+		para.getParagraphContent().add(run);
+
+		// Attach it 
+		
+		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
+		Body body =  wmlDocumentEl.getBody();
+		body.getEGBlockLevelElts().add(para);
+		
+		
+	}
 	
+	public void addParagraph(org.docx4j.wml.P p) {
+		
+		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
+		Body body =  wmlDocumentEl.getBody();
+		body.getEGBlockLevelElts().add(p);
+		
+	}
+	
+	public void addParagraph(String pXml) {
+		
+		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
+		Body body =  wmlDocumentEl.getBody();
+		body.getEGBlockLevelElts().add(
+				(org.docx4j.wml.P)org.docx4j.XmlUtils.unmarshalString(pXml) );
+		
+	
+	}
 }
 
 	

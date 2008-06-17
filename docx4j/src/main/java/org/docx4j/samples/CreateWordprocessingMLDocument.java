@@ -39,6 +39,9 @@ public class CreateWordprocessingMLDocument {
 		
 		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createTestPackage();
+		
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("Hello world, from docx4j!");
+		
 		System.out.println( ".. done!");
 		
 		//injectDocPropsCustomPart(wordMLPackage);
