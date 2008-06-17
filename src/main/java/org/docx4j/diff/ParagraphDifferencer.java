@@ -38,11 +38,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.P;
+import org.docx4j.wml.R;
 
-import org.eclipse.compare.internal.LCSSettings;
-import org.eclipse.compare.rangedifferencer.IRangeComparator;
 import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.docx4j.diff.StringComparator;
 
@@ -62,11 +62,12 @@ public class ParagraphDifferencer {
 	 * - handle spaces properly (encode real spaces as something before splitting,
 	 *   and add back in at end
 	 *   
-	 * - encode real occurences of RUN_DELIMITER, and add back in at end
+	 * - write xml:space="preserve" to generate w:t as necessary
 	 * 
 	 */
 
-	public final static String RUN_DELIMITER = "|";
+	protected static Logger log = Logger.getLogger(ParagraphDifferencer.class);
+	
 	
 	public static String author = "unknown";
 	
@@ -79,23 +80,9 @@ public class ParagraphDifferencer {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		
-		/*String[] runtContents = "|".split("\\" + RUN_DELIMITER);
-		System.out.println( "'|' " + runtContents.length );
-		
-		runtContents = " |".split("\\" + RUN_DELIMITER);
-		System.out.println( "' |' " + runtContents.length );
-
-		runtContents = "| ".split("\\" + RUN_DELIMITER);
-		System.out.println( "'| ' " + runtContents.length );
-		
-		runtContents = " | ".split("\\" + RUN_DELIMITER);
-		System.out.println( "' | ' " + runtContents.length );*/
-		
-
 		// Test setup
-		String paraL = ParagraphDifferencerTest.BASE_DIR + "t2RR";		
-		String paraR = ParagraphDifferencerTest.BASE_DIR + "t3L";
+		String paraL = ParagraphDifferencerTest.BASE_DIR + "t2R";		
+		String paraR = ParagraphDifferencerTest.BASE_DIR + "t4";
 		P pl = loadParagraph(paraL);
 		P pr = loadParagraph(paraR);
 		
@@ -140,161 +127,250 @@ public class ParagraphDifferencer {
 		 * The XML diff is then run on these 'normalised' paragraphs. 
 		 * It will tell which of the w:t have been populated/deleted, and
 		 * what formatting has changed on their w:r elements.   
+		 * 
+		 * In terms of actual performance (versus plain old diffx), the
+		 * main case where the pre-processing helps:
+		 * 
+		 * 1. t2R cf t3L
+		 * 
+			  Left input 
+					
+					<w:p>
+					    <w:r>
+					        <w:t xml:space="preserve">The quick brown </w:t>
+					    </w:r>
+					    <w:r>
+					        <w:rPr>
+					            <w:b/>
+					            <w:sz w:val="28"/>
+					            <w:szCs w:val="28"/>
+					        </w:rPr>
+					        <w:t>fox</w:t>
+					    </w:r>
+					    <w:r>
+					        <w:t xml:space="preserve"> jumped over the </w:t>
+					    </w:r>
+					    <w:r>
+					        <w:rPr>
+					            <w:u w:val="single"/>
+					        </w:rPr>
+					        <w:t>lazy</w:t>
+					    </w:r>
+					    <w:r>
+					        <w:t xml:space="preserve"> dog.</w:t>
+					    </w:r>
+					</w:p> 
+					
+					
+			  Right input 
+					
+					<w:p>
+					    <w:r>
+					        <w:t>The quick brown fox jumped high </w:t>
+					    </w:r>
+					    <w:r>
+					        <w:t>high over the lazy dog.</w:t>
+					    </w:r>
+					</w:p>		 
+					
+					    
+		 * 
 		 */
 
-        String leftXmlOld = org.docx4j.XmlUtils.marshaltoString(pl, true);
-        String rightXmlOld = org.docx4j.XmlUtils.marshaltoString(pr, true);
-		
-		System.out.println("\n\n Left input \n\n" );
-        System.out.println(leftXmlOld) ;
-
-		// Get their string content
-		String pLeftText = collateRuns(pl);
-		System.out.println("\n\n" + pLeftText);									
-                
-		System.out.println("\n\n Right input \n\n" );
-        System.out.println(rightXmlOld) ;
-
-		String pRightText = collateRuns(pr);
-		System.out.println("\n\n" + pRightText);									
-		
+		// debug only
+        String leftXmlOld = null;
+        String rightXmlOld = null;
+        if (log.isInfoEnabled() ) {
+	        leftXmlOld = org.docx4j.XmlUtils.marshaltoString(pl, true, true);
+	        rightXmlOld = org.docx4j.XmlUtils.marshaltoString(pr, true, true);
+        }
+        
 		// Compute LCS
-		StringComparator left = new StringComparator(pLeftText);
-		StringComparator right = new StringComparator(pRightText);
+		StringComparator left = new StringComparator(pl.toString());
+		StringComparator right = new StringComparator(pr.toString());
 		org.eclipse.compare.internal.LCSSettings settings = new org.eclipse.compare.internal.LCSSettings();
 		
 		RangeDifference[] rd = RangeDifferencer.findRanges(settings, left, right); 
 		
 		// Debug Output
-		System.out.println("\n\n RangeDifferences \n\n");									
-        for (int x=0; x<rd.length; x++) {    
-        	System.out.println (
-        			toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), true )
-        			+ rd[x].kindString() 
-        			+ toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), true ) );
-        }
+		if (log.isDebugEnabled()) {
+			log.debug("\n\n RangeDifferences \n\n");									
+	        for (int x=0; x<rd.length; x++) {    
+	        	log.debug (
+	        			toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), true )
+	        			+ rd[x].kindString() 
+	        			+ toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), true ) );
+	        }
+		}
         
         // Now build appropriate replacement paragraph content
         List<Object> pLeftReplacement = new ArrayList<Object>();
         List<Object> pRightReplacement = new ArrayList<Object>();
         
-        // Which of the existing w:r we are up to
+        // Which of the _existing_ w:r we are up to
         int pLeftIndex = 0; 
         int pRightIndex = 0;    	
-
-        // We'll need to add this in certain places
-		org.docx4j.wml.R emptyStructure = wmlFactory.createR();
-		org.docx4j.wml.Text newT = wmlFactory.createText();
-		emptyStructure.getRunContent().add(newT);
-        
+		
+		int[] leftCounts = getParagraphRunTextWordCounts(pl); 
+		
+//    	StringBuilder debug = new StringBuilder();
+//    	debug.append("{ ");
+//		for (int i=0; i < leftCounts.length; i++) {
+//	    	try {
+//				debug.append( leftCounts[i] + ", ");
+//			} catch (RuntimeException e) {
+//			}
+//		}
+//    	System.out.println(debug);
+		
+		int[] rightCounts = getParagraphRunTextWordCounts(pr); 
+		
+		int leftWordCounter = -1;
+		int rightWordCounter = -1;
         
         for (int x=0; x<rd.length; x++) {
         
         	// The original runs are always longer than 
         	// each rd
+
+    		// We will definitely require a new run 
+    		// structure for each side
+    		R currentLeftStructure = createRunStructure("",
+    				pl, pLeftIndex );
+        	R currentRightStructure = createRunStructure("",
+    				pr, pRightIndex );
+        	
+        	pLeftReplacement.add(currentLeftStructure);
+        	pRightReplacement.add(currentRightStructure);
         	
         	if (rd[x].kind() == RangeDifference.NOCHANGE) {
+        		log.debug("NOCHANGE");
         		// These are part of the string LCS,
         		// (though they might not be part of the
         		//  XML LCS once we've added their rPr 
-        		//  back in.)
+        		//  back in.)  
+        		// This is where we focus our efforts.
         		
-            	String[] runtContents = toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), true )
-            								.split("\\" + RUN_DELIMITER);
-            	
-            	
-                for (int j=0; j<runtContents.length; j++) {
-                	
-                	System.out.println("Processing '" + runtContents[j] + "'");
-                	
-                	if (j>0 ) {
-                    	/*
-                    	 * 		'|'   0  <--- never happens
-        						' |'  1  <--- never happens
-        						'| '  2
-        						' | ' 2
-                    	 * 
-                    	 *  The 'true' above ensures that if RUN_DELIMITER is present, 
-                    	 *  runtContents.length will always be 2 or greater, which 
-                    	 *  in turn ensures these will get incremented
-                    	 */
+            	        		
+        		// Process the words in rd[x] one word at a time
+                for (int i=rd[x].leftStart(); // left and right are identical
+                		 i<(rd[x].leftStart()+rd[x].leftLength()); i++) {
 
-            			// This is a boundary on both left and right objects
-            			
-            			// We're now on to the left paragraph's next w:t
-                		pLeftIndex++;
-
-            			// We're now on to the right paragraph's next w:t
-                		pRightIndex++;
+            		// Our objective is to ensure that both the
+            		// left and right paragraphs end up with 
+            		// matching w:r/w:t boundaries.
+            		
+            		// So when either of the existing paragraphs
+            		// contains a boundary, this need to be inserted
+            		// in both results
+                	
+                	String word = left.getLeaf(i);
+                	
+                	leftWordCounter++;
+                	rightWordCounter++;
+                	
+//            		log.debug(word);
+                	
+                	if ( leftWordCounter < sum(leftCounts, 0, pLeftIndex)
+                			&& rightWordCounter < sum(rightCounts, 0, pRightIndex) ) {
+                		
+                		// it is ok to insert into current w:t
+                		addWord(currentLeftStructure, word);
+                		addWord(currentRightStructure, word);                		
+                		
+                	} else {  
+                		
+//                		log.debug("Hit boundary");
+                		
+                		// which boundary have we hit?
+                		if (leftWordCounter == sum(leftCounts, 0, pLeftIndex)
+                				&& rightWordCounter	== sum(rightCounts, 0, pRightIndex) ) {
+                			// Quite likely, for example, same formatting in each
+                			
+                			// We're now on to each paragraph's next w:t
+                    		pLeftIndex++;
+                    		pRightIndex++;
+                			
+                		} else if (leftWordCounter == sum(leftCounts, 0, pLeftIndex) ) {
+                			
+                			// We're now on to the left paragraph's next w:t
+                    		pLeftIndex++;
+                			
+                		} else {
+                		
+                			// We're now on to the right paragraph's next w:t
+                    		pRightIndex++;
+                		}
+                		
+                		currentLeftStructure = createRunStructure(word,
+                				pl, pLeftIndex );
+                    	currentRightStructure = createRunStructure(word,
+                				pr, pRightIndex );
+                    	
+                    	pLeftReplacement.add(currentLeftStructure);
+                    	pRightReplacement.add(currentRightStructure);
                 		
                 	}
                 	
-                	if ("".equals(runtContents[j])) 
-                		continue;
-                	
-        			// Normal case        		
-	        		org.docx4j.wml.R newLeftR = createRunStructure(runtContents[j], pl, pLeftIndex );	        		
-	        		pLeftReplacement.add( newLeftR );
-	        		
-	        		
-	        		org.docx4j.wml.R newRightR = createRunStructure(runtContents[j], pr, pRightIndex );	        		
-	        		pRightReplacement.add( newRightR );
-                	                	
-                }
+                }        		        		
                 
         	} else if (rd[x].kind() == RangeDifference.CHANGE) {
+        		log.debug("CHANGE");
         		// These aren't part of the string LCS,
-        		// (so they are unlikely to be part of 
+        		// (so they shouldn't be part of 
         		//  the XML LCS)
         		
-        		/* Test case t2RR, t3L results in:
-        		 * 
-        		 *     parrot |  jumped CHANGEhigh
-        		 * 
-        		 */
-        		
-        		// Left hand side
-            	String[] runtContents = toRangeString( left, rd[x].leftStart(), rd[x].leftLength(), true )
-				.split("\\" + RUN_DELIMITER);
-                for (int j=0; j<runtContents.length; j++) {
+        		// All we need to do is make sure that 
+        		// the input is round tripped.
+        		            	        		
+        		// Left side: Process the words in rd[x] one word at a time
+            	// NB, can't just copy existing runs into the output            	
+        		log.debug(".. left side");
+                for (int i=rd[x].leftStart(); 
+                		 i<(rd[x].leftStart()+rd[x].leftLength()); i++) {
+                	                	
+                	String word = left.getLeaf(i);
+//            		log.debug(word);
+                	leftWordCounter++;
                 	
-                	System.out.println("Processing '" + runtContents[j] + "'");
-                	
-                	if (j>0 ) {            			
+                	if ( leftWordCounter < sum(leftCounts, 0, pLeftIndex) ) {
+            			// it is ok to insert into left's current w:t
+                		addWord(currentLeftStructure, word);
+                	} else {                		
+                		// boundary hit                			
             			// We're now on to the left paragraph's next w:t
                 		pLeftIndex++;
+                		currentLeftStructure = createRunStructure(word,
+                				pl, pLeftIndex );
+                    	pLeftReplacement.add(currentLeftStructure);
                 	}
                 	
-                	if ("".equals(runtContents[j])) 
-                		continue;
-                	
-        			// Normal case        		
-	        		org.docx4j.wml.R newLeftR = createRunStructure(runtContents[j], pl, pLeftIndex );	        		
-	        		pLeftReplacement.add( newLeftR );
-                	                	
-                }
+                }        		        		
         		
-        		// Right hand side
-            	runtContents = toRangeString( right, rd[x].rightStart(), rd[x].rightLength(), true )
-				.split("\\" + RUN_DELIMITER);
-                for (int j=0; j<runtContents.length; j++) {
+        		// Right side
+        		log.debug(".. right side");
+                for (int i=rd[x].rightStart(); 
+                		 i<(rd[x].rightStart()+rd[x].rightLength()); i++) {
                 	
-                	System.out.println("Processing '" + runtContents[j] + "'");
+                	String word = right.getLeaf(i);
+            		log.debug(word);
+                	rightWordCounter++;
                 	
-                	if (j>0 ) {            			
-            			// We're now on to the left paragraph's next w:t
+                	if ( rightWordCounter < sum(rightCounts, 0, pRightIndex) ) {
+                		// it is ok to insert into right's current w:t
+                		addWord(currentRightStructure, word);                		
+                	} else {                		
+                		// boundary hit                			
+            			// We're now on to the right paragraph's next w:t
                 		pRightIndex++;
-                	}
-                	
-                	if ("".equals(runtContents[j])) 
-                		continue;
-                	
-        			// Normal case        		
-	        		org.docx4j.wml.R newRightR = createRunStructure(runtContents[j], pr, pRightIndex );	        		
-	        		pRightReplacement.add( newRightR );
-                	                	
-                }        		
+                    	currentRightStructure = createRunStructure(word,
+                				pr, pRightIndex );
+                    	pRightReplacement.add(currentRightStructure);
+                	}                	
+                }        		        		
+        		
         	}
+        	
         }
 		
         
@@ -306,32 +382,39 @@ public class ParagraphDifferencer {
         newRightP.setPPr(pr.getPPr());
         newRightP.getParagraphContent().addAll(pRightReplacement);
         
-        System.out.println("\n\n New left side \n\n" );
-        String leftXmlNew = org.docx4j.XmlUtils.marshaltoString(newLeftP, true);
-        System.out.println(leftXmlNew) ;
-
-        System.out.println("\n\n New right side \n\n" );
-        String rightXmlNew = org.docx4j.XmlUtils.marshaltoString(newRightP, true);
-        System.out.println(rightXmlNew) ;
+		log.debug("\n\n Left input \n\n" );
+        log.debug(leftXmlOld) ;
         
-        System.out.println("\n\n Difference \n\n" );
+        log.debug("\n\n New left side \n\n" );
+        String leftXmlNew = org.docx4j.XmlUtils.marshaltoString(newLeftP, true, true);
+        log.debug(leftXmlNew) ;
+
+		log.debug("\n\n Right input \n\n" );
+        log.debug(rightXmlOld) ;        
+        
+        log.debug("\n\n New right side \n\n" );
+        String rightXmlNew = org.docx4j.XmlUtils.marshaltoString(newRightP, true, true);
+        log.debug(rightXmlNew) ;
+        
+        log.debug("\n\n Difference \n\n" );
         
         String diffx = getDiffxOutput(leftXmlNew, rightXmlNew);
         //String diffx = getDiffxOutput(rightXmlNew, leftXmlNew);
-        System.out.println(diffx) ;
+        log.debug(diffx) ;
 
         // Debug purposes only!
-        System.out.println("\n\n Compare naive difference \n\n" );
+        log.debug("\n\n Compare naive difference \n\n" );
         
         String naive = getDiffxOutput(leftXmlOld, rightXmlOld);
-        System.out.println(naive) ;
+        log.debug(naive) ;
         
         
-        System.out.println("\n\n WordML \n\n" );
+        log.info("\n\n <p> difference with pre-processing</p> \n\n" );
 		try {
 			StreamSource src = new StreamSource(new StringReader(diffx));
 			java.io.InputStream xslt = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
+				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 			transformParameters.put("author", author);
 			XmlUtils.transform(src, xslt, transformParameters, result);
@@ -339,11 +422,83 @@ public class ParagraphDifferencer {
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
-                
-		System.out.println("\n\n Done!" );									
+
+        log.info("\n\n <p> difference without preprocessing </p> \n\n" );
+		try {
+			StreamSource src = new StreamSource(new StringReader(naive));
+			java.io.InputStream xslt = 
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
+			//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
+			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+			transformParameters.put("author", author);
+			XmlUtils.transform(src, xslt, transformParameters, result);
+			
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}
+		
+		log.debug("\n\n Done!" );									
 		
 	}
 	
+	private static int sum( int[] array, int idx1, int idx2) {
+
+    	StringBuilder debug = new StringBuilder();
+    	
+    	debug.append("{ ");
+
+		int sum = 0;
+		
+		for (int i=idx1; i <= idx2; i++) {
+	    	debug.append( array[i] + ", ");
+			
+			sum+=array[i];			
+		}
+    	debug.append("} = " + sum);
+//    	System.out.println(debug);
+		return sum;
+		
+	}
+	
+	/** Add a word to a w:r's existing w:t */ 
+	private static void addWord(R r, String word) {
+		
+    	List runContent = r.getRunContent();
+		    	
+		for (Object o2 : runContent ) {	
+			
+			/* TODO - model assumes each w:r contains
+			   only 1 w:t
+			   
+			   Check spec to see what the story is.
+			   
+			 */
+			
+			boolean found = false;
+			
+			if (o2 instanceof org.docx4j.wml.Text) {
+					
+					if (found) {
+						log.debug("TODO: Handle multiple w:t in w:r!");
+					}
+					
+					found = true;
+					
+					org.docx4j.wml.Text t = (org.docx4j.wml.Text)o2;
+					
+					String existingVal = t.getValue();
+					
+					t.setValue(existingVal + " " + word); // TODO smarter handling of spaces
+					
+			} else {
+				log.debug(o2.getClass().getName());
+			}
+		}
+		
+		
+		
+	}
+
 	
 	private static org.docx4j.wml.R createRunStructure(String textVal,
 			P existingP, int rIndex ) {
@@ -360,6 +515,8 @@ public class ParagraphDifferencer {
 	}
 	
 	private static String toRangeString(StringComparator sc, int start, int length, boolean space) {
+		
+		// This method only exists for debug...
 		
     	StringBuilder result = new StringBuilder();
         for (int x=start; x<(start+length); x++) {  
@@ -389,6 +546,98 @@ public class ParagraphDifferencer {
 		
 	}
 
+    public static int[] getParagraphRunTextWordCounts(P p) {
+    	
+    	List<Object> children = p.getParagraphContent();
+    	
+    	int i=0;
+    	int[] result = new int[children.size()]; // one for each w:r
+    	
+    	for (Object o : children) {
+    	
+	    	if ( o instanceof org.docx4j.wml.R ) {
+	    		
+	    		org.docx4j.wml.R r = (org.docx4j.wml.R)o;
+		    	List runContent = r.getRunContent();
+	    		
+		    	result[i]=0;
+		    	
+				for (Object o2 : runContent ) {	
+					
+					/* TODO - model assumes each w:r contains
+					   only 1 w:t
+					   
+					   Check spec to see what the story is.
+					   
+					 */
+					
+					boolean found = false;
+					
+					if (o2 instanceof javax.xml.bind.JAXBElement) {
+	
+						if (((JAXBElement) o2).getDeclaredType().getName().equals(
+								"org.docx4j.wml.Text")) {
+							
+							if (found) {
+								log.debug("TODO: Handle multiple w:t in w:r!");
+							}
+							
+							found = true;
+							
+							// System.out.println("Found Text");
+							org.docx4j.wml.Text t = (org.docx4j.wml.Text) ((JAXBElement) o2)
+									.getValue();
+							
+							result[i] = getWordCount( t.getValue() ); 
+							
+						} else {
+							log.debug(((JAXBElement) o2).getDeclaredType().getName());
+						}
+					} else {
+						log.debug(o2.getClass().getName());
+					}
+				}
+				
+				i++;
+	    		
+	    	} else {
+		    	log.debug("Encountered " + children.get(i).getClass().getName());	    	
+		    	return null;
+	    		
+	    	}
+    	}    	
+    	
+    	return result;
+    	
+    }
+
+    
+    private static int getWordCount(String sentence) {
+    	
+		/* 
+		 * Need to convert leading and trailing spaces
+		 * in order to get correct count.
+		 * 
+		 * 	'a'     1
+			' a'    2
+			'a '    1
+			' b '   2
+			' b c ' 3
+			'b c'   2
+			'b  c'  3  <-- and also double spaces here
+			
+		 * 
+		 * trim takes care of leading and trailing.
+		 */
+    	
+    	return sentence.trim().split("\\s").length;
+    	
+    		// TODO - handle cases of 2 spaces in a row, within the sentence
+    		// via an improved regex
+    	
+    }
+	
+	
     public static String getRunString(org.docx4j.wml.P p, int i) {
 
     	StringBuilder result = new StringBuilder();
@@ -405,20 +654,20 @@ public class ParagraphDifferencer {
 
 					if (((JAXBElement) o2).getDeclaredType().getName().equals(
 							"org.docx4j.wml.Text")) {
-						// System.out.println("Found Text");
+						// log.debug("Found Text");
 						org.docx4j.wml.Text t = (org.docx4j.wml.Text) ((JAXBElement) o2)
 								.getValue();
 						result.append(t.getValue());
 					} else {
-						System.out.println(((JAXBElement) o2).getDeclaredType().getName());
+						log.debug(((JAXBElement) o2).getDeclaredType().getName());
 					}
 				} else {
-					System.out.println(o2.getClass().getName());
+					log.debug(o2.getClass().getName());
 				}
 			}    		
     		
     	} else {
-	    	System.out.println("Encountered " + children.get(i).getClass().getName());	    	
+	    	log.debug("Encountered " + children.get(i).getClass().getName());	    	
 	    	return null;
     		
     	}
@@ -427,47 +676,7 @@ public class ParagraphDifferencer {
     	
     }
 	
-	
-    public static String collateRuns(org.docx4j.wml.P p) {
-
-    	StringBuilder result = new StringBuilder();
-    	boolean resultIsEmpty = true;
-    	
-    	List<Object> children = p.getParagraphContent();
-    	
-//    	System.out.println("p.toString");
-    	    	
-		for (Object o : children ) {					
-//			System.out.println("  " + o.getClass().getName() );
-			if ( o instanceof org.docx4j.wml.R) {
-//		    	System.out.println("Hit R");
-				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
-		    	List runContent = run.getRunContent();
-				for (Object o2 : runContent ) {					
-					if ( o2 instanceof javax.xml.bind.JAXBElement) {
-						// TODO - unmarshall directly to Text.
-						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
-//					    	System.out.println("Found Text");
-							org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o2).getValue();
-							
-							if (resultIsEmpty) {
-								result.append( t.getValue() );	
-								resultIsEmpty = false;
-							} else {
-								result.append( " " + RUN_DELIMITER + " " + t.getValue() );					
-							}
-							
-						}
-					} else {
-//				    	System.out.println(o2.getClass().getName());						
-					}
-				}
-			} 
-		}
-		return result.toString();
-    	
-    }
-	
+		
 	private static String getDiffxOutput(String xml1, String xml2) {
 		Reader xmlr1 = new StringReader(xml1);
 		Reader xmlr2 = new StringReader(xml2);
@@ -521,5 +730,26 @@ public class ParagraphDifferencer {
 	public static void setAuthor(String author) {
 		ParagraphDifferencer.author = author;
 	}
+
+	/*String[] runtContents = "a".trim().split("\\s");
+	System.out.println( "'a' " + runtContents.length );
+	
+	runtContents = " a".trim().split("\\s");
+	System.out.println( "' a' " + runtContents.length );
+
+	runtContents = "a ".trim().split("\\s");
+	System.out.println( "'a ' " + runtContents.length );
+	
+	runtContents = " b ".trim().split("\\s");
+	System.out.println( "' b ' " + runtContents.length );
+
+	runtContents = " b c ".trim().split("\\s");
+	System.out.println( "' b c ' " + runtContents.length );
+
+	runtContents = "b c".trim().split("\\s");
+	System.out.println( "'b c' " + runtContents.length );
+	
+	runtContents = "b  c".trim().split("\\s");
+	System.out.println( "'b  c' " + runtContents.length );*/
 
 }
