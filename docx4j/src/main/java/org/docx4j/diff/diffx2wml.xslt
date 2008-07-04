@@ -39,6 +39,7 @@
   
 <xsl:param name="author"/>
 
+<xsl:preserve-space elements="ins del w:t"/> 
 
   <xsl:template match="/ | @*|node()">
     <xsl:copy>
