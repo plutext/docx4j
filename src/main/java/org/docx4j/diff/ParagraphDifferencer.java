@@ -706,8 +706,8 @@ public class ParagraphDifferencer {
 		Writer out = new StringWriter();
 		
 		DiffXConfig diffxConfig = new DiffXConfig();
-		diffxConfig.setIgnoreWhiteSpace(true);
-		diffxConfig.setPreserveWhiteSpace(false);
+		diffxConfig.setIgnoreWhiteSpace(false);
+		diffxConfig.setPreserveWhiteSpace(true);
 
 		try {
 			Main.diff(toNode(xmlr1, true), toNode(xmlr2, true), out, diffxConfig);
