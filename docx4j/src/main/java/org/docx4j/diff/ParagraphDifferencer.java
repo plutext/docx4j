@@ -38,6 +38,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import javax.xml.stream.*;
+import javax.xml.stream.events.*;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.P;
@@ -53,6 +58,8 @@ import org.xml.sax.InputSource;
 
 import com.topologi.diffx.Main;
 import com.topologi.diffx.config.DiffXConfig;
+
+
 
 public class ParagraphDifferencer {
 	
@@ -194,8 +201,16 @@ public class ParagraphDifferencer {
         String leftXmlOld = null;
         String rightXmlOld = null;
         if (!preProcess || log.isDebugEnabled() ) {
-	        leftXmlOld = org.docx4j.XmlUtils.marshaltoString(pl, true, true);
-	        rightXmlOld = org.docx4j.XmlUtils.marshaltoString(pr, true, true);
+	        leftXmlOld = org.docx4j.XmlUtils.marshaltoString(pl, true, false);
+	        rightXmlOld = org.docx4j.XmlUtils.marshaltoString(pr, true, false);
+	        	// NB boolean prettyprint must be set to false
+	        	// with diffxConfig 
+				//    .setIgnoreWhiteSpace(false);
+				//    .setPreserveWhiteSpace(true);
+	        	// because otherwise we get ins, del around
+	        	// indentation whitespace, and this 
+	        	// breaks the transform to wml.
+
         }
 
 		if (!preProcess) {
@@ -209,7 +224,15 @@ public class ParagraphDifferencer {
 	        
 	        log.info("\n\n <p> difference without preprocessing </p> \n\n" );
 			try {
-				StreamSource src = new StreamSource(new StringReader(naive));
+				
+				XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+				//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
+				Reader reader = new StringReader(naive);
+				String simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
+				
+				log.debug("\n\n combineAdjacent: \n\n" + simplified );
+								
+				StreamSource src = new StreamSource(new StringReader(simplified));
 				java.io.InputStream xslt = 
 					org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
 					//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
@@ -426,14 +449,14 @@ public class ParagraphDifferencer {
         log.debug(leftXmlOld) ;
         
         log.debug("\n\n New left side \n\n" );
-        String leftXmlNew = org.docx4j.XmlUtils.marshaltoString(newLeftP, true, true);
+        String leftXmlNew = org.docx4j.XmlUtils.marshaltoString(newLeftP, true, false);
         log.debug(leftXmlNew) ;
 
 		log.debug("\n\n Right input \n\n" );
         log.debug(rightXmlOld) ;        
         
         log.debug("\n\n New right side \n\n" );
-        String rightXmlNew = org.docx4j.XmlUtils.marshaltoString(newRightP, true, true);
+        String rightXmlNew = org.docx4j.XmlUtils.marshaltoString(newRightP, true, false);
         log.debug(rightXmlNew) ;
         
         log.debug("\n\n Difference \n\n" );
@@ -743,6 +766,147 @@ public class ParagraphDifferencer {
 		}
 		return null;
 	}
+	
+    /* diffx treats each word as a token, and its output may
+     * look like:
+     * 
+     *     <ins>Well,</ins><ins> </ins><ins>maybe</ins>
+     * 
+     * This method will change that to:
+     * 
+     *     <ins>Well, maybe</ins>
+     */ 
+    private static String combineAdjacent(XMLStreamReader reader) throws XMLStreamException
+    {
+        /* A more complex example:
+         * 
+<w:r><w:t>It<ins> </ins><ins>is</ins><ins> </ins><ins>good</ins> <ins>indeed</ins>
+<del>would</del> <ins>very</ins><del>be</del> good to read paragraph 
+spacing<ins> </ins><ins>properly</ins><ins> </ins><ins>I</ins><ins> </ins><ins>would</ins> <ins>say.</ins><del>property.</del></w:t></w:r>
+
+            becomes 
+
+<w:r><w:t>It<ins> is good</ins> <ins>indeed</ins>
+<del>would</del> <ins>very</ins><del>be</del> good to read paragraph 
+spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w:r>
+         * 
+         * 
+         * 
+         */
+
+        String memory = null;
+
+        
+//        XmlWriterSettings settings = new XmlWriterSettings();
+//        settings.OmitXmlDeclaration = true; // important!
+//        settings.Encoding = Encoding.UTF8;
+        java.io.StringWriter stringWriter = new java.io.StringWriter();
+
+        XMLOutputFactory factory = XMLOutputFactory.newInstance();
+        XMLStreamWriter writer = factory.createXMLStreamWriter(stringWriter);
+        
+        while ( reader.hasNext() ) {
+        	
+        	int event = reader.next();
+        	
+        	switch (event) {
+        	
+        		case XMLStreamConstants.END_ELEMENT: 
+
+                    if (reader.getLocalName().equals("ins"))
+                    {
+                        memory = "ins";
+                        // and don't write it 
+                        // until we see what the next 
+                        // element is
+                    }
+                    else if (reader.getLocalName().equals("del"))
+                    {
+                        memory = "del";
+                    }
+                    else
+                    {
+                    	writer.writeEndElement();
+                    }
+                    break;
+           
+
+                case XMLStreamConstants.START_ELEMENT:
+
+                    if (memory != null)
+                    {
+                        // There is an </ins> (or </del>) we have just ignored
+
+                        if (memory.equals(reader.getLocalName()))
+                        {
+                            // Hit </ins><ins> 
+                            // This is the case where
+                            // we don't write either of them ...
+                            memory = null;
+                            continue;
+                        }
+                        else
+                        {
+                            // This is a different node,
+                            // so write the </ins>
+                        	writer.writeEndElement();
+                            memory = null;
+                        }
+                    }
+                    if (reader.getNamespaceURI() == null ) {
+                    	writer.writeStartElement(reader.getLocalName());
+                    	
+                    } else {
+                    	writer.writeStartElement(reader.getPrefix(), reader.getLocalName(), reader.getNamespaceURI());
+                    }
+                    for (int i=0; i<reader.getAttributeCount() ; i++ ) {
+                    	writer.writeAttribute(
+                    			reader.getAttributePrefix(i), 
+                    			reader.getAttributeNamespace(i), 
+                    			reader.getAttributeLocalName(i), 
+                    			reader.getAttributeValue(i));
+                    }
+                    for (int i=0; i<reader.getNamespaceCount() ; i++ ) {
+                    	writer.writeNamespace(
+                    			reader.getNamespacePrefix(i),
+                    			reader.getNamespaceURI(i) );
+                    }
+                    
+                    break;
+
+                case XMLStreamConstants.CHARACTERS:
+                    if (memory != null)
+                    {
+                        // eg "</ins>HERE"
+                    	writer.writeEndElement();
+                        memory = null;
+                    }
+                    writer.writeCharacters(reader.getText());
+                    break;
+
+
+                case XMLStreamConstants.START_DOCUMENT:
+
+                    writer.writeStartDocument();
+                    break;
+
+                case XMLStreamConstants.END_DOCUMENT:
+
+                    writer.writeEndDocument();
+                    break;
+                    
+                default:
+                	
+                	// Ignore 
+            }
+
+        }
+
+        writer.flush();
+        writer.close();
+        
+        return stringWriter.toString();
+    }	
 
 	public static String getAuthor() {
 		return author;
