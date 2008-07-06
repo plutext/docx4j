@@ -1,5 +1,1 @@
-   <w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-            <w:r>
-                <w:t>The quick fox jumped over the lazy old dog.</w:t>
-            </w:r>
-        </w:p>
+<w:p xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:r><w:t>The quick fox jumped over the lazy old dog.</w:t></w:r></w:p>

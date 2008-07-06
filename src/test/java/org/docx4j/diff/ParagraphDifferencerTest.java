@@ -95,7 +95,7 @@ public class ParagraphDifferencerTest {
 				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
 		
 				// Run the diff
-				ParagraphDifferencer.diff(pl, pr, result);
+				ParagraphDifferencer.diff(pl, pr, result, true);
 				
 				try {
 					P markedUpP = (org.docx4j.wml.P)result.getResult(); 
@@ -110,7 +110,7 @@ public class ParagraphDifferencerTest {
 					wordMLPackage.getMainDocumentPart().addParagraphOfText(msg);
 					
 					StreamResult err = new StreamResult(System.out);
-					ParagraphDifferencer.diff(pl, pr, err);
+					ParagraphDifferencer.diff(pl, pr, err, true);
 					
 				}
 				
@@ -129,7 +129,7 @@ public class ParagraphDifferencerTest {
 					wordMLPackage.getMainDocumentPart().addParagraphOfText(msg);
 					
 					StreamResult err = new StreamResult(System.out);
-					ParagraphDifferencer.diff(pl, pr, err);
+					ParagraphDifferencer.diff(pl, pr, err, false);
 					
 				}
 			}
