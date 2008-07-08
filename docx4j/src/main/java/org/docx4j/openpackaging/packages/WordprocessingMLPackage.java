@@ -558,7 +558,7 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 	}	
 	
 
-	public static WordprocessingMLPackage createTestPackage() throws InvalidFormatException {
+	public static WordprocessingMLPackage createPackage() throws InvalidFormatException {
 		
 				
 		// Create a package

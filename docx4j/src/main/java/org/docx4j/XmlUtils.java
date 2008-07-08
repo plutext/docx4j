@@ -323,6 +323,34 @@ public class XmlUtils {
 		}
 		return null;				
 	}
+
+	/** Marshal to a W3C document */ 
+	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o) {
+		// TODO - refactor this.
+		try {
+			JAXBContext jc = Context.jc;
+
+			Marshaller marshaller=jc.createMarshaller();
+			
+			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+
+			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			
+			marshaller.marshal(o, doc);
+			
+		    return doc;
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;				
+	}
 	
 	
 	/** Clone this JAXB object */ 

@@ -117,6 +117,53 @@ public class ParagraphDifferencer {
 
 		diff(pl, pr, result, false);
 	}
+
+	
+	public static void diff(org.docx4j.wml.SdtContentBlock cbLeft, 
+			org.docx4j.wml.SdtContentBlock cbRight, 
+			javax.xml.transform.Result result) {
+
+		Writer diffxResult = new StringWriter();
+		
+		DiffXConfig diffxConfig = new DiffXConfig();
+		diffxConfig.setIgnoreWhiteSpace(false);
+		diffxConfig.setPreserveWhiteSpace(true);
+
+		try {
+			Main.diff( org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbLeft),
+					   org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbRight),
+					   diffxResult, diffxConfig);
+				// The signature which takes Reader objects appears to be broken
+			diffxResult.close();
+		} catch (Exception exc) {
+			exc.printStackTrace();
+			diffxResult = null;
+		}
+		
+		try {
+			
+			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
+			Reader reader = new StringReader(diffxResult.toString());
+			
+			String simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
+			
+			//log.debug("\n\n combineAdjacent: \n\n" + simplified );
+							
+			StreamSource src = new StreamSource(new StringReader(simplified));
+			java.io.InputStream xslt = 
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
+				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
+			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+			transformParameters.put("author", author);
+			XmlUtils.transform(src, xslt, transformParameters, result);
+			
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}			
+		
+
+	}
 	
 	/**
 	 * Compare 2 p objects, returning a result containing

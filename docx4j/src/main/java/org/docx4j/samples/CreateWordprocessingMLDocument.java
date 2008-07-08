@@ -38,7 +38,7 @@ public class CreateWordprocessingMLDocument {
 	public static void main(String[] args) throws Exception {
 		
 		System.out.println( "Creating package..");
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createTestPackage();
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("Hello world, from docx4j!");
 		

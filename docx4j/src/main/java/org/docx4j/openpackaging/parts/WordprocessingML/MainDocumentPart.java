@@ -548,36 +548,65 @@ public class MainDocumentPart extends DocumentPart  {
 			e.printStackTrace();
 		}	    
 	}
+
+	/*
+	 * Note that this method does not check that the specified style is defined,
+	 * nor change the style part to make the style operational.   
+	 * 
+	 */
+	public org.docx4j.wml.P addStyledParagraphOfText(String style, String simpleText) {
 		
-	public void addParagraphOfText(String simpleText) {
+		org.docx4j.wml.P p = addParagraphOfText(simpleText);
+		
+		// Now style it
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		
+		org.docx4j.wml.PPr  pPr = factory.createPPr();
+		p.setPPr(pPr);
+		
+		org.docx4j.wml.PPrBase.PStyle pStyle = factory.createPPrBasePStyle();
+		pPr.setPStyle(pStyle);
+		pStyle.setVal(style);
+		
+		return p;
+
+	}
+	
+	/*
+	 * If passed null, will create, add and return an empty P
+	 */
+	public org.docx4j.wml.P addParagraphOfText(String simpleText) {
 		
 		// Create content
 
 		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-		
-		org.docx4j.wml.Text  t = factory.createText();
-		t.setValue(simpleText);
-
-		org.docx4j.wml.R  run = factory.createR();
-		run.getRunContent().add(t);		
-		
 		org.docx4j.wml.P  para = factory.createP();
-		para.getParagraphContent().add(run);
 
+		if (simpleText!=null) {
+			org.docx4j.wml.Text  t = factory.createText();
+			t.setValue(simpleText);
+	
+			org.docx4j.wml.R  run = factory.createR();
+			run.getRunContent().add(t);		
+			
+			para.getParagraphContent().add(run);
+		}
 		// Attach it 
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 		body.getEGBlockLevelElts().add(para);
 		
+		return para;
+		
 		
 	}
 	
-	public void addParagraph(org.docx4j.wml.P p) {
+	public void addObject(Object o) {
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
-		body.getEGBlockLevelElts().add(p);
+		body.getEGBlockLevelElts().add(o);
 		
 	}
 	
