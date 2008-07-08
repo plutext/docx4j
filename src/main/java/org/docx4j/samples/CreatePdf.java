@@ -31,7 +31,8 @@ public class CreatePdf {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-			String inputfilepath = "/home/jharrop/tmp/Styles-lots.docx";
+			String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/TableAndPng.docx";
+				//"/home/jharrop/tmp/Styles-lots.docx";
 //			String inputfilepath = "/home/jharrop/tmp/wordml2html.docx";
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 	    							
