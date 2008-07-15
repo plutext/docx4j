@@ -71,7 +71,7 @@ public class ParagraphDifferencerTest {
 	@Test
 	public static void testDiffDocx() throws Exception {
 		
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createTestPackage();
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		for (int i=0; i<testparagraphs.length-1; i++){
 
@@ -84,11 +84,11 @@ public class ParagraphDifferencerTest {
 				// Test setup
 				wordMLPackage.getMainDocumentPart().addParagraphOfText("first:");
 				P pl = ParagraphDifferencer.loadParagraph(BASE_DIR + testparagraphs[i]);
-				wordMLPackage.getMainDocumentPart().addParagraph(pl);
+				wordMLPackage.getMainDocumentPart().addObject(pl);
 				
 				wordMLPackage.getMainDocumentPart().addParagraphOfText("second:");
 				P pr = ParagraphDifferencer.loadParagraph(BASE_DIR + testparagraphs[j]);
-				wordMLPackage.getMainDocumentPart().addParagraph(pr);
+				wordMLPackage.getMainDocumentPart().addObject(pr);
 				
 				// Result format				
 				JAXBContext jc = Context.jc;
@@ -101,7 +101,7 @@ public class ParagraphDifferencerTest {
 					P markedUpP = (org.docx4j.wml.P)result.getResult(); 
 					
 					wordMLPackage.getMainDocumentPart().addParagraphOfText("result:");
-					wordMLPackage.getMainDocumentPart().addParagraph(markedUpP);
+					wordMLPackage.getMainDocumentPart().addObject(markedUpP);
 				} catch (RuntimeException e) {
 					String msg = "failed to apply stylesheet to pre-processed! " 
 						+ testparagraphs[i] + ", " + testparagraphs[j];
@@ -120,7 +120,7 @@ public class ParagraphDifferencerTest {
 				try {
 					P markedUpPsimple = (org.docx4j.wml.P)result.getResult(); 				
 					wordMLPackage.getMainDocumentPart().addParagraphOfText("no preprocessing:");
-					wordMLPackage.getMainDocumentPart().addParagraph(markedUpPsimple);				
+					wordMLPackage.getMainDocumentPart().addObject(markedUpPsimple);				
 				} catch (RuntimeException e) {
 					String msg = "failed to apply stylesheet to naive! "
 						+ testparagraphs[i] + ", " + testparagraphs[j];
