@@ -4,30 +4,25 @@ package org.docx4j.dml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
-//import org.openxmlformats.schemas.drawingml._2006.picture.Pic;
 
 
 /**
- * <p>Java class for CT_GraphicalObjectData complex type.
+ * <p>Java class for CT_PictureNonVisual complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_GraphicalObjectData">
+ * &lt;complexType name="CT_PictureNonVisual">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/picture}pic" minOccurs="0"/>
+ *         &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
+ *         &lt;element name="cNvPicPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualPictureProperties"/>
  *       &lt;/sequence>
- *       &lt;attribute name="uri" type="{http://www.w3.org/2001/XMLSchema}token" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -36,68 +31,67 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_GraphicalObjectData", propOrder = {
-    "pic"
+@XmlType(name = "CT_PictureNonVisual", namespace = "http://schemas.openxmlformats.org/drawingml/2006/picture", propOrder = {
+    "cNvPr",
+    "cNvPicPr"
 })
-public class CTGraphicalObjectData
+public class CTPictureNonVisual
     implements Child
 {
 
-    @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/picture")
-    protected Pic pic;
-    @XmlAttribute
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    @XmlSchemaType(name = "token")
-    protected String uri;
+    @XmlElement(required = true)
+    protected CTNonVisualDrawingProps cNvPr;
+    @XmlElement(required = true)
+    protected CTNonVisualPictureProperties cNvPicPr;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the pic property.
+     * Gets the value of the cNvPr property.
      * 
      * @return
      *     possible object is
-     *     {@link Pic }
+     *     {@link CTNonVisualDrawingProps }
      *     
      */
-    public Pic getPic() {
-        return pic;
+    public CTNonVisualDrawingProps getCNvPr() {
+        return cNvPr;
     }
 
     /**
-     * Sets the value of the pic property.
+     * Sets the value of the cNvPr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Pic }
+     *     {@link CTNonVisualDrawingProps }
      *     
      */
-    public void setPic(Pic value) {
-        this.pic = value;
+    public void setCNvPr(CTNonVisualDrawingProps value) {
+        this.cNvPr = value;
     }
 
     /**
-     * Gets the value of the uri property.
+     * Gets the value of the cNvPicPr property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link CTNonVisualPictureProperties }
      *     
      */
-    public String getUri() {
-        return uri;
+    public CTNonVisualPictureProperties getCNvPicPr() {
+        return cNvPicPr;
     }
 
     /**
-     * Sets the value of the uri property.
+     * Sets the value of the cNvPicPr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link CTNonVisualPictureProperties }
      *     
      */
-    public void setUri(String value) {
-        this.uri = value;
+    public void setCNvPicPr(CTNonVisualPictureProperties value) {
+        this.cNvPicPr = value;
     }
 
     /**

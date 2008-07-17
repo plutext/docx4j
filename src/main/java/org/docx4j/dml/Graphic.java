@@ -38,7 +38,7 @@ public class Graphic
 {
 
     @XmlElement(required = true)
-    protected CTGraphicalObjectData graphicData;
+    protected GraphicData graphicData;
     @XmlTransient
     private Object parent;
 
@@ -47,10 +47,10 @@ public class Graphic
      * 
      * @return
      *     possible object is
-     *     {@link CTGraphicalObjectData }
+     *     {@link GraphicData }
      *     
      */
-    public CTGraphicalObjectData getGraphicData() {
+    public GraphicData getGraphicData() {
         return graphicData;
     }
 
@@ -59,10 +59,10 @@ public class Graphic
      * 
      * @param value
      *     allowed object is
-     *     {@link CTGraphicalObjectData }
+     *     {@link GraphicData }
      *     
      */
-    public void setGraphicData(CTGraphicalObjectData value) {
+    public void setGraphicData(GraphicData value) {
         this.graphicData = value;
     }
 

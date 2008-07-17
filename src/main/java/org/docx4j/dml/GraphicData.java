@@ -12,7 +12,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jvnet.jaxb2_commons.ppp.Child;
-//import org.openxmlformats.schemas.drawingml._2006.picture.Pic;
 
 
 /**
@@ -39,7 +38,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_GraphicalObjectData", propOrder = {
     "pic"
 })
-public class CTGraphicalObjectData
+public class GraphicData
     implements Child
 {
 
