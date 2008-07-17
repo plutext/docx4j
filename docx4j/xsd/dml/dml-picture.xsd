@@ -23,6 +23,20 @@
 	<xsd:import schemaLocation="wordprocessingDrawing_import_Main.xsd" 
 		namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
 		
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.dml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+				
 	<xsd:complexType name="CT_PictureOld">
 		<xsd:annotation>
 			<xsd:documentation>Picture Container</xsd:documentation>
