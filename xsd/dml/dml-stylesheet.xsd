@@ -24,11 +24,20 @@
 				
 		jharrop@jharrop-490:~/workspace200711/docx4j-001/src/main/resources/schema/themePart$
 		    sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh  dml-stylesheet.xsd  -d ../../../java/ -no-header  -target 2.0
+		    
+		    
+		20080718 - don't invoke the above directly, since we now handle drawing in wml.
+		
+				   Compiling package.xsd pulls in both:
+				   - dml-stylesheet (213 classes)
+				   - dml-wordprocessingDrawing (174 classes)
+				   of which 145 are common to both,
+				   giving a total of 242 classes.
 
 	-->
 	
 	
-	
+<!-- 	
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
     </xsd:documentation>
@@ -42,10 +51,11 @@
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
   </xsd:annotation>
- 	
+ 	 -->
 	
 	<xsd:include schemaLocation="dml-baseStylesheet.xsd"/>
 	<xsd:include schemaLocation="dml-styleDefaults.xsd"/>
+	
 	<xsd:complexType name="CT_EmptyElement"></xsd:complexType>
 	<xsd:complexType name="CT_ColorMapping">
 		<xsd:sequence>

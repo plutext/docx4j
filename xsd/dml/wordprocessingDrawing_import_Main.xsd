@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+	elementFormDefault="qualified"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+
+<!--  This xsd is a workaround for the fact that JAXB (and the Eclipse
+	  schema editor) don't let you import the same namespace more than
+	  once.
+	  
+	  This technique suggested by lukas, at http://alweb.homeip.net/dw0rm/dblog/?p=72
+	  
+	  Its a good approach, since it allows us to proceed with minimal
+	  alteration to the original XSD's.
+	  
+	  See also:
+	  
+	  http://issues.apache.org/jira/browse/XERCESJ-893  (bug fixed in Xerces 2.7.0)
+	  
+	  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4980862 (JAXB bug report) 
+	  
+	   -->	
+	   
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.dml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+	   
+
+	<xsd:include schemaLocation="dml-graphicalobject.xsd" />
+		
+	<xsd:include schemaLocation="dml-docproperties.xsd" />
+		
+	<xsd:include schemaLocation="dml-baseTypes.xsd"  />
+
+	<xsd:include schemaLocation="dml-shapeProperties.xsd" />
+		
+</xsd:schema>
