@@ -23,7 +23,10 @@ package org.docx4j.samples;
 
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -33,18 +36,19 @@ import org.docx4j.wml.Body;
 
 
 public class OpenMainDocumentAndTraverse {
+	
+	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = "/home/jharrop/tmp/simple.docx";
-		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
+		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/jpeg.docx";
+		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fonts-modesOfApplication.docx";
 		
-		boolean save = true;
-		String outputfilepath = "/home/dev/tmp/test-out.docx";
-		
+		boolean save = false;
+		String outputfilepath = "/home/dev/tmp/test-out.docx";		
 		
 		
 		// Open a document from the file system
@@ -116,23 +120,10 @@ public class OpenMainDocumentAndTraverse {
 
 			if ( o instanceof javax.xml.bind.JAXBElement) {
 			
-				// Not used as of 20080408
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
-					System.out.println( "Paragraph object: ");
-					org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)o).getValue();
-					
-	//				if (p.getPPr()!=null) {
-	//					System.out.println( "Properties...");					
-	//				}
-					
-					walkList(p.getParagraphContent());
-					
-					
-				} else {
 					System.out.println( o.getClass().getName() );
 					System.out.println( ((JAXBElement)o).getName() );
 					System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
-				}
+					
 			} else if (o instanceof org.docx4j.wml.P) {
 				System.out.println( "Paragraph object: ");
 				
@@ -143,7 +134,7 @@ public class OpenMainDocumentAndTraverse {
 				}
 				
 				
-				//walkList( ((org.docx4j.wml.P)o).getParagraphContent());
+				walkList( ((org.docx4j.wml.P)o).getParagraphContent());
 			}
 		}
 	}
@@ -159,8 +150,13 @@ public class OpenMainDocumentAndTraverse {
 				// TODO - unmarshall directly to Text.
 				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
 					org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o).getValue();
-					System.out.println("      " +  t.getValue() );					
+					System.out.println("      " +  t.getValue() );
+					
+				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Drawing") ) {
+					describeDrawing( (org.docx4j.wml.Drawing)((JAXBElement)o).getValue() );
 				}
+				
+				
 				
 			} else if (o instanceof org.w3c.dom.Node) {
 				System.out.println(" IGNORED " + ((org.w3c.dom.Node)o).getNodeName() );					
@@ -176,7 +172,12 @@ public class OpenMainDocumentAndTraverse {
 					}
 				}
 				walkList(run.getRunContent());				
-			} 
+				
+			} else {
+				
+				System.out.println(" IGNORED " + o.getClass().getName() );
+				
+			}
 //			else if ( o instanceof org.docx4j.jaxb.document.Text) {
 //				org.docx4j.jaxb.document.Text  t = (org.docx4j.jaxb.document.Text)o;
 //				System.out.println("      " +  t.getValue() );					
@@ -184,5 +185,31 @@ public class OpenMainDocumentAndTraverse {
 		}
 	}
 	
+	static void describeDrawing( org.docx4j.wml.Drawing d ) {
+	
+		System.out.println(" describeDrawing " );
+		
+		if ( d.getAnchorOrInline().get(0) instanceof org.docx4j.dml.Anchor ) {
+			
+			System.out.println(" ENCOUNTERED w:drawing/wp:anchor " );
+			// That's all for now...
+			
+		} else if ( d.getAnchorOrInline().get(0) instanceof org.docx4j.dml.Inline ) {
+			
+			// Extract w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip/@r:embed
+			
+			org.docx4j.dml.Inline inline = (org.docx4j.dml.Inline )d.getAnchorOrInline().get(0);
+			
+			org.docx4j.dml.Pic pic = inline.getGraphic().getGraphicData().getPic();
+						
+			System.out.println( "image relationship: " +  pic.getBlipFill().getBlip().getEmbed() );
+			
+			
+		} else {
+			
+			System.out.println(" Didn't get Inline :(  How to handle " + d.getAnchorOrInline().get(0).getClass().getName() );
+		}
+		
+	}
 
 }
