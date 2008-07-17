@@ -32,6 +32,7 @@ USAGE INSTRUCTIONS
 	
   To CLEAN previously generated classes: 
 
+	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/dml/*.java -rf
 	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/wml/*.java -rf
 	
   To generate the classes (from the same directory)	
@@ -111,9 +112,11 @@ PRINCIPLES:
 		schemaLocation="../customXml/shared-customXmlSchemaProperties.xsd"/>
 	<!--	
 	<xsd:import id="m" namespace="http://schemas.openxmlformats.org/officeDocument/2006/math" schemaLocation="shared-math.xsd" />
+	-->
 	
 	
-	<xsd:import id="wp" namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" schemaLocation="dml-wordprocessingDrawing.xsd" />-->
+	<xsd:import id="wp" namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" 
+		schemaLocation="../dml/dml-wordprocessingDrawing.xsd" />
 	
 	<!-- Used in FontRel -->
 	<xsd:import id="rel"
@@ -4300,21 +4303,32 @@ PRINCIPLES:
 				</xsd:sequence>
 			</xsd:extension>
 		</xsd:complexContent>
-	</xsd:complexType> <!--
-	<xsd:complexType name="CT_Drawing"> 
-	<xsd:choice minOccurs="1" maxOccurs="unbounded">
-	<xsd:element ref="wp:anchor" minOccurs="0">
-	<xsd:annotation>
-	<xsd:documentation>Drawing Element Anchor</xsd:documentation>
-	</xsd:annotation>
-	</xsd:element>
-	<xsd:element ref="wp:inline" minOccurs="0">
-	<xsd:annotation>
-	<xsd:documentation>Inline Drawing Object</xsd:documentation>
-	</xsd:annotation>
-	</xsd:element>
-	</xsd:choice>
-	</xsd:complexType> -->
+	</xsd:complexType>
+	
+	<xsd:complexType name="CT_Drawing">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="drawing"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
+		<xsd:choice minOccurs="1" maxOccurs="unbounded">
+			<xsd:element ref="wp:anchor" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Drawing Element Anchor
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element ref="wp:inline" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>
+						Inline Drawing Object
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	
 	<xsd:complexType name="CT_SimpleField">
 		<xsd:sequence>
 			<xsd:element name="fldData" type="CT_Text" minOccurs="0" maxOccurs="1">
@@ -6348,12 +6362,14 @@ PRINCIPLES:
 					<xsd:documentation>Comment Content Reference
 						Mark</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element> <!--
+			</xsd:element>
 			<xsd:element name="drawing" type="CT_Drawing">
-			<xsd:annotation>
-			<xsd:documentation>DrawingML Object</xsd:documentation>
-			</xsd:annotation>
-			</xsd:element> -->
+				<xsd:annotation>
+					<xsd:documentation>
+						DrawingML Object
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
 			<xsd:element name="ptab" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Absolute Position Tab
