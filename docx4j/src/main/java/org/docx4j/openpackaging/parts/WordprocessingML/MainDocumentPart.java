@@ -549,24 +549,30 @@ public class MainDocumentPart extends DocumentPart  {
 		}	    
 	}
 
-	/*
-	 * Note that this method does not check that the specified style is defined,
-	 * nor change the style part to make the style operational.   
+	/**
+	 * Add this paragraph of text using the specified style
+	 * (up to user to ensure it is a paragraph style).
 	 * 
+	 * @param styleId
+	 * @param text
+	 * @return
 	 */
-	public org.docx4j.wml.P addStyledParagraphOfText(String style, String simpleText) {
+	public org.docx4j.wml.P addStyledParagraphOfText(String styleId, String text) {
 		
-		org.docx4j.wml.P p = addParagraphOfText(simpleText);
-		
-		// Now style it
-		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-		
-		org.docx4j.wml.PPr  pPr = factory.createPPr();
-		p.setPPr(pPr);
-		
-		org.docx4j.wml.PPrBase.PStyle pStyle = factory.createPPrBasePStyle();
-		pPr.setPStyle(pStyle);
-		pStyle.setVal(style);
+		org.docx4j.wml.P p = addParagraphOfText(text);
+						
+		StyleDefinitionsPart styleDefinitionsPart 
+			= this.getStyleDefinitionsPart();
+
+		if (styleDefinitionsPart.activateStyle(styleId)) {
+			// Style is available 
+			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();			
+			org.docx4j.wml.PPr  pPr = factory.createPPr();
+			p.setPPr(pPr);
+			org.docx4j.wml.PPrBase.PStyle pStyle = factory.createPPrBasePStyle();
+			pPr.setPStyle(pStyle);
+			pStyle.setVal(styleId);
+		} 		
 		
 		return p;
 

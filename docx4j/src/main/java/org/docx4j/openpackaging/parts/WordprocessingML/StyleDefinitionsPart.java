@@ -59,6 +59,12 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 		setRelationshipType(Namespaces.STYLES);
 	}
 	
+	// A variety of pre-defined styles, available for use in a StyleDefinitionsPart.
+	private static java.util.Map<String, org.docx4j.wml.Style>  knownStyles = null;
+	
+	// Note, you need to manually keep this up to date
+	private static java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
+	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
      * resulting content tree.  Validation event location information may
@@ -89,6 +95,12 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 			System.out.println("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
 			jaxbElement = u.unmarshal( is );
+			
+			liveStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
+			
+			for ( org.docx4j.wml.Style s : ((org.docx4j.wml.Styles)jaxbElement).getStyle() ) {				
+				liveStyles.put(s.getStyleId(), s);				
+			}
 			
 			
 			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
@@ -124,8 +136,123 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 				e.printStackTrace();
 			}    		
     	
-    	return unmarshal( is );    	
+    	return unmarshal( is );    // side-effect is to set jaxbElement 	
     }
-	
     
+    private void initKnownStyles() {
+    	
+		java.io.InputStream is = null;
+		try {
+			is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml");
+						
+			org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)unmarshal( is );
+			
+			knownStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
+			
+			for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
+				knownStyles.put(s.getStyleId(), s);				
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}    		
+    	
+		
+    }
+    
+    public boolean activateStyle( String styleId  ) {
+    	
+    	if (liveStyles.get(styleId)!=null) {
+    		// Its already live - nothing to do
+    		return true;    		
+    	}
+    	
+    	if ( knownStyles == null ) {
+    		// First time used, 
+    		initKnownStyles();    		
+    	}
+    	
+    	org.docx4j.wml.Style s = knownStyles.get(styleId);
+    	
+    	if (s==null) {
+    		log.error("Unknown style: " + styleId);
+    		return false;
+    	}
+    	    	
+    	return activateStyle(s, false); 
+    		// false -> don't replace an existing live style with a template
+    	
+    }
+    
+    public boolean activateStyle(org.docx4j.wml.Style s) {
+
+    	return activateStyle(s, true);
+    	
+    }
+
+    private boolean activateStyle(org.docx4j.wml.Style s, boolean replace) {
+    	
+    	if (liveStyles.get(s.getStyleId())!=null) {
+    		// Its already live
+    		
+    		if (!replace) {    			
+    			return false;
+    		}
+    		
+    		// Remove existing entry
+			((org.docx4j.wml.Styles)jaxbElement).getStyle().remove( 
+					liveStyles.get(s.getStyleId()) );				
+    	}
+    	
+    	// Add it
+    	// .. to the JAXB object
+    	((org.docx4j.wml.Styles)jaxbElement).getStyle().add(s);
+    	// .. here
+    	liveStyles.put(s.getStyleId(), s);
+    	
+    	// Now, recursively check that what it is based on is present
+    	boolean result1;
+    	if (s.getBasedOn()!=null) {
+    		String basedOn = s.getBasedOn().getVal();
+    		result1 = activateStyle( basedOn );
+    		
+    	} else if ( s.getStyleId().equals("Normal")
+    			|| s.getStyleId().equals("DefaultParagraphFont") )
+    	{
+    		// stop condition
+    		result1 = true;
+    	} else {
+    		
+    		log.error("Expected " + s.getStyleId() + " to have <w:basedOn ??");
+    		// Not properly activated
+    		result1 = false;
+    	}
+    	
+    	// Also add the linked style, if any
+    	// .. Word might expect it to be there
+    	boolean result2 = true;
+    	if (s.getLink()!=null) {
+    		
+    		org.docx4j.wml.Style.Link link = s.getLink();
+    		result2 = activateStyle(link.getVal());
+    		
+    	}
+    	
+    	return (result1 & result2);
+    	    	
+    }
+    
+    public org.docx4j.wml.Style getStyle(String styleId) {
+    	
+    	return liveStyles.get(styleId);
+    }
+    
+    
+//	public static void main(String[] args) throws Exception {
+//		
+//		StyleDefinitionsPart sdp = new StyleDefinitionsPart ();		
+//		sdp.initKnownStyles();
+//    
+//	}    
 }
