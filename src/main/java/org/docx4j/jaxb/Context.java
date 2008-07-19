@@ -29,6 +29,7 @@ public class Context {
 	public static JAXBContext jcDocPropsCore;
 	public static JAXBContext jcDocPropsCustom;
 	public static JAXBContext jcDocPropsExtended;
+	public static JAXBContext jcXmlPackage;
 	
 	static {
 		
@@ -38,6 +39,7 @@ public class Context {
 			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms");
 			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom");
 			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended");
+			jcXmlPackage = JAXBContext.newInstance("org.docx4j.convert.out.xmlPackage");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}				
