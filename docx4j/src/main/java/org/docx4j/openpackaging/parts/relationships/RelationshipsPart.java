@@ -242,6 +242,10 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	}
 	
 	private void init() {
+		
+		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
+				org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART));
+		
 		relationshipsByID = new TreeMap<String, Relationship>();
 		relationshipsByType = new TreeMap<String, Relationship>();		
 	}
