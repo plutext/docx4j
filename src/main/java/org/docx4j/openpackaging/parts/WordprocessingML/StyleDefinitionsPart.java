@@ -143,9 +143,12 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
     	
 		java.io.InputStream is = null;
 		try {
-			is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml");
-						
-			org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)unmarshal( is );
+			is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml");						
+			
+			Unmarshaller u = jc.createUnmarshaller();			
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)u.unmarshal( is );			
 			
 			knownStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
 			
