@@ -85,9 +85,11 @@ public class ParagraphDifferencer {
 	 */
 	public static void main(String[] args) throws Exception {
 		
+		String BASE_DIR = "/home/dev/workspace/docx4j/src/test/java/org/docx4j/diff/";
+		
 		// Test setup
-		String paraL = ParagraphDifferencerTest.BASE_DIR + "t2R";		
-		String paraR = ParagraphDifferencerTest.BASE_DIR + "t3L";
+		String paraL = BASE_DIR + "t2R";		
+		String paraR = BASE_DIR + "t3L";
 		P pl = loadParagraph(paraL);
 		P pr = loadParagraph(paraR);
 		
