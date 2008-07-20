@@ -6,7 +6,7 @@
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
 	<name>docx4j</name>
-	<version>0.9-SNAPSHOT</version>
+	<version>2.0</version>
 	<description>
 		docx4j is a library which helps you to work with the Office Open
 		XML file format, specifically WordprocessingML as used in docx
@@ -32,8 +32,8 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.6</source>
+					<target>1.6</target>
 					<verbose>false</verbose>
 				</configuration>
 			</plugin>
@@ -265,6 +265,16 @@
 			<url>svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2</url>
 		</repository>
 	</distributionManagement>
+
+   		<!--  NB as at 20080521, docx4j can't be built using 1.5. There are 2 issues:
+   		
+   			1.  fop-fonts-0.1.jar was built targeting 1.6
+   			
+   			2.  NamespacePrefixMapper.java imports com.sun.xml.internal.bind.marshaller
+   		   		
+	so comment this out, until:
+	(a) above issues are addressed
+	(b) the Windows path issues below are fixed in m2eclipse
 	
    <profiles>
    	<profile>
@@ -272,22 +282,13 @@
    		<activation>
    			<jdk>1.5</jdk>
    		</activation>
-   		<!--  NB as at 20080521, docx4j can't be built using 1.5. There are 2 issues:
-   		
-   			1.  fop-fonts-0.1.jar was built targeting 1.6
-   			
-   			2.  NamespacePrefixMapper.java imports com.sun.xml.internal.bind.marshaller
-   		   		
-   		 -->
    		<dependencies>
-   			<!-- Core jaxb classes -->
    			<dependency>
    				<groupId>javax.xml.bind</groupId>
    				<artifactId>jaxb-api</artifactId>
    				<version>2.1</version>
    			</dependency>
 
-   			<!-- Core jaxb classes -->
    			<dependency>
    				<groupId>com.sun.xml.bind</groupId>
    				<artifactId>jaxb-impl</artifactId>
@@ -302,15 +303,21 @@
    		</activation>
    		<dependencies>
    			<dependency>
-   				<!--  in order to access com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper  -->
    				<groupId>com.sun.xml.bind</groupId>
    				<artifactId>jaxb-impl</artifactId>
    				<version>2.0</version>
    				<scope>system</scope>
-   				<systemPath>
-   					/usr/lib/jvm/java-6-sun/jre/lib/rt.jar
-   				</systemPath>
+                <systemPath>${env.JAVA_HOME}/jre/lib/rt.jar</systemPath>
+   			</dependency>
+   		</dependencies>
+   	</profile>
+   </profiles>
+   		 -->
+
    				<!--
+                <systemPath>
+                    /usr/lib/jvm/java-6-sun/jre/lib/rt.jar
+                </systemPath>
    					Note for Windows users: Maven won't find rt.jar if systemPath
    					contains a space (eg "Program Files"). Either copy rt.jar 
    					to a path that doesn't contain spaces, or use:
@@ -324,9 +331,5 @@
    					broken (mvn 2.0.9) even though java.home is supposed to point to JRE_HOME: 
    					
    				-->
-   			</dependency>
-   		</dependencies>
-   	</profile>
-   </profiles>
 	
 </project>
