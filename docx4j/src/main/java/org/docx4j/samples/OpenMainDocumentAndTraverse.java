@@ -45,7 +45,7 @@ public class OpenMainDocumentAndTraverse {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/jpeg.docx";
-		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fonts-modesOfApplication.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/fonts-modesOfApplication.docx";
 		
 		boolean save = false;
 		String outputfilepath = "/home/dev/tmp/test-out.docx";		

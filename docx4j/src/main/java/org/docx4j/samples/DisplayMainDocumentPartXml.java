@@ -41,7 +41,7 @@ public class DisplayMainDocumentPartXml {
 		public static void main(String[] args) throws Exception {
 
 			//String inputfilepath = "/home/jharrop/tmp/simple.docx";
-			String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/TableAndPng.docx";
+			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/TableAndPng.docx";
 			
 			// Open a document from the file system
 			// 1. Load the Package
