@@ -75,13 +75,21 @@ public class NamespacePrefixMapper extends com.sun.xml.internal.bind.marshaller.
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")) {
     		return "vt";
     	}
-    	
-    	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/xmlPackage")) {
-    		return "pkg";
+    	    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/relationships")) {
+    		return "r";
     	}
     	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/relationships")) {
-    		return "rel";
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")) {
+    		return "wp";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/main")) {
+    		return "a";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/picture")) {
+    		return "pic";
     	}
     	
     	return suggestion;
