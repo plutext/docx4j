@@ -559,7 +559,24 @@ public class MainDocumentPart extends DocumentPart  {
 	 */
 	public org.docx4j.wml.P addStyledParagraphOfText(String styleId, String text) {
 		
-		org.docx4j.wml.P p = addParagraphOfText(text);
+		org.docx4j.wml.P p = createStyledParagraphOfText(styleId, text);
+		addObject(p);
+		
+		return p;
+
+	}
+
+	/**
+	 * Add this paragraph of text using the specified style
+	 * (up to user to ensure it is a paragraph style).
+	 * 
+	 * @param styleId
+	 * @param text
+	 * @return
+	 */
+	public org.docx4j.wml.P createStyledParagraphOfText(String styleId, String text) {
+		
+		org.docx4j.wml.P p = createParagraphOfText(text);
 						
 		StyleDefinitionsPart styleDefinitionsPart 
 			= this.getStyleDefinitionsPart();
@@ -578,10 +595,23 @@ public class MainDocumentPart extends DocumentPart  {
 
 	}
 	
+	
 	/*
 	 * If passed null, will create, add and return an empty P
 	 */
 	public org.docx4j.wml.P addParagraphOfText(String simpleText) {
+		
+		org.docx4j.wml.P  para = createParagraphOfText(simpleText);
+		addObject(para);
+		
+		return para;
+		
+	}
+
+	/*
+	 * If passed null, will create, add and return an empty P
+	 */
+	public org.docx4j.wml.P createParagraphOfText(String simpleText) {
 		
 		// Create content
 
@@ -597,16 +627,12 @@ public class MainDocumentPart extends DocumentPart  {
 			
 			para.getParagraphContent().add(run);
 		}
-		// Attach it 
-		
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
-		Body body =  wmlDocumentEl.getBody();
-		body.getEGBlockLevelElts().add(para);
 		
 		return para;
 		
 		
 	}
+	
 	
 	public void addObject(Object o) {
 		
