@@ -164,17 +164,7 @@ public class Doc {
 			
 			for (int y = 0; y < s.numParagraphs(); y++) {
 				Paragraph p = s.getParagraph(y);
-				
-				org.docx4j.wml.P wmlP =  documentPart.addParagraphOfText(null);				
-
-				if (p.getStyleIndex() > 0) {
-					log.debug("Styled paragraph, with index: " + p.getStyleIndex());
-					log.debug(stylesheet
-							.getStyleDescription(p.getStyleIndex()).getName());
-					
-					// TODO - HIGH PRIORITY - attach paragraph styles 
-				}
-								
+												
                 if (p.isInTable()) {
 					Table t = s.getTable(p);
 					int cl = numCol(t);
@@ -182,71 +172,113 @@ public class Doc {
 					log.info("Found " + t.numRows() + "x" + cl
 							+ " table - TODO - convert");
 
-					dumpTable(t);
+					handleTable(t, stylesheet, documentPart, factory);
 					
-					addTODO(factory, wmlP, "[TABLE " + + t.numRows() + "x" + cl 
-							+ " - can't convert tables yet]");
+//					addTODO(factory, wmlP, "[TABLE " + + t.numRows() + "x" + cl 
+//							+ " - can't convert tables yet]");
 
 					y += t.numParagraphs() - 1;
-				}				
-
-				for (int z = 0; z < p.numCharacterRuns(); z++) {
-					// character run
-					CharacterRun run = p.getCharacterRun(z);
-
-					// No character styles defined in there??
-
-					org.docx4j.wml.RPr rPr = null;
+				} else {
+					org.docx4j.wml.P paraToAdd = handleP(p, stylesheet,
+							documentPart, factory);
 					
-					if (run.isBold()) {
-						
-						// TODO - HIGH PRIORITY- handle other run properties
-						// esp underline, font size
-						if (rPr == null) {
-							rPr = factory.createRPr();
-						}
-						
-						org.docx4j.wml.BooleanDefaultTrue boldOn = factory.createBooleanDefaultTrue();
-						boldOn.setVal( Boolean.TRUE);
-						
-						rPr.setB(boldOn);
-						
-					}
-
-					// character run text
-					String text = run.text();
-					
-					// show us the text
-					log.debug("Processing: " + text);
-					
-					String cleansed = stripNonValidXMLCharacters(text);
-					// Necessary to avoid org.xml.sax.SAXParseException: An invalid XML character 
-					// (Unicode: 0xb) was found in the element content of the document.
-					// when trying to open the resulting docx.
-					// ie JAXB happily writes (marshals) it, but doesn't want to
-					// unmarshall.
-					
-					if (!text.equals(cleansed)) {
-						log.warn("Cleansed..");
-					}
-					
-					org.docx4j.wml.Text  t = factory.createText();
-					t.setValue(cleansed);
-			
-					org.docx4j.wml.R  wmlRun = factory.createR();
-					
-					if (rPr!=null) {
-						wmlRun.setRPr(rPr);
-					}
-					
-					wmlRun.getRunContent().add(t);		
-					
-					wmlP.getParagraphContent().add(wmlRun);					
-					
+					documentPart.addObject(paraToAdd);
 				}
+
 			}
 		}
 
+	}
+
+	private static org.docx4j.wml.P handleP(Paragraph p,
+			org.apache.poi.hwpf.model.StyleSheet stylesheet,
+			MainDocumentPart documentPart,
+			org.docx4j.wml.ObjectFactory factory) {
+		
+		org.docx4j.wml.P wmlP =  null; 				
+
+		if (p.getStyleIndex() > 0) {
+			log.debug("Styled paragraph, with index: " + p.getStyleIndex());
+			String styleName = stylesheet
+					.getStyleDescription(p.getStyleIndex()).getName();
+			log.debug(styleName);
+			
+			wmlP = documentPart.createStyledParagraphOfText( stripSpace(styleName), null);
+			
+		} else {
+			wmlP = documentPart.createParagraphOfText(null);
+		}
+
+		for (int z = 0; z < p.numCharacterRuns(); z++) {
+			// character run
+			CharacterRun run = p.getCharacterRun(z);
+
+			// No character styles defined in there??
+
+			org.docx4j.wml.RPr rPr = null;
+			
+			if (run.isBold()) {
+				
+				// TODO - HIGH PRIORITY- handle other run properties
+				// esp underline, font size
+				if (rPr == null) {
+					rPr = factory.createRPr();
+				}
+				
+				org.docx4j.wml.BooleanDefaultTrue boldOn = factory.createBooleanDefaultTrue();
+				boldOn.setVal( Boolean.TRUE);
+				
+				rPr.setB(boldOn);
+				
+			}
+
+			// character run text
+			String text = run.text();
+			
+			// show us the text
+			log.debug("Processing: " + text);
+			
+			String cleansed = stripNonValidXMLCharacters(text);
+			// Necessary to avoid org.xml.sax.SAXParseException: An invalid XML character 
+			// (Unicode: 0xb) was found in the element content of the document.
+			// when trying to open the resulting docx.
+			// ie JAXB happily writes (marshals) it, but doesn't want to
+			// unmarshall.
+			
+			if (!text.equals(cleansed)) {
+				log.warn("Cleansed..");
+			}
+			
+			org.docx4j.wml.Text  t = factory.createText();
+			t.setValue(cleansed);
+	
+			org.docx4j.wml.R  wmlRun = factory.createR();
+			
+			if (rPr!=null) {
+				wmlRun.setRPr(rPr);
+			}
+			
+			wmlRun.getRunContent().add(t);		
+			
+			wmlP.getParagraphContent().add(wmlRun);					
+			
+		}
+		
+		return wmlP;
+
+	}
+	
+	private static String stripSpace(String in) {
+		
+		StringBuffer sb = new StringBuffer();
+		
+		for (int i = 0; i < in.length(); i++) {
+			if (in.charAt(i) != ' ') {
+				sb.append(in.charAt(i));
+			}
+		}
+		
+		return sb.toString();
 	}
 	
 	private static void addTODO(org.docx4j.wml.ObjectFactory factory,
@@ -307,13 +339,50 @@ public class Doc {
 		return col;
 	}
 
-	private static void dumpTable(Table t) {
+	private static void handleTable(Table t,
+			org.apache.poi.hwpf.model.StyleSheet stylesheet,			
+			MainDocumentPart documentPart,
+			org.docx4j.wml.ObjectFactory factory) {
+		
+		org.docx4j.wml.Tbl tbl = factory.createTbl();
+		documentPart.addObject(tbl);
+		
+		org.docx4j.wml.TblPr tblPr = factory.createTblPr();
+		tbl.setTblPr(tblPr);
+		// TODO - set tblPr values
+		
+		org.docx4j.wml.TblGrid tblGrid = factory.createTblGrid();
+		tbl.setTblGrid(tblGrid);
+		// TODO - set tblGrid values
+				
 		for (int i = 0; i < t.numRows(); i++) {
 			TableRow tr = t.getRow(i);
+			
+			org.docx4j.wml.Tr trOut = factory.createTr();
+			tbl.getEGContentRowContent().add(trOut);
 
 			for (int j = 0; j < tr.numCells(); j++) {
 				TableCell tc = tr.getCell(j);
-				System.out.println("CELL[" + i + "][" + j + "]=" + tc.text());
+				
+				org.docx4j.wml.Tc tcOut = factory.createTc();
+				trOut.getEGContentCellContent().add(tcOut);
+								
+				//System.out.println("CELL[" + i + "][" + j + "]=" + tc.text());
+				
+				for (int y = 0; y < tc.numParagraphs(); y++) {
+					Paragraph p = tc.getParagraph(y);
+
+					// Nested tables?
+	                // if (p.isInTable()) ???
+				
+					org.docx4j.wml.P paraToAdd = handleP(p, stylesheet,
+						documentPart, factory);
+					
+					tcOut.getEGBlockLevelElts().add(paraToAdd);
+					
+					log.debug("Added p to tc");
+				}
+				
 			}
 		}
 	}	
