@@ -50,7 +50,7 @@ public class CreateWordprocessingMLDocument {
 		//injectDocPropsCustomPart(wordMLPackage);
 		
 		// Now save it 
-		wordMLPackage.save(new java.io.File("/tmp/result.docx") );
+		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/result.docx") );
 		
 		System.out.println("Done.");
 				
