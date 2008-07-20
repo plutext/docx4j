@@ -64,23 +64,23 @@ public class CTBlip
 {
 
     @XmlElements({
-        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
-        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
-        @XmlElement(name = "biLevel", type = CTBiLevelEffect.class),
-        @XmlElement(name = "lum", type = CTLuminanceEffect.class),
-        @XmlElement(name = "alphaModFix", type = CTAlphaModulateFixedEffect.class),
-        @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
-        @XmlElement(name = "alphaFloor", type = CTAlphaFloorEffect.class),
-        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
-        @XmlElement(name = "hsl", type = CTHSLEffect.class),
-        @XmlElement(name = "alphaCeiling", type = CTAlphaCeilingEffect.class),
-        @XmlElement(name = "tint", type = CTTintEffect.class),
-        @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
         @XmlElement(name = "blur", type = CTBlurEffect.class),
-        @XmlElement(name = "clrChange", type = CTColorChangeEffect.class),
+        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class),
+        @XmlElement(name = "hsl", type = CTHSLEffect.class),
         @XmlElement(name = "alphaInv", type = CTAlphaInverseEffect.class),
+        @XmlElement(name = "lum", type = CTLuminanceEffect.class),
+        @XmlElement(name = "alphaCeiling", type = CTAlphaCeilingEffect.class),
+        @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
         @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class),
-        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class)
+        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
+        @XmlElement(name = "clrChange", type = CTColorChangeEffect.class),
+        @XmlElement(name = "biLevel", type = CTBiLevelEffect.class),
+        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
+        @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
+        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
+        @XmlElement(name = "tint", type = CTTintEffect.class),
+        @XmlElement(name = "alphaFloor", type = CTAlphaFloorEffect.class),
+        @XmlElement(name = "alphaModFix", type = CTAlphaModulateFixedEffect.class)
     })
     protected List<Object> alphaBiLevelOrAlphaCeilingOrAlphaFloor;
     protected CTOfficeArtExtensionList extLst;
@@ -111,23 +111,23 @@ public class CTBlip
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTAlphaReplaceEffect }
-     * {@link CTDuotoneEffect }
-     * {@link CTBiLevelEffect }
-     * {@link CTLuminanceEffect }
-     * {@link CTAlphaModulateFixedEffect }
-     * {@link CTGrayscaleEffect }
-     * {@link CTAlphaFloorEffect }
-     * {@link CTColorReplaceEffect }
-     * {@link CTHSLEffect }
-     * {@link CTAlphaCeilingEffect }
-     * {@link CTTintEffect }
-     * {@link CTFillOverlayEffect }
      * {@link CTBlurEffect }
-     * {@link CTColorChangeEffect }
-     * {@link CTAlphaInverseEffect }
-     * {@link CTAlphaModulateEffect }
      * {@link CTAlphaBiLevelEffect }
+     * {@link CTHSLEffect }
+     * {@link CTAlphaInverseEffect }
+     * {@link CTLuminanceEffect }
+     * {@link CTAlphaCeilingEffect }
+     * {@link CTGrayscaleEffect }
+     * {@link CTAlphaModulateEffect }
+     * {@link CTColorReplaceEffect }
+     * {@link CTColorChangeEffect }
+     * {@link CTBiLevelEffect }
+     * {@link CTDuotoneEffect }
+     * {@link CTFillOverlayEffect }
+     * {@link CTAlphaReplaceEffect }
+     * {@link CTTintEffect }
+     * {@link CTAlphaFloorEffect }
+     * {@link CTAlphaModulateFixedEffect }
      * 
      * 
      */
