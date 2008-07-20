@@ -65,6 +65,12 @@ public abstract class Dom4jXmlPart extends Part {
 			e.printStackTrace() ;
 		}		
 	}
+
+	public void setDocument(Document document) {
+		
+		this.document = document;
+	}
+	
 	
 	public abstract Document getDocument();
 	

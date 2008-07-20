@@ -27,6 +27,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.MarshalException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.UnmarshalException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.ValidationEventHandler;
 
 import org.docx4j.jaxb.Context;
@@ -147,7 +148,7 @@ public abstract class JaxbXmlPart extends Part {
 		}
 	}
 
-
+    
     /**
 	 * Unmarshal XML data from the specified InputStream and return the
 	 * resulting content tree. Validation event location information may be
@@ -165,6 +166,24 @@ public abstract class JaxbXmlPart extends Part {
 	 */
     public abstract Object unmarshal( java.io.InputStream is ) throws JAXBException;
 
+    public Object unmarshal(org.w3c.dom.Element el) throws JAXBException {
+
+		try {
+
+			Unmarshaller u = jc.createUnmarshaller();
+						
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			jaxbElement = u.unmarshal( el );
+
+			return jaxbElement;
+			
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 	
 	

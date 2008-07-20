@@ -18,26 +18,6 @@
 
  */
 
-/*
- *  Copyright 2007-2008, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 package org.docx4j.convert.out.xmlPackage;
 
 import java.io.IOException;
@@ -88,18 +68,18 @@ public class XmlPackage {
 		
 		this.packageIn = p;
 		
-		factory = new org.docx4j.convert.out.xmlPackage.ObjectFactory(); 
+		factory = new org.docx4j.xmlPackage.ObjectFactory(); 
 	}
 		
 	// The package to save
 	public Package packageIn;
 	
-	private static org.docx4j.convert.out.xmlPackage.ObjectFactory factory;
+	private static org.docx4j.xmlPackage.ObjectFactory factory;
 	
-	private org.docx4j.convert.out.xmlPackage.Package pkgResult;
+	private org.docx4j.xmlPackage.Package pkgResult;
 	
 	
-	public org.docx4j.convert.out.xmlPackage.Package get() throws Docx4JException  {		
+	public org.docx4j.xmlPackage.Package get() throws Docx4JException  {		
 		
 		 try {
 
@@ -157,7 +137,7 @@ public class XmlPackage {
 	
 	public void  saveRawXmlPart(Part part, String partName) throws Docx4JException {
 		
-        org.docx4j.convert.out.xmlPackage.Part partResult = factory.createPart();
+        org.docx4j.xmlPackage.Part partResult = factory.createPart();
         
         if (partName.startsWith("/")) {       
         	partResult.setName(partName);
@@ -174,7 +154,7 @@ public class XmlPackage {
         	partResult.setContentType( ct );
         }
         pkgResult.getPart().add(partResult);
-        org.docx4j.convert.out.xmlPackage.XmlData dataResult = factory.createXmlData();
+        org.docx4j.xmlPackage.XmlData dataResult = factory.createXmlData();
         partResult.setXmlData(dataResult);
 
 		org.w3c.dom.Document w3cDoc = null;
@@ -331,7 +311,7 @@ public class XmlPackage {
 
 		//InputStream bin = ((BinaryPart)part).getBinaryData();		
 		
-        org.docx4j.convert.out.xmlPackage.Part partResult = factory.createPart();
+        org.docx4j.xmlPackage.Part partResult = factory.createPart();
         partResult.setName(resolvedPartUri);
         partResult.setContentType( part.getContentType() );
         pkgResult.getPart().add(partResult);
@@ -363,7 +343,7 @@ public class XmlPackage {
 		
 		XmlPackage worker = new XmlPackage(wordMLPackage);
 		
-		org.docx4j.convert.out.xmlPackage.Package result = worker.get();
+		org.docx4j.xmlPackage.Package result = worker.get();
 		
 		boolean suppressDeclaration = true;
 		boolean prettyprint = true;
@@ -373,9 +353,10 @@ public class XmlPackage {
 					marshaltoString(result, suppressDeclaration, prettyprint, 
 							org.docx4j.jaxb.Context.jcXmlPackage) );
 		
-		// TODO
-		// 1. add mso-application PI
+		// Note - We don't bother adding:
+		// 1. mso-application PI
 		// 2. @padding on rels?
+		// Since Word 2007 is happy to consume without either of these
 		
 	
 	}	

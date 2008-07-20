@@ -56,7 +56,14 @@ public class BinaryPart extends Part {
 			e.printStackTrace();
 		}
 	}	
-			
+
+	public void setBinaryData(byte[] bytes) {
+		
+		bb = java.nio.ByteBuffer.wrap(bytes);
+		
+	}
+	
+	
 	public java.nio.ByteBuffer getBuffer() {
 		return bb;
 	}
