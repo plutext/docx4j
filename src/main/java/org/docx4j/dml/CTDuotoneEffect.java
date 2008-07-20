@@ -40,11 +40,11 @@ public class CTDuotoneEffect implements Child
 {
 
     @XmlElements({
+        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
         @XmlElement(name = "hslClr", type = CTHslColor.class),
         @XmlElement(name = "prstClr", type = CTPresetColor.class),
-        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
-        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
         @XmlElement(name = "schemeClr", type = CTSchemeColor.class),
+        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
         @XmlElement(name = "sysClr", type = CTSystemColor.class)
     })
     protected List<Object> egColorChoice;
@@ -69,11 +69,11 @@ public class CTDuotoneEffect implements Child
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link CTScRgbColor }
      * {@link CTHslColor }
      * {@link CTPresetColor }
-     * {@link CTScRgbColor }
-     * {@link CTSRgbColor }
      * {@link CTSchemeColor }
+     * {@link CTSRgbColor }
      * {@link CTSystemColor }
      * 
      * 
