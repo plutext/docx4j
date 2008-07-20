@@ -235,11 +235,28 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 		setDocument(in);
 		this.sourceP = sourceP;
 		init();
-		parseRelationshipsDocument();
+		Element root = document.getRootElement();		
+		parseRelationshipsDocument(root);
 		
 //		this.container = (Package) pack;
 //		isRelationshipPart = partName.isRelationshipPartURI();
 	}
+
+	// This constructor used when input is a Word 2007 Xml Package file
+	public RelationshipsPart(Base sourceP, PartName partName, Element root)
+			throws InvalidFormatException {
+		
+		super(partName);
+		
+		// setDocument(in);  // nb - not set
+		this.sourceP = sourceP;
+		init();
+		parseRelationshipsDocument(root);
+
+		// this.container = (Package) pack;
+		// isRelationshipPart = partName.isRelationshipPartURI();
+	}
+	
 	
 	private void init() {
 		
@@ -448,19 +465,18 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 		 * @throws InvalidFormatException
 		 *             Throws if the relationship part is invalid.
 		 */
-		private void parseRelationshipsDocument()
+		private void parseRelationshipsDocument(Element root)
 				throws InvalidFormatException {
 			try {
-	
+					
 				// Browse default types
-				Element root = document.getRootElement();
 	
 				// Check OPC compliance M4.1 rule
 				boolean fCorePropertiesRelationship = false;
 	
 				for (Iterator i = root
-						.elementIterator(Relationship.RELATIONSHIP_TAG_NAME); i
-						.hasNext();) {
+						.elementIterator(Relationship.RELATIONSHIP_TAG_NAME); 
+						i.hasNext();) {
 					Element element = (Element) i.next();
 
 					Relationship rel = new Relationship(sourceP, element, fCorePropertiesRelationship);

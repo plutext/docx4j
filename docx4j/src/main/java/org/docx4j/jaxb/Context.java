@@ -39,7 +39,7 @@ public class Context {
 			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms");
 			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom");
 			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended");
-			jcXmlPackage = JAXBContext.newInstance("org.docx4j.convert.out.xmlPackage");
+			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}				

@@ -18,8 +18,7 @@
 
  */
 
-
-package org.docx4j.convert.out.xmlPackage;
+package org.docx4j.xmlPackage;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
@@ -30,7 +29,7 @@ import javax.xml.namespace.QName;
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
- * generated in the org.docx4j.convert.out.xmlPackage package. 
+ * generated in the org.docx4j.xmlPackage package. 
  * <p>An ObjectFactory allows you to programatically 
  * construct new instances of the Java representation 
  * for XML content. The Java representation of XML 
@@ -47,7 +46,7 @@ public class ObjectFactory {
     private final static QName _Package_QNAME = new QName("http://schemas.microsoft.com/office/2006/xmlPackage", "package");
 
     /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.convert.out.xmlPackage
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.xmlPackage
      * 
      */
     public ObjectFactory() {

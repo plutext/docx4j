@@ -18,8 +18,7 @@
 
  */
 
-
-package org.docx4j.convert.out.xmlPackage;
+package org.docx4j.xmlPackage;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
