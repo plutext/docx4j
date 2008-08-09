@@ -45,10 +45,10 @@ public class OpenMainDocumentAndTraverse {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/jpeg.docx";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/fonts-modesOfApplication.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Table.docx";
 		
 		boolean save = false;
-		String outputfilepath = "/home/dev/tmp/test-out.docx";		
+		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
 		
 		
 		// Open a document from the file system
@@ -67,44 +67,7 @@ public class OpenMainDocumentAndTraverse {
 
 		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
-		walkJAXBElements(bodyChildren);
-			
-//		// Change something
-//		org.docx4j.wml.P p = (org.docx4j.wml.P)((JAXBElement)bodyChildren.get(2)).getValue();
-		org.docx4j.wml.P p = (org.docx4j.wml.P)bodyChildren.get(2);
-		
-		//walkList(p.getParagraphContent());
-		
-		org.docx4j.wml.PPr pPr = p.getPPr();
-		
-		if (pPr!=null && pPr.getPStyle()!=null) {
-			System.out.println( "Style: " + pPr.getPStyle().getVal() );
-		}		
-		
-		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-		org.docx4j.wml.R  run = factory.createR();
-		org.docx4j.wml.Text  t = factory.createText();
-				
-		
-		t.setValue("SOMETHING NEW, with added JAXB convenience!");
-		
-		run.getRunContent().add(t);		
-		
-		org.docx4j.wml.RPr  runProps = factory.createRPr();
-		
-		run.setRPr( runProps); 
-		
-		org.docx4j.wml.BooleanDefaultTrue val = factory.createBooleanDefaultTrue();
-		val.setVal(Boolean.valueOf(true));
-		runProps.setB( val );
-		
-		// or relying on the default value, could just do:
-		// runProps.setB( factory.createBooleanDefaultTrue() );
-		
-		p.getParagraphContent().add(run);
-		
-//		System.out.println( "/n/n What does that look like? /n/n");
-//		walkList(p.getParagraphContent());
+		walkJAXBElements(bodyChildren);			
 				
 		// Save it
 		
@@ -120,10 +83,14 @@ public class OpenMainDocumentAndTraverse {
 
 			if ( o instanceof javax.xml.bind.JAXBElement) {
 			
-					System.out.println( o.getClass().getName() );
-					System.out.println( ((JAXBElement)o).getName() );
-					System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
+				System.out.println( o.getClass().getName() );
+				System.out.println( ((JAXBElement)o).getName() );
+				System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
 					
+				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
+					org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();
+					describeTable(tbl);
+				}
 			} else if (o instanceof org.docx4j.wml.P) {
 				System.out.println( "Paragraph object: ");
 				
@@ -183,6 +150,59 @@ public class OpenMainDocumentAndTraverse {
 //				System.out.println("      " +  t.getValue() );					
 //			}
 		}
+	}
+
+	static void describeTable( org.docx4j.wml.Tbl tbl ) {
+		
+		// What does a table look like?
+		boolean suppressDeclaration = false;
+		boolean prettyprint = true;
+		System.out.println( org.docx4j.XmlUtils.marshaltoString(tbl, suppressDeclaration, prettyprint) );
+		
+		// Could get the TblPr if we wanted them
+		 org.docx4j.wml.TblPr tblPr = tbl.getTblPr();
+		 
+		 // Could get the TblGrid if we wanted it
+		 org.docx4j.wml.TblGrid tblGrid = tbl.getTblGrid();
+		 
+		 // But here, let's look at the table contents
+		 for (Object o : tbl.getEGContentRowContent() ) {
+			 
+			 if (o instanceof org.docx4j.wml.Tr) {
+				 
+				 org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr)o;
+				 
+				 for (Object o2 : tr.getEGContentCellContent() ) {
+					 
+						System.out.println("  " + o2.getClass().getName() );
+						if ( o2 instanceof javax.xml.bind.JAXBElement) {
+							
+							if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc") ) {
+								org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
+								
+								// Look at the paragraphs in the tc
+								walkJAXBElements( tc.getEGBlockLevelElts() );
+								
+							} else {
+								// What is it, if it isn't a Tc?
+								System.out.println("      " +  ((JAXBElement)o).getName() );
+								System.out.println("      " +  ((JAXBElement)o).getDeclaredType().getName());
+							}
+						} else {
+							System.out.println("  " + o.getClass().getName() );							
+						}
+					 
+				 }
+				 
+				 
+			 } else {
+				System.out.println("  " + o.getClass().getName() );
+			 }
+			 
+		 }
+		 
+		 
+		
 	}
 	
 	static void describeDrawing( org.docx4j.wml.Drawing d ) {
