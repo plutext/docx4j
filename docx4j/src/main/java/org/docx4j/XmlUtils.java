@@ -559,6 +559,34 @@ public class XmlUtils {
     			xformer.transform(source, result);
     	
     }
+    
+   
+     /**
+      *  Give a string of wml containing ${key1}, ${key2}, return
+      *  a suitable object.
+     * @param wmlTemplateString
+     * @param mappings
+     * @return
+     */
+    public static Object unmarshallFromTemplate(String wmlTemplateString, java.util.HashMap<String, String> mappings) {
+        String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
+        log.debug("Results of substitution: " + wmlString);
+        return unmarshalString(wmlString);
+     }
+
+     private static StringBuilder replace(String s, int offset, StringBuilder b, java.util.HashMap<String, String> mappings) {
+        int startKey = s.indexOf("${", offset);
+        if (startKey == -1)
+           return b.append(s.substring(offset));
+        else {
+           b.append(s.substring(offset, startKey));
+           int keyEnd = s.indexOf('}', startKey);
+           String key = s.substring(startKey + 2, keyEnd);
+           b.append( mappings.get(key) );
+           return replace(s, keyEnd + 1, b, mappings);
+        }
+     }
+
 	
 	
 	
