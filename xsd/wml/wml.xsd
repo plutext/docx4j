@@ -3309,22 +3309,6 @@ PRINCIPLES:
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Comment">
-		<xsd:complexContent>
-			<xsd:extension base="CT_TrackChange">
-				<xsd:sequence>
-					<xsd:group ref="EG_BlockLevelElts" minOccurs="0"
-						maxOccurs="unbounded"></xsd:group>
-				</xsd:sequence>
-				<xsd:attribute name="initials" type="ST_String" use="optional">
-					<xsd:annotation>
-						<xsd:documentation>Initials of Comment
-							Author</xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
 	<xsd:complexType name="CT_TrackChangeNumbering">
 		<xsd:complexContent>
 			<xsd:extension base="CT_TrackChange">
@@ -3514,6 +3498,69 @@ PRINCIPLES:
 			</xsd:element>
 		</xsd:choice>
 	</xsd:group>
+	
+			<xsd:element name="commentRangeStart">
+				<xsd:annotation>
+					<xsd:documentation>
+						Comment Anchor Range Start
+					</xsd:documentation>
+					<!-- 
+					<xsd:appinfo>
+						<jaxb:class name="CommentRangeStart" />
+					</xsd:appinfo>  -->
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attribute name="id" type="ST_DecimalNumber"
+						use="required">
+						<xsd:annotation>
+							<xsd:documentation>
+								Annotation Identifier
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="displacedByCustomXml"
+						type="ST_DisplacedByCustomXml" use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Annotation Marker Relocated For Custom
+								XML Markup
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="commentRangeEnd">
+				<xsd:annotation>
+					<xsd:documentation>
+								Comment Anchor Range End
+					</xsd:documentation>
+					<!-- 
+					<xsd:appinfo>
+						<jaxb:class name="CommentRangeEnd" />
+					</xsd:appinfo>  -->
+				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attribute name="id" type="ST_DecimalNumber"
+						use="required">
+						<xsd:annotation>
+							<xsd:documentation>
+								Annotation Identifier
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="displacedByCustomXml"
+						type="ST_DisplacedByCustomXml" use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Annotation Marker Relocated For Custom
+								XML Markup
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
+	
+	
 	<xsd:group name="EG_RangeMarkupElements">
 		<xsd:choice>
 			<xsd:element name="bookmarkStart" type="CT_Bookmark">
@@ -3550,17 +3597,8 @@ PRINCIPLES:
 						End</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="commentRangeStart" type="CT_MarkupRange">
-				<xsd:annotation>
-					<xsd:documentation>Comment Anchor Range
-						Start</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="commentRangeEnd" type="CT_MarkupRange">
-				<xsd:annotation>
-					<xsd:documentation>Comment Anchor Range End</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
+			<xsd:element ref="commentRangeStart"/>
+			<xsd:element ref="commentRangeEnd" />
 			<xsd:element name="customXmlInsRangeStart" type="CT_TrackChange">
 				<xsd:annotation>
 					<xsd:documentation>Custom XML Markup Insertion
@@ -6357,11 +6395,22 @@ PRINCIPLES:
 					<xsd:documentation>Endnote Reference</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="commentReference" type="CT_Markup">
+			<xsd:element name="commentReference">
 				<xsd:annotation>
-					<xsd:documentation>Comment Content Reference
-						Mark</xsd:documentation>
+					<xsd:documentation>
+						Comment Content Reference Mark
+					</xsd:documentation>
 				</xsd:annotation>
+				<xsd:complexType>
+					<xsd:attribute name="id" type="ST_DecimalNumber"
+						use="required">
+						<xsd:annotation>
+							<xsd:documentation>
+								Annotation Identifier
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="drawing" type="CT_Drawing">
 				<xsd:annotation>
@@ -12467,20 +12516,41 @@ PRINCIPLES:
 				maxOccurs="unbounded"/>
 		</xsd:choice>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Comments">
-		<xsd:sequence>
-			<xsd:element name="comment" type="CT_Comment" minOccurs="0"
-				maxOccurs="unbounded">
-				<xsd:annotation>
-					<xsd:documentation>Comment Content</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="comments" type="CT_Comments">
+	<xsd:element name="comments">
 		<xsd:annotation>
 			<xsd:documentation>Comments Collection</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="comment" minOccurs="0"
+					maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>
+							Comment Content
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:complexContent>
+							<xsd:extension base="CT_TrackChange">
+								<xsd:sequence>
+									<xsd:group ref="EG_BlockLevelElts"
+										minOccurs="0" maxOccurs="unbounded">
+									</xsd:group>
+								</xsd:sequence>
+								<xsd:attribute name="initials"
+									type="ST_String" use="optional">
+									<xsd:annotation>
+										<xsd:documentation>
+											Initials of Comment Author
+										</xsd:documentation>
+									</xsd:annotation>
+								</xsd:attribute>
+							</xsd:extension>
+						</xsd:complexContent>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="CT_Footnotes">
 		<xsd:sequence maxOccurs="unbounded">
