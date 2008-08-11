@@ -21,28 +21,28 @@
 
 package org.docx4j.wml;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Comments complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Comments">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="comment" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Comment" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
+ *       &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
+ *       &lt;attribute name="displacedByCustomXml" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DisplacedByCustomXml" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -51,44 +51,64 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Comments", propOrder = {
-    "comment"
-})
-public class CTComments
-    implements Child
+@XmlType(name = "")
+@XmlRootElement(name = "commentRangeEnd")
+public class CommentRangeEnd implements Child
 {
 
-    protected List<CTComment> comment;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    protected BigInteger id;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+    protected STDisplacedByCustomXml displacedByCustomXml;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the comment property.
+     * Gets the value of the id property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the comment property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getComment().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link CTComment }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
      */
-    public List<CTComment> getComment() {
-        if (comment == null) {
-            comment = new ArrayList<CTComment>();
-        }
-        return this.comment;
+    public BigInteger getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setId(BigInteger value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the displacedByCustomXml property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STDisplacedByCustomXml }
+     *     
+     */
+    public STDisplacedByCustomXml getDisplacedByCustomXml() {
+        return displacedByCustomXml;
+    }
+
+    /**
+     * Sets the value of the displacedByCustomXml property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STDisplacedByCustomXml }
+     *     
+     */
+    public void setDisplacedByCustomXml(STDisplacedByCustomXml value) {
+        this.displacedByCustomXml = value;
     }
 
     /**

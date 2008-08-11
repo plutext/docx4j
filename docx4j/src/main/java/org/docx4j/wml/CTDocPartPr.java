@@ -84,11 +84,11 @@ public class CTDocPartPr
 {
 
     @XmlElements({
-        @XmlElement(name = "name", type = CTDocPartName.class),
+        @XmlElement(name = "category", type = CTDocPartCategory.class),
         @XmlElement(name = "guid", type = CTGuid.class),
         @XmlElement(name = "description", type = CTDocPartPr.Description.class),
         @XmlElement(name = "types", type = CTDocPartTypes.class),
-        @XmlElement(name = "category", type = CTDocPartCategory.class),
+        @XmlElement(name = "name", type = CTDocPartName.class),
         @XmlElement(name = "style", type = CTDocPartPr.Style.class),
         @XmlElement(name = "behaviors", type = CTDocPartBehaviors.class)
     })
@@ -114,11 +114,11 @@ public class CTDocPartPr
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTDocPartName }
+     * {@link CTDocPartCategory }
      * {@link CTGuid }
      * {@link CTDocPartPr.Description }
      * {@link CTDocPartTypes }
-     * {@link CTDocPartCategory }
+     * {@link CTDocPartName }
      * {@link CTDocPartPr.Style }
      * {@link CTDocPartBehaviors }
      * 
