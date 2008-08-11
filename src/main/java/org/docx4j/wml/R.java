@@ -371,6 +371,7 @@ public class R implements Child
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "commentReference")    
     public static class CommentReference
         implements Child
     {
