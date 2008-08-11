@@ -25,6 +25,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -32,6 +34,7 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,6 +53,7 @@ import org.docx4j.wml.R;
 
 import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.docx4j.diff.StringComparator;
+import org.docx4j.jaxb.Context;
 
 import org.eclipse.compare.rangedifferencer.RangeDifferencer;
 import org.w3c.dom.Document;
@@ -73,12 +77,20 @@ public class ParagraphDifferencer {
 
 	protected static Logger log = Logger.getLogger(ParagraphDifferencer.class);
 	
-	
-	public static String author = "unknown";
-	
 	public static Integer nextId = 0;
 
 	static org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory();
+	
+    final private static SimpleDateFormat RFC3339_FORMAT 
+    	= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		// SimpleDateFormat is not thread-safe see:
+		//   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6231579
+		//   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6178997
+		// solution is to use stateless MessageFormat instead:
+		// final private static String RFC3339_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+		// final private static String RFC3339_PATTERN = "{0,date," + RFC3339_FORMAT + "}";    	
+	
 	
 	/**
 	 * @param args
@@ -97,7 +109,7 @@ public class ParagraphDifferencer {
 		StreamResult result = new StreamResult(System.out);
 
 		// Run the diff
-		diff(pl, pr, result);
+		diff(pl, pr, result, null, null);
 		
 	}
 	
@@ -115,15 +127,16 @@ public class ParagraphDifferencer {
 	 * @param pr - the right paragraph
 	 * @param result 
 	 */
-	public static void diff(P pl, P pr, javax.xml.transform.Result result) {
+	public static void diff(P pl, P pr, javax.xml.transform.Result result, String author, java.util.Calendar date) {
 
-		diff(pl, pr, result, false);
+		diff(pl, pr, result, author, date, false);
 	}
 
 	
 	public static void diff(org.docx4j.wml.SdtContentBlock cbLeft, 
 			org.docx4j.wml.SdtContentBlock cbRight, 
-			javax.xml.transform.Result result) {
+			javax.xml.transform.Result result,
+			String author, java.util.Calendar date) {
 
 		Writer diffxResult = new StringWriter();
 		
@@ -157,6 +170,12 @@ public class ParagraphDifferencer {
 				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
 				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+						
+			if (date!=null) {				
+				String dateString = RFC3339_FORMAT.format(date.getTime()) ;
+				transformParameters.put("date", dateString);
+			}
+			
 			transformParameters.put("author", author);
 			XmlUtils.transform(src, xslt, transformParameters, result);
 			
@@ -164,8 +183,76 @@ public class ParagraphDifferencer {
 			exc.printStackTrace();
 		}			
 		
+	}
+	
+	public static void markupAsInsertion(org.docx4j.wml.SdtContentBlock cbLeft, 
+			javax.xml.transform.Result result,
+			String author, java.util.Calendar date) {
+
+		Writer diffxResult = new StringWriter();
+				
+		try {
+
+	    	// Now marshall it
+			JAXBContext jc = Context.jc;
+			Marshaller marshaller=jc.createMarshaller();
+			org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
+
+			marshaller.marshal(cbLeft, doc);
+			
+			
+			java.io.InputStream xslt = 
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupInsert.xslt");
+			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+						
+			if (date!=null) {				
+				String dateString = RFC3339_FORMAT.format(date.getTime()) ;
+				transformParameters.put("date", dateString);
+			}
+			
+			transformParameters.put("author", author);
+			XmlUtils.transform(doc, xslt, transformParameters, result);
+			
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}					
 
 	}
+
+	public static void markupAsDeletion(org.docx4j.wml.SdtContentBlock cbLeft, 
+			javax.xml.transform.Result result,
+			String author, java.util.Calendar date) {
+
+		Writer diffxResult = new StringWriter();
+				
+		try {
+
+	    	// Now marshall it
+			JAXBContext jc = Context.jc;
+			Marshaller marshaller=jc.createMarshaller();
+			org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
+
+			marshaller.marshal(cbLeft, doc);
+			
+			
+			java.io.InputStream xslt = 
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupDelete.xslt");
+			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+						
+			if (date!=null) {				
+				String dateString = RFC3339_FORMAT.format(date.getTime()) ;
+				transformParameters.put("date", dateString);
+			}
+			
+			transformParameters.put("author", author);
+			XmlUtils.transform(doc, xslt, transformParameters, result);
+			
+		} catch (Exception exc) {
+			exc.printStackTrace();
+		}					
+
+	}
+	
 	
 	/**
 	 * Compare 2 p objects, returning a result containing
@@ -176,6 +263,7 @@ public class ParagraphDifferencer {
 	 * @param result 
 	 */
 	public static void diff(P pl, P pr, javax.xml.transform.Result result,
+			String author, java.util.Calendar date,
 			boolean preProcess) {
 		
 		
@@ -956,14 +1044,6 @@ spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w
         
         return stringWriter.toString();
     }	
-
-	public static String getAuthor() {
-		return author;
-	}
-
-	public static void setAuthor(String author) {
-		ParagraphDifferencer.author = author;
-	}
 
 	/*String[] runtContents = "a".trim().split("\\s");
 	System.out.println( "'a' " + runtContents.length );

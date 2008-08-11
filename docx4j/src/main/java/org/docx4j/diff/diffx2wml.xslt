@@ -38,6 +38,7 @@
   indent="yes" xalan:indent-amount="4" />  
   
 <xsl:param name="author"/>
+<xsl:param name="date"/>
 
 <xsl:preserve-space elements="ins del w:t"/> 
 
@@ -90,7 +91,7 @@
 				select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
   
 
-    <w:ins w:id="{$id}" w:author="{$author}">  <!--  w:date is optional, so omit for now -->
+    <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
 
       <w:r>
    		<xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
@@ -106,7 +107,7 @@
 				select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
 
 
-    <w:del w:id="{$id}" w:author="{$author}">
+    <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
 
       <w:r>
       	<xsl:apply-templates select="../../w:rPr"/>
