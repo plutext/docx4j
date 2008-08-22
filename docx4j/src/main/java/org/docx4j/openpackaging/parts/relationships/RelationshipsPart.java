@@ -227,8 +227,13 @@ public final class RelationshipsPart extends JaxbXmlPart {
 			// like this in other constructors
 			// in this class.
 		
+				
+		org.docx4j.relationships.ObjectFactory factory =
+			new org.docx4j.relationships.ObjectFactory();
 		
-		// TODO - create jaxbElement|relationships from factory?
+		relationships = factory.createRelationships();
+		jaxbElement = relationships;
+
 		
 	}
 	
@@ -333,7 +338,6 @@ public final class RelationshipsPart extends JaxbXmlPart {
 			new org.docx4j.relationships.ObjectFactory();
 		
 		Relationship rel = factory.createRelationship();
-		relationships.getRelationship().add(rel);
 		
 		rel.setTarget(result.toString() );
 		//rel.setTargetMode( TargetMode.INTERNAL );
