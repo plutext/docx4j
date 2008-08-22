@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	xmlns="http://schemas.openxmlformats.org/package/2006/relationships"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://schemas.openxmlformats.org/package/2006/relationships" 
+	elementFormDefault="qualified"
+	attributeFormDefault="unqualified" blockDefault="#all"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+		
+	<!--  
+	
+	For similar schema, see United States Patent 20080104203; Application Number: 11/555154
+    Publication Date: 05/01/2008
+	see http://www.freepatentsonline.com/y2008/0104203.html 
+	
+	I'm not sure where else this is published.
+	
+	
+	<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+		<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended
+-properties" Target="docProps/app.xml"/>
+		<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+		<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+	</Relationships>
+	
+	
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh relationships.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+	
+	
+	-->
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.relationships"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
+	
+	<xsd:element name="Relationships">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="Relationship" minOccurs="0"
+					maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+	<xsd:element name="Relationship">
+		<xsd:complexType>
+			<xsd:simpleContent>
+				<xsd:extension base="xsd:string">
+					<!-- 					<xsd:attribute name="TargetMode" type="ST_TargetMode"
+						use="optional" /> -->
+					<xsd:attribute name="TargetMode" use="optional">
+						<xsd:simpleType>
+							<xsd:restriction base="xsd:string">
+								<xsd:enumeration value="External" />
+								<xsd:enumeration value="Internal" />
+							</xsd:restriction>
+						</xsd:simpleType>
+					</xsd:attribute>
+					<xsd:attribute name="Target" type="xsd:anyURI"
+						use="required" />
+					<xsd:attribute name="Type" type="xsd:anyURI"
+						use="required" />
+					<xsd:attribute name="Id" type="xsd:ID"
+						use="required" />
+				</xsd:extension>
+			</xsd:simpleContent>
+		</xsd:complexType>
+	</xsd:element>
+
+
+</xsd:schema>
+

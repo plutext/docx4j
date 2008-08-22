@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/office/2006/xmlPackage"
+	xmlns="http://schemas.microsoft.com/office/2006/xmlPackage"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" blockDefault="#all"
+	elementFormDefault="qualified" attributeFormDefault="qualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	<!-- 
+		
+		sh ~/jaxb-ri-20071219/bin/xjc.sh xmlPackage.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+		
+	-->
+
+	<xsd:annotation>
+		<xsd:documentation>
+			Schema for flat XML documents.
+		</xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings></jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.xmlPackage" />
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+
+	</xsd:annotation>
+
+	<xsd:element name="package" type="CT_Package" />
+
+	<xsd:complexType name="CT_Package">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Package" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="part" type="CT_Part" minOccurs="0"
+				maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Represents a part of a package using open
+						package conventions.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="CT_Part">
+		<xsd:annotation>
+			<xsd:documentation>
+				Defines a part of a package using open package
+				conventions. A part with contentType containing xml
+				requires xmlData. All other contentType values use
+				binaryData.
+			</xsd:documentation>
+			<xsd:appinfo>
+				<jaxb:class name="Part" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="xmlData" type="CT_XmlData">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the contents of a part containing XML
+						data.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="binaryData" type="xsd:base64Binary">
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the contents of a part containing
+						binary base 64 encoded non-XML data.
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>
+					Specifies the name including the path of a part
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="contentType">
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the content type of a part
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:pattern value="text/xml" />
+					<xsd:pattern value="application/xml" />
+					<xsd:pattern value="application/.+\+xml" />
+					<xsd:pattern value=".+" />
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="compression" default="deflateSuperFast"
+			use="optional">
+			<xsd:simpleType>
+				<xsd:annotation>
+					<xsd:documentation>
+						Specifies the compression type of a part
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:restriction base="xsd:string">
+					<xsd:enumeration value="store" />
+					<xsd:enumeration value="deflateSuperFast" />
+					<xsd:enumeration value="deflateFast" />
+					<xsd:enumeration value="deflateNormal" />
+					<xsd:enumeration value="deflateMaximum" />
+				</xsd:restriction>
+			</xsd:simpleType>
+		</xsd:attribute>
+		<xsd:attribute name="padding" type="xsd:unsignedInt" default="0"
+			use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Specifies the default padding size in bytes of a
+					part
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+
+
+
+	<xsd:complexType name="CT_XmlData">
+		<xsd:annotation>
+			<xsd:documentation>
+				Specifies the details of an xml part.
+			</xsd:documentation>
+			<xsd:appinfo>
+				<jaxb:class name="XmlData" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:any processContents="skip" />
+		</xsd:sequence>
+		<xsd:attribute name="originalXmlEncoding" type="xsd:string"
+			default="UTF-8" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Specifies the original XML encoding of an XML part
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="originalXmlVersion" type="xsd:string"
+			default="1.0" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Specifies the original XML version of an XML part
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="originalXmlStandalone" type="xsd:string"
+			default="yes" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>
+					Specifies the original XML standalone attribute of
+					an XML part
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+</xsd:schema>
