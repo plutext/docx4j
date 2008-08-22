@@ -56,9 +56,9 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.openpackaging.parts.relationships.TargetMode;
+import org.docx4j.relationships.Relationships;
+import org.docx4j.relationships.Relationship;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
@@ -246,7 +246,13 @@ public class LoadFromJCR extends Load {
 			InputStream is = getInputStreamFromJCRPart( nodeMapper, contentNode); 
 			
 
-			return new RelationshipsPart(p, new PartName("/" + partName), is );
+			//return new RelationshipsPart(p, new PartName("/" + partName), is );
+			
+			RelationshipsPart rp = new RelationshipsPart(new PartName("/" + partName) );
+			rp.setSourceP(p);
+			rp.unmarshal(is);
+			return rp;
+			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -411,18 +417,30 @@ public class LoadFromJCR extends Load {
 		
 		Package pkg = source.getPackage();		
 		
-		for (Iterator it = rp.iterator(); it.hasNext(); ) {
-			Relationship r = (Relationship)it.next();
+//		for (Iterator it = rp.iterator(); it.hasNext(); ) {
+//			Relationship r = (Relationship)it.next();
+//			log.info("For Relationship Id=" + r.getId() 
+//					+ " Source is " + r.getSource().getPartName() 
+//					+ ", Target is " + r.getTargetURI() );
+//			try {				
+//				getPart(jcrSession, docxNode, pkg, rp, r);
+//			} catch (Exception e) {
+//				throw new Docx4JException("Failed to add parts from relationships", e);
+//			}
+//		}
+		
+		
+		for ( Relationship r : rp.getRelationships().getRelationship() ) {
+			
 			log.info("For Relationship Id=" + r.getId() 
-					+ " Source is " + r.getSource().getPartName() 
-					+ ", Target is " + r.getTargetURI() );
+					+ " Source is " + rp.getSourceP().getPartName() 
+					+ ", Target is " + r.getTarget() );
 			try {				
 				getPart(jcrSession, docxNode, pkg, rp, r);
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
 		}
-		
 		
 	}
 
@@ -443,17 +461,18 @@ public class LoadFromJCR extends Load {
 	 */
 	public void getPart(Session jcrSession, Node docxNode, 
 			Package pkg, RelationshipsPart rp, Relationship r)	
-			throws Docx4JException, RepositoryException, InvalidFormatException {
+			throws Docx4JException, RepositoryException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;
 		String resolvedPartUri = null;
 		
-		if (r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+		if (r.getTargetMode() == null
+				|| !r.getTargetMode().equals("External") ) {
 			
 			// Usual case
 		
-			source = r.getSource();
-			resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();		
+			source = rp.getSourceP();
+			resolvedPartUri = URIHelper.resolvePartUri(rp.getSourceURI(), new URI(r.getTarget() ) ).toString();		
 	
 			// Now drop leading "/'
 			resolvedPartUri = resolvedPartUri.substring(1);				
@@ -471,8 +490,8 @@ public class LoadFromJCR extends Load {
 			 *  location of the package."
 			 */
 
-			log.warn("Encountered external resource " + r.getTargetURI() 
-					   + " of type " + r.getRelationshipType() );
+			log.warn("Encountered external resource " + r.getTarget() 
+					   + " of type " + r.getType() );
 			
 			// As of 1 May 2008, we don't do anything with these yet.
 			// No need to create a Part out of them until such time as
@@ -485,7 +504,7 @@ public class LoadFromJCR extends Load {
 			return;
 		}
 		
-		String relationshipType = r.getRelationshipType();		
+		String relationshipType = r.getType();		
 		
 		Part part = getRawPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);
 		rp.loadPart(part);
