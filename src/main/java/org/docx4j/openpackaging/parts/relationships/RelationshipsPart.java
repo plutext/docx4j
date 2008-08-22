@@ -50,13 +50,18 @@
 
 package org.docx4j.openpackaging.parts.relationships;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import org.docx4j.relationships.Relationships;
+import org.docx4j.relationships.Relationship;
+
+import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
+
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.TreeMap;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 
@@ -70,16 +75,7 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 
-import org.dom4j.Attribute;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.QName;
-import org.dom4j.io.SAXReader;
-//import org.openxml4j.opc.PackageAccess;
 
 
 
@@ -90,9 +86,11 @@ import org.dom4j.io.SAXReader;
  * @author Julien Chable, CDubettier
  * @version 0.1
  */
-public final class RelationshipsPart extends Dom4jXmlPart implements
-		Iterable<Relationship> {
+public final class RelationshipsPart extends JaxbXmlPart { 
+	// implements Iterable<Relationship> {
 
+	private static Logger logger = Logger.getLogger(RelationshipsPart.class);
+	
 	/* Example:
 	 * 
 	 * Package relationships:
@@ -141,20 +139,42 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 
 	 */
 	
+	/**
+	 * Constructor.
+	 */
+	public RelationshipsPart(PartName partName) throws InvalidFormatException {
+		super(partName);
+		init();
+	}
+
+	public RelationshipsPart() throws InvalidFormatException {
+		super(new PartName("/rels/.rels"));
+		init();
+	}
 	
-	private static Logger logger = Logger.getLogger(RelationshipsPart.class);
+	public void init() {		
+		// Used if this Part is added to [Content_Types].xml 
+		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
+				org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART));
 
-	/**
-	 * Package relationships ordered by ID.
-	 */
-	private TreeMap<String, Relationship> relationshipsByID;
+		setJAXBContext(Context.jcRelationships);
+				
+	}
+	
+	private Relationships relationships;
+	public Relationships getRelationships() {
+		return relationships;
+	}
 
-	/**
-	 * Package relationships ordered by type.
-	 */
-	private TreeMap<String, Relationship> relationshipsByType;
+	public void setRelationships(Relationships relationships) {
+		this.relationships = relationships;
+	}	
 
-
+	// NB partName is the partName of this relationship part,
+	// not the source Part.  sourceP above has the 
+	// sourcePartName, which will be required in order to resolve 
+	// relative targets
+	
 	/**
 	 * Source part for these relationships
 	 */
@@ -163,6 +183,17 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	public Base getSourceP() {
 		return sourceP;
 	}
+	public void setSourceP( Base sourcePart) {
+		sourceP = sourcePart;
+	}
+	
+	public URI getSourceURI() {
+		if (sourceP == null) {
+			return URIHelper.PACKAGE_ROOT_URI;
+		}
+		return sourceP.getPartName().getURI();
+	}
+	
 	
 	/** This Relationship Part is the package relationship part
 	 * if its source is the Package. 
@@ -171,26 +202,6 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 		return (sourceP instanceof Package);
 	}
 
-//	public void setPackageRelationshipPart(boolean isPackageRelationshipPart) {
-//		this.isPackageRelationshipPart = isPackageRelationshipPart;
-//	}
-	
-
-	/**
-	 * Constructor.
-	 * 
-	 * DO NOT USE.  Doesn't set source Part!
-	 */
-	public RelationshipsPart(PartName partName) throws InvalidFormatException {
-		super(partName);
-		// NB partName is the partName of this relationship part,
-		// not the source Part.  sourceP above has the 
-		// sourcePartName, which will be required in order to resolve 
-		// relative targets
-		init();
-		
-		//throw new InvalidFormatException();
-	}
 
 	/**
 	 * Constructor.  Creates an appropriately named .rels XML document.
@@ -216,55 +227,9 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 			// like this in other constructors
 			// in this class.
 		
-	}
-	
-	
-	/**
-	 * Constructor.  Parses the .rels XML document.
-	 * 
-	 * @param partName
-	 *            The part name, relative to the parent Package root.
-	 * @param contents
-	 *            The XML Document contents of the part.
-	 * @throws InvalidFormatException
-	 *             If the specified URI is not valid.
-	 */
-	public RelationshipsPart(Base sourceP, PartName partName, InputStream in)
-			throws InvalidFormatException {
-		super(partName);
-		setDocument(in);
-		this.sourceP = sourceP;
-		init();
-		Element root = document.getRootElement();		
-		parseRelationshipsDocument(root);
 		
-//		this.container = (Package) pack;
-//		isRelationshipPart = partName.isRelationshipPartURI();
-	}
-
-	// This constructor used when input is a Word 2007 Xml Package file
-	public RelationshipsPart(Base sourceP, PartName partName, Element root)
-			throws InvalidFormatException {
+		// TODO - create jaxbElement|relationships from factory?
 		
-		super(partName);
-		
-		// setDocument(in);  // nb - not set
-		this.sourceP = sourceP;
-		init();
-		parseRelationshipsDocument(root);
-
-		// this.container = (Package) pack;
-		// isRelationshipPart = partName.isRelationshipPartURI();
-	}
-	
-	
-	private void init() {
-		
-		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
-				org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART));
-		
-		relationshipsByID = new TreeMap<String, Relationship>();
-		relationshipsByType = new TreeMap<String, Relationship>();		
 	}
 	
 	/**
@@ -314,12 +279,22 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 			return null;
 		}
 		
-		log.info(" source is  " + r.getSourceURI() );
-    	log.info(id + " points to " + r.getTargetURI());
+		log.info(" source is  " + sourceP.getPartName().toString() );
+    	log.info(id + " points to " + r.getTarget());
     	// eg rId1 points to fonts/font1.odttf
+    			
+		URI uri = null;
+
+		try {
+			uri = org.docx4j.openpackaging.URIHelper
+					.resolvePartUri(sourceP.partName.getURI(), new URI(
+							r.getTarget()));
+		} catch (URISyntaxException e) {
+			log.error("Cannot convert " + r.getTarget()
+					+ " in a valid relationship URI-> ignored", e);
+		}		
     	
-    	URI uri = org.docx4j.openpackaging.URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI());
-		
+    	
     	try {
 			return getPackage().getParts().get( new PartName(uri, true ));
 		} catch (InvalidFormatException e) {
@@ -354,8 +329,20 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 		
 		log.debug("Result " + result); 
 		
-		Relationship rel = new Relationship(sourceP, result, 
-				TargetMode.INTERNAL, part.getRelationshipType(), id);
+		org.docx4j.relationships.ObjectFactory factory =
+			new org.docx4j.relationships.ObjectFactory();
+		
+		Relationship rel = factory.createRelationship();
+		relationships.getRelationship().add(rel);
+		
+		rel.setTarget(result.toString() );
+		//rel.setTargetMode( TargetMode.INTERNAL );
+		rel.setType( part.getRelationshipType() );
+		rel.setId( id );
+		
+		
+//		Relationship rel = new Relationship(sourceP, result, 
+//				TargetMode.INTERNAL, part.getRelationshipType(), id);
 		addRelationship(rel );
 		
 		// Add an override to ContentTypeManager
@@ -371,18 +358,22 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 
 		// Make a list in order to avoid concurrent modification exception
 		java.util.ArrayList<Relationship> relationshipsToGo = new java.util.ArrayList<Relationship>();
-		for (Relationship r : relationshipsByID.values() ) {
+		for (Relationship r : relationships.getRelationship() ) {
 			relationshipsToGo.add(r);
 		}
 
 		for (Relationship r : relationshipsToGo ) {
 			
-			String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
-			
-			log.info("Removing part: " + resolvedPartUri);
-			
 			try {
+				String resolvedPartUri = URIHelper.resolvePartUri(
+						getSourceURI(), new URI(r.getTarget())).toString();
+
+				log.info("Removing part: " + resolvedPartUri);
+
 				removePart(new PartName(resolvedPartUri));
+			} catch (URISyntaxException e) {
+				log.error("Cannot convert " + r.getTarget()
+						+ " in a valid relationship URI-> ignored", e);
 			} catch (InvalidFormatException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -415,14 +406,25 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 			// Remove the relationship for which it is a target from here
 			// Throw an error if this can't be found!
 			Relationship relToBeRemoved = null;
-			for (Relationship rel : relationshipsByID.values() ) {
-				
-				URI resolvedTargetURI = org.docx4j.openpackaging.URIHelper.resolvePartUri(   sourceP.partName.getURI(), rel.getTargetURI() );
+//			for (Relationship rel : relationshipsByID.values() ) {
+			for (Relationship rel : relationships.getRelationship() ) {
+								
+				URI resolvedTargetURI = null;
+
+				try {
+					resolvedTargetURI = org.docx4j.openpackaging.URIHelper
+							.resolvePartUri(sourceP.partName.getURI(), new URI(
+									rel.getTarget()));
+				} catch (URISyntaxException e) {
+					log.error("Cannot convert " + rel.getTarget()
+							+ " in a valid relationship URI-> ignored", e);
+				}		
+
 				log.debug("Comparing " + resolvedTargetURI + " == " + partName.getName());
 				
 				if (partName.getName().equals(resolvedTargetURI.toString()) ) { // was rel.getTargetURI()
 					
-					log.info("True - will delete relationship with target " + rel.getTargetURI());
+					log.info("True - will delete relationship with target " + rel.getTarget());
 					relToBeRemoved = rel; // Avoid java.util.ConcurrentModificationException
 					break;
 				}
@@ -454,92 +456,6 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	}
 
 
-
-
-
-	/**
-		 * Parse the relationship part and add all relationship in this collection.
-		 * 
-		 * @param relPart
-		 *            The package part to parse.
-		 * @throws InvalidFormatException
-		 *             Throws if the relationship part is invalid.
-		 */
-		private void parseRelationshipsDocument(Element root)
-				throws InvalidFormatException {
-			try {
-					
-				// Browse default types
-	
-				// Check OPC compliance M4.1 rule
-				boolean fCorePropertiesRelationship = false;
-	
-				for (Iterator i = root
-						.elementIterator(Relationship.RELATIONSHIP_TAG_NAME); 
-						i.hasNext();) {
-					Element element = (Element) i.next();
-
-					Relationship rel = new Relationship(sourceP, element, fCorePropertiesRelationship);
-					
-					if (rel.getId() == null) {
-						// Generate a unique ID if id parameter is null.
-						int j = 0;
-						do {
-							rel.setId("rId" + ++j);
-						} while (relationshipsByID.get(rel.getId()) != null);
-					}
-					
-					//addRelationship(target, targetMode, type, id);
-					addRelationship(rel);
-					
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				logger.error(e);
-				throw new InvalidFormatException(e.getMessage());
-			}
-		}
-		
-		/**
-		 * Return an XML representation of this part.
-		 */
-		public Document getDocument() {
-			
-			// Building xml
-			Document xmlOutDoc = DocumentHelper.createDocument();
-			// make something like <Relationships
-			// xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-			Namespace dfNs = Namespace.get("", Namespaces.RELATIONSHIPS);
-			Element root = xmlOutDoc.addElement(new QName(
-					Relationship.RELATIONSHIPS_TAG_NAME, dfNs));
-
-			// <Relationship
-			// TargetMode="External"
-			// Id="rIdx"
-			// Target="http://www.custom.com/images/pic1.jpg"
-			// Type="http://www.custom.com/external-resource"/>
-
-			log.debug("Partname is " + partName);
-//			URI sourcePartURI = URIHelper
-//					.getSourcePartUriFromRelationshipPartUri(partName.getURI());
-
-			for (Relationship rel : relationshipsByID.values()) {
-				// The relationship element
-				Element relElem = root
-						.addElement(Relationship.RELATIONSHIP_TAG_NAME);
-				
-				//rel.marshall(sourcePartURI, relElem);
-
-				rel.marshall(relElem);
-				
-			}
-
-		
-		 xmlOutDoc.normalize();
-		 
-		 return xmlOutDoc;
-	}
-
 	/**
 	 * Add the specified relationship to the collection.
 	 * 
@@ -547,28 +463,10 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	 *            The relationship to add.
 	 */
 	public void addRelationship(Relationship rel) {
-		relationshipsByID.put(rel.getId(), rel);
-		relationshipsByType.put(rel.getRelationshipType(), rel);
+		
+		relationships.getRelationship().add(rel);
 	}
 
-
-	
-	
-	/**
-	 * Remove a relationship by its ID.
-	 * 
-	 * @param id
-	 *            The relationship ID to remove.
-	 */
-//	private void removeRelationship(String id) {
-//		if (relationshipsByID != null && relationshipsByType != null) {
-//			Relationship rel = relationshipsByID.get(id);
-//			if (rel != null) {
-//				relationshipsByID.remove(rel.getId());
-//				relationshipsByType.values().remove(rel);
-//			}
-//		}
-//	}
 
 	/**
 	 * Remove a relationship by its reference.
@@ -579,29 +477,11 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	public void removeRelationship(Relationship rel) {
 		if (rel == null)
 			throw new IllegalArgumentException("rel");
+		
+		relationships.getRelationship().remove(rel);
 
-		relationshipsByID.values().remove(rel);
-		relationshipsByType.values().remove(rel);
 	}
 
-	/**
-	 * Retrieves a relationship by its index in the collection.
-	 * 
-	 * @param index
-	 *            Must be a value between [0-relationships_count-1]
-	 */
-	public Relationship getRelationship(int index) {
-		if (index < 0 || index > relationshipsByID.values().size())
-			throw new IllegalArgumentException("index");
-
-		Relationship retRel = null;
-		int i = 0;
-		for (Relationship rel : relationshipsByID.values()) {
-			if (index == i++)
-				return rel;
-		}
-		return retRel;
-	}
 
 	/**
 	 * Retrieves a package relationship based on its id.
@@ -611,26 +491,44 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	 * @return The package relationship identified by the specified id.
 	 */
 	public Relationship getRelationshipByID(String id) {
-		return relationshipsByID.get(id);
+		
+		for ( Relationship r : relationships.getRelationship()  ) {
+			
+			if (r.getId().equals(id) ) {
+				return r;
+			}
+			
+		}
+		
+		return null;
 	}
 
 	public Relationship getRelationshipByType(String type) {
-		return relationshipsByType.get(type);
+		
+		for ( Relationship r : relationships.getRelationship()  ) {
+			
+			if (r.getType().equals(type) ) {
+				return r;
+			}
+			
+		}
+		
+		return null;
 	}
 	
 	/**
 	 * Get the number of relationships in the collection.
 	 */
 	public int size() {
-		return relationshipsByID.values().size();
+		return relationships.getRelationship().size();
 	}
 
 	/**
 	 * Get this collection's iterator.
 	 */
-	public Iterator<Relationship> iterator() {
-		return relationshipsByID.values().iterator();
-	}
+//	public Iterator<Relationship> iterator() {
+//		return relationshipsByID.values().iterator();
+//	}
 
 	/**
 	 * Get an iterator of a collection with all relationship with the specified
@@ -641,56 +539,59 @@ public final class RelationshipsPart extends Dom4jXmlPart implements
 	 * @return An iterator to a collection containing all relationships with the
 	 *         specified type contain in this collection.
 	 */
-	public Iterator<Relationship> iterator(String typeFilter) {
-		ArrayList<Relationship> retArr = new ArrayList<Relationship>();
-		for (Relationship rel : relationshipsByID.values()) {
-			if (rel.getRelationshipType().equals(typeFilter))
-				retArr.add(rel);
-		}
-		return retArr.iterator();
-	}
+//	public Iterator<Relationship> iterator(String typeFilter) {
+//		ArrayList<Relationship> retArr = new ArrayList<Relationship>();
+//		for (Relationship rel : relationshipsByID.values()) {
+//			if (rel.getRelationshipType().equals(typeFilter))
+//				retArr.add(rel);
+//		}
+//		return retArr.iterator();
+//	}
 
-	/**
-	 * Clear all relationships.
-	 */
-	public void clear() {
-		relationshipsByID.clear();
-		relationshipsByType.clear();
-	}
+	
+    /**
+     * Unmarshal XML data from the specified InputStream and return the 
+     * resulting content tree.  Validation event location information may
+     * be incomplete when using this form of the unmarshal API.
+     *
+     * <p>
+     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
+     * 
+     * @param is the InputStream to unmarshal XML data from
+     * @return the newly created root object of the java content tree 
+     *
+     * @throws JAXBException 
+     *     If any unexpected errors occur while unmarshalling
+     */
+    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+    	
+		try {
+			
+//			if (jc==null) {
+//				setJAXBContext(Context.jc);				
+//			}
+		    		    
+			Unmarshaller u = jc.createUnmarshaller();
+			
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-	@Override
-	public String toString() {
-		 	
-		String str;
-		if (relationshipsByID == null) {
-			str = "relationshipsByID=null";
-		} else {
-			str = relationshipsByID.size() + " relationship(s) = [ \n";
+			System.out.println("unmarshalling " + this.getClass().getName() + " \n\n" );									
+						
+			jaxbElement = u.unmarshal( is );
+			
+			
+			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+
+		} catch (Exception e ) {
+			e.printStackTrace();
 		}
 		
-		ArrayList<Relationship> retArr = new ArrayList<Relationship>();
-		for (Relationship rel : relationshipsByID.values()) {
-			str = str + rel.toString() + "\n";
-		}
-		
-//		if ( (partName != null)) {
-//			str = str + "," + partName;
-//		} else {
-//			str = str + ",relationshipPart=null";
-//		}
-//
-//		// Source of this relationship
-//		if ((sourcePart != null) && (sourcePart.getPartName() != null)) {
-//			str = str + "," + sourcePart.getPartName();
-//		} else {
-//			str = str + ",sourcePart=null";
-//		}
-//		if (partName != null) {
-//			str = str + "," + partName;
-//		} else {
-//			str = str + ",uri=null)";
-//		}
-		return str + "]";
-	}
+		relationships = (Relationships)jaxbElement;
+		    	
+		return jaxbElement;
+    	
+    }
 
+	
 }

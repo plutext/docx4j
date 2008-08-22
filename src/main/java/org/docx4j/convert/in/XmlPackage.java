@@ -22,6 +22,7 @@ package org.docx4j.convert.in;
 
 
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,9 +47,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.openpackaging.parts.relationships.TargetMode;
+import org.docx4j.relationships.Relationships;
+import org.docx4j.relationships.Relationship;
 
 
 
@@ -164,10 +165,14 @@ public class XmlPackage  {
 			
 			org.w3c.dom.Element el = part.getXmlData().getAny();
 			
-			// Convert it to a Dom4J element
+			RelationshipsPart rp = new RelationshipsPart(new PartName(partName) );
+			// PartName already starts with a '/', so no need to add it
+			rp.setSourceP(p);
+			rp.unmarshal(el);
 			
-			thePart = new RelationshipsPart( p, new PartName( partName), convertW3CtoDom4J(el) );
-				// PartName already starts with a '/', so no need to add it
+//			// Convert it to a Dom4J element
+//			thePart = new RelationshipsPart( p, new PartName( partName), convertW3CtoDom4J(el) );
+//				// PartName already starts with a '/', so no need to add it
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -208,19 +213,32 @@ public class XmlPackage  {
 		
 		Package pkg = source.getPackage();				
 		
-		for (Iterator it = rp.iterator(); it.hasNext(); ) {
-			Relationship r = (Relationship)it.next();
-			log.info("For Relationship Id=" + r.getId() + " Source is " 
-					+ r.getSource().getPartName() 
-					+ ", Target is " + r.getTargetURI() );
-			try {
-				
+//		for (Iterator it = rp.iterator(); it.hasNext(); ) {
+//			Relationship r = (Relationship)it.next();
+//			log.info("For Relationship Id=" + r.getId() + " Source is " 
+//					+ r.getSource().getPartName() 
+//					+ ", Target is " + r.getTargetURI() );
+//			try {
+//				
+//				getPart(pkg, rp, r);
+//				
+//			} catch (Exception e) {
+//				throw new Docx4JException("Failed to add parts from relationships", e);
+//			}
+//		}
+		
+		for ( Relationship r : rp.getRelationships().getRelationship() ) {
+			
+			log.info("For Relationship Id=" + r.getId() 
+					+ " Source is " + rp.getSourceP().getPartName() 
+					+ ", Target is " + r.getTarget() );
+			try {				
 				getPart(pkg, rp, r);
-				
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
 		}
+		
 		
 		
 	}
@@ -240,17 +258,20 @@ public class XmlPackage  {
 	 * @throws InvalidFormatException
 	 */
 	private void getPart( Package pkg, RelationshipsPart rp, Relationship r)
-			throws Docx4JException, InvalidFormatException {
+			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;
 		String resolvedPartUri = null;
 		
-		if (r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+		if (r.getTargetMode() == null
+				|| !r.getTargetMode().equals("External") ) {
 			
 			// Usual case
 			
-			source = r.getSource();
-			resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();		
+//			source = r.getSource();
+//			resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();		
+			source = rp.getSourceP();
+			resolvedPartUri = URIHelper.resolvePartUri(rp.getSourceURI(), new URI(r.getTarget() ) ).toString();		
 
 			// Don't drop leading "/' in Xml Package
 			// resolvedPartUri = resolvedPartUri.substring(1);				
@@ -264,8 +285,8 @@ public class XmlPackage  {
 			 *  location of the package."
 			 */
 
-			log.warn("Encountered external resource " + r.getTargetURI() 
-					   + " of type " + r.getRelationshipType() );
+			log.warn("Encountered external resource " + r.getTarget() 
+					   + " of type " + r.getType() );
 			
 			// As of 1 May 2008, we don't do anything with these yet.
 			// No need to create a Part out of them until such time as
@@ -278,7 +299,7 @@ public class XmlPackage  {
 			return;
 		}
 		
-		String relationshipType = r.getRelationshipType();		
+		String relationshipType = r.getType();		
 			
 		Part part = getRawPart(ctm, resolvedPartUri);
 		rp.loadPart(part);

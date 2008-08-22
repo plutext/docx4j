@@ -18,8 +18,7 @@
 
  */
 
-
-package org.docx4j.customxml;
+package org.docx4j.relationships;
 
 import javax.xml.bind.annotation.XmlRegistry;
 
@@ -27,7 +26,7 @@ import javax.xml.bind.annotation.XmlRegistry;
 /**
  * This object contains factory methods for each 
  * Java content interface and Java element interface 
- * generated in the org.docx4j.customxml package. 
+ * generated in the org.docx4j.relationships package. 
  * <p>An ObjectFactory allows you to programatically 
  * construct new instances of the Java representation 
  * for XML content. The Java representation of XML 
@@ -43,26 +42,26 @@ public class ObjectFactory {
 
 
     /**
-     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.customxml
+     * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.relationships
      * 
      */
     public ObjectFactory() {
     }
 
     /**
-     * Create an instance of {@link SchemaLibrary }
+     * Create an instance of {@link Relationships }
      * 
      */
-    public SchemaLibrary createSchemaLibrary() {
-        return new SchemaLibrary();
+    public Relationships createRelationships() {
+        return new Relationships();
     }
 
     /**
-     * Create an instance of {@link SchemaLibrary.Schema }
+     * Create an instance of {@link Relationship }
      * 
      */
-    public SchemaLibrary.Schema createSchemaLibrarySchema() {
-        return new SchemaLibrary.Schema();
+    public Relationship createRelationship() {
+        return new Relationship();
     }
 
 }

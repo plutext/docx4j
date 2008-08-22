@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.zip.ZipEntry;
@@ -41,9 +42,10 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.openpackaging.parts.relationships.TargetMode;
+import org.docx4j.relationships.Relationships;
+import org.docx4j.relationships.Relationship;
+
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
@@ -237,26 +239,35 @@ public class SaveToZipFile {
 	public void addPartsFromRelationships(ZipOutputStream out,  RelationshipsPart rp )
 	 throws Docx4JException {
 		
-		for (Iterator it = rp.iterator(); it.hasNext(); ) {
-			Relationship r = (Relationship)it.next();
-			log.info("For Relationship Id=" + r.getId() + " Source is " + r.getSource().getPartName() + ", Target is " + r.getTargetURI() );
+//		for (Iterator it = rp.iterator(); it.hasNext(); ) {
+//			Relationship r = (Relationship)it.next();
+//			log.info("For Relationship Id=" + r.getId() + " Source is " + r.getSource().getPartName() + ", Target is " + r.getTargetURI() );
+		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			if (!r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+			log.info("For Relationship Id=" + r.getId() 
+					+ " Source is " + rp.getSourceP().getPartName() 
+					+ ", Target is " + r.getTarget() );
+			
+//			if (!r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+			if (r.getTargetMode() != null
+					&& r.getTargetMode().equals("External") ) {
 				
 				// ie its EXTERNAL
 				// As at 1 May 2008, we don't have a Part for these;
 				// there is just the relationship.
 
-				log.warn("Encountered external resource " + r.getTargetURI() 
-						   + " of type " + r.getRelationshipType() );
+				log.warn("Encountered external resource " + r.getTarget() 
+						   + " of type " + r.getType() );
 				
 				// So
 				continue;				
 			}
 			
 			try {
-				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+				//String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
 
+				String resolvedPartUri = URIHelper.resolvePartUri(rp.getSourceURI(), new URI(r.getTarget() ) ).toString();		
+				
 				// Now drop leading "/'
 				resolvedPartUri = resolvedPartUri.substring(1);				
 				

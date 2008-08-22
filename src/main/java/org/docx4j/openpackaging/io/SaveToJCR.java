@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.io;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.URI;
 
 import java.util.Iterator;
 
@@ -55,9 +56,9 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.relationships.Relationship;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.openpackaging.parts.relationships.TargetMode;
+import org.docx4j.relationships.Relationships;
+import org.docx4j.relationships.Relationship;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
@@ -139,7 +140,8 @@ public class SaveToJCR {
 			RelationshipsPart rp = p.getRelationshipsPart();
 			// TODO - replace with saveRawXmlPart(baseNode, rp)
 			// once we know that partName resolves correctly
-			saveRawXmlPart(baseNode, partName, rp.getW3cDocument() );
+//			saveRawXmlPart(baseNode, partName, rp.getW3cDocument() );
+			saveRawXmlPart(baseNode, rp );
 			
 			
 			// 5. Now recursively 
@@ -400,27 +402,38 @@ public class SaveToJCR {
 	public void addPartsFromRelationships( 
 			Node baseNode, RelationshipsPart rp )  throws Docx4JException  {
 		
-		for (Iterator it = rp.iterator(); it.hasNext(); ) {
-			Relationship r = (Relationship)it.next();
-			log.info("For Relationship Id=" + r.getId() 
-					+ " Source is " + r.getSource().getPartName() 
-					+ ", Target is " + r.getTargetURI() );
+//		for (Iterator it = rp.iterator(); it.hasNext(); ) {
+//			Relationship r = (Relationship)it.next();
+//			log.info("For Relationship Id=" + r.getId() 
+//					+ " Source is " + r.getSource().getPartName() 
+//					+ ", Target is " + r.getTargetURI() );
+		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			if (!r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+			log.info("For Relationship Id=" + r.getId() 
+					+ " Source is " + rp.getSourceP().getPartName() 
+					+ ", Target is " + r.getTarget() );
+		
+			
+//			if (!r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+			if (r.getTargetMode() != null
+					&& r.getTargetMode().equals("External") ) {
 				
 				// ie its EXTERNAL
 				// As at 1 May 2008, we don't have a Part for these;
 				// there is just the relationship.
 
-				log.warn("Encountered external resource " + r.getTargetURI() 
-						   + " of type " + r.getRelationshipType() );
+				log.warn("Encountered external resource " + r.getTarget() 
+						   + " of type " + r.getType() );
 				
 				// So
 				continue;				
 			}
 			
 			try {
-				String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+				//String resolvedPartUri = URIHelper.resolvePartUri(r.getSourceURI(), r.getTargetURI() ).toString();
+
+				String resolvedPartUri = URIHelper.resolvePartUri(rp.getSourceURI(), new URI(r.getTarget() ) ).toString();		
+
 				// Now drop leading "/'
 				resolvedPartUri = resolvedPartUri.substring(1);				
 				
@@ -479,7 +492,10 @@ public class SaveToJCR {
 			RelationshipsPart rrp = part.getRelationshipsPart(); // **
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
 			log.info("Found relationships " + relPart );
-			saveRawXmlPart(baseNode,  relPart, rrp.getW3cDocument() );
+			
+			//saveRawXmlPart(baseNode,  relPart, rrp.getW3cDocument() );
+			saveRawXmlPart(baseNode,  rrp );
+			
 			log.info("Recursing ... " );
 			addPartsFromRelationships( baseNode, rrp );
 		} else {
