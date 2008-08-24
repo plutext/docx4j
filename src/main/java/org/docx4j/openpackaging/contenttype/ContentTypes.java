@@ -89,8 +89,16 @@ public class ContentTypes {
 	public final static String OFFICEDOCUMENT_FONT =
 		"application/vnd.openxmlformats-officedocument.obfuscatedFont";
 	
+	public final static String OFFICEDOCUMENT_VBA_PROJECT =
+		"application/vnd.ms-office.vbaProject";
+
+	public final static String OFFICEDOCUMENT_VBA_DATA =
+		"application/vnd.ms-word.vbaData+xml";
+	
+	
 	// PartName="/word/document.xml"
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+	public final static String WORDPROCESSINGML_DOCUMENT_MACROENABLED = "application/vnd.ms-word.document.macroEnabled.main+xml";
 
 	// PartName="/word/comments.xml"
 	public final static String WORDPROCESSINGML_COMMENTS = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml";

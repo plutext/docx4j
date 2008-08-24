@@ -96,6 +96,10 @@ public class Namespaces {
 	public final static String COMMENTS = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
 	
 	public final static String AF = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
+	
+	
+	public final static String VBA_PROJECT = "http://schemas.microsoft.com/office/2006/relationships/vbaProject";
+	public final static String VBA_DATA_WORD = "http://schemas.microsoft.com/office/2006/relationships/wordVbaData";
 
 	
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
