@@ -255,7 +255,9 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			// how is the main document distinguished from the glossary document?
 			// Answer:- Main Document is a Package level relationship target,
 			// whereas the Glossary Document is a Part-level target (from the
-			// Main Document part)
+			// Main Document part)						
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED)) {
+			return CreateMainDocumentPartObject(partName);
 		} else if (contentType.equals(ContentTypes.PACKAGE_COREPROPERTIES)) {
 			return CreateDocPropsCorePartObject(partName ); 
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMPROPERTIES)) {
@@ -607,31 +609,34 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 	 * creating a new Package, start with the new WordprocessingMLPackage constructor. */
 	public Package createPackage() throws InvalidFormatException {
 		
-		/* How do we know what type of Package this is?
+		/*
+		 * How do we know what type of Package this is?
 		 * 
 		 * In principle, either:
 		 * 
-		 * 1. We were told its file extension or mime type in the constructor/method parameters, or
+		 * 1. We were told its file extension or mime type in the
+		 * constructor/method parameters, or
 		 * 
-		 * 2. Because [Content_Types].xml contains an override for PartName /document.xml 
-		 *    of content type application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml
-		 *    
+		 * 2. Because [Content_Types].xml contains an override for PartName
+		 * /document.xml of content type
+		 * application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml
+		 * 
 		 * The latter approach is more reliable, so ..
 		 * 
 		 */
-//		debugPrint(ctmDocument);
+// debugPrint(ctmDocument);
 		Package p;
 		
-		java.net.URI partURI = null;
-		partURI = getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT);
-		if ( partURI == null ) {
-			log.warn("No part in [Content_Types].xml for content type" + ContentTypes.WORDPROCESSINGML_DOCUMENT);
-			// TODO - what content type in this case?
-			return new Package(this);
-		} else {
-			log.info("Detected WordProcessingML package, at " + partURI.toString() );			
+		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
+				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null) {
+			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
 			return p;
+		} else {
+			log.warn("No part in [Content_Types].xml for content type"
+					+ ContentTypes.WORDPROCESSINGML_DOCUMENT);
+			// TODO - what content type in this case?
+			return new Package(this);
 		}
 	}
 

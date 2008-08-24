@@ -436,7 +436,7 @@ public class MainDocumentPart extends DocumentPart  {
 				traverseMainDocumentRecursive(p.getParagraphContent(),
 						fontsDiscovered, stylesInUse);
 		
-			} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
+			} else if (o instanceof org.docx4j.wml.SdtBlock) {
 
 				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) o;
 				
@@ -445,6 +445,14 @@ public class MainDocumentPart extends DocumentPart  {
 				traverseMainDocumentRecursive(sdt.getSdtContent().getEGContentBlockContent(),
 						fontsDiscovered, stylesInUse);
 				
+//			} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
+//
+//				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) o;
+//				
+//				// Don't bother looking in SdtPr
+//				
+//				traverseMainDocumentRecursive(sdt.getSdtContent().getEGContentBlockContent(),
+//						fontsDiscovered, stylesInUse);
 				
 			} else if (o instanceof org.docx4j.wml.R) {
 
