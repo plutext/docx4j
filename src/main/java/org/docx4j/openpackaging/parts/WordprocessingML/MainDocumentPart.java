@@ -648,6 +648,33 @@ public class MainDocumentPart extends DocumentPart  {
 		Body body =  wmlDocumentEl.getBody();
 		body.getEGBlockLevelElts().add(o);
 		
+		// If this object contains paragraphs, make sure any style used
+		// is activated
+    	Map stylesInUse = new java.util.HashMap();
+		Map fontsDiscovered = new java.util.HashMap(); // method requires this
+		List list = new java.util.ArrayList<Object>();
+		list.add(o);
+		traverseMainDocumentRecursive( list, fontsDiscovered, stylesInUse);
+		Iterator it = stylesInUse.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)it.next();
+	        String styleName = (String)pairs.getKey();
+	        log.debug("Inspecting style: " + styleName );
+	        
+	        if (styleDefinitionsPart.activateStyle(styleName)) {
+	        
+	        	// Cool
+	        	
+	        } else {
+	        	
+	        	log.warn(styleName + " couldn't be activated!");
+	        }
+	        
+	    }
+		
+		
+		
+		
 	}
 	
 	public void addParagraph(String pXml) {
