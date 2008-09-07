@@ -161,6 +161,8 @@ public final class RelationshipsPart extends JaxbXmlPart {
 				
 	}
 	
+	static int nextId;
+	
 	private Relationships relationships;
 	public Relationships getRelationships() {
 		return relationships;
@@ -321,8 +323,8 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		loadPart(part);
 		
 		// Now add a new relationship
-		int num = size() + 1;
-		String id = "rId" + num;
+		String id = "rId" + nextId;
+		nextId++;
 
 		URI tobeRelativized = part.getPartName().getURI();
 		URI relativizeAgainst = sourceP.getPartName().getURI();
@@ -343,6 +345,30 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		//rel.setTargetMode( TargetMode.INTERNAL );
 		rel.setType( part.getRelationshipType() );
 		rel.setId( id );
+		
+		// TODO 20080902 read spec to determine whether
+		// more than one rel with the same target is
+		// ever permitted. 
+		// For example, an image?
+		// Word fails to load a document if it has 2 copies of the styles part
+		// (each with a separate rels entry).
+		
+		// For now, here we ensure there is just a single entry
+		Relationship relToBeRemoved = null;
+		for (Relationship relic : relationships.getRelationship() ) {
+			
+			if (relic.getTarget().equals( rel.getTarget() )) {
+				
+				log.info("True - will delete relationship with target " + rel.getTarget());
+				relToBeRemoved = relic; // Avoid java.util.ConcurrentModificationException
+				break;
+			}
+			
+		}
+		if (relToBeRemoved!=null) {
+			removeRelationship(relToBeRemoved);				
+		}
+		
 		
 		
 //		Relationship rel = new Relationship(sourceP, result, 
@@ -592,6 +618,8 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		}
 		
 		relationships = (Relationships)jaxbElement;
+		
+		nextId = size() + 1;
 		    	
 		return jaxbElement;
     	
