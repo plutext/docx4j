@@ -59,8 +59,23 @@ public class ExportInPackageFormat {
 		Marshaller marshaller=jc.createMarshaller();
 		
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-				new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+		try { 
+			marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+			// Reference implementation appears to be present (in endorsed dir?)
+			//log.info("using com.sun.xml.bind.namespacePrefixMapper");
+			
+		} catch (javax.xml.bind.PropertyException cnfe) {
+			
+			//log.error(cnfe);
+
+			//log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+			
+			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			
+		}
 		
 
 		

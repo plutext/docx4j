@@ -167,8 +167,24 @@ public class XmlUtils {
 			dbf.setNamespaceAware(true);
 			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
 
-			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			try { 
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+				
+			} catch (javax.xml.bind.PropertyException cnfe) {
+				
+				log.error(cnfe);
+
+				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+				
+			}
 			
 			marshaller.marshal(o, doc);
 			
@@ -240,8 +256,24 @@ public class XmlUtils {
 		try {			
 			Marshaller m=jc.createMarshaller();
 
-			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			try { 
+				m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+				
+			} catch (javax.xml.bind.PropertyException cnfe) {
+				
+				log.error(cnfe);
+
+				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+				
+			}
 			
 			if (prettyprint) {
 				m.setProperty("jaxb.formatted.output", true);
@@ -301,8 +333,24 @@ public class XmlUtils {
 		try {			
 			Marshaller m=jc.createMarshaller();
 
-			m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			try { 
+				m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+				
+			} catch (javax.xml.bind.PropertyException cnfe) {
+				
+				log.error(cnfe);
+
+				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+				
+			}
 						
 			if (suppressDeclaration) {
 				m.setProperty(Marshaller.JAXB_FRAGMENT,true);
@@ -336,8 +384,24 @@ public class XmlUtils {
 			dbf.setNamespaceAware(true);
 			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
 
-			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			try { 
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+				
+			} catch (javax.xml.bind.PropertyException cnfe) {
+				
+				log.error(cnfe);
+
+				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+				
+			}
 			
 			marshaller.marshal(o, doc);
 			
