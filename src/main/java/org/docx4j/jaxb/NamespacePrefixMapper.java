@@ -20,7 +20,7 @@
 
 package org.docx4j.jaxb;
 
-public class NamespacePrefixMapper extends com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper {
+public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
 	// Must use 'internal' for Java 6
 
 	

@@ -107,8 +107,24 @@ public abstract class JaxbXmlPart extends Part {
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
-			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			try { 
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+				
+			} catch (javax.xml.bind.PropertyException cnfe) {
+				
+				log.error(cnfe);
+
+				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+				
+			}
 			
 			marshaller.marshal(jaxbElement, node);
 
@@ -133,8 +149,24 @@ public abstract class JaxbXmlPart extends Part {
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
-			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+			try { 
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+				
+			} catch (javax.xml.bind.PropertyException cnfe) {
+				
+				log.error(cnfe);
+
+				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+				
+			}
 			
 			System.out.println("marshalling " + this.getClass().getName() + " ..." );									
 			
