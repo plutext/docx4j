@@ -56,7 +56,7 @@ public class ParagraphDifferencerTest {
 				StreamResult result = new StreamResult(System.out);
 		
 				// Run the diff
-				ParagraphDifferencer.diff(pl, pr, result);
+				ParagraphDifferencer.diff(pl, pr, result, null, null);
 				
 			}
 		}
@@ -95,7 +95,7 @@ public class ParagraphDifferencerTest {
 				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
 		
 				// Run the diff
-				ParagraphDifferencer.diff(pl, pr, result, true);
+				ParagraphDifferencer.diff(pl, pr, result, null, null, true);
 				
 				try {
 					P markedUpP = (org.docx4j.wml.P)result.getResult(); 
@@ -110,13 +110,13 @@ public class ParagraphDifferencerTest {
 					wordMLPackage.getMainDocumentPart().addParagraphOfText(msg);
 					
 					StreamResult err = new StreamResult(System.out);
-					ParagraphDifferencer.diff(pl, pr, err, true);
+					ParagraphDifferencer.diff(pl, pr, err, null, null, true);
 					
 				}
 				
 				// Compare no pre-processor
 				result = new javax.xml.bind.util.JAXBResult(jc );
-				ParagraphDifferencer.diff(pl, pr, result, false);				
+				ParagraphDifferencer.diff(pl, pr, result, null, null, false);				
 				try {
 					P markedUpPsimple = (org.docx4j.wml.P)result.getResult(); 				
 					wordMLPackage.getMainDocumentPart().addParagraphOfText("no preprocessing:");
@@ -129,7 +129,7 @@ public class ParagraphDifferencerTest {
 					wordMLPackage.getMainDocumentPart().addParagraphOfText(msg);
 					
 					StreamResult err = new StreamResult(System.out);
-					ParagraphDifferencer.diff(pl, pr, err, false);
+					ParagraphDifferencer.diff(pl, pr, err, null, null, false);
 					
 				}
 			}
