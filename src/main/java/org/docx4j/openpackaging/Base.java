@@ -29,6 +29,7 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 
 
 
@@ -153,7 +154,7 @@ public abstract class Base {
 	 * @param targetpart
 	 *            The part to add to this part's relationships
 	 */
-	public void addTargetPart(Part targetpart) throws InvalidFormatException {
+	public Relationship addTargetPart(Part targetpart) throws InvalidFormatException {
 		
 		if ( this.getPackage()==null ) {
 						
@@ -170,13 +171,15 @@ public abstract class Base {
 		}
 		
 		// Now add the targetpart to the relationships
-		this.getRelationshipsPart().addPart(targetpart, getPackage().getContentTypeManager());
+		Relationship rel = this.getRelationshipsPart().addPart(targetpart, getPackage().getContentTypeManager());
 		
 		// Finally, set part shortcut if there is one to set
 		boolean shortcutSet = setPartShortcut(targetpart, targetpart.getRelationshipType());
 		if (shortcutSet) {
 			log.info("shortcut was set");			
 		}
+		
+		return rel;
 		
 	}
 

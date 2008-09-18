@@ -67,6 +67,7 @@ import org.apache.log4j.Logger;
 
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
@@ -316,9 +317,9 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 * 
 	 * @param part
 	 *            The part to add.
-	 * @return The part added to the package, the same as the one specified.
+	 * @return The Relationship
 	 */
-	public void addPart(Part part, ContentTypeManager ctm) {
+	public Relationship addPart(Part part, ContentTypeManager ctm) {
 		
 		loadPart(part);
 		
@@ -376,7 +377,23 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		addRelationship(rel );
 		
 		// Add an override to ContentTypeManager
-		ctm.addOverrideContentType(part.getPartName().getURI(), part.getContentType());
+		if ( part.getContentType().equals( ContentTypes.IMAGE_JPEG) ) {
+			
+			ctm.addDefaultContentType("jpeg", ContentTypes.IMAGE_JPEG);
+			
+		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_GIF ) ) {
+			
+			ctm.addDefaultContentType("gif", ContentTypes.EXTENSION_GIF);
+			
+		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_PNG ) ) {
+			
+			ctm.addDefaultContentType("png", ContentTypes.IMAGE_PNG);
+			
+		} else {
+			ctm.addOverrideContentType(part.getPartName().getURI(), part.getContentType());
+		}
+		
+		return rel;
 
 	}
 
