@@ -4,9 +4,11 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
+
 	
 	<property name="m2Repository" value="../../.m2/repository"/>	
     <path id="Maven Dependencies.libraryclasspath">
+        <pathelement location="${m2Repository}/junit/junit/4.4/junit-4.4.jar"/>    	
         <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
         <pathelement location="${m2Repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
@@ -15,15 +17,24 @@
         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
         <pathelement location="${m2Repository}/jdom/jdom/1.0/jdom-1.0.jar"/>
         <pathelement location="${m2Repository}/commons-httpclient/commons-httpclient/3.0.1/commons-httpclient-3.0.1.jar"/>
+<!--    	
         <pathelement location="${m2Repository}/junit/junit/3.8.1/junit-3.8.1.jar"/>
+        -->
         <pathelement location="${m2Repository}/commons-codec/commons-codec/1.2/commons-codec-1.2.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.3/xmlgraphics-commons-1.3.jar"/>
-        <pathelement location="${m2Repository}/com/lowagie/itext/2.0.8/itext-2.0.8.jar"/>
+        <pathelement location="${m2Repository}/org/apache/poi/hwpf/3.1.0/hwpf-3.1.0.jar"/>
+        <pathelement location="${m2Repository}/com/topologi/diffx/0.61/diffx-0.61.jar"/>
+        <pathelement location="${m2Repository}/com/lowagie/itext-unsigned/2.0.8/itext-unsigned-2.0.8.jar"/>    	
+<!--
+	    <pathelement location="${m2Repository}/com/lowagie/itext/2.0.8/itext-2.0.8.jar"/> 
+	    -->
+    <!--Explicit Exclusions from iText: 
         <pathelement location="${m2Repository}/bouncycastle/bcmail-jdk14/138/bcmail-jdk14-138.jar"/>
         <pathelement location="${m2Repository}/bouncycastle/bcprov-jdk14/138/bcprov-jdk14-138.jar"/>
+        -->
         <pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>
-        <pathelement location="${m2Repository}/webdavclient4j/vfs/0.91/vfs-0.91.jar"/>
-        <pathelement location="${m2Repository}/webdavclient4j/core/0.91/core-0.91.jar"/>
+        <pathelement location="${m2Repository}/webdavclient4j/webdavclient4j-vfs/0.92.1/webdavclient4j-vfs-0.92.1.jar"/>
+        <pathelement location="${m2Repository}/webdavclient4j/webdavclient4j-core/0.92/webdavclient4j-core-0.92.jar"/>
         <pathelement location="${m2Repository}/pdf-renderer/pdf-renderer/0.2007/pdf-renderer-0.2007.jar"/>
         <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
         <pathelement location="${m2Repository}/xhtmlrenderer/minium/0.1/minium-0.1.jar"/>
