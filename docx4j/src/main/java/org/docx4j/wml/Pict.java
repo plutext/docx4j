@@ -54,7 +54,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "movie",
     "control"
 })
-public class CTPicture
+public class Pict
     extends CTPictureBase
     implements Child
 {

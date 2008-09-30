@@ -1615,7 +1615,7 @@ public class Numbering
     {
 
         @XmlElement(required = true)
-        protected CTPicture pict;
+        protected Pict pict;
         @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger numPicBulletId;
         @XmlTransient
@@ -1626,10 +1626,10 @@ public class Numbering
          * 
          * @return
          *     possible object is
-         *     {@link CTPicture }
+         *     {@link Pict }
          *     
          */
-        public CTPicture getPict() {
+        public Pict getPict() {
             return pict;
         }
 
@@ -1638,10 +1638,10 @@ public class Numbering
          * 
          * @param value
          *     allowed object is
-         *     {@link CTPicture }
+         *     {@link Pict }
          *     
          */
-        public void setPict(CTPicture value) {
+        public void setPict(Pict value) {
             this.pict = value;
         }
 
