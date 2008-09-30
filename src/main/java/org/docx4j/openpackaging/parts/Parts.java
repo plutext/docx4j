@@ -47,15 +47,12 @@
  * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 package org.docx4j.openpackaging.parts;
 
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.packages.Package;
-
-
 
 /**
  * A collection of all the parts in the package
@@ -64,9 +61,8 @@ import org.docx4j.openpackaging.packages.Package;
  * @version 0.1
  */
 public class Parts {
-	
+
 	private static Logger log = Logger.getLogger(Parts.class);
-	
 
 	private HashMap parts;
 
@@ -75,30 +71,40 @@ public class Parts {
 	}
 
 	public void put(Part part) {
-		if (get( part.getPartName() )!=null ) {
-			log.warn("Overwriting existing part " + part.getPartName() );
+		if (get(part.getPartName()) != null) {
+			log.warn("Overwriting existing part " + part.getPartName());
 		}
-		
+
 		parts.put(part.getPartName(), part);
 	}
 
 	public Part get(PartName partName) {
-		return (Part)parts.get(partName);
+		return (Part) parts.get(partName);
 	}
-	
+
+	/**
+	 * Getter method for parts
+	 * 
+	 * @return parts - A HashMap of all parts
+	 */
+	public HashMap getParts() {
+		return parts;
+	}
+
 	public void remove(PartName partName) {
-		
-		if (get( partName )!=null ) {
-			log.info("Deleting part " + partName );
+
+		if (get(partName) != null) {
+			log.info("Deleting part " + partName);
 			parts.remove(partName);
 		} else {
-			log.error("Couldn't delete part " + partName + " - nothing by that name");
+			log.error("Couldn't delete part " + partName
+					+ " - nothing by that name");
 		}
 	}
-	
-//	@Override
-//	public Object clone() {
-//		return super.clone();
-//	}
-	
+
+	// @Override
+	// public Object clone() {
+	// return super.clone();
+	// }
+
 }
