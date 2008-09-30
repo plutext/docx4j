@@ -15,6 +15,10 @@ REVISION HISTORY
 20080407 - revert back to Microsoft's original wml.xsd, but omit math: and drawing:
 
   - Styles @qformat ; Style @default
+  
+  :
+  
+20081001 - get rid of CT_HdrFtr (just use hdr and ftr)  
 	
 USAGE INSTRUCTIONS
 	  
@@ -4324,6 +4328,11 @@ PRINCIPLES:
 		</xsd:complexContent>
 	</xsd:complexType>
 	<xsd:complexType name="CT_Picture">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="pict"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:complexContent>
 			<xsd:extension base="CT_PictureBase">
 				<xsd:sequence maxOccurs="1">
@@ -5524,9 +5533,11 @@ PRINCIPLES:
 			</xsd:element>
 		</xsd:choice>
 	</xsd:group>
+<!--  	
 	<xsd:complexType name="CT_HdrFtr">
 		<xsd:group ref="EG_BlockLevelElts" minOccurs="1" maxOccurs="unbounded"/>
 	</xsd:complexType>
+-->	
 	<xsd:group name="EG_SectPrContents">
 		<xsd:sequence>
 			<xsd:element name="footnotePr" type="CT_FtnProps" minOccurs="0">
@@ -12580,15 +12591,23 @@ PRINCIPLES:
 			<xsd:documentation>Document Endnotes</xsd:documentation>
 		</xsd:annotation>
 	</xsd:element>
-	<xsd:element name="hdr" type="CT_HdrFtr">
-		<xsd:annotation>
-			<xsd:documentation>Header</xsd:documentation>
-		</xsd:annotation>
+	<xsd:element name="hdr">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:documentation>Header</xsd:documentation>
+			</xsd:annotation>
+			<xsd:group ref="EG_BlockLevelElts" minOccurs="1"
+				maxOccurs="unbounded" />
+		</xsd:complexType>
 	</xsd:element>
-	<xsd:element name="ftr" type="CT_HdrFtr">
-		<xsd:annotation>
-			<xsd:documentation>Footer</xsd:documentation>
-		</xsd:annotation>
+	<xsd:element name="ftr">
+		<xsd:complexType>
+			<xsd:annotation>
+				<xsd:documentation>Footer</xsd:documentation>
+			</xsd:annotation>
+			<xsd:group ref="EG_BlockLevelElts" minOccurs="1"
+				maxOccurs="unbounded" />
+		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="CT_SmartTagType">
 		<xsd:attribute name="namespaceuri" type="ST_String">
