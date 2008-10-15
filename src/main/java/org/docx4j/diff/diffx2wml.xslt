@@ -74,13 +74,24 @@
 
   <xsl:template match="w:r">
 
-       <xsl:apply-templates select="w:t"/>
+       <xsl:apply-templates select="w:t|w:tab"/>
+    
+      <!-- NB: this XSLT drops run content other than w:t and w:tab. -->
 
   </xsl:template>
 
   <xsl:template match="w:t">
 
        <xsl:apply-templates select="node()"/>
+
+  </xsl:template>
+
+  <xsl:template match="w:tab[parent::w:r]"> <!-- so we don't match tab in properties -->
+
+    <w:r>
+      <xsl:apply-templates select="../w:rPr" mode="omitDeletions"/>
+      <w:tab/> 
+    </w:r>
 
   </xsl:template>
 
