@@ -153,7 +153,7 @@ public class XmlPackage  {
 	private RelationshipsPart getRelationshipsPartFromXmlPackage(Base p, String partName) 
 			throws Docx4JException {
 		
-		RelationshipsPart thePart = null;
+		RelationshipsPart rp = null;
 		
 		try {
 			
@@ -165,22 +165,19 @@ public class XmlPackage  {
 			
 			org.w3c.dom.Element el = part.getXmlData().getAny();
 			
-			RelationshipsPart rp = new RelationshipsPart(new PartName(partName) );
+			rp = new RelationshipsPart(new PartName(partName) );
 			// PartName already starts with a '/', so no need to add it
 			rp.setSourceP(p);
-			rp.unmarshal(el);
 			
-//			// Convert it to a Dom4J element
-//			thePart = new RelationshipsPart( p, new PartName( partName), convertW3CtoDom4J(el) );
-//				// PartName already starts with a '/', so no need to add it
-			
+			rp.setRelationships( (Relationships)rp.unmarshal(el) );
+						
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Docx4JException("Error getting document from XmlPackage:" + partName, e);
 			
 		} 
 		
-		return thePart;
+		return rp;
 	}
 
 	public org.dom4j.Element convertW3CtoDom4J( org.w3c.dom.Element element) throws Exception {
