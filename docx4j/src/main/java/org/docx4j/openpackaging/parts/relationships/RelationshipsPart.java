@@ -324,8 +324,6 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		loadPart(part);
 		
 		// Now add a new relationship
-		String id = "rId" + nextId;
-		nextId++;
 
 		URI tobeRelativized = part.getPartName().getURI();
 		URI relativizeAgainst = sourceP.getPartName().getURI();
@@ -345,7 +343,6 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		rel.setTarget(result.toString() );
 		//rel.setTargetMode( TargetMode.INTERNAL );
 		rel.setType( part.getRelationshipType() );
-		rel.setId( id );
 		
 		// TODO 20080902 read spec to determine whether
 		// more than one rel with the same target is
@@ -510,6 +507,18 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 *            The relationship to add.
 	 */
 	public void addRelationship(Relationship rel) {
+
+		// Relationship part always 
+		// determines the Relationship Id
+		String id = "rId" + nextId;
+		nextId++;
+		// but warn if we are overwriting
+		if ( rel.getId() !=null 
+				&& !rel.getId().equals("") ) {
+			logger.warn("replacing relationship id '" + rel.getId() + "' with '"
+					+ id + "'");
+		}		
+		rel.setId( id );
 		
 		relationships.getRelationship().add(rel);
 	}
