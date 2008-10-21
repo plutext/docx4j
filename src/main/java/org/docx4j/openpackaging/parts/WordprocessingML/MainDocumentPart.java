@@ -617,7 +617,7 @@ public class MainDocumentPart extends DocumentPart  {
 	}
 
 	/*
-	 * If passed null, will create, add and return an empty P
+	 * If passed null, will create and return an empty P
 	 */
 	public org.docx4j.wml.P createParagraphOfText(String simpleText) {
 		
