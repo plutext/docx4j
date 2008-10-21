@@ -120,6 +120,7 @@ public class Namespaces {
 	// JBH added
 	public final static Namespace namespaceWord = new Namespace("w", NS_WORD12);
 	
+	public final static String HYPERLINK  = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 	
 	
 	
