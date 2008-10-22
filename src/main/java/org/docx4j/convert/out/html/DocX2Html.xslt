@@ -78,14 +78,21 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
     xmlns:aml="http://schemas.microsoft.com/aml/2001/core"
     xmlns:w10="urn:schemas-microsoft-com:office:word"
 	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"		    
-	xmlns:java="http://xml.apache.org/xalan/java"    
+	xmlns:java="http://xml.apache.org/xalan/java" 
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10">	
+        exclude-result-prefixes="java w a o v WX aml w10 pkg">	
+        
+        <!--  Note definition of xmlns:r is different 
+              from the definition in an _rels file!  -->
 
 <!-- 
   <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
    -->
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
+
+<xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
+
    
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
@@ -3925,15 +3932,46 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
       <xsl:with-param name="prsR" select="$prsR"/>
     </xsl:call-template>
   </xsl:template>
+  
+  <!-- 
+  
+		<w:hyperlink r:id="rId4" w:history="true">
+			<w:r>
+				<w:rPr>
+				    <w:rStyle w:val="Hyperlink"/>
+				</w:rPr>
+				<w:t>hyperlink</w:t>
+			</w:r>
+		</w:hyperlink>
+  
+	  Micrososoft C# code replaces w:hyperlink with 
+	  a new node 
+	  
+	      <w:hlink w:dest=".." [other attributes cloned] />
+	      
+	  before the XSLT is called.
 
+	  But we use an extension function instead.
+                        
+                        -->
   <xsl:template name="DisplayHlink">
     <xsl:param name="b.bidi"/>
     <xsl:param name="prsR"/>
     <a style="text-decoration:none;">
+    <!--  
       <xsl:variable name="href">
         <xsl:for-each select="@w:dest">
           <xsl:value-of select="."/>
         </xsl:for-each>
+        :
+      -->
+	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
+      
+		<xsl:variable name="hTemp" 
+			select="java:org.docx4j.convert.out.html.HtmlExporter.resolveHref(
+			             $wmlPackage, $relId )" />      
+      <xsl:variable name="href">
+          <xsl:value-of select="$hTemp"/>
         <xsl:choose>
           <xsl:when test="@w:anchor">
             #<xsl:value-of select="@w:anchor"/>
@@ -3951,6 +3989,9 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
           <xsl:value-of select="$href"/>
         </xsl:attribute>
       </xsl:if>
+      
+      
+      
       <xsl:for-each select="@w:tgtFrame">
         <xsl:attribute name="target">
           <xsl:value-of select="."/>
