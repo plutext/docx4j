@@ -1,4 +1,74 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<!-- 
+(c) Microsoft Corporation
+
+Microsoft Public License (Ms-PL)
+
+This license governs use of the accompanying software. If you use the
+software, you accept this license. If you do not accept the license, do
+not use the software.
+
+1. Definitions
+
+The terms "reproduce," "reproduction," "derivative works," and "distribution"
+have the same meaning here as under U.S. copyright law.
+
+A "contribution" is the original software, or any additions or changes to the software.
+
+A "contributor" is any person that distributes its contribution under this license.
+
+"Licensed patents" are a contributor's patent claims that read directly on its contribution.
+
+2. Grant of Rights
+
+(A) Copyright Grant- Subject to the terms of this license, including the
+license conditions and limitations in section 3, each contributor
+grants you a non-exclusive, worldwide, royalty-free copyright license
+to reproduce its contribution, prepare derivative works of its
+contribution, and distribute its contribution or any derivative works
+that you create.
+
+(B) Patent Grant- Subject to the terms of this
+license, including the license conditions and limitations in section 3,
+each contributor grants you a non-exclusive, worldwide, royalty-free
+license under its licensed patents to make, have made, use, sell, offer
+for sale, import, and/or otherwise dispose of its contribution in the
+software or derivative works of the contribution in the software.
+
+3. Conditions and Limitations
+
+(A) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
+
+(B) If you bring a patent claim against any contributor over patents that
+you claim are infringed by the software, your patent license from such
+contributor to the software ends automatically.
+
+(C) If you distribute any portion of the software, you must retain all copyright,
+patent, trademark, and attribution notices that are present in the
+software.
+
+(D) If you distribute any portion of the software in
+source code form, you may do so only under this license by including a
+complete copy of this license with your distribution. If you distribute
+any portion of the software in compiled or object code form, you may
+only do so under a license that complies with this license.
+
+(E) The software is licensed "as-is." You bear the risk of using it. The
+contributors give no express warranties, guarantees or conditions. You
+may have additional consumer rights under your local laws which this
+license cannot change. To the extent permitted under your local laws,
+the contributors exclude the implied warranties of merchantability,
+fitness for a particular purpose and non-infringement.
+
+************************************************************************
+
+Modified by Jason Harrop (dev.plutext.org) to work with the
+output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
+	
+	/pkg:package/pkg:part/pkg:xmlData	
+	
+
+-->
+
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
@@ -7,9 +77,22 @@
     xmlns:WX="http://schemas.microsoft.com/office/word/2003/auxHint"
     xmlns:aml="http://schemas.microsoft.com/aml/2001/core"
     xmlns:w10="urn:schemas-microsoft-com:office:word"
-    version="1.0">
+	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"		    
+	xmlns:java="http://xml.apache.org/xalan/java"    
+    version="1.0"
+        exclude-result-prefixes="java w a o v WX aml w10">	
 
+<!-- 
   <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
+   -->
+<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
+   
+<!-- Used in extension function for mapping fonts --> 		
+<xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
+<xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->	
+<xsl:param name="docxWiki"/>		
+<xsl:param name="docxWikiSdtID"/>		
+<xsl:param name="docID"/>
 
   <xsl:variable name="paraStyleID_Default">Normal</xsl:variable>
   <xsl:variable name="tblStyleID_Default">TableNormal</xsl:variable>
@@ -107,17 +190,23 @@
 
   <xsl:variable name="prListSuff_space">Space</xsl:variable>
   <xsl:variable name="prListSuff_nothing">Nothing</xsl:variable>
-  
-  <!--  Location of the other parts -->
 
+<!-- 
   <xsl:variable name="nsStyles" select="/w:document[1]/w:styles[1]/w:style"/>
   <xsl:variable name="ndLists" select="/w:document[1]/w:numbering[1]|//w:cfChunk/w:numbering"/>
   <xsl:variable name="ndDocPr" select="/w:document[1]/w:settings[1]"/>
   <xsl:variable name="ndDocInfo" select="/w:document[1]/w:docInfo[1]"/>
   <xsl:variable name="ndOfficeDocPr" select="/w:document[1]/o:DocumentProperties[1]"/>
-  
-  <!--  END other parts -->
-
+ -->  
+ 
+ <xsl:variable name="nsStyles" select="/pkg:package/pkg:part/pkg:xmlData/w:styles[1]/w:style"/>	
+ <xsl:variable name="ndLists" select="/pkg:package/pkg:part/pkg:xmlData/w:numbering[1]|//w:cfChunk/w:numbering"/>
+ <xsl:variable name="ndDocPr" select="/pkg:package/pkg:part/pkg:xmlData/w:docPr[1]"/>
+ <xsl:variable name="ndDocInfo" select="/pkg:package/pkg:part/pkg:xmlData/w:docInfo[1]"/>
+ <xsl:variable name="ndOfficeDocPr" select="/pkg:package/pkg:part/pkg:xmlData/o:DocumentProperties[1]"/>
+ 
+ 
+ 
   <xsl:variable name="lowercase" select="'abcdefghijklmnopqrstuvwxyz'" />
   <xsl:variable name="uppercase" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'" />
 
@@ -3401,9 +3490,59 @@
     </xsl:call-template>;
   </xsl:template>
 
-  <xsl:template match="w:rFonts" mode="rpr">
-    font-family:<xsl:value-of select="@w:ascii"/>;
-  </xsl:template>
+<!-- JHarrop 
+	
+	 20080222  Basic support for fonts
+	 20080310  Extension function to substitute appropriate PDF font
+	 20080319  Support for bold and italic (but only in the rPr element)
+	 
+	  -->
+
+
+<!-- 
+<xsl:template match="w:rFonts" mode="rpr">font-family:<xsl:value-of select="@w:ascii"/>;</xsl:template>
+-->
+	
+<xsl:template match="w:rFonts" mode="rpr">
+	
+	<!-- xhtml renderer probably is smart enough to convert <b> into a bold font?
+		
+		 But what if we don't have the corresponding bold font on the system?
+		
+		 Substituter will substitute something else.  This logic ensures that can happen.
+		
+		 But it assumes the single rPr element contains both the font and the b or i. This isn't
+		 good enough ... but eventually we'll replace this stylesheet with writing
+		 PDF using iText directly. -->
+	
+	<xsl:variable name="documentFont"><xsl:value-of select="string(@w:ascii)"/></xsl:variable>
+	<xsl:choose>
+		<xsl:when test="count(../w:b)=1 and count(../w:i)=1">
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), 'BoldItalic', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';						
+		</xsl:when>
+		<xsl:when test="count(../w:b)=1">
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), 'Bold', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';									
+		</xsl:when>
+		<xsl:when test="count(../w:i)=1">
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), 'Italic', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';									
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:variable name="targetFont" 
+				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+							string($documentFont), '', boolean($fontFamilyStack))" />
+			font-family:'<xsl:value-of select="$targetFont"/>';			
+		</xsl:otherwise>		
+	</xsl:choose>
+</xsl:template>
 
   <xsl:template match="w:smallCaps" mode="rpr">
     <xsl:choose>
@@ -6322,6 +6461,7 @@ if (msoBrowserCheck())
     <xsl:apply-templates />
   </xsl:template>
 
+<!-- 
   <xsl:template match="w:sdt">
     <xsl:apply-templates />
   </xsl:template>
@@ -6329,12 +6469,96 @@ if (msoBrowserCheck())
   <xsl:template match="w:sdtContent">
     <xsl:apply-templates />
   </xsl:template>
+ -->
+ 
+ <xsl:template match="w:sdt">
 
+<!-- 
+
+A mediawiki chunk starts with three things:
+1. anchor
+2. heading level
+   (i) editsection
+   (2) the actual heading (including line)
+
+<p><a name="Business_and_political_career_before_presidency" id="Business_and_political_career_before_presidency"></a></p>
+<h2><span class="editsection">[<a href="/w/index.php?title=Dmitry_Medvedev&amp;action=edit&amp;section=2" title="Edit section: Business and political career before presidency">edit</a>]</span> 
+    <span class="mw-headline">Business and political career before presidency</span></h2>
+
+ -->
+
+	<xsl:variable name="thisSdtID"><xsl:value-of select="string(./w:sdtPr/w:id/@w:val)"/></xsl:variable>
+
+	<xsl:choose>
+		<xsl:when test="$docxWiki='open'">
+			<div class="docxwiki-headline">
+				<a name="sub{./w:sdtPr/w:id/@w:val}" id="sub{./w:sdtPr/w:id/@w:val}"></a>
+				<div class="editsection">[<a href="/alfresco/docxwiki/edit{$docID}/{./w:sdtPr/w:id/@w:val}" title="Edit sdt {./w:sdtPr/w:id/@w:val}">edit</a>]</div>
+					<!--  Firefox 2 does not pass # to the server, so use / instead. --> 
+			    <span class="mw-headline">sub<xsl:value-of select="./w:sdtPr/w:id/@w:val"/>.xml</span>
+			</div>
+			<xsl:apply-templates select="w:sdtContent/*"/>
+		</xsl:when>
+		<xsl:when test="$docxWiki='edit'">
+			<xsl:choose>
+				<xsl:when test="$docxWikiSdtID=$thisSdtID">
+					<form id="dialog" name="dialog" method="post" 
+					       action="/alfresco/docxwiki/save{$docID}/{./w:sdtPr/w:id/@w:val}" 
+					       accept-charset="UTF-8" 
+					       enctype="application/x-www-form-urlencoded">
+						<script language="javascript" type="text/javascript" src="/alfresco/scripts/tiny_mce/tiny_mce.js">//</script>
+							<!--  // to ensure the tag does not become self-closing, since this upsets browsers. -->
+						<script language="javascript" type="text/javascript">
+											
+							tinyMCE.init({
+							theme : "advanced",
+							mode : "exact",
+							relative_urls: false,
+							elements : "editor",
+							save_callback : "saveContent",
+							theme_advanced_toolbar_location : "top",
+							theme_advanced_toolbar_align : "left",
+							theme_advanced_buttons1_add : "fontselect,fontsizeselect",
+							theme_advanced_disable: "styleselect",
+							extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
+							});
+							
+							function saveContent(id, content)
+							{
+							 document.getElementById("editorOutput").value=content;
+							}
+						
+						</script>	
+						<div id='editor' style='width:100%; height:360px'>
+							<xsl:apply-templates select="w:sdtContent/*"/>
+						</div>
+						<input type="hidden" id="editorOutput" name="editorOutput" value="" />
+						<input type="submit" name="submit"/>
+					</form>			
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:apply-templates select="w:sdtContent/*"/>				
+				</xsl:otherwise>
+			</xsl:choose>			
+		</xsl:when>
+		<xsl:otherwise>
+			<!--  The normal (ie non wiki) case -->
+			<xsl:apply-templates select="w:sdtContent/*"/>
+		</xsl:otherwise>
+	</xsl:choose>
+</xsl:template>
+ 
+ 
+ 
+ 
   <xsl:template match="w:smartTag">
     <xsl:apply-templates />
   </xsl:template>
 
-  <xsl:template match="/w:document">
+<!--
+<xsl:template match="/w:wordDocument">
+	-->
+<xsl:template match="/pkg:package">
 
     <html>
       <head>
@@ -6361,8 +6585,10 @@ if (msoBrowserCheck())
         <style>
           <xsl:comment>
 
+			/*font definitions*/
             <xsl:apply-templates select="w:fonts[1]/w:font"/>
 
+			/*element styles*/
             del {text-decoration:line-through;color:red;}
             <xsl:choose>
               <xsl:when test="/w:document/w:settings/w:trackRevisions">
@@ -6375,14 +6601,37 @@ if (msoBrowserCheck())
 
             <xsl:apply-templates select="a:theme/a:themeElements/a:fontScheme"/>
 
+			/*class styles*/
             <xsl:apply-templates select="$nsStyles"/>
+            
+			<xsl:if test="$docxWiki=true()">
+				/*docxwiki*/
+				.docxwiki-headline {
+					color: black;
+					background: none;
+					font-weight: normal;
+					margin: 0;
+					padding-top: .5em;
+					padding-bottom: .17em;
+					border-bottom: 1px solid #aaa;
+				}
+				
+				.editsection { font-size: 80%; font-weight: normal; }
+				
+				div.editsection {
+					float: right;
+					margin-left: 5px;
+				}							
+			</xsl:if>
+            
 
           </xsl:comment>
         </style>
       </head>
 
       <body>
-        <xsl:apply-templates select="w:body|w:cfChunk"/>
+<!-- was <xsl:apply-templates select="w:body|w:cfChunk"/> -->
+					<xsl:apply-templates select="pkg:part/pkg:xmlData/w:document/w:body|w:cfChunk"/>
 
         <xsl:if test="w:bgPict/w:background/@w:bgcolor">
           <xsl:attribute name="bgcolor">

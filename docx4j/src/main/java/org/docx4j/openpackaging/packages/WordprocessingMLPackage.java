@@ -241,82 +241,6 @@ public class WordprocessingMLPackage extends Package {
     	
     }
 
-	/** Create an html version of the document, using CSS font family
-	 *  stacks.  This is appropriate if the HTML is intended for
-	 *  viewing in a web browser, rather than an intermediate step
-	 *  on the way to generating PDF output. 
-	 * 
-	 * @param result
-	 *            The javax.xml.transform.Result object to transform into 
-	 * 
-	 * */ 
-    public void html(javax.xml.transform.Result result) throws Exception {
-
-    	html(result, true);
-    }
-
-    public void html(javax.xml.transform.Result result, boolean fontFamilyStack) throws Exception {
-
-		// Prep parameters
-    	HtmlSettings htmlSettings = new HtmlSettings();
-    	htmlSettings.setFontFamilyStack(fontFamilyStack);
-    	
-		html(result, htmlSettings);
-    }
-    
-	/** Create an html version of the document. 
-	 * 
-	 * @param result
-	 *            The javax.xml.transform.Result object to transform into 
-	 * 
-	 * */ 
-    public void html(javax.xml.transform.Result result, HtmlSettings htmlSettings) throws Exception {
-    	
-    	/*
-    	 * Given that word2html.xsl is freely available, use a
-    	 * version of it adapted to process the
-    	 * pck:package/pck:part stuff emitted by Word 2007.
-    	 * 
-    	 */    	
-		XmlPackage worker = new XmlPackage(this);
-		org.docx4j.xmlPackage.Package pkg = worker.get();
-    	
-		JAXBContext jc = Context.jcXmlPackage;
-		Marshaller marshaller=jc.createMarshaller();
-		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
-
-		marshaller.marshal(pkg, doc);
-		
-		log.info("wordDocument created for PDF rendering!");
-
-
-		// Get the xslt file - Works in Eclipse - note absence of leading '/'
-		java.io.InputStream xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/packages/wordml2html-2007.xslt");
-		
-		// Prep parameters
-		if (htmlSettings==null) {
-			htmlSettings = new HtmlSettings();
-			// ..Ensure that the font names in the XHTML have been mapped to these matches
-			//     possibly via an extension function in the XSLT
-		}
-		
-		if (htmlSettings.getFontSubstituter()==null) {
-			if (fontSubstituter==null) {
-				log.debug("Creating new Substituter.");
-				setFontSubstituter(new Substituter());
-			} else {
-				log.debug("Using existing Substituter.");
-			}
-			htmlSettings.setFontSubstituter(fontSubstituter);
-		}
-		
-		// Now do the transformation
-		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
-		
-		log.info("wordDocument transformed to xhtml ..");
-    	
-    }
-    
     
     
     
@@ -345,7 +269,11 @@ public class WordprocessingMLPackage extends Package {
     	
     }
 
-    private Substituter fontSubstituter;
+    public Substituter getFontSubstituter() {
+		return fontSubstituter;
+	}
+
+	private Substituter fontSubstituter;
     
 	/** Create a pdf version of the document. 
 	 * 
@@ -375,7 +303,7 @@ public class WordprocessingMLPackage extends Package {
         // Put the html in result
 		org.w3c.dom.Document xhtmlDoc = org.docx4j.XmlUtils.neww3cDomDocument();
 		javax.xml.transform.dom.DOMResult result = new javax.xml.transform.dom.DOMResult(xhtmlDoc);
-		html(result, false); // false -> don't use HTML fonts.
+		org.docx4j.convert.out.html.HtmlExporter.html(this, result, false); // false -> don't use HTML fonts.
 				
 		// Now render the XHTML
 		org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
@@ -385,7 +313,7 @@ public class WordprocessingMLPackage extends Package {
 			// See https://xhtmlrenderer.dev.java.net/r7/users-guide-r7.html#xil_32
 		org.xhtmlrenderer.extend.FontResolver resolver = renderer.getFontResolver();		
 				
-		Map fontMappings = fontSubstituter.getFontMappings();
+		Map fontMappings = getFontSubstituter().getFontMappings();
 		Map fontsInUse = this.getMainDocumentPart().fontsInUse();
 		Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
 		while (fontMappingsIterator.hasNext()) {
@@ -570,50 +498,5 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 		
 	}
 
-	public static class HtmlSettings {
-		
-		Boolean fontFamilyStack = Boolean.FALSE;		
-		public void setFontFamilyStack(boolean val) {
-			fontFamilyStack = new Boolean(val);
-		}
-		
-		String docxWiki = null;	// edit | open	
-		public void setDocxWiki(String docxWiki) {
-			this.docxWiki = docxWiki;
-		}
-
-		String docxWikiSdtID = null;	
-		public void setDocxWikiSdtID(String docxWikiSdtID) {
-			this.docxWikiSdtID = docxWikiSdtID;
-		}
-		
-		String docID = null;
-		public void setDocID(String docID) {
-			this.docID = docID;
-		}
-		
-		
-		Substituter fontSubstituter = null;		
-		public void setFontSubstituter(Substituter fontSubstituter) {
-			this.fontSubstituter = fontSubstituter;
-		}
-		public Substituter getFontSubstituter() {
-			return fontSubstituter;
-		}
-		
-		
-		Map<String, Object> getSettings() {
-			Map<String, Object> settings = new java.util.HashMap<String, Object>();
-			
-			settings.put("fontFamilyStack", fontFamilyStack);
-			settings.put("docxWiki", docxWiki);
-			settings.put("docxWikiSdtID", docxWikiSdtID);
-			settings.put("docID", docID);
-			settings.put("substituterInstance", fontSubstituter);
-			
-			return settings;
-		}
-		
-	}
 	
 }
