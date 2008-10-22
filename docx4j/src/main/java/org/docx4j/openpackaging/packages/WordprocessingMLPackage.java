@@ -34,6 +34,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
@@ -171,74 +172,6 @@ public class WordprocessingMLPackage extends Package {
 		return mainDoc;
 	}
 	
-	
-
-    
-    /* Output in pck:package/pck:part format, as emitted by Word 2007.
-	 * 
-	 */
-    public org.docx4j.wml.Package exportPkgXml() {
-		// so, put the 2 parts together into a single document 
-    	// The JAXB object org.docx4j.wml.Package is
-    	// custom built for this purpose.
-    	
-    	// TODO - this method currently only puts the main document
-    	// part and the styles part into the pkg.  
-    	// Extend it so that it can optionally do the others as well.
-    	// Likewise, the converse.
-    	
-    	// Create a org.docx4j.wml.Package object
-    	org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-    	org.docx4j.wml.Package pkg = factory.createPackage();
-    	
-    	// Set its parts
-    	
-    	// .. the main document part
-    	org.docx4j.wml.Package.Part pkgPartDocument = factory.createPackagePart();
-    	    	
-		MainDocumentPart documentPart = getMainDocumentPart(); 
-		
-		if (documentPart==null) {
-			log.warn("Main document part missing!");
-		} else {
-		
-	    	pkgPartDocument.setName(documentPart.getPartName().getName());
-	    	pkgPartDocument.setContentType(documentPart.getContentType() );
-			
-	    	org.docx4j.wml.Package.Part.XmlData XmlDataDoc = factory.createPackagePartXmlData();
-	    	
-			org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
-			
-			XmlDataDoc.setDocument(wmlDocumentEl);
-			pkgPartDocument.setXmlData(XmlDataDoc);
-			pkg.getPart().add(pkgPartDocument);
-		}
-				
-    	// .. the style part
-    	org.docx4j.wml.Package.Part pkgPartStyles = factory.createPackagePart();
-
-    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart = documentPart.getStyleDefinitionsPart();
-
-		if (stylesPart==null) {
-			log.warn("Style definitions part missing!");
-		} else {
-    	
-	    	pkgPartStyles.setName(stylesPart.getPartName().getName());
-	    	pkgPartStyles.setContentType(stylesPart.getContentType() );
-	    	
-	    	org.docx4j.wml.Package.Part.XmlData XmlDataStyles = factory.createPackagePartXmlData();
-	    	
-	    	org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)stylesPart.getJaxbElement();
-	    	
-			XmlDataStyles.setStyles(styles);
-			pkgPartStyles.setXmlData(XmlDataStyles);
-			pkg.getPart().add(pkgPartStyles);
-		}
-		
-		return pkg;
-    	
-    }
-    
     
     /**
      * Use an XSLT to alter the contents of this package.
@@ -253,8 +186,11 @@ public class WordprocessingMLPackage extends Package {
 			  Map<String, Object> transformParameters) throws Exception {
 
     	// Prepare in the input document
-    	org.docx4j.wml.Package pkg = exportPkgXml();
-		JAXBContext jc = Context.jc;
+    	
+		XmlPackage worker = new XmlPackage(this);
+		org.docx4j.xmlPackage.Package pkg = worker.get();
+    	
+		JAXBContext jc = Context.jcXmlPackage;
 		Marshaller marshaller=jc.createMarshaller();
 		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 		marshaller.marshal(pkg, doc);
@@ -342,11 +278,10 @@ public class WordprocessingMLPackage extends Package {
     	 * pck:package/pck:part stuff emitted by Word 2007.
     	 * 
     	 */    	
-    	org.docx4j.wml.Package pkg = exportPkgXml();
-    	    	
+		XmlPackage worker = new XmlPackage(this);
+		org.docx4j.xmlPackage.Package pkg = worker.get();
     	
-    	// Now marshall it
-		JAXBContext jc = Context.jc;
+		JAXBContext jc = Context.jcXmlPackage;
 		Marshaller marshaller=jc.createMarshaller();
 		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 
@@ -433,10 +368,7 @@ public class WordprocessingMLPackage extends Package {
     	 * The question then is how the stylesheet is made to work with
     	 * our main document and style definition parts.
     	 * 
-    	 * For now, I've just edited it a little to accept our parts wrapped
-    	 * in a <w:wordDocument> element.  Since that's a completely
-    	 * arbitrary format, it may be better in due course to process
-    	 * pck:package/pck:part
+    	 * it processes pck:package/pck:part
     	 * 
     	 */
 				
