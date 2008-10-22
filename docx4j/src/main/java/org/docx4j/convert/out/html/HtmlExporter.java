@@ -66,33 +66,35 @@ public class HtmlExporter {
 		 *  
 		 */
 		
+		
 		JAXBContext jc = Context.jcXmlPackage;
 		Marshaller marshaller=jc.createMarshaller();
 		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 
 		marshaller.marshal(pkg, doc);
+
+		log.error( org.docx4j.XmlUtils.marshaltoString(pkg, true, true, jc)  );
+		
 		
         // Load the link relationship tables
-//        Hashtable linkTable = new Hashtable();
+		
+		
+		
 //        Hashtable imageTable = new Hashtable();
 //
-//        Metro.PackageRelationshipCollection linkRels = wordDoc.GetRelationshipsByType(LinkRelationshipUri);
 //        Metro.PackageRelationshipCollection imageRels = wordDoc.GetRelationshipsByType(ImageRelationshipUri);
 //
-//        ReadRelationshipCollectionIntoHashtable(linkRels, linkTable);
 //        ReadRelationshipCollectionIntoHashtable(imageRels, imageTable);
 //
 //        System.IO.MemoryStream html = null;
 //
 //        // link the hyperlinks from the relationship tables in
-//        HandleLinks(mainDoc, nsm, linkTable);
 //        HandleImages(mainDoc, nsm, imageTable, linkTable);
 //        HandleThemeFonts(mainDoc, nsm);
 //        HandleNumberedLists(mainDoc, nsm);
 		
 		
 		// Get the xslt file - Works in Eclipse - note absence of leading '/'
-//		java.io.InputStream xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/packages/wordml2html-2007.xslt");
 		java.io.InputStream xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/convert/out/html/DocX2Html.xslt");
 		
 		// Prep parameters
@@ -114,6 +116,9 @@ public class HtmlExporter {
 			htmlSettings.setFontSubstituter(wmlPackage.getFontSubstituter());
 		}
 		
+		htmlSettings.setWmlPackage(wmlPackage);
+		
+		
 		// Now do the transformation
 		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
 		
@@ -121,7 +126,35 @@ public class HtmlExporter {
     	
     }
     
+
+    // XSLT extension function
+    public static String resolveHref( WordprocessingMLPackage wmlPackage, String id  )  {
+    	
+    	org.docx4j.relationships.Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(id);
+    	
+    	if ( rel != null) {
+    		
+        	// TODO resolve ServerRelativePath, if its not a full URL 
+
+    		return rel.getTarget();
+    		
+    	} else {
+    		
+    		log.error("Couldn't resolve hyperlink for rel " + id);    		
+    		return "";    		
+    	}
+    }
+    
+    
 	public static class HtmlSettings {
+		
+		private WordprocessingMLPackage wmlPackage = null;
+		public void setWmlPackage(WordprocessingMLPackage wmlPackage) {
+			this.wmlPackage = wmlPackage;
+		}
+		public WordprocessingMLPackage getWmlPackage() {
+			return wmlPackage;
+		}
 		
 		Boolean fontFamilyStack = Boolean.FALSE;		
 		public void setFontFamilyStack(boolean val) {
@@ -156,6 +189,7 @@ public class HtmlExporter {
 		Map<String, Object> getSettings() {
 			Map<String, Object> settings = new java.util.HashMap<String, Object>();
 			
+			settings.put("wmlPackage", wmlPackage);
 			settings.put("fontFamilyStack", fontFamilyStack);
 			settings.put("docxWiki", docxWiki);
 			settings.put("docxWikiSdtID", docxWikiSdtID);
