@@ -1,20 +1,31 @@
 package org.docx4j.convert.out.html;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.Map;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.vfs.CacheStrategy;
+import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
+import org.apache.commons.vfs.FileSystemManager;
+import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.utils.VFSUtils;
+import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 
 import org.w3c.dom.traversal.NodeIterator;
 import org.w3c.dom.Document;
@@ -37,16 +48,23 @@ public class HtmlExporter {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
-    public static void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result) throws Exception {
+    public static void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result,
+    		String imageDirPath) throws Exception {
 
-    	html(wmlPackage, result, true);
+    	html(wmlPackage, result, true, imageDirPath);
     }
 
-    public static void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, boolean fontFamilyStack) throws Exception {
+    public static void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, boolean fontFamilyStack,
+    		String imageDirPath) throws Exception {
 
 		// Prep parameters
     	HtmlSettings htmlSettings = new HtmlSettings();
     	htmlSettings.setFontFamilyStack(fontFamilyStack);
+    	
+    	if (imageDirPath==null) {
+    		imageDirPath = "";
+    	}
+    	htmlSettings.setImageDirPath(imageDirPath);
     	
 		html(wmlPackage, result, htmlSettings);
     }
@@ -57,7 +75,8 @@ public class HtmlExporter {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
-    public static void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, HtmlSettings htmlSettings) throws Exception {
+    public static void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, 
+    		HtmlSettings htmlSettings) throws Exception {
     	
     	/*
     	 * Given that word2html.xsl is freely available, use a
@@ -74,7 +93,7 @@ public class HtmlExporter {
  
 		 *  hyperlinks and images are handled separately.
 		 *  
-		 *  We need an option to leave images out of the pkg.
+		 *  We need an option to leave images out of the pkg?
 		 *  
 		 */
 		
@@ -164,6 +183,7 @@ public class HtmlExporter {
     static String getServerRelativePath(String docLibPath, String itemUrl)
     {
         if (itemUrl.startsWith("/") ||
+            itemUrl.toLowerCase().startsWith("file://") ||
             itemUrl.toLowerCase().startsWith("http://") ||
             itemUrl.toLowerCase().startsWith("https://"))
         	
@@ -176,58 +196,19 @@ public class HtmlExporter {
         }
     }
     
-    /*
-     * The Microsoft C# code creates an <img> element
+    /* Extension function to create an <img> element
      * from "E2.0 images" 
      *      //w:drawing/wp:inline
      *     |//w:drawing/wp:anchor
-     *     
-     *     relative to this, it defines:
-     *     
-     *     pictureDataXpathQuery = "./a:graphic/a:graphicData/pic:pic/pic:blipFill"
-     *     picSizeNode = "./wp:extent"
-     *     picLinkNode = "./wp:docPr/a:hlinkClick"
-     *     linkDataNode = "./a:blip"
-     *     
-     * and from "E1.0 images":
-     * 
-     *      //w:pict
-     *      
-     *     relative to this, it defines:
-     *     
-     *      shapeXpathQuery = "./v:shape"
-     *      blagh blagh
-     * before the XSLT is run.  
-     * 
-     * So their XSLT doesn't contain any templates
-     * which explicitly match w:drawing or v:shape
-     * (it has only v:*).
-     * 
-     * It doesn't need to explicitly match <img>,
-     * because the C# code has already done everything
-     * it needs to do.  So the <img> just gets passed
-     * through.
-     * 
-     * But we'll invoke this extension function instead
-     * (similar to how we process hyperlinks, except that
-     *  we return a org.w3c.dom.DocumentFragment 
-     *  which represents the <img> element).
-     * 
-     * The Microsoft code does not appear to save the 
-     * images as files, as far as I can see.  But we will,
-     * in an _files dir, if its a binary part. (TODO)
-     * 
-     * 
      */
-    public static DocumentFragment createImg(WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createImgE20(WordprocessingMLPackage wmlPackage,
+    		String imageDirPath,
     		NodeIterator pictureData, NodeIterator picSize,
     		NodeIterator picLink, NodeIterator linkData) {
     	
-    	log.debug("pictureData: " + pictureData.getClass().getName() );  // org.apache.xml.dtm.ref.DTMNodeIterator implements org.w3c.dom.traversal.NodeIterator
-    	log.debug("pictureSize: " + picSize.getClass().getName() );
-    	log.debug("pictureLink: " + picLink.getClass().getName() );
-    	log.debug("linkDataNode: " + linkData.getClass().getName() );
-    	
+    	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
+    	// which implements org.w3c.dom.traversal.NodeIterator
+    	    	
     	WordXmlPicture picture = new WordXmlPicture();
     	picture.readStandardAttributes( pictureData.nextNode() );
     	
@@ -273,6 +254,141 @@ public class HtmlExporter {
             	if (rel.getTargetMode() == null
             			|| rel.getTargetMode().equals("Internal") ) {
             		
+            		
+            		if ( !imageDirPath.equals("") ) {
+            			// Need to save the image 
+            			
+            			try {
+							// To create directory:
+							FileObject folder = getFileSystemManager().resolveFile(imageDirPath);
+							if (!folder.exists() ) {
+							    folder.createFolder();
+							}
+							
+							// Get the part
+							Part part = wmlPackage.getMainDocumentPart().getRelationshipsPart().getPart(rel);
+							
+							// Construct a file name from the part name	
+							String partname = part.getPartName().toString();
+							String filename = partname.substring(partname.lastIndexOf("/") + 1);
+							log.debug("image file name: " + filename);
+							
+							FileObject fo = folder.resolveFile(filename);
+							if (fo.exists() ) {
+								
+								log.warn("Overwriting (!) existing file!"); 
+								
+							} else {
+							   fo.createFile();
+							}
+							
+							// Save the file
+			       			OutputStream out = fo.getContent().getOutputStream();
+			    	        java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
+			    	        bb.clear();
+			    	        byte[] bytes = new byte[bb.capacity()];
+			    	        bb.get(bytes, 0, bytes.length);
+			    	        	        
+			    	        out.write( bytes );
+							
+							// Set the attribute
+	                		picture.setSrc(imageDirPath + "/" + filename );  // Need to be smarter about path separator?
+							
+						} catch (Exception e) {
+							log.error(e);
+						}
+            				
+            				
+            			
+            			
+            			
+            		} else {
+                		picture.setSrc("BinaryPart_" + rel.getTarget() );
+            		}
+
+            		
+            	} else {
+                    picture.setSrc( rel.getTarget() );            	
+            	}
+
+            }
+
+            // if the relationship isn't found, produce a warning
+            //if (String.IsNullOrEmpty(picture.Src))
+            //{
+            //    this.embeddedPicturesDropped++;
+            //}
+        }
+    	
+        Document d = picture.createImageElement("");
+
+		DocumentFragment docfrag = d.createDocumentFragment();
+		docfrag.appendChild(d.getDocumentElement());
+
+		return docfrag;
+        
+    }
+
+    private static FileSystemManager fileSystemManager;
+    private static ReadWriteLock aLock = new ReentrantReadWriteLock(true);
+    
+    public static FileSystemManager getFileSystemManager()
+    {
+        aLock.readLock().lock();
+
+        try
+        {
+            if (fileSystemManager == null)
+            {
+                try
+                {
+                    StandardFileSystemManager fm = new StandardFileSystemManager();
+                    fm.setCacheStrategy(CacheStrategy.MANUAL);
+                    fm.init();
+                    fileSystemManager = fm;
+                }
+                catch (Exception exc)
+                {
+                    throw new RuntimeException(exc);
+                }
+            }
+
+            return fileSystemManager;
+        }
+        finally
+        {
+            aLock.readLock().unlock();
+        }
+    }
+    
+    
+    /* Extension function to create an <img> element
+     * from "E1.0 images"
+     *  
+     *      //w:pict
+     */
+    public static DocumentFragment createImgE10(WordprocessingMLPackage wmlPackage,
+    		String imageDirPath,
+    		NodeIterator shape, NodeIterator imageData) {
+    	
+    	// NB as at 2008 10 24, this code has not been tested
+    	    	
+    	WordXmlPicture picture = new WordXmlPicture();
+    	picture.readStandardAttributes( shape.nextNode() );
+    	
+    	Node imageDataNode = imageData.nextNode();
+    	if ( imageDataNode==null ) {    		
+        	log.warn("Couldn't find v:imagedata!");
+        } else {
+            String imgRelId = getAttributeValueNS(imageDataNode, "http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"); 
+
+            if (imgRelId!=null && !imgRelId.equals(""))
+            {
+            	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
+            	
+            	if (rel.getTargetMode() == null
+            			|| rel.getTargetMode().equals("Internal") ) {
+            		
             		picture.setSrc("TODO - save object " + rel.getTarget() );
             		
             	} else {
@@ -296,26 +412,27 @@ public class HtmlExporter {
 		return docfrag;
         
     }
-
+    
+    
     static String getAttributeValue(Node node, String name)
     {
     	
-    	log.debug("node " + node.getNodeName() );
-    	
-    	log.debug("@" + name);
+//    	log.debug("node " + node.getNodeName() );
+//    	
+//    	log.debug("@" + name);
         String value = "";
         
         Node attribute = node.getAttributes().getNamedItem(name);
         
-        if (attribute == null) {
-        	log.debug("@" + name + " missing");
-        }
+//        if (attribute == null) {
+//        	log.debug("@" + name + " missing");
+//        }
         
         if (attribute != null &&  ((org.w3c.dom.Attr)attribute).getNodeValue()!= null)
         {
             value = ((org.w3c.dom.Attr)attribute).getNodeValue();
         }
-        log.debug(" = " + value);
+//        log.debug(" = " + value);
 
         return value;
     }
@@ -323,52 +440,52 @@ public class HtmlExporter {
     static String getAttributeValueNS(Node node, String namespaceURI, String localname)
     {
     	
-    	log.debug("node " + node.getNodeName() );
-    	
-    	log.debug("@" + localname);
+//    	log.debug("node " + node.getNodeName() );
+//    	
+//    	log.debug("@" + localname);
         String value = "";
         
         Node attribute = node.getAttributes().getNamedItemNS(namespaceURI, localname);
         
-        if (attribute == null) {
-        	log.debug("@" + localname + " missing");
-        }
+//        if (attribute == null) {
+//        	log.debug("@" + localname + " missing");
+//        }
         
         if (attribute != null &&  ((org.w3c.dom.Attr)attribute).getNodeValue()!= null)
         {
             value = ((org.w3c.dom.Attr)attribute).getNodeValue();
         }
-        log.debug(" = " + value);
+//        log.debug(" = " + value);
 
         return value;
     }
 
     
     
-    // Parses a string containing XML and returns a DocumentFragment
-    // containing the nodes of the parsed XML.
-    public static DocumentFragment parseXml(String fragment) {
-        // Wrap the fragment in an arbitrary element
-        fragment = "<p>"+fragment+"</p>";
-        try {
-            // Create a DOM builder and parse the fragment
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            
-            //Document d = factory.newDocumentBuilder().newDocument();
-            
-            Document d = factory.newDocumentBuilder().parse(
-                new InputSource(new StringReader(fragment)));
-        
-            // Create the document fragment node to hold the new nodes
-            DocumentFragment docfrag = d.createDocumentFragment();
-            
-            docfrag.appendChild(d.getDocumentElement());        
-            return docfrag;
-        } catch (Exception e) {
-        	log.error(e);
-            return null;
-        }
-    }    
+//    // Parses a string containing XML and returns a DocumentFragment
+//    // containing the nodes of the parsed XML.
+//    public static DocumentFragment parseXml(String fragment) {
+//        // Wrap the fragment in an arbitrary element
+//        fragment = "<p>"+fragment+"</p>";
+//        try {
+//            // Create a DOM builder and parse the fragment
+//            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+//            
+//            //Document d = factory.newDocumentBuilder().newDocument();
+//            
+//            Document d = factory.newDocumentBuilder().parse(
+//                new InputSource(new StringReader(fragment)));
+//        
+//            // Create the document fragment node to hold the new nodes
+//            DocumentFragment docfrag = d.createDocumentFragment();
+//            
+//            docfrag.appendChild(d.getDocumentElement());        
+//            return docfrag;
+//        } catch (Exception e) {
+//        	log.error(e);
+//            return null;
+//        }
+//    }    
     
 	public static class HtmlSettings {
 		
@@ -409,6 +526,17 @@ public class HtmlExporter {
 			return fontSubstituter;
 		}
 		
+		// If this is set to something, images in
+		// internal binary parts will be saved to this directory;
+		// otherwise they won't
+		private String imageDirPath = "";
+		public void setImageDirPath(String imageDirPath) {
+			this.imageDirPath = imageDirPath;
+		}
+		public String getImageDirPath() {
+			return imageDirPath;
+		}
+		
 		
 		Map<String, Object> getSettings() {
 			Map<String, Object> settings = new java.util.HashMap<String, Object>();
@@ -419,6 +547,7 @@ public class HtmlExporter {
 			settings.put("docxWikiSdtID", docxWikiSdtID);
 			settings.put("docID", docID);
 			settings.put("substituterInstance", fontSubstituter);
+			settings.put("imageDirPath", imageDirPath);
 			
 			return settings;
 		}
