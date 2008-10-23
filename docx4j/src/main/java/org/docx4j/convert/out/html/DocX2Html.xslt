@@ -94,7 +94,7 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
-
+<xsl:param name="imageDirPath"/>
    
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
@@ -3241,7 +3241,45 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
     </xsl:choose>
   </xsl:template>
   
-  <!--  E2.0 images -->
+  <!--  E2.0 images 
+  
+    /*
+     * The Microsoft C# code creates an <img> element
+     * from "E2.0 images" 
+     *      //w:drawing/wp:inline
+     *     |//w:drawing/wp:anchor
+     *     
+     *     relative to this, it defines:
+     *     
+     *     pictureDataXpathQuery = "./a:graphic/a:graphicData/pic:pic/pic:blipFill"
+     *     picSizeNode = "./wp:extent"
+     *     picLinkNode = "./wp:docPr/a:hlinkClick"
+     *     linkDataNode = "./a:blip"
+     *     
+     * and from "E1.0 images":
+     * 
+     *      //w:pict
+     *      
+     *     relative to this, it defines:
+     *     
+     *      shapeXpathQuery = "./v:shape"
+     *      blagh blagh
+     * before the XSLT is run.  
+     * 
+     * So their XSLT doesn't contain any templates
+     * which explicitly match w:drawing or v:shape
+     * (it has only v:*).
+     * 
+     * It doesn't need to explicitly match <img>,
+     * because the C# code has already done everything
+     * it needs to do.  So the <img> just gets passed
+     * through.
+     * 
+     
+     our approach is to use an extension function to create the
+     <img> element.
+  
+  -->
   <xsl:template match="w:drawing">
   	<!--  this template is required.  Go figure ... -->
 	<xsl:apply-templates select="*"/>
@@ -3254,11 +3292,39 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
   	<xsl:variable name="picLink" select="./wp:docPr/a:hlinkClick"/>
   	<xsl:variable name="linkDataNode" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip"/>
   	
-  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.createImg( $wmlPackage,
+  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.createImgE20( $wmlPackage, string($imageDirPath),
   			$pictureData, $picSize, $picLink, $linkDataNode)" />
-  
-  
+    
   </xsl:template>
+
+
+  <!--  E1.0 images 
+  
+    /*
+     * The Microsoft C# code creates an <img> element
+		from "E1.0 images":
+     * 
+     *      //w:pict
+     *      
+     *     relative to this, it defines:
+     *     
+     *      shapeXpathQuery = "./v:shape"
+     *      blagh blagh
+     * before the XSLT is run.  
+
+     our approach is to use an extension function to create the
+     <img> element.
+  
+  -->
+<xsl:template match="w:pict">
+
+  	<xsl:variable name="shape" select="./v:shape"/>
+  	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
+  	
+  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.createImgE10( $wmlPackage, string($imageDirPath),
+  			$shape, $imageData)" />
+
+</xsl:template>
 
 <!--<xsl:template match="w:pict">
 	<xsl:apply-templates select="*"/>
