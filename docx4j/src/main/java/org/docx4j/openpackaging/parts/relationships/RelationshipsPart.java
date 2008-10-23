@@ -281,14 +281,16 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		log.debug("looking for: " + id);
 		
 		Relationship r = getRelationshipByID(id);
+    	log.info(id + " points to " + r.getTarget());
 		
-		if (r==null) {
-			log.warn("couldn't find part with id: " + id);
-			return null;
-		}
+		return getPart(r);
+		
+	}
+
+	public Part getPart(Relationship r ) {
+
 		
 		log.info(" source is  " + sourceP.getPartName().toString() );
-    	log.info(id + " points to " + r.getTarget());
     	// eg rId1 points to fonts/font1.odttf
     			
 		URI uri = null;
@@ -310,6 +312,7 @@ public final class RelationshipsPart extends JaxbXmlPart {
 			return null;
 		}
 	}
+	
 	
 	/**
 	 * Add a newly created part, a relationship and the content type.
