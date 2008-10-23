@@ -79,9 +79,11 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
     xmlns:w10="urn:schemas-microsoft-com:office:word"
 	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"		    
 	xmlns:java="http://xml.apache.org/xalan/java" 
-	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg">	
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
         
         <!--  Note definition of xmlns:r is different 
               from the definition in an _rels file!  -->
@@ -3238,10 +3240,85 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-
-  <xsl:template match="w:pict">
-    <xsl:apply-templates select="*"/>
+  
+  <!--  E2.0 images -->
+  <xsl:template match="w:drawing">
+  	<!--  this template is required.  Go figure ... -->
+	<xsl:apply-templates select="*"/>
   </xsl:template>
+
+  <xsl:template match="wp:inline|wp:anchor">
+  
+  	<xsl:variable name="pictureData" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill"/>
+  	<xsl:variable name="picSize" select="./wp:extent"/>
+  	<xsl:variable name="picLink" select="./wp:docPr/a:hlinkClick"/>
+  	<xsl:variable name="linkDataNode" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip"/>
+  	
+  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.createImg( $wmlPackage,
+  			$pictureData, $picSize, $picLink, $linkDataNode)" />
+  
+  
+  </xsl:template>
+
+<!--<xsl:template match="w:pict">
+	<xsl:apply-templates select="*"/>
+</xsl:template> -->
+
+<!-- picture -->
+<!-- Added by Oleg Tkachenko -->
+
+<!--		
+	
+ERROR:  'The first argument to the non-static Java function 'decodePicture' is not a valid object reference.'
+FATAL ERROR:  'Could not compile stylesheet'
+Exception in thread "main" javax.xml.transform.TransformerConfigurationException: Could not compile stylesheet
+	at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl.newTemplates(TransformerFactoryImpl.java:824)
+	
+		
+    <xsl:param name="base-dir-for-images" select="'./'"/>
+    <xsl:param name="base-virtual-dir-for-images"/>
+
+    <msxsl:script language="c#" implements-prefix="ext">
+        public string decodePicture(XPathNodeIterator bindata, string baseDir,
+        string baseVirtualDir, string dirname, string filename) {
+        string imageUrl = "";
+        if (bindata.MoveNext()) {
+        System.IO.DirectoryInfo baseDirInfo = new System.IO.DirectoryInfo(baseDir);
+        if (!baseDirInfo.Exists)
+        baseDirInfo.Create();
+        System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(
+        System.IO.Path.Combine(baseDirInfo.FullName, dirname));
+        if (!di.Exists)
+        di.Create();
+        using (System.IO.FileStream fs =
+        System.IO.File.Create(System.IO.Path.Combine(di.FullName, filename))) {
+        byte[] data = Convert.FromBase64String(bindata.Current.Value);
+        fs.Write(data, 0, data.Length);
+        }
+        if (baseVirtualDir == "")
+        imageUrl = dirname + "/" + filename;
+        else
+        imageUrl =  baseVirtualDir + "/" + dirname + "/" + filename;
+        }
+        return imageUrl;
+        }
+    </msxsl:script>
+		
+<xsl:template match="w:pict">
+	<xsl:variable name="dir">
+-->	
+		<!-- We need something unique instead of document name -->
+		<!-- Let's take first 10 characters of title -->
+<!--	
+		<xsl:value-of select="translate(substring($ndOfficeDocPr/o:Title, 1, 10), ' ', '_')"/>
+		<xsl:text>_files</xsl:text>		
+	</xsl:variable>
+    <img src="{ext:decodePicture(w:binData, $base-dir-for-images, $base-virtual-dir-for-images, 
+        $dir, substring-after(w:binData/@w:name, 'wordml://'))}" alt="{v:shape/v:imagedata/@o:title}" style="{v:shape/@style}" title="{v:shape/v:imagedata/@o:title}"/>	
+</xsl:template>
+-->  
+
+
 
   <xsl:template match="w:br">
     <br>
@@ -3694,6 +3771,12 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
       </xsl:choose>
     </xsl:if>
   </xsl:template>
+  
+  <!-- ***********************************************************
+  
+  		Display the run  
+    
+        *********************************************************** -->
 
   <xsl:template name="DisplayR">
     <xsl:param name="b.bidi"/>
@@ -3840,6 +3923,7 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+      
 
   <xsl:template match="w:r">
     <xsl:param name="b.bidi" select="''"/>
@@ -4356,6 +4440,12 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
     <xsl:call-template name="ApplyPPr.many"/>
 
   </xsl:template>
+  
+  <!--  *********************************
+  
+        w:p - main template
+  
+        ********************************* -->
 
   <xsl:template match="w:p">
     <xsl:param name="bdrBetween" select="''"/>
@@ -6764,4 +6854,8 @@ A mediawiki chunk starts with three things:
   <xsl:template match="/">
     <xsl:apply-templates select="*"/>
   </xsl:template>
+  
+  
+  
+  
 </xsl:stylesheet>
