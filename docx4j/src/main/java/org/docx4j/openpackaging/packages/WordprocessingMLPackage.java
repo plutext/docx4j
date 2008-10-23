@@ -303,7 +303,8 @@ public class WordprocessingMLPackage extends Package {
         // Put the html in result
 		org.w3c.dom.Document xhtmlDoc = org.docx4j.XmlUtils.neww3cDomDocument();
 		javax.xml.transform.dom.DOMResult result = new javax.xml.transform.dom.DOMResult(xhtmlDoc);
-		org.docx4j.convert.out.html.HtmlExporter.html(this, result, false); // false -> don't use HTML fonts.
+		org.docx4j.convert.out.html.HtmlExporter.html(this, result, false,
+				System.getProperty("java.io.tmpdir") ); // false -> don't use HTML fonts.
 				
 		// Now render the XHTML
 		org.xhtmlrenderer.pdf.ITextRenderer renderer = new org.xhtmlrenderer.pdf.ITextRenderer();
