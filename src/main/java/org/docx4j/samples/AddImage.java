@@ -65,6 +65,9 @@ public class AddImage {
 			
 			imagePart.setBinaryData(is);
 			imagePart.setContentType( new ContentType(ContentTypes.IMAGE_JPEG) );  
+
+			//imagePart.setContentType( new ContentType(ContentTypes.IMAGE_PNG) );  
+
 			
 			imagePart.setRelationshipType( Namespaces.IMAGE );
 						

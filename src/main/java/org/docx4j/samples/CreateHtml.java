@@ -33,7 +33,8 @@ public class CreateHtml {
 	    				
 	        //  send output to System.out
 			javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(System.out);
-			wordMLPackage.html(result);
+   			org.docx4j.convert.out.html.HtmlExporter.html(wordMLPackage, result, 
+   					inputfilepath + "_files");
 	        	        
 	    }
 	}

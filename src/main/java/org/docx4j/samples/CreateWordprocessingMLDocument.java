@@ -45,12 +45,54 @@ public class CreateWordprocessingMLDocument {
 
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("from docx4j!");
 		
+		// To get bold text, you must set the run's rPr@w:b,
+	    // so you can't use the createParagraphOfText convenience method
+
+		//org.docx4j.wml.P p = wordMLPackage.getMainDocumentPart().createParagraphOfText("text");
+		
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		org.docx4j.wml.P  p = factory.createP();
+
+		org.docx4j.wml.Text  t = factory.createText();
+		t.setValue("text");
+
+		org.docx4j.wml.R  run = factory.createR();
+		run.getRunContent().add(t);		
+		
+		p.getParagraphContent().add(run);
+		
+		
+		org.docx4j.wml.RPr rpr = factory.createRPr();		
+		org.docx4j.wml.BooleanDefaultTrue b = new org.docx4j.wml.BooleanDefaultTrue();
+	    b.setVal(true);	    
+	    rpr.setB(b);
+	    
+		run.setRPr(rpr);
+		
+		// Optionally, set pPr/rPr@w:b		
+	    org.docx4j.wml.PPr ppr = factory.createPPr();	    
+	    p.setPPr( ppr );
+	    org.docx4j.wml.ParaRPr paraRpr = factory.createParaRPr();
+	    ppr.setRPr(paraRpr);	    
+	    rpr.setB(b);
+	    
+	            
+	    wordMLPackage.getMainDocumentPart().addObject(p);
+	    
+	    
+	    // Here is an easier way:
+	    String str = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" ><w:r><w:rPr><w:b /></w:rPr><w:t>Bold, just at w:r level</w:t></w:r></w:p>";
+	    
+	    wordMLPackage.getMainDocumentPart().addObject(
+	    			org.docx4j.XmlUtils.unmarshalString(str) );
+	    
+		
 		System.out.println( ".. done!");
 		
 		//injectDocPropsCustomPart(wordMLPackage);
 		
 		// Now save it 
-		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/result.docx") );
+		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/bolds.docx") );
 		
 		System.out.println("Done.");
 				
