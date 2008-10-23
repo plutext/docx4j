@@ -292,6 +292,12 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			return CreateWebSettingsPartObject(partName );
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
 			return CreateObfuscatedFontPartObject(partName );
+		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
+			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.IMAGE_PNG)) {
+			return new org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.IMAGE_GIF)) {
+			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageGifPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)) {
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");
@@ -393,13 +399,11 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			throws InvalidFormatException {
 		return new NumberingDefinitionsPart(new PartName(partName));
 	}
-	
+		
 	public Part CreateObfuscatedFontPartObject(String partName)
-	throws InvalidFormatException {
-		return new ObfuscatedFontPart(new PartName(partName));		
+			throws InvalidFormatException {
+		return new ObfuscatedFontPart(new PartName(partName));
 	}
-	
-	
 	
 	/**
 	 * Add a content type associated with the specified extension.
