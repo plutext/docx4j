@@ -45,7 +45,8 @@ public class OpenMainDocumentAndTraverse {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/jpeg.docx";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Table.docx";
+		String inputfilepath = "/home/dev/sample1.docx";
+		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
@@ -67,7 +68,21 @@ public class OpenMainDocumentAndTraverse {
 
 		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
-		walkJAXBElements(bodyChildren);			
+		walkJAXBElements(bodyChildren);		
+		
+		org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart commentsPart = documentPart.getCommentsPart();
+		
+		Object o = commentsPart.getJaxbElement();
+		System.out.println( o.getClass().getName() );
+//		System.out.println( ((JAXBElement)o).getName() );
+//		System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
+		
+		org.docx4j.wml.Comments comments = (org.docx4j.wml.Comments)o;
+		
+		List<org.docx4j.wml.Comments.Comment> commentList = comments.getComment();
+		
+		//walkJAXBElements(comments.getComment());		
+		
 				
 		// Save it
 		

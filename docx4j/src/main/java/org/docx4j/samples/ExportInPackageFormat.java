@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -39,23 +40,24 @@ public class ExportInPackageFormat {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/qformat.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Table.docx";
 				
 		// Do we want to save output? 
 		boolean save = false;
 		// If so, whereto?
-		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/qformat.pkg";		
+		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/tmp.pkg";		
 		
 		
 		// Open a document from the file system
 		// 1. Load the Package
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
 	   	// Create a org.docx4j.wml.Package object
-    	org.docx4j.wml.Package pkg = wordMLPackage.exportPkgXml();
+		XmlPackage worker = new XmlPackage(wmlPackage);
+		org.docx4j.xmlPackage.Package pkg = worker.get();
     	
     	// Now marshall it
-		JAXBContext jc = Context.jc;
+		JAXBContext jc = Context.jcXmlPackage;
 		Marshaller marshaller=jc.createMarshaller();
 		
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
