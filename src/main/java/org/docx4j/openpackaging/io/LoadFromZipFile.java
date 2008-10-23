@@ -481,12 +481,10 @@ public class LoadFromZipFile extends Load {
 					
 					((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).setDocument( is );
 
-				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart) {
+				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
-					log.debug("Detected ObfuscatedFontPart");
+					log.debug("Detected BinaryPart " + part.getClass().getName() );
 					((BinaryPart)part).setBinaryData(is);
-					log.info("Stored as BinaryData" );
-					
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
