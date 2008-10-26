@@ -24,11 +24,13 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.listnumbering.Emulator;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.wml.Numbering;
 
 
 
@@ -44,6 +46,20 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.NUMBERING);
 	}
+	
+	private Emulator em;
+//	public void setEmulator(Emulator em) {
+//		this.em = em;
+//	}
+	public Emulator getEmulator() {
+		
+    	if (em == null ) {    		
+    		em = new Emulator( (Numbering)jaxbElement );    		
+    	}
+		
+		return em;
+	}
+
 
 	
     /**
@@ -89,6 +105,9 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 		return jaxbElement;
     	
     }
+
+
+
 	
 	
 }

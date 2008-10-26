@@ -1,8 +1,6 @@
 package org.docx4j.convert.out.html;
 
-import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -14,30 +12,35 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.vfs.CacheStrategy;
 import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
+import org.docx4j.listnumbering.Emulator;
+import org.docx4j.listnumbering.Emulator.ResultTriple;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.utils.VFSUtils;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 
 import org.w3c.dom.traversal.NodeIterator;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Text;
 
 public class HtmlExporter {
 	
 	
 	protected static Logger log = Logger.getLogger(HtmlExporter.class);
+	
+	public static void log(String message ) {
+		
+		log.info(message);
+	}
 	
 	/** Create an html version of the document, using CSS font family
 	 *  stacks.  This is appropriate if the HTML is intended for
@@ -195,6 +198,47 @@ public class HtmlExporter {
             return docLibPath + itemUrl;
         }
     }
+    
+    /**
+	 * The method used by the XSLT extension function during HTML export.
+	 * 
+	 * @param em
+	 * @param levelId
+	 * @param numId
+	 * @return
+	 */
+    public static DocumentFragment getNumberXmlNode(WordprocessingMLPackage wmlPackage,
+    		String pStyleVal, String numId, String levelId) {
+    	
+    	log.info("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
+    	
+    	ResultTriple triple = org.docx4j.listnumbering.Emulator.getNumber(
+    			wmlPackage, pStyleVal, numId, levelId);    	
+    	
+        // Create a DOM builder and parse the fragment
+        try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+			Document document = factory.newDocumentBuilder().newDocument();
+			       
+			Node spanElement = document.createElement("span");			
+			document.appendChild(spanElement);
+			
+			Text number = document.createTextNode( triple.getNumString() );
+			spanElement.appendChild(number);
+			
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+
+			return docfrag;
+						
+		} catch (Exception e) {
+			log.error(e);
+		} 
+    	
+    	return null;
+    	
+    }
+    
     
     /* Extension function to create an <img> element
      * from "E2.0 images" 

@@ -89,17 +89,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.STNumberFormat;
+import org.docx4j.wml.PPrBase.NumPr;
 import org.w3c.dom.DocumentFragment;
 
 public class Emulator {
 	
 	/* There should be only one Emulator object per 
-	 * WordprocessingML package.
+	 * WordprocessingML package.  It is set on the 
+	 * numbering part.
 	 */
+	
+	protected static Logger log = Logger.getLogger(Emulator.class);
+	
 	
     HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions; 
     HashMap<String, ListNumberingDefinition> instanceListDefinitions; 
@@ -162,36 +169,92 @@ public class Emulator {
     /* Get the computed list number for the given list at this point in the
      * document.
      */
-    public static ResultTriple getNumber(Emulator em, String levelId, String numId) {
+    public static ResultTriple getNumber(WordprocessingMLPackage wmlPackage, String pStyleVal, 
+    		String numId, String levelId) {
     	
-        // Looking at nodes //w:numPr/w:ilvl
     	
-    	ResultTriple triple = em.new ResultTriple();
+    	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
+    		wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+
+    	Emulator em = numberingPart.getEmulator();
+    	
+    	// Object to hold results
+    	ResultTriple triple = em.new ResultTriple();    	
+    	
+    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
+    		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
+    	
+    	// If numId is not provided explicitly, 
+    	// is it provided by the style?
+    	// (ie does this style have a list associated with it?)
+    	if (numId == null 
+    			|| numId.equals("")) {
+    		
+	    	org.docx4j.wml.Style style = stylesPart.getStyle(pStyleVal);
+	    	if (style == null) {
+	    		log.warn("Couldn't find style '" + pStyleVal + "'");
+	    	} else {
+	    		
+	    		NumPr numPr = style.getPPr().getNumPr();
+	    		
+	    		numId = numPr.getNumId().getVal().toString();
+	    		log.info("numId=" + numId + " (from style)" );
+	    		
+	    		if (levelId == null 
+	    				|| levelId.equals("") ) {
+	    			
+	    			if (numPr.getIlvl() != null ) {
+	    				
+	    				levelId = numPr.getIlvl().getVal().toString();
+	    	    		log.info("levelId=" + numId + " (from style)" );
+	    			} else {
+	    				// default
+	    				levelId = "0";
+	    			}
+	    		}
+	    	}
+    	}
     	
 		if (levelId != null && !levelId.equals("")) {
 			// String numId = getAttributeValue(numIdNode, ValAttrName);
 
-			if (numId != null
-					&& !numId.equals("")
-					&& em.instanceListDefinitions.containsKey(numId)
-					&& em.instanceListDefinitions.get(numId).LevelExists(
-							levelId)) {
-				// XmlAttribute counterAttr =
-				// mainDoc.CreateAttribute("numString");
+			if (numId == null || numId.equals("")) {
 
-				em.instanceListDefinitions.get(numId).IncrementCounter(levelId);
-				triple.numString = em.instanceListDefinitions.get(numId)
-						.GetCurrentNumberString(levelId);
+				log.error("numId was null or empty!");
+				
+			} else {
 
-				String font = em.instanceListDefinitions.get(numId).GetFont(
-						levelId);
+				if (em.instanceListDefinitions.containsKey(numId)
+						&& em.instanceListDefinitions.get(numId).LevelExists(
+								levelId)) {
+					// XmlAttribute counterAttr =
+					// mainDoc.CreateAttribute("numString");
 
-				if (font != null && !font.equals("")) {
-					triple.numFont = font;
-				}
+					em.instanceListDefinitions.get(numId).IncrementCounter(
+							levelId);
+					triple.numString = em.instanceListDefinitions.get(numId)
+							.GetCurrentNumberString(levelId);
+					
+					log.debug("Got number: " + triple.numString);
 
-				if (em.instanceListDefinitions.get(numId).IsBullet(levelId)) {
-					triple.isBullet = true;
+					String font = em.instanceListDefinitions.get(numId)
+							.GetFont(levelId);
+
+					if (font != null && !font.equals("")) {
+						triple.numFont = font;
+					}
+
+					if (em.instanceListDefinitions.get(numId).IsBullet(levelId)) {
+						triple.isBullet = true;
+					}
+				} else if (!em.instanceListDefinitions.containsKey(numId)){
+					
+					log.error("Couldn't find list " + numId);
+					
+				} else if (!em.instanceListDefinitions.get(numId).LevelExists(
+						levelId)){
+					
+					log.error("Couldn't find level " + levelId + " in list " + numId);					
 				}
 			}
 		}
@@ -199,29 +262,23 @@ public class Emulator {
 
     }
 
-    /**
-	 * The method used by the XSLT extension function during HTML export.
-	 * 
-	 * @param em
-	 * @param levelId
-	 * @param numId
-	 * @return
-	 */
-    public static DocumentFragment getNumberXmlNode(Emulator em, String levelId, String numId) {
-
-    	// TODO
-    	
-    	return null;
-    	
-    }
     
-    private class ResultTriple {
+    public class ResultTriple {
     	
     	String numString;
+		public String getNumString() {
+			return numString;
+		}
     	
     	String numFont;
+		public String getNumFont() {
+			return numFont;
+		}
     	
     	boolean isBullet = false;
+		public boolean isBullet() {
+			return isBullet;
+		}
     }
 
 
@@ -237,7 +294,9 @@ public class Emulator {
             Lvl.Start startValueNode = levelNode.getStart();
             if (startValueNode != null)
             {
-            	this.startValue = startValueNode.getVal(); 
+            	this.startValue = startValueNode.getVal().subtract(BigInteger.ONE);
+            		// Start value is one less than the user set it to,
+            		// since whenever we fetch the number, we first increment it.
                 this.counter = this.startValue;
             }
 
@@ -259,11 +318,10 @@ public class Emulator {
             NumFmt enumTypeNode = levelNode.getNumFmt();
             if (enumTypeNode != null)
             {
-            	STNumberFormat type =  enumTypeNode.getVal(); // getAttributeValue(enumTypeNode, ValAttrName);
-            		// TODO: alter schema 
+            	this.numFmt =  enumTypeNode.getVal(); 
 
                 // w:numFmt="bullet" indicates a bulleted list
-            	this.isBullet = type.equals( STNumberFormat.BULLET ); 
+            	this.isBullet = numFmt.equals( STNumberFormat.BULLET ); 
             	
                 // this.isBullet = String.Compare(type, "bullet", StringComparison.OrdinalIgnoreCase) == 0;
             }
@@ -282,6 +340,7 @@ public class Emulator {
             this.counter = this.startValue;
             this.font = masterCopy.font;
             this.isBullet = masterCopy.isBullet;
+            this.numFmt = masterCopy.numFmt;
         }
 
         /// <summary>
@@ -315,11 +374,10 @@ public class Emulator {
             NumFmt enumTypeNode = levelNode.getNumFmt();
             if (enumTypeNode != null)
             {
-            	STNumberFormat type =  enumTypeNode.getVal(); 
-            		// TODO: alter schema 
+            	this.numFmt =  enumTypeNode.getVal(); 
 
                 // w:numFmt="bullet" indicates a bulleted list
-            	this.isBullet = type.equals( STNumberFormat.BULLET ); 
+            	this.isBullet = numFmt.equals( STNumberFormat.BULLET ); 
             }
         }
 
@@ -333,7 +391,7 @@ public class Emulator {
                 return this.id;
         }
 
-        private BigInteger startValue;
+        private BigInteger startValue = BigInteger.ZERO;
 
         /// <summary>
         /// start value of that level
@@ -348,17 +406,87 @@ public class Emulator {
         /// <summary>
         /// returns the current count of list items of that level
         /// </summary>
-        public BigInteger getCurrentValue()
+        public BigInteger getCurrentValueRaw()
         {        	
                 return this.counter;
         }
 
+        /**
+         * The current number, formatted using numFmt.
+         */
+        public String getCurrentValueFormatted()
+        {
+        	/*
+        	 * If you look at the OpenXML spec or
+        	 * STNumberFormat.java, you'll see there are some 60 number formats.
+        	 * 
+        	 * Of these, we currently aim to support:
+        	 * 
+			 *     decimal
+			 *     upperRoman
+			 *     lowerRoman
+			 *     upperLetter
+			 *     lowerLetter
+			 *     bullet
+			 *     none
+			 *     
+			 * What about?
+			 *     
+			 *     ordinal
+			 *     cardinalText
+			 *     ordinalText
+        	 * 
+        	 */
+        	
+        	if (numFmt.equals( STNumberFormat.DECIMAL ) ) {
+        		return this.counter.toString();
+        	}
+        	
+        	if (numFmt.equals( STNumberFormat.NONE ) ) {
+        		return "";        		
+        	}
+
+        	if (numFmt.equals( STNumberFormat.BULLET ) ) {
+        		
+        		// TODO - revisit how this is handled.
+        		// The code elsewhere for handling bullets
+        		// overlaps with this numFmt stuff.
+        		return "*";        		
+        	}
+        	        	
+        	int current = this.counter.intValue();
+        	
+        	if (numFmt.equals( STNumberFormat.UPPER_ROMAN ) ) {        		
+        		NumberFormatRomanUpper converter = new NumberFormatRomanUpper(); 
+        		return converter.format(current);
+        	}
+        	if (numFmt.equals( STNumberFormat.LOWER_ROMAN ) ) {        		
+        		NumberFormatRomanLower converter = new NumberFormatRomanLower(); 
+        		return converter.format(current);
+        	}
+        	if (numFmt.equals( STNumberFormat.LOWER_LETTER ) ) {        		
+        		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
+        		return converter.format(current);
+        	}
+        	if (numFmt.equals( STNumberFormat.UPPER_LETTER ) ) {        		
+        		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
+        		return converter.format(current).toUpperCase();
+        	}        	
+        	
+        	log.error("Unhandled numFmt: " + numFmt.name() );
+            return this.counter.toString();
+        }
+        
+        
         /// <summary>
         /// increments the current count of list items of that level
         /// </summary>
         public void IncrementCounter()
         {
-            this.counter = this.counter.add(BigInteger.ONE);            
+            this.counter = this.counter.add(BigInteger.ONE); 
+            
+            log.debug("counter now: " + this.counter.toString() );
+            
         }
 
         /// <summary>
@@ -390,6 +518,16 @@ public class Emulator {
         {
                 return this.font;
         }
+        
+        private STNumberFormat numFmt; // TODO: alter schema 
+        // w:numFmt = RTF's \levelnfcN
+
+//		private void setNumFmt(STNumberFormat numFmt) {
+//			this.numFmt = numFmt;
+//		}
+		private STNumberFormat getNumFmt() {
+			return numFmt;
+		}
 
         private boolean isBullet;
 
@@ -400,6 +538,7 @@ public class Emulator {
         {
                 return this.isBullet;
         }
+
     }
 
     /// <summary>
@@ -593,8 +732,11 @@ public class Emulator {
         /// <param name="level"></param>
         public void IncrementCounter(String level)
         {
+        	log.debug("Increment level " + level);
             this.levels.get(level).IncrementCounter();
 
+            // Now set all lower levels back to 1.
+            
             // here's a bit where the decision to use Strings as level IDs was bad 
             // - I need to loop through the derived levels and reset their counters
             //UInt32 levelNumber = System.Convert.ToUInt32(level, CultureInfo.InvariantCulture) + 1;
@@ -603,7 +745,8 @@ public class Emulator {
 
             while (this.levels.containsKey(levelString))
             {
-                this.levels.get(level).ResetCounter();
+            	log.debug("Reset level " + levelNumber);
+                this.levels.get(levelString).ResetCounter();
                 levelNumber++;
                 levelString = Integer.toString(levelNumber);
             }
@@ -627,6 +770,7 @@ public class Emulator {
         public String GetCurrentNumberString(String level)
         {
             String formatString = this.levels.get(level).levelText;
+            log.debug("levelText: " + formatString );
             StringBuilder result = new StringBuilder();
             String temp = ""; //String.Empty;
 
@@ -642,7 +786,7 @@ public class Emulator {
                         String formatStringLevel = formatString.substring(i + 1, i+2);
                         // as it turns out, in the format String, the level is 1-based
                         int levelId =  Integer.parseInt(formatStringLevel) - 1;
-                        result.append(this.levels.get( Integer.toString(levelId) ).toString());
+                        result.append(this.levels.get( Integer.toString(levelId) ).getCurrentValueFormatted() );
                         i++;
                     }
                 }
