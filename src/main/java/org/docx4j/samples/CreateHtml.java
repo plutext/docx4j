@@ -20,6 +20,8 @@
 
 package org.docx4j.samples;
 
+import java.io.OutputStream;
+
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 public class CreateHtml {
@@ -27,12 +29,17 @@ public class CreateHtml {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-			String inputfilepath = System.getProperty("user.dir") + "/tmp/Styles-lots.docx";
+			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
+			
+			System.out.println(inputfilepath);
+			
 //			String inputfilepath = "/home/jharrop/tmp/wordml2html.docx";
-			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-	    				
-	        //  send output to System.out
-			javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(System.out);
+			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));	    				
+			
+			//OutputStream os = System.out;
+			OutputStream os = new java.io.FileOutputStream(inputfilepath + ".html");			
+			
+			javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(os);
    			org.docx4j.convert.out.html.HtmlExporter.html(wordMLPackage, result, 
    					inputfilepath + "_files");
 	        	        

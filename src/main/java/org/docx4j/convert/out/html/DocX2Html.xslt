@@ -1316,10 +1316,12 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
       </xsl:when>
 
       <xsl:when test="$type = $prrApplyRPr">
+      	<xsl:comment>call-template ApplyRPr.class</xsl:comment>
         <xsl:call-template name="ApplyRPr.class"/>
       </xsl:when>
 
       <xsl:when test="$type = $prrUpdateRPr">
+      	<xsl:comment>call-template PrsUpdateRPrCore</xsl:comment>
         <xsl:call-template name="PrsUpdateRPrCore">
           <xsl:with-param name="type" select="$prrList"/>
           <xsl:with-param name="prsR" select="$prsR"/>
@@ -2411,9 +2413,18 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
     <xsl:param name="b.bidi"/>
     <xsl:param name="prsR"/>
     <xsl:param name="runStyleName"/>
+    
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('in DisplayRBorder')" /> 
+				
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log(string($ns.content) )" /> 
+				       
+    
     <xsl:choose>
 
       <xsl:when test="($ns.content)[$i.this]">
+      
         <xsl:for-each select="($ns.content)[$i.this]">
           <xsl:choose>
 
@@ -2521,9 +2532,28 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
     <xsl:param name="b.bidi"/>
     <xsl:param name="prsR"/>
     <xsl:param name="runStyleName"/>
+    
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('WrapRBorder')" /> 
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log(string($ns.content) )" /> 
+    
+    
     <xsl:choose>
 
+
+	<!--  This is where we usually write text !! -->
+
       <xsl:when test="$pr.bdr = ''">
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log(
+					concat(
+						'applying templates @ line 2551 to context node ',
+						local-name( ($ns.content)[position() &gt;= $i.bdrRange.start and position() &lt; $i.bdrRange.end] ),
+						'  which contains  ',
+						string( ($ns.content)[position() &gt;= $i.bdrRange.start and position() &lt; $i.bdrRange.end] )
+						)
+					)" /> 
         <xsl:apply-templates select="($ns.content)[position() &gt;= $i.bdrRange.start and position() &lt; $i.bdrRange.end]">
           <xsl:with-param name="b.bidi" select="$b.bidi"/>
           <xsl:with-param name="prsR" select="$prsR"/>
@@ -3436,7 +3466,13 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
   </xsl:template>
 
   <xsl:template match="w:t">
+  			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log( 
+				   concat( 'in w:t with:', string(.) )  )" />    
     <xsl:value-of select="."/>
+  			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log( 
+				   '--------------------------------'  )" />    
   </xsl:template>
 
   <xsl:template match="w:sym">
@@ -3488,8 +3524,17 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
   </xsl:template>
 
   <xsl:template name="DisplayRContent">
+  	<!--  We enter this template from DisplayR
+  	      The context node can be pPr, or r
+  	      If the latter, that is how content actually gets displayed. -->
+  
+  			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log( 
+					concat( 'in DisplayRContent with context node ', string( local-name(.) ) ) )" />  
+  
     <xsl:choose>
 
+<!-- 
       <xsl:when test="w:numPr">
 
         <xsl:choose>
@@ -3519,8 +3564,24 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
           </span>
         </xsl:if>
       </xsl:when>
-
+ -->
+ 
+ 	<xsl:when test="self::w:pPr">
+ 	
+		<xsl:variable name="pStyleVal" select="string( w:pStyle/@w:val )" />  
+		<xsl:variable name="numId" select="string( w:numPr/w:numId/@w:val )" />  
+		<xsl:variable name="levelId" select="string( w:numPr/w:ilvl/@w:val )" />  
+					
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.getNumberXmlNode( $wmlPackage, 
+	  			$pStyleVal, $numId, $levelId)" />					
+ 	
+ 	</xsl:when>
+ 
+	  <!--  if context node is w:r, here is where we call w:t  -->
       <xsl:otherwise>
+  			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log( 
+					concat( 'apply-templates @ line 3560 on context node ', string( local-name(.) ) ) )" />  
         <xsl:apply-templates select="*"/>
       </xsl:otherwise>
     </xsl:choose>
@@ -3591,9 +3652,31 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
       <xsl:when test="$fSup = $on">vertical-align:super;</xsl:when>
     </xsl:choose>
 
+
+     
     <xsl:if test="not($rStyleId='CommentReference')">
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log(
+				concat(
+				'display:none (line 3661) for ', 
+				local-name(.),
+				string('substring('),
+				string($prsR),
+				string(','),
+				string($iVanishWebHidden),
+				string(', 1) = '),
+				string(substring($prsR,$iVanishWebHidden,1))
+				))" />
+<!-- Can cause paragraph number to disappear, maybe just if its the last 
+     paragraph and has explicit numbering and pStyle? So comment out.
       <xsl:if test="substring($prsR,$iVanishWebHidden,1) = $on">display:none;</xsl:if>
+     -->
+      <xsl:if test="substring($prsR,$iVanishWebHidden,1) = $on">
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('TODO FIXME - LOOK AT THIS')"/>      
+      </xsl:if>
     </xsl:if>
+    
   </xsl:template>
 
   <xsl:template name="RecursiveApplyRPr.class">
@@ -3840,7 +3923,10 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
   
   <!-- ***********************************************************
   
-  		Display the run  
+  		Display the run; start by setting styles  
+    
+        w:pPr calls DisplayR which does style stuff,
+        then calls DisplayRContent
     
         *********************************************************** -->
 
@@ -3848,6 +3934,10 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
     <xsl:param name="b.bidi"/>
     <xsl:param name="prsR"/>
     <xsl:param name="runStyleName"/>
+    
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('in DisplayR')" />
+    
 
     <xsl:variable name="rStyleId" select="string(w:rPr/w:rStyle/@w:val)"/>
 
@@ -3894,6 +3984,8 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
         <xsl:with-param name="type" select="$prrListSuff"/>
       </xsl:call-template>
     </xsl:variable>
+    
+    <!--  Setting variable styleMod, which sets list related styles -->
     <xsl:variable name="styleMod">
       <xsl:call-template name="ApplyRPr.class"/>
 
@@ -3913,9 +4005,10 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
           <xsl:apply-templates select="w:numPr[1]/WX:font[1]" mode="rpr"/>
         </xsl:if>
 
-        <xsl:call-template name="PrsGetListPr">
+        <xsl:call-template name="PrsGetListPr">        
           <xsl:with-param name="type" select="$prrApplyRPr"/>
         </xsl:call-template>
+        
         <xsl:call-template name="ApplyRPr.once">
           <xsl:with-param name="rStyleId" select="$rStyleId"/>
           <xsl:with-param name="b.bidi" select="$b.bidi"/>
@@ -3927,6 +4020,8 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
         <xsl:text>font-style:normal;text-decoration:none;font-weight:normal;</xsl:text>
       </xsl:if>
     </xsl:variable>
+    
+    
     <xsl:choose>
       <xsl:when test="$rStyleId='' and $styleMod=''">
         <xsl:choose>
@@ -3945,6 +4040,7 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
 
           </xsl:when>
           <xsl:otherwise>
+          
             <xsl:call-template name="DisplayRContent"/>
           </xsl:otherwise>
         </xsl:choose>
@@ -3953,7 +4049,7 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
           <xsl:text> </xsl:text>
         </xsl:if>
       </xsl:when>
-      <xsl:otherwise>
+      <xsl:otherwise> <!--  insert list styles -->
         <span>
 
           <xsl:if test="not($rStyleId='')">
@@ -3991,10 +4087,14 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
   </xsl:template>
       
 
-  <xsl:template match="w:r">
+  <xsl:template match="w:r">  <!--  NOT USED ?! -->
     <xsl:param name="b.bidi" select="''"/>
     <xsl:param name="prsR" select="$prsRDefault"/>
     <xsl:param name="runStyleName"/>
+    
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('in w:r template - USED AFTER ALL !!')" />
+    
 
     <xsl:if test="not(w:fldChar or w:instrText)">
 
@@ -4051,8 +4151,7 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
           </a>
         </xsl:when>
 
-        <xsl:otherwise>
-
+        <xsl:otherwise> <!--  not this -->
           <xsl:call-template name="DisplayR">
             <xsl:with-param name="b.bidi" select="$b.bidi"/>
             <xsl:with-param name="prsR" select="$prsR"/>
@@ -4063,10 +4162,15 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
     </xsl:if>
   </xsl:template>
 
+  <!--  the w:r template which is normally used -->
   <xsl:template match="w:r[count(preceding-sibling::w:r[w:fldChar/@w:fldCharType='begin']) = count(preceding-sibling::w:r[w:fldChar/@w:fldCharType='end'])]">
     <xsl:param name="b.bidi" select="''"/>
     <xsl:param name="prsR" select="$prsRDefault"/>
     <xsl:param name="runStyleName"/>
+    
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('in w:r template (outside fld) @ line 4136')" />    
+    
     <xsl:call-template name="DisplayR">
       <xsl:with-param name="b.bidi" select="$b.bidi"/>
       <xsl:with-param name="prsR" select="$prsR"/>
@@ -4077,6 +4181,10 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
   <xsl:template match="w:pPr">
     <xsl:param name="b.bidi" select="''"/>
     <xsl:param name="prsR" select="$prsRDefault"/>
+    
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('in w:pPr template')" />    
+    
     <xsl:call-template name="DisplayR">
       <xsl:with-param name="b.bidi" select="$b.bidi"/>
       <xsl:with-param name="prsR" select="$prsR"/>
@@ -4472,6 +4580,10 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
     <xsl:param name="b.bidi"/>
     <xsl:param name="prsR"/>
     <xsl:param name="runStyleName"/>
+    
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('in DisplayPContent')" />    
+    
     <xsl:call-template name="DisplayRBorder">
       <xsl:with-param name="b.bidi" select="$b.bidi"/>
       <xsl:with-param name="prsR" select="$prsR"/>
@@ -4518,7 +4630,10 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
     <xsl:param name="prsPAccum" select="''"/>
     <xsl:param name="prsP" select="$prsPDefault"/>
     <xsl:param name="prsR" select="$prsRDefault"/>
-
+    
+  			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('in w:p')" />
+    
     <xsl:if test="not(w:pPr/w:pStyle/@w:val='z-TopofForm') and not(w:pPr/w:pStyle/@w:val='z-BottomofForm')">
       <p>
 
@@ -6443,6 +6558,11 @@ if (msoBrowserCheck())
     <xsl:param name="lastRow"/>
     <xsl:param name="cnfRow"/>
     <xsl:param name="b.bidivisual"/>
+    
+  			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log( 'in match *' )" />  
+    
+    
     <xsl:call-template name="copyElements">
       <xsl:with-param name="sTblStyleName" select="$sTblStyleName"/>
       <xsl:with-param name="prsPAccum" select="$prsPAccum"/>
@@ -6650,6 +6770,8 @@ if (msoBrowserCheck())
     <xsl:apply-templates/>
   </xsl:template>
 
+
+  <!--  Ignore any element not specifically handled! -->
   <xsl:template match="w:*"/>
 
   <xsl:template match="o:WordFieldCodes"/>
@@ -6756,6 +6878,10 @@ A mediawiki chunk starts with three things:
 <xsl:template match="/w:wordDocument">
 	-->
 <xsl:template match="/pkg:package">
+
+			<xsl:variable name="dummy" 
+				select="java:org.docx4j.convert.out.html.HtmlExporter.log('/pkg:package')" />
+
 
     <html>
       <head>
