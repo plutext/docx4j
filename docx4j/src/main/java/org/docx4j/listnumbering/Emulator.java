@@ -94,7 +94,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.Numbering;
-import org.docx4j.wml.STNumberFormat;
+import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.PPrBase.NumPr;
 import org.w3c.dom.DocumentFragment;
 
@@ -321,7 +321,7 @@ public class Emulator {
             	this.numFmt =  enumTypeNode.getVal(); 
 
                 // w:numFmt="bullet" indicates a bulleted list
-            	this.isBullet = numFmt.equals( STNumberFormat.BULLET ); 
+            	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
             	
                 // this.isBullet = String.Compare(type, "bullet", StringComparison.OrdinalIgnoreCase) == 0;
             }
@@ -377,7 +377,7 @@ public class Emulator {
             	this.numFmt =  enumTypeNode.getVal(); 
 
                 // w:numFmt="bullet" indicates a bulleted list
-            	this.isBullet = numFmt.equals( STNumberFormat.BULLET ); 
+            	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
             }
         }
 
@@ -438,15 +438,15 @@ public class Emulator {
         	 * 
         	 */
         	
-        	if (numFmt.equals( STNumberFormat.DECIMAL ) ) {
+        	if (numFmt.equals( NumberFormat.DECIMAL ) ) {
         		return this.counter.toString();
         	}
         	
-        	if (numFmt.equals( STNumberFormat.NONE ) ) {
+        	if (numFmt.equals( NumberFormat.NONE ) ) {
         		return "";        		
         	}
 
-        	if (numFmt.equals( STNumberFormat.BULLET ) ) {
+        	if (numFmt.equals( NumberFormat.BULLET ) ) {
         		
         		// TODO - revisit how this is handled.
         		// The code elsewhere for handling bullets
@@ -456,19 +456,19 @@ public class Emulator {
         	        	
         	int current = this.counter.intValue();
         	
-        	if (numFmt.equals( STNumberFormat.UPPER_ROMAN ) ) {        		
+        	if (numFmt.equals( NumberFormat.UPPER_ROMAN ) ) {        		
         		NumberFormatRomanUpper converter = new NumberFormatRomanUpper(); 
         		return converter.format(current);
         	}
-        	if (numFmt.equals( STNumberFormat.LOWER_ROMAN ) ) {        		
+        	if (numFmt.equals( NumberFormat.LOWER_ROMAN ) ) {        		
         		NumberFormatRomanLower converter = new NumberFormatRomanLower(); 
         		return converter.format(current);
         	}
-        	if (numFmt.equals( STNumberFormat.LOWER_LETTER ) ) {        		
+        	if (numFmt.equals( NumberFormat.LOWER_LETTER ) ) {        		
         		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
         		return converter.format(current);
         	}
-        	if (numFmt.equals( STNumberFormat.UPPER_LETTER ) ) {        		
+        	if (numFmt.equals( NumberFormat.UPPER_LETTER ) ) {        		
         		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
         		return converter.format(current).toUpperCase();
         	}        	
@@ -519,13 +519,13 @@ public class Emulator {
                 return this.font;
         }
         
-        private STNumberFormat numFmt; // TODO: alter schema 
+        private NumberFormat numFmt; // TODO: alter schema 
         // w:numFmt = RTF's \levelnfcN
 
 //		private void setNumFmt(STNumberFormat numFmt) {
 //			this.numFmt = numFmt;
 //		}
-		private STNumberFormat getNumFmt() {
+		private NumberFormat getNumFmt() {
 			return numFmt;
 		}
 

@@ -40,6 +40,7 @@ import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -48,6 +49,7 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
@@ -201,33 +203,43 @@ public class WordprocessingMLPackage extends Package {
 		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 		
 
-		org.docx4j.wml.Package wmlPackageEl = (org.docx4j.wml.Package)result.getResult(); 
+		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)result.getResult();
+		org.docx4j.convert.in.XmlPackage xmlPackage = new org.docx4j.convert.in.XmlPackage( wmlPackageEl); 
 
 		org.docx4j.wml.Document wmlDocument = null;
 		org.docx4j.wml.Styles wmlStyles = null;
-		for (org.docx4j.wml.Package.Part p : wmlPackageEl.getPart() ) {
-			
-			if (p.getXmlData().getDocument()!= null) {
-				wmlDocument = p.getXmlData().getDocument();
-			}				
-			if (p.getXmlData().getStyles()!= null) {
-				wmlStyles = p.getXmlData().getStyles();
-			}				
-		}
+		
+		ContentTypeManager ctm = new ContentTypeManagerImpl();
+		
+		Part tmpDocPart = xmlPackage.getRawPart(ctm,  "/word/document.xml");
+		Part tmpStylesPart = xmlPackage.getRawPart(ctm,  "/word/styles.xml");
+		
+		
+//		for (org.docx4j.xmlPackage.Part p : wmlPackageEl.getPart() ) {
+//			
+//			if (p.getXmlData().getDocument()!= null) {
+//				wmlDocument = p.getXmlData().getDocument();
+//			}				
+//			if (p.getXmlData().getStyles()!= null) {
+//				wmlStyles = p.getXmlData().getStyles();
+//			}				
+//		}
 
 		// This code assumes all the existing rels etc of 
 		// the existing main document part are still relevant.
-		if (wmlDocument==null) {
-			log.warn("Couldn't get main document part from package transform result!");			
-		} else {
-			this.getMainDocumentPart().setJaxbElement(wmlDocument);
-		}	
-				
-		if (wmlStyles==null) {
-			log.warn("Couldn't get style definitions part from package transform result!");			
-		} else {
-			this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(wmlStyles);
-		}
+//		if (wmlDocument==null) {
+//			log.warn("Couldn't get main document part from package transform result!");			
+//		} else {
+//			this.getMainDocumentPart().setJaxbElement(wmlDocument);
+//		}	
+		this.getMainDocumentPart().setJaxbElement(  ((JaxbXmlPart)tmpDocPart).getJaxbElement() );
+//				
+//		if (wmlStyles==null) {
+//			log.warn("Couldn't get style definitions part from package transform result!");			
+//		} else {
+//			this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(wmlStyles);
+//		}
+		this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(  ((JaxbXmlPart)tmpStylesPart).getJaxbElement() );
     	
     }
     
