@@ -21,34 +21,27 @@
 
 package org.docx4j.wml;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.docx4j.dml.Anchor;
-import org.docx4j.dml.Inline;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_Drawing complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Drawing">
+ * &lt;complexType>
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice maxOccurs="unbounded">
- *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}anchor" minOccurs="0"/>
- *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}inline" minOccurs="0"/>
- *       &lt;/choice>
- *     &lt;/restriction>
+ *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Rel">
+ *       &lt;attribute name="type" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}HdrFtrRef" />
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -56,49 +49,40 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Drawing", propOrder = {
-    "anchorOrInline"
-})
-public class Drawing
+@XmlType(name = "")
+@XmlRootElement(name = "headerReference")
+public class HeaderReference
+    extends CTRel
     implements Child
 {
 
-    @XmlElements({
-        @XmlElement(name = "inline", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Inline.class),
-        @XmlElement(name = "anchor", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Anchor.class)
-    })
-    protected List<Object> anchorOrInline;
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+    protected HdrFtrRef type;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the anchorOrInline property.
+     * Gets the value of the type property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the anchorOrInline property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAnchorOrInline().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Inline }
-     * {@link Anchor }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link HdrFtrRef }
+     *     
      */
-    public List<Object> getAnchorOrInline() {
-        if (anchorOrInline == null) {
-            anchorOrInline = new ArrayList<Object>();
-        }
-        return this.anchorOrInline;
+    public HdrFtrRef getType() {
+        return type;
+    }
+
+    /**
+     * Sets the value of the type property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link HdrFtrRef }
+     *     
+     */
+    public void setType(HdrFtrRef value) {
+        this.type = value;
     }
 
     /**

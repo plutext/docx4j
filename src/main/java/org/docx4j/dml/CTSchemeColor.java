@@ -43,34 +43,34 @@ public class CTSchemeColor implements Child
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "green", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "blueMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "lumOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "comp", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "gray", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "gamma", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "blueOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "blue", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sat", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hueMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "green", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "redMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "lum", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "red", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "satMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "alphaMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "redOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "invGamma", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "alphaOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "inv", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "tint", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "shade", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hueOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "greenOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "hue", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "blueMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "alpha", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "invGamma", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "lum", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "gray", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "comp", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "satOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "greenMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "hue", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "hueMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "inv", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "red", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sat", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "blue", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "lumMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "redOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "alphaOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "greenOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "gamma", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "alphaMod", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "hueOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "lumOff", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> egColorTransform;
     @XmlAttribute(required = true)
@@ -96,34 +96,34 @@ public class CTSchemeColor implements Child
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link JAXBElement }{@code <}{@link CTGammaTransform }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTComplementTransform }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTGrayscaleTransform }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPositivePercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPositiveFixedPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPositiveFixedPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPositiveFixedPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPositivePercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTInverseGammaTransform }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFixedPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTInverseTransform }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPositiveFixedPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPositiveFixedPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTAngle }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPositiveFixedAngle }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPositivePercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTInverseTransform }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPositiveFixedPercentage }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTGrayscaleTransform }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTComplementTransform }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
      * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFixedPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPositivePercentage }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTGammaTransform }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTAngle }{@code >}
      * 
      * 
      */

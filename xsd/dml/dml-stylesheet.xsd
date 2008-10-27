@@ -24,8 +24,7 @@
 				
 		jharrop@jharrop-490:~/workspace200711/docx4j-001/src/main/resources/schema/themePart$
 		    sh ~/jaxb/jaxb-ri-20070917/bin/xjc.sh  dml-stylesheet.xsd  -d ../../../java/ -no-header  -target 2.0
-		    
-		    
+		    		   		   
 		20080718 - don't invoke the above directly, since we now handle drawing in wml.
 		
 				   Compiling package.xsd pulls in both:
@@ -33,11 +32,27 @@
 				   - dml-wordprocessingDrawing (174 classes)
 				   of which 145 are common to both,
 				   giving a total of 242 classes.
+				   
+				   [Check that it actually got both Anchor and BaseStyles .. that would be the litmus test]
+				   
+20081027 - having got rid of package.xsd, org.docx4j.dml.BaseStyles is missing				   
 
+ sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer dml-stylesheet.xsd -d ../../src/main/java/  -no-header -target 2.0
+
+regenerates it, but still missing
+
+org/docx4j/dml/Anchor.java
+org/docx4j/dml/Graphic.java
+org/docx4j/dml/GraphicData.java
+org/docx4j/dml/Inline.java
+org/docx4j/dml/Pic.java
+
+For now, get these from wml generated stuff.  But that is not good enough.  For example, there is other stuff Anchor needs :(
+
+But ObjectFactory won't know how to construct them??  So copy that as well!
 	-->
 	
-	
-<!-- 	
+	<!-- 
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
     </xsd:documentation>
@@ -51,8 +66,8 @@
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
   </xsd:annotation>
- 	 -->
-	
+	 -->
+	 
 	<xsd:include schemaLocation="dml-baseStylesheet.xsd"/>
 	<xsd:include schemaLocation="dml-styleDefaults.xsd"/>
 	

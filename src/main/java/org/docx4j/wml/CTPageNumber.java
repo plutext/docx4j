@@ -40,7 +40,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_PageNumber">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="fmt" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_NumberFormat" />
+ *       &lt;attribute name="fmt" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}NumberFormat" />
  *       &lt;attribute name="start" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *       &lt;attribute name="chapStyle" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *       &lt;attribute name="chapSep" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_ChapterSep" />
@@ -58,7 +58,7 @@ public class CTPageNumber
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected STNumberFormat fmt;
+    protected NumberFormat fmt;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger start;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
@@ -73,10 +73,10 @@ public class CTPageNumber
      * 
      * @return
      *     possible object is
-     *     {@link STNumberFormat }
+     *     {@link NumberFormat }
      *     
      */
-    public STNumberFormat getFmt() {
+    public NumberFormat getFmt() {
         return fmt;
     }
 
@@ -85,10 +85,10 @@ public class CTPageNumber
      * 
      * @param value
      *     allowed object is
-     *     {@link STNumberFormat }
+     *     {@link NumberFormat }
      *     
      */
-    public void setFmt(STNumberFormat value) {
+    public void setFmt(NumberFormat value) {
         this.fmt = value;
     }
 

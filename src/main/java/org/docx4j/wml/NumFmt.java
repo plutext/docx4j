@@ -39,7 +39,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_NumFmt">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_NumberFormat" />
+ *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}NumberFormat" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -54,7 +54,7 @@ public class NumFmt
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    protected STNumberFormat val;
+    protected NumberFormat val;
     @XmlTransient
     private Object parent;
 
@@ -63,10 +63,10 @@ public class NumFmt
      * 
      * @return
      *     possible object is
-     *     {@link STNumberFormat }
+     *     {@link NumberFormat }
      *     
      */
-    public STNumberFormat getVal() {
+    public NumberFormat getVal() {
         return val;
     }
 
@@ -75,10 +75,10 @@ public class NumFmt
      * 
      * @param value
      *     allowed object is
-     *     {@link STNumberFormat }
+     *     {@link NumberFormat }
      *     
      */
-    public void setVal(STNumberFormat value) {
+    public void setVal(NumberFormat value) {
         this.val = value;
     }
 

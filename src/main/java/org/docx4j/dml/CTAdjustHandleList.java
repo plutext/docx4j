@@ -42,8 +42,8 @@ public class CTAdjustHandleList
 {
 
     @XmlElements({
-        @XmlElement(name = "ahXY", type = CTXYAdjustHandle.class),
-        @XmlElement(name = "ahPolar", type = CTPolarAdjustHandle.class)
+        @XmlElement(name = "ahPolar", type = CTPolarAdjustHandle.class),
+        @XmlElement(name = "ahXY", type = CTXYAdjustHandle.class)
     })
     protected List<Object> ahXYOrAhPolar;
     @XmlTransient
@@ -67,8 +67,8 @@ public class CTAdjustHandleList
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTXYAdjustHandle }
      * {@link CTPolarAdjustHandle }
+     * {@link CTXYAdjustHandle }
      * 
      * 
      */

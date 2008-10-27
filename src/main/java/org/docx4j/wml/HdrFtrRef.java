@@ -27,12 +27,12 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for ST_HdrFtr.
+ * <p>Java class for HdrFtrRef.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_HdrFtr">
+ * &lt;simpleType name="HdrFtrRef">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="even"/>
  *     &lt;enumeration value="default"/>
@@ -42,9 +42,9 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "ST_HdrFtr")
+@XmlType(name = "HdrFtrRef")
 @XmlEnum
-public enum STHdrFtr {
+public enum HdrFtrRef {
 
 
     /**
@@ -69,7 +69,7 @@ public enum STHdrFtr {
     FIRST("first");
     private final String value;
 
-    STHdrFtr(String v) {
+    HdrFtrRef(String v) {
         value = v;
     }
 
@@ -77,8 +77,8 @@ public enum STHdrFtr {
         return value;
     }
 
-    public static STHdrFtr fromValue(String v) {
-        for (STHdrFtr c: STHdrFtr.values()) {
+    public static HdrFtrRef fromValue(String v) {
+        for (HdrFtrRef c: HdrFtrRef.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -45,7 +45,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;attribute name="chapNum" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="heading" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_DecimalNumber" />
  *       &lt;attribute name="noLabel" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="numFmt" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_NumberFormat" />
+ *       &lt;attribute name="numFmt" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}NumberFormat" />
  *       &lt;attribute name="sep" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_ChapterSep" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -71,7 +71,7 @@ public class CTCaption
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected Boolean noLabel;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
-    protected STNumberFormat numFmt;
+    protected NumberFormat numFmt;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected STChapterSep sep;
     @XmlTransient
@@ -210,10 +210,10 @@ public class CTCaption
      * 
      * @return
      *     possible object is
-     *     {@link STNumberFormat }
+     *     {@link NumberFormat }
      *     
      */
-    public STNumberFormat getNumFmt() {
+    public NumberFormat getNumFmt() {
         return numFmt;
     }
 
@@ -222,10 +222,10 @@ public class CTCaption
      * 
      * @param value
      *     allowed object is
-     *     {@link STNumberFormat }
+     *     {@link NumberFormat }
      *     
      */
-    public void setNumFmt(STNumberFormat value) {
+    public void setNumFmt(NumberFormat value) {
         this.numFmt = value;
     }
 
