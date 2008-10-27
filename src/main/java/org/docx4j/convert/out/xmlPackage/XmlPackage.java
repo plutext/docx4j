@@ -39,7 +39,8 @@ import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
 
 /**
- * Save a Package object to a single XML file.
+ * Convert a Package object to org.docx4j.xmlPackage.Package
+ * (ie the "pkg" single XML file format):
  * 
  * "<?xml version=""1.0"" standalone=""yes""?>
  * <?mso-application progid=""Word.Document""?>

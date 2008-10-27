@@ -61,46 +61,17 @@ public class ImportFromPackageFormat {
 		// If so, where to?
 		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/just-created.docx";		
 		
-		
-		// Create a package
-		WordprocessingMLPackage wmlPackage = new WordprocessingMLPackage();
-		
 		try {
 			JAXBContext jc = Context.jc;
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			org.docx4j.wml.Package wmlPackageEl = (org.docx4j.wml.Package)u.unmarshal(
+			org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)u.unmarshal(
 					new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath))); 
 
-			org.docx4j.wml.Document wmlDocument = null;
-			org.docx4j.wml.Styles wmlStyles = null;
-			for (org.docx4j.wml.Package.Part p : wmlPackageEl.getPart() ) {
-				
-				if (p.getXmlData().getDocument()!= null) {
-					wmlDocument = p.getXmlData().getDocument();
-				}				
-				if (p.getXmlData().getStyles()!= null) {
-					wmlStyles = p.getXmlData().getStyles();
-				}				
-			}
-			
-			// Create main document part
-			MainDocumentPart wordDocumentPart = new MainDocumentPart();		
-			// Put the content in the part				
-			wordDocumentPart.setJaxbElement(wmlDocument);
-			// Add the main document part to the package relationships
-			// (creating it if necessary)
-			wmlPackage.addTargetPart(wordDocumentPart);
-			
-			
-			// That handled the Main Document Part; now set the Style part.
-			StyleDefinitionsPart stylesPart = new StyleDefinitionsPart(); 
-			stylesPart.setJaxbElement(wmlStyles);
-			// Add the styles part to the main document part relationships
-			// (creating it if necessary)
-			wordDocumentPart.addTargetPart(stylesPart); // NB - add it to main doc part, not package!
-			
+			org.docx4j.convert.in.XmlPackage xmlPackage = new org.docx4j.convert.in.XmlPackage( wmlPackageEl); 
+
+			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 			
 			// Now that its loaded properly, lets just save it
 			

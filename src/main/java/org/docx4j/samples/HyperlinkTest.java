@@ -25,7 +25,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.wml.CTHyperlink;
+import org.docx4j.wml.P.Hyperlink;
 
 
 /**
@@ -34,7 +34,7 @@ import org.docx4j.wml.CTHyperlink;
  * @author Jason Harrop
  * @version 1.0
  */
-public class Hyperlink {
+public class HyperlinkTest {
 	
 	/*
 	 * <w:p>
@@ -68,7 +68,7 @@ public class Hyperlink {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		// Create hyperlink
-		CTHyperlink link = createHyperlink(wordMLPackage, "http://slashdot.org");
+		Hyperlink link = createHyperlink(wordMLPackage, "http://slashdot.org");
 		
 		// Add it to a paragraph
 		org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory(); 
@@ -84,7 +84,7 @@ public class Hyperlink {
 				
 	}
 	
-	public static CTHyperlink createHyperlink(WordprocessingMLPackage wordMLPackage, String url) {
+	public static Hyperlink createHyperlink(WordprocessingMLPackage wordMLPackage, String url) {
 		
 		// TODO - regenerate JAXB so that CTHyperlink is just called Hyperlink
 		
@@ -116,7 +116,7 @@ public class Hyperlink {
             "</w:r>" +
             "</w:hyperlink>";
 
-			return (CTHyperlink)XmlUtils.unmarshalString(hpl);
+			return (Hyperlink)XmlUtils.unmarshalString(hpl);
 			
 			
 		} catch (Exception e) {
