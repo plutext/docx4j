@@ -36,12 +36,15 @@ USAGE INSTRUCTIONS
 	
   To CLEAN previously generated classes: 
 
-	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/dml/*.java -rf
-	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/wml/*.java -rf
+	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/dml/*.java -rf ; rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/wml/*.java -rf
 	
   To generate the classes (from the same directory)	
 			
- 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer package.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+	 
+  It would be nice to be able to add the fluent api, but having 2 entries on the class path doesn't seem to work!  TODO - try with an ant task
+	 
+	  sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar:~/workspace/docx4j/lib/jaxb-fluent-api-2.1.8.jar  -Xfluent-api -Xparent-pointer wml.xsd -d tmp/  -no-header -target 2.0
 	 
   jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
   
@@ -4559,40 +4562,6 @@ PRINCIPLES:
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Hyperlink">
-		<xsd:group ref="EG_PContent" minOccurs="0" maxOccurs="unbounded"/>
-		<xsd:attribute name="tgtFrame" type="ST_String" use="optional">
-			<xsd:annotation>
-				<xsd:documentation>Hyperlink Target Frame</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="tooltip" type="ST_String" use="optional">
-			<xsd:annotation>
-				<xsd:documentation>Associated String</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="docLocation" type="ST_String" use="optional">
-			<xsd:annotation>
-				<xsd:documentation>Location in Target Document</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="history" type="xsd:boolean" default="true"
-			use="optional">
-			<xsd:annotation>
-				<xsd:documentation>Add To Viewed Hyperlinks</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="anchor" type="ST_String" use="optional">
-			<xsd:annotation>
-				<xsd:documentation>Hyperlink Anchor</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute ref="r:id">
-			<xsd:annotation>
-				<xsd:documentation>Hyperlink Target</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
 	<xsd:complexType name="CT_FFData">
 		<xsd:choice maxOccurs="unbounded">
 			<xsd:element name="name" type="CT_FFName">
@@ -4807,7 +4776,7 @@ PRINCIPLES:
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:simpleType name="ST_NumberFormat">
+	<xsd:simpleType name="NumberFormat">
 		<xsd:annotation>
 			<xsd:documentation>Numbering Format</xsd:documentation>
 		</xsd:annotation>
@@ -5311,7 +5280,7 @@ PRINCIPLES:
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_PageNumber">
-		<xsd:attribute name="fmt" type="ST_NumberFormat" use="optional">
+		<xsd:attribute name="fmt" type="NumberFormat" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Page Number Format</xsd:documentation>
 			</xsd:annotation>
@@ -5456,7 +5425,8 @@ PRINCIPLES:
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:simpleType name="ST_HdrFtr">
+	
+	<xsd:simpleType name="HdrFtrRef">
 		<xsd:annotation>
 			<xsd:documentation>Header or Footer Type</xsd:documentation>
 		</xsd:annotation>
@@ -5507,26 +5477,46 @@ PRINCIPLES:
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
-	<xsd:complexType name="CT_HdrFtrRef">
-		<xsd:complexContent>
-			<xsd:extension base="CT_Rel">
-				<xsd:attribute name="type" type="ST_HdrFtr" use="required">
-					<xsd:annotation>
-						<xsd:documentation>Header or Footer
-							Type</xsd:documentation>
-					</xsd:annotation>
-				</xsd:attribute>
-			</xsd:extension>
-		</xsd:complexContent>
-	</xsd:complexType>
+	<xsd:element name="headerReference">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="CT_Rel">
+					<xsd:attribute name="type" type="HdrFtrRef"
+						use="required">
+						<xsd:annotation>
+							<xsd:documentation>
+								Header Type
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="footerReference">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="CT_Rel">
+					<xsd:attribute name="type" type="HdrFtrRef"
+						use="required">
+						<xsd:annotation>
+							<xsd:documentation>
+								Footer Type
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
 	<xsd:group name="EG_HdrFtrReferences">
 		<xsd:choice>
-			<xsd:element name="headerReference" type="CT_HdrFtrRef" minOccurs="0">
+			<xsd:element ref="headerReference" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Header Reference</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="footerReference" type="CT_HdrFtrRef" minOccurs="0">
+			<xsd:element ref="footerReference" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Footer Reference</xsd:documentation>
 				</xsd:annotation>
@@ -8291,11 +8281,63 @@ PRINCIPLES:
 					<xsd:documentation>Simple Field</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="hyperlink" type="CT_Hyperlink">
-				<xsd:annotation>
-					<xsd:documentation>Hyperlink</xsd:documentation>
-				</xsd:annotation>
+			<xsd:element name="hyperlink">
+				<xsd:complexType>
+					<xsd:annotation>
+						<xsd:documentation>Hyperlink</xsd:documentation>
+					</xsd:annotation>
+					<xsd:group ref="EG_PContent" minOccurs="0"
+						maxOccurs="unbounded" />
+					<xsd:attribute name="tgtFrame" type="ST_String"
+						use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Hyperlink Target Frame
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="tooltip" type="ST_String"
+						use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Associated String
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="docLocation" type="ST_String"
+						use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Location in Target Document
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="history" type="xsd:boolean"
+						default="true" use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Add To Viewed Hyperlinks
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute name="anchor" type="ST_String"
+						use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Hyperlink Anchor
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute ref="r:id">
+						<xsd:annotation>
+							<xsd:documentation>
+								Hyperlink Target
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
 			</xsd:element>
+			
 			<xsd:element name="subDoc" type="CT_Rel">
 				<xsd:annotation>
 					<xsd:documentation>Anchor for Subdocument
@@ -9394,7 +9436,7 @@ PRINCIPLES:
 				<jaxb:class name="NumFmt"/>
 			</xsd:appinfo>
 		</xsd:annotation>
-		<xsd:attribute name="val" type="ST_NumberFormat" use="required">
+		<xsd:attribute name="val" type="NumberFormat" use="required">
 			<xsd:annotation>
 				<xsd:documentation>Numbering Format Type</xsd:documentation>
 			</xsd:annotation>
@@ -13998,7 +14040,7 @@ PRINCIPLES:
 				<xsd:documentation>Do Not Include Name In Caption</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="numFmt" type="ST_NumberFormat" use="optional">
+		<xsd:attribute name="numFmt" type="NumberFormat" use="optional">
 			<xsd:annotation>
 				<xsd:documentation>Caption Numbering Format</xsd:documentation>
 			</xsd:annotation>

@@ -29,8 +29,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -82,15 +83,16 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "printerSettings",
     "sectPrChange"
 })
+@XmlRootElement(name = "sectPr")
 public class SectPr
     implements Child
 {
 
-    @XmlElementRefs({
-        @XmlElementRef(name = "footerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "headerReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+    @XmlElements({
+        @XmlElement(name = "footerReference", type = FooterReference.class),
+        @XmlElement(name = "headerReference", type = HeaderReference.class)
     })
-    protected List<JAXBElement<CTHdrFtrRef>> egHdrFtrReferences;
+    protected List<CTRel> egHdrFtrReferences;
     protected CTFtnProps footnotePr;
     protected CTEdnProps endnotePr;
     protected SectPr.Type type;
@@ -140,14 +142,14 @@ public class SectPr
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTHdrFtrRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTHdrFtrRef }{@code >}
+     * {@link FooterReference }
+     * {@link HeaderReference }
      * 
      * 
      */
-    public List<JAXBElement<CTHdrFtrRef>> getEGHdrFtrReferences() {
+    public List<CTRel> getEGHdrFtrReferences() {
         if (egHdrFtrReferences == null) {
-            egHdrFtrReferences = new ArrayList<JAXBElement<CTHdrFtrRef>>();
+            egHdrFtrReferences = new ArrayList<CTRel>();
         }
         return this.egHdrFtrReferences;
     }

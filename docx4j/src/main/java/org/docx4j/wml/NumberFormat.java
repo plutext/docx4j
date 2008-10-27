@@ -27,12 +27,12 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for ST_NumberFormat.
+ * <p>Java class for NumberFormat.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_NumberFormat">
+ * &lt;simpleType name="NumberFormat">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="decimal"/>
  *     &lt;enumeration value="upperRoman"/>
@@ -99,9 +99,9 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "ST_NumberFormat")
+@XmlType(name = "NumberFormat")
 @XmlEnum
-public enum STNumberFormat {
+public enum NumberFormat {
 
 
     /**
@@ -556,7 +556,7 @@ public enum STNumberFormat {
     THAI_COUNTING("thaiCounting");
     private final String value;
 
-    STNumberFormat(String v) {
+    NumberFormat(String v) {
         value = v;
     }
 
@@ -564,8 +564,8 @@ public enum STNumberFormat {
         return value;
     }
 
-    public static STNumberFormat fromValue(String v) {
-        for (STNumberFormat c: STNumberFormat.values()) {
+    public static NumberFormat fromValue(String v) {
+        for (NumberFormat c: NumberFormat.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

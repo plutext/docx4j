@@ -41,12 +41,12 @@ public class CTColorMRU
 {
 
     @XmlElements({
-        @XmlElement(name = "schemeClr", type = CTSchemeColor.class),
-        @XmlElement(name = "hslClr", type = CTHslColor.class),
-        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
-        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
         @XmlElement(name = "prstClr", type = CTPresetColor.class),
-        @XmlElement(name = "sysClr", type = CTSystemColor.class)
+        @XmlElement(name = "sysClr", type = CTSystemColor.class),
+        @XmlElement(name = "schemeClr", type = CTSchemeColor.class),
+        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
+        @XmlElement(name = "hslClr", type = CTHslColor.class),
+        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class)
     })
     protected List<Object> egColorChoice;
     @XmlTransient
@@ -70,12 +70,12 @@ public class CTColorMRU
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTSchemeColor }
-     * {@link CTHslColor }
-     * {@link CTSRgbColor }
-     * {@link CTScRgbColor }
      * {@link CTPresetColor }
      * {@link CTSystemColor }
+     * {@link CTSchemeColor }
+     * {@link CTSRgbColor }
+     * {@link CTHslColor }
+     * {@link CTScRgbColor }
      * 
      * 
      */

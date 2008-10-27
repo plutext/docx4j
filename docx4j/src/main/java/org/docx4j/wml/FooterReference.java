@@ -25,21 +25,22 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_HdrFtrRef complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_HdrFtrRef">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;extension base="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Rel">
- *       &lt;attribute name="type" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}ST_HdrFtr" />
+ *       &lt;attribute name="type" use="required" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}HdrFtrRef" />
  *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -48,14 +49,15 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_HdrFtrRef")
-public class CTHdrFtrRef
+@XmlType(name = "")
+@XmlRootElement(name = "footerReference")
+public class FooterReference
     extends CTRel
     implements Child
 {
 
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
-    protected STHdrFtr type;
+    protected HdrFtrRef type;
     @XmlTransient
     private Object parent;
 
@@ -64,10 +66,10 @@ public class CTHdrFtrRef
      * 
      * @return
      *     possible object is
-     *     {@link STHdrFtr }
+     *     {@link HdrFtrRef }
      *     
      */
-    public STHdrFtr getType() {
+    public HdrFtrRef getType() {
         return type;
     }
 
@@ -76,10 +78,10 @@ public class CTHdrFtrRef
      * 
      * @param value
      *     allowed object is
-     *     {@link STHdrFtr }
+     *     {@link HdrFtrRef }
      *     
      */
-    public void setType(STHdrFtr value) {
+    public void setType(HdrFtrRef value) {
         this.type = value;
     }
 

@@ -47,8 +47,8 @@ public class CTTextParagraph
     protected CTTextParagraphProperties pPr;
     @XmlElements({
         @XmlElement(name = "br", type = CTTextLineBreak.class),
-        @XmlElement(name = "fld", type = CTTextField.class),
-        @XmlElement(name = "r", type = CTRegularTextRun.class)
+        @XmlElement(name = "r", type = CTRegularTextRun.class),
+        @XmlElement(name = "fld", type = CTTextField.class)
     })
     protected List<Object> egTextRun;
     protected CTTextCharacterProperties endParaRPr;
@@ -98,8 +98,8 @@ public class CTTextParagraph
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link CTTextLineBreak }
-     * {@link CTTextField }
      * {@link CTRegularTextRun }
+     * {@link CTTextField }
      * 
      * 
      */

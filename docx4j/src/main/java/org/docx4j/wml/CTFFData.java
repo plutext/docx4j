@@ -73,16 +73,16 @@ public class CTFFData
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "enabled", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "name", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "calcOnExit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "exitMacro", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "helpText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "ddList", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "statusText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "textInput", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "enabled", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "entryMacro", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "checkBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "helpText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "statusText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "exitMacro", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "name", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "checkBox", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "calcOnExit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> nameOrEnabledOrCalcOnExit;
     @XmlTransient
@@ -106,16 +106,16 @@ public class CTFFData
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTFFName }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFFTextInput }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFFDDList }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMacroName }{@code >}
      * {@link JAXBElement }{@code <}{@link CTFFHelpText }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFFDDList }{@code >}
      * {@link JAXBElement }{@code <}{@link CTFFStatusText }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFFTextInput }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFFCheckBox }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFFName }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMacroName }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFFCheckBox }{@code >}
      * 
      * 
      */

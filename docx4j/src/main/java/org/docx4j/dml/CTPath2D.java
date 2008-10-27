@@ -54,9 +54,9 @@ public class CTPath2D
     @XmlElements({
         @XmlElement(name = "quadBezTo", type = CTPath2DQuadBezierTo.class),
         @XmlElement(name = "arcTo", type = CTPath2DArcTo.class),
-        @XmlElement(name = "cubicBezTo", type = CTPath2DCubicBezierTo.class),
         @XmlElement(name = "moveTo", type = CTPath2DMoveTo.class),
         @XmlElement(name = "close", type = CTPath2DClose.class),
+        @XmlElement(name = "cubicBezTo", type = CTPath2DCubicBezierTo.class),
         @XmlElement(name = "lnTo", type = CTPath2DLineTo.class)
     })
     protected List<Object> closeOrMoveToOrLnTo;
@@ -93,9 +93,9 @@ public class CTPath2D
      * Objects of the following type(s) are allowed in the list
      * {@link CTPath2DQuadBezierTo }
      * {@link CTPath2DArcTo }
-     * {@link CTPath2DCubicBezierTo }
      * {@link CTPath2DMoveTo }
      * {@link CTPath2DClose }
+     * {@link CTPath2DCubicBezierTo }
      * {@link CTPath2DLineTo }
      * 
      * 
