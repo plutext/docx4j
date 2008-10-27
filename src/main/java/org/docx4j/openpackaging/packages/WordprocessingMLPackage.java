@@ -203,28 +203,16 @@ public class WordprocessingMLPackage extends Package {
 		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 		
 
-		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)result.getResult();
+		//org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)result.getResult();
+		javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
+		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)je.getValue();
 		org.docx4j.convert.in.XmlPackage xmlPackage = new org.docx4j.convert.in.XmlPackage( wmlPackageEl); 
-
-		org.docx4j.wml.Document wmlDocument = null;
-		org.docx4j.wml.Styles wmlStyles = null;
 		
 		ContentTypeManager ctm = new ContentTypeManagerImpl();
 		
 		Part tmpDocPart = xmlPackage.getRawPart(ctm,  "/word/document.xml");
 		Part tmpStylesPart = xmlPackage.getRawPart(ctm,  "/word/styles.xml");
 		
-		
-//		for (org.docx4j.xmlPackage.Part p : wmlPackageEl.getPart() ) {
-//			
-//			if (p.getXmlData().getDocument()!= null) {
-//				wmlDocument = p.getXmlData().getDocument();
-//			}				
-//			if (p.getXmlData().getStyles()!= null) {
-//				wmlStyles = p.getXmlData().getStyles();
-//			}				
-//		}
-
 		// This code assumes all the existing rels etc of 
 		// the existing main document part are still relevant.
 //		if (wmlDocument==null) {
