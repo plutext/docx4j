@@ -170,7 +170,9 @@ public class ObfuscatedFontPart extends BinaryPart {
 	        CustomFont customFont = null;
 	        try {
 	        	log.debug("Loading from: " + path);
-	            customFont = FontLoader.loadFont("file:" + path, fontResolver);
+	        	String subFontName = null; // TODO set this if its a TTC
+	        	boolean embedded = true;   
+	            customFont = FontLoader.loadFont("file:" + path, subFontName, embedded, fontResolver);
 	        } catch (Exception e) {
 				e.printStackTrace();
 	        }

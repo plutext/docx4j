@@ -73,7 +73,13 @@
 			<name>docx4j Maven 2 repository</name>
 			<url>http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2</url>
 		</repository>
-<repository>
+		<repository>
+			<id>webdavclient4j</id>
+			<name>webdavclient4j Maven 2 repository</name>
+			<url>https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2</url>
+		</repository>
+
+		<repository>
       <id>maven2-repository.dev.java.net</id>
       <name>Java.net Repository for Maven</name>
       <url>http://download.java.net/maven/2/</url>
@@ -157,11 +163,13 @@
 			<artifactId>jdom</artifactId>
 			<version>1.0</version>
 		</dependency>
+<!-- 2008 10 08 - use source code for now 		
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.0.1</version>
 		</dependency>
+ -->		
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>xmlgraphics-commons</artifactId>
@@ -223,12 +231,14 @@
 				6396599 has also been committed to backport to 6u release 6u10 -->
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>webdavclient4j</groupId>
 			<artifactId>webdavclient4j-vfs</artifactId>
 			<version>0.92.1</version>
 		</dependency>
-
+ -->
+ 
 		<dependency>
 			<groupId>webdavclient4j</groupId>
 			<artifactId>webdavclient4j-core</artifactId>
@@ -262,16 +272,21 @@
 		<dependency>
 			<groupId>docx4j</groupId>
 			<artifactId>fop-fonts</artifactId>
-			<version>0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-vfs-patched</artifactId>
-			<version>1.1a</version>
+			<version>0.2.0</version>
 		</dependency>
 
 		<!-- end of svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 -->
+
+		<!-- https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2
+
+			(stuff not available in public repositories)                                 
+ 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-vfs-patched</artifactId>
+			<version>1.9.1</version>			
+		</dependency>
+  -->
 
 	</dependencies>
 	<distributionManagement>
