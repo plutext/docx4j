@@ -108,6 +108,13 @@ public class Substituter {
     public final static String ITALIC = "Italic";
     public final static String BOLD_ITALIC = "BoldItalic";
     
+    /** Max difference for it to be considered an acceptable match.
+     *  Note that this value will depend on the weights in the
+     *  difference function.
+     */ 
+    public static final int MATCH_THRESHOLD = 30;
+    
+    
 	
 	static {
 		fontMappings = Collections.synchronizedMap(new HashMap<String, FontMapping>());
@@ -245,7 +252,8 @@ public class Substituter {
 	public static void setupPhysicalFont(FontResolver fontResolver,
 			URL fontUrl, FontInfoFinder fontInfoFinder) {
 		
-		List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
+		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
+		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
 		
 		if (embedFontInfoList==null) {
 			return;
@@ -556,7 +564,7 @@ public class Substituter {
 				String panoseKey = null;
 //				if ( !normalFormFound) 
 					panoseKey = findClosestPanoseMatch(documentFontName, documentFontPanose, 
-							physicalFontMap, org.apache.fop.fonts.Panose.MATCH_THRESHOLD);
+							physicalFontMap , MATCH_THRESHOLD);
 				
 				if ( panoseKey!=null) {
 					log.info("panose: " + fm.getDocumentFont() + " --> " + physicalFontMap.get(panoseKey).getEmbeddedFile() );
@@ -594,7 +602,7 @@ public class Substituter {
 				org.apache.fop.fonts.Panose seekingPanose = null; 
 				if (msFont.getBold()!=null) {
 					log.debug("this font has a bold form");
-					seekingPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
+					seekingPanose = documentFontPanose.getBold();
 					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose); 					
 					if (fmTmp!=null) {
 						fontMappings.put(normalise(fm.getDocumentFont()+BOLD), fmTmp);
@@ -605,7 +613,7 @@ public class Substituter {
 				seekingPanose = null; 
 				if (msFont.getItalic()!=null) {
 					log.debug("this font has an italic form");
-					seekingPanose = org.apache.fop.fonts.Panose.getItalic(documentFontPanose);
+					seekingPanose = documentFontPanose.getItalic();
 					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose);
 					if (fmTmp!=null) {
 						fontMappings.put(normalise(fm.getDocumentFont()+ITALIC), fmTmp);
@@ -616,8 +624,8 @@ public class Substituter {
 				seekingPanose = null; 
 				if (msFont.getBolditalic()!=null) {
 					log.debug("this font has a bold italic form");												
-					seekingPanose = org.apache.fop.fonts.Panose.getBold(documentFontPanose);
-					seekingPanose = org.apache.fop.fonts.Panose.getItalic(seekingPanose);
+					seekingPanose = documentFontPanose.getBold();
+					seekingPanose = seekingPanose.getItalic();
 					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose);
 					if (fmTmp!=null) {
 						fontMappings.put(normalise(fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
@@ -684,7 +692,7 @@ public class Substituter {
 										.difference(physicalFontPanose,
 												null);
 
-								if (pd >= org.apache.fop.fonts.Panose.MATCH_THRESHOLD) {
+								if (pd >= MATCH_THRESHOLD) {
 									log
 											.debug(".. with a panose distance exceeding threshold: "
 													+ pd);
@@ -764,7 +772,7 @@ public class Substituter {
 		
 		//fm.setDocumentFont(documentFontName); ???
 		resultingPanoseKey = findClosestPanoseMatch(documentFontName, soughtPanose, physicalFontMap,
-				org.apache.fop.fonts.Panose.MATCH_THRESHOLD); 
+				MATCH_THRESHOLD); 
 		if ( resultingPanoseKey!=null ) {
 			log.info("--> " + physicalFontMap.get(resultingPanoseKey).getEmbeddedFile() );
         	fm.setPhysicalFont( physicalFontMap.get(resultingPanoseKey) );													
@@ -806,7 +814,7 @@ public class Substituter {
 	        	continue;
 	        }
 			org.apache.fop.fonts.Panose physicalFontPanose = null;
-	        long panoseMatchValue = org.apache.fop.fonts.Panose.MATCH_THRESHOLD + 1; // inititaliase to a non-match
+	        long panoseMatchValue = MATCH_THRESHOLD + 1; // inititaliase to a non-match
 			try {
 				physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(physicalFont.getPanose().getPanoseArray() );
 		        panoseMatchValue = documentFontPanose.difference(physicalFontPanose, null);
@@ -993,7 +1001,7 @@ public class Substituter {
 
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/Word2007-fonts.docx";
+		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
 		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
