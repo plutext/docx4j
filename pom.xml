@@ -280,13 +280,13 @@
 		<!-- https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2
 
 			(stuff not available in public repositories)                                 
+  -->
  
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-vfs-patched</artifactId>
 			<version>1.9.1</version>			
 		</dependency>
-  -->
 
 	</dependencies>
 	<distributionManagement>
