@@ -8,21 +8,20 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.CharBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 
 public class BufferUtil {
 
+	private static Logger log = Logger.getLogger(BufferUtil.class);		
+	
+	
     private static final int BUFFER_SIZE = 1024;
 
     /**
@@ -104,17 +103,35 @@ public class BufferUtil {
     	
     // From http://docs.jboss.org/jbossas/javadoc/4.0.2/org/jboss/media/util/ByteBufferUtils.java.html
     	
+    	// Not working properly?  Make sure any method being called is implemented
+    	
        return new InputStream()
        {
           public synchronized int read() throws IOException
           {
              if (!buf.hasRemaining())
              {
+            	 log.debug("done");
                 return -1;
              }
+             log.debug("#");
              return buf.get();
           }
 
+          public synchronized int read(byte[] bytes) throws IOException
+          {
+             if (!buf.hasRemaining())
+             {
+            	 log.debug("done");
+                return -1;
+             }
+             log.debug("#");
+                                       
+             int len = Math.min(bytes.length, buf.remaining());
+             buf.get(bytes, 0, len );
+             return len;
+          }          
+          
           public synchronized int read(byte[] bytes, int off, int len)
              throws IOException
           {
