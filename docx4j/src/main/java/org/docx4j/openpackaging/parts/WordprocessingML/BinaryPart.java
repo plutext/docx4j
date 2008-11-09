@@ -49,11 +49,21 @@ public class BinaryPart extends Part {
 	java.nio.ByteBuffer bb;
 	public void setBinaryData(InputStream binaryData) {
 		
+		log.debug("reading input stream");
 		try {
 			bb = org.docx4j.utils.BufferUtil.readInputStream(binaryData);
+			log.debug(".. done" );
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
+			log.error(e);
+		} finally {
+			
+			try {
+				log.debug("closing binary input stream");
+				binaryData.close();
+				log.info(".. closed.");
+			} catch (Exception nested) {}
+			
 		}
 	}	
 
@@ -65,6 +75,9 @@ public class BinaryPart extends Part {
 	
 	
 	public java.nio.ByteBuffer getBuffer() {
+		
+		bb.rewind(); // Don't forget this!
+		
 		return bb;
 	}
 		
