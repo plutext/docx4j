@@ -667,10 +667,10 @@ public class LoadFromJCR extends Load {
 			throws Docx4JException {
 
 		Part part = null;
+		InputStream in = null;
 
 		try {
 
-			InputStream in = null;
 			log.info("Fetching " + encodeSlashes(nodeMapper, resolvedPartUri));
 			Node fileNode = docxNode.getNode(encodeSlashes(nodeMapper, resolvedPartUri));
 			
@@ -691,7 +691,7 @@ public class LoadFromJCR extends Load {
 			// URISyntaxException
 			ex.printStackTrace();
 			throw new Docx4JException("Failed to getPart", ex);
-		}
+		} 
 		return part;
 	}
 

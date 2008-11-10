@@ -575,6 +575,9 @@ public class SaveToJCR {
 //	        contentNode.setProperty("jcr:encoding", "");
 	        
 			//cmContentNode.setProperty("jcr:data", bin );
+
+			//log.debug("writing binary content");
+			
 	        nodeMapper.setJcrDataProperty(cmContentNode, bin );	        
 			
 	        Calendar lastModified = Calendar.getInstance();
@@ -584,7 +587,16 @@ public class SaveToJCR {
 			
 			Version firstVersion = cmContentNode.checkin();
 		} catch (Exception e ) {
+			log.error(e);
 			throw new Docx4JException("Failed to put binary part", e);			
+		} finally {
+			
+			try {
+				log.debug("closing binary input stream");
+				bin.close();
+				log.info(".. closed.");
+			} catch (Exception nested) {}
+			
 		}
 	}
 	
