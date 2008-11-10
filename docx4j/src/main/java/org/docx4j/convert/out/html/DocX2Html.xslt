@@ -86,7 +86,8 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
         exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
         
         <!--  Note definition of xmlns:r is different 
-              from the definition in an _rels file!  -->
+              from the definition in an _rels file
+              (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
 <!-- 
   <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
@@ -101,6 +102,7 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
 <xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->	
 <xsl:param name="docxWiki"/>		
 <xsl:param name="docxWikiSdtID"/>		
+<xsl:param name="docxWikiSdtVersion"/>		
 <xsl:param name="docID"/>
 
   <xsl:variable name="paraStyleID_Default">Normal</xsl:variable>
@@ -6812,7 +6814,7 @@ A mediawiki chunk starts with three things:
 		<xsl:when test="$docxWiki='open'">
 			<div class="docxwiki-headline">
 				<a name="sub{./w:sdtPr/w:id/@w:val}" id="sub{./w:sdtPr/w:id/@w:val}"></a>
-				<div class="editsection">[<a href="/alfresco/docxwiki/edit{$docID}/{./w:sdtPr/w:id/@w:val}" title="Edit sdt {./w:sdtPr/w:id/@w:val}">edit</a>]</div>
+				<div class="editsection">[<a href="/alfresco/docxwiki/edit{$docID}/{./w:sdtPr/w:id/@w:val}?v={./w:sdtPr/w:tag/@w:val}" title="Edit sdt {./w:sdtPr/w:id/@w:val}">edit</a>]</div>
 					<!--  Firefox 2 does not pass # to the server, so use / instead. --> 
 			    <span class="mw-headline">sub<xsl:value-of select="./w:sdtPr/w:id/@w:val"/>.xml</span>
 			</div>
@@ -6852,6 +6854,7 @@ A mediawiki chunk starts with three things:
 							<xsl:apply-templates select="w:sdtContent/*"/>
 						</div>
 						<input type="hidden" id="editorOutput" name="editorOutput" value="" />
+						<input type="hidden" id="sdtVersion" name="sdtVersion" value="{$docxWikiSdtVersion}" />
 						<input type="submit" name="submit"/>
 					</form>			
 				</xsl:when>

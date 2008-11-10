@@ -555,6 +555,12 @@ public class HtmlExporter {
 		public void setDocxWikiSdtID(String docxWikiSdtID) {
 			this.docxWikiSdtID = docxWikiSdtID;
 		}
+
+		String docxWikiSdtVersion = null;	
+		public void setDocxWikiSdtVersion(String docxWikiSdtVersion) {
+			this.docxWikiSdtVersion = docxWikiSdtVersion;
+		}
+		
 		
 		String docID = null;
 		public void setDocID(String docID) {
@@ -589,6 +595,7 @@ public class HtmlExporter {
 			settings.put("fontFamilyStack", fontFamilyStack);
 			settings.put("docxWiki", docxWiki);
 			settings.put("docxWikiSdtID", docxWikiSdtID);
+			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
 			settings.put("docID", docID);
 			settings.put("substituterInstance", fontSubstituter);
 			settings.put("imageDirPath", imageDirPath);
