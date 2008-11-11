@@ -274,15 +274,7 @@
 		</repository>
 	</distributionManagement>
 
-   		<!--  NB as at 20080521, docx4j can't be built using 1.5. There are 2 issues:
-   		
-   			1.  fop-fonts-0.1.jar was built targeting 1.6
-   			
-   			2.  NamespacePrefixMapper.java imports com.sun.xml.internal.bind.marshaller
-   		   		
-	so comment this out, until:
-	(a) above issues are addressed
-	(b) the Windows path issues below are fixed in m2eclipse
+   		<!--  comment this out, until the Windows path issues below are fixed in m2eclipse
 	
    <profiles>
    	<profile>
