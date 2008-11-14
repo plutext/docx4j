@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.vfs.CacheStrategy;
 import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
@@ -53,7 +54,7 @@ public class HtmlExporter {
 	 * */ 
     public static void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result,
     		String imageDirPath) throws Exception {
-
+    	
     	html(wmlPackage, result, true, imageDirPath);
     }
 
@@ -67,7 +68,7 @@ public class HtmlExporter {
     	if (imageDirPath==null) {
     		imageDirPath = "";
     	}
-    	htmlSettings.setImageDirPath(imageDirPath);
+    	htmlSettings.setImageDirPath(imageDirPath);    	
     	
 		html(wmlPackage, result, htmlSettings);
     }
@@ -161,7 +162,27 @@ public class HtmlExporter {
     }
     
 
-    // XSLT extension function
+    /* 
+    
+		<w:hyperlink r:id="rId4" w:history="true">
+			<w:r>
+				<w:rPr>
+				    <w:rStyle w:val="Hyperlink"/>
+				</w:rPr>
+				<w:t>hyperlink</w:t>
+			</w:r>
+		</w:hyperlink>
+	
+	  Micrososoft C# code replaces w:hyperlink with 
+	  a new node 
+	  
+	      <w:hlink w:dest=".." [other attributes cloned] />
+	      
+	  before the XSLT is called.
+	
+	  But we use an extension function instead.
+                    
+                    */    
     public static String resolveHref( WordprocessingMLPackage wmlPackage, String id  )  {
     	
     	org.docx4j.relationships.Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(id);
@@ -181,22 +202,43 @@ public class HtmlExporter {
     
     
 
-    /// <id guid="5a57dca1-2cfb-4ec0-8c66-4f964787450f" />
-    /// <owner alias="ROrleth" />
-    static String getServerRelativePath(String docLibPath, String itemUrl)
+	/* imageDirPath is anything VFSJFileChooser can resolve into a FileObject.
+	// That's enough for saving the image.
+	// In order for a web browser to display it, the URI Scheme has to
+	// be something a web browser can understand.
+	// So at that point, webdav:// will have to become http://,
+	// and smb:// become file:// ... */
+    static String fixImgSrcURL( FileObject fo)
     {
-        if (itemUrl.startsWith("/") ||
+    	String itemUrl = null;
+		try {
+			itemUrl = fo.getURL().toExternalForm();
+		} catch (FileSystemException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(itemUrl);
+    	
+        if (
             itemUrl.toLowerCase().startsWith("file://") ||
             itemUrl.toLowerCase().startsWith("http://") ||
             itemUrl.toLowerCase().startsWith("https://"))
         	
         {
+        	
             return itemUrl;
         }
-        else
-        {
-            return docLibPath + itemUrl;
+        
+        if ( itemUrl.toLowerCase().startsWith("webdav://")  ) {
+        	
+        	// TODO - convert to http:, dropping username / password
+        	return itemUrl;
+        	
         }
+        log.warn("How to handle scheme: " + itemUrl );
+        
+    	return itemUrl;
+        
     }
     
     /**
@@ -325,6 +367,8 @@ public class HtmlExporter {
 							} else {
 							   fo.createFile();
 							}
+//							System.out.println("URL: " + fo.getURL().toExternalForm() );
+//							System.out.println("String: " + fo.toString() );
 							
 							// Save the file
 			       			OutputStream out = fo.getContent().getOutputStream();
@@ -336,7 +380,9 @@ public class HtmlExporter {
 			    	        out.write( bytes );
 							
 							// Set the attribute
-	                		picture.setSrc(imageDirPath + "/" + filename );  // Need to be smarter about path separator?
+			    	        String src = fixImgSrcURL( fo );
+	                		picture.setSrc( src );  
+			    	        log.info("Wrote @src='" + src);
 							
 						} catch (Exception e) {
 							log.error(e);
@@ -364,7 +410,7 @@ public class HtmlExporter {
             //}
         }
     	
-        Document d = picture.createImageElement("");
+        Document d = picture.createImageElement();
 
 		DocumentFragment docfrag = d.createDocumentFragment();
 		docfrag.appendChild(d.getDocumentElement());
@@ -448,7 +494,7 @@ public class HtmlExporter {
             //}
         }
     	
-        Document d = picture.createImageElement("somepath");
+        Document d = picture.createImageElement();
 
 		DocumentFragment docfrag = d.createDocumentFragment();
 		docfrag.appendChild(d.getDocumentElement());
@@ -633,7 +679,7 @@ public class HtmlExporter {
     	
         /// <id guid="100b714f-5397-4420-958b-e03c2d021f7c" />
         /// <owner alias="ROrleth" />
-    	Document createImageElement(String fixupPath)
+    	Document createImageElement()
         {
 
             try {
@@ -647,7 +693,7 @@ public class HtmlExporter {
 
                 if (src !=null && !src.equals(""))
                 {
-                	setAttribute("src", getServerRelativePath(fixupPath, src));
+                	setAttribute("src", src);
                 }
 
                 if (id !=null && !id.equals("") )
