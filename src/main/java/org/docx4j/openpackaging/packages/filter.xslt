@@ -29,32 +29,6 @@
   </xsl:copy>
 </xsl:template>
 
-
-<xsl:template match="w:hyperlink">
-	
-	<!--  <w:hyperlink ns2:id="rId4" w:history="true">
-                            <w:r>
-<w:rPr>
-    <w:rStyle w:val="Hyperlink"/>
-</w:rPr>
-<w:t>http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=CELEX:12002E081:EN:NOT</w:t>
-                            </w:r>
-                        </w:hyperlink>
-                         -->
-	
-	<xsl:choose>
-		<xsl:when test="$tidyForDocx4all=true()">
-			<xsl:apply-templates select="node()"/>
-		</xsl:when>
-		<xsl:otherwise>
-		  <xsl:copy>
-			<xsl:apply-templates select="@*|node()"/>
-		  </xsl:copy>
-		</xsl:otherwise>
-	</xsl:choose>
-	
-</xsl:template>	
-
 <xsl:template match="w:lastRenderedPageBreak">
 	
 	<xsl:choose>
