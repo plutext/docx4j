@@ -417,8 +417,17 @@ public class XmlUtils {
 	}
 	
 	
-	/** Clone this JAXB object */ 
+	/** Clone this JAXB object, using default JAXBContext. */ 
 	public static Object deepCopy(Object in) {
+		
+		JAXBContext jc = Context.jc;
+		
+		return deepCopy(in, jc);
+		
+	}
+
+	/** Clone this JAXB object */ 
+	public static Object deepCopy(Object in, JAXBContext jc) {
 
 		log.debug("Attempting to clone: " + in.getClass().getName() );
 
@@ -428,9 +437,7 @@ public class XmlUtils {
 		if (in instanceof javax.xml.bind.JAXBElement) {
 			in = ((javax.xml.bind.JAXBElement)in).getValue();
 			log.debug("Attempting to clone: " + in.getClass().getName() );
-		}
-		
-		JAXBContext jc = Context.jc;
+		}		
 		
 		Object o = null;
 		try {				
@@ -450,6 +457,7 @@ public class XmlUtils {
 		return o;
 		
 	}
+	
 	
 	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
 	public static org.w3c.dom.Document neww3cDomDocument() {
