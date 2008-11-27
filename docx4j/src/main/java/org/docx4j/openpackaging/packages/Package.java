@@ -21,30 +21,19 @@
 
 package org.docx4j.openpackaging.packages;
 
-import javax.xml.bind.JAXBContext;
-
 import org.apache.log4j.Logger;
-
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.Base;
-import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.QName;
 
 
 /**
@@ -142,8 +131,9 @@ public class Package extends Base {
 	public DocPropsCorePart getDocPropsCorePart() {
 		if (docPropsCorePart==null) {
 			try {
-				Part docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
+				docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
 				this.addTargetPart(docPropsCorePart);
+				
 				org.docx4j.docProps.core.ObjectFactory factory = 
 					new org.docx4j.docProps.core.ObjectFactory();				
 				org.docx4j.docProps.core.CoreProperties properties = factory.createCoreProperties();
@@ -160,8 +150,9 @@ public class Package extends Base {
 	public DocPropsExtendedPart getDocPropsExtendedPart() {
 		if (docPropsExtendedPart==null) {
 			try {
-				Part docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
+				docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
 				this.addTargetPart(docPropsExtendedPart);
+				
 				org.docx4j.docProps.extended.ObjectFactory factory = 
 					new org.docx4j.docProps.extended.ObjectFactory();				
 				org.docx4j.docProps.extended.Properties properties = factory.createProperties();
@@ -179,7 +170,7 @@ public class Package extends Base {
 		
 		if (docPropsCustomPart==null) {
 			try {
-				Part docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
+				docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
 				this.addTargetPart(docPropsCustomPart);
 				
 				org.docx4j.docProps.custom.ObjectFactory factory = 
