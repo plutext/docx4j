@@ -2325,7 +2325,7 @@ public class PPrBase
          */
         public boolean isBeforeAutospacing() {
             if (beforeAutospacing == null) {
-                return true;
+                return false;
             } else {
                 return beforeAutospacing;
             }
@@ -2401,7 +2401,7 @@ public class PPrBase
          */
         public boolean isAfterAutospacing() {
             if (afterAutospacing == null) {
-                return true;
+                return false;
             } else {
                 return afterAutospacing;
             }
