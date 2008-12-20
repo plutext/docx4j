@@ -348,6 +348,19 @@ public class XmlPackage {
 		
 	}
 	
+	/* It is sometimes useful to wrap a part in an appropriate pkg:part */
+	public static String wrapInXmlPart(String xml, String partName, String contentType) {
+		
+		return  "<pkg:part pkg:name=\"" + partName + "\""  
+			 				+ " pkg:contentType=\"" + contentType + "\"" 
+			 				+ " xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\">"
+				  		+ "<pkg:xmlData>"
+				  			+ xml
+				  		+ "</pkg:xmlData>"
+				  	+ "</pkg:part>";
+		
+	}
+	
 	public static void main(String[] args) throws Exception {
 		
 		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fonts-modesOfApplication.docx";
