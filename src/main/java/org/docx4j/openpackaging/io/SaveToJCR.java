@@ -102,7 +102,10 @@ public class SaveToJCR {
 			
 	public Session jcrSession;
 	
-	public NodeMapper nodeMapper = null;
+	public static NodeMapper nodeMapper = null;
+	public static void setNodeMapper(NodeMapper nodeMapper1) {
+		nodeMapper = nodeMapper1; 
+	}
 	
 	
 	/* Save a Package to baseNode in JCR.
@@ -126,7 +129,7 @@ public class SaveToJCR {
 			// convert dom4j node to real W3C dom node
 			w3cDoc = new org.dom4j.io.DOMWriter()
 					.write(ctm.getDocument());
-			saveRawXmlPart(baseNode, "[Content_Types].xml", w3cDoc );
+			saveRawXmlPart(jcrSession, baseNode, "[Content_Types].xml", w3cDoc );
 	        
 			// 4. Start with _rels/.rels
 
@@ -164,7 +167,7 @@ public class SaveToJCR {
 		 return true;
 	}
 	
-	public String encodeSlashes(NodeMapper nodeMapper,  String partName) {		
+	public static String encodeSlashes(NodeMapper nodeMapper,  String partName) {		
 		
 		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
 			
@@ -225,18 +228,48 @@ public class SaveToJCR {
 			return null;					
 		}		
 		
-		return saveRawXmlPart(baseNode, partName, w3cDoc);  
+		return saveRawXmlPart(jcrSession, baseNode, partName, w3cDoc);  
 		
 		// TODO - refactor, so that in JaxbXmlPart case, we write
 		// directly to output stream (like we do in SaveToZipFile)
 		
+	}
+
+	/* @displayName - a human readable description for this content
+	 * object.  Pass null if you don't want the displayName property set. 
+	 * Returns the resource.
+	 */
+	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
+
+		try {
+			
+	        // Need to convert the Document to an input stream
+	        // There are at least three possible ways to do it:
+	        // 1. PipedInputStream http://www.biglist.com/lists/xsl-list/archives/199908/msg00554.html
+	        // 2. Use an intermediate byte array
+	        // 3. Use XSLT! http://lists.xml.org/archives/xml-dev/200408/msg00072.html
+	        // In fact I use the library
+	        // See http://www.ibm.com/developerworks/java/library/j-io1/
+	        // Though the byte array would work ok as well.
+
+	        DOMSerializerEngine engine 
+	        	= new DOMSerializerEngine( (org.w3c.dom.Node)w3cDoc.getDocumentElement() );
+	        
+	        return saveRawXmlPart(jcrSession, baseNode, partName, new OutputEngineInputStream(engine)); 
+			
+	
+		} catch (Exception e ) {
+			e.printStackTrace();
+			throw new Docx4JException("Failed to put " + partName, e);
+		}
+				
 	}
 	
 	/* @displayName - a human readable description for this content
 	 * object.  Pass null if you don't want the displayName property set. 
 	 * Returns the resource.
 	 */
-	public Node saveRawXmlPart(Node baseNode, String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
+	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, String partName, InputStream is) throws Docx4JException {
 
 		try {
 			// OLD COMMENT - IN COURSE OF BECOMING REDUNDANT (as of 18 Jan 2008)  
@@ -323,22 +356,6 @@ public class SaveToJCR {
  */ 			
 
 	        
-	        // Need to convert the Document to an input stream
-	        // There are at least three possible ways to do it:
-	        // 1. PipedInputStream http://www.biglist.com/lists/xsl-list/archives/199908/msg00554.html
-	        // 2. Use an intermediate byte array
-	        // 3. Use XSLT! http://lists.xml.org/archives/xml-dev/200408/msg00072.html
-	        // In fact I use the library
-	        // See http://www.ibm.com/developerworks/java/library/j-io1/
-	        // Though the byte array would work ok as well.
-
-//	        // For now, convert dom4j node to real W3C dom node
-//	        // (TODO write org.merlin.io.DOM4JSerializerEngine!)
-//	        org.w3c.dom.Document w3cDoc 
-//	        	= new org.dom4j.io.DOMWriter().write(xml);
-	        
-	        DOMSerializerEngine engine 
-	        	= new DOMSerializerEngine( (org.w3c.dom.Node)w3cDoc.getDocumentElement() );
 
 	        // New - in what follows, replaced contentNode with cmContentNode
 	        
@@ -374,7 +391,7 @@ public class SaveToJCR {
 	        
 	        log.info("using " + nodeMapper.getClass().getName());
 	        
-	        nodeMapper.setJcrDataProperty(cmContentNode, new OutputEngineInputStream(engine) );	        
+	        nodeMapper.setJcrDataProperty(cmContentNode, is );	        
 	        
 	        Calendar lastModified = Calendar.getInstance();
 	        lastModified.setTimeInMillis(lastModified.getTimeInMillis());
