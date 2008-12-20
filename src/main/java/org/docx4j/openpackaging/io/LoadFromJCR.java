@@ -165,22 +165,10 @@ public class LoadFromJCR extends Load {
 //	        ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper, docxContentNode, "[Content_Types].xml");	        	
 //			debugPrint(ctmDocument);
 	        
-	        Node contentTypesPartNode = getPartNode(jcrSession, nodeMapper, docxContentNode, "[Content_Types].xml");
-
-	        // Document ctmDocument = deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper, contentTypesPartNode);			
-			InputStream in = getInputStreamFromJCRPart(nodeMapper, contentTypesPartNode);
-			SAXReader xmlReader = new SAXReader();
-			Document ctmDocument = null;
-			try {
-				ctmDocument = xmlReader.read(in);
-				debugPrint(ctmDocument);				
-			} catch (DocumentException e) {
-				e.printStackTrace() ;
-				throw e;
-			}
+	        initialiseContentTypeManager(ctm, 
+	    			 jcrSession,
+	    			 docxContentNode , nodeMapper );
 	        
-	        
-			ctm.parseContentTypesFile(ctmDocument);
 			p = ctm.createPackage();
 						
 			
@@ -231,6 +219,41 @@ public class LoadFromJCR extends Load {
 	    }
 	    
 	 return p;
+		
+	}
+	
+	
+	public static void initialiseContentTypeManager(ContentTypeManager ctm, 
+			Session jcrSession,
+			Node docxContentNode , NodeMapper nodeMapper ) 
+			throws Docx4JException {	
+		
+		try {
+
+			Node contentTypesPartNode = getPartNode(jcrSession, nodeMapper,
+					docxContentNode, "[Content_Types].xml");
+
+			// Document ctmDocument =
+			// deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper,
+			// contentTypesPartNode);
+			InputStream in = getInputStreamFromJCRPart(nodeMapper,
+					contentTypesPartNode);
+			SAXReader xmlReader = new SAXReader();
+			Document ctmDocument = null;
+			try {
+				ctmDocument = xmlReader.read(in);
+				debugPrint(ctmDocument);
+			} catch (DocumentException e) {
+				e.printStackTrace();
+				throw e;
+			}
+
+			ctm.parseContentTypesFile(ctmDocument);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Docx4JException("Failed to get package", e);
+		}
 		
 	}
 	
@@ -341,6 +364,7 @@ public class LoadFromJCR extends Load {
 			
 	//		Property jcrData = contentNode.getProperty("jcr:data");
 			Property jcrData = nodeMapper.getJcrData(contentNode);
+			
 			return jcrData.getStream();
 		} catch (PathNotFoundException e) {		
 			e.printStackTrace();
