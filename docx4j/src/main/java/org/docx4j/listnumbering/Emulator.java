@@ -183,7 +183,7 @@ public class Emulator {
     	
     	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
     		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
-    	
+    	    	
     	// If numId is not provided explicitly, 
     	// is it provided by the style?
     	// (ie does this style have a list associated with it?)
@@ -197,8 +197,16 @@ public class Emulator {
 	    		
 	    		NumPr numPr = style.getPPr().getNumPr();
 	    		
+	    		if (numPr==null) {
+		        	System.out.println("Couldn't get NumPr from " +  pStyleVal);
+		        	System.out.println(
+		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
+		        			);
+	    		}
+	    		
 	    		numId = numPr.getNumId().getVal().toString();
 	    		log.info("numId=" + numId + " (from style)" );
+	        	System.out.println("numId=" + numId + " (from style)" );
 	    		
 	    		if (levelId == null 
 	    				|| levelId.equals("") ) {
