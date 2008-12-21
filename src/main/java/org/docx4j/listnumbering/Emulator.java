@@ -93,10 +93,9 @@ import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
-import org.docx4j.wml.Numbering;
 import org.docx4j.wml.NumberFormat;
+import org.docx4j.wml.Numbering;
 import org.docx4j.wml.PPrBase.NumPr;
-import org.w3c.dom.DocumentFragment;
 
 public class Emulator {
 	
@@ -314,8 +313,11 @@ public class Emulator {
                 this.levelText = levelTextNode.getVal(); 
             }
 
-            //XmlNode fontNode = levelNode.SelectSingleNode(".//w:rFonts", nsm);
-            org.docx4j.wml.RFonts fontNode = levelNode.getRPr().getRFonts();
+            org.docx4j.wml.RFonts fontNode = null;
+            if (levelNode.getRPr() != null) {
+                //XmlNode fontNode = levelNode.SelectSingleNode(".//w:rFonts", nsm);
+            	fontNode = levelNode.getRPr().getRFonts();
+            }
             if (fontNode != null)
             {
                 this.font = fontNode.getHAnsi(); //getAttributeValue(fontNode, "w:hAnsi");
