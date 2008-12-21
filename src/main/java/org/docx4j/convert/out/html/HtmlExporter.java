@@ -108,8 +108,12 @@ public class HtmlExporter {
 
 		marshaller.marshal(pkg, doc);
 
-		log.error( org.docx4j.XmlUtils.marshaltoString(pkg, true, true, jc)  );
+		//log.error( org.docx4j.XmlUtils.marshaltoString(pkg, true, true, jc)  );
 		
+		
+//    	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
+//    		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
+//    	log.error( org.docx4j.XmlUtils.marshaltoString(stylesPart.getJaxbElement(), true, true)  );
 		
         // Load the link relationship tables
 		
@@ -253,17 +257,29 @@ public class HtmlExporter {
     		String pStyleVal, String numId, String levelId) {
     	
     	log.info("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
+    	System.out.println("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
     	
-    	ResultTriple triple = org.docx4j.listnumbering.Emulator.getNumber(
-    			wmlPackage, pStyleVal, numId, levelId);    	
     	
         // Create a DOM builder and parse the fragment
         try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+        	ResultTriple triple = org.docx4j.listnumbering.Emulator.getNumber(
+        			wmlPackage, pStyleVal, numId, levelId);   
+        	
+        	if (triple==null) {
+        		log.error("computed number was null!");
+        		System.out.println("computed number was null!");
+        	}
+
+        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
 			       
 			Node spanElement = document.createElement("span");			
 			document.appendChild(spanElement);
+
+	    	if (triple.getNumString()==null) {
+	    		log.error("computed NumString was null!");
+	    		System.out.println("computed NumString was null!");
+	    	}
 			
 			Text number = document.createTextNode( triple.getNumString() );
 			spanElement.appendChild(number);
@@ -274,6 +290,8 @@ public class HtmlExporter {
 			return docfrag;
 						
 		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(e.toString() );
 			log.error(e);
 		} 
     	
@@ -591,22 +609,26 @@ public class HtmlExporter {
 		public void setFontFamilyStack(boolean val) {
 			fontFamilyStack = new Boolean(val);
 		}
-		
-		String docxWiki = null;	// edit | open	
-		public void setDocxWiki(String docxWiki) {
-			this.docxWiki = docxWiki;
-		}
 
-		String docxWikiSdtID = null;	
-		public void setDocxWikiSdtID(String docxWikiSdtID) {
-			this.docxWikiSdtID = docxWikiSdtID;
-		}
-
-		String docxWikiSdtVersion = null;	
-		public void setDocxWikiSdtVersion(String docxWikiSdtVersion) {
-			this.docxWikiSdtVersion = docxWikiSdtVersion;
+		String docxWikiMenu = null;		
+		public void setDocxWikiMenu(String docxWikiMenu) {
+			this.docxWikiMenu = docxWikiMenu;
 		}
 		
+//		String docxWiki = null;	// edit | open	
+//		public void setDocxWiki(String docxWiki) {
+//			this.docxWiki = docxWiki;
+//		}
+//
+//		String docxWikiSdtID = null;	
+//		public void setDocxWikiSdtID(String docxWikiSdtID) {
+//			this.docxWikiSdtID = docxWikiSdtID;
+//		}
+//
+//		String docxWikiSdtVersion = null;	
+//		public void setDocxWikiSdtVersion(String docxWikiSdtVersion) {
+//			this.docxWikiSdtVersion = docxWikiSdtVersion;
+//		}		
 		
 		String docID = null;
 		public void setDocID(String docID) {
@@ -639,9 +661,10 @@ public class HtmlExporter {
 			
 			settings.put("wmlPackage", wmlPackage);
 			settings.put("fontFamilyStack", fontFamilyStack);
-			settings.put("docxWiki", docxWiki);
-			settings.put("docxWikiSdtID", docxWikiSdtID);
-			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
+			settings.put("docxWikiMenu", docxWikiMenu);
+//			settings.put("docxWiki", docxWiki);
+//			settings.put("docxWikiSdtID", docxWikiSdtID);
+//			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
 			settings.put("docID", docID);
 			settings.put("substituterInstance", fontSubstituter);
 			settings.put("imageDirPath", imageDirPath);
