@@ -101,6 +101,8 @@ public class Namespaces {
 	public final static String VBA_PROJECT = "http://schemas.microsoft.com/office/2006/relationships/vbaProject";
 	public final static String VBA_DATA_WORD = "http://schemas.microsoft.com/office/2006/relationships/wordVbaData";
 
+	public final static String OLE_OBJECT = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject"; 
+	
 	
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 
