@@ -22,6 +22,7 @@
 package org.docx4j.samples;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -46,7 +47,35 @@ public class AddImage {
 		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
-		createImagePart(wordMLPackage);
+		
+		File file = new File("/home/dev/lanl/testing/fig1.pdf" );
+		
+		// Our utility method wants that as a byte array
+		
+		java.io.InputStream is = new java.io.FileInputStream(file );
+        long length = file.length();    
+        // You cannot create an array using a long type.
+        // It needs to be an int type.
+        if (length > Integer.MAX_VALUE) {
+        	System.out.println("File too large!!");
+        }
+        byte[] bytes = new byte[(int)length];
+        int offset = 0;
+        int numRead = 0;
+        while (offset < bytes.length
+               && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
+            offset += numRead;
+        }
+        // Ensure all the bytes have been read in
+        if (offset < bytes.length) {
+            System.out.println("Could not completely read file "+file.getName());
+        }
+        is.close();
+        
+        
+		// TODO - an algorithm for generating the partname
+		
+		org.docx4j.utils.ImageUtils.createImagePart(wordMLPackage, bytes, "/word/media/image.png");
 		
 		// Now save it 
 		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/result.docx") );
@@ -55,43 +84,5 @@ public class AddImage {
 				
 	}
 	
-	public static void createImagePart(WordprocessingMLPackage wordMLPackage) {
-		
-		try {
-			org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart imagePart 
-				= new org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart( new PartName("/word/media/image1.jpeg") );
-			
-			java.io.InputStream is = new java.io.FileInputStream("/tmp/image.jpeg" );
-			
-			imagePart.setBinaryData(is);
-			imagePart.setContentType( new ContentType(ContentTypes.IMAGE_JPEG) );  
-
-			//imagePart.setContentType( new ContentType(ContentTypes.IMAGE_PNG) );  
-
-			
-			imagePart.setRelationshipType( Namespaces.IMAGE );
-						
-			Relationship rel = wordMLPackage.getMainDocumentPart().addTargetPart(imagePart);
-			
-			// Contains ${docPrId}, ${docPrName}, ${docPrDesc}, ${picName}, ${rEmbedId}
-            String ml ="<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\"><w:r><w:rPr><w:noProof/></w:rPr><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"><wp:extent cx=\"3238500\" cy=\"2362200\"/><wp:effectExtent l=\"19050\" t=\"0\" r=\"0\" b=\"0\"/><wp:docPr id=\"${docPrId}\" name=\"${docPrName}\" descr=\"${docPrDesc}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"0\" name=\"${picName}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"3238500\" cy=\"2362200\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
-            java.util.HashMap<String, String>mappings = new java.util.HashMap<String, String>();
-            
-            mappings.put("docPrId", "1");
-            mappings.put("docPrName", "Picture 1");
-            mappings.put("docPrDesc", "some.jpeg");
-            mappings.put("picName", "some.jpeg");
-            mappings.put("rEmbedId", rel.getId()  );
-
-            wordMLPackage.getMainDocumentPart().addObject(
-                  org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings ) );
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-	}
 		
 }
