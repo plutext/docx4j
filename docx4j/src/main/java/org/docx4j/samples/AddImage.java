@@ -24,6 +24,7 @@ package org.docx4j.samples;
 import java.io.File;
 import java.io.IOException;
 
+import org.docx4j.dml.Inline;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -32,6 +33,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 /**
@@ -48,7 +50,8 @@ public class AddImage {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		
-		File file = new File("/home/dev/lanl/testing/fig1.pdf" );
+		//File file = new File("/home/dev/lanl/testing/fig1.pdf" );
+		File file = new File("C:\\Documents and Settings\\Jason Harrop\\My Documents\\LANL\\fig1.pdf" );
 		
 		// Our utility method wants that as a byte array
 		
@@ -75,8 +78,22 @@ public class AddImage {
         
 		// TODO - an algorithm for generating the partname
 		
-		org.docx4j.utils.ImageUtils.createImagePart(wordMLPackage, bytes, "/word/media/image.png");
+        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes, "/word/media/image.png");
 		
+        Inline inline = imagePart.createImageInline();
+        
+        // Now add the inline in w:p/w:r/w:drawing
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		org.docx4j.wml.P  p = factory.createP();
+		org.docx4j.wml.R  run = factory.createR();		
+		p.getParagraphContent().add(run);        
+		org.docx4j.wml.Drawing drawing = factory.createDrawing();		
+		run.getRunContent().add(drawing);		
+		drawing.getAnchorOrInline().add(inline);
+		
+		// Now add our p to the document
+		wordMLPackage.getMainDocumentPart().addObject(p);
+        
 		// Now save it 
 		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/result.docx") );
 		
