@@ -199,8 +199,8 @@ public class ImageUtils {
 		double imageWidthTwips = dPt.getWidth() * 20;
 		log.debug("imageWidthTwips: " + imageWidthTwips);
 		
-		double cx;
-		double cy;
+		long cx;
+		long cy;
 		if (imageWidthTwips>writableWidthTwips) {
 			
 			log.debug("Scaling image to fit page width");
@@ -217,18 +217,19 @@ public class ImageUtils {
 			
 		}
 		
+		log.debug("cx=" + cx + "; cy=" + cy);
 		
 		
 		// Contains ${docPrId}, ${docPrName}, ${docPrDesc}, ${picName}, ${rEmbedId}
         String ml ="<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\"><w:r>" +
         "<w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">" +
-        //"<wp:extent cx=\"${cx}\" cy=\"${cy}\"/>" +
+        "<wp:extent cx=\"${cx}\" cy=\"${cy}\"/>" +
         "<wp:effectExtent l=\"19050\" t=\"0\" r=\"0\" b=\"0\"/>" +
         "<wp:docPr id=\"${docPrId}\" name=\"${docPrName}\" descr=\"${docPrDesc}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"0\" name=\"${picName}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"3238500\" cy=\"2362200\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>";
         java.util.HashMap<String, String>mappings = new java.util.HashMap<String, String>();
         
-        mappings.put("cx", Double.toString(cx));
-        mappings.put("cy", Double.toString(cy));
+        mappings.put("cx", Long.toString(cx));
+        mappings.put("cy", Long.toString(cy));
         mappings.put("docPrId", "1");
         mappings.put("docPrName", "Picture 1");
         mappings.put("docPrDesc", "some.jpeg");
@@ -247,9 +248,9 @@ public class ImageUtils {
 	}
 	
 	
-	public static double twipToEMU(double twips) {
+	public static long twipToEMU(double twips) {
 		
-		return 635 * twips;
+		return Math.round(635 * twips);
 				
 	}
 	
@@ -346,7 +347,7 @@ public class ImageUtils {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private static void convertToPNG(InputStream is, OutputStream os, int density) throws IOException, InterruptedException{
+	public static void convertToPNG(InputStream is, OutputStream os, int density) throws IOException, InterruptedException{
 		
 	/*
 	 * See http://www.eichberger.de/2006/05/imagemagick-in-servlets.html
