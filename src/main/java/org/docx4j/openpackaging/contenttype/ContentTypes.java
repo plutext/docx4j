@@ -95,6 +95,8 @@ public class ContentTypes {
 	public final static String OFFICEDOCUMENT_VBA_DATA =
 		"application/vnd.ms-word.vbaData+xml";
 	
+	public final static String OFFICEDOCUMENT_OLE_OBJECT =
+		"application/vnd.openxmlformats-officedocument.oleObject";
 	
 	// PartName="/word/document.xml"
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
@@ -132,7 +134,6 @@ public class ContentTypes {
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml";
 
 	
-	
 	  
 	  
 	/*
@@ -161,21 +162,33 @@ public class ContentTypes {
 
 	// Images format supported by WordprocessingML. See tc45-2006-334.pdf p.146
 
-	public static final String IMAGE_JPEG = "image/jpeg";
-
-	public static final String EXTENSION_JPG_1 = "jpg";
-
-	public static final String EXTENSION_JPG_2 = "jpeg";
-
-	// image/png ISO/IEC 15948:2003 http://www.libpng.org/pub/png/spec/
-	public static final String IMAGE_PNG = "image/png";
-
-	public static final String EXTENSION_PNG = "png";
-
+	public static final String IMAGE_EMF = "image/x-emf";
+	public static final String EXTENSION_EMF = "emf";
+	
+	public static final String IMAGE_WMF = "image/x-wmf";
+	public static final String EXTENSION_WMF = "wmf";
+	
+	
 	// image/gif http://www.w3.org/Graphics/GIF/spec-gif89a.txt
 	public static final String IMAGE_GIF = "image/gif";
-
 	public static final String EXTENSION_GIF = "gif";
+	
+	public static final String IMAGE_JPEG = "image/jpeg";
+	public static final String EXTENSION_JPG_1 = "jpg";
+	public static final String EXTENSION_JPG_2 = "jpeg";
+
+	/**
+	 * Pict image format.
+	 * 
+	 * @see http://developer.apple.com/documentation/mac/QuickDraw/QuickDraw-2.html
+	 */
+	public static final String IMAGE_PICT = "image/pict";	
+	public static final String EXTENSION_PICT = "tiff"; // ?????????	
+	
+	// image/png ISO/IEC 15948:2003 http://www.libpng.org/pub/png/spec/
+	public static final String IMAGE_PNG = "image/png";
+	public static final String EXTENSION_PNG = "png";
+
 
 	/**
 	 * TIFF image format.
@@ -183,17 +196,10 @@ public class ContentTypes {
 	 * @see http://partners.adobe.com/public/developer/tiff/index.html#spec
 	 */
 	public static final String IMAGE_TIFF = "image/tiff";
-
 	public static final String EXTENSION_TIFF = "tiff";
 
-	/**
-	 * Pict image format.
-	 * 
-	 * @see http://developer.apple.com/documentation/mac/QuickDraw/QuickDraw-2.html
-	 */
-	public static final String IMAGE_PICT = "image/pict";
-
-	public static final String EXTENSION_PICT = "tiff";
 
 	public static final String XML = "text/xml";
+	
+	
 }
