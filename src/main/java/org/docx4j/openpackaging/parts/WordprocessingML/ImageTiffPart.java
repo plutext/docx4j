@@ -29,7 +29,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
-public class ImageTiffPart extends BinaryPart {
+public class ImageTiffPart extends BinaryPartAbstractImage {
 	
 	public ImageTiffPart(PartName partName) throws InvalidFormatException {
 		super(partName);
