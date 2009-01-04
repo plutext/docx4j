@@ -292,6 +292,8 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			return CreateWebSettingsPartObject(partName );
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
 			return CreateObfuscatedFontPartObject(partName );
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)) {
+			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_PNG)) {
@@ -304,7 +306,7 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			return CreateDefaultPartObject(partName );
 		} else {
 			log.error("No subclass found for " + partName);
-			throw new PartUnrecognisedException("No subclass found for " + partName);		
+			throw new PartUnrecognisedException("No subclass found for " + partName + " (content type '" + contentType + "')");		
 
 		}
 
