@@ -134,12 +134,14 @@ public class XmlUtils {
 	}
 
 	/** Unmarshal a String as an object in the package org.docx4j.jaxb.document */ 
-	public static Object unmarshalString(String str) {
+	public static Object unmarshalString(String str) {		
+		return unmarshalString(str, Context.jc);
+	}
+
+	public static Object unmarshalString(String str, JAXBContext jc) {
 		Object o = null;
 		try {				
 			
-			JAXBContext jc = Context.jc;
-
 			Unmarshaller u = jc.createUnmarshaller();
 						
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
@@ -641,9 +643,14 @@ public class XmlUtils {
      * @return
      */
     public static Object unmarshallFromTemplate(String wmlTemplateString, java.util.HashMap<String, String> mappings) {
+        return unmarshallFromTemplate(wmlTemplateString, mappings, Context.jc);
+     }
+
+    public static Object unmarshallFromTemplate(String wmlTemplateString, 
+    		java.util.HashMap<String, String> mappings, JAXBContext jc) {
         String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
         log.debug("Results of substitution: " + wmlString);
-        return unmarshalString(wmlString);
+        return unmarshalString(wmlString, jc);
      }
 
      private static StringBuilder replace(String s, int offset, StringBuilder b, java.util.HashMap<String, String> mappings) {
