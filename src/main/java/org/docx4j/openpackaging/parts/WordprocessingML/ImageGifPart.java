@@ -23,6 +23,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -37,7 +38,7 @@ public class ImageGifPart extends BinaryPartAbstractImage {
 	}
 
 	public ImageGifPart() throws InvalidFormatException {
-		super(new PartName("/word/media/image.png"));
+		super(new PartName( generateName() + "." + ContentTypes.EXTENSION_GIF ));
 		init();
 	}
 	

@@ -23,6 +23,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -37,14 +38,14 @@ public class ImageTiffPart extends BinaryPartAbstractImage {
 	}
 
 	public ImageTiffPart() throws InvalidFormatException {
-		super(new PartName("/word/media/image.png"));
+		super(new PartName( generateName() + "." + ContentTypes.EXTENSION_TIFF ));
 		init();
 	}
 	
 	public void init() {
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
-				org.docx4j.openpackaging.contenttype.ContentTypes.IMAGE_PNG));
+				org.docx4j.openpackaging.contenttype.ContentTypes.IMAGE_TIFF));
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.IMAGE);
