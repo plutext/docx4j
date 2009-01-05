@@ -58,6 +58,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
 	protected static Logger log = Logger.getLogger(BinaryPartAbstractImage.class);
 	
+	final static String IMAGE_PREFIX = "/word/media/image";
+	
 	public BinaryPartAbstractImage(PartName partName) throws InvalidFormatException {
 		super(partName);
 		
@@ -67,6 +69,13 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// provide that information.
 		
 	}
+	
+	public static String generateName() {
+		counter++;
+		return IMAGE_PREFIX + counter;
+	}
+	static int counter = 0;
+	
 	
 	ImageInfo imageInfo;
 
@@ -122,11 +131,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	static ImageManager imageManager;
 	
 	public static BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
-			byte[] bytes,
-			String partName) throws Exception {
+			byte[] bytes) throws Exception {
 				
-		log.debug("entering, for " + partName );		
-		
 		// Whatever image type this is, we're going to need 
 		// to know its dimensions.
 		// For that we use ImageInfo, which can only
@@ -198,17 +204,18 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// Word will accept
 		
 		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
-		BinaryPartAbstractImage imagePart = (BinaryPartAbstractImage)ctm.newPartForContentType(info.getMimeType(), partName);
-		log.debug("created part " + imagePart.getClass().getName() );		
+		BinaryPartAbstractImage imagePart = (BinaryPartAbstractImage)ctm.newPartForContentType(info.getMimeType(), 
+				generateName() );
+		log.debug("created part " + imagePart.getClass().getName() +
+				" with name " + imagePart.getPartName().toString() );		
 		
 		
 		FileInputStream fis = new FileInputStream(tmpImageFile); //reuse		
 		imagePart.setBinaryData( fis );
 				
-		Relationship rel = wordMLPackage.getMainDocumentPart().addTargetPart(imagePart);
+		imagePart.rel =  wordMLPackage.getMainDocumentPart().addTargetPart(imagePart);
 		
 		imagePart.setImageInfo(info);
-		imagePart.rel = rel;
 
 		  // Delete the tmp file
 		tmpImageFile.delete();
@@ -216,14 +223,34 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		return imagePart;
 		
 			}
+	
+	// Defaults - if values aren't defined in sectPr 
+	private static int DEFAULT_PAGE_WIDTH_TWIPS = 12240;  // Letter; A4 would be 11907  
+	private static int DEFAULT_LEFT_MARGIN_TWIPS = 1440;  // 1 inch
+	private static int DEFAULT_RIGHT_MARGIN_TWIPS = 1440;
 		
 	/**
 	 * Create a <wp:inline> element suitable for this image,
 	 * which can be embedded in w:p/w:r/w:drawing
-	 * 
+	 * @param filenameHint Any text, for example the original filename
+	 * @param altText  Like HTML's alt text
+	 * @param id1   An id unique in the document
+	 * @param id2   Another id unique in the document
+	 * None of these things seem to be exposed in Word 2007's
+	 * user interface, but Word won't open the document if 
+	 * any of the attributes these go in (except @ desc) aren't present!
 	 * @throws Exception
 	 */
-	public Inline createImageInline() throws Exception {
+	public Inline createImageInline(String filenameHint, String altText, 
+			int id1, int id2) throws Exception {
+		
+		if (filenameHint==null) {
+			filenameHint = "";
+		}
+		if (altText==null) {
+			altText = "";
+		}
+		
 		WordprocessingMLPackage wordMLPackage = ((WordprocessingMLPackage)this.getPackage()); 
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
@@ -236,16 +263,36 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		if (sectPr==null) {
 			
 			log.debug("PgSz and PgMar not defined in this doc's SectPr element");
-			// Have to make a sensible default
-			// A4
-			writableWidthTwips = 12240 - (1440 + 1440); 
+			writableWidthTwips = DEFAULT_PAGE_WIDTH_TWIPS - (DEFAULT_LEFT_MARGIN_TWIPS + DEFAULT_RIGHT_MARGIN_TWIPS); 
 				
 		} else {
 			
 			PgSz pgSz = sectPr.getPgSz();
 			PgMar pgMar = sectPr.getPgMar();
+			
+			double pageWidth;
+			double leftMargin;
+			double rightMargin;
+			
+			if ( pgSz == null ) {
+				pageWidth = DEFAULT_PAGE_WIDTH_TWIPS;
+			} else {
+				pageWidth = pgSz.getW().doubleValue();
+			}
+			if ( pgMar == null 
+					|| pgMar.getLeft()==null) {
+				leftMargin = DEFAULT_LEFT_MARGIN_TWIPS;
+			} else {
+				leftMargin = pgMar.getLeft().doubleValue();
+			}
+			if ( pgMar == null 
+					|| pgMar.getRight()==null) {
+				rightMargin = DEFAULT_RIGHT_MARGIN_TWIPS;
+			} else {
+				rightMargin = pgMar.getRight().doubleValue();
+			}
 
-			writableWidthTwips = pgSz.getW().doubleValue() - (pgMar.getLeft().doubleValue() + pgMar.getRight().doubleValue() );
+			writableWidthTwips = pageWidth - (leftMargin + rightMargin );
 		}
 				
 		log.debug("writableWidthTwips: " + writableWidthTwips);
@@ -276,14 +323,15 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 		log.debug("cx=" + cx + "; cy=" + cy);
 		
-		// Contains ${docPrId}, ${docPrName}, ${docPrDesc}, ${picName}, ${rEmbedId}
         String ml =
 //        	"<w:p ><w:r>" +
 //        "<w:drawing>" +
         "<wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"" + namespaces + ">" +
         "<wp:extent cx=\"${cx}\" cy=\"${cy}\"/>" +
         "<wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>" +  //l=\"19050\"
-        "<wp:docPr id=\"${docPrId}\" name=\"${docPrName}\" descr=\"${docPrDesc}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"0\" name=\"${picName}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>" +
+        "<wp:docPr id=\"${id1}\" name=\"${filenameHint}\" descr=\"${altText}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">" +
+        "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">" +
+        "<pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"${id2}\" name=\"${filenameHint}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>" +
         "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"${cx}\" cy=\"${cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic>" +
         "</wp:inline>"; // +
 //        "</w:drawing>" +
@@ -292,11 +340,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         
         mappings.put("cx", Long.toString(cx));
         mappings.put("cy", Long.toString(cy));
-        mappings.put("docPrId", "1");
-        mappings.put("docPrName", "Picture 1");
-        mappings.put("docPrDesc", "some.jpeg");
-        mappings.put("picName", "some.jpeg");
+        mappings.put("filenameHint", filenameHint);
+        mappings.put("altText", altText);
         mappings.put("rEmbedId", rel.getId()  );
+        mappings.put("id1", Integer.toString(id1));
+        mappings.put("id2", Integer.toString(id2));
 
         Object o = org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings ) ;        
         Inline inline = (Inline)((JAXBElement)o).getValue();
@@ -371,28 +419,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		  
 		  Dimension2D dPt = size.getDimensionPt();
 		  Dimension dPx = size.getDimensionPx();
-		  
-//			  System.out.println("dpi x: " + size.getDpiHorizontal() );
-//			  System.out.println("points: " + d2d.getWidth() );
-//			  System.out.println("so inches: " +  d2d.getWidth()/72 );	
-		  
-//			  double xPixels =  size.getDpiHorizontal() * dPt.getWidth()/72 ;
-		  
-		  
-//			  System.out.println("\n dpi y: " + size.getDpiVertical() );
-//			  System.out.println("points: " + d2d.getHeight() );
-//			  System.out.println("so inches: " +  d2d.getHeight()/72 );	
-		  
-//			  double yPixels =  size.getDpiVertical() * dPt.getHeight()/72 ;
 
 		  System.out.println(info.getOriginalURI() + " " + info.getMimeType() 
-				  + " " + dPx.getWidth() +"x" + dPx.getHeight());
-		  
-//			  System.out.println( "should be the same as  " + xPixels +"x" + yPixels);
-		  
-		  
-		  System.out.println("Resolution:" + size.getDpiHorizontal() + "x" + size.getDpiVertical() );
-		  System.out.println("Print size: " + dPt.getWidth()/72 + "x" + dPt.getHeight()/72 ); 
+				  + " " + Math.round(dPx.getWidth()) +"x" + Math.round(dPx.getHeight()));
+		  		  
+		  System.out.println("Resolution:" + Math.round(size.getDpiHorizontal()) + "x" + Math.round(size.getDpiVertical()) );
+		  System.out.println("Print size: " + Math.round(dPt.getWidth()/72) + "\" x" + Math.round(dPt.getHeight()/72)+"\"" ); 
 		
 	}
 
@@ -419,8 +451,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 */
 		
 	 System.out.println("Start ImageMagick...");
-	 //Process p = Runtime.getRuntime().exec("C:\\Program Files\\ImageMagick-6.4.8-Q16\\convert -density " + density + " -units PixelsPerInch - png:-");  // jpeg
-	 Process p = Runtime.getRuntime().exec("imconvert -density " + density + " -units PixelsPerInch - png:-");  // jpeg
+	 Process p = Runtime.getRuntime().exec("imconvert -density " + density + " -units PixelsPerInch - png:-");  
+	 
+	 // GraphicsMagick is a little quicker than ImageMagick,
+	 // but v1.3.3 (of Dec 2008) still has the now fixed in GM bug
+	 // whereby the right most ~10% of the resulting image is chopped off
+	 //Process p = Runtime.getRuntime().exec("gm convert -density " + density + " -units PixelsPerInch - png:-");  
 	 
 	 /* On Windows, if this results in "Invalid Parameter",
 	  * then either ImageMagick is not installed,

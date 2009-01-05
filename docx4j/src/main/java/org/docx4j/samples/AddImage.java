@@ -75,22 +75,15 @@ public class AddImage {
         }
         is.close();
         
+        String filenameHint = null;
+        String altText = null;
+        int id1 = 0;
+        int id2 = 1;
+        		
+        org.docx4j.wml.P p = newImage( wordMLPackage, bytes, 
+        		filenameHint, altText, 
+    			id1, id2 );
         
-		// TODO - an algorithm for generating the partname
-		
-        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes, "/word/media/image.png");
-		
-        Inline inline = imagePart.createImageInline();
-        
-        // Now add the inline in w:p/w:r/w:drawing
-		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-		org.docx4j.wml.P  p = factory.createP();
-		org.docx4j.wml.R  run = factory.createR();		
-		p.getParagraphContent().add(run);        
-		org.docx4j.wml.Drawing drawing = factory.createDrawing();		
-		run.getRunContent().add(drawing);		
-		drawing.getAnchorOrInline().add(inline);
-		
 		// Now add our p to the document
 		wordMLPackage.getMainDocumentPart().addObject(p);
         
@@ -101,5 +94,26 @@ public class AddImage {
 				
 	}
 	
+	public static org.docx4j.wml.P newImage( WordprocessingMLPackage wordMLPackage,
+			byte[] bytes,
+			String filenameHint, String altText, 
+			int id1, int id2) throws Exception {
 		
+        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes);
+		
+        Inline inline = imagePart.createImageInline( filenameHint, altText, 
+    			id1, id2);
+        
+        // Now add the inline in w:p/w:r/w:drawing
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		org.docx4j.wml.P  p = factory.createP();
+		org.docx4j.wml.R  run = factory.createR();		
+		p.getParagraphContent().add(run);        
+		org.docx4j.wml.Drawing drawing = factory.createDrawing();		
+		run.getRunContent().add(drawing);		
+		drawing.getAnchorOrInline().add(inline);
+		
+		return p;
+		
+	}	
 }

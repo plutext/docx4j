@@ -295,11 +295,34 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
+			
+			if (!partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_JPG_1)
+					&& !partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_JPG_2)) {
+				partName = partName + "." + ContentTypes.EXTENSION_JPG_2;
+			}
+			
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_PNG)) {
+			
+			if (!partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_PNG) ) {
+				partName = partName + "." + ContentTypes.EXTENSION_PNG;
+			}
+			
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_GIF)) {
+			
+			if (!partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_GIF) ) {
+				partName = partName + "." + ContentTypes.EXTENSION_GIF;
+			}			
+			
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageGifPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.IMAGE_TIFF)) {
+			
+			if (!partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_TIFF) ) {
+				partName = partName + "." + ContentTypes.EXTENSION_TIFF;
+			}			
+			
+			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageTiffPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)) {
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");
