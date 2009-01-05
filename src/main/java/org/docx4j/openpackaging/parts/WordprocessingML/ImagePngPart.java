@@ -31,13 +31,14 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 public class ImagePngPart extends BinaryPartAbstractImage {
 	
+	
 	public ImagePngPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();
 	}
 
 	public ImagePngPart() throws InvalidFormatException {
-		super(new PartName("/word/media/image.gif"));
+		super(new PartName( generateName() + ".png" ));
 		init();
 	}
 	
@@ -49,6 +50,7 @@ public class ImagePngPart extends BinaryPartAbstractImage {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.IMAGE);
 	}
+	
 	
 		
 }
