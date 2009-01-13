@@ -20,7 +20,7 @@
 
 package org.docx4j.jaxb;
 
-public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
+public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
 	// Must use 'internal' for Java 6
 
 	
@@ -59,38 +59,38 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
      *      If this method returns "" when requirePrefix=true, the return
      *      value will be ignored and the system will generate one.
      */
-    public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {    
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/wordprocessingml/2006/main")) {
-    		return "w";
-    	}
-    	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/xmlPackage")) {
-    		return "pkg";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/custom-properties")) {
-    		return "prop";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")) {
-    		return "vt";
-    	}
-    	    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/relationships")) {
-    		return "r";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")) {
-    		return "wp";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/main")) {
-    		return "a";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/picture")) {
-    		return "pic";
-    	}
+    public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
+    
+//    	if (namespaceUri.equals("http://schemas.openxmlformats.org/wordprocessingml/2006/main")) {
+//		return "w";
+//	}
+//	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/xmlPackage")) {
+//		return "pkg";
+//	}
+//	
+//	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/custom-properties")) {
+//		return "prop";
+//	}
+//	
+//	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")) {
+//		return "vt";
+//	}
+	    	
+	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/relationships")) {
+		return ""; // Make it the default namespace
+	}
+	
+//	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")) {
+//		return "wp";
+//	}
+//	
+//	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/main")) {
+//		return "a";
+//	}
+//	
+//	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/picture")) {
+//		return "pic";
+//	}
     	
     	return suggestion;
     }

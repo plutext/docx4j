@@ -653,6 +653,21 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		return jaxbElement;
     	
     }
+    
+    public void marshal(org.w3c.dom.Node node) throws JAXBException {
+    	
+    	marshal(node, new org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart() );
+    	
+	}
+    
+    
+    public void marshal(java.io.OutputStream os) throws JAXBException {
+
+		
+		marshal( os, new org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart() ); 
+
+	}
+    
 
 	
 }
