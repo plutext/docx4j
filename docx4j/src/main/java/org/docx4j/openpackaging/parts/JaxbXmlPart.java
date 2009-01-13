@@ -103,13 +103,33 @@ public abstract class JaxbXmlPart extends Part {
      *      If any unexpected problem occurs during the marshalling.
      */
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
+    	
+    	marshal(node, new org.docx4j.jaxb.NamespacePrefixMapper() );
+    	
+	}
+
+    /**
+     * Marshal the content tree rooted at <tt>jaxbElement</tt> into a DOM tree.
+     * 
+     * @param node
+     *      DOM nodes will be added as children of this node.
+     *      This parameter must be a Node that accepts children
+     *      ({@link org.w3c.dom.Document},
+     *      {@link  org.w3c.dom.DocumentFragment}, or
+     *      {@link  org.w3c.dom.Element})
+     * 
+     * @throws JAXBException
+     *      If any unexpected problem occurs during the marshalling.
+     */
+    public void marshal(org.w3c.dom.Node node, 
+    		com.sun.xml.bind.marshaller.NamespacePrefixMapper namespacePrefixMapper) throws JAXBException {
 
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
 			try { 
 				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+						namespacePrefixMapper ); 
 
 				// Reference implementation appears to be present (in endorsed dir?)
 				log.info("using com.sun.xml.bind.namespacePrefixMapper");
@@ -122,7 +142,7 @@ public abstract class JaxbXmlPart extends Part {
 				
 				// Use JAXB distributed in Java 6 - note 'internal' 
 				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+						namespacePrefixMapper ); 
 				
 			}
 			
@@ -136,7 +156,7 @@ public abstract class JaxbXmlPart extends Part {
     
     /**
 	 * Marshal the content tree rooted at <tt>jaxbElement</tt> into an output
-	 * stream.
+	 * stream, using org.docx4j.jaxb.NamespacePrefixMapper.
 	 * 
 	 * @param os
 	 *            XML will be added to this stream.
@@ -146,15 +166,34 @@ public abstract class JaxbXmlPart extends Part {
 	 */
     public void marshal(java.io.OutputStream os) throws JAXBException {
 
+		
+		marshal( os, new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+
+	}
+
+    /**
+	 * Marshal the content tree rooted at <tt>jaxbElement</tt> into an output
+	 * stream
+	 * 
+	 * @param os
+	 *            XML will be added to this stream.
+	 * @param namespacePrefixMapper
+	 *            namespacePrefixMapper
+	 * 
+	 * @throws JAXBException
+	 *             If any unexpected problem occurs during the marshalling.
+	 */
+    public void marshal(java.io.OutputStream os, com.sun.xml.bind.marshaller.NamespacePrefixMapper namespacePrefixMapper) throws JAXBException {
+
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
 			try { 
 				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+						namespacePrefixMapper ); 
 
 				// Reference implementation appears to be present (in endorsed dir?)
-				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+				log.info("using property com.sun.xml.bind.namespacePrefixMapper");
 				
 			} catch (javax.xml.bind.PropertyException cnfe) {
 				
@@ -164,7 +203,7 @@ public abstract class JaxbXmlPart extends Part {
 				
 				// Use JAXB distributed in Java 6 - note 'internal' 
 				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+						namespacePrefixMapper ); 
 				
 			}
 			
@@ -179,7 +218,6 @@ public abstract class JaxbXmlPart extends Part {
 			e.printStackTrace();
 		}
 	}
-
     
     /**
 	 * Unmarshal XML data from the specified InputStream and return the
