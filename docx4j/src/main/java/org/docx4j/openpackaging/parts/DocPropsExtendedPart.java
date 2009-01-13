@@ -21,11 +21,13 @@
 package org.docx4j.openpackaging.parts;
 
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.dom4j.Document;
@@ -71,6 +73,9 @@ public class DocPropsExtendedPart extends JaxbXmlPart {
 	}
 	
 	public void init() {
+		
+		jc = Context.jcDocPropsExtended;
+		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_EXTENDEDPROPERTIES));
