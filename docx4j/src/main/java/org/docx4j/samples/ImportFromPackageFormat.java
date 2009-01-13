@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.FileInputStream;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
@@ -54,20 +55,23 @@ public class ImportFromPackageFormat {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/docProps-out.pkg";
+		String inputfilepath = "/home/dev/simple-out.xml"; 
+			
+			//System.getProperty("user.dir") + "/sample-docs/docProps-out.pkg";
 				
 		// Do we want to save output? 
 		boolean save = true;
 		// If so, where to?
-		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/just-created.docx";		
+		String outputfilepath = "/home/dev/simple-out-rtt.docx";
+			//System.getProperty("user.dir") + "/sample-docs/just-created.docx";		
 		
 		try {
-			JAXBContext jc = Context.jc;
+			JAXBContext jc = Context.jcXmlPackage;
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)u.unmarshal(
-					new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath))); 
+			org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+					new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
 
 			org.docx4j.convert.in.XmlPackage xmlPackage = new org.docx4j.convert.in.XmlPackage( wmlPackageEl); 
 
