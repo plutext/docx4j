@@ -21,13 +21,17 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.poifs.dev.POIFSViewEngine;
+import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
@@ -61,6 +65,9 @@ public class OleObjectBinaryPart extends BinaryPart {
 	}
 
 	POIFSFileSystem fs;
+	public POIFSFileSystem getFs() {
+		return fs;
+	}
 	
 	public void initPOIFSFileSystem() throws IOException {
 		
@@ -79,21 +86,50 @@ public class OleObjectBinaryPart extends BinaryPart {
 		
 	}
 	
+	public void writePOIFSFileSystem() throws IOException {
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+
+		fs.writeFilesystem(baos);
+		
+		// Need to put this is bb
+		byte[] bytes = baos.toByteArray();
+		
+		bb = ByteBuffer.wrap(bytes);
+		
+	}
+	
 	// java.nio.ByteBuffer bb contains the data
 	
-    public void viewFile() throws IOException
+    public void viewFile(boolean verbose) throws IOException
     {
     	org.apache.poi.poifs.dev.POIFSLister.displayDirectory(fs.getRoot(), "");
     	
-        List strings = POIFSViewEngine.inspectViewable(fs, true, 0, "  ");
-		Iterator iter = strings.iterator();
-
-		while (iter.hasNext()) {
-			System.out.print(iter.next());
-		}
-    	
+    	if (verbose) {
+	        List strings = POIFSViewEngine.inspectViewable(fs, true, 0, "  ");
+			Iterator iter = strings.iterator();
+	
+			while (iter.hasNext()) {
+				System.out.print(iter.next());
+			}
+    	}
     	
     }
+
+//	public void extractPdf(OutputStream out) throws IOException {
+//		
+//		DocumentInputStream inputStream = fs.createDocumentInputStream("CONTENTS");
+//	    
+//	    byte buf[]=new byte[1024];
+//	    int len;
+//	    while ((len=inputStream.read(buf))>0) {
+//	    	out.write(buf,0,len);
+//	    }
+//	    out.close();
+//	    inputStream.close();
+//		
+//	}
+
 	
 	
 	
