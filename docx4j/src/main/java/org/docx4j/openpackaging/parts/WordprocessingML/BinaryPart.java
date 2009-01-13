@@ -22,7 +22,9 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
+import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -80,5 +82,23 @@ public class BinaryPart extends Part {
 		
 		return bb;
 	}
+	
+	/**
+	 * Copy the ByteBuffer containing this part's binary data
+	 * to an output stream.
+	 * 
+	 * @param out
+	 * @throws IOException
+	 */
+	public void writeDataToOutputStream(OutputStream out) throws IOException {
+		
+        bb.clear();
+        byte[] bytes = new byte[bb.capacity()];
+        bb.get(bytes, 0, bytes.length);
+        	        
+        out.write( bytes );	    
+		
+	}
+	
 		
 }
