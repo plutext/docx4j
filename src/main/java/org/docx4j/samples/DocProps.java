@@ -104,6 +104,21 @@ public class DocProps {
 		// .. add it
 		customProps.getProperty().add(newProp);
 		
+		/* Example of setting some extended properties
+		DocPropsExtendedPart extendedPart = new DocPropsExtendedPart(); 
+		wordMLPackage.addTargetPart(extendedPart);
+		// Add content type
+		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
+		ctm.addOverrideContentType(extendedPart.getPartName().getURI(), extendedPart.getContentType());
+		// Now the properties
+		org.docx4j.docProps.extended.ObjectFactory factory = new org.docx4j.docProps.extended.ObjectFactory();
+		Properties props = factory.createProperties();
+		props.setApplication("Microsoft Word 12.1.0");
+		props.setAppVersion("12.0256");	
+		extendedPart.setJaxbElement(props);`
+		//Required for docx4j < 2.2.0
+		extendedPart.setJAXBContext(Context.jcDocPropsExtended);
+		*/		
 				
 		// Save the revised document
 		
