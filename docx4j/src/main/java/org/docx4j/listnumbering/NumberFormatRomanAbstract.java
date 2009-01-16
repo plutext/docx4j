@@ -13,7 +13,7 @@ public abstract class NumberFormatRomanAbstract extends NumberFormat {
  //================================================================ constant
  // This could be alternatively be done with parallel arrays.
  // Another alternative would be Pair<Integer, String>
- static RomanValue[] ROMAN_VALUE_TABLE; 
+  RomanValue[] ROMAN_VALUE_TABLE; 
  
  //============================================================== int2roman
  public String format(int n) {

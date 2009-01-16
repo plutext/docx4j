@@ -1,5 +1,7 @@
 package org.docx4j.listnumbering;
 
+import org.docx4j.listnumbering.NumberFormatRomanAbstract.RomanValue;
+
 //File   : gui/componenents/calculators/Roman.java
 //Description: A static method for converting binary integers to Roman numbers.
 //Illustrates: Static inner value class, StringBuffer, throw exceptions.
@@ -10,23 +12,30 @@ package org.docx4j.listnumbering;
 
 /////////////////////////////////////////////////////////////////// class Roman
 public class NumberFormatRomanLower extends NumberFormatRomanAbstract {
- //================================================================ constant
- // This could be alternatively be done with parallel arrays.
- // Another alternative would be Pair<Integer, String>
- static RomanValue[] ROMAN_VALUE_TABLE = {
-     new RomanValue(1000, "M"),
-     new RomanValue( 900, "CM"),
-     new RomanValue( 500, "D"),
-     new RomanValue( 400, "CD"),
-     new RomanValue( 100, "C"),
-     new RomanValue(  90, "XC"),
-     new RomanValue(  50, "L"),
-     new RomanValue(  40, "XL"),
-     new RomanValue(  10, "X"),
-     new RomanValue(   9, "IX"),
-     new RomanValue(   5, "V"),
-     new RomanValue(   4, "IV"),
-     new RomanValue(   1, "I")
+	
+	
+	NumberFormatRomanLower() {
+		
+		ROMAN_VALUE_TABLE = ROMAN_VALUE_TABLE_LOWER;
+	}
+	
+	 //================================================================ constant
+	 // This could be alternatively be done with parallel arrays.
+	 // Another alternative would be Pair<Integer, String>
+ static RomanValue[] ROMAN_VALUE_TABLE_LOWER = {
+     new RomanValue(1000, "m"),
+     new RomanValue( 900, "cm"),
+     new RomanValue( 500, "d"),
+     new RomanValue( 400, "cd"),
+     new RomanValue( 100, "c"),
+     new RomanValue(  90, "xc"),
+     new RomanValue(  50, "l"),
+     new RomanValue(  40, "xl"),
+     new RomanValue(  10, "x"),
+     new RomanValue(   9, "ix"),
+     new RomanValue(   5, "v"),
+     new RomanValue(   4, "iv"),
+     new RomanValue(   1, "i")
  };
  
 }
