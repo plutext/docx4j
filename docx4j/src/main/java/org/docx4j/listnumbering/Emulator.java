@@ -189,9 +189,14 @@ public class Emulator {
     	if (numId == null 
     			|| numId.equals("")) {
     		
-	    	org.docx4j.wml.Style style = stylesPart.getStyle(pStyleVal);
+    		
+    		org.docx4j.wml.Style style = null;
+    		if (pStyleVal!=null && !pStyleVal.equals("") ) {    		
+    			style = stylesPart.getStyle(pStyleVal);    			
+    		}
 	    	if (style == null) {
 	    		log.warn("Couldn't find style '" + pStyleVal + "'");
+	    		return null;
 	    	} else {
 	    		
 	    		NumPr numPr = style.getPPr().getNumPr();
@@ -201,6 +206,9 @@ public class Emulator {
 		        	System.out.println(
 		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
 		        			);
+		        	// So there is no numbering set on the style either
+		        	// That's ok ..
+		        	return null;
 	    		}
 	    		
 	    		numId = numPr.getNumId().getVal().toString();
