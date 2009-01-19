@@ -99,10 +99,17 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
    
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
-<xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->	
+<xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->
+
+<xsl:param name="conditionalComments"/> <!-- select="'passed in'"-->
+	
+
+<xsl:param name="docxWikiMenu"/>		
+<!-- 
 <xsl:param name="docxWiki"/>		
 <xsl:param name="docxWikiSdtID"/>		
-<xsl:param name="docxWikiSdtVersion"/>		
+<xsl:param name="docxWikiSdtVersion"/>
+ -->		
 <xsl:param name="docID"/>
 
   <xsl:variable name="paraStyleID_Default">Normal</xsl:variable>
@@ -6081,7 +6088,10 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
       </xsl:apply-templates>
 
       <xsl:for-each select="w:tblGrid[1]">
-        <xsl:text disable-output-escaping="yes">&lt;![if !supportMisalignedColumns]&gt;</xsl:text>
+      
+      	<xsl:if test="$conditionalComments">      
+        	<xsl:text disable-output-escaping="yes">&lt;![if !supportMisalignedColumns]&gt;</xsl:text>
+        </xsl:if>
         <tr height="0">
           <xsl:for-each select="w:gridCol">
             <xsl:variable name="gridStyle">
@@ -6090,7 +6100,9 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
             <td style="{$gridStyle}"/>
           </xsl:for-each>
         </tr>
-        <xsl:text disable-output-escaping="yes">&lt;![endif]&gt;</xsl:text>
+      	<xsl:if test="$conditionalComments">      
+	        <xsl:text disable-output-escaping="yes">&lt;![endif]&gt;</xsl:text>
+	    </xsl:if>
       </xsl:for-each>
     </table>
   </xsl:template>
@@ -6413,7 +6425,9 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
   </xsl:template>
 
   <xsl:template name="DisplayAnnotationScript">
-    <xsl:text disable-output-escaping="yes">&lt;![if !supportAnnotations]&gt;</xsl:text>
+   	<xsl:if test="$conditionalComments">        
+    	<xsl:text disable-output-escaping="yes">&lt;![if !supportAnnotations]&gt;</xsl:text>
+    </xsl:if>
     <style id="dynCom" type="text/css"></style>
     <script type="text/javascript" language="JavaScript">
       <xsl:comment>
@@ -6493,7 +6507,10 @@ if (msoBrowserCheck())
 </xsl:text>
       </xsl:comment>
     </script>
-    <xsl:text disable-output-escaping="yes">&lt;![endif]&gt;</xsl:text>
+    
+   	<xsl:if test="$conditionalComments">          
+    	<xsl:text disable-output-escaping="yes">&lt;![endif]&gt;</xsl:text>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="copyElements">
@@ -6782,94 +6799,16 @@ if (msoBrowserCheck())
     <xsl:apply-templates />
   </xsl:template>
 
-<!-- 
   <xsl:template match="w:sdt">
-    <xsl:apply-templates />
+	<xsl:apply-templates select="w:sdtContent/*"/>
   </xsl:template>
 
+<!-- 
   <xsl:template match="w:sdtContent">
     <xsl:apply-templates />
   </xsl:template>
  -->
- 
- <xsl:template match="w:sdt">
-
-<!-- 
-
-A mediawiki chunk starts with three things:
-1. anchor
-2. heading level
-   (i) editsection
-   (2) the actual heading (including line)
-
-<p><a name="Business_and_political_career_before_presidency" id="Business_and_political_career_before_presidency"></a></p>
-<h2><span class="editsection">[<a href="/w/index.php?title=Dmitry_Medvedev&amp;action=edit&amp;section=2" title="Edit section: Business and political career before presidency">edit</a>]</span> 
-    <span class="mw-headline">Business and political career before presidency</span></h2>
-
- -->
-
-	<xsl:variable name="thisSdtID"><xsl:value-of select="string(./w:sdtPr/w:id/@w:val)"/></xsl:variable>
-
-	<xsl:choose>
-		<xsl:when test="$docxWiki='open'">
-			<div class="docxwiki-headline">
-				<a name="sub{./w:sdtPr/w:id/@w:val}" id="sub{./w:sdtPr/w:id/@w:val}"></a>
-				<div class="editsection">[<a href="/alfresco/docxwiki/edit{$docID}/{./w:sdtPr/w:id/@w:val}?v={./w:sdtPr/w:tag/@w:val}" title="Edit sdt {./w:sdtPr/w:id/@w:val}">edit</a>]</div>
-					<!--  Firefox 2 does not pass # to the server, so use / instead. --> 
-			    <span class="mw-headline">sub<xsl:value-of select="./w:sdtPr/w:id/@w:val"/>.xml</span>
-			</div>
-			<xsl:apply-templates select="w:sdtContent/*"/>
-		</xsl:when>
-		<xsl:when test="$docxWiki='edit'">
-			<xsl:choose>
-				<xsl:when test="$docxWikiSdtID=$thisSdtID">
-					<form id="dialog" name="dialog" method="post" 
-					       action="/alfresco/docxwiki/save{$docID}/{./w:sdtPr/w:id/@w:val}" 
-					       accept-charset="UTF-8" 
-					       enctype="application/x-www-form-urlencoded">
-						<script language="javascript" type="text/javascript" src="/alfresco/scripts/tiny_mce/tiny_mce.js">//</script>
-							<!--  // to ensure the tag does not become self-closing, since this upsets browsers. -->
-						<script language="javascript" type="text/javascript">
-											
-							tinyMCE.init({
-							theme : "advanced",
-							mode : "exact",
-							relative_urls: false,
-							elements : "editor",
-							save_callback : "saveContent",
-							theme_advanced_toolbar_location : "top",
-							theme_advanced_toolbar_align : "left",
-							theme_advanced_buttons1_add : "fontselect,fontsizeselect",
-							theme_advanced_disable: "styleselect",
-							extended_valid_elements : "a[href|target|name],font[face|size|color|style],span[class|align|style]"
-							});
-							
-							function saveContent(id, content)
-							{
-							 document.getElementById("editorOutput").value=content;
-							}
-						
-						</script>	
-						<div id='editor' style='width:100%; height:360px'>
-							<xsl:apply-templates select="w:sdtContent/*"/>
-						</div>
-						<input type="hidden" id="editorOutput" name="editorOutput" value="" />
-						<input type="hidden" id="sdtVersion" name="sdtVersion" value="{$docxWikiSdtVersion}" />
-						<input type="submit" name="submit"/>
-					</form>			
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:apply-templates select="w:sdtContent/*"/>				
-				</xsl:otherwise>
-			</xsl:choose>			
-		</xsl:when>
-		<xsl:otherwise>
-			<!--  The normal (ie non wiki) case -->
-			<xsl:apply-templates select="w:sdtContent/*"/>
-		</xsl:otherwise>
-	</xsl:choose>
-</xsl:template>
- 
+  
  
  
  
@@ -6893,21 +6832,23 @@ A mediawiki chunk starts with three things:
         </xsl:for-each>
         <xsl:call-template name="DisplayAnnotationScript"/>
 
-        <xsl:comment>
-          <xsl:text disable-output-escaping="yes">[if !mso]&gt;</xsl:text>
-          <xsl:text disable-output-escaping="yes">&lt;style&gt;</xsl:text>
-          <xsl:text>
-
-                            v\:* {behavior:url(#default#VML);}
-                            o\:* {behavior:url(#default#VML);}
-                            w10\:* {behavior:url(#default#VML);}
-                            .shape {behavior:url(#default#VML);}
-                        </xsl:text>
-
-          <xsl:text disable-output-escaping="yes">&lt;/style&gt;</xsl:text>
-          <xsl:text disable-output-escaping="yes">&lt;![endif]</xsl:text>
-        </xsl:comment>
-
+      	<xsl:if test="$conditionalComments">      
+	        <xsl:comment>
+	          <xsl:text disable-output-escaping="yes">[if !mso]&gt;</xsl:text>
+	          <xsl:text disable-output-escaping="yes">&lt;style&gt;</xsl:text>
+	          <xsl:text>
+	
+	                            v\:* {behavior:url(#default#VML);}
+	                            o\:* {behavior:url(#default#VML);}
+	                            w10\:* {behavior:url(#default#VML);}
+	                            .shape {behavior:url(#default#VML);}
+	                        </xsl:text>
+	
+	          <xsl:text disable-output-escaping="yes">&lt;/style&gt;</xsl:text>
+	          <xsl:text disable-output-escaping="yes">&lt;![endif]</xsl:text>
+	        </xsl:comment>
+		</xsl:if>
+		
         <style>
           <xsl:comment>
 
@@ -6930,7 +6871,7 @@ A mediawiki chunk starts with three things:
 			/*class styles*/
             <xsl:apply-templates select="$nsStyles"/>
             
-			<xsl:if test="$docxWiki=true()">
+			<xsl:if test="$docxWikiMenu=true()">
 				/*docxwiki*/
 				.docxwiki-headline {
 					color: black;
@@ -6956,14 +6897,24 @@ A mediawiki chunk starts with three things:
       </head>
 
       <body>
-<!-- was <xsl:apply-templates select="w:body|w:cfChunk"/> -->
-					<xsl:apply-templates select="pkg:part/pkg:xmlData/w:document/w:body|w:cfChunk"/>
-
         <xsl:if test="w:bgPict/w:background/@w:bgcolor">
           <xsl:attribute name="bgcolor">
             <xsl:value-of select="w:bgPict/w:background/@w:bgcolor"/>
           </xsl:attribute>
         </xsl:if>
+        
+        <xsl:if test="$docxWikiMenu='true'">        
+			<div style="text-align:right">
+				<a href="/alfresco/docxwiki/edit{$docID}">edit</a>, 
+				<a href="/alfresco{$docID}">download</a>
+			</div>        
+        </xsl:if>
+
+<!-- was <xsl:apply-templates select="w:body|w:cfChunk"/> -->
+					<xsl:apply-templates select="pkg:part/pkg:xmlData/w:document/w:body|w:cfChunk"/>
+
+
+
 
         <xsl:if test="//v:background">
           <xsl:for-each select="//v:background[1]">

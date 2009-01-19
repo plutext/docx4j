@@ -46,7 +46,9 @@ public class HtmlExporter {
 	/** Create an html version of the document, using CSS font family
 	 *  stacks.  This is appropriate if the HTML is intended for
 	 *  viewing in a web browser, rather than an intermediate step
-	 *  on the way to generating PDF output. 
+	 *  on the way to generating PDF output. The Microsoft Conditional
+	 *  Comments (supportMisalignedColumns, supportAnnotations,
+	 *  and mso) which are defined in the XSLT are not inserted.
 	 * 
 	 * @param result
 	 *            The javax.xml.transform.Result object to transform into 
@@ -256,6 +258,8 @@ public class HtmlExporter {
     public static DocumentFragment getNumberXmlNode(WordprocessingMLPackage wmlPackage,
     		String pStyleVal, String numId, String levelId) {
     	
+    	// Note that this is invoked for every paragraph with a pPr node.
+    	
     	log.info("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
     	System.out.println("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
     	
@@ -266,8 +270,9 @@ public class HtmlExporter {
         			wmlPackage, pStyleVal, numId, levelId);   
         	
         	if (triple==null) {
-        		log.error("computed number was null!");
+        		log.info("computed number was null");
         		System.out.println("computed number was null!");
+        		return null;
         	}
 
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -605,6 +610,11 @@ public class HtmlExporter {
 			return wmlPackage;
 		}
 		
+		Boolean conditionalComments = Boolean.FALSE; 
+		public void setConditionalComments(Boolean conditionalComments) {
+			this.conditionalComments = conditionalComments;
+		}
+		
 		Boolean fontFamilyStack = Boolean.FALSE;		
 		public void setFontFamilyStack(boolean val) {
 			fontFamilyStack = new Boolean(val);
@@ -668,6 +678,8 @@ public class HtmlExporter {
 			settings.put("docID", docID);
 			settings.put("substituterInstance", fontSubstituter);
 			settings.put("imageDirPath", imageDirPath);
+			settings.put("conditionalComments", conditionalComments);
+			
 			
 			return settings;
 		}
