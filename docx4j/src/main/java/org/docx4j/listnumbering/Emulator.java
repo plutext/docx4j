@@ -195,8 +195,12 @@ public class Emulator {
     			style = stylesPart.getStyle(pStyleVal);    			
     		}
 	    	if (style == null) {
-	    		log.warn("Couldn't find style '" + pStyleVal + "'");
+	    		log.debug("Couldn't find style '" + pStyleVal + "'");
 	    		return null;
+	    	} else
+		    	if (style.getPPr() == null) {
+		    		log.debug("Style '" + pStyleVal + "' has no pPr");
+		    		return null;
 	    	} else {
 	    		
 	    		NumPr numPr = style.getPPr().getNumPr();
