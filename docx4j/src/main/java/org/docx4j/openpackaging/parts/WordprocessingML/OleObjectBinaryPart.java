@@ -103,7 +103,9 @@ public class OleObjectBinaryPart extends BinaryPart {
 	
     public void viewFile(boolean verbose) throws IOException
     {
-    	org.apache.poi.poifs.dev.POIFSLister.displayDirectory(fs.getRoot(), "");
+    	String indent="";
+    	boolean withSizes = true;    	
+    	org.apache.poi.poifs.dev.POIFSLister.displayDirectory(fs.getRoot(), indent, withSizes);
     	
     	if (verbose) {
 	        List strings = POIFSViewEngine.inspectViewable(fs, true, 0, "  ");
