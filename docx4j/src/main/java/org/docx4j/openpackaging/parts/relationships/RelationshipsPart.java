@@ -162,7 +162,6 @@ public final class RelationshipsPart extends JaxbXmlPart {
 				
 	}
 	
-	static int nextId;
 	
 	private Relationships relationships;
 	public Relationships getRelationships() {
@@ -502,7 +501,27 @@ public final class RelationshipsPart extends JaxbXmlPart {
 //		this.isDirty = true;
 	}
 
+	/* Requirements for Id allocation: 
+	 * 
+	 * 1. uniqueness
+	 * 
+	 * 2. if a rel is removed, best not to reuse it
+	 *    (ie don't just use size() 
+	 * 
+	 * 
+	 * */
+	private int nextId;
 
+	private String getNextId() {
+		
+		// Relationship part always 
+		// determines the Relationship Id
+		String id = "rId" + nextId;
+		nextId++;
+		return id;
+		
+	}
+	
 	/**
 	 * Add the specified relationship to the collection.
 	 * 
@@ -513,9 +532,8 @@ public final class RelationshipsPart extends JaxbXmlPart {
 
 		// Relationship part always 
 		// determines the Relationship Id
-		String id = "rId" + nextId;
-		nextId++;
 		// but warn if we are overwriting
+		String id = getNextId();
 		if ( rel.getId() !=null 
 				&& !rel.getId().equals("") ) {
 			logger.warn("replacing relationship id '" + rel.getId() + "' with '"
