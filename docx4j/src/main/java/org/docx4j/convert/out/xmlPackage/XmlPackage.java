@@ -164,11 +164,31 @@ public class XmlPackage {
 		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 			try {
-				javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+				javax.xml.parsers.DocumentBuilderFactory dbf
+					= javax.xml.parsers.DocumentBuilderFactory.newInstance();
 				dbf.setNamespaceAware(true);
 				w3cDoc = dbf.newDocumentBuilder().newDocument();
 				
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc );
+				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc, 
+						new org.docx4j.jaxb.NamespacePrefixMapper() );
+					/* Force the RelationshipsPart to be marshalled using
+					 * the normal non-rels part NamespacePrefixMapper,
+					 * since otherwise (because we'd be using 2 namespace
+					 * prefix mappers?) we end up with errant xmlns="",
+					 * which is wrong and stops Word 2007 from loading the
+					 * document.
+					 * 
+					 * Note that xmlPackage.xsd defines:
+					 * 	<xsd:complexType name="CT_XmlData">
+							<xsd:sequence>
+								<xsd:any processContents="skip" />
+							</xsd:sequence>
+					 *
+					 * Note also that marshaltoString uses 
+					 * just the normal non-rels part NamespacePrefixMapper,
+					 * so if/when this is marshalled again, that could
+					 * have been causing problems as well?? 
+					 */
 		        dataResult.setAny( w3cDoc.getDocumentElement() );		        
 				log.info( "PUT SUCCESS: " + partName);		
 			} catch (Exception e) {
