@@ -228,10 +228,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	private static int DEFAULT_PAGE_WIDTH_TWIPS = 12240;  // Letter; A4 would be 11907  
 	private static int DEFAULT_LEFT_MARGIN_TWIPS = 1440;  // 1 inch
 	private static int DEFAULT_RIGHT_MARGIN_TWIPS = 1440;
-		
+
 	/**
 	 * Create a <wp:inline> element suitable for this image,
-	 * which can be embedded in w:p/w:r/w:drawing
+	 * which can be embedded in w:p/w:r/w:drawing.
+	 * If the image is wider than the page, it will be scaled
+	 * automatically.
 	 * @param filenameHint Any text, for example the original filename
 	 * @param altText  Like HTML's alt text
 	 * @param id1   An id unique in the document
@@ -243,14 +245,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 */
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2) throws Exception {
-		
-		if (filenameHint==null) {
-			filenameHint = "";
-		}
-		if (altText==null) {
-			altText = "";
-		}
-		
+				
 		WordprocessingMLPackage wordMLPackage = ((WordprocessingMLPackage)this.getPackage()); 
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
@@ -322,6 +317,79 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		}
 		
 		log.debug("cx=" + cx + "; cy=" + cy);
+		
+ 
+		return createImageInline( filenameHint,  altText, 
+				 id1,  id2,  cx,  cy);		
+	}
+	
+	
+	/**
+	 * Create a <wp:inline> element suitable for this image,
+	 * which can be embedded in w:p/w:r/w:drawing.
+	 * @param filenameHint Any text, for example the original filename
+	 * @param altText  Like HTML's alt text
+	 * @param id1   An id unique in the document
+	 * @param id2   Another id unique in the document
+	 * @param cx    Image width in twip
+	 * None of these things seem to be exposed in Word 2007's
+	 * user interface, but Word won't open the document if 
+	 * any of the attributes these go in (except @ desc) aren't present!
+	 * @throws Exception
+	 */
+	public Inline createImageInline(String filenameHint, String altText, 
+			int id1, int id2, long cx) throws Exception {
+		
+		ImageSize size = imageInfo.getSize();
+
+		Dimension2D dPt = size.getDimensionPt();
+		double imageWidthTwips = dPt.getWidth() * 20;
+		log.debug("imageWidthTwips: " + imageWidthTwips);
+
+		long cy;
+
+		log.debug("Scaling image height to retain aspect ratio");
+		cy = twipToEMU(dPt.getHeight() * 20 * cx / imageWidthTwips);
+
+		// Now convert cx to EMU
+		cx = twipToEMU(cx);
+		
+
+		log.debug("cx=" + cx + "; cy=" + cy);
+
+		return createImageInline(filenameHint, altText, id1, id2, cx, cy);		
+	}
+
+	/**
+	 * Create a <wp:inline> element suitable for this image, which can be
+	 * embedded in w:p/w:r/w:drawing, specifying height and width.  Note
+	 * that you'd ordinarily use one of the methods which don't require
+	 * you to specify height (cy). 
+	 * 
+	 * @param filenameHint
+	 *            Any text, for example the original filename
+	 * @param altText
+	 *            Like HTML's alt text
+	 * @param id1
+	 *            An id unique in the document
+	 * @param id2
+	 *            Another id unique in the document None of these things seem to
+	 *            be exposed in Word 2007's user interface, but Word won't open
+	 * the document if any of the attributes these go in (except @ desc) aren't
+	 *            present!
+	 * @param cx    Image width in twip
+	 * @param cy    Image height in twip
+	 * @throws Exception
+	 */
+	public Inline createImageInline(String filenameHint, String altText, 
+			int id1, int id2, long cx, long cy) throws Exception {
+		
+		if (filenameHint==null) {
+			filenameHint = "";
+		}
+		if (altText==null) {
+			altText = "";
+		}
 		
         String ml =
 //        	"<w:p ><w:r>" +
