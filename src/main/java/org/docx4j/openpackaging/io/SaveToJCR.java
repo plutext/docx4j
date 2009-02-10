@@ -264,12 +264,19 @@ public class SaveToJCR {
 		}
 				
 	}
+
+	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, String partName, InputStream is) throws Docx4JException {
+
+		return saveRawXmlPart( jcrSession,  baseNode,  partName, "text/plain",  is);
+		
+	}
 	
 	/* @displayName - a human readable description for this content
 	 * object.  Pass null if you don't want the displayName property set. 
 	 * Returns the resource.
 	 */
-	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, String partName, InputStream is) throws Docx4JException {
+	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, 
+			String partName, String mimeType, InputStream is) throws Docx4JException {
 
 		try {
 			// OLD COMMENT - IN COURSE OF BECOMING REDUNDANT (as of 18 Jan 2008)  
@@ -360,7 +367,7 @@ public class SaveToJCR {
 	        // New - in what follows, replaced contentNode with cmContentNode
 	        
 	        // javax.jcr.nodetype.ConstraintViolationException: no matching property definition found for {http://www.jcp.org/jcr/1.0}data
-	        cmContentNode.setProperty("jcr:mimeType", "text/plain");
+	        cmContentNode.setProperty("jcr:mimeType", mimeType);
 //	        contentNode.setProperty("jcr:encoding", "");
 	        
 	        if (partName.indexOf("/")>0 ) {
