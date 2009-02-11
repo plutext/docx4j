@@ -129,9 +129,37 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	}
 
 	static ImageManager imageManager;
-	
+
+	/**
+	 * Create an image part from the provided byte array, attach it to the 
+	 * main document part, and return it.
+	 * 
+	 * @param wordMLPackage
+	 * @param sourcePart
+	 * @param bytes
+	 * @return
+	 * @throws Exception
+	 */
 	public static BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
 			byte[] bytes) throws Exception {
+		
+		return createImagePart(wordMLPackage,
+				wordMLPackage.getMainDocumentPart(), bytes);
+
+	}
+	
+	/**
+	 * Create an image part from the provided byte array, attach it to the source part
+	 * (eg the main document part, a header part etc), and return it.
+	 * 
+	 * @param wordMLPackage
+	 * @param sourcePart
+	 * @param bytes
+	 * @return
+	 * @throws Exception
+	 */
+	public static BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
+			Part sourcePart, byte[] bytes) throws Exception {
 				
 		// Whatever image type this is, we're going to need 
 		// to know its dimensions.
@@ -213,7 +241,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		FileInputStream fis = new FileInputStream(tmpImageFile); //reuse		
 		imagePart.setBinaryData( fis );
 				
-		imagePart.rel =  wordMLPackage.getMainDocumentPart().addTargetPart(imagePart);
+		imagePart.rel =  sourcePart.addTargetPart(imagePart);
 		
 		imagePart.setImageInfo(info);
 
