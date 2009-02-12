@@ -33,8 +33,8 @@ import org.dom4j.io.SAXReader;
  *  Most are XML documents.
  *  
  *  docx4j aims to represent XML parts using JAXB.  However, 
- *  at present we only have a JAXB representation for the main
- *  document part.  
+ *  at present there are some parts for which we don't have
+ *  JAXB representations. 
  *  
  *  Until such time as a JAXB representation for an XML Part exists,
  *  the Part should extend this class.   
