@@ -123,6 +123,10 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
      *     If any unexpected errors occur while unmarshalling
      */
     public Object unmarshalDefaultStyles() throws JAXBException {
+    	
+    	
+//    	Throwable t = new Throwable();
+//    	t.printStackTrace();
     	  
     		java.io.InputStream is = null;
 			try {
@@ -131,6 +135,10 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 				
 				// Works in Eclipse - not absence of leading '/'
 				is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/styles.xml");
+				
+					// styles.xml defines a small subset of common styles
+					// (it is a much smaller set of styles than KnownStyles.xml)
+				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -140,6 +148,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
     }
     
     private void initKnownStyles() {
+
+//    	Throwable t = new Throwable();
+//    	t.printStackTrace();
     	
 		java.io.InputStream is = null;
 		try {

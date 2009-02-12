@@ -507,8 +507,6 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 * 
 	 * 2. if a rel is removed, best not to reuse it
 	 *    (ie don't just use size() 
-	 * 
-	 * 
 	 * */
 	private int nextId;
 

@@ -29,17 +29,27 @@ import org.dom4j.Document;
 
 
 
-public final class CustomXmlPropertiesPart extends Dom4jXmlPart {
+public final class CustomXmlDataStoragePropertiesPart extends Dom4jXmlPart {
 	
-	public CustomXmlPropertiesPart(PartName partName) throws InvalidFormatException {
+	public CustomXmlDataStoragePropertiesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init();
+	}
+	
+	public CustomXmlDataStoragePropertiesPart() throws InvalidFormatException {
+		super(new PartName("/customXML/itemProps1.xml"));
+		init();
+	}
+
+	public void init() {		
+	
 		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
-				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_CUSTOMXMLPROPERTIES));
+				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGEPROPERTIES));
 
 		// Used when this Part is added to a rels 
-//		setRelationshipType(Namespaces. TODO);
+		setRelationshipType(Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES);
 		
 	}
 
