@@ -72,17 +72,20 @@ public class ContentTypes {
 	
 	// PartName="/docProps/core.xml" 
 	public final static String PACKAGE_COREPROPERTIES =
-		"application/vnd.openxmlformats-package.core-properties+xml";
-
-	
+		"application/vnd.openxmlformats-package.core-properties+xml";	
 	// PartName="/docProps/custom.xml"
 	public final static String OFFICEDOCUMENT_CUSTOMPROPERTIES =
-		"application/vnd.openxmlformats-officedocument.custom-properties+xml";
-	// PartName="/customXml/itemProps1.xml"
-	public final static String OFFICEDOCUMENT_CUSTOMXMLPROPERTIES = "application/vnd.openxmlformats-officedocument.customXmlProperties+xml";
+		"application/vnd.openxmlformats-officedocument.custom-properties+xml";	
 	// PartName="/docProps/app.xml"
 	public final static String OFFICEDOCUMENT_EXTENDEDPROPERTIES =
 		"application/vnd.openxmlformats-officedocument.extended-properties+xml";
+	
+	// PartName="/customXml/itemProps1.xml"
+	public final static String OFFICEDOCUMENT_CUSTOMXML_DATASTORAGEPROPERTIES = 
+		"application/vnd.openxmlformats-officedocument.customXmlProperties+xml";
+	public final static String OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE = 
+		"application/xml";
+	
 	public final static String OFFICEDOCUMENT_THEME =
 		"application/vnd.openxmlformats-officedocument.theme+xml";
 	

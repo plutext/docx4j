@@ -170,7 +170,7 @@ public interface ContentTypeManager {
 	public Part CreateDefaultPartObject(String partName)
 	throws InvalidFormatException;	
 	
-	public Part CreateCustomXmlPropertiesPartObject(String partName)
+	public Part CreateCustomXmlDataStoragePropertiesPartObject(String partName)
 	throws InvalidFormatException;
 	
 	public Part CreateDocPropsCorePartObject(String partName)
