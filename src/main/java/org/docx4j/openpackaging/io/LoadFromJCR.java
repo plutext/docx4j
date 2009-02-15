@@ -111,7 +111,7 @@ public class LoadFromJCR extends Load {
 	
 	 // HashMap containing the names of all the nodes,
 		// so we can tell whether there are any orphans
-	public HashMap unusedJCRNodes = null;
+//	public HashMap unusedJCRNodes = null;
 	
 	public NodeMapper nodeMapper = null;
 	
@@ -145,18 +145,18 @@ public class LoadFromJCR extends Load {
 		// 1. The idea is to walk the tree of relationships, getting
 //		everything we need from JCR. 
 		
-		unusedJCRNodes = new HashMap();
+//		unusedJCRNodes = new HashMap();
         try {
 //	        Node docxContentNode = docxNode.getNode("jcr:content");
 			Node docxContentNode = nodeMapper.getContentNode(docxNode);
 
             // Its a flat structure since we've URL Encoded '/'
-            NodeIterator nodeIterator = docxContentNode.getNodes();
-	        while(nodeIterator.hasNext()) {
-	            Node n=nodeIterator.nextNode();
-	            log.info(n.getName());
-				unusedJCRNodes.put(decodeSlashes(nodeMapper, n.getName()), new Boolean(true) );				
-	        }		
+//            NodeIterator nodeIterator = docxContentNode.getNodes();
+//	        while(nodeIterator.hasNext()) {
+//	            Node n=nodeIterator.nextNode();
+//	            log.info(n.getName());
+//				unusedJCRNodes.put(decodeSlashes(nodeMapper, n.getName()), new Boolean(true) );				
+//	        }		
 		
 			// 2. Create a new Package
 	//		Eventually, you'll only be able to create an Excel package etc
@@ -177,7 +177,8 @@ public class LoadFromJCR extends Load {
 	//		each PartName, and use it in the Part constructor.
 
 //			p.setContentTypeManager(ctm); - 20080111 - done by ctm.createPackage();
-			unusedJCRNodes.put("[Content_Types].xml", new Boolean(false));
+			
+//			unusedJCRNodes.put("[Content_Types].xml", new Boolean(false));
 			
 			// 4. Start with _rels/.rels
 	
@@ -191,7 +192,7 @@ public class LoadFromJCR extends Load {
 			RelationshipsPart rp = getRelationshipsPartFromJCR(p, jcrSession, docxContentNode,  partName);
 			p.setRelationships(rp);
 			//rp.setPackageRelationshipPart(true);
-			unusedJCRNodes.put(partName, new Boolean(false));
+//			unusedJCRNodes.put(partName, new Boolean(false));
 			
 			
 			log.info( "Object created for: " + partName);
@@ -206,11 +207,11 @@ public class LoadFromJCR extends Load {
 			
 			
 			// 6. Check unusedJCRNodes is empty
-			 Iterator myVeryOwnIterator = unusedJCRNodes.keySet().iterator();
-			 while(myVeryOwnIterator.hasNext()) {
-			     String key = (String)myVeryOwnIterator.next();
-			     log.info( key + "  " + unusedJCRNodes.get(key));
-			 }
+//			 Iterator myVeryOwnIterator = unusedJCRNodes.keySet().iterator();
+//			 while(myVeryOwnIterator.hasNext()) {
+//			     String key = (String)myVeryOwnIterator.next();
+//			     log.info( key + "  " + unusedJCRNodes.get(key));
+//			 }
 			 
 			 
 	    } catch (Exception e) {
@@ -226,7 +227,11 @@ public class LoadFromJCR extends Load {
 	public static void initialiseContentTypeManager(ContentTypeManager ctm, 
 			Session jcrSession,
 			Node docxContentNode , NodeMapper nodeMapper ) 
-			throws Docx4JException {	
+			throws Docx4JException {
+		
+		// NB - this is static so that it can be called without needing a
+		// LoadFromJCR object.  It is not the intent that a ContentTypeManager
+		// be shared between documents!
 		
 		try {
 
@@ -440,20 +445,7 @@ public class LoadFromJCR extends Load {
 			Node docxNode, Base source, RelationshipsPart rp) throws Docx4JException {
 		
 		Package pkg = source.getPackage();		
-		
-//		for (Iterator it = rp.iterator(); it.hasNext(); ) {
-//			Relationship r = (Relationship)it.next();
-//			log.info("For Relationship Id=" + r.getId() 
-//					+ " Source is " + r.getSource().getPartName() 
-//					+ ", Target is " + r.getTargetURI() );
-//			try {				
-//				getPart(jcrSession, docxNode, pkg, rp, r);
-//			} catch (Exception e) {
-//				throw new Docx4JException("Failed to add parts from relationships", e);
-//			}
-//		}
-		
-		
+				
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
 			log.info("For Relationship Id=" + r.getId() 
@@ -541,7 +533,7 @@ public class LoadFromJCR extends Load {
 					+ " to " + part.getPartName());
 		}				
 		
-		unusedJCRNodes.put(resolvedPartUri, new Boolean(false));
+//		unusedJCRNodes.put(resolvedPartUri, new Boolean(false));
 		log.info(".. added part '" + part.getPartName() + "'" );
 		
 		RelationshipsPart rrp = getRelationshipsPart(jcrSession, docxNode, part);
@@ -550,7 +542,7 @@ public class LoadFromJCR extends Load {
 			addPartsFromRelationships(jcrSession, docxNode, part, rrp );					
 			String relPart = PartName.getRelationshipsPartName(
 					part.getPartName().getName().substring(1) );
-			unusedJCRNodes.put(relPart, new Boolean(false));
+//			unusedJCRNodes.put(relPart, new Boolean(false));
 		}
 	}
 

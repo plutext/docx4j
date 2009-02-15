@@ -63,6 +63,13 @@ import org.dom4j.io.SAXReader;
  */
 public class LoadFromZipFile extends Load {
 	
+	/*
+	 * It would be nice to be about to load a zip file from 
+	 * an input stream, rather than from a file, but java.util.zip
+	 * doesn't support this.  Nor does truezip (?). jazzlib?
+	 *
+	 */
+	
 	private static Logger log = Logger.getLogger(LoadFromZipFile.class);
 
 	// Testing
