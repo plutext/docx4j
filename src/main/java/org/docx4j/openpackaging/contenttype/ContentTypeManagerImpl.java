@@ -262,10 +262,16 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			return CreateDocPropsCorePartObject(partName ); 
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMPROPERTIES)) {
 			return CreateDocPropsCustomPartObject(partName );
-		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMXMLPROPERTIES)) {
-			return CreateCustomXmlPropertiesPartObject(partName );
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_EXTENDEDPROPERTIES)) {
 			return CreateDocPropsExtendedPartObject(partName );
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE)) {
+			return new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGEPROPERTIES)) {
+			return CreateCustomXmlDataStoragePropertiesPartObject(partName );			
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
+			return CreateObfuscatedFontPartObject(partName );
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)) {
+			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME)) {
 			return CreateThemePartObject(partName );
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS)) {
@@ -290,10 +296,6 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 			return CreateStyleDefinitionsPartObject( partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_WEBSETTINGS)) {
 			return CreateWebSettingsPartObject(partName );
-		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
-			return CreateObfuscatedFontPartObject(partName );
-		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)) {
-			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
 			
 			if (!partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_JPG_1)
@@ -390,9 +392,9 @@ public class ContentTypeManagerImpl implements ContentTypeManager {
 		return new CommentsPart(new PartName(partName));
 	}
 
-	public Part CreateCustomXmlPropertiesPartObject(String partName)
+	public Part CreateCustomXmlDataStoragePropertiesPartObject(String partName)
 			throws InvalidFormatException {
-		return new CustomXmlPropertiesPart(new PartName(partName));
+		return new CustomXmlDataStoragePropertiesPart(new PartName(partName));
 	}
 
 	public Part CreateEndnotesPartObject(String partName)
