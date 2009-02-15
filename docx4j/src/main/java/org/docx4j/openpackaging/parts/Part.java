@@ -160,5 +160,17 @@ public abstract class Part extends Base {
 		return false;
 	}
 
+	// The version of this part.
+	// Useful for some applications, particularly where unzipped parts
+	// are stored in a document management system.
+	// This field is available for the use of client applications as 
+	// they see fit.
+	private long version;
+	public void setVersion(long version) {
+		this.version = version;
+	}
+	public long getVersion() {
+		return version;
+	}
 
 }
