@@ -187,7 +187,7 @@ public final class URIHelper {
 	}
 
 	/**
-	 * Obtenir le nom du fichier � partir de son URI.
+	 * Get file name from the specified URI.
 	 */
 	public static String getFilename(URI uri) {
 		if (uri != null) {
@@ -204,10 +204,7 @@ public final class URIHelper {
 	}
 
 	/**
-	 * R�cup�rer le nom du fichier sans son extension.
-	 * 
-	 * @param uri
-	 *            L'URI � partir duquel extraire le chemin du fichier
+	 * Get the file name without the trailing extension.
 	 */
 	public static String getFilenameWithoutExtension(URI uri) {
 		String filename = getFilename(uri);
@@ -218,7 +215,7 @@ public final class URIHelper {
 	}
 
 	/**
-	 * Obtenir le chemin sans le nom du fichier � paritr d'un URI.
+	 * Get the directory path from the specified URI.
 	 */
 	public static URI getPath(URI uri) {
 		if (uri != null) {
@@ -240,12 +237,10 @@ public final class URIHelper {
 	}
 
 	/**
-	 * Combine les deux URI.
+	 * Combine two URI.
 	 * 
 	 * @param prefix
-	 *            L'URI de pr�fixe.
 	 * @param suffix
-	 *            L'URI de suffixe.
 	 * @return
 	 */
 	public static URI combine(URI prefix, URI suffix) {
@@ -254,7 +249,7 @@ public final class URIHelper {
 			retUri = new URI(combine(prefix.getPath(), suffix.getPath()));
 		} catch (URISyntaxException e) {
 			throw new IllegalArgumentException(
-					"Prefix and suffix can't be combine !");
+					"Prefix and suffix can't be combined !");
 		}
 		return retUri;
 	}
@@ -275,6 +270,112 @@ public final class URIHelper {
 			return "";
 	}
 
+	/**
+	 * Fully relativize the target part URI against the source part URI.
+	 * 
+	 * @param sourceURI
+	 *            The source part URI.
+	 * @param targetURI
+	 *            The target part URI.
+	 * @return A fully relativize part name URI ('word/media/image1.gif',
+	 *         '/word/document.xml' => 'media/image1.gif') else
+	 *         <code>null</code>.
+	 */
+	public static URI relativizeURI(URI sourceURI, URI targetURI) {
+		StringBuilder retVal = new StringBuilder();
+		String[] segmentsSource = sourceURI.getPath().split("/", -1);
+		String[] segmentsTarget = targetURI.getPath().split("/", -1);
+
+		// If the source URI is empty
+		if (segmentsSource.length == 0) {
+			throw new IllegalArgumentException(
+					"Can't relativize an empty source URI !");
+		}
+
+		// If target URI is empty
+		if (segmentsTarget.length == 0) {
+			throw new IllegalArgumentException(
+					"Can't relativize an empty target URI !");
+		}
+		
+		// If the source is the root, then the relativized
+		//  form must actually be an absolute URI
+		if(sourceURI.toString().equals("/")) {
+			return targetURI;
+		}
+
+
+		// Relativize the source URI against the target URI.
+		// First up, figure out how many steps along we can go
+		// and still have them be the same
+		int segmentsTheSame = 0;
+		for (int i = 0; i < segmentsSource.length && i < segmentsTarget.length; i++) {
+			if (segmentsSource[i].equals(segmentsTarget[i])) {
+				// Match so far, good
+				segmentsTheSame++;
+			} else {
+				break;
+			}
+		}
+
+		// If we didn't have a good match or at least except a first empty element
+		if ((segmentsTheSame == 0 || segmentsTheSame == 1) && 
+				segmentsSource[0].equals("") && segmentsTarget[0].equals("")) {
+			for (int i = 0; i < segmentsSource.length - 2; i++) {
+				retVal.append("../");
+			}
+			for (int i = 0; i < segmentsTarget.length; i++) {
+				if (segmentsTarget[i].equals(""))
+					continue;
+				retVal.append(segmentsTarget[i]);
+				if (i != segmentsTarget.length - 1)
+					retVal.append("/");
+			}
+
+			try {
+				return new URI(retVal.toString());
+			} catch (Exception e) {
+				System.err.println(e);
+				return null;
+			}
+		}
+
+		// Special case for where the two are the same
+		if (segmentsTheSame == segmentsSource.length
+				&& segmentsTheSame == segmentsTarget.length) {
+			retVal.append("");
+		} else {
+			// Matched for so long, but no more
+
+			// Do we need to go up a directory or two from
+			// the source to get here?
+			// (If it's all the way up, then don't bother!)
+			if (segmentsTheSame == 1) {
+				retVal.append("/");
+			} else {
+				for (int j = segmentsTheSame; j < segmentsSource.length - 1; j++) {
+					retVal.append("../");
+				}
+			}
+
+			// Now go from here on down
+			for (int j = segmentsTheSame; j < segmentsTarget.length; j++) {
+				if (retVal.length() > 0
+						&& retVal.charAt(retVal.length() - 1) != '/') {
+					retVal.append("/");
+				}
+				retVal.append(segmentsTarget[j]);
+			}
+		}
+
+		try {
+			return new URI(retVal.toString());
+		} catch (Exception e) {
+			System.err.println(e);
+			return null;
+		}
+	}
+	
 
 	/**
 	 * Resolve a target uri against a source.
@@ -449,67 +550,67 @@ public final class URIHelper {
 		return retVal.toString();
 	}
 
-	/**
-	 * Fully relativize the source part URI against the target part URI.
-	 * 
-	 * @param sourceURI
-	 *            The source part URI.
-	 * @param targetURI
-	 *            The target part URI.
-	 * @return A fully relativize part name URI ('word/media/image1.gif',
-	 *         '/word/document.xml' => 'media/image1.gif') else
-	 *         <code>null</code>.
-	 */
-	public static URI relativizeURI(URI sourceURI, URI targetURI) {
-		StringBuffer retVal = new StringBuffer();
-		String[] segmentsSource = sourceURI.getPath().split("/");
-		String[] segmentsTarget = targetURI.getPath().split("/");
-
-		// If the source URI is empty
-		if (segmentsSource.length == 0) {
-			return null;
-		}
-
-		// If target URI is empty
-		if (segmentsTarget.length == 0) {
-			if (sourceURI.getPath().startsWith(FORWARD_SLASH_STRING)) {
-				try {
-					return new URI(sourceURI.getPath().substring(1));
-				} catch (Exception e) {
-					return null;
-				}
-			} else
-				return sourceURI;
-		}
-
-		// Relativize the source URI against the target URI.
-		for (short i = 0, j = 0; i < segmentsSource.length
-				&& j < segmentsTarget.length; ++i, ++j) {
-			if (segmentsSource[i].equalsIgnoreCase(segmentsTarget[j])) {
-				if (i < segmentsSource.length - 1) {
-					continue;
-				} else {
-					// We add the last segment whatever it happens
-					retVal.append("/");
-					retVal.append(segmentsTarget[i]);
-					break;
-				}
-			} else {
-				for (; i < segmentsSource.length; ++i) {
-					retVal.append("/");
-					retVal.append(segmentsSource[i]);
-				}
-				break;
-			}
-		}
-		try {
-			PartName retPartName = new PartName(
-					retVal.toString(), true);
-			return new URI(retPartName.getURI().getPath().substring(1));
-		} catch (Exception e) {
-			return null;
-		}
-	}
+//	/**
+//	 * Fully relativize the source part URI against the target part URI.
+//	 * 
+//	 * @param sourceURI
+//	 *            The source part URI.
+//	 * @param targetURI
+//	 *            The target part URI.
+//	 * @return A fully relativize part name URI ('word/media/image1.gif',
+//	 *         '/word/document.xml' => 'media/image1.gif') else
+//	 *         <code>null</code>.
+//	 */
+//	public static URI OLDrelativizeURI(URI sourceURI, URI targetURI) {
+//		StringBuffer retVal = new StringBuffer();
+//		String[] segmentsSource = sourceURI.getPath().split("/");
+//		String[] segmentsTarget = targetURI.getPath().split("/");
+//
+//		// If the source URI is empty
+//		if (segmentsSource.length == 0) {
+//			return null;
+//		}
+//
+//		// If target URI is empty
+//		if (segmentsTarget.length == 0) {
+//			if (sourceURI.getPath().startsWith(FORWARD_SLASH_STRING)) {
+//				try {
+//					return new URI(sourceURI.getPath().substring(1));
+//				} catch (Exception e) {
+//					return null;
+//				}
+//			} else
+//				return sourceURI;
+//		}
+//
+//		// Relativize the source URI against the target URI.
+//		for (short i = 0, j = 0; i < segmentsSource.length
+//				&& j < segmentsTarget.length; ++i, ++j) {
+//			if (segmentsSource[i].equalsIgnoreCase(segmentsTarget[j])) {
+//				if (i < segmentsSource.length - 1) {
+//					continue;
+//				} else {
+//					// We add the last segment whatever it happens
+//					retVal.append("/");
+//					retVal.append(segmentsTarget[i]);
+//					break;
+//				}
+//			} else {
+//				for (; i < segmentsSource.length; ++i) {
+//					retVal.append("/");
+//					retVal.append(segmentsSource[i]);
+//				}
+//				break;
+//			}
+//		}
+//		try {
+//			PartName retPartName = new PartName(
+//					retVal.toString(), true);
+//			return new URI(retPartName.getURI().getPath().substring(1));
+//		} catch (Exception e) {
+//			return null;
+//		}
+//	}
 
 	
 	
