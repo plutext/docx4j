@@ -330,10 +330,10 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		URI tobeRelativized = part.getPartName().getURI();
 		URI relativizeAgainst = sourceP.getPartName().getURI();
 		
-		log.debug("Relativising " + tobeRelativized 
-				+ " against " + relativizeAgainst);
+		log.debug("Relativising target " + tobeRelativized 
+				+ " against source " + relativizeAgainst);
 		
-		URI result = org.docx4j.openpackaging.URIHelper.relativizeURI(tobeRelativized, relativizeAgainst); 
+		URI result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized); 
 		
 		log.debug("Result " + result); 
 		
