@@ -63,7 +63,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 	private static java.util.Map<String, org.docx4j.wml.Style>  knownStyles = null;
 	
 	// Note, you need to manually keep this up to date
-	private static java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
+	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
 	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
@@ -96,12 +96,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 						
 			jaxbElement = u.unmarshal( is );
 			
-			liveStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
-			
-			for ( org.docx4j.wml.Style s : ((org.docx4j.wml.Styles)jaxbElement).getStyle() ) {				
-				liveStyles.put(s.getStyleId(), s);				
-			}
-			
+			initialiseLiveStyles();
 			
 			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
@@ -110,6 +105,40 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 		}
     	
 		return jaxbElement;
+    	
+    }
+    
+    public Object unmarshal(org.w3c.dom.Element el) throws JAXBException {
+    	
+    	// Note: This is used when we read in a pkg:package 
+
+		try {
+
+			Unmarshaller u = jc.createUnmarshaller();
+						
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			jaxbElement = u.unmarshal( el );
+
+			initialiseLiveStyles();
+			
+			return jaxbElement;
+			
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+    private void initialiseLiveStyles() {
+    	
+		liveStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
+		
+		for ( org.docx4j.wml.Style s : ((org.docx4j.wml.Styles)jaxbElement).getStyle() ) {				
+			liveStyles.put(s.getStyleId(), s);	
+			log.debug("live style: " + s.getStyleId() );
+		}
     	
     }
     
