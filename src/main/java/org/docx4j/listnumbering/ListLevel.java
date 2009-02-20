@@ -164,6 +164,8 @@ public class ListLevel {
         /// <param name="masterCopy"></param>
         public ListLevel(ListLevel masterCopy)
         {
+        	this.jaxbAbstractLvl = masterCopy.jaxbAbstractLvl;
+        	
             this.id = masterCopy.id;
             this.levelText = masterCopy.levelText;
             this.startValue = masterCopy.startValue;
