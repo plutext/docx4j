@@ -104,6 +104,12 @@ public class ListNumberingDefinition {
 	 * numbering part.
 	 */
 	
+//	// The underlying JAXB object 
+//	private Numbering.Num numNode;
+//	public Numbering.Num getNumNode() {
+//		return numNode;
+//	}
+	
 	protected static Logger log = Logger.getLogger(ListNumberingDefinition.class);
 	
         /// <summary>
@@ -115,6 +121,8 @@ public class ListNumberingDefinition {
         public ListNumberingDefinition(Numbering.Num numNode, 
         		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions)
         {
+//        	this.numNode = numNode;
+        	
             this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
 
             //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
@@ -158,6 +166,10 @@ public class ListNumberingDefinition {
 
         private AbstractListNumberingDefinition abstractListDefinition;
         private HashMap<String, ListLevel> levels;
+    	public ListLevel getLevel(String ilvl) {
+    		return levels.get(ilvl);
+    	}
+        
 
         /// <summary>
         /// increment the occurrence count of the specified level, reset the occurrence count of derived levels
@@ -265,6 +277,7 @@ public class ListNumberingDefinition {
         {
             return this.levels.containsKey(level);
         }
+
     }
 
 //    static String getAttributeValue(XmlNode node, String name)

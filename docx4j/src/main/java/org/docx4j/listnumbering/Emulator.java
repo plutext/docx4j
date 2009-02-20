@@ -105,63 +105,9 @@ public class Emulator {
 	 */
 	
 	protected static Logger log = Logger.getLogger(Emulator.class);
-	
-	
-    HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions; 
-    HashMap<String, ListNumberingDefinition> instanceListDefinitions; 
-	
-    public Emulator(Numbering numbering)
+			
+    public Emulator()
     {
-        // count the number of different list numbering schemes
-    	if (numbering.getNum().size() == 0)
-        {
-            return;
-        }
-        
-        // initialize the abstract number list
-        abstractListDefinitions 
-        	= new HashMap<String, AbstractListNumberingDefinition>(numbering.getAbstractNum().size() );
-                
-        // initialize the instance number list
-        instanceListDefinitions 
-        	= new HashMap<String, ListNumberingDefinition>( numbering.getAbstractNum().size() );
-        		// Hmm, shouldn't the size be based on the number of instance nums?
-
-        // store the abstract list type definitions
-        for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() )
-        {
-            AbstractListNumberingDefinition absNumDef 
-            	= new AbstractListNumberingDefinition(abstractNumNode);
-
-            abstractListDefinitions.put(absNumDef.getID(), absNumDef);
-
-            // now go through the abstract list definitions and update those that are linked to other styles
-            if (absNumDef.hasLinkedStyle() )
-            {
-//                String linkStyleXPath = "/w:document/w:numbering/w:abstractNum/w:styleLink[@w:val=\"" + absNumDef.Value.LinkedStyleId + "\"]";
-//                XmlNode linkedStyleNode = mainDoc.SelectSingleNode(linkStyleXPath, nsm);
-//
-//                if (linkedStyleNode != null)
-//                {
-//                    absNumDef.Value.UpdateDefinitionFromLinkedStyle(linkedStyleNode.ParentNode, nsm);
-//                }
-                
-                // find the linked style
-                // TODO - review
-                absNumDef.UpdateDefinitionFromLinkedStyle(abstractNumNode);
-            }
-        }
-
-        // instantiate the list number definitions
-        //foreach (XmlNode numNode in numberNodes)
-        for( Numbering.Num numNode : numbering.getNum() )
-        {
-            ListNumberingDefinition listDef 
-            	= new ListNumberingDefinition(numNode, abstractListDefinitions);
-
-            instanceListDefinitions.put(listDef.getListNumberId(), listDef);
-        }
-
     }
     
 
@@ -249,34 +195,34 @@ public class Emulator {
 				
 			} else {
 
-				if (em.instanceListDefinitions.containsKey(numId)
-						&& em.instanceListDefinitions.get(numId).LevelExists(
+				if (numberingPart.getInstanceListDefinitions().containsKey(numId)
+						&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
 								levelId)) {
 					// XmlAttribute counterAttr =
 					// mainDoc.CreateAttribute("numString");
 
-					em.instanceListDefinitions.get(numId).IncrementCounter(
+					numberingPart.getInstanceListDefinitions().get(numId).IncrementCounter(
 							levelId);
-					triple.numString = em.instanceListDefinitions.get(numId)
+					triple.numString = numberingPart.getInstanceListDefinitions().get(numId)
 							.GetCurrentNumberString(levelId);
 					
 					log.debug("Got number: " + triple.numString);
 
-					String font = em.instanceListDefinitions.get(numId)
+					String font = numberingPart.getInstanceListDefinitions().get(numId)
 							.GetFont(levelId);
 
 					if (font != null && !font.equals("")) {
 						triple.numFont = font;
 					}
 
-					if (em.instanceListDefinitions.get(numId).IsBullet(levelId)) {
+					if (numberingPart.getInstanceListDefinitions().get(numId).IsBullet(levelId)) {
 						triple.isBullet = true;
 					}
-				} else if (!em.instanceListDefinitions.containsKey(numId)){
+				} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 					
 					log.error("Couldn't find list " + numId);
 					
-				} else if (!em.instanceListDefinitions.get(numId).LevelExists(
+				} else if (!numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
 						levelId)){
 					
 					log.error("Couldn't find level " + levelId + " in list " + numId);					

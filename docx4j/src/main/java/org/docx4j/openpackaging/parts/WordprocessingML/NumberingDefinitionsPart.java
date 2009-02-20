@@ -21,16 +21,24 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import java.util.HashMap;
+
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.listnumbering.Emulator;
+import org.docx4j.listnumbering.ListLevel;
+import org.docx4j.listnumbering.ListNumberingDefinition;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
+import org.docx4j.wml.PPrBase.Ind;
 
 
 
@@ -38,7 +46,15 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 	
 	public NumberingDefinitionsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
-		
+		init();
+	}
+	
+	public NumberingDefinitionsPart() throws InvalidFormatException {
+		super(new PartName("/word/numbering.xml"));
+		init();
+	}
+
+	public void init() {	
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_NUMBERING));
@@ -47,19 +63,153 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 		setRelationshipType(Namespaces.NUMBERING);
 	}
 	
+    HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions; 
+	public HashMap<String, AbstractListNumberingDefinition> getAbstractListDefinitions() {
+		return abstractListDefinitions;
+	}
+
+    HashMap<String, ListNumberingDefinition> instanceListDefinitions; 
+	public HashMap<String, ListNumberingDefinition> getInstanceListDefinitions() {
+		return instanceListDefinitions;
+	}
+	
+    public void initialiseMaps()
+    {
+    	Numbering numbering = (Numbering)jaxbElement;
+    	
+        // count the number of different list numbering schemes
+    	if (numbering.getNum().size() == 0)
+        {
+            return;
+        }
+        
+        // initialize the abstract number list
+        abstractListDefinitions 
+        	= new HashMap<String, AbstractListNumberingDefinition>(numbering.getAbstractNum().size() );
+                
+        // initialize the instance number list
+        instanceListDefinitions 
+        	= new HashMap<String, ListNumberingDefinition>( numbering.getAbstractNum().size() );
+        		// Hmm, shouldn't the size be based on the number of instance nums?
+
+        // store the abstract list type definitions
+        for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() )
+        {
+            AbstractListNumberingDefinition absNumDef 
+            	= new AbstractListNumberingDefinition(abstractNumNode);
+
+            abstractListDefinitions.put(absNumDef.getID(), absNumDef);
+
+            // now go through the abstract list definitions and update those that are linked to other styles
+            if (absNumDef.hasLinkedStyle() )
+            {
+//                String linkStyleXPath = "/w:document/w:numbering/w:abstractNum/w:styleLink[@w:val=\"" + absNumDef.Value.LinkedStyleId + "\"]";
+//                XmlNode linkedStyleNode = mainDoc.SelectSingleNode(linkStyleXPath, nsm);
+//
+//                if (linkedStyleNode != null)
+//                {
+//                    absNumDef.Value.UpdateDefinitionFromLinkedStyle(linkedStyleNode.ParentNode, nsm);
+//                }
+                
+                // find the linked style
+                // TODO - review
+                absNumDef.UpdateDefinitionFromLinkedStyle(abstractNumNode);
+            }
+        }
+
+        // instantiate the list number definitions
+        //foreach (XmlNode numNode in numberNodes)
+        for( Numbering.Num numNode : numbering.getNum() )
+        {
+            ListNumberingDefinition listDef 
+            	= new ListNumberingDefinition(numNode, abstractListDefinitions);
+
+            instanceListDefinitions.put(listDef.getListNumberId(), listDef);
+        }
+
+    }
+	
+	
 	private Emulator em;
 //	public void setEmulator(Emulator em) {
 //		this.em = em;
 //	}
 	public Emulator getEmulator() {
 		
-    	if (em == null ) {    		
-    		em = new Emulator( (Numbering)jaxbElement );    		
+    	if (em == null ) { 
+    		initialiseMaps();
+    		em = new Emulator();    		
     	}
 		
 		return em;
 	}
 
+	public Ind getInd(String numId, String ilvl) {
+
+		// Operating on the docx4j.listnumbering plane,
+		// not the JAXB plane..
+		ListNumberingDefinition lnd = instanceListDefinitions.get(numId);
+		ListLevel ll = lnd.getLevel(ilvl);
+		
+		// OK, now on the JAXB plane
+		Lvl jaxbOverrideLvl = ll.getJaxbOverrideLvl();
+		
+		log.debug("Looking at override/instance definition..");
+		if (jaxbOverrideLvl!=null) {
+			
+			Ind ind = getIndFromLvl(jaxbOverrideLvl);
+			if (ind!=null) {
+				log.debug("Got it..");
+				return ind;
+			}
+		}
+		
+		// Now do the same for the abstract definition
+		log.debug("Looking at abstract definition..");
+		Lvl abstractLvl = ll.getJaxbAbstractLvl();
+		Ind ind = getIndFromLvl(abstractLvl);
+		
+		return ind;
+	}
+	
+	private Ind getIndFromLvl(Lvl lvl) {
+		
+		// If there is a style reference in the instance,
+		// as a sibling of pPr,
+		// use any w:ind in it (or TODO styles it is based on)
+		if (lvl.getPStyle()!=null) {
+			
+			// Get the style
+			StyleDefinitionsPart stylesPart = ((WordprocessingMLPackage)this.getPackage()).
+				getMainDocumentPart().getStyleDefinitionsPart();
+			
+			log.debug("override level has linked style: " + lvl.getPStyle().getVal() );
+			
+			org.docx4j.wml.Style style = stylesPart.getStyle( lvl.getPStyle().getVal() );
+			
+			// If the style has a w:ind, return it.
+			// Otherwise, continue
+			if (style.getPPr() != null
+					&& style.getPPr().getInd()!=null ) {
+				return style.getPPr().getInd();
+			}
+		}
+		
+		// If there is a style reference in pPr,
+		// but not also one as a sibling of pPr,
+		// then no number appears at all!
+		
+			// TODO: throw ShouldNotBeNumbered??
+		
+		// If there is a w:ind in the instance use that
+		if ( lvl.getPPr()!=null
+				&& lvl.getPPr().getInd() !=null ) {
+			return lvl.getPPr().getInd();
+		}
+		
+		return null;		
+		
+	}
 
 	
     /**
@@ -105,6 +255,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 		return jaxbElement;
     	
     }
+
 
 
 

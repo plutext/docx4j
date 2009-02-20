@@ -102,10 +102,20 @@ public class ListLevel {
 	
 	protected static Logger log = Logger.getLogger(ListLevel.class);
 	
-	
+	private Lvl jaxbAbstractLvl;
+	public Lvl getJaxbAbstractLvl() {
+		return jaxbAbstractLvl;
+	}
 
+	private Lvl jaxbOverrideLvl;
+	public Lvl getJaxbOverrideLvl() {
+		return jaxbOverrideLvl;
+	}
+	
         public ListLevel(Lvl levelNode)
         {
+        	this.jaxbAbstractLvl = levelNode;
+        	
             this.id = levelNode.getIlvl().toString(); 
 
             Lvl.Start startValueNode = levelNode.getStart();
@@ -170,6 +180,8 @@ public class ListLevel {
         /// <param name="nsm"></param>
         public void SetOverrides(Lvl levelNode)
         {
+        	this.jaxbOverrideLvl = levelNode;
+        	
             Lvl.Start startValueNode = levelNode.getStart();
             if (startValueNode != null)
             {
@@ -200,6 +212,8 @@ public class ListLevel {
             	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
             }
         }
+        
+        
 
         private String id;
 
