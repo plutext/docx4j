@@ -1,6 +1,8 @@
 package org.docx4j.utils;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -142,6 +144,24 @@ public class BufferUtil {
           }
        };
     }
+    
+	public static byte[] getBytesFromInputStream(InputStream is)
+			throws Exception {
+
+		BufferedInputStream bufIn = new BufferedInputStream(is);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		BufferedOutputStream bos = new BufferedOutputStream(baos);
+		int c = bufIn.read();
+		while (c != -1) {
+			bos.write(c);
+			c = bufIn.read();
+		}
+		bos.flush();
+		baos.flush();
+		bufIn.close();
+		bos.close();
+		return baos.toByteArray();
+	} 		
     
     
 }
