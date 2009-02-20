@@ -21,6 +21,7 @@
 package org.docx4j.convert.out.xmlPackage;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Iterator;
 
@@ -358,6 +359,10 @@ public class XmlPackage {
 	        bb.get(bytes, 0, bytes.length);
 
 			partResult.setBinaryData( bytes );
+			
+			// Note that I didn't need to Base64 encode this.
+			// Suspect marshaller.marshal must Base64 encode
+			// automatically?
 
 			
 		} catch (Exception e ) {
@@ -380,6 +385,28 @@ public class XmlPackage {
 				  	+ "</pkg:part>";
 		
 	}
+
+	public static String wrapInBinaryPart(byte[] base64, String partName, String contentType) {
+		
+		try {
+			return "<pkg:part pkg:name=\""
+					+ partName
+					+ "\""
+					+ " pkg:contentType=\""
+					+ contentType
+					+ "\""
+					// + " pkg:compression=\"store\"" 
+					+ " xmlns:pkg=\"http://schemas.microsoft.com/office/2006/xmlPackage\">"
+					+ "<pkg:binaryData>" + new String(base64, "UTF-8")
+					+ "</pkg:binaryData>" + "</pkg:part>";
+		} catch (UnsupportedEncodingException e) {
+			// I assume system supports UTF-8 !!
+			log.error(e);
+			return null;
+		}
+		
+	}
+	
 	
 	public static void main(String[] args) throws Exception {
 		
