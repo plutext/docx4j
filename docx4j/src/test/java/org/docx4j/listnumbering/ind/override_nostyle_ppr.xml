@@ -177,7 +177,7 @@
                         <w:lvlJc w:val="left"/>
                         <!--<w:pStyle w:val="Heading1"/>-->
                         <w:pPr>
-                            <w:ind w:left="213"/>
+                            <w:ind w:left="23"/>
                         </w:pPr>
                         <w:rPr>
                             <w:rFonts w:hint="default"/>

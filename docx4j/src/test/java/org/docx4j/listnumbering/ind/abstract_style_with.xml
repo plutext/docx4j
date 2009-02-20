@@ -209,7 +209,7 @@
                     <w:uiPriority w:val="9"/>
                     <w:qFormat/>
                     <w:pPr>
-                        <w:ind w:left="111"/>
+                        <w:ind w:left="11"/>
                         <w:keepNext/>
                         <w:keepLines/>
                         <w:numPr>
