@@ -35,7 +35,9 @@ import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 
 /**
- * Creates a WordprocessingML document from scratch. 
+ * Creates a WordprocessingML document from scratch,
+ * including a numbering definitions part, and use 
+ * it to demonstrate restart numbering. 
  * 
  * @author Jason Harrop
  * @version 1.0
@@ -70,7 +72,7 @@ public class NumberingRestart {
 	    		createNumberedParagraph(1, 1, "text on level 1" ));
 	    
 	    // Ok, lets restart numbering
-	    long newNumId = ndp.restart("1", 0, 1);
+	    long newNumId = ndp.restart(1, 0, 1);
 	    
 	    wordMLPackage.getMainDocumentPart().addObject(
 	    		createNumberedParagraph(newNumId, 0, "text on top level - restarted" ));
