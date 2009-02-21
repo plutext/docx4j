@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import java.math.BigInteger;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBException;
@@ -31,6 +32,7 @@ import org.docx4j.listnumbering.Emulator;
 import org.docx4j.listnumbering.ListLevel;
 import org.docx4j.listnumbering.ListNumberingDefinition;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -38,6 +40,10 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
+import org.docx4j.wml.Numbering.Num;
+import org.docx4j.wml.Numbering.Num.AbstractNumId;
+import org.docx4j.wml.Numbering.Num.LvlOverride;
+import org.docx4j.wml.Numbering.Num.LvlOverride.StartOverride;
 import org.docx4j.wml.PPrBase.Ind;
 
 
@@ -127,6 +133,60 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
             instanceListDefinitions.put(listDef.getListNumberId(), listDef);
         }
 
+    }
+    
+    /**
+     * For the given list numId, restart the numbering on the specified
+     * level at value val.  This is done by creating a new list.
+     * @param numId
+     * @param ilvl
+     * @param val
+     * @return 
+     */
+    public long restart(String numId, long ilvl, long val) 
+    	throws InvalidOperationException {
+    	
+    	// Find the abstractNumId
+    	
+    	// (Ensure maps are initialised)
+    	if (em == null ) { 
+    		getEmulator();
+    	}
+    	ListNumberingDefinition existingLnd = instanceListDefinitions.get(numId);
+    	if (existingLnd==null) {
+    		throw new InvalidOperationException("List " + numId + " does not exist");
+    	}
+    	BigInteger abstractNumIdVal = existingLnd.getNumNode().getAbstractNumId().getVal();
+    	
+    	// Generate the new <w:num
+    	long newNumId = instanceListDefinitions.size() + 1;
+    	
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+			// TODO - have a static wmlFactory defined in Base? 
+		
+		Num newNum = factory.createNumberingNum();
+		newNum.setNumId( BigInteger.valueOf(newNumId) );
+		AbstractNumId abstractNumId = factory.createNumberingNumAbstractNumId();
+		abstractNumId.setVal(abstractNumIdVal);
+		newNum.setAbstractNumId(abstractNumId);
+		
+		LvlOverride lvlOverride = factory.createNumberingNumLvlOverride();
+		lvlOverride.setIlvl(BigInteger.valueOf(ilvl));
+		newNum.getLvlOverride().add(lvlOverride);
+		
+		StartOverride start = factory.createNumberingNumLvlOverrideStartOverride();
+		start.setVal(BigInteger.valueOf(val));
+		lvlOverride.setStartOverride(start);
+    	
+    	// Add it to the jaxb object and our hashmap
+		((Numbering)jaxbElement).getNum().add(newNum);
+        ListNumberingDefinition listDef 
+    		= new ListNumberingDefinition(newNum, abstractListDefinitions);
+        instanceListDefinitions.put(listDef.getListNumberId(), listDef);		
+    	
+    	// Return the new numId
+    	return newNumId;
+    	
     }
 	
 	
