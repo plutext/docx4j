@@ -104,11 +104,11 @@ public class ListNumberingDefinition {
 	 * numbering part.
 	 */
 	
-//	// The underlying JAXB object 
-//	private Numbering.Num numNode;
-//	public Numbering.Num getNumNode() {
-//		return numNode;
-//	}
+	// The underlying JAXB object 
+	private Numbering.Num numNode;
+	public Numbering.Num getNumNode() {
+		return numNode;
+	}
 	
 	protected static Logger log = Logger.getLogger(ListNumberingDefinition.class);
 	
@@ -121,7 +121,7 @@ public class ListNumberingDefinition {
         public ListNumberingDefinition(Numbering.Num numNode, 
         		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions)
         {
-//        	this.numNode = numNode;
+        	this.numNode = numNode;
         	
             this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
 
