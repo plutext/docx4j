@@ -143,7 +143,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
      * @param val
      * @return 
      */
-    public long restart(String numId, long ilvl, long val) 
+    public long restart(long numId, long ilvl, long val) 
     	throws InvalidOperationException {
     	
     	// Find the abstractNumId
@@ -152,7 +152,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
     	if (em == null ) { 
     		getEmulator();
     	}
-    	ListNumberingDefinition existingLnd = instanceListDefinitions.get(numId);
+    	ListNumberingDefinition existingLnd = instanceListDefinitions.get( Long.toString(numId) );
     	if (existingLnd==null) {
     		throw new InvalidOperationException("List " + numId + " does not exist");
     	}
