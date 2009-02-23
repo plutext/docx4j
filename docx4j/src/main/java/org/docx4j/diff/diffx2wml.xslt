@@ -65,13 +65,23 @@
   </xsl:template>
  -->
    
-  <xsl:template match="w:rPr[@dfx:delete='true'] " mode="omitDeletions">
-  	<xsl:comment>rPr had @dfx:delete='true', so left out.</xsl:comment>
-  </xsl:template>
 
   
   <xsl:template match="@dfx:insert" />
   
+  <!--  
+  <w:p dfx:delete="true"><w:r dfx:delete="true"><w:rPr dfx:delete="true"><w:noProof dfx:delete="true" /></w:rPr><w:drawing dfx:delete="true"><wp:inline dfx:delete="true" del:distB="0" del:distL="0" del:distR="0" del:distT="0"><wp:extent dfx:delete="true" del:cx="3143250" del:cy="2286000" /><wp:effectExtent dfx:delete="true" del:b="0" del:l="19050" del:r="0" del:t="0" /><wp:docPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="2" del:name="Picture 1" /><wp:cNvGraphicFramePr dfx:delete="true"><a:graphicFrameLocks dfx:delete="true" del:noChangeAspect="1" /></wp:cNvGraphicFramePr><a:graphic dfx:delete="true"><a:graphicData dfx:delete="true" del:uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic dfx:delete="true"><pic:nvPicPr dfx:delete="true"><pic:cNvPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="0" del:name="Picture 1" /><pic:cNvPicPr dfx:delete="true"><a:picLocks dfx:delete="true" del:noChangeArrowheads="1" del:noChangeAspect="1" /></pic:cNvPicPr></pic:nvPicPr><pic:blipFill dfx:delete="true"><a:blip dfx:delete="true" del:link="rId4" /><a:srcRect dfx:delete="true" /><a:stretch dfx:delete="true"><a:fillRect dfx:delete="true" /></a:stretch></pic:blipFill><pic:spPr dfx:delete="true" del:bwMode="auto"><a:xfrm dfx:delete="true"><a:off dfx:delete="true" del:x="0" del:y="0" /><a:ext dfx:delete="true" del:cx="3143250" del:cy="2286000" /></a:xfrm><a:prstGeom dfx:delete="true" del:prst="rect"><a:avLst dfx:delete="true" /></a:prstGeom><a:noFill dfx:delete="true" /><a:ln dfx:delete="true" del:w="9525"><a:noFill dfx:delete="true" /><a:miter dfx:delete="true" del:lim="800000" /><a:headEnd dfx:delete="true" /><a:tailEnd dfx:delete="true" /></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>
+  -->
+  <xsl:template match="*[@dfx:delete]">
+    <!-- Drop this element, but retain its children
+         unless they to have the dfx:delete attribute -->
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="w:rPr[@dfx:delete='true'] " mode="omitDeletions">
+  	<xsl:comment>rPr had @dfx:delete='true', so left out.</xsl:comment>
+  </xsl:template>
+
   
   <!--  
   <w:p dfx:delete="true"><w:r dfx:delete="true"><w:rPr dfx:delete="true"><w:noProof dfx:delete="true" /></w:rPr><w:drawing dfx:delete="true"><wp:inline dfx:delete="true" del:distB="0" del:distL="0" del:distR="0" del:distT="0"><wp:extent dfx:delete="true" del:cx="3143250" del:cy="2286000" /><wp:effectExtent dfx:delete="true" del:b="0" del:l="19050" del:r="0" del:t="0" /><wp:docPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="2" del:name="Picture 1" /><wp:cNvGraphicFramePr dfx:delete="true"><a:graphicFrameLocks dfx:delete="true" del:noChangeAspect="1" /></wp:cNvGraphicFramePr><a:graphic dfx:delete="true"><a:graphicData dfx:delete="true" del:uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic dfx:delete="true"><pic:nvPicPr dfx:delete="true"><pic:cNvPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="0" del:name="Picture 1" /><pic:cNvPicPr dfx:delete="true"><a:picLocks dfx:delete="true" del:noChangeArrowheads="1" del:noChangeAspect="1" /></pic:cNvPicPr></pic:nvPicPr><pic:blipFill dfx:delete="true"><a:blip dfx:delete="true" del:link="rId4" /><a:srcRect dfx:delete="true" /><a:stretch dfx:delete="true"><a:fillRect dfx:delete="true" /></a:stretch></pic:blipFill><pic:spPr dfx:delete="true" del:bwMode="auto"><a:xfrm dfx:delete="true"><a:off dfx:delete="true" del:x="0" del:y="0" /><a:ext dfx:delete="true" del:cx="3143250" del:cy="2286000" /></a:xfrm><a:prstGeom dfx:delete="true" del:prst="rect"><a:avLst dfx:delete="true" /></a:prstGeom><a:noFill dfx:delete="true" /><a:ln dfx:delete="true" del:w="9525"><a:noFill dfx:delete="true" /><a:miter dfx:delete="true" del:lim="800000" /><a:headEnd dfx:delete="true" /><a:tailEnd dfx:delete="true" /></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>
