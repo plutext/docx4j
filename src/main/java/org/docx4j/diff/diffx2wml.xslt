@@ -67,27 +67,100 @@
    
 
   
-  <xsl:template match="@dfx:insert" />
   
   <!--  
-  <w:p dfx:delete="true"><w:r dfx:delete="true"><w:rPr dfx:delete="true"><w:noProof dfx:delete="true" /></w:rPr><w:drawing dfx:delete="true"><wp:inline dfx:delete="true" del:distB="0" del:distL="0" del:distR="0" del:distT="0"><wp:extent dfx:delete="true" del:cx="3143250" del:cy="2286000" /><wp:effectExtent dfx:delete="true" del:b="0" del:l="19050" del:r="0" del:t="0" /><wp:docPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="2" del:name="Picture 1" /><wp:cNvGraphicFramePr dfx:delete="true"><a:graphicFrameLocks dfx:delete="true" del:noChangeAspect="1" /></wp:cNvGraphicFramePr><a:graphic dfx:delete="true"><a:graphicData dfx:delete="true" del:uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic dfx:delete="true"><pic:nvPicPr dfx:delete="true"><pic:cNvPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="0" del:name="Picture 1" /><pic:cNvPicPr dfx:delete="true"><a:picLocks dfx:delete="true" del:noChangeArrowheads="1" del:noChangeAspect="1" /></pic:cNvPicPr></pic:nvPicPr><pic:blipFill dfx:delete="true"><a:blip dfx:delete="true" del:link="rId4" /><a:srcRect dfx:delete="true" /><a:stretch dfx:delete="true"><a:fillRect dfx:delete="true" /></a:stretch></pic:blipFill><pic:spPr dfx:delete="true" del:bwMode="auto"><a:xfrm dfx:delete="true"><a:off dfx:delete="true" del:x="0" del:y="0" /><a:ext dfx:delete="true" del:cx="3143250" del:cy="2286000" /></a:xfrm><a:prstGeom dfx:delete="true" del:prst="rect"><a:avLst dfx:delete="true" /></a:prstGeom><a:noFill dfx:delete="true" /><a:ln dfx:delete="true" del:w="9525"><a:noFill dfx:delete="true" /><a:miter dfx:delete="true" del:lim="800000" /><a:headEnd dfx:delete="true" /><a:tailEnd dfx:delete="true" /></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>
+  
+  	In the case of <w:p dfx:delete="true">, 
+  	there are 3 distinct cases we need to handle:
+  	
+  	The first is simple.  It occurs when a paragraph has been
+  	deleted.  For that we want to end up with:
+  	
+  		<w:p>
+  			<w:pPr>
+  				<w:rPr><w:del ...> <~~~~~~~
+  				
+  			<w:r><w:delText>....
+  			
+  	The second is more complex.  It occurs
+  	when diffing two paragraphs results in:
+  	
+  		<w:p dfx:insert="true">
+  			<w:p dfx:delete="true">
+  			 
+  
+    The third is the converse of the second.
+    I haven't seen it in a real document, but ...
+    
+  
   -->
-  <xsl:template match="*[@dfx:delete]">
-    <!-- Drop this element, but retain its children
+  <xsl:template match="w:p[@dfx:delete and not(parent::w:p)]">
+  	<!--  We need a paragraph in the document, 
+  	      to contain the deleted content. -->
+  	<xsl:comment>Handling simple deleted w:p</xsl:comment>
+  	<w:p>
+    	<xsl:apply-templates/>
+    </w:p>
+  </xsl:template>
+  
+  <xsl:template match="w:p[@dfx:delete and parent::w:p]">
+    <!-- Drop this element, since there is a suitable
+    	 parent p in the document to contain the
+    	 content; 
+    	 retain children
          unless they to have the dfx:delete attribute -->
+  	<xsl:comment>Handling diffx nested w:p</xsl:comment>
     <xsl:apply-templates/>
   </xsl:template>
+  
+  <!--  Just in case? -->
+  <xsl:template match="w:p[@dfx:insert and parent::w:p]">
+    <!-- Drop this element, since there is a suitable
+    	 parent p in the document to contain the
+    	 content -->
+  	<xsl:comment>Handling diffx nested w:p case3</xsl:comment>
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  
+  <xsl:template match="@dfx:insert" />
+  
+  
+  <xsl:template match="*[@dfx:delete and not(self::w:p)]">
+    <!-- Drop this element, but retain its children
+         unless they to have the dfx:delete attribute.
+         
+         A consequence of this is that images will 
+         disappear without trace?
+         
+  		<w:p dfx:delete="true">
+  			<w:r dfx:delete="true">
+  				<w:rPr dfx:delete="true"><w:noProof dfx:delete="true" /></w:rPr>
+  				<w:drawing dfx:delete="true"><wp:inline dfx:delete="true" del:distB="0" del:distL="0" del:distR="0" del:distT="0"><wp:extent dfx:delete="true" del:cx="3143250" del:cy="2286000" /><wp:effectExtent dfx:delete="true" del:b="0" del:l="19050" del:r="0" del:t="0" /><wp:docPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="2" del:name="Picture 1" /><wp:cNvGraphicFramePr dfx:delete="true"><a:graphicFrameLocks dfx:delete="true" del:noChangeAspect="1" /></wp:cNvGraphicFramePr><a:graphic dfx:delete="true"><a:graphicData dfx:delete="true" del:uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic dfx:delete="true"><pic:nvPicPr dfx:delete="true"><pic:cNvPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="0" del:name="Picture 1" /><pic:cNvPicPr dfx:delete="true"><a:picLocks dfx:delete="true" del:noChangeArrowheads="1" del:noChangeAspect="1" /></pic:cNvPicPr></pic:nvPicPr><pic:blipFill dfx:delete="true"><a:blip dfx:delete="true" del:link="rId4" /><a:srcRect dfx:delete="true" /><a:stretch dfx:delete="true"><a:fillRect dfx:delete="true" /></a:stretch></pic:blipFill><pic:spPr dfx:delete="true" del:bwMode="auto"><a:xfrm dfx:delete="true"><a:off dfx:delete="true" del:x="0" del:y="0" /><a:ext dfx:delete="true" del:cx="3143250" del:cy="2286000" /></a:xfrm><a:prstGeom dfx:delete="true" del:prst="rect"><a:avLst dfx:delete="true" /></a:prstGeom><a:noFill dfx:delete="true" /><a:ln dfx:delete="true" del:w="9525"><a:noFill dfx:delete="true" /><a:miter dfx:delete="true" del:lim="800000" /><a:headEnd dfx:delete="true" /><a:tailEnd dfx:delete="true" /></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing>
+  			</w:r>
+  		</w:p>
+         
+         
+          -->
+    <xsl:apply-templates/>
+  </xsl:template>
+
+    
 
   <xsl:template match="w:rPr[@dfx:delete='true'] " mode="omitDeletions">
   	<xsl:comment>rPr had @dfx:delete='true', so left out.</xsl:comment>
   </xsl:template>
 
-  
-  <!--  
-  <w:p dfx:delete="true"><w:r dfx:delete="true"><w:rPr dfx:delete="true"><w:noProof dfx:delete="true" /></w:rPr><w:drawing dfx:delete="true"><wp:inline dfx:delete="true" del:distB="0" del:distL="0" del:distR="0" del:distT="0"><wp:extent dfx:delete="true" del:cx="3143250" del:cy="2286000" /><wp:effectExtent dfx:delete="true" del:b="0" del:l="19050" del:r="0" del:t="0" /><wp:docPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="2" del:name="Picture 1" /><wp:cNvGraphicFramePr dfx:delete="true"><a:graphicFrameLocks dfx:delete="true" del:noChangeAspect="1" /></wp:cNvGraphicFramePr><a:graphic dfx:delete="true"><a:graphicData dfx:delete="true" del:uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic dfx:delete="true"><pic:nvPicPr dfx:delete="true"><pic:cNvPr dfx:delete="true" del:descr="http://venturebeat.com/wp-content/uploads/2009/01/imvu.jpg" del:id="0" del:name="Picture 1" /><pic:cNvPicPr dfx:delete="true"><a:picLocks dfx:delete="true" del:noChangeArrowheads="1" del:noChangeAspect="1" /></pic:cNvPicPr></pic:nvPicPr><pic:blipFill dfx:delete="true"><a:blip dfx:delete="true" del:link="rId4" /><a:srcRect dfx:delete="true" /><a:stretch dfx:delete="true"><a:fillRect dfx:delete="true" /></a:stretch></pic:blipFill><pic:spPr dfx:delete="true" del:bwMode="auto"><a:xfrm dfx:delete="true"><a:off dfx:delete="true" del:x="0" del:y="0" /><a:ext dfx:delete="true" del:cx="3143250" del:cy="2286000" /></a:xfrm><a:prstGeom dfx:delete="true" del:prst="rect"><a:avLst dfx:delete="true" /></a:prstGeom><a:noFill dfx:delete="true" /><a:ln dfx:delete="true" del:w="9525"><a:noFill dfx:delete="true" /><a:miter dfx:delete="true" del:lim="800000" /><a:headEnd dfx:delete="true" /><a:tailEnd dfx:delete="true" /></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>
-  -->  
-  <xsl:template match="*[@dfx:delete]" />
-  
+  <xsl:template match="w:rPr[not(@dfx:delete='true')] " mode="omitDeletions">
+    <!--  Handle eg
+       
+       <w:rPr dfx:insert="true"><w:b dfx:insert="true" /></w:rPr><
+    
+    -->
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
 
 
   <xsl:template match="w:r">
@@ -188,16 +261,6 @@
     
   </xsl:template>
 
-  <xsl:template match="w:rPr[not(@dfx:delete='true')] " mode="omitDeletions">
-    <!--  Handle eg
-       
-       <w:rPr dfx:insert="true"><w:b dfx:insert="true" /></w:rPr><
-    
-    -->
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()"/>
-    </xsl:copy>
-  </xsl:template>
 
 
 </xsl:stylesheet>
