@@ -661,7 +661,11 @@ public class MainDocumentPart extends DocumentPart  {
 	        String styleName = (String)pairs.getKey();
 	        log.debug("Inspecting style: " + styleName );
 	        
-	        if (styleDefinitionsPart.activateStyle(styleName)) {
+	        if (styleDefinitionsPart==null) {
+	        	
+	        	log.warn("Style definitions part was null!");
+	        	
+	        } else if (styleDefinitionsPart.activateStyle(styleName)) {
 	        
 	        	// Cool
 	        	
