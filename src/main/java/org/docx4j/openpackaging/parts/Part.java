@@ -146,11 +146,16 @@ public abstract class Part extends Base {
 	
 	public Package getPackage() {
 		if (pack==null) {
-			log.error("Package field null for this Part!");
+			log.error("Package field null for this Part " + this.getClass().getName() );
 		}
 		return pack;
 	}
+	
+	// TODO - this is not always set ...
+	// think through whether, and if so 
+	// where and how it should be set
 	public void setPackage( Package pack) {
+		log.debug("setPackage called for " + this.getClass().getName() );
 		this.pack = pack;
 	}
 
