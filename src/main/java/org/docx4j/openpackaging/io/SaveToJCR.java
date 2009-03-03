@@ -367,7 +367,13 @@ public class SaveToJCR {
 	        // New - in what follows, replaced contentNode with cmContentNode
 	        
 	        // javax.jcr.nodetype.ConstraintViolationException: no matching property definition found for {http://www.jcp.org/jcr/1.0}data
+			
+			// 20090226 - Alfresco's writeValue method guesses mimetype
+			// when we do .setJcrDataProperty below, so for
+			// Alfresco, this is redundant.
 	        cmContentNode.setProperty("jcr:mimeType", mimeType);
+	        	
+	        
 //	        contentNode.setProperty("jcr:encoding", "");
 	        
 	        if (partName.indexOf("/")>0 ) {
@@ -398,7 +404,12 @@ public class SaveToJCR {
 	        
 	        log.info("using " + nodeMapper.getClass().getName());
 	        
-	        nodeMapper.setJcrDataProperty(cmContentNode, is );	        
+	        nodeMapper.setJcrDataProperty(cmContentNode, is );	
+	        
+	        // special case - this method NOT USED?  Chunking version used instead?
+	        if (partName.endsWith("rels")) {	        	
+		        cmContentNode.setProperty("jcr:mimeType", "text/xml");	        	
+	        }
 	        
 	        Calendar lastModified = Calendar.getInstance();
 	        lastModified.setTimeInMillis(lastModified.getTimeInMillis());
