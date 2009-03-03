@@ -333,8 +333,21 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		log.debug("Relativising target " + tobeRelativized 
 				+ " against source " + relativizeAgainst);
 		
-		URI result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized); 
+		String result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized).toString(); 
 		
+		if (relativizeAgainst.getPath().equals("/")
+				&& result.startsWith("/")) {
+			
+			/*
+			 * Relativising target /word/document.xml against source / 
+			 * Result /word/document.xml
+			 * 
+			 * but we want word/document.xml
+			 */		
+			
+			result = result.substring(1);
+		}
+				
 		log.debug("Result " + result); 
 		
 		org.docx4j.relationships.ObjectFactory factory =
@@ -354,6 +367,12 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		// (each with a separate rels entry).
 		
 		// For now, here we ensure there is just a single entry
+		// NB, this does not recursively remove parts
+		// (compare removePart method below)
+		// In fact, it only removes the rel, it leaves the
+		// part in the Parts hashmap, but that's ok
+		// since the docx is constructed by walking the
+		// rels tree.
 		Relationship relToBeRemoved = null;
 		for (Relationship relic : relationships.getRelationship() ) {
 			
