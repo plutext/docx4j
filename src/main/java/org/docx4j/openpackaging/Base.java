@@ -67,7 +67,9 @@ public abstract class Base {
 
 	public void setRelationships(RelationshipsPart relationships) {
 				
-		relationships.setPackage( getPackage() );
+		if (relationships!=null) {
+			relationships.setPackage( getPackage() );
+		}
 		
 		this.relationships = relationships;
 	}
@@ -163,10 +165,14 @@ public abstract class Base {
 
 		// Create RelationshipsPart for this part if necessary
 		if (this.getRelationshipsPart() == null ) {
-			this.setRelationships(new RelationshipsPart( this ));
+			RelationshipsPart rp = new RelationshipsPart( this );
+			rp.setPackage(this.getPackage());
+			
+			this.setRelationships(rp);
 			
 			// Make sure content manager knows how to handle .rels
 			getPackage().getContentTypeManager().addDefaultContentType("rels", org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
+			
 			
 		}
 		
