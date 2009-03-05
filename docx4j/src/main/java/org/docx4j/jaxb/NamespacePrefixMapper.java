@@ -20,7 +20,15 @@
 
 package org.docx4j.jaxb;
 
-public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
+import java.util.Iterator;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
+
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+
+public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper 
+	implements NamespaceContext{
 	// Must use 'internal' for Java 6
 
 	
@@ -61,10 +69,10 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
      */
     public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {    
     	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/wordprocessingml/2006/main")) {
+    	if (namespaceUri.equals(Namespaces.NS_WORD12)) {
     		return "w";
     	}
-    	if (namespaceUri.equals("http://schemas.microsoft.com/office/2006/xmlPackage")) {
+    	if (namespaceUri.equals(Namespaces.PKG_XML)) {
     		return "pkg";
     	}
     	
@@ -77,6 +85,10 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
     	}
     	    	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/relationships")) {
+    		return "rel";
+    	}
+
+    	if (namespaceUri.equals(Namespaces.RELATIONSHIPS_OFFICEDOC)) {
     		return "r";
     	}
     	
@@ -94,6 +106,8 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
     	
     	return suggestion;
     }
+    
+       
     
     /**
      * Returns a list of namespace URIs that should be declared
@@ -145,5 +159,38 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
 //        return new String[] { "urn:abc", "urn:def" };
 //    }
 
+    // ----------------------------------------------------
+    // implement NamespaceContext,
+    // for use with for use with javax.xml.xpath
+    
+	public String getNamespaceURI(String prefix) {
+		
+		if (prefix.equals("w"))  
+			return Namespaces.NS_WORD12;
+		else if (prefix.equals("r"))
+			return Namespaces.RELATIONSHIPS_OFFICEDOC;
+		else if (prefix.equals("pkg"))
+			return Namespaces.PKG_XML;
+		else
+			return XMLConstants.NULL_NS_URI;
+		
+	}
+
+	public String getPrefix(String namespaceURI) {
+		
+		return getPreferredPrefix(namespaceURI, null, false );
+		
+//		if (namespaceURI.equals(Namespaces.NS_WORD12))
+//			return "w";
+//		else if (namespaceURI.equals(Namespaces.RELATIONSHIPS_OFFICEDOC))
+//			return "r";
+//		else if (namespaceURI.equals(Namespaces.PKG_XML))
+//			return "pkg";
+//		else return null;
+	}
+
+	public Iterator getPrefixes(String namespaceURI) {
+		return null;
+	}
     
 }
