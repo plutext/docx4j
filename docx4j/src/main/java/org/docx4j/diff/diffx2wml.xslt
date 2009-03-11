@@ -39,6 +39,17 @@
   
 <xsl:param name="author"/>
 <xsl:param name="date"/>
+	<!--  NB: do not set date to an empty string,
+		  or 
+		  
+java.lang.IllegalArgumentException: 
+	at com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl$Parser.parseAndSetYear(XMLGregorianCalendarImpl.java:2850)
+	at com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl$Parser.parse(XMLGregorianCalendarImpl.java:2737)
+	at com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl.<init>(XMLGregorianCalendarImpl.java:433)
+	at com.sun.org.apache.xerces.internal.jaxp.datatype.DatatypeFactoryImpl.newXMLGregorianCalendar(DatatypeFactoryImpl.java:230)
+	at com.sun.xml.bind.v2.model.impl.RuntimeBuiltinLeafInfoImpl$13.parse(RuntimeBuiltinLeafInfoImpl.java:546)		  
+		  
+		   -->
 
 <xsl:preserve-space elements="ins del w:t"/> 
 

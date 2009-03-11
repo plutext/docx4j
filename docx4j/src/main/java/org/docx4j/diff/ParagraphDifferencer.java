@@ -163,7 +163,7 @@ public class ParagraphDifferencer {
 			
 			String simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
 			
-			//log.debug("\n\n combineAdjacent: \n\n" + simplified );
+			log.debug("\n\n Diff'd input to transform: \n\n" + simplified );
 							
 			StreamSource src = new StreamSource(new StringReader(simplified));
 			java.io.InputStream xslt = 
@@ -171,10 +171,17 @@ public class ParagraphDifferencer {
 				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 						
+			String dateString;
 			if (date!=null) {				
-				String dateString = RFC3339_FORMAT.format(date.getTime()) ;
-				transformParameters.put("date", dateString);
+				dateString = RFC3339_FORMAT.format(date.getTime()) ;
+			} else {
+				// TODO FIXME - JAXB requires a real date.
+				// What to give it?  
+				// The alternative is to change the xslt
+				// to omit the @date entirely if its unknown
+				dateString = "2009-03-11T17:57:00Z";
 			}
+			transformParameters.put("date", dateString);
 			
 			transformParameters.put("author", author);
 			XmlUtils.transform(src, xslt, transformParameters, result);
