@@ -64,10 +64,10 @@ public class Parts {
 
 	private static Logger log = Logger.getLogger(Parts.class);
 
-	private HashMap parts;
+	private HashMap<PartName, Part> parts;
 
 	public Parts() {
-		parts = new HashMap();
+		parts = new HashMap<PartName, Part>();
 	}
 
 	public void put(Part part) {
@@ -87,7 +87,7 @@ public class Parts {
 	 * 
 	 * @return parts - A HashMap of all parts
 	 */
-	public HashMap getParts() {
+	public HashMap<PartName, Part> getParts() {
 		return parts;
 	}
 
