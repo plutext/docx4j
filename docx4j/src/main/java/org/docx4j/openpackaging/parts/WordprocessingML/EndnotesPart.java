@@ -22,20 +22,24 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
-import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
-import org.dom4j.Document;
 
-
-public final class EndnotesPart extends Dom4jXmlPart {
+public final class EndnotesPart extends JaxbXmlPart {
 	
 	public EndnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
-		
-		
+	}
+
+	public EndnotesPart() throws InvalidFormatException {
+		super(new PartName("/word/endnotes.xml"));
+		init();		
+	}
+	
+	public void init() {		
+			
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_ENDNOTES));
@@ -45,9 +49,5 @@ public final class EndnotesPart extends Dom4jXmlPart {
 		
 	}
 
-	@Override
-	public Document getDocument() {
-		return document;
-	}	
 
 }

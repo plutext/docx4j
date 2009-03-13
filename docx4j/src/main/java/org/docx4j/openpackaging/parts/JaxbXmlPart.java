@@ -59,6 +59,13 @@ import org.dom4j.Document;
  * */
 public abstract class JaxbXmlPart extends Part {
 	
+	// This class is abstract
+	// Most applications ought to be able to instantiate
+	// any part as the relevant subclass.
+	// If it was not abstract, users would have to
+	// take care to set its content type and
+	// relationship type when adding the part.
+	
 	public JaxbXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		setJAXBContext(Context.jc);						
@@ -234,7 +241,31 @@ public abstract class JaxbXmlPart extends Part {
 	 * @throws JAXBException
 	 *             If any unexpected errors occur while unmarshalling
 	 */
-    public abstract Object unmarshal( java.io.InputStream is ) throws JAXBException;
+    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+    	
+		try {
+			
+//			if (jc==null) {
+//				setJAXBContext(Context.jc);				
+//			}
+		    		    
+			Unmarshaller u = jc.createUnmarshaller();
+			
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			log.debug("unmarshalling " + this.getClass().getName() );															
+			jaxbElement = u.unmarshal( is );						
+			log.debug( this.getClass().getName() + " unmarshalled" );									
+
+		} catch (Exception e ) {
+			e.printStackTrace();
+		}
+    	
+		return jaxbElement;
+    	
+    }	
+//    public abstract Object unmarshal( java.io.InputStream is ) throws JAXBException;
 
     public Object unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
