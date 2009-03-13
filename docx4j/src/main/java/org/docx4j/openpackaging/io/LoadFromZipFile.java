@@ -296,9 +296,11 @@ public class LoadFromZipFile extends Load {
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			log.info("For Relationship Id=" + r.getId() 
+			log.info("\n For Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
 					+ ", Target is " + r.getTarget() );
+				// This is usually the first logged comment for
+				// a part, so start with a line break.
 			try {				
 				getPart(zf, pkg, rp, r);
 			} catch (Exception e) {
