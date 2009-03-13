@@ -22,17 +22,24 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
-import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.dom4j.Document;
 
 
-public final class FootnotesPart extends Dom4jXmlPart {
+public final class FootnotesPart extends JaxbXmlPart {
 	
 	public FootnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init();		
+	}
+
+	public FootnotesPart() throws InvalidFormatException {
+		super(new PartName("/word/footnotes.xml"));
+		init();		
+	}
+	
+	public void init() {		
 		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
@@ -43,9 +50,5 @@ public final class FootnotesPart extends Dom4jXmlPart {
 		
 	}
 
-	@Override
-	public Document getDocument() {
-		return document;
-	}	
 
 }
