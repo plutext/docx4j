@@ -36,11 +36,32 @@ public final class CustomXmlDataStoragePart extends Dom4jXmlPart {
 		init();
 	}
 	
-	public CustomXmlDataStoragePart() throws InvalidFormatException {
-		super(new PartName("/customXml/item1.xml"));
+//	public CustomXmlDataStoragePart() throws InvalidFormatException {
+//		super(new PartName("/customXml/item1.xml"));
+//		init();
+//	}
+
+	/**
+	 * @param parts The parts present in the package to which this will be added.
+	 * If for example /customXml/item1.xml already exists, this allows
+	 * the name /customXml/item2.xml to be generated.
+	 * @throws InvalidFormatException
+	 */
+	public CustomXmlDataStoragePart(Parts parts) throws InvalidFormatException {
+		
+		int partNum = 1;
+		if (parts!=null) {
+			while (parts.get(new PartName("/customXml/item" + partNum + ".xml"))!=null) {
+				partNum++;			
+			}
+		}
+		
+		this.partName = new PartName("/customXml/item" + partNum + ".xml");
+		log.info("Using PartName /customXml/item" + partNum + ".xml");
 		init();
 	}
-
+	
+	
 	public void init() {		
 	
 		// Used if this Part is added to [Content_Types].xml 

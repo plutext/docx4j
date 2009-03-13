@@ -44,6 +44,10 @@ public abstract class Dom4jXmlPart extends Part {
 	public Dom4jXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
+
+	public Dom4jXmlPart() throws InvalidFormatException {
+		super();
+	}
 	
 	/**
 	 * This part's XML contents.  Not guaranteed to be up to date.
