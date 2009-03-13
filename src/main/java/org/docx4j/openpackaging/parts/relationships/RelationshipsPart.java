@@ -319,9 +319,13 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 * 
 	 * @param part
 	 *            The part to add.
+	 * @param overwriteExistingTarget
+	 *            Whether to replace any part with the same target
+	 * @param ctm
+	 *            Content type manager
 	 * @return The Relationship
 	 */
-	public Relationship addPart(Part part, ContentTypeManager ctm) {
+	public Relationship addPart(Part part, boolean overwriteExistingTarget, ContentTypeManager ctm) {
 		
 		loadPart(part);
 		
@@ -359,36 +363,41 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		//rel.setTargetMode( TargetMode.INTERNAL );
 		rel.setType( part.getRelationshipType() );
 		
-		// TODO 20080902 read spec to determine whether
-		// more than one rel with the same target is
-		// ever permitted. 
-		// For example, an image?
-		// Word fails to load a document if it has 2 copies of the styles part
-		// (each with a separate rels entry).
-		
-		// For now, here we ensure there is just a single entry
-		// NB, this does not recursively remove parts
-		// (compare removePart method below)
-		// In fact, it only removes the rel, it leaves the
-		// part in the Parts hashmap, but that's ok
-		// since the docx is constructed by walking the
-		// rels tree.
-		Relationship relToBeRemoved = null;
-		for (Relationship relic : relationships.getRelationship() ) {
+		if (overwriteExistingTarget) {
+			// Is more than one rel with the same target 
+			// ever permitted. For example, an image?
+			// ECMA-376 Part 2 8.3 only says that
+			// Id must be unique.
+			// (But we don't test for that here; the id
+			//  is only assigned in addRelationship further
+			//  below)			
 			
-			if (relic.getTarget().equals( rel.getTarget() )) {
+			// Word fails to load a document if it has 2 copies of the styles part
+			// (each with a separate rels entry).
+			
+			// We ensure there is just a single entry
+			// iff overwriteExistingTarget is set
+			// NB, this does not recursively remove parts
+			// (compare removePart method below)
+			// In fact, it only removes the rel, it leaves the
+			// part in the Parts hashmap, but that's ok
+			// since the docx is constructed by walking the
+			// rels tree.
+			Relationship relToBeRemoved = null;
+			for (Relationship relic : relationships.getRelationship() ) {
 				
-				log.info("True - will delete relationship with target " + rel.getTarget());
-				relToBeRemoved = relic; // Avoid java.util.ConcurrentModificationException
-				break;
+				if (relic.getTarget().equals( rel.getTarget() )) {
+					
+					log.info("True - will delete relationship with target " + rel.getTarget());
+					relToBeRemoved = relic; // Avoid java.util.ConcurrentModificationException
+					break;
+				}
+				
 			}
-			
+			if (relToBeRemoved!=null) {
+				removeRelationship(relToBeRemoved);				
+			}		
 		}
-		if (relToBeRemoved!=null) {
-			removeRelationship(relToBeRemoved);				
-		}
-		
-		
 		
 //		Relationship rel = new Relationship(sourceP, result, 
 //				TargetMode.INTERNAL, part.getRelationshipType(), id);
