@@ -26,6 +26,7 @@ import java.io.File;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -52,8 +53,8 @@ public class CreateDocxWithCustomXml {
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("from docx4j!");
 		
 	    			
-		injectCustomXmlDataStoragePart(wordMLPackage.getMainDocumentPart());
-		//injectCustomXmlDataStoragePart(wordMLPackage);
+		injectCustomXmlDataStoragePart(wordMLPackage.getMainDocumentPart(),
+				wordMLPackage.getParts() );
 		
 		// Now save it 
 		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/customxml2.docx") );
@@ -63,11 +64,11 @@ public class CreateDocxWithCustomXml {
 	}
 	
 	
-	public static void injectCustomXmlDataStoragePart(Base base) {
+	public static void injectCustomXmlDataStoragePart(Base base, Parts parts) {
 		
 		try {
 			org.docx4j.openpackaging.parts.CustomXmlDataStoragePart customXmlDataStoragePart = 
-				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart();
+				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart(parts);
 				// Defaults to /customXml/item1.xml
 			
 			customXmlDataStoragePart.setDocument( createCustomXmlDocument() );
