@@ -176,7 +176,7 @@ java.lang.IllegalArgumentException:
 
   <xsl:template match="w:r">
 
-       <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym"/> 
+       <xsl:apply-templates select="w:t|w:tab|w:drawing|w:commentReference|w:sym|w:footnoteReference|w:endnoteReference"/> 
       <!-- NB: this XSLT drops run content other than these. What else to keep? -->
 
   </xsl:template>
@@ -191,7 +191,7 @@ java.lang.IllegalArgumentException:
 
   </xsl:template>
 
-  <xsl:template match="w:drawing | w:commentReference | w:sym">
+  <xsl:template match="w:drawing | w:commentReference | w:sym |w:footnoteReference|w:endnoteReference">
     <w:r>
       <xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>
       <xsl:copy>
