@@ -137,8 +137,15 @@ public class XmlPackage {
 		
 		saveRawXmlPart(part, partName);
 	}
-	
+
 	public void  saveRawXmlPart(Part part, String partName) throws Docx4JException {
+		
+		org.docx4j.xmlPackage.Part partResult = createRawXmlPart(part, partName);
+        pkgResult.getPart().add(partResult);
+		
+	}
+	
+	public static org.docx4j.xmlPackage.Part createRawXmlPart(Part part, String partName) throws Docx4JException {
 		
         org.docx4j.xmlPackage.Part partResult = factory.createPart();
         
@@ -156,7 +163,6 @@ public class XmlPackage {
         } else {
         	partResult.setContentType( ct );
         }
-        pkgResult.getPart().add(partResult);
         org.docx4j.xmlPackage.XmlData dataResult = factory.createXmlData();
         partResult.setXmlData(dataResult);
 
@@ -217,6 +223,7 @@ public class XmlPackage {
 			log.error("PROBLEM - No suitable part found for: " + partName);
 		}		
 		
+		return partResult;
 		
 	}
 	
