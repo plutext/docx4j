@@ -393,7 +393,11 @@ public final class URIHelper {
 		if (sourcePartUri == null || sourcePartUri.isAbsolute()) {
 			throw new IllegalArgumentException("sourcePartUri");
 		}
-		if (targetUri == null || targetUri.isAbsolute()) {
+		if (targetUri == null) {
+			log.error("targetUri was null");
+			throw new IllegalArgumentException("targetUri");			
+		} else if (targetUri.isAbsolute()) {			
+			log.error("targetUri " + targetUri.toString() + " is absolute!");
 			throw new IllegalArgumentException("targetUri");
 		}
 
