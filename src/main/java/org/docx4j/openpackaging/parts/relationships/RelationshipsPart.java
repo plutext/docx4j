@@ -494,6 +494,12 @@ public final class RelationshipsPart extends JaxbXmlPart {
 			Relationship relToBeRemoved = null;
 //			for (Relationship rel : relationshipsByID.values() ) {
 			for (Relationship rel : relationships.getRelationship() ) {
+				
+				if (rel.getTargetMode() !=null
+						&& rel.getTargetMode().equals("External") ) {
+					// This method can't be used to remove external resources
+					continue;
+				}
 								
 				URI resolvedTargetURI = null;
 
