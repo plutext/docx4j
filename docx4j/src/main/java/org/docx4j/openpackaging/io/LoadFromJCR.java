@@ -499,24 +499,16 @@ public class LoadFromJCR extends Load {
 	//		log.info("Normalised, it is " + target );				
 		
 		} else {			
-			// EXTERNAL
-			/* "When set to External, the target attribute may be a relative
-			 *  reference or a URI.  If the target attribute is a relative
-			 *  reference, then that reference is interpreted relative to the
-			 *  location of the package."
-			 */
-
-			log.warn("Encountered external resource " + r.getTarget() 
-					   + " of type " + r.getType() );
-			
-			// As of 1 May 2008, we don't do anything with these yet.
-			// No need to create a Part out of them until such time as
-			// we need to read the contents. (External resources don't
-			// seem to necessarily be described in [ContentTypes].xml )
-			
-			// When the document is saved, the relationship is simply
-			// written again.
-			
+			// EXTERNAL			
+			if (loadExternalTargets) {
+				log.warn("Loading external resource " + r.getTarget() 
+						   + " of type " + r.getType() );
+				BinaryPart bp = getExternalResource(r.getTarget());
+				pkg.getExternalResources().put(bp.getExternalTarget(), bp);			
+			} else {				
+				log.warn("Encountered (but not loading) external resource " + r.getTarget() 
+						   + " of type " + r.getType() );				
+			}						
 			return;
 		}
 		

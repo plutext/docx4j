@@ -53,18 +53,24 @@ public class LoadFromVFSZipFile extends Load {
 		//String filepath = 
 		//	"webdav://jojada:password@192.168.23.129:8080/alfresco/webdav/User%20Homes/jojada/This%20is%20Heading1.docx";
 		log.info("Path: " + filepath );
-		LoadFromVFSZipFile loader = new LoadFromVFSZipFile();
+		LoadFromVFSZipFile loader = new LoadFromVFSZipFile(true);
 		loader.get(filepath);		
 	}
 
 	private LoadFromZipFile _loadFromZipFile;
-	
+
 	public LoadFromVFSZipFile() {
+		this(true);
+	}
+	
+	public LoadFromVFSZipFile(boolean loadExternalTargets) {
 		_loadFromZipFile = new LoadFromZipFile();
+		_loadFromZipFile.loadExternalTargets(loadExternalTargets);
 	}
 
-	public LoadFromVFSZipFile(ContentTypeManager ctm) {
+	public LoadFromVFSZipFile(ContentTypeManager ctm, boolean loadExternalTargets) {
 		_loadFromZipFile = new LoadFromZipFile(ctm);
+		_loadFromZipFile.loadExternalTargets(loadExternalTargets);
 	}
 	
 	public Package get(String filepath) throws Docx4JException {

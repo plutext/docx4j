@@ -21,6 +21,8 @@
 
 package org.docx4j.openpackaging.packages;
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.Base;
@@ -30,6 +32,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.Parts;
@@ -50,6 +53,7 @@ public class Package extends Base {
 	 * Package parts collection.  This is a collection of _all_
 	 * parts in the package (_except_ relationship parts), 
 	 * not just those referred to by the package-level relationships.
+	 * It doesn't include external resources.
 	 */
 	protected Parts parts = new Parts();
 
@@ -58,8 +62,17 @@ public class Package extends Base {
 	 */
 	public Parts getParts() {
 
+		// Having a separate Parts object doesn't really buy
+		// us much, but live with it...
+		
 		return parts;		
 	}
+	
+	protected HashMap<ExternalTarget, Part> externalResources 
+		= new HashMap<ExternalTarget, Part>();
+	public HashMap<ExternalTarget, Part> getExternalResources() {
+		return externalResources;		
+	}	
 	
 	protected ContentTypeManager contentTypeManager;
 
