@@ -56,6 +56,7 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
@@ -500,7 +501,10 @@ public class LoadFromJCR extends Load {
 		
 		} else {			
 			// EXTERNAL			
-			if (loadExternalTargets) {
+			if (loadExternalTargets && 
+					r.getType().equals( Namespaces.IMAGE ) ) {
+					// It could instead be, for example, of type hyperlink,
+					// and we don't want to try to fetch that				
 				log.warn("Loading external resource " + r.getTarget() 
 						   + " of type " + r.getType() );
 				BinaryPart bp = getExternalResource(r.getTarget());
