@@ -26,6 +26,7 @@ import java.io.OutputStream;
 
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 
@@ -40,6 +41,17 @@ public class BinaryPart extends Part {
 		// Common binary parts should extend this class to 
 		// provide that information.
 		
+	}
+	
+	
+	ExternalTarget externalTarget = null;	
+	public BinaryPart(ExternalTarget externalTarget) {
+		
+		this.externalTarget = externalTarget;
+		
+	}
+	public ExternalTarget getExternalTarget() {
+		return externalTarget;
 	}
 	
 //	private InputStream binaryData;

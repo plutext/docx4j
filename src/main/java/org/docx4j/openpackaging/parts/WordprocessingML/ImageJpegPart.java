@@ -25,6 +25,7 @@ import java.io.InputStream;
 
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -41,6 +42,12 @@ public class ImageJpegPart extends BinaryPartAbstractImage {
 		super(new PartName( generateName() + "." + ContentTypes.EXTENSION_JPG_2 ));
 		init();
 	}
+	
+	public ImageJpegPart(ExternalTarget externalTarget) {
+		super(externalTarget);
+		init();		
+	}
+	
 	
 	public void init() {
 		// Used if this Part is added to [Content_Types].xml 

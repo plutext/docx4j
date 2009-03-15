@@ -46,6 +46,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.relationships.Relationship;
@@ -69,6 +70,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// provide that information.
 		
 	}
+	
+	public BinaryPartAbstractImage(ExternalTarget externalTarget) {
+		super(externalTarget);
+	}
+	
 	
 	public static String generateName() {
 		counter++;

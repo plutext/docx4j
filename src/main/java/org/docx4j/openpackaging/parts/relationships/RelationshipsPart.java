@@ -73,6 +73,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 
@@ -291,24 +292,35 @@ public final class RelationshipsPart extends JaxbXmlPart {
 		
 		log.info(" source is  " + sourceP.getPartName().toString() );
     	// eg rId1 points to fonts/font1.odttf
-    			
-		URI uri = null;
-
-		try {
-			uri = org.docx4j.openpackaging.URIHelper
-					.resolvePartUri(sourceP.partName.getURI(), new URI(
-							r.getTarget()));
-		} catch (URISyntaxException e) {
-			log.error("Cannot convert " + r.getTarget()
-					+ " in a valid relationship URI-> ignored", e);
-		}		
-    	
-    	
-    	try {
-			return getPackage().getParts().get( new PartName(uri, true ));
-		} catch (InvalidFormatException e) {
-			log.error("Couldn't get part using PartName: " + uri, e);
-			return null;
+    		
+		if (r.getTargetMode() == null
+				|| !r.getTargetMode().equals("External") ) {
+			
+			// Usual case
+			URI uri = null;
+	
+			try {
+				uri = org.docx4j.openpackaging.URIHelper
+						.resolvePartUri(sourceP.partName.getURI(), new URI(
+								r.getTarget()));
+			} catch (URISyntaxException e) {
+				log.error("Cannot convert " + r.getTarget()
+						+ " in a valid relationship URI-> ignored", e);
+			}		
+	    		    	
+	    	try {
+				return getPackage().getParts().get( new PartName(uri, true ));
+			} catch (InvalidFormatException e) {
+				log.error("Couldn't get part using PartName: " + uri, e);
+				return null;
+			}
+			
+		} else {
+			// EXTERNAL
+			return getPackage().getExternalResources().get(
+					new ExternalTarget( r.getTarget() ) );
+			// TODO - doesn't handle a relative reference,
+			// because the keys are absolute references
 		}
 	}
 	
