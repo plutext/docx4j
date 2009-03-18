@@ -311,7 +311,7 @@ public class WordprocessingMLPackage extends Package {
 				
 		// 4.  Use addFont code like that below as necessary for the fonts
 		
-			// See https://xhtmlrenderer.dev.java.net/r7/users-guide-r7.html#xil_32
+			// See https://xhtmlrenderer.dev.java.net/guide/users-guide-r7.html#xil_32
 		org.xhtmlrenderer.extend.FontResolver resolver = renderer.getFontResolver();		
 				
 		Map fontMappings = getFontSubstituter().getFontMappings();
@@ -376,7 +376,8 @@ public class WordprocessingMLPackage extends Package {
 					File f = new File(afm);
 			        if (f.exists()) {				
 			        	log.info("Got it");
-			        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
+//			        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
+			        	renderer.getFontResolver().addFont(afm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
 						log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
 			        } else {
 			        	// Should we be doing afm first, or pfm?
@@ -386,7 +387,8 @@ public class WordprocessingMLPackage extends Package {
 						f = new File(pfm);
 				        if (f.exists()) {				
 				        	log.info("Got it");
-				        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
+//				        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
+				        	renderer.getFontResolver().addFont(pfm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
 							log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getFamilyName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
 				        } else {
 				        	// Shouldn't happen.
