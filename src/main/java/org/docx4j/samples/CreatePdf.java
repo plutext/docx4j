@@ -20,32 +20,39 @@
 
 package org.docx4j.samples;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-
-import org.docx4j.convert.out.pdf.viaHTML.Conversion;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 public class CreatePdf {
 	    
 	    public static void main(String[] args) 
 	            throws Exception {
+			
+			String inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
 
-			//String inputfilepath = System.getProperty("user.dir") + "/docx4j/sample-docs/TableAndPng.docx";
-			
-			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
-			
-				//"/home/jharrop/tmp/Styles-lots.docx";
-//			String inputfilepath = "/home/jharrop/tmp/wordml2html.docx";
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-	    										
-			Conversion c = new Conversion(wordMLPackage);
+
+			/* Choose which of the three methods you want to use...
+			 * 
+			 * .. viaHTML uses docX2HTML.xslt and xhtmlrenderer, 
+			 *    and supports numbering, images,
+			 *    and tables, but is pretty hard to understand
+			 *    
+			 * .. viaXSLFO uses docx2fo.xslt and FOP.  It is
+			 *    rudimentary right now, but should be
+			 *    easy enough to extend to include a basic
+			 *    feature set
+			 *    
+			 * .. viaItext - for developers who don't like xslt
+			 *    at all! Or what to use iText's features..
+			 * 
+			 */
+			org.docx4j.convert.out.pdf.PdfConversion c 
+//				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
+				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
+//				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
 			c.view();
 	        	        
 	    }
-	    
-   
 	    
 	    
 	}
