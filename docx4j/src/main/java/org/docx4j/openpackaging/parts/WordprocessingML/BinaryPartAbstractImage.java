@@ -529,6 +529,58 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		  System.out.println("Print size: " + Math.round(dPt.getWidth()/72) + "\" x" + Math.round(dPt.getHeight()/72)+"\"" ); 
 		
 	}
+	
+	/**
+	 * Convenience method, given a Graphic in a document,
+	 * to get the byte[] representing
+	 * the associated image 
+	 * 
+	 * @param wmlPkg
+	 * @param graphic
+	 * @return
+	 */
+	public static byte[] getImage(WordprocessingMLPackage wmlPkg,
+			org.docx4j.dml.Graphic graphic) {
+		
+		if (wmlPkg == null 
+			|| wmlPkg.getMainDocumentPart() == null
+			|| wmlPkg.getMainDocumentPart().getRelationshipsPart() == null) {
+			return null;
+		}
+		
+		org.docx4j.dml.Pic pic = graphic.getGraphicData().getPic();
+		String rId = pic.getBlipFill().getBlip().getEmbed();
+		if (rId.equals("")) {
+			rId = pic.getBlipFill().getBlip().getLink();
+		}
+		log.debug("Image rel id: " + rId);
+		org.docx4j.relationships.Relationship rel = 
+			wmlPkg.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(rId);
+		if (rel != null) {
+			org.docx4j.openpackaging.parts.Part part = 
+				wmlPkg.getMainDocumentPart().getRelationshipsPart().getPart(rel);
+			if (part == null) {
+				log.error("Couldn't get Part!");
+			} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
+				log.debug("getting bytes...");
+				org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart binaryPart =
+					(org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) part;
+				java.nio.ByteBuffer bb = binaryPart.getBuffer();
+    	        bb.clear();
+    	        byte[] bytes = new byte[bb.capacity()];
+    	        bb.get(bytes, 0, bytes.length);
+
+				return bytes;
+			} else {				
+				log.error("Part was a " + part.getClass().getName() );
+			}
+		} else {
+			log.error("Couldn't find rel " + rId);
+		}
+		
+		return null;
+	}
+	
 
 	/**
 	 * Convert image formats which are not supported by Word (eg EPS, PDF),
