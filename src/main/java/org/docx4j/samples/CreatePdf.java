@@ -27,8 +27,9 @@ public class CreatePdf {
 	    public static void main(String[] args) 
 	            throws Exception {
 			
-			String inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
-
+//			String inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
+			String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+			
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
 			/* Choose which of the three methods you want to use...
@@ -43,13 +44,14 @@ public class CreatePdf {
 			 *    feature set
 			 *    
 			 * .. viaItext - for developers who don't like xslt
-			 *    at all! Or what to use iText's features..
-			 * 
+			 *    at all! Or want to use iText's features..
+			 *    Displays images, but as at 2009 03 19.
+			 *    doesn't try to scale them.
 			 */
 			org.docx4j.convert.out.pdf.PdfConversion c 
 //				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
-				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
-//				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
+//				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
+				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
 			c.view();
 	        	        
 	    }
