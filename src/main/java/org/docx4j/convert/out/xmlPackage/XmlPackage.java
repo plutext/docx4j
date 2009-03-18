@@ -27,6 +27,7 @@ import java.net.URI;
 import java.util.Iterator;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
@@ -429,16 +430,21 @@ public class XmlPackage implements Output {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Document getFlatDomDocument(WordprocessingMLPackage wordMLPackage) throws Exception {
+	public static Document getFlatDomDocument(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
 		XmlPackage worker = new XmlPackage(wordMLPackage);
 		org.docx4j.xmlPackage.Package pkg = worker.get();
 		
-		JAXBContext jc = Context.jcXmlPackage;
-		Marshaller marshaller=jc.createMarshaller();
-		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
+		org.w3c.dom.Document doc;
+		try {
+			JAXBContext jc = Context.jcXmlPackage;
+			Marshaller marshaller=jc.createMarshaller();
+			doc = org.docx4j.XmlUtils.neww3cDomDocument();
 
-		marshaller.marshal(pkg, doc);
+			marshaller.marshal(pkg, doc);
+		} catch (JAXBException e) {
+			throw new Docx4JException("Couldn't marshal Flat OPC to DOM", e);
+		}
 		
 		return doc;
 		
