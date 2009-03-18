@@ -179,6 +179,11 @@ public class Package extends Base {
 		return docPropsExtendedPart;
 	}
 
+	/**
+	 * Get DocPropsCustomPart, creating it if necessary.
+	 * 
+	 * @return
+	 */
 	public DocPropsCustomPart getDocPropsCustomPart() {
 		
 		if (docPropsCustomPart==null) {
