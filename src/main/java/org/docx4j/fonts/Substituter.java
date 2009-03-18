@@ -407,14 +407,23 @@ public class Substituter {
 			return "nullInputToExtension";
 		}
 		
-		// Concat bold italic modifier
-		documentStyleId = documentStyleId + bolditalic;
-		
-		FontMapping fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId));
+		// Try with bold italic modifier		
+		FontMapping fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId + bolditalic));
 
 		if (fontMapping==null) {
-			log.error("no mapping for:" + normalise(documentStyleId));
-			return "noMappingFor" + normalise(documentStyleId);
+			log.error("no mapping for:" + normalise(documentStyleId + bolditalic));
+			
+			// try without  bold italic modifier
+			fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId));
+			
+			if (fontMapping==null) {
+				log.error("still no good:" + normalise(documentStyleId));
+				return "noMappingFor" + normalise(documentStyleId);
+			}
+		} else {
+			
+			documentStyleId = documentStyleId + bolditalic;
+			
 		}
 		
 		log.info(documentStyleId + " -> " + fontMapping.getPhysicalFont().getFamilyName() );
