@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.html.HtmlExporter;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -36,6 +37,12 @@ public abstract class PdfConversion  {
 	public abstract void output(OutputStream os) throws Docx4JException;
 		
 	protected static Logger log = Logger.getLogger(PdfConversion.class);	
+	
+	// For XSLT logging
+	public static void log(String message ) {
+		
+		log.info(message);
+	}
 	
 	protected WordprocessingMLPackage wordMLPackage;
 
