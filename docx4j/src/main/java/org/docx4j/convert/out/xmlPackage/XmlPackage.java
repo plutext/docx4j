@@ -21,13 +21,20 @@
 package org.docx4j.convert.out.xmlPackage;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Iterator;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.Output;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.Package;
@@ -38,10 +45,12 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
+import org.w3c.dom.Document;
 
 /**
  * Convert a Package object to org.docx4j.xmlPackage.Package
- * (ie the "pkg" single XML file format):
+ * (ie the "pkg" single XML file format, sometimes called
+ *  Flat OPC format):
  * 
  * "<?xml version=""1.0"" standalone=""yes""?>
  * <?mso-application progid=""Word.Document""?>
@@ -63,7 +72,7 @@ import org.docx4j.relationships.Relationship;
  * @author jharrop
  *
  */
-public class XmlPackage {
+public class XmlPackage implements Output {
 	
 	private static Logger log = Logger.getLogger(XmlPackage.class);				
 	
@@ -413,6 +422,46 @@ public class XmlPackage {
 		}
 		
 	}
+	
+	/**
+	 * Return the WordML package in Flat OPC format, as a W3C DOM document
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public static Document getFlatDomDocument(WordprocessingMLPackage wordMLPackage) throws Exception {
+		
+		XmlPackage worker = new XmlPackage(wordMLPackage);
+		org.docx4j.xmlPackage.Package pkg = worker.get();
+		
+		JAXBContext jc = Context.jcXmlPackage;
+		Marshaller marshaller=jc.createMarshaller();
+		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
+
+		marshaller.marshal(pkg, doc);
+		
+		return doc;
+		
+	}
+	
+	// Implement the interface
+	public void output(javax.xml.transform.Result result) throws Docx4JException {
+		
+		// Do this via identity transform
+		
+		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
+		// We don't care which it is here - See XmlUtils for fun with these factories...
+	
+		try {
+			Transformer serializer = tfactory.newTransformer();
+			serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+			serializer.transform( new DOMSource( getFlatDomDocument( (WordprocessingMLPackage)packageIn)) , result );				
+		} catch (Exception e) {
+			throw new Docx4JException("Failed to create Flat OPC output", e);
+		} 
+		
+	}
+	
 	
 	
 	public static void main(String[] args) throws Exception {

@@ -16,11 +16,13 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.listnumbering.Emulator;
 import org.docx4j.listnumbering.Emulator.ResultTriple;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.openpackaging.parts.Part;
@@ -33,7 +35,7 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
-public class HtmlExporter {
+public class HtmlExporter implements Output {
 	
 	
 	protected static Logger log = Logger.getLogger(HtmlExporter.class);
@@ -42,6 +44,41 @@ public class HtmlExporter {
 		
 		log.info(message);
 	}
+	
+	// Implement the interface.  Everything in this class was
+	// static, until now.
+	
+	WordprocessingMLPackage wmlPackage;
+	public void setWmlPackage(WordprocessingMLPackage wmlPackage) {
+		this.wmlPackage = wmlPackage;
+	}
+
+	HtmlSettings htmlSettings;
+	public void setHtmlSettings(HtmlSettings htmlSettings) {
+		this.htmlSettings = htmlSettings;
+	}
+	
+	
+	public void output(javax.xml.transform.Result result) throws Docx4JException {
+		
+		if (wmlPackage==null) {
+			throw new Docx4JException("Must setWmlPackage");
+		}
+		
+		if (htmlSettings==null) {
+			log.debug("Using empty HtmlSettings");
+			htmlSettings = new HtmlSettings();			
+		}		
+		
+		try {
+			html(wmlPackage, result, htmlSettings);
+		} catch (Exception e) {
+			throw new Docx4JException("Failed to create HTML output", e);
+		}		
+		
+	}
+	
+	// End interface
 	
 	/** Create an html version of the document, using CSS font family
 	 *  stacks.  This is appropriate if the HTML is intended for
@@ -1045,5 +1082,6 @@ public class HtmlExporter {
 			this.pType = value;
 		}
     }
+
 
 }
