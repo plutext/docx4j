@@ -120,6 +120,10 @@ public class Emulator {
     	
     	org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart numberingPart =
     		wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+    	
+    	if (numberingPart==null) {
+    		return null;
+    	}
 
     	Emulator em = numberingPart.getEmulator();
     	
