@@ -514,9 +514,11 @@ public final class RelationshipsPart extends JaxbXmlPart {
 
 				log.debug("Comparing " + resolvedTargetURI + " == " + partName.getName());
 				
-				if (partName.getName().equals(resolvedTargetURI.toString()) ) { // was rel.getTargetURI()
+				if (partName.getName().equals(resolvedTargetURI.toString()) ) { 
+					// was rel.getTargetURI()
 					
-					log.info("True - will delete relationship with target " + rel.getTarget());
+					log.info("True - will delete relationship with id " + rel.getId() 
+							+ " and target " + rel.getTarget());
 					relToBeRemoved = rel; // Avoid java.util.ConcurrentModificationException
 					break;
 				}
@@ -554,15 +556,39 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 * 2. if a rel is removed, best not to reuse it
 	 *    (ie don't just use size() 
 	 * */
-	private int nextId;
+	private int nextId = 1;
 
 	private String getNextId() {
 		
 		// Relationship part always 
-		// determines the Relationship Id
+		// determines the Relationship Id		
 		String id = "rId" + nextId;
 		nextId++;
 		return id;
+		
+	}
+	
+	public void resetIdAllocator() {
+		
+		int highestId = 0;
+		for (Relationship rel : relationships.getRelationship() ) {
+
+			String id = rel.getId();
+			try {
+				String idNum = id.substring(3);
+				
+				int current = Integer.parseInt(idNum);
+				
+				if (current > highestId) {
+					highestId = current;
+				}
+			} catch (Exception e) {
+				log.error("Couldn't process id: " + id);
+				return;
+			}			
+		}
+		nextId = highestId+1;		
+		logger.debug("nextId reset to : " + nextId);
 		
 	}
 	
@@ -582,7 +608,9 @@ public final class RelationshipsPart extends JaxbXmlPart {
 				&& !rel.getId().equals("") ) {
 			logger.warn("replacing relationship id '" + rel.getId() + "' with '"
 					+ id + "'");
-		}		
+		} else {
+			logger.debug("Using id: " + id);
+		}
 		rel.setId( id );
 		
 		relationships.getRelationship().add(rel);
