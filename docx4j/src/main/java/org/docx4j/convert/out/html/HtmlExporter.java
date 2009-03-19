@@ -19,6 +19,7 @@ import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
+import org.docx4j.fonts.Substituter;
 import org.docx4j.fonts.SubstituterImplPanose;
 import org.docx4j.jaxb.Context;
 import org.docx4j.listnumbering.Emulator;
@@ -693,11 +694,11 @@ public class HtmlExporter implements Output {
 		}
 		
 		
-		SubstituterImplPanose fontSubstituter = null;		
-		public void setFontSubstituter(SubstituterImplPanose fontSubstituter) {
+		Substituter fontSubstituter = null;		
+		public void setFontSubstituter(Substituter fontSubstituter) {
 			this.fontSubstituter = fontSubstituter;
 		}
-		public SubstituterImplPanose getFontSubstituter() {
+		public Substituter getFontSubstituter() {
 			return fontSubstituter;
 		}
 		
