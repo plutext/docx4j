@@ -45,5 +45,9 @@ public class Docx4JException extends Exception {
 	public Docx4JException(String msg, Exception e) {
 		super(msg, e);
 	}
+
+	public Docx4JException(String msg, Throwable t) {
+		super(msg, t);
+	}
 	
 }
