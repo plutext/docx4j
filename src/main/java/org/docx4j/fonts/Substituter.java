@@ -68,6 +68,18 @@ public abstract class Substituter {
 		replacement = (new String("")).subSequence(0, 0);
 	}
 	
+	/**
+	 * Populate the fontMappings object. We make an entry for each
+	 * of the documentFontNames.
+	 * 
+	 * @param documentFontNames - the fonts used in the document
+	 * @param wmlFonts - the content model for the fonts part
+	 * @throws Exception
+	 */
+	public abstract void populateFontMappings(Map documentFontNames, 
+			org.docx4j.wml.Fonts wmlFonts ) throws Exception;
+	
+	
 	
 	// Remove spaces and make lower case        
 	public final static String normalise(String realName) {		

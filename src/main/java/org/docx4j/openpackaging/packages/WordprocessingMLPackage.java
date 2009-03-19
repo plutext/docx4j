@@ -35,7 +35,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
-import org.docx4j.fonts.SubstituterImplPanose;
+import org.docx4j.fonts.Substituter;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentType;
@@ -244,7 +244,7 @@ public class WordprocessingMLPackage extends Package {
     
     
     
-    public void setFontSubstituter(SubstituterImplPanose fs) throws Exception {
+    public void setFontSubstituter(Substituter fs) throws Exception {
     	if (fs == null) {
     		throw new IllegalArgumentException("Font Substituter cannot be null.");
     	}
@@ -269,11 +269,11 @@ public class WordprocessingMLPackage extends Package {
     	
     }
 
-    public SubstituterImplPanose getFontSubstituter() {
+    public Substituter getFontSubstituter() {
 		return fontSubstituter;
 	}
 
-	private SubstituterImplPanose fontSubstituter;
+	private Substituter fontSubstituter;
     
 	
 
