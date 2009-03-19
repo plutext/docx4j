@@ -1,7 +1,36 @@
-Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java
 ===================================================================
---- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 631408)
-+++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFont.java	(working copy)
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/autodetect/FontInfoFinder.java	(working copy)
+@@ -151,7 +151,10 @@
+         }
+         EmbedFontInfo fontInfo = new EmbedFontInfo(null, customFont.isKerningEnabled(),
+                 fontTripletList, embedUrl, subFontName);
++        fontInfo.setPanose(customFont.getPanose());
+         fontInfo.setPostScriptName(customFont.getFontName());
++        fontInfo.setEmbeddable(customFont.isEmbeddable());
++        
+         if (fontCache != null) {
+             fontCache.addFont(fontInfo);
+         }
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/CIDFontType.java
+===================================================================
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/CIDFontType.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/CIDFontType.java	(working copy)
+@@ -19,7 +19,8 @@
+ 
+ package org.apache.fop.fonts;
+ 
+-import org.apache.avalon.framework.ValuedEnum;
++//import org.apache.avalon.framework.ValuedEnum;
++import org.apache.fop.fonts.ValuedEnum;
+ 
+ /**
+  * This class enumerates all supported CID font types.
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/CustomFont.java
+===================================================================
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/CustomFont.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/CustomFont.java	(working copy)
 @@ -17,6 +17,11 @@
  
  /* $Id$ */
@@ -14,23 +43,23 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFon
  package org.apache.fop.fonts;
  
  import java.io.IOException;
-@@ -57,6 +62,26 @@
-     private Map kerning;
+@@ -58,6 +63,26 @@
  
      private boolean useKerning = true;
-+    
-+    private boolean isEmbeddable = true; 
+ 
++    private boolean isEmbeddable = true;
++
 +	public boolean isEmbeddable() {
 +		return isEmbeddable;
 +	}
++
 +	public void setEmbeddable(boolean isEmbeddable) {
 +		this.isEmbeddable = isEmbeddable;
 +	}
-+    
-+    
-+    private Panose panose = null;
 +
-+    public Panose getPanose() {
++	private Panose panose = null;
++
++	public Panose getPanose() {
 +		return panose;
 +	}
 +
@@ -38,23 +67,17 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/CustomFon
 +		this.panose = panose;
 +	}
 +    
- 
      /** {@inheritDoc} */
      public String getFontName() {
-@@ -448,4 +473,5 @@
-         }
-     }
- 
-+
- }
-Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java
+         return fontName;
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java
 ===================================================================
---- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(revision 631408)
-+++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(working copy)
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/EmbedFontInfo.java	(working copy)
 @@ -17,6 +17,11 @@
  
  /* $Id$ */
-  
+ 
 +/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
 + * 
 + * This notice is included to meet the condition in clause 4(b) of the License. 
@@ -62,23 +85,24 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
 +
  package org.apache.fop.fonts;
  
- import java.io.Serializable;
-@@ -38,6 +43,32 @@
-     protected boolean kerning;
-     /** the list of associated font triplets */
-     protected List fontTriplets;
-+    
-+    private boolean isEmbeddable = true; 
+ import java.io.IOException;
+@@ -48,14 +53,41 @@
+ 
+     private transient boolean embedded = true;
+ 
++    private boolean isEmbeddable = true;
++
 +	public boolean isEmbeddable() {
 +		return isEmbeddable;
 +	}
++
 +	public void setEmbeddable(boolean isEmbeddable) {
 +		this.isEmbeddable = isEmbeddable;
-+	}    
-+    
-+    protected Panose panose = null;
++	}
 +
-+    public Panose getPanose() {
++	protected Panose panose = null;
++
++	public Panose getPanose() {
 +		return panose;
 +	}
 +
@@ -86,20 +110,35 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/EmbedFont
 +		this.panose = panose;
 +	}
 +    
-+	protected String postScriptName = null;
-+	public String getPostScriptName() {
-+		return postScriptName;
-+	}
-+	public void setPostScriptName(String postScriptName) {
-+		this.postScriptName = postScriptName;
-+	}
-       
      /**
-      * Main constructor
-Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java
+-     * Main constructor
+-     * @param metricsFile Path to the xml file containing font metrics
+-     * @param kerning True if kerning should be enabled
+-     * @param fontTriplets List of font triplets to associate with this font
+-     * @param embedFile Path to the embeddable font file (may be null)
+-     * @param subFontName the sub-fontname used for TrueType Collections (null otherwise)
+-     */
++	 * Main constructor
++	 * 
++	 * @param metricsFile
++	 *            Path to the xml file containing font metrics
++	 * @param kerning
++	 *            True if kerning should be enabled
++	 * @param fontTriplets
++	 *            List of font triplets to associate with this font
++	 * @param embedFile
++	 *            Path to the embeddable font file (may be null)
++	 * @param subFontName
++	 *            the sub-fontname used for TrueType Collections (null
++	 *            otherwise)
++	 */
+     public EmbedFontInfo(String metricsFile, boolean kerning,
+                     List/*<FontTriplet>*/ fontTriplets, String embedFile, String subFontName) {
+         this.metricsFile = metricsFile;
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/Enum.java
 ===================================================================
---- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java	(revision 0)
-+++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java	(revision 0)
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/Enum.java	(revision 0)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/Enum.java	(revision 0)
 @@ -0,0 +1,182 @@
 +/*
 + * Copyright 1997-2004 The Apache Software Foundation
@@ -122,7 +161,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java
 + * This notice is included to meet the condition in clause 4(b) of the License. 
 + */
 +
-+// moved from avalon.framework
++//package org.apache.avalon.framework;
 +package org.apache.fop.fonts;
 +
 +import java.util.Map;
@@ -177,7 +216,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java
 + *
 + *
 + * @author <a href="mailto:dev@avalon.apache.org">Avalon Development Team</a>
-+ * @version CVS $Revision: 1.28 $ $Date: 2004/02/11 14:34:24 $
++ * @version $Id$
 + */
 +public abstract class Enum
 +{
@@ -229,18 +268,18 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java
 +     * @param o the other object
 +     * @return the equality status
 +     */
-+    public final boolean equals( Object o )
++    public boolean equals( Object o )
 +    {
 +        if( this == o )
 +            return true;
 +        if( !(o instanceof Enum) )
 +            return false;
 +
-+        final Enum enumb = (Enum)o;
++        final Enum enumerated = (Enum)o;
 +
-+        if( !getClass().equals( enumb.getClass() ) )
++        if( !getClass().equals( enumerated.getClass() ) )
 +            return false;
-+        if( m_name != null ? !m_name.equals( enumb.m_name ) : enumb.m_name != null )
++        if( m_name != null ? !m_name.equals( enumerated.m_name ) : enumerated.m_name != null )
 +            return false;
 +
 +        return true;
@@ -283,10 +322,24 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Enum.java
 +        return getClass().getName() + "[" + m_name + "]";
 +    }
 +}
-Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/FontType.java
 ===================================================================
---- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(revision 631408)
-+++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(working copy)
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/FontType.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/FontType.java	(working copy)
+@@ -19,7 +19,8 @@
+ 
+ package org.apache.fop.fonts;
+ 
+-import org.apache.avalon.framework.ValuedEnum;
++//import org.apache.avalon.framework.ValuedEnum;
++import org.apache.fop.fonts.ValuedEnum;
+ 
+ /**
+  * This class enumerates all supported font types.
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/MultiByteFont.java
+===================================================================
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/MultiByteFont.java	(working copy)
 @@ -17,6 +17,11 @@
  
  /* $Id$ */
@@ -299,45 +352,29 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/MultiByte
  package org.apache.fop.fonts;
  
  //Java
-@@ -40,8 +45,9 @@
-     private String namePrefix = null;    // Quasi unique prefix
- 
-     private BFEntry[] bfentries = null;
-+    
- 
--    /**
-+	/**
-      * Default constructor
-      */
-     public MultiByteFont() {
-@@ -133,12 +139,16 @@
+@@ -118,10 +123,13 @@
          }
      }
  
--    /**
--     * {@inheritDoc}
--     */
+-    /** {@inheritDoc} */
 -    public boolean isEmbeddable() {
 -        return !(getEmbedFileName() == null && getEmbedResourceName() == null);
 -    }
-+    
 +// Comment out - this overrides the value derived by TTFFile, which 
 +// is not what we want.    
 +    
-+//    /**
-+//     * {@inheritDoc}
-+//     */
++//    /** {@inheritDoc} */
 +//    public boolean isEmbeddable() {
 +//        return !(getEmbedFileName() == null && getEmbedResourceName() == null);
 +//    }
  
-     /**
-      * {@inheritDoc}
-Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java
+     /** {@inheritDoc} */
+     public CIDSubset getCIDSubset() {
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/Panose.java
 ===================================================================
---- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-+++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
-@@ -0,0 +1,409 @@
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/Panose.java	(revision 0)
+@@ -0,0 +1,376 @@
 +/*
 + * Copyright 2006 The FOray Project.
 + *      http://www.foray.org
@@ -361,8 +398,8 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 + */
 +
 +/*
-+ * $LastChangedRevision: 10097 $
-+ * $LastChangedDate: 2007-07-24 15:05:09 -0600 (Tue, 24 Jul 2007) $
++ * $LastChangedRevision: 10482 $
++ * $LastChangedDate: 2008-03-23 02:59:39 +1100 (Sun, 23 Mar 2008) $
 + * $LastChangedBy$
 + */
 +
@@ -371,14 +408,14 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 + * This notice is included to meet the condition in clause 4(b) of the License. 
 + */
 +
++//package org.foray.font.format;
 +package org.apache.fop.fonts;
 +
-+import java.io.Serializable;
 +
 +
 +/**
-+ * A PANOSE classification number.
-+ * 
++ * A PANOSE-1 classification number.
++ *
 + * <p>References:</p>
 + * <ul>
 + *   <li><a href="http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html">The TTF OS/2 Table
@@ -392,14 +429,8 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 + *   <li><a href="www.fonts.com/hp/panose/greybook">The "Grey Book"</a></li>
 + * </ul>
 + */
-+public class Panose implements Serializable {
++public final class Panose {
 +
-+    /**
-+     * Serialization Version UID. Change this value if you want to make sure the user's cache
-+     * file is purged after an update.
-+     */
-+    private static final long serialVersionUID = 605232520271754718L;
-+	
 +    /**
 +     * Enumeration of the fields that comprise a PANOSE description.
 +     * @see "http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html"
@@ -468,47 +499,87 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +        }
 +
 +    }
-+	
++
++    /**
++     * Constant indicating the minimum italic value for the letterform field.
++     * This is based on an analysis of the MS ClearType Collection fonts:
++     * <ul>
++     * <li>consolas             [ 2 11 6 9 2 2 4 3 2 4 ]  bold 6 ital 3</li>
++     * <li>consolas-bold        [ 2 11 7 9 2 2 4 3 2 4 ]  bold 7 ital 3</li>
++     * <li>consolas-italic      [ 2 11 6 9 2 2 4 10 2 4 ] bold 6 ital 10</li>
++     * <li>consolas-bolditalic  [ 2 11 7 9 2 2 4 10 2 4 ] bold 7 ital 10</li>
++     *
++     * <li>cordianew            [ 2 11 3 4 2 2 2 2 2 4 ]  bold 3 ital 2</li>
++     * <li>cordianew-bolditalic [ 2 11 6 4 2 2 2 9 2 4 ]  bold 6 ital 9</li>
++     *
++     * <li>calibri              [ 2 15 5 2 2 2 4 3 2 4 ]  bold 5 ital 3</li>
++     * <li>calibri-bold         [ 2 15 7 2 3 4 4 3 2 4 ]  bold 7 ital 3</li>
++     * <li>calibri-bolditalic   [ 2 15 7 2 3 4 4 10 2 4 ] bold 7 ital 10</li>
++     *
++     * <li>constantia           [ 2 3 6 2 5 3 6 3 3 3 ]   bold 6 ital 3</li>
++     * <li>constantia-bold      [ 2 3 7 2 6 3 6 3 3 3 ]   bold 7 ital 3 (note the 6 at index 4)</li>
++     * <li>constantia-italic    [ 2 3 6 2 5 3 6 10 3 3 ]  bold 6 ital 10</li>
++     *
++     * <li>candara-bold         [ 2 14 7 2 3 3 3 2 2 4 ]  bold 7 ital 2</li>
++     * <li>candara-italic       [ 2 14 5 2 3 3 3 9 2 4 ]  bold 5 ital 9</li>
++     * <li>candara-bolditalic   [ 2 14 7 2 3 3 3 9 2 4 ]  bold 7 ital 9</li>
++     *
++     * <li>cambria-bold         [ 2 4 8 3 5 4 6 3 2 4 ]   bold 8 ital 3</li>
++     * <li>cambria-italic       [ 2 4 5 3 5 4 6 10 2 4 ]  bold 5 ital 10</li>
++     * </ul>
++     */
++    private static final byte LETTERFORM_MIN_ITALIC = 9;
++
++    /**
++     * Constant indicating the minimum bold value for the weight field.
++     * This is based on an analysis of the MS ClearType Collection fonts, which can be found at
++     * {@link #LETTERFORM_MIN_ITALIC}.
++     */
++    private static final byte WEIGHT_MIN_BOLD = 7;
++
 +    /** An array of weights indicating that all elements in a comparison between two PANOSE values
 +     * shall be considered to be of the same weight. */
 +    private static final byte[] NEUTRAL_WEIGHTS = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 +    /* Caveat: It is tempting to make NEUTRAL_WEIGHTS public and allow client apps to use it as a
 +     * parameter. However, there is no way to protect the data inside it from corruption, so we
 +     * have elected to keep it private and to allow "null" to be interpreted as the same value. */
-+	
-+//    /** Constant indicating the size of the "panose" field, in bytes. */
-+//    public static final byte ARRAY_SIZE = 10;
 +
-+    /** Max difference for it to be considered an acceptable match.
-+     *  Note that this value will depend on the weights in the
-+     *  difference function.
-+     */ 
-+    public static final int MATCH_THRESHOLD = 30;
-+    
-+    
 +    /** The encapsulated array of PANOSE numbers. */
 +    private byte[] panoseArray;
-+    
 +
 +    /**
 +     * Private Constructor. Use {@link #makeInstance(byte[])} to create an instance of this class.
 +     * @param panoseArray The array of bytes recording the PANOSE classification.
 +     */
 +    private Panose(final byte[] panoseArray) {
-+        this.panoseArray = panoseArray;
++        /* Clone the incoming array to protect our data from subsequent changes made to the original
++         * array. */
++        this.panoseArray = panoseArray.clone();
 +    }
 +
 +    /**
-+     * Creates a new Panose instance.
++     * Creates a new Panose instance, first checking it for validity.
 +     * @param panoseArray The array of bytes recording the PANOSE
 +     * classification.
 +     * @return The newly-created instance.
++     * @throws FontException If <code>panoseArray</code> contains an illegal value.
++     * @see #forceInstance(byte[])
 +     */
 +    public static Panose makeInstance(final byte[] panoseArray) {
 +        final String panoseValidationMessage = Panose.validPanose(panoseArray);
 +        if (panoseValidationMessage != null) {
 +            throw new IllegalArgumentException("Illegal Panose Array: " + panoseValidationMessage);
 +        }
++        return new Panose(panoseArray);
++    }
++
++    /**
++     * Creates a new Panose instance without any error checking.
++     * @param panoseArray The array of bytes recording the PANOSE classification.
++     * @return The newly-created instance.
++     * @see #makeInstance(byte[])
++     */
++    public static Panose forceInstance(final byte[] panoseArray) {
 +        return new Panose(panoseArray);
 +    }
 +
@@ -574,72 +645,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +        }
 +        return difference;
 +    }
-+    
-+    /*
-+     *  consolas           [ 2 11 6 9 2 2 4 3 2 4 ] bold 6 ital 3
-+		consolas-bold      [ 2 11 7 9 2 2 4 3 2 4 ] bold 7 ital 3
-+		consolas-italic    [ 2 11 6 9 2 2 4 10 2 4 ] bold 6 ital 10
-+		consolas-bolditalic[ 2 11 7 9 2 2 4 10 2 4 ] bold 7 ital 10
-+		
-+		cordianew           [ 2 11 3 4 2 2 2 2 2 4 ] bold 3 ital 2
-+		cordianew-bolditalic[ 2 11 6 4 2 2 2 9 2 4 ] bold 6 ital 9
-+		
-+		calibri             [ 2 15 5 2 2 2 4 3 2 4 ] bold 5 ital 3
-+		calibri-bold        [ 2 15 7 2 3 4 4 3 2 4 ] bold 7 ital 3
-+		calibri-bolditalic  [ 2 15 7 2 3 4 4 10 2 4 ] bold 7 ital 10
-+		
-+		constantia          [ 2 3 6 2 5 3 6 3 3 3 ] bold 6 ital 3
-+		constantia-bold     [ 2 3 7 2 6 3 6 3 3 3 ] bold 7 ital 3
-+		                              ^ note this
-+		constantia-italic   [ 2 3 6 2 5 3 6 10 3 3 ] bold 6 ital 10
-+		
-+		candara-bold        [ 2 14 7 2 3 3 3 2 2 4 ] bold 7 ital 2
-+		candara-italic      [ 2 14 5 2 3 3 3 9 2 4 ] bold 5 ital 9
-+		candara-bolditalic  [ 2 14 7 2 3 3 3 9 2 4 ] bold 7 ital 9
-+		
-+		cambria-bold        [ 2 4 8 3 5 4 6 3 2 4 ] bold 8 ital 3
-+		cambria-italic      [ 2 4 5 3 5 4 6 10 2 4 ] bold 5 ital 10
 +
-+     */
-+    
-+    public static Panose getBold(Panose thisPanose) {
-+    	
-+    	byte[] panoseArray = thisPanose.getPanoseArray();
-+    	
-+    	if (panoseArray[2]==11) {
-+    		// Already the maximum value - do nothing
-+    	} else if (panoseArray[2]<8) {
-+    		panoseArray[2]=9; 
-+    		// 8 = bold, and even though most of the MS ClearType Collection fonts have 7 here,
-+    		// experience (Times New Roman) shows it is better to be on the high side, to stop
-+    		// this Panose array from being equidistant between the normal weight and the
-+    		// bold weight.
-+    		
-+    	} else {
-+    		// Do nothing, rather than increase the Weight
-+    	}
-+    	
-+		return Panose.makeInstance(panoseArray);
-+    	
-+    }
-+
-+    public static Panose getItalic(Panose thisPanose) {
-+    	
-+    	byte[] panoseArray = thisPanose.getPanoseArray();
-+    	
-+    	if (panoseArray[7]==15) {
-+    		// Already the maximum value - do nothing
-+    	} else if (panoseArray[7]<9) {
-+    		panoseArray[7]=10; // Most fonts have 9 or 10 here, so use 10 on the same reasoning as above.
-+    	} else {
-+    		// Do nothing, rather than increase the Letterform setting 
-+    	}
-+    	
-+		return Panose.makeInstance(panoseArray);
-+    	
-+    }
-+    
-+    
 +    /**
 +     * Examines an array of weights, throwing various unchecked exceptions if the data is not valid.
 +     * @param weights The array of weights to be tested.
@@ -661,42 +667,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +            }
 +        }
 +    }
-+    
-+//    /**
-+//     * Tests the validity of a panose description.
-+//     * @param panoseDescription The panose values to be tested.
-+//     * @return True for a valid PANOSE description, or false if the input is
-+//     * null, does not have 10 elements, or any of the elements do not contain
-+//     * valid ASCII numerals (0 through 9).
-+//     */
-+//    public static boolean validPanose(final byte[] panoseDescription) {
-+//        if (panoseDescription == null) {
-+//        	System.out.println("null byte[]" );
-+//            return false;
-+//        }
-+//        if (panoseDescription.length != Panose.ARRAY_SIZE) {
-+//        	System.out.println("Invalid length " + panoseDescription.length );
-+//            return false;
-+//        }
-+//        for (int i = 0; i < panoseDescription.length; i++) {
-+//            final byte theByte = panoseDescription[i];
-+//            String s = Byte.toString(theByte);            
-+//            int n = Integer.parseInt(s);
-+//            if (n < 0) {
-+//            	//System.out.println("Invalid value (too small) " + theByte + " in position " + i + " of " + toString(panoseDescription) );
-+//                return false;
-+//            }
-+//                        
-+//            if (n > validMaxValues[i]) {
-+//            	System.out.println("Invalid value " + n + " > " + validMaxValues[i] + " in position " + i + " of " + toString(panoseDescription) );
-+//                return false;
-+//            }
-+//        }
-+//        return true;
-+//    }
 +
-+    
-+    
 +    /**
 +     * Tests the validity of a panose description.
 +     * @param panoseDescription The panose values to be tested.
@@ -727,7 +698,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +     * {@inheritDoc}
 +     */
 +    public String toString() {
-+        return toString(this.panoseArray);      
++        return toString(this.panoseArray);
 +    }
 +
 +    /**
@@ -743,118 +714,113 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/Panose.ja
 +            sb.append(theByte + " ");
 +        }
 +        sb.append("]");
-+        return sb.toString();       
++        return sb.toString();
 +    }
-+    
-+}
-Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java
-===================================================================
---- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(revision 631408)
-+++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(working copy)
-@@ -17,6 +17,11 @@
- 
- /* $Id$ */
- 
-+/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
-+ * 
-+ * This notice is included to meet the condition in clause 4(b) of the License. 
-+ */
 +
- package org.apache.fop.fonts.truetype;
- 
- import java.io.IOException;
-@@ -30,7 +35,9 @@
- 
++    /**
++     * Returns the bold version of this Panose instance.
++     * @return If this already describes a bold font, returns this. Otherwise, returns a new
++     * Panose instance that is identical to this, except describing a bold font.
++     */
++    public Panose getBold() {
++        final byte weightValue = this.getElement(Panose.Field.WEIGHT);
++        if (weightValue >= Panose.WEIGHT_MIN_BOLD) {
++            /* This Panose value is already bold. */
++            return this;
++        }
++        final byte[] newArray = this.panoseArray.clone();
++        newArray[Panose.Field.WEIGHT.getIndex()] = Panose.WEIGHT_MIN_BOLD;
++        return Panose.forceInstance(newArray);
++    }
++
++    /**
++     * Returns the italic version of this Panose instance.
++     * @return If this already describes an italic font, returns this. Otherwise, returns a new
++     * Panose instance that is identical to this, except describing an italic font.
++     */
++    public Panose getItalic() {
++        final byte letterformValue = this.getElement(Panose.Field.LETTERFORM);
++        if (letterformValue >= Panose.LETTERFORM_MIN_ITALIC) {
++            /* This Panose value is already italic. */
++            return this;
++        }
++        final byte[] newArray = this.panoseArray.clone();
++        newArray[Panose.Field.LETTERFORM.getIndex()] = Panose.LETTERFORM_MIN_ITALIC;
++        return Panose.forceInstance(newArray);
++    }
++
++
++}
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java
+===================================================================
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/truetype/TTFFile.java	(working copy)
+@@ -31,6 +31,7 @@
  import org.apache.xmlgraphics.fonts.Glyphs;
  
-+import org.apache.fop.fonts.EmbedFontInfo;
  import org.apache.fop.fonts.FontUtil;
 +import org.apache.fop.fonts.Panose;
  
  /**
   * Reads a TrueType file or a TrueType Collection.
-@@ -48,9 +55,12 @@
-     public static final boolean TRACE_ENABLED = false;
+@@ -49,6 +50,9 @@
  
      private String encoding = "WinAnsiEncoding";    // Default encoding
-+    
+ 
 +    /** Array containing the Panose information. */
-+    private Panose panose;
- 
++	private Panose panose;
++    
      private short firstChar = 0;
--    private boolean isEmbeddable = true;
-+    private boolean isEmbeddable = false; // until proven otherwise!
+     private boolean isEmbeddable = true;
      private boolean hasSerifs = true;
-     /**
-      * Table directory
-@@ -549,8 +559,10 @@
-      */
-     public String getPostScriptName() {
-         if (postScriptName.length() == 0) {
-+        	System.out.println("TTFFile - Hmmm, Composed postscript name from fullname.");
-             return FontUtil.stripWhiteSpace(getFullName());
-         } else {
-+//        	System.out.println("TTFFile - Cool, there was a proper postScript name, namely: " + postScriptName);
-             return postScriptName;
-         }
-     }
-@@ -743,6 +755,7 @@
-      * @return boolean True if it may be embedded
-      */
-     public boolean isEmbeddable() {
-+    	
-         return isEmbeddable;
-     }
- 
-@@ -988,7 +1001,10 @@
-         if (dirTabs.get("OS/2") != null) {
-             seekTab(in, "OS/2", 2 * 2);
-             this.usWeightClass = in.readTTFUShort();
-+            
-+            // usWidthClass
-             in.skip(2);
-+            
-             int fsType = in.readTTFUShort();
-             if (fsType == 2) {
-                 isEmbeddable = false;
-@@ -996,10 +1012,21 @@
+@@ -1006,8 +1010,15 @@
                  isEmbeddable = true;
              }
              in.skip(11 * 2);
 -            in.skip(10); //panose array
+-            in.skip(4 * 4); //unicode ranges
 +            
-+            //in.skip(10); //panose array
++            //in.skip(10); //panose array            
 +            final byte[] panoseArray = new byte[10];
-+            for (int i = 0; i < panoseArray.length; i++) {
-+                panoseArray[i] = in.read();
-+            }
-+            this.panose = Panose.makeInstance(panoseArray);
++			for (int i = 0; i < panoseArray.length; i++) {
++				panoseArray[i] = in.read();
++			}
++			this.panose = Panose.makeInstance(panoseArray);
 +            
-+            
-+            /* Skip ulUnicodeRange1 - 4. */            
-             in.skip(4 * 4); //unicode ranges
++            in.skip(4 * 4); // unicode ranges
              in.skip(4);
              in.skip(3 * 2);
-+           
-+            /* Read sTypoAscender. */            
              int v;
-             os2Ascender = in.readTTFShort(); //sTypoAscender
-             log.debug("sTypoAscender: " + os2Ascender 
-@@ -1568,4 +1655,8 @@
-             ioe.printStackTrace(System.err);
+@@ -1549,6 +1560,10 @@
+             return null;
          }
      }
-+
-+	public Panose getPanose() {
++    
++    public Panose getPanose() {
 +		return panose;
-+	}
- }
-\ No newline at end of file
-Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnum.java
++	}    
+ 
+     /*
+      * Helper classes, they are not very efficient, but that really
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java
 ===================================================================
---- /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnum.java	(revision 0)
-+++ /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnum.java	(revision 0)
-@@ -0,0 +1,205 @@
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(revision 711795)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/truetype/TTFFontLoader.java	(working copy)
+@@ -130,6 +130,9 @@
+         returnFont.setItalicAngle(Integer.parseInt(ttf.getItalicAngle()));
+         returnFont.setMissingWidth(0);
+         returnFont.setWeight(ttf.getWeightClass());
++        
++        returnFont.setPanose(ttf.getPanose() );
++        returnFont.setEmbeddable(ttf.isEmbeddable() );
+ 
+         if (isCid) {
+             multiFont.setCIDType(CIDFontType.CIDTYPE2);
+Index: /home/dev/workspace/fop/src/java/org/apache/fop/fonts/ValuedEnum.java
+===================================================================
+--- /home/dev/workspace/fop/src/java/org/apache/fop/fonts/ValuedEnum.java	(revision 0)
++++ /home/dev/workspace/fop/src/java/org/apache/fop/fonts/ValuedEnum.java	(revision 0)
+@@ -0,0 +1,234 @@
 +/*
 + * Copyright 1997-2004 The Apache Software Foundation
 + * 
@@ -876,7 +842,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnu
 + * This notice is included to meet the condition in clause 4(b) of the License. 
 + */
 +
-+// moved from avalon.framework
++//package org.apache.avalon.framework;
 +package org.apache.fop.fonts;
 +
 +import java.util.Map;
@@ -937,7 +903,7 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnu
 + * </p>
 + *
 + * @author <a href="mailto:dev@avalon.apache.org">Avalon Development Team</a>
-+ * @version CVS $Revision: 1.21 $ $Date: 2004/02/11 14:34:24 $
++ * @version $Id$
 + */
 +public abstract class ValuedEnum
 +    extends Enum
@@ -1048,6 +1014,35 @@ Index: /home/jharrop/workspace200711/fop/src/java/org/apache/fop/fonts/ValuedEnu
 +        return m_value <= other.m_value;
 +    }
 +
++    /**
++     * Tests for equality. Two Enum:s are considered equal
++     * if they are of the same class, have the same name, and same value.
++     *
++     * @param o the other object
++     * @return the equality status
++     */
++    public boolean equals( Object o )
++    {
++        boolean prelim = super.equals( o );
++        if( ! prelim )
++            return false;
++            
++        if( !(o instanceof ValuedEnum) )
++            return false;
++
++        final ValuedEnum enumerated = (ValuedEnum) o;
++        return m_value == enumerated.m_value;
++    }
++    
++    public int hashCode()
++    {
++        int hash = super.hashCode();
++        hash ^= m_value;
++        hash >>>= (m_value & 31 );
++        return hash;
++    }
++    
++    
 +    /**
 +     * Override toString method to produce human readable description.
 +     *
