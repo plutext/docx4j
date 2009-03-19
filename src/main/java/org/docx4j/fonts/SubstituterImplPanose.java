@@ -60,7 +60,7 @@ import com.lowagie.text.pdf.BaseFont;
  * @author jharrop
  *
  */
-public class SubstituterImplPanose {
+public class SubstituterImplPanose extends Substituter {
 	
 	/*
 	 * TODO
@@ -80,12 +80,6 @@ public class SubstituterImplPanose {
 	
 	protected static FontCache fontCache;
 	
-	/** This map is the one that the others are used
-	 *  to produce. */
-	private final static Map<String, FontMapping> fontMappings;
-	public Map<String, FontMapping> getFontMappings() {
-		return fontMappings;
-	}	
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
 	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
@@ -101,12 +95,6 @@ public class SubstituterImplPanose {
 	private final static Map<String, PhysicalFontFamily> physicalFontFamiliesMap;
 	int lastSeenNumberOfPhysicalFonts = 0;
 	
-	private final static java.lang.CharSequence target;
-    private final static java.lang.CharSequence replacement;
-    
-    public final static String BOLD   = "Bold";
-    public final static String ITALIC = "Italic";
-    public final static String BOLD_ITALIC = "BoldItalic";
     
     /** Max difference for it to be considered an acceptable match.
      *  Note that this value will depend on the weights in the
@@ -117,9 +105,6 @@ public class SubstituterImplPanose {
     
 	
 	static {
-		fontMappings = Collections.synchronizedMap(new HashMap<String, FontMapping>());
-		target = (new String(" ")).subSequence(0, 1);
-		replacement = (new String("")).subSequence(0, 0);
 		
 		try {
 			// Microsoft Fonts
@@ -387,72 +372,6 @@ public class SubstituterImplPanose {
 	}
 	
 	
-	// Remove spaces and make lower case        
-	public final static String normalise(String realName) {		
-        return realName.replace(target, replacement).toLowerCase();
-	}
-	
-	
-	// For Xalan
-	public static String getSubstituteFontXsltExtension(SubstituterImplPanose s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
-		
-		return s.getSubstituteFontXsltExtension(documentStyleId, bolditalic, fontFamilyStack);
-	}
-	
-	public String getSubstituteFontXsltExtension(String documentStyleId, 
-			String bolditalic, boolean fontFamilyStack) {
-				
-		if (documentStyleId==null) {
-			log.error("passed null documentStyleId");
-			return "nullInputToExtension";
-		}
-		
-		// Try with bold italic modifier		
-		FontMapping fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId + bolditalic));
-
-		if (fontMapping==null) {
-			log.error("no mapping for:" + normalise(documentStyleId + bolditalic));
-			
-			// try without  bold italic modifier
-			fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId));
-			
-			if (fontMapping==null) {
-				log.error("still no good:" + normalise(documentStyleId));
-				return "noMappingFor" + normalise(documentStyleId);
-			}
-		} else {
-			
-			documentStyleId = documentStyleId + bolditalic;
-			
-		}
-		
-		log.info(documentStyleId + " -> " + fontMapping.getPhysicalFont().getFamilyName() );
-		
-		if (fontFamilyStack) {
-			
-			// TODO - if this is an HTML document intended
-			// for viewing in a web browser, we need to add a 
-			// font-family cascade (since the true type font
-			// specified for PDF purposes won't necessarily be
-			// present on web browser's system).
-			
-			// The easiest way to do it might be to just
-			// see whether the substitute font is serif or
-			// not, and add cascade entries accordingly.
-			
-			// If we matched it via FontSubstitutions.xml,
-			// maybe that file contains an HTML match as well?
-			
-			// Either way, this stuff should be worked out in
-			// populateFontMappings, and added to the 
-			// FontMapping objects.
-			
-			return fontMapping.getPhysicalFont().getFamilyName();
-		} else {
-			return fontMapping.getPhysicalFont().getFamilyName();
-		}
-		
-	}
 	
 	
 	/**
