@@ -21,6 +21,7 @@
 package org.docx4j.diff;
 
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -83,14 +84,32 @@ public class ParagraphDifferencer {
 	
     final private static SimpleDateFormat RFC3339_FORMAT 
     	= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
+    
 		// SimpleDateFormat is not thread-safe see:
 		//   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6231579
 		//   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6178997
 		// solution is to use stateless MessageFormat instead:
 		// final private static String RFC3339_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 		// final private static String RFC3339_PATTERN = "{0,date," + RFC3339_FORMAT + "}";    	
-	
+
+    static java.io.InputStream xsltDiffx2Wml;
+    static java.io.InputStream xsltMarkupInsert;
+    static java.io.InputStream xsltMarkupDelete;
+    
+    static {
+		try {
+			xsltDiffx2Wml = 
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
+			xsltMarkupInsert = 
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupInsert.xslt");
+			xsltMarkupDelete = 
+				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupDelete.xslt");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	
+    }
+    
 	
 	/**
 	 * @param args
@@ -166,9 +185,6 @@ public class ParagraphDifferencer {
 			log.debug("\n\n Diff'd input to transform: \n\n" + simplified );
 							
 			StreamSource src = new StreamSource(new StringReader(simplified));
-			java.io.InputStream xslt = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
-				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 						
 			String dateString;
@@ -184,7 +200,7 @@ public class ParagraphDifferencer {
 			transformParameters.put("date", dateString);
 			
 			transformParameters.put("author", author);
-			XmlUtils.transform(src, xslt, transformParameters, result);
+			XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();
@@ -208,8 +224,6 @@ public class ParagraphDifferencer {
 			marshaller.marshal(cbLeft, doc);
 			
 			
-			java.io.InputStream xslt = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupInsert.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 						
 			if (date!=null) {				
@@ -218,7 +232,7 @@ public class ParagraphDifferencer {
 			}
 			
 			transformParameters.put("author", author);
-			XmlUtils.transform(doc, xslt, transformParameters, result);
+			XmlUtils.transform(doc, xsltMarkupInsert, transformParameters, result);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();
@@ -242,8 +256,6 @@ public class ParagraphDifferencer {
 			marshaller.marshal(cbLeft, doc);
 			
 			
-			java.io.InputStream xslt = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupDelete.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 						
 			if (date!=null) {				
@@ -252,7 +264,7 @@ public class ParagraphDifferencer {
 			}
 			
 			transformParameters.put("author", author);
-			XmlUtils.transform(doc, xslt, transformParameters, result);
+			XmlUtils.transform(doc, xsltMarkupDelete, transformParameters, result);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();
@@ -377,12 +389,9 @@ public class ParagraphDifferencer {
 				log.debug("\n\n combineAdjacent: \n\n" + simplified );
 								
 				StreamSource src = new StreamSource(new StringReader(simplified));
-				java.io.InputStream xslt = 
-					org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
-					//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
 				Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 				transformParameters.put("author", author);
-				XmlUtils.transform(src, xslt, transformParameters, result);
+				XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 				
 			} catch (Exception exc) {
 				exc.printStackTrace();
@@ -612,12 +621,9 @@ public class ParagraphDifferencer {
         log.info("\n\n <p> difference with pre-processing</p> \n\n" );
 		try {
 			StreamSource src = new StreamSource(new StringReader(diffx));
-			java.io.InputStream xslt = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
-				//org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2html.xslt");
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
 			transformParameters.put("author", author);
-			XmlUtils.transform(src, xslt, transformParameters, result);
+			XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();
