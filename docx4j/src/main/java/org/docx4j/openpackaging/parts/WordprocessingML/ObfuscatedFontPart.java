@@ -190,7 +190,7 @@ public class ObfuscatedFontPart extends BinaryPart {
 		// Add this font to our known physical fonts  
         try {
 			FontInfoFinder finder = new FontInfoFinder();
-			org.docx4j.fonts.Substituter.setupPhysicalFont(fontResolver, new java.net.URL("file:" + path), finder);
+			org.docx4j.fonts.SubstituterImplPanose.setupPhysicalFont(fontResolver, new java.net.URL("file:" + path), finder);
 			
 			// This needs to be done before populateFontMappings, 
 			// otherwise this font will be ignored, and references

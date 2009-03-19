@@ -27,7 +27,7 @@ public class PhysicalFont {
 		
 		// Sanity check
 		if (fontInfo.getPostScriptName()==null) {
-			Substituter.log.error("Not set!");
+			SubstituterImplPanose.log.error("Not set!");
 			//log.error(((org.apache.fop.fonts.FontTriplet)fontInfo.getFontTriplets().get(0)).getName());
 		}
 		
