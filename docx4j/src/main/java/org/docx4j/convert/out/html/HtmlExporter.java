@@ -1,5 +1,6 @@
 package org.docx4j.convert.out.html;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -44,6 +45,18 @@ public class HtmlExporter implements Output {
 		
 		log.info(message);
 	}
+	
+	// Get the xslt file - Works in Eclipse - note absence of leading '/'
+	static java.io.InputStream xslt;
+	
+	static {
+		try {
+			xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/convert/out/html/DocX2Html.xslt");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	
 	// Implement the interface.  Everything in this class was
 	// static, until now.
@@ -171,10 +184,7 @@ public class HtmlExporter implements Output {
 //        HandleThemeFonts(mainDoc, nsm);
 //        HandleNumberedLists(mainDoc, nsm);
 		
-		
-		// Get the xslt file - Works in Eclipse - note absence of leading '/'
-		java.io.InputStream xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/convert/out/html/DocX2Html.xslt");
-		
+			
 		// Prep parameters
 		if (htmlSettings==null) {
 			htmlSettings = new HtmlSettings();

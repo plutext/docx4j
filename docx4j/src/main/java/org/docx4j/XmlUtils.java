@@ -44,6 +44,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
@@ -75,6 +76,43 @@ public class XmlUtils {
 	    return new java.io.ByteArrayInputStream(bytes);
 		
 	}
+	
+	public static String TRANSFORMER_FACTORY_ORIGINAL;
+	public static String TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS;
+	
+	public static javax.xml.transform.TransformerFactory tfactory; 
+	
+	static {
+		
+		// Whenever we flush Preferences in a Swing application on Linux, 
+		// < Java 6u10 RC (as of b23)
+		// we'll get java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
+		// if we are using our Xalan jar.
+		// See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+		// So Swing applications will need to use the original 
+		// setting, which we record for their convenience here.
+		// eg com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+		// It would be nice to reset to the original whenever we finish
+		// using, but that goal seems to be elusive!
+		
+		javax.xml.transform.TransformerFactory tmpfactory = javax.xml.transform.TransformerFactory.newInstance();			
+		TRANSFORMER_FACTORY_ORIGINAL = tmpfactory.getClass().getName();
+		tmpfactory = null;
+		log.debug("Set TRANSFORMER_FACTORY_ORIGINAL to " + TRANSFORMER_FACTORY_ORIGINAL);
+		
+		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't
+		// work with our extension functions.		
+		TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS = "org.apache.xalan.processor.TransformerFactoryImpl";
+		System.setProperty("javax.xml.transform.TransformerFactory",
+				TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS);
+		tfactory = javax.xml.transform.TransformerFactory
+				.newInstance();
+		// We've got our factory now, so set it back again!
+		System.setProperty("javax.xml.transform.TransformerFactory",
+				TRANSFORMER_FACTORY_ORIGINAL);
+		
+	}
+	
 
 	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document */ 
 	public static Object unmarshalDom4jDoc(org.dom4j.Document doc) {
@@ -496,6 +534,11 @@ public class XmlUtils {
     					  Map<String, Object> transformParameters, 
     					  javax.xml.transform.Result result) throws Exception {
     	
+    	if (doc == null ) {
+    		Throwable t = new Throwable();
+    		throw new Docx4JException( "Null DOM Doc", t);
+    	}
+    	
 		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
 
 		transform(domSource, xslt, transformParameters, result);
@@ -518,6 +561,11 @@ public class XmlUtils {
 			  Map<String, Object> transformParameters, 
 			  javax.xml.transform.Result result) throws Exception {
 
+    	if (doc == null ) {
+    		Throwable t = new Throwable();
+    		throw new Docx4JException( "Null DOM Doc", t);
+    	}
+    	
 		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
 		
     	transform(domSource,
@@ -541,6 +589,15 @@ public class XmlUtils {
     					  javax.xml.transform.Source xsltSource, 
     					  Map<String, Object> transformParameters, 
     					  javax.xml.transform.Result result) throws Exception {
+    	
+    	if (source == null ) {
+    		Throwable t = new Throwable();
+    		throw new Docx4JException( "Null Source doc", t);
+    	}
+    	if (xsltSource == null ) {
+    		Throwable t = new Throwable();
+    		throw new Docx4JException( "Null xslt Source", t);
+    	}
 
     	/*		
     	 * 		We want to use plain old Xalan J, not xsltc
@@ -561,7 +618,7 @@ public class XmlUtils {
     				java.util.prefs.FileSystemPreferences syncWorld
     				WARNING: Couldn't flush user prefs: java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
     			
-    			every 30 seconds
+    			every 30 seconds (on Linux, with JDK < Java 6u10 RC (as of b23)
 
     			The workaround implemented is to remove META-INF/services from the xalan jar 
     			to prevent xalan being picked up as the default provider for jaxp transform,
@@ -601,76 +658,72 @@ public class XmlUtils {
     				
     	*/		
     			
-    			javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
-    			String originalFactory = tfactory.getClass().getName();
-    			System.out.println("original TransformerFactory: " + originalFactory);
-    			// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl resolves the syncWorld problem
-    			// net.sf.saxon.TransformerFactoryImpl is no good.
-    			
-    			System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
-    			
-    			// Now transform this into XHTML
-    			tfactory = javax.xml.transform.TransformerFactory.newInstance();
-//    			javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
+		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+		// resolves the syncWorld problem
+		// net.sf.saxon.TransformerFactoryImpl is no good.
 
-    					
-    			// Use the factory to create a template containing the xsl file
-    			javax.xml.transform.Templates template = tfactory.newTemplates(
-    					xsltSource);
-    			// Use the template to create a transformer
-    			javax.xml.transform.Transformer xformer = template.newTransformer();
-    			
-    			
-    			// Finished with the factory, so set it back again!
-    			// The "Not supported: indent-number" problem will only occur if a user creates 
-    			// a new document during the time between these 2 calls to setProperty
-    			// (and syncWorld is called?)
-    			System.setProperty("javax.xml.transform.TransformerFactory", originalFactory);
-    			
-    			if (!xformer.getClass().getName().equals("org.apache.xalan.transformer.TransformerImpl")) {
-    				log.error("Detected " + xformer.getClass().getName() 
-    						+ ", but require org.apache.xalan.transformer.TransformerImpl. " +
-    								"Ensure Xalan 2.7.0 is on your classpath!" );
-    			}
-    			// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't work
-    			// with our extension function.
+		// Use the factory to create a template containing the xsl file
+		javax.xml.transform.Templates template = tfactory
+				.newTemplates(xsltSource);
+			// runtime representation of processed transformation instructions.
+			// Templates must be threadsafe for a given instance over multiple 
+			// threads running concurrently, and may be used multiple times in a given session.
+		
+		// Use the template to create a transformer
+		// A Transformer may not be used in multiple threads running concurrently. 
+		// Different Transformers may be used concurrently by different threads.
+		// A Transformer may be used multiple times. Parameters and output properties 
+		// are preserved across transformations.		
+		javax.xml.transform.Transformer xformer = template.newTransformer();
+		if (!xformer.getClass().getName().equals(
+				"org.apache.xalan.transformer.TransformerImpl")) {
+			log
+					.error("Detected "
+							+ xformer.getClass().getName()
+							+ ", but require org.apache.xalan.transformer.TransformerImpl. "
+							+ "Ensure Xalan 2.7.0 is on your classpath!");
+		}
 
-    			if (transformParameters!=null) {
-	    			Iterator parameterIterator = transformParameters.entrySet().iterator();
-	    		    while (parameterIterator.hasNext()) {
-	    		        Map.Entry pairs = (Map.Entry)parameterIterator.next();
-	    		        
-	    		        if(pairs.getKey()==null) {
-	    		        	log.info("Skipped null key");
-	    		        	//pairs = (Map.Entry)parameterIterator.next();
-	    		        	continue;
-	    		        }
-	    		        
-	    		        if (pairs.getValue()==null) {
-	    		        	log.warn("parameter '" + pairs.getKey() + "' was null.");
-	    		        } else {
-	    		        	xformer.setParameter( (String)pairs.getKey(), pairs.getValue() );
-	    		        }
-	    		    }
-    			}
-    			
-    			//DEBUGGING 
-    			// use the identity transform if you want to send wordDocument;
-    			// otherwise you'll get the XHTML
-    			//javax.xml.transform.Transformer xformer = tfactory.newTransformer();
-    			
-    			xformer.transform(source, result);
+
+		if (transformParameters != null) {
+			Iterator parameterIterator = transformParameters.entrySet()
+					.iterator();
+			while (parameterIterator.hasNext()) {
+				Map.Entry pairs = (Map.Entry) parameterIterator.next();
+
+				if (pairs.getKey() == null) {
+					log.info("Skipped null key");
+					// pairs = (Map.Entry)parameterIterator.next();
+					continue;
+				}
+
+				if (pairs.getValue() == null) {
+					log.warn("parameter '" + pairs.getKey() + "' was null.");
+				} else {
+					xformer.setParameter((String) pairs.getKey(), pairs
+							.getValue());
+				}
+			}
+		}
+
+		// DEBUGGING
+		// use the identity transform if you want to send wordDocument;
+		// otherwise you'll get the XHTML
+		// javax.xml.transform.Transformer xformer = tfactory.newTransformer();
+
+		xformer.transform(source, result);
     	
     }
     
    
      /**
-      *  Give a string of wml containing ${key1}, ${key2}, return
-      *  a suitable object.
-     * @param wmlTemplateString
-     * @param mappings
-     * @return
-     */
+		 * Give a string of wml containing ${key1}, ${key2}, return a suitable
+		 * object.
+		 * 
+		 * @param wmlTemplateString
+		 * @param mappings
+		 * @return
+		 */
     public static Object unmarshallFromTemplate(String wmlTemplateString, java.util.HashMap<String, String> mappings) {
         return unmarshallFromTemplate(wmlTemplateString, mappings, Context.jc);
      }
@@ -700,10 +753,7 @@ public class XmlUtils {
     	 
  		// Why doesn't Java have a nice neat way of getting 
  		// the XML as a String??  
-    	 
-		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
-			// TODO - make that (or some) factory static? See above for fun with these factories...
-		
+    	 		
  		StringWriter sw = new StringWriter();
  		try {
 				Transformer serializer = tfactory.newTransformer();

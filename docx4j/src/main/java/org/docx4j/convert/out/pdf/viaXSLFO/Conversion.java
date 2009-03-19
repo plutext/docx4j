@@ -67,7 +67,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
     	// (reuse if you plan to render multiple documents!)
     	FopFactory fopFactory = FopFactory.newInstance();
-
+    	
     	try {
     	  Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
     	  Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);	

@@ -456,7 +456,8 @@ public class XmlPackage implements Output {
 		// Do this via identity transform
 		
 		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
-		// We don't care which it is here - See XmlUtils for fun with these factories...
+		String originalFactory = tfactory.getClass().getName();
+		System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
 	
 		try {
 			Transformer serializer = tfactory.newTransformer();
@@ -464,7 +465,9 @@ public class XmlPackage implements Output {
 			serializer.transform( new DOMSource( getFlatDomDocument( (WordprocessingMLPackage)packageIn)) , result );				
 		} catch (Exception e) {
 			throw new Docx4JException("Failed to create Flat OPC output", e);
-		} 
+		} finally {
+			System.setProperty("javax.xml.transform.TransformerFactory", originalFactory);						
+		}
 		
 	}
 	
