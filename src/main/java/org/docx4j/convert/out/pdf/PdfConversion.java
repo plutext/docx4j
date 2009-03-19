@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.html.HtmlExporter;
+import org.docx4j.fonts.FontMapping;
 import org.docx4j.fonts.FontUtils;
-import org.docx4j.fonts.Substituter;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -106,7 +106,7 @@ public abstract class PdfConversion  {
 	 */
 	protected void embed(org.xhtmlrenderer.pdf.ITextRenderer renderer,
 			String fontName, Map fontMappings) {
-		Substituter.FontMapping fm = (Substituter.FontMapping)fontMappings.get( fontName );
+		FontMapping fm = (FontMapping)fontMappings.get( fontName );
 		
 		if (fm == null) {
 			log.warn("No mapping found for: " + fontName);

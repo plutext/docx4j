@@ -60,7 +60,7 @@ import com.lowagie.text.pdf.BaseFont;
  * @author jharrop
  *
  */
-public class Substituter {
+public class SubstituterImplPanose {
 	
 	/*
 	 * TODO
@@ -72,9 +72,9 @@ public class Substituter {
 	
 	
 	
-	protected static Logger log = Logger.getLogger(Substituter.class);
+	protected static Logger log = Logger.getLogger(SubstituterImplPanose.class);
 
-	public Substituter() {
+	public SubstituterImplPanose() {
 		super();
 	}
 	
@@ -394,7 +394,7 @@ public class Substituter {
 	
 	
 	// For Xalan
-	public static String getSubstituteFontXsltExtension(Substituter s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
+	public static String getSubstituteFontXsltExtension(SubstituterImplPanose s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
 		
 		return s.getSubstituteFontXsltExtension(documentStyleId, bolditalic, fontFamilyStack);
 	}
@@ -928,7 +928,7 @@ public class Substituter {
 		FontTablePart fontTablePart= wordMLPackage.getMainDocumentPart().getFontTablePart();		
 		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
 	
-		Substituter s = new Substituter();
+		SubstituterImplPanose s = new SubstituterImplPanose();
 				
 		///////////////
 		// Go through the FontsTable, and see what we have filenames for.
