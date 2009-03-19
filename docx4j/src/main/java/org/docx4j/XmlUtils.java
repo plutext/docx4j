@@ -37,6 +37,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import javax.xml.transform.Transformer;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
@@ -45,6 +48,7 @@ import org.docx4j.jaxb.Context;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.w3c.dom.Node;
 
 public class XmlUtils {
 	
@@ -152,7 +156,7 @@ public class XmlUtils {
 			System.out.println("unmarshalled ");
 
 		} catch (Exception ex) {
-			ex.printStackTrace();
+			log.error("Caught and ignored: \n" + ex);
 		}		
 		return o;
 	}
@@ -496,6 +500,31 @@ public class XmlUtils {
 
 		transform(domSource, xslt, transformParameters, result);
     }
+
+    public static void transform(javax.xml.transform.Source source,
+    		java.io.InputStream xsltIS, 
+			  Map<String, Object> transformParameters, 
+			  javax.xml.transform.Result result) throws Exception {
+
+    	transform(source,
+    			new javax.xml.transform.stream.StreamSource(xsltIS), 
+    			 transformParameters, 
+    			 result);
+    }
+    
+    
+    public static void transform(org.w3c.dom.Document doc,
+    		javax.xml.transform.Source xsltSource, 
+			  Map<String, Object> transformParameters, 
+			  javax.xml.transform.Result result) throws Exception {
+
+		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
+		
+    	transform(domSource,
+    			xsltSource, 
+    			 transformParameters, 
+    			 result);
+    }
     
 	
     /**
@@ -509,7 +538,7 @@ public class XmlUtils {
      * @throws Exception
      */
     public static void transform(javax.xml.transform.Source source,
-    					  java.io.InputStream xslt, 
+    					  javax.xml.transform.Source xsltSource, 
     					  Map<String, Object> transformParameters, 
     					  javax.xml.transform.Result result) throws Exception {
 
@@ -587,7 +616,7 @@ public class XmlUtils {
     					
     			// Use the factory to create a template containing the xsl file
     			javax.xml.transform.Templates template = tfactory.newTemplates(
-    					new javax.xml.transform.stream.StreamSource(xslt));
+    					xsltSource);
     			// Use the template to create a transformer
     			javax.xml.transform.Transformer xformer = template.newTransformer();
     			
@@ -667,6 +696,27 @@ public class XmlUtils {
      }
 
 	
+     public static String w3CDomNodeToString(Node n) {
+    	 
+ 		// Why doesn't Java have a nice neat way of getting 
+ 		// the XML as a String??  
+    	 
+		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
+			// TODO - make that (or some) factory static? See above for fun with these factories...
+		
+ 		StringWriter sw = new StringWriter();
+ 		try {
+				Transformer serializer = tfactory.newTransformer();
+				serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+				serializer.transform( new DOMSource(n) , new StreamResult(sw) );				
+				return sw.toString();
+				//log.debug("serialised:" + n);
+			} catch (Exception e) {
+				// Unexpected!
+				e.printStackTrace();
+				return null;
+			} 
+     }
 	
 	
 }
