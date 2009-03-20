@@ -83,6 +83,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 	
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
+	private final static HashMap<String, String> filenamesToMsFontNames;
 	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
 		return msFontsFilenames;
 	}		
@@ -108,6 +109,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 			// 1. On Microsoft platform, to embed in PDF output
 			// 2. docx4all - all platforms - to populate font dropdown list
 			msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
+			filenamesToMsFontNames = new HashMap<String, String>();
 			setupMicrosoftFontFilenames();
 
 	        fontCache = FontCache.load();
@@ -151,6 +153,23 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		for (MicrosoftFonts.Font font : msFontsList ) {			
 			msFontsFilenames.put( normalise(font.getName()), font); // 20080318 - normalised
 			//log.debug( "put msFontsFilenames: " + normalise(font.getName()) );
+			
+			filenamesToMsFontNames.put( font.getFilename().toLowerCase() , font.getName());
+//			log.debug( "put msFontsFilenames: " + font.getName() );
+			
+			if (font.getBold()!=null) {
+				filenamesToMsFontNames.put( font.getBold().getFilename().toLowerCase(), font.getName()+SEPARATOR+Substituter.BOLD);
+//				log.debug( "put bold: " +  font.getName()+SEPARATOR+Substituter.BOLD );				
+			}
+			if (font.getItalic()!=null) {
+				filenamesToMsFontNames.put( font.getItalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Substituter.ITALIC);
+//				log.debug( "put italic: " + font.getName()+SEPARATOR+Substituter.ITALIC );				
+			}
+			if (font.getBolditalic() !=null) {
+				filenamesToMsFontNames.put( font.getBolditalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Substituter.BOLD_ITALIC);
+//				log.debug( "put bold italic: " + font.getName()+SEPARATOR+Substituter.BOLD_ITALIC );				
+			}
+			
 		}
 		
 	}
@@ -227,6 +246,9 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
 		
 		if (embedFontInfoList==null) {
+			// Quite a few fonts exist that we can't seem to get
+			// EmbedFontInfo for. To be investigated.
+			log.warn("Aborting: " + fontUrl.toString() );
 			return;
 		}
 		
@@ -255,7 +277,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 						will be thrown if os_2.fsType == 2
 						
 					 */
-	//	        	log.info(physicalFontKey + " is not embeddable; skipping.");
+		        	log.warn(fontInfo.getEmbedFile() + " is not embeddable; ignoring this font.");
 				 
 				 return;
 			 }
@@ -270,6 +292,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 				// these physical font objects contains the same info
 		    	
 		        String lower = fontInfo.getEmbedFile().toLowerCase();
+		        log.debug("Processing physical font: " + lower);
 		        		        
 		        pf = null;
 		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
@@ -307,7 +330,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		        	
 		        	// Add it to the map
 		        	physicalFontMap.put(pf.getName(), pf);
-		    		//log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
+		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
 		        	
 		        	// Handle the font family bit - this is critical, since
 		        	// it is what iText uses
@@ -361,25 +384,25 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 //		}
 		
 		// We need the documentFontNames normalised
-		Map<String, String> documentFontNamesKeyedByNormalised = new HashMap<String, String>();
-		Iterator documentFontIterator = documentFontNames.entrySet().iterator();
-	    while (documentFontIterator.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)documentFontIterator.next();
-	        
-	        if(pairs.getKey()==null) {
-	        	log.info("Skipped null key");
-	        	pairs = (Map.Entry)documentFontIterator.next();
-	        }
-	        
-	        String documentFontName = (String)pairs.getKey();
-
-			log.debug("Added normalised: " + documentFontName);
-	        
-	        String normalisedFontName = normalise(documentFontName);
-	        
-	        documentFontNamesKeyedByNormalised.put(normalisedFontName, documentFontName);
-	        	// each name, keyed by its normalised value
-	    }
+//		Map<String, String> documentFontNamesKeyedByNormalised = new HashMap<String, String>();
+//		Iterator documentFontIterator = documentFontNames.entrySet().iterator();
+//	    while (documentFontIterator.hasNext()) {
+//	        Map.Entry pairs = (Map.Entry)documentFontIterator.next();
+//	        
+//	        if(pairs.getKey()==null) {
+//	        	log.info("Skipped null key");
+//	        	pairs = (Map.Entry)documentFontIterator.next();
+//	        }
+//	        
+//	        String documentFontName = (String)pairs.getKey();
+//
+//			log.debug("Added normalised: " + documentFontName);
+//	        
+//	        String normalisedFontName = normalise(documentFontName);
+//	        
+//	        documentFontNamesKeyedByNormalised.put(normalisedFontName, documentFontName);
+//	        	// each name, keyed by its normalised value
+//	    }
 
 		// Iterate through the physical fonts, since their key is their 
 		// postscript name (non-normalised).  This way, we can do a single
@@ -394,59 +417,46 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 	        }
 		
 	        String physicalFontName = (String)pairs.getKey();
-			log.debug("\n\n" + physicalFontName);	        
-	        String normalisedFontName = normalise(physicalFontName);
-	        
-	        // Add it to the mapping if it is present in the document
-	        if ( documentFontNamesKeyedByNormalised.get(normalisedFontName)!=null ) {
-	        	
-	        	log.debug("HIT! " + normalisedFontName + " is used in document");
-	        	
-	        	String documentFont = documentFontNamesKeyedByNormalised.get(normalisedFontName);
-	        	
-	        	fontMappings.put(normalisedFontName, 
-	        			new FontMapping(documentFont, (PhysicalFont)pairs.getValue() ) );
-	        	
-	        } else {
-	        	log.debug("Ignoring physical font " + normalisedFontName );
-	        	
-	        }
-	        
-				// bold, italic, and bolditalic?
-
-//				MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(normalisedFontName);
-//				
-//				if (msFont==null) {
-//					log.warn("Font not found in MicrosoftFonts.xml");
-//					continue; 
-//				} 
-//				
-//				FontMapping fmTmp = null;
-//				if (msFont.getBold()!=null) {
-//					log.debug("this font has a bold form");
-//					fmTmp = getAssociatedFontMapping(documentFontName); 					
-//					if (fmTmp!=null) {
-//						fontMappings.put(normalise(fm.getDocumentFont()+BOLD), fmTmp);
-//					}
-//				} 
-//				
-//				fmTmp = null;
-//				if (msFont.getItalic()!=null) {
-//					log.debug("this font has an italic form");
-//					fmTmp = getAssociatedFontMapping(documentFontName);
-//					if (fmTmp!=null) {
-//						fontMappings.put(normalise(fm.getDocumentFont()+ITALIC), fmTmp);
-//					}						
-//				} 
-//				
-//				fmTmp = null;
-//				if (msFont.getBolditalic()!=null) {
-//					log.debug("this font has a bold italic form");												
-//					fmTmp = getAssociatedFontMapping(documentFontName);
-//					if (fmTmp!=null) {
-//						fontMappings.put(normalise(fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
-//					}						
-//				}
+			//log.debug("\n\n" + physicalFontName);	        
+	        //String normalisedFontName = normalise(physicalFontName);
+			String fontPath = ((PhysicalFont)pairs.getValue()).getEmbeddedFile();
+			String physicalFilename = fontPath.substring( fontPath.lastIndexOf("/") +1).toLowerCase();
+			
+			String msFontName = filenamesToMsFontNames.get(physicalFilename);
+			
+			if (msFontName!=null) {
+			
+//				String msFontName = font.getName(); 
+				
+				String baseform = msFontName;
+				if (msFontName.indexOf(SEPARATOR)>0) {
+					baseform = msFontName.substring(0, msFontName.indexOf(SEPARATOR));
+				}
+				
+		        // Add it to the mapping if it is present in the document
+		        if ( documentFontNames.get(baseform)!=null ) {
+		        	
+					// for now, if the baseform is used, 
+		        	// we say bold, italic, and bolditalic are as well
+		        	
+		        	if (pairs.getValue()==null) {
+		        		log.debug("Handle that");
+		        	} else {
+		        		fontMappings.put(normalise(msFontName), 
+			        			new FontMapping(msFontName, (PhysicalFont)pairs.getValue() ) );
+		        		log.info("Added mapping for: " + normalise(msFontName));		        		
+		        	}
+		        	
+		        } else {
+		        	log.debug("Ignoring physical font " + msFontName
+		        			+ ((PhysicalFont)pairs.getValue()).getEmbeddedFile() );
+		        	
+		        }
+			} else {
+				
+				log.info("Unknown font: " + physicalFontName + "(" + physicalFilename);
+				
+			}
 				
 	    }
 	        
@@ -481,8 +491,8 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 	
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
-		//String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\sample-docs\\Word2007-fonts.docx";
+		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
+		String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
 		

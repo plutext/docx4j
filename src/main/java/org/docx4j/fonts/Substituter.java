@@ -60,7 +60,8 @@ public abstract class Substituter {
     public final static String BOLD   = "Bold";
     public final static String ITALIC = "Italic";
     public final static String BOLD_ITALIC = "BoldItalic";
-        
+    
+    public final static String SEPARATOR = "#";
 	
 	static {
 		fontMappings = Collections.synchronizedMap(new HashMap<String, FontMapping>());

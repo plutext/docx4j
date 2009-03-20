@@ -21,6 +21,7 @@ import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Substituter;
 import org.docx4j.fonts.SubstituterImplPanose;
+import org.docx4j.fonts.SubstituterWindowsPlatformImpl;
 import org.docx4j.jaxb.Context;
 import org.docx4j.listnumbering.Emulator;
 import org.docx4j.listnumbering.Emulator.ResultTriple;
@@ -198,7 +199,8 @@ public class HtmlExporter implements Output {
 		if (htmlSettings.getFontSubstituter()==null) {
 			if (wmlPackage.getFontSubstituter()==null) {
 				log.debug("Creating new Substituter.");
-				wmlPackage.setFontSubstituter(new SubstituterImplPanose());
+//				wmlPackage.setFontSubstituter(new SubstituterImplPanose());
+				wmlPackage.setFontSubstituter(new SubstituterWindowsPlatformImpl());
 			} else {
 				log.debug("Using existing Substituter.");
 			}
