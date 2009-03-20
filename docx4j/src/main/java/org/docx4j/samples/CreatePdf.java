@@ -20,6 +20,8 @@
 
 package org.docx4j.samples;
 
+import java.io.OutputStream;
+
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 public class CreatePdf {
@@ -27,10 +29,12 @@ public class CreatePdf {
 	    public static void main(String[] args) 
 	            throws Exception {
 			
+	    	boolean save = true;
+	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
 //			String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
-			
+//			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
+			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
 			/* Choose which of the three methods you want to use...
@@ -50,11 +54,17 @@ public class CreatePdf {
 			 *    doesn't try to scale them.
 			 */
 			org.docx4j.convert.out.pdf.PdfConversion c 
-				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
-//				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
+//				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
+				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 //				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
-			c.view();
-	        	        
+			
+			if (save) {
+				OutputStream os = new java.io.FileOutputStream(inputfilepath + ".pdf");			
+				c.output(os);
+				System.out.println("Saved " + inputfilepath + ".pdf");
+			} else {
+				c.view();
+			}    
 	    }
 	    
 	    
