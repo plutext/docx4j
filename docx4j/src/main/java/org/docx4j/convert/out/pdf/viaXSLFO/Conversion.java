@@ -1,7 +1,9 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,6 +18,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -27,10 +30,19 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
+import org.apache.avalon.framework.configuration.Configuration;
+import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
+import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
+import org.apache.fop.fo.FOEventHandler;
+import org.apache.fop.fonts.CustomFontCollection;
+import org.apache.fop.fonts.FontCollection;
+import org.apache.fop.fonts.FontInfo;
+import org.apache.fop.fonts.FontManager;
+import org.apache.fop.fonts.base14.Base14FontCollection;
 import org.apache.fop.render.pdf.PDFRenderer;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 
@@ -70,31 +82,31 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	// (reuse if you plan to render multiple documents!)
     	FopFactory fopFactory = FopFactory.newInstance();
     	
-    	// For Windows, all we need to do is 
-    	// stick our fonts into a CustomFontCollection
-    	
-//    	fopFactory.getFontManager().setup(fontInfo, fontCollections)
-    	
-    	// For other Substituter implementations .. TODO
-    	
     	try {
+                
+    	  DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
+    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration><fonts><directory recursive=\"true\">/usr/share/fonts/</directory><directory recursive=\"true\">/var/lib/defoma/</directory><auto-detect/></fonts></fop>";
+    	  	// See FOP's PrintRendererConfigurator
+    	  
+    	  Configuration cfg = cfgBuilder.build(
+    			  new ByteArrayInputStream(myConfig.getBytes()) );
+    	  fopFactory.setUserConfig(cfg);
+    	  
     	  Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
-    	  
-//    	  FOUserAgent foUserAgent = fop.getUserAgent();    	  
-//    	  PDFRenderer pdfRenderer = new PDFRenderer();    	      	  
-//    	  fop.getUserAgent().setRendererOverride(pdfRenderer);
-//    	  pdfRenderer.setUserAgent(foUserAgent);
-//    	  pdfRenderer.setupFontInfo(inFontInfo)
-    	  
-//    	  AreaTreeHandler constructor does setupModel, which
-//
-//    	   calls RenderPagesModel constructor (but by then we have FontInfo).
-//    	   
-//    	We get that from FOEventHandler constructor, which AreaTreeHandler extends.
-//
-//    	So once you have an FOEventHandler/AreaTreeHandler, you can get FontInfo
-    	  
-    	      	  
+  	  	// that creates a user agent, and a tree builder
+  	  	// the tree builder in turn creates an event handler
+  	      	      	  
+  	  //FOUserAgent foUserAgent = fop.getUserAgent();
+
+  	  /*
+	    	  // fop.foTreeBuilder is private :-(
+	    	  FontInfo fi = fop.getFOTreeBuilder().getEventHandler().
+	                
+	         // PrintRenderer has addFontList(List<EmbedFontInfo> fontList)
+	         // So all we need to do is access PrintRenderer.  
+	          * 
+	          * But How?
+       */
     	  
     	  Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);	
 
@@ -261,6 +273,16 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				foBlockElement.appendChild(err);
 				
 			} else {
+				
+				RFonts rFonts = rPr.getRFonts();
+				if (rFonts !=null ) {
+					
+					String font = rFonts.getAscii();
+					log.debug("Font: " + font);
+					((Element)foBlockElement).setAttribute("font-family", 
+							font );
+				}
+				
 			    
 				// bold
 				
