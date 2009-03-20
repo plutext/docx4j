@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import org.apache.fop.fonts.CustomFont;
+import org.apache.fop.fonts.EncodingMode;
 import org.apache.fop.fonts.FontLoader;
 import org.apache.fop.fonts.FontResolver;
 import org.apache.fop.fonts.FontSetup;
@@ -172,7 +173,9 @@ public class ObfuscatedFontPart extends BinaryPart {
 	        	log.debug("Loading from: " + path);
 	        	String subFontName = null; // TODO set this if its a TTC
 	        	boolean embedded = true;   
-	            customFont = FontLoader.loadFont("file:" + path, subFontName, embedded, fontResolver);
+	        	boolean useKerning = true;
+	            customFont = FontLoader.loadFont("file:" + path, 
+	            		subFontName, embedded, EncodingMode.AUTO, useKerning, fontResolver);
 	        } catch (Exception e) {
 				e.printStackTrace();
 	        }
