@@ -27,9 +27,11 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
+import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
+import org.apache.fop.render.pdf.PDFRenderer;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
@@ -68,8 +70,32 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	// (reuse if you plan to render multiple documents!)
     	FopFactory fopFactory = FopFactory.newInstance();
     	
+    	// For Windows, all we need to do is 
+    	// stick our fonts into a CustomFontCollection
+    	
+//    	fopFactory.getFontManager().setup(fontInfo, fontCollections)
+    	
+    	// For other Substituter implementations .. TODO
+    	
     	try {
     	  Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
+    	  
+//    	  FOUserAgent foUserAgent = fop.getUserAgent();    	  
+//    	  PDFRenderer pdfRenderer = new PDFRenderer();    	      	  
+//    	  fop.getUserAgent().setRendererOverride(pdfRenderer);
+//    	  pdfRenderer.setUserAgent(foUserAgent);
+//    	  pdfRenderer.setupFontInfo(inFontInfo)
+    	  
+//    	  AreaTreeHandler constructor does setupModel, which
+//
+//    	   calls RenderPagesModel constructor (but by then we have FontInfo).
+//    	   
+//    	We get that from FOEventHandler constructor, which AreaTreeHandler extends.
+//
+//    	So once you have an FOEventHandler/AreaTreeHandler, you can get FontInfo
+    	  
+    	      	  
+    	  
     	  Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);	
 
     	  // Resulting SAX events (the generated FO) must be piped through to FOP
