@@ -246,12 +246,14 @@
 			<version>R8pre2</version>
 		</dependency>
 
+<!-- 
 		<dependency>
 			<groupId>docx4j</groupId>
 			<artifactId>fop-fonts</artifactId>
 			<version>0.2.0</version>
 		</dependency>
-
+   -->
+   
 		<!-- end of svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 -->
 
 		<!-- https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2
