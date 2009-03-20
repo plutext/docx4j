@@ -107,6 +107,7 @@ public class SubstituterImplPanose extends Substituter {
 	static {
 		
 		try {
+			
 			// Microsoft Fonts
 			// 1. On Microsoft platform, to embed in PDF output
 			// 2. docx4all - all platforms - to populate font dropdown list

@@ -28,7 +28,8 @@ public class CreatePdf {
 	            throws Exception {
 			
 //			String inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
-			String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+//			String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
 			
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
@@ -49,9 +50,9 @@ public class CreatePdf {
 			 *    doesn't try to scale them.
 			 */
 			org.docx4j.convert.out.pdf.PdfConversion c 
-//				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
+				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
 //				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
-				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
+//				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
 			c.view();
 	        	        
 	    }
