@@ -53,12 +53,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			    }
 			    
 			    String fontName = (String)pairs.getKey();
-			    embed(renderer, Substituter.normalise(fontName), fontMappings);	        
+			    embed(renderer, fontName, fontMappings);	        
 			    // For any font we embed, also embed the bold, italic, and bold italic substitute
 			    // .. at present, we can't tell which of these forms are actually used, so add them all
-			    embed(renderer, Substituter.normalise(fontName + Substituter.SEPARATOR + Substituter.BOLD), fontMappings);
-			    embed(renderer, Substituter.normalise(fontName + Substituter.SEPARATOR + Substituter.ITALIC), fontMappings);
-			    embed(renderer, Substituter.normalise(fontName + Substituter.SEPARATOR + Substituter.BOLD_ITALIC), fontMappings);
+//			    embed(renderer, Substituter.normalise(fontName + Substituter.SEPARATOR + Substituter.BOLD), fontMappings);
+//			    embed(renderer, Substituter.normalise(fontName + Substituter.SEPARATOR + Substituter.ITALIC), fontMappings);
+//			    embed(renderer, Substituter.normalise(fontName + Substituter.SEPARATOR + Substituter.BOLD_ITALIC), fontMappings);
 			    
 			}
 			

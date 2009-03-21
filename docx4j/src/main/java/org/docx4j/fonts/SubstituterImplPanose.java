@@ -163,7 +163,7 @@ public class SubstituterImplPanose extends Substituter {
 		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
 		
 		for (MicrosoftFonts.Font font : msFontsList ) {			
-			msFontsFilenames.put( normalise(font.getName()), font); // 20080318 - normalised
+			msFontsFilenames.put( (font.getName()), font); // 20080318 - normalised
 			//log.debug( "put msFontsFilenames: " + normalise(font.getName()) );
 		}
 		
@@ -242,15 +242,54 @@ public class SubstituterImplPanose extends Substituter {
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
 		
 		if (embedFontInfoList==null) {
+			// Quite a few fonts exist that we can't seem to get
+			// EmbedFontInfo for. To be investigated.
+			log.warn("Aborting: " + fontUrl.toString() );
 			return;
 		}
 		
+		StringBuffer debug = new StringBuffer();
+		
 		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
+			
+			/* EmbedFontInfo has:
+			 * - subFontName (if the underlying CustomFont is a TTC)
+			 * - PostScriptName = CustomFont.getFontName()
+			 * - FontTriplets named:
+			 * 		- CustomFont.getFullName() with quotes stripped
+			 * 		- CustomFont.getFontName() with whitespace stripped
+			 * 		- each family name        (with quotes stripped)
+			 * 
+			 * By creating one PhysicalFont object 
+			 * per triplet, each referring to the same
+			 * EmbedFontInfo, we increase the chances 
+			 * of a match
+			 * 
+				ComicSansMS
+				.. triplet Comic Sans MS (priority + 0
+				.. triplet ComicSansMS (priority + 0
+				
+				ComicSansMS-Bold
+				.. triplet Comic Sans MS Bold (priority + 0
+				.. triplet ComicSansMS-Bold (priority + 0
+				.. triplet Comic Sans MS (priority + 5
+			 * 
+			 * The alternative would be to just use
+			 * the first triplet.
+			 * 
+			 * I think that's all we need.
+			 * 
+			 */
 			
 			
 			if (fontInfo == null) {
-				return;
+//				return;
+				continue;
 			}
+			
+			debug.append("------- \n");
+			debug.append(fontInfo.getPostScriptName() + "\n" );
+			
 			 if (!fontInfo.isEmbeddable() ) {			        	
 	//	        	log.info(tokens[x] + " is not embeddable; skipping.");
 				 
@@ -270,28 +309,34 @@ public class SubstituterImplPanose extends Substituter {
 						will be thrown if os_2.fsType == 2
 						
 					 */
-	//	        	log.info(physicalFontKey + " is not embeddable; skipping.");
+		        	log.warn(fontInfo.getEmbedFile() + " is not embeddable; ignoring this font.");
 				 
-				 return;
+				 //return;
+		        continue;
 			 }
 				
 			PhysicalFont pf; 
 			
-			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
-				FontTriplet triplet = (FontTriplet)iterIn.next(); 
+//			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
+//				FontTriplet triplet = (FontTriplet)iterIn.next();
+			
+				FontTriplet triplet = (FontTriplet)fontInfo.getFontTriplets().get(0); 
 				// There is one triplet for each of the font family names
 				// this font has, and we create a PhysicalFont object 
 				// for each of them.  For our purposes though, each of
 				// these physical font objects contains the same info
 		    	
 		        String lower = fontInfo.getEmbedFile().toLowerCase();
+		        log.debug("Processing physical font: " + lower);
+				debug.append(".. triplet " + triplet.getName() 
+						+ " (priority " + triplet.getPriority() +"\n" );
 		        		        
 		        pf = null;
 		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 		        // can handle
 		        // .otf, .ttf, .ttc, .pfb
 		        if (lower.endsWith(".otf") || lower.endsWith(".ttf") || lower.endsWith(".ttc") ) {
-		        	pf = new PhysicalFont(fontInfo);
+		        	pf = new PhysicalFont(triplet.getName(), fontInfo);
 		        } else if (lower.endsWith(".pfb") ) {
 		        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
@@ -300,7 +345,7 @@ public class SubstituterImplPanose extends Substituter {
 					//log.debug("Looking for: " + afm);					
 					File f = new File(afm);
 			        if (f.exists()) {				
-			        	pf = new PhysicalFont(fontInfo);
+			        	pf = new PhysicalFont(triplet.getName(),fontInfo);
 			        } else {
 			        	// Should we be doing afm first, or pfm?
 						String pfm = FontUtils.pathFromURL(lower);
@@ -308,7 +353,7 @@ public class SubstituterImplPanose extends Substituter {
 						//log.debug("Looking for: " + pfm);
 						f = new File(pfm);
 				        if (f.exists()) {				
-				        	pf = new PhysicalFont(fontInfo);
+				        	pf = new PhysicalFont(triplet.getName(), fontInfo);
 				        } else {
 				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
 				        }
@@ -322,12 +367,10 @@ public class SubstituterImplPanose extends Substituter {
 		        	
 		        	// Add it to the map
 		        	physicalFontMap.put(pf.getName(), pf);
-		    		//log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
+		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
 		        	
-		        	// Handle the font family bit - this is critical, since
-		        	// it is what iText uses
 		        	String familyName = triplet.getName();
-		        	pf.setFamilyName(familyName);
+//		        	pf.setFamilyName(familyName);
 		        	
 		        	PhysicalFontFamily pff;
 		        	if (physicalFontFamiliesMap.get(familyName)==null) {
@@ -340,7 +383,8 @@ public class SubstituterImplPanose extends Substituter {
 		        	
 		        }
 			}            	
-		}
+		
+		log.debug(debug.toString() );
 	}
 	
 	
@@ -401,7 +445,7 @@ public class SubstituterImplPanose extends Substituter {
 		List<Fonts.Font> fontList = wmlFonts.getFont();
 		Map<String, Fonts.Font> fontsInFontTable = new HashMap<String, Fonts.Font>();
 		for (Fonts.Font font : fontList ) {
-			fontsInFontTable.put( normalise(font.getName()), font );
+			fontsInFontTable.put( (font.getName()), font );
 		}
 			
 		log.info("\n\n Populating font mappings.");
@@ -419,16 +463,14 @@ public class SubstituterImplPanose extends Substituter {
 	        String documentFontName = (String)pairs.getKey();
 
 			log.debug("\n\n" + documentFontName);
-	        
-	        String normalisedFontName = normalise(documentFontName);
-	        
+	        	        
 	        // Since docx4all invokes this method when opening
 	        // each new document, the mapping may have been done
 	        // last time.  We don't need to do it again, unless
 	        // new physical fonts have been added (eg via
 	        // an embedding)
-	        if (fontMappings.get(normalisedFontName) != null ) {
-	        	log.info(normalisedFontName + " already mapped.");
+	        if (fontMappings.get(documentFontName) != null ) {
+	        	log.info(documentFontName + " already mapped.");
         		if ( lastSeenNumberOfPhysicalFonts == physicalFontMap.size() ) {
     	        	log.info(".. and no need to check again.");
     	        	continue;
@@ -444,9 +486,9 @@ public class SubstituterImplPanose extends Substituter {
 			
 			// Panose setup
 			org.docx4j.wml.FontPanose wmlFontPanoseForDocumentFont = null;
-			Fonts.Font font = fontsInFontTable.get(normalisedFontName);
+			Fonts.Font font = fontsInFontTable.get(documentFontName);
 			if (font==null) {
-				log.error("Font " + normalisedFontName + "not found in font table!");
+				log.error("Font " + documentFontName + "not found in font table!");
 			} else {
 				wmlFontPanoseForDocumentFont = font.getPanose1();
 			}
@@ -501,7 +543,7 @@ public class SubstituterImplPanose extends Substituter {
 		        	
 					// Out of interest, is this match in font substitutions table?
 					FontSubstitutions.Replace rtmp 
-						= (FontSubstitutions.Replace) explicitSubstitutionsMap.get(normalise(fm.getDocumentFont()));
+						= (FontSubstitutions.Replace) explicitSubstitutionsMap.get((fm.getDocumentFont()));
 					if (rtmp!=null && rtmp.getSubstFonts()!=null) {
 						if (rtmp.getSubstFonts().contains(panoseKey) ) {
 							log.debug("(consistent with explicit substitutes)");
@@ -510,8 +552,8 @@ public class SubstituterImplPanose extends Substituter {
 						}
 						
 					}
-					fontMappings.put(normalise(fm.getDocumentFont()), fm);
-					log.debug("Entry added for: " +  normalise(fm.getDocumentFont()) );
+					fontMappings.put((fm.getDocumentFont()), fm);
+					log.debug("Entry added for: " +  (fm.getDocumentFont()) );
 				} else {
 					log.debug(fm.getDocumentFont() + " -->  no panose match");
 				}
@@ -520,7 +562,7 @@ public class SubstituterImplPanose extends Substituter {
 				// this document font, we still need to do
 				// bold, italic, and bolditalic?
 
-				MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(normalisedFontName);
+				MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(documentFontName);
 				
 				if (msFont==null) {
 					log.warn("Font not found in MicrosoftFonts.xml");
@@ -534,7 +576,7 @@ public class SubstituterImplPanose extends Substituter {
 					seekingPanose = documentFontPanose.getBold();
 					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose); 					
 					if (fmTmp!=null) {
-						fontMappings.put(normalise(fm.getDocumentFont()+BOLD), fmTmp);
+						fontMappings.put((fm.getDocumentFont()+BOLD), fmTmp);
 					}
 				} 
 				
@@ -545,7 +587,7 @@ public class SubstituterImplPanose extends Substituter {
 					seekingPanose = documentFontPanose.getItalic();
 					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose);
 					if (fmTmp!=null) {
-						fontMappings.put(normalise(fm.getDocumentFont()+ITALIC), fmTmp);
+						fontMappings.put((fm.getDocumentFont()+ITALIC), fmTmp);
 					}						
 				} 
 				
@@ -557,7 +599,7 @@ public class SubstituterImplPanose extends Substituter {
 					seekingPanose = seekingPanose.getItalic();
 					fmTmp = getAssociatedFontMapping(documentFontName, panoseKey, seekingPanose);
 					if (fmTmp!=null) {
-						fontMappings.put(normalise(fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
+						fontMappings.put((fm.getDocumentFont()+BOLD_ITALIC), fmTmp);
 					}						
 				}
 				
@@ -578,7 +620,7 @@ public class SubstituterImplPanose extends Substituter {
 			
 			log.debug("So try explicit font substitutions table");					        
 			FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) explicitSubstitutionsMap
-					.get(normalise(documentFontName));
+					.get((documentFontName));
 			if (replacement != null) {
 				// log.debug( "\n" + fontName + " found." );
 				// String subsFonts = replacement.getSubstFonts();
@@ -654,10 +696,10 @@ public class SubstituterImplPanose extends Substituter {
 			}
 			
 			if (fm!=null && fm.getPhysicalFont()!=null) {
-				fontMappings.put(normalisedFontName, fm);
-				log.info("subtable: " + normalisedFontName + " --> " + fm.getPhysicalFont().getEmbeddedFile() );
+				fontMappings.put(documentFontName, fm);
+				log.info("subtable: " + documentFontName + " --> " + fm.getPhysicalFont().getEmbeddedFile() );
 			} else {
-				log.debug("Nothing added for: " + normalisedFontName);
+				log.debug("Nothing added for: " + documentFontName);
 			}
 		}
 		
@@ -680,7 +722,7 @@ public class SubstituterImplPanose extends Substituter {
 		// First try panose space restricted to this font family
 		if (orignalKey!=null) {
 			PhysicalFontFamily thisFamily = 
-				physicalFontFamiliesMap.get( physicalFontMap.get(orignalKey).getFamilyName() );					
+				physicalFontFamiliesMap.get( physicalFontMap.get(orignalKey).getName() );					
 			
 			log.debug("Searching within family:" + thisFamily.getFamilyName() );
 			

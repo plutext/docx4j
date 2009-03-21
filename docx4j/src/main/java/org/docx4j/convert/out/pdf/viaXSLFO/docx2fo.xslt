@@ -14,7 +14,7 @@
 	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
 	xmlns:fo="http://www.w3.org/1999/XSL/Format"
     version="1.0"
-        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic">	
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic r">	
 
 <!-- =======================================
 

@@ -9,7 +9,9 @@ import org.apache.fop.fonts.EmbedFontInfo;
  * This class represents a font which is
  * available on the system.
  * 
- * It essentially wraps fop's EmbedFontInfo.
+ * It essentially wraps fop's EmbedFontInfo,
+ * but names it using the name from the
+ * triplet.
  * 
  * However, it extends that with Panose
  * info.  TODO: use reflection, so that
@@ -23,7 +25,7 @@ import org.apache.fop.fonts.EmbedFontInfo;
 public class PhysicalFont {
 
 	
-	PhysicalFont(EmbedFontInfo fontInfo) {
+	PhysicalFont(String name, EmbedFontInfo fontInfo) {
 		
 		// Sanity check
 		if (fontInfo.getPostScriptName()==null) {
@@ -31,7 +33,8 @@ public class PhysicalFont {
 			//log.error(((org.apache.fop.fonts.FontTriplet)fontInfo.getFontTriplets().get(0)).getName());
 		}
 		
-    	setName(fontInfo.getPostScriptName());
+    	setName(name);
+//    	setName(fontInfo.getPostScriptName());
     	setEmbeddedFile(fontInfo.getEmbedFile());
     	setPanose(fontInfo.getPanose());		
 	}
@@ -53,13 +56,13 @@ public class PhysicalFont {
 	}
 	
 	// // For example: Times New Roman
-	String familyName;
-	public String getFamilyName() {
-		return familyName;
-	}
-	public void setFamilyName(String familyName) {
-		this.familyName = familyName;
-	}
+//	String familyName;
+//	public String getFamilyName() {
+//		return familyName;
+//	}
+//	public void setFamilyName(String familyName) {
+//		this.familyName = familyName;
+//	}
 			
 	String embeddedFile;
 	public String getEmbeddedFile() {
