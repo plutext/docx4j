@@ -51,11 +51,12 @@ import com.lowagie.text.pdf.BaseFont;
 
 /**
  * 
- * Generate a map, mapping each Microsoft font name to:
- * 1. a substitute font which can be embedded in a PDF document
- * 2. a font list suitable for an HTML document (which is not then going to be transformed to PDF!)
+ * This mapper uses Panose to guess the physical font
+ * which is a closest fit for the font used in the
+ * document.  
  * 
- * Docx4all makes a corresponding AWT fonts directly from the substitute font.
+ * It is most likely to be suitable on Linux or OSX
+ * systems which don't have Microsoft's fonts installed.
  * 
  * @author jharrop
  *
