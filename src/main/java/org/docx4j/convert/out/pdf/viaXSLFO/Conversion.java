@@ -19,7 +19,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
-import org.docx4j.fonts.Substituter;
+import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -44,12 +44,6 @@ import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.fo.FOEventHandler;
-import org.apache.fop.fonts.CustomFontCollection;
-import org.apache.fop.fonts.FontCollection;
-import org.apache.fop.fonts.FontInfo;
-import org.apache.fop.fonts.FontManager;
-import org.apache.fop.fonts.base14.Base14FontCollection;
-import org.apache.fop.render.pdf.PDFRenderer;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
@@ -90,13 +84,21 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	try {
                 
     	  DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-//    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration><fonts><directory recursive=\"true\">/usr/share/fonts/</directory><directory recursive=\"true\">/var/lib/defoma/</directory><auto-detect/></fonts></fop>";
     	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>" +
-    	  		"<renderers><renderer mime=\"application/pdf\">" +
-    	  		"<fonts><directory recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
-    	  		"<auto-detect/>" +
-    	  		"</fonts></renderer></renderers></fop>";
+	  		"<renderers><renderer mime=\"application/pdf\">" +
+	  		"<fonts><directory>/home/dev/fonts</directory>" +
+	  		//"<directory>/usr/share/fonts/truetype/ttf-lucida</directory>" +
+	  		//"<directory>/var/lib/defoma/fontconfig.d/D</directory>" +
+	  		//"<directory>/var/lib/defoma/fontconfig.d/L</directory>" +
+	  		"<auto-detect/>" +
+	  		"</fonts></renderer></renderers></fop>";
     	  	// See FOP's PrintRendererConfigurator
+//    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>" +
+//	  		"<renderers><renderer mime=\"application/pdf\">" +
+//	  		"<fonts><directory recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
+//	  		"<auto-detect/>" +
+//	  		"</fonts></renderer></renderers></fop>";
+    	  
     	  
     	  Configuration cfg = cfgBuilder.build(
     			  new ByteArrayInputStream(myConfig.getBytes()) );

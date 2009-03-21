@@ -19,9 +19,9 @@ import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
-import org.docx4j.fonts.Substituter;
-import org.docx4j.fonts.SubstituterImplPanose;
-import org.docx4j.fonts.SubstituterWindowsPlatformImpl;
+import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.BestMatchingMapper;
+import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.listnumbering.Emulator;
 import org.docx4j.listnumbering.Emulator.ResultTriple;
@@ -200,7 +200,7 @@ public class HtmlExporter implements Output {
 			if (wmlPackage.getFontSubstituter()==null) {
 				log.debug("Creating new Substituter.");
 //				wmlPackage.setFontSubstituter(new SubstituterImplPanose());
-				wmlPackage.setFontSubstituter(new SubstituterWindowsPlatformImpl());
+				wmlPackage.setFontSubstituter(new IdentityPlusMapper());
 			} else {
 				log.debug("Using existing Substituter.");
 			}
@@ -696,11 +696,11 @@ public class HtmlExporter implements Output {
 		}
 		
 		
-		Substituter fontSubstituter = null;		
-		public void setFontSubstituter(Substituter fontSubstituter) {
+		Mapper fontSubstituter = null;		
+		public void setFontSubstituter(Mapper fontSubstituter) {
 			this.fontSubstituter = fontSubstituter;
 		}
-		public Substituter getFontSubstituter() {
+		public Mapper getFontSubstituter() {
 			return fontSubstituter;
 		}
 		
