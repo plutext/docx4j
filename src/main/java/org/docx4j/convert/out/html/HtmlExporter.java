@@ -50,7 +50,7 @@ public class HtmlExporter implements Output {
 	
 	// Get the xslt file - Works in Eclipse - note absence of leading '/'
 	static java.io.InputStream xslt;
-	
+		
 	static {
 		try {
 			xslt = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/convert/out/html/DocX2Html.xslt");
@@ -197,14 +197,15 @@ public class HtmlExporter implements Output {
 		
 
 		if (htmlSettings.getFontSubstituter()==null) {
-			if (wmlPackage.getFontSubstituter()==null) {
+			
+			if (wmlPackage.getFontMapper()==null) {
 				log.debug("Creating new Substituter.");
 //				wmlPackage.setFontSubstituter(new SubstituterImplPanose());
-				wmlPackage.setFontSubstituter(new IdentityPlusMapper());
+				wmlPackage.setFontMapper(new IdentityPlusMapper());
 			} else {
 				log.debug("Using existing Substituter.");
 			}
-			htmlSettings.setFontSubstituter(wmlPackage.getFontSubstituter());
+			htmlSettings.setFontSubstituter(wmlPackage.getFontMapper());
 		}
 		
 		htmlSettings.setWmlPackage(wmlPackage);
@@ -1095,6 +1096,7 @@ public class HtmlExporter implements Output {
 			this.pType = value;
 		}
     }
+
 
 
 }

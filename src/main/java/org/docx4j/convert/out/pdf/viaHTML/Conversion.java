@@ -42,7 +42,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				// See https://xhtmlrenderer.dev.java.net/guide/users-guide-r7.html#xil_32
 			org.xhtmlrenderer.extend.FontResolver resolver = renderer.getFontResolver();		
 					
-			Map fontMappings = wordMLPackage.getFontSubstituter().getFontMappings();
 			Map fontsInUse = wordMLPackage.getMainDocumentPart().fontsInUse();
 			Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
 			while (fontMappingsIterator.hasNext()) {
@@ -53,7 +52,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			    }
 			    
 			    String fontName = (String)pairs.getKey();
-			    embed(renderer, fontName, fontMappings);	        
+			    embed(renderer, fontName);	        
 			    // For any font we embed, also embed the bold, italic, and bold italic substitute
 			    // .. at present, we can't tell which of these forms are actually used, so add them all
 //			    embed(renderer, Substituter.normalise(fontName + Substituter.SEPARATOR + Substituter.BOLD), fontMappings);

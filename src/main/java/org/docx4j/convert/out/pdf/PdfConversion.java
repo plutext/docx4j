@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.html.HtmlExporter;
 import org.docx4j.fonts.FontUtils;
+import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -45,7 +46,7 @@ public abstract class PdfConversion  {
 	}
 	
 	protected WordprocessingMLPackage wordMLPackage;
-
+	
 	public PdfConversion(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
 	}
@@ -105,9 +106,9 @@ public abstract class PdfConversion  {
 	 * @param fm
 	 */
 	protected void embed(org.xhtmlrenderer.pdf.ITextRenderer renderer,
-			String fontName, Map<String, PhysicalFont> fontMappings) {
+			String fontName) {
 		
-		PhysicalFont pf = fontMappings.get( fontName );
+		PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get( fontName );
 		
 		if (pf == null) {
 			log.warn("No mapping found for: " + fontName);
