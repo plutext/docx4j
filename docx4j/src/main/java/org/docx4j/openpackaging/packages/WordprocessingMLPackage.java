@@ -35,7 +35,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
-import org.docx4j.fonts.Substituter;
+import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentType;
@@ -243,9 +243,17 @@ public class WordprocessingMLPackage extends Package {
 
     
     
-    
-    public void setFontSubstituter(Substituter fs) throws Exception {
-    	if (fs == null) {
+/* There should be a mapper per document,
+ * but PhysicalFonts should be system wide.
+ * 
+ * The only way PhysicalFonts will change
+ * is if fonts are added/removed while
+ * docx4j is executing (which can happen eg if an
+ * obfuscated font part is read)
+ */
+
+    public void setFontMapper(Mapper fm) throws Exception {
+    	if (fm == null) {
     		throw new IllegalArgumentException("Font Substituter cannot be null.");
     	}
 		// 1.  Get a list of all the fonts in the document
@@ -253,7 +261,7 @@ public class WordprocessingMLPackage extends Package {
 		
 		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
 		//     - do this in a general way, since docx4all needs this as well to display fonts		
-		fontSubstituter = fs;
+		fontMapper = fm;
 		org.docx4j.wml.Fonts fonts = null;
 		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();	
 		
@@ -265,17 +273,16 @@ public class WordprocessingMLPackage extends Package {
 		}
 		
 		fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
-		fontSubstituter.populateFontMappings(fontsInUse, fonts);    	
+		fontMapper.populateFontMappings(fontsInUse, fonts);    	
     	
     }
 
-    public Substituter getFontSubstituter() {
-		return fontSubstituter;
+    public Mapper getFontMapper() {
+		return fontMapper;
 	}
 
-	private Substituter fontSubstituter;
-    
-	
+	private Mapper fontMapper;
+    	
 
 	public static WordprocessingMLPackage createPackage() throws InvalidFormatException {
 		

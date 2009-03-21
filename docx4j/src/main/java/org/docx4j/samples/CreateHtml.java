@@ -29,8 +29,9 @@ public class CreateHtml {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
-			
+			//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
+	    	String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
+	    	
 			System.out.println(inputfilepath);
 			
 //			String inputfilepath = "/home/jharrop/tmp/wordml2html.docx";

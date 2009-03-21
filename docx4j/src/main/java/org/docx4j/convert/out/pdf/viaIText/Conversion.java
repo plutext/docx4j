@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
+import org.docx4j.fonts.Mapper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;

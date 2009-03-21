@@ -4,6 +4,8 @@
 package org.docx4j.fonts;
 
 import org.apache.fop.fonts.EmbedFontInfo;
+import org.apache.log4j.Logger;
+import org.docx4j.convert.out.pdf.viaXSLFO.Conversion;
 
 /**
  * This class represents a font which is
@@ -24,19 +26,22 @@ import org.apache.fop.fonts.EmbedFontInfo;
  */
 public class PhysicalFont {
 
+	protected static Logger log = Logger.getLogger(PhysicalFont.class);		
 	
-	PhysicalFont(String name, EmbedFontInfo fontInfo) {
+	PhysicalFont(String name, EmbedFontInfo embedFontInfo) {
 		
 		// Sanity check
-		if (fontInfo.getPostScriptName()==null) {
-			BestMatchingMapper.log.error("Not set!");
+		if (embedFontInfo.getPostScriptName()==null) {
+			log.error("Not set!");
 			//log.error(((org.apache.fop.fonts.FontTriplet)fontInfo.getFontTriplets().get(0)).getName());
 		}
 		
+		this.embedFontInfo = embedFontInfo;
+		
     	setName(name);
 //    	setName(fontInfo.getPostScriptName());
-    	setEmbeddedFile(fontInfo.getEmbedFile());
-    	setPanose(fontInfo.getPanose());		
+    	setEmbeddedFile(embedFontInfo.getEmbedFile());
+    	setPanose(embedFontInfo.getPanose());		
 	}
 	
 	// postscript name eg 
@@ -46,6 +51,11 @@ public class PhysicalFont {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	private EmbedFontInfo embedFontInfo;
+	public EmbedFontInfo getEmbedFontInfo() {
+		return embedFontInfo;
 	}
 	
 	// // For example: Times New Roman

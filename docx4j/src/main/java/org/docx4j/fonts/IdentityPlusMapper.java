@@ -89,37 +89,31 @@ public class IdentityPlusMapper extends Mapper {
 	}
 	
 	
-	
-	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
-	private final static HashMap<String, String> filenamesToMsFontNames;
-	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
-		return msFontsFilenames;
-	}		
-		
-    
-	
 	static {
 		
 		try {
-			// Microsoft Fonts
-			// 1. On Microsoft platform, to embed in PDF output
-			// 2. docx4all - all platforms - to populate font dropdown list
-			msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
-			filenamesToMsFontNames = new HashMap<String, String>();
-			setupMicrosoftFontFilenames();
+			
+			PhysicalFonts.discoverPhysicalFonts();
 			
 		} catch (Exception exc) {
 			throw new RuntimeException(exc);
 		}
 	}
+
+	private static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
+	private static HashMap<String, String> filenamesToMsFontNames;
+	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
+		return msFontsFilenames;
+	}		
 	
 	/**
 	 * Get Microsoft fonts
-	 * We need these:
-	 * 1. On Microsoft platform, to embed in PDF output
-	 * 2. docx4all - all platforms - to populate font dropdown list */	
+	 * docx4all - all platforms - to populate font dropdown list */	
 	private final static void setupMicrosoftFontFilenames() throws Exception {
 				
+		msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
+		filenamesToMsFontNames = new HashMap<String, String>();
+
 		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft");		
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());

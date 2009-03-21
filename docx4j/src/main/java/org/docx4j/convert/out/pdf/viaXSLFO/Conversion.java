@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,8 +20,10 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.pdf.PdfConversion;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -44,9 +48,13 @@ import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.fo.FOEventHandler;
+import org.apache.fop.fonts.FontTriplet;
+import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
+	
+	protected static Logger log = Logger.getLogger(Conversion.class);	
 	
 	public Conversion(WordprocessingMLPackage wordMLPackage) {
 		super(wordMLPackage);
@@ -69,6 +77,58 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	// not available in font "Helvetica".
 
 
+	/**
+	 * Create a FOP font configuration for each font used in the
+	 * document.
+	 * 
+	 * @return
+	 */
+	private String declareFonts() {
+		
+		StringBuffer result = new StringBuffer();
+		Map fontsInUse = wordMLPackage.getMainDocumentPart().fontsInUse();
+		Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
+		while (fontMappingsIterator.hasNext()) {
+		    Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
+		    if(pairs.getKey()==null) {
+		    	log.info("Skipped null key");
+		    	pairs = (Map.Entry)fontMappingsIterator.next();
+		    }
+		    
+		    String fontName = (String)pairs.getKey();
+		    
+		    
+		    PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
+		    
+		    if (pf==null) {
+		    	log.error("Document font " + fontName + " is not mapped to a physical font!");
+		    	continue;
+		    }
+		    
+		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\">" );
+		    	// now add the first font triplet
+			    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
+			    result.append("<font-triplet name=\"" + fontTriplet.getName() + "\""
+		    							+ " style=\"" + fontTriplet.getStyle() + "\""
+		    							+ " weight=\"" + weightToCSS2FontWeight(fontTriplet.getWeight()) + "\""
+		    									+ "/>" );		    		    
+		    result.append("</font>" );
+		}
+		
+		return result.toString();
+		
+	}
+	
+	private String weightToCSS2FontWeight(int i) {
+		
+		if (i>=700) {
+			return "bold";
+		} else {
+			return "normal";
+		}
+		
+	}
+	
 	/** Create a pdf version of the document, using XSL FO. 
 	 * 
 	 * @param os
@@ -86,12 +146,16 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	  DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
     	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>" +
 	  		"<renderers><renderer mime=\"application/pdf\">" +
-	  		"<fonts><directory>/home/dev/fonts</directory>" +
+	  		"<fonts>" + declareFonts() +  
+	  		//<directory>/home/dev/fonts</directory>" +
 	  		//"<directory>/usr/share/fonts/truetype/ttf-lucida</directory>" +
 	  		//"<directory>/var/lib/defoma/fontconfig.d/D</directory>" +
 	  		//"<directory>/var/lib/defoma/fontconfig.d/L</directory>" +
-	  		"<auto-detect/>" +
+//	  		"<auto-detect/>" +
 	  		"</fonts></renderer></renderers></fop>";
+    	  
+    	  log.debug("Using config: " + myConfig);
+    			  
     	  	// See FOP's PrintRendererConfigurator
 //    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>" +
 //	  		"<renderers><renderer mime=\"application/pdf\">" +
@@ -105,20 +169,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	  fopFactory.setUserConfig(cfg);
     	  
     	  Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
-  	  	// that creates a user agent, and a tree builder
-  	  	// the tree builder in turn creates an event handler
-  	      	      	  
-  	  //FOUserAgent foUserAgent = fop.getUserAgent();
-
-  	  /*
-	    	  // fop.foTreeBuilder is private :-(
-	    	  FontInfo fi = fop.getFOTreeBuilder().getEventHandler().
-	                
-	         // PrintRenderer has addFontList(List<EmbedFontInfo> fontList)
-	         // So all we need to do is access PrintRenderer.  
-	          * 
-	          * But How?
-       */
     	  
     	  Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);	
     	  
@@ -137,11 +187,29 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		      	SystemId Unknown; Line #163; Column #-1; java.lang.ArrayIndexOutOfBoundsException: 273
 		      	
 		      	It doesn't seem to matter whether we're using Xerces or Crimson though.
-		
-		  		System.setProperty("javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl");
-		  		System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-		  		
+				  		
 		  		So on Windows, do 2 transforms :-(
+		  		
+		  		Which doesn't fix the problem, but show it to be:
+		  		 
+				 java.lang.ArrayIndexOutOfBoundsException: 273
+				       at org.apache.fop.fo.StaticPropertyList.get(StaticPropertyList.java:70)
+				       at org.apache.fop.fo.PropertyList.get(PropertyList.java:155)
+				       at org.apache.fop.fo.flow.Block.bind(Block.java:133)
+				       at org.apache.fop.fo.FObj.processNode(FObj.java:123)
+				       at org.apache.fop.fo.FOTreeBuilder$MainFOHandler.startElement(FOTreeBuilder.java:282)
+				       at org.apache.fop.fo.FOTreeBuilder.startElement(FOTreeBuilder.java:171)
+				       at org.apache.xalan.transformer.TransformerIdentityImpl.startElement(TransformerIdentityImpl.java:1072)
+				       at com.bluecast.xml.Piccolo.reportStartTag(Piccolo.java:1082)
+				       at com.bluecast.xml.PiccoloLexer.parseOpenTagNS(PiccoloLexer.java:1471)
+				       at com.bluecast.xml.PiccoloLexer.parseTagNS(PiccoloLexer.java:1360)
+				       at com.bluecast.xml.PiccoloLexer.parseXMLNS(PiccoloLexer.java:1291)
+				       at com.bluecast.xml.PiccoloLexer.parseXML(PiccoloLexer.java:1259)
+				       at com.bluecast.xml.PiccoloLexer.yylex(PiccoloLexer.java:4716)
+				       at com.bluecast.xml.Piccolo.yylex(Piccolo.java:1290)
+				       at com.bluecast.xml.Piccolo.yyparse(Piccolo.java:1400)
+				       at com.bluecast.xml.Piccolo.parse(Piccolo.java:714)
+				       at org.apache.xalan.transformer.TransformerIdentityImpl.transform(TransformerIdentityImpl.java:484)		  		 
 		      	 */
 
 	  			ByteArrayOutputStream intermediate = new ByteArrayOutputStream();

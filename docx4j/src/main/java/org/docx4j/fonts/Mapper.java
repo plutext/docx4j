@@ -30,6 +30,13 @@ import org.apache.log4j.Logger;
  * fonts physically available
  * on the system.
  * 
+ * So, a mapper per document.
+ * If fonts are added to the document
+ * (ie fonts introduced into use)
+ * then the mapper should be updated
+ * to include a mapping for the
+ * new font.
+ * 
  * There are 2 implementations:
  * 
  * - IndentityPlusMapper, which is best

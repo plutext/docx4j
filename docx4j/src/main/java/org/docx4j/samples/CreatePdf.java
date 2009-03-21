@@ -22,21 +22,28 @@ package org.docx4j.samples;
 
 import java.io.OutputStream;
 
+import org.docx4j.fonts.IdentityPlusMapper;
+import org.docx4j.fonts.Mapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 public class CreatePdf {
 	    
 	    public static void main(String[] args) 
 	            throws Exception {
-			
+
 	    	boolean save = true;
+	    	
+			String inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";
 	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
 //			String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
 //			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
-			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
+//			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
+
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
+			wordMLPackage.setFontMapper(new IdentityPlusMapper());
+			
 			/* Choose which of the three methods you want to use...
 			 * 
 			 * .. viaHTML uses docX2HTML.xslt and xhtmlrenderer, 
