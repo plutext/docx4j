@@ -50,22 +50,31 @@ import org.docx4j.wml.Fonts;
 import com.lowagie.text.pdf.BaseFont;
 
 /**
+ *
+ * Maps font names used in the document to 
+ * corresponding fonts physically available
+ * on the system.
  * 
- * Generate a map, mapping each Microsoft font name to:
- * 1. a substitute font which can be embedded in a PDF document
- * 2. a font list suitable for an HTML document (which is not then going to be transformed to PDF!)
+ * This mapper automatically maps
+ * document fonts for which the exact
+ * font is physically available.  Think
+ * of this as an identity mapping.  For 
+ * this reason, it will work best on 
+ * Windows, or a system on which 
+ * Microsoft fonts have been installed.
  * 
- * Docx4all makes a corresponding AWT fonts directly from the substitute font.
+ * You can manually add your own
+ * additional mappings if you wish. 
  * 
  * @author jharrop
  *
  */
-public class SubstituterWindowsPlatformImpl extends Substituter {
+public class IdentityPlusMapper extends Mapper {
 	
 	
-	protected static Logger log = Logger.getLogger(SubstituterWindowsPlatformImpl.class);
+	protected static Logger log = Logger.getLogger(IdentityPlusMapper.class);
 
-	public SubstituterWindowsPlatformImpl() {
+	public IdentityPlusMapper() {
 		super();
 		
 		//log.debug(System.getProperty("os.name")); // eg Linux
@@ -133,15 +142,15 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 //			log.debug( "put msFontsFilenames: " + font.getName() );
 			
 			if (font.getBold()!=null) {
-				filenamesToMsFontNames.put( font.getBold().getFilename().toLowerCase(), font.getName()+SEPARATOR+Substituter.BOLD);
+				filenamesToMsFontNames.put( font.getBold().getFilename().toLowerCase(), font.getName()+SEPARATOR+Mapper.BOLD);
 //				log.debug( "put bold: " +  font.getName()+SEPARATOR+Substituter.BOLD );				
 			}
 			if (font.getItalic()!=null) {
-				filenamesToMsFontNames.put( font.getItalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Substituter.ITALIC);
+				filenamesToMsFontNames.put( font.getItalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Mapper.ITALIC);
 //				log.debug( "put italic: " + font.getName()+SEPARATOR+Substituter.ITALIC );				
 			}
 			if (font.getBolditalic() !=null) {
-				filenamesToMsFontNames.put( font.getBolditalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Substituter.BOLD_ITALIC);
+				filenamesToMsFontNames.put( font.getBolditalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Mapper.BOLD_ITALIC);
 //				log.debug( "put bold italic: " + font.getName()+SEPARATOR+Substituter.BOLD_ITALIC );				
 			}
 			
@@ -199,9 +208,8 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 	        	
 	        	// An identity mapping; that is all
 	        	// this class knows how to do!
-        		fontMappings.put(documentFontname, 
-        				new FontMapping(documentFontname, 
-        						PhysicalFonts.getPhysicalFonts().get(documentFontname) ) );	        		        	
+        		fontMappings.put(documentFontname,         				 
+        						PhysicalFonts.getPhysicalFonts().get(documentFontname) );	        		        	
 	        } else {
 	        	
 	        	log.warn("- - No physical font for: " + documentFontname);
@@ -307,7 +315,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		FontTablePart fontTablePart= wordMLPackage.getMainDocumentPart().getFontTablePart();		
 		org.docx4j.wml.Fonts fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();		
 	
-		SubstituterWindowsPlatformImpl s = new SubstituterWindowsPlatformImpl();
+		IdentityPlusMapper s = new IdentityPlusMapper();
 				
 		///////////////
 		// Go through the FontsTable, and see what we have filenames for.

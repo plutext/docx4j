@@ -26,30 +26,40 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 /**
- * Substitute fonts used in the document with fonts which are 
- * physically available.
+ * Maps font names used in the document to 
+ * fonts physically available
+ * on the system.
  * 
- * This is useful for:
+ * There are 2 implementations:
  * 
- * - PDF output
- * 
- * - other applications which render fonts on the screen
- *   (eg Swing applications)
+ * - IndentityPlusMapper, which is best
+ *   where most of the fonts used in the 
+ *   document are physically present
+ *   on the system
+ *   
+ * - BestMatchingMapper, useful on
+ *   Linux and OSX systems on which
+ *   Microsoft fonts have not been 
+ *   installed.
+ *   
+ * Whichever one you use, you can 
+ * add/remove mappings programmatically
+ * to customise to your needs. 
  * 
  * @author jharrop
  *
  */
-public abstract class Substituter {
+public abstract class Mapper {
 	
 	
-	protected static Logger log = Logger.getLogger(Substituter.class);
+	protected static Logger log = Logger.getLogger(Mapper.class);
 
-	public Substituter() {
+	public Mapper() {
 		super();
 	}
 	
-	protected final static Map<String, FontMapping> fontMappings;
-	public Map<String, FontMapping> getFontMappings() {
+	protected final static Map<String, PhysicalFont> fontMappings;
+	public Map<String, PhysicalFont> getFontMappings() {
 		return fontMappings;
 	}	
 		
@@ -68,7 +78,7 @@ public abstract class Substituter {
     public final static String SEPARATOR = "#";
 	
 	static {
-		fontMappings = Collections.synchronizedMap(new HashMap<String, FontMapping>());
+		fontMappings = Collections.synchronizedMap(new HashMap<String, PhysicalFont>());
 //		target = (new String(" ")).subSequence(0, 1);
 //		replacement = (new String("")).subSequence(0, 0);
 	}
@@ -93,7 +103,7 @@ public abstract class Substituter {
 	
 	
 	// For Xalan
-	public static String getSubstituteFontXsltExtension(Substituter s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
+	public static String getSubstituteFontXsltExtension(Mapper s, String documentStyleId, String bolditalic, boolean fontFamilyStack) {
 		
 		return s.getSubstituteFontXsltExtension(documentStyleId, bolditalic, fontFamilyStack);
 	}
@@ -108,7 +118,7 @@ public abstract class Substituter {
 			return "nullInputToExtension";
 		}
 		
-		if (this instanceof SubstituterWindowsPlatformImpl) {	
+		if (this instanceof IdentityPlusMapper) {	
 			
 			if (documentStyleId.equals("")) {
 				return "EMPTY";
@@ -118,15 +128,15 @@ public abstract class Substituter {
 		}
 		
 		// Try with bold italic modifier		
-		FontMapping fontMapping = (FontMapping)fontMappings.get((documentStyleId + bolditalic));
+		PhysicalFont physicalFont = (PhysicalFont)fontMappings.get((documentStyleId + bolditalic));
 
-		if (fontMapping==null) {
+		if (physicalFont==null) {
 			log.error("no mapping for:" + (documentStyleId + SEPARATOR + bolditalic));
 			
 			// try without  bold italic modifier
-			fontMapping = (FontMapping)fontMappings.get((documentStyleId));
+			physicalFont = (PhysicalFont)fontMappings.get((documentStyleId));
 			
-			if (fontMapping==null) {
+			if (physicalFont==null) {
 				log.error("still no good:" + (documentStyleId));
 				return "noMappingFor" + (documentStyleId);
 			}
@@ -136,7 +146,7 @@ public abstract class Substituter {
 			
 		}
 		
-		log.info(documentStyleId + " -> " + fontMapping.getPhysicalFont().getName() );
+		log.info(documentStyleId + " -> " + physicalFont.getName() );
 		
 		if (fontFamilyStack) {
 			
@@ -158,10 +168,10 @@ public abstract class Substituter {
 			// FontMapping objects.
 			
 //			return normalise(fontMapping.getPhysicalFont().getFamilyName());
-			return fontMapping.getPhysicalFont().getName();
+			return physicalFont.getName();
 		} else {
 //			return normalise(fontMapping.getPhysicalFont().getFamilyName());
-			return fontMapping.getPhysicalFont().getName();
+			return physicalFont.getName();
 		}
 		
 		/*

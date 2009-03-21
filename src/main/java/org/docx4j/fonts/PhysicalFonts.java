@@ -137,7 +137,7 @@ public class PhysicalFonts {
 	/**
 	 * Add a physical font's EmbedFontInfo object.
 	 * 
-	 * @param fontUrl
+	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
 	public static void addPhysicalFont(URL fontUrl) {
 		
