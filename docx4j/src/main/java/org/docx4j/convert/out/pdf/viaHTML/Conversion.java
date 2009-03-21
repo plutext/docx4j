@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.docx4j.convert.out.Output;
-import org.docx4j.fonts.Substituter;
-import org.docx4j.fonts.SubstituterImplPanose;
+import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 

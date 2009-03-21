@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.html.HtmlExporter;
-import org.docx4j.fonts.FontMapping;
 import org.docx4j.fonts.FontUtils;
+import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -105,17 +105,18 @@ public abstract class PdfConversion  {
 	 * @param fm
 	 */
 	protected void embed(org.xhtmlrenderer.pdf.ITextRenderer renderer,
-			String fontName, Map fontMappings) {
-		FontMapping fm = (FontMapping)fontMappings.get( fontName );
+			String fontName, Map<String, PhysicalFont> fontMappings) {
 		
-		if (fm == null) {
+		PhysicalFont pf = fontMappings.get( fontName );
+		
+		if (pf == null) {
 			log.warn("No mapping found for: " + fontName);
-		} else if (fm.getPhysicalFont()!=null) {
+		} else  {
 			try {
-				if (fm.getPhysicalFont().getEmbeddedFile().endsWith(".pfb")) {
+				if (pf.getEmbeddedFile().endsWith(".pfb")) {
 					
 //						String afm = fm.getPhysicalFont().getEmbeddedFile().substring(5, fm.getPhysicalFont().getEmbeddedFile().length()-4 ) + ".afm";  // drop the 'file:'
-					String afm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
+					String afm = FontUtils.pathFromURL(pf.getEmbeddedFile());
 					afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
 					log.info("Looking for: " + afm);
 					
@@ -124,28 +125,28 @@ public abstract class PdfConversion  {
 			        if (f.exists()) {				
 			        	log.info("Got it");
 //			        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
-			        	renderer.getFontResolver().addFont(afm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
-						log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
+			        	renderer.getFontResolver().addFont(afm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(pf.getEmbeddedFile()));  // drop the 'file:'	
+						log.info("Substituting " + fontName + " with embedding " + pf.getName() + " from " + pf.getEmbeddedFile() );
 			        } else {
 			        	// Should we be doing afm first, or pfm?
-						String pfm = FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile());
+						String pfm = FontUtils.pathFromURL(pf.getEmbeddedFile());
 						pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
 						log.info("Looking for: " + pfm);
 						f = new File(pfm);
 				        if (f.exists()) {				
 				        	log.info("Got it");
 //				        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
-				        	renderer.getFontResolver().addFont(pfm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
-							log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
+				        	renderer.getFontResolver().addFont(pfm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(pf.getEmbeddedFile() ));  // drop the 'file:'
+							log.info("Substituting " + fontName + " with embedding " + pf.getName() + " from " + pf.getEmbeddedFile() );
 				        } else {
 				        	// Shouldn't happen.
-				        	log.error("Couldn't find afm or pfm corresponding to " + fm.getPhysicalFont().getEmbeddedFile());
+				        	log.error("Couldn't find afm or pfm corresponding to " + pf.getEmbeddedFile());
 				        }
 			        }
 				} else {				
-//					renderer.getFontResolver().addFont(FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()), true);
-					renderer.getFontResolver().addFont(FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-					log.info("Substituting " + fontName + " with embedding " + fm.getPhysicalFont().getName() + " from " + fm.getPhysicalFont().getEmbeddedFile() );
+//					renderer.getFontResolver().addFont(FontUtils.pathFromURL(pf.getEmbeddedFile()), true);
+					renderer.getFontResolver().addFont(FontUtils.pathFromURL(pf.getEmbeddedFile()), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+					log.info("Substituting " + fontName + " with embedding " + pf.getName() + " from " + pf.getEmbeddedFile() );
 				}
 			} catch (java.io.IOException e) {
 			
@@ -158,15 +159,11 @@ at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 
 			 */
 				e.printStackTrace();
-				log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + fm.getPhysicalFont().getEmbeddedFile()); 
+				log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + pf.getEmbeddedFile()); 
 			} catch (Exception e) {
 				e.printStackTrace();
 				log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
 			}
-		} else {
-			log.warn("Can't addFont for: " + fontName); 
-		}
 	}	
-	
-	
+	}
 }
