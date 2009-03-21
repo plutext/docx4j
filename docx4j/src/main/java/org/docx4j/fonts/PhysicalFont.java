@@ -39,14 +39,7 @@ public class PhysicalFont {
     	setPanose(fontInfo.getPanose());		
 	}
 	
-	// For example, Times New Roman Bold
-	// What exactly to call it?
-	// Note that we don't use this name anywhere that matters
-	// - iText uses the font family name,
-	// with magic appendages 'Bold', 'Italic', 'BoldItalic'
-	// as necessary
-	// Nevertheless, lets refer to it here by its
-	// postscript name, since that is pretty well defined
+	// postscript name eg 
 	String name;
 	public String getName() {
 		return name;

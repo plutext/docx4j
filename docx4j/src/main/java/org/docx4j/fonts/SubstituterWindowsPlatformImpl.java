@@ -72,14 +72,13 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		//log.debug(System.getProperty("os.arch")); // eg i386
 		
 		if (System.getProperty("os.name").toLowerCase().indexOf("windows")<0) {
-			log.error("WARNING! SubstituterWindowsPlatformImpl will only work " +
-					"properly on Windows! You'll get strange results with font " +
-					"handling. Use some other Substituter implementation!");
+			log.error("WARNING! SubstituterWindowsPlatformImpl works best " +
+					"on Windows.  To get good results on other platforms, you'll probably  " +
+					"need to have installed Windows fonts.");
 		}
 		
 	}
 	
-	protected static FontCache fontCache;
 	
 	
 	private final static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
@@ -88,18 +87,6 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		return msFontsFilenames;
 	}		
 		
-	/** These are the physical fonts on the system which we have discovered. */ 
-	private final static Map<String, PhysicalFont> physicalFontMap;
-//	private final static Map<String, PhysicalFontFamily> physicalFontFamiliesMap;
-//	int lastSeenNumberOfPhysicalFonts = 0;
-	
-    
-    /** Max difference for it to be considered an acceptable match.
-     *  Note that this value will depend on the weights in the
-     *  difference function.
-     */ 
-    public static final int MATCH_THRESHOLD = 30;
-    
     
 	
 	static {
@@ -111,18 +98,6 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 			msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
 			filenamesToMsFontNames = new HashMap<String, String>();
 			setupMicrosoftFontFilenames();
-
-	        fontCache = FontCache.load();
-	        if (fontCache == null) {
-	            fontCache = new FontCache();
-	        }			
-			
-			// Map of all physical fonts (normalised names) to file paths
-	        // We'll use panose first to see which of these is the best
-	        // substitute, then failing that, the explicit substitutions
-			physicalFontMap = new HashMap<String, PhysicalFont>();
-//			physicalFontFamiliesMap = new HashMap<String, PhysicalFontFamily>();
-			setupPhysicalFonts();
 			
 		} catch (Exception exc) {
 			throw new RuntimeException(exc);
@@ -175,221 +150,6 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 	}
 	
  
-	/**
-	 * Add all physical fonts (normalised names) to a map, 
-	 * value being EmbedFontInfo objects.
-	 */ 
-	private final static void setupPhysicalFonts() throws Exception {
-		
-		// Currently we use FOP - inspired by org.apache.fop.render.PrintRendererConfigurator
-		// TODO 20080320 - iText also has a font discoverer.  Given that
-		// we're using iText for PDF output, we should use iText's
-		// font discovery provided it works
-		// (ie discovers all fonts, and can be used to create AWT fonts),
-		// we should use that instead of FOP (merging the Panose stuff into
-		// it).
-		
-		
-        FontResolver fontResolver = FontSetup.createMinimalFontResolver();        
-        FontFileFinder fontFileFinder = new FontFileFinder();
-        
-        // Automagically finds a list of font files on local system
-        // based on os.name
-        List fontFileList = fontFileFinder.find();                
-        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-        	
-        	URL fontUrl = getURL(iter.next());
-            
-            // parse font to ascertain font info
-            FontInfoFinder finder = new FontInfoFinder();
-            setupPhysicalFont(fontResolver, fontUrl, finder);
-        }
-
-        // Add fonts from our Temporary Embedded Fonts dir
-        fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );
-        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-            URL fontUrl = getURL(iter.next());
-            // parse font to ascertain font info
-            FontInfoFinder finder = new FontInfoFinder();
-            setupPhysicalFont(fontResolver, fontUrl, finder);
-        }
-        
-        fontCache.save();
-        
-	}
-	
-	private static URL getURL(Object o) throws Exception {
-		
-    	if (o instanceof java.io.File) {
-    		// Running in Tomcat
-    		java.io.File f = (java.io.File)o;
-    		return f.toURL();
-    	} else if (o instanceof java.net.URL) {
-    		return (URL)o;
-    	} else {
-    		throw new Exception("Unexpected object:" + o.getClass().getName() );
-    	}        	
-	}
-
-	/**
-	 * Add a physical font's EmbedFontInfo object.
-	 * 
-	 * @param fontResolver
-	 * @param fontUrl
-	 * @param fontInfoFinder
-	 */
-	public static void setupPhysicalFont(FontResolver fontResolver,
-			URL fontUrl, FontInfoFinder fontInfoFinder) {
-		
-		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
-		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
-		
-		if (embedFontInfoList==null) {
-			// Quite a few fonts exist that we can't seem to get
-			// EmbedFontInfo for. To be investigated.
-			log.warn("Aborting: " + fontUrl.toString() );
-			return;
-		}
-		
-		StringBuffer debug = new StringBuffer();
-		
-		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
-			
-			/* EmbedFontInfo has:
-			 * - subFontName (if the underlying CustomFont is a TTC)
-			 * - PostScriptName = CustomFont.getFontName()
-			 * - FontTriplets named:
-			 * 		- CustomFont.getFullName() with quotes stripped
-			 * 		- CustomFont.getFontName() with whitespace stripped
-			 * 		- each family name        (with quotes stripped)
-			 * 
-			 * By creating one PhysicalFont object 
-			 * per triplet, each referring to the same
-			 * EmbedFontInfo, we increase the chances 
-			 * of a match
-			 * 
-				ComicSansMS
-				.. triplet Comic Sans MS (priority + 0
-				.. triplet ComicSansMS (priority + 0
-				
-				ComicSansMS-Bold
-				.. triplet Comic Sans MS Bold (priority + 0
-				.. triplet ComicSansMS-Bold (priority + 0
-				.. triplet Comic Sans MS (priority + 5
-			 * 
-			 * The alternative would be to just use
-			 * the first triplet.
-			 * 
-			 * I think that's all we need.
-			 * 
-			 */
-			
-			
-			if (fontInfo == null) {
-//				return;
-				continue;
-			}
-			
-			debug.append("------- \n");
-			debug.append(fontInfo.getPostScriptName() + "\n" );
-			
-			 if (!fontInfo.isEmbeddable() ) {			        	
-	//	        	log.info(tokens[x] + " is not embeddable; skipping.");
-				 
-					// NB isEmbeddable() only exists in our patched FOP
-			        
-					/*
-					 * No point looking at this font, since if we tried to use it,
-					 * later, we'd get:
-					 *  
-					 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
-						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
-						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
-						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
-						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
-						at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
-						
-						will be thrown if os_2.fsType == 2
-						
-					 */
-		        	log.warn(fontInfo.getEmbedFile() + " is not embeddable; ignoring this font.");
-				 
-				 //return;
-		        continue;
-			 }
-				
-			PhysicalFont pf; 
-			
-//			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
-//				FontTriplet triplet = (FontTriplet)iterIn.next();
-			
-				FontTriplet triplet = (FontTriplet)fontInfo.getFontTriplets().get(0); 
-				// There is one triplet for each of the font family names
-				// this font has, and we create a PhysicalFont object 
-				// for each of them.  For our purposes though, each of
-				// these physical font objects contains the same info
-		    	
-		        String lower = fontInfo.getEmbedFile().toLowerCase();
-		        log.debug("Processing physical font: " + lower);
-				debug.append(".. triplet " + triplet.getName() 
-						+ " (priority " + triplet.getPriority() +"\n" );
-		        		        
-		        pf = null;
-		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
-		        // can handle
-		        // .otf, .ttf, .ttc, .pfb
-		        if (lower.endsWith(".otf") || lower.endsWith(".ttf") || lower.endsWith(".ttc") ) {
-		        	pf = new PhysicalFont(triplet.getName(), fontInfo);
-		        } else if (lower.endsWith(".pfb") ) {
-		        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
-		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
-					String afm = FontUtils.pathFromURL(lower);
-					afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
-					//log.debug("Looking for: " + afm);					
-					File f = new File(afm);
-			        if (f.exists()) {				
-			        	pf = new PhysicalFont(triplet.getName(),fontInfo);
-			        } else {
-			        	// Should we be doing afm first, or pfm?
-						String pfm = FontUtils.pathFromURL(lower);
-						pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
-						//log.debug("Looking for: " + pfm);
-						f = new File(pfm);
-				        if (f.exists()) {				
-				        	pf = new PhysicalFont(triplet.getName(), fontInfo);
-				        } else {
-				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
-				        }
-			        }
-		        } else {                    	
-		    		log.warn("Skipping " + triplet.getName() + "; unsupported type: " + fontInfo.getEmbedFile());                	                    	
-		        }
-		    	
-		        
-		        if (pf!=null) {
-		        	
-		        	// Add it to the map
-		        	physicalFontMap.put(pf.getName(), pf);
-		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
-		        	
-//		        	String familyName = triplet.getName();
-//		        	pf.setFamilyName(familyName);
-//		        	
-//		        	PhysicalFontFamily pff;
-//		        	if (physicalFontFamiliesMap.get(familyName)==null) {
-//		        		pff = new PhysicalFontFamily(familyName);
-//		        		physicalFontFamiliesMap.put(familyName, pff);
-//		        	} else {
-//		        		pff = physicalFontFamiliesMap.get(familyName);
-//		        	}
-//		        	pff.addFont(pf);
-		        	
-		        }
-			}            	
-		
-		log.debug(debug.toString() );
-	}
-	
 	
 	
 	
@@ -435,12 +195,13 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 	        String documentFontname = (String)pairs.getKey();
 	        log.debug("Document font: " + documentFontname);
 	        
-	        if ( physicalFontMap.get(documentFontname)!=null ) {
+	        if ( PhysicalFonts.getPhysicalFonts().get(documentFontname)!=null ) {
 	        	
 	        	// An identity mapping; that is all
 	        	// this class knows how to do!
         		fontMappings.put(documentFontname, 
-        				new FontMapping(documentFontname, physicalFontMap.get(documentFontname) ) );	        		        	
+        				new FontMapping(documentFontname, 
+        						PhysicalFonts.getPhysicalFonts().get(documentFontname) ) );	        		        	
 	        } else {
 	        	
 	        	log.warn("- - No physical font for: " + documentFontname);
