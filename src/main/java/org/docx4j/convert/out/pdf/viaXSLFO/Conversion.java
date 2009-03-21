@@ -1,19 +1,25 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
+import org.docx4j.fonts.Substituter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -68,7 +74,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	// TODO resolve WARN  [fop.apps.FOUserAgent] Glyph "Č" (0x10c, Ccaron) 
 	// not available in font "Helvetica".
 
-	
 
 	/** Create a pdf version of the document, using XSL FO. 
 	 * 
@@ -85,7 +90,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	try {
                 
     	  DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration><fonts><directory recursive=\"true\">/usr/share/fonts/</directory><directory recursive=\"true\">/var/lib/defoma/</directory><auto-detect/></fonts></fop>";
+//    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration><fonts><directory recursive=\"true\">/usr/share/fonts/</directory><directory recursive=\"true\">/var/lib/defoma/</directory><auto-detect/></fonts></fop>";
+    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>" +
+    	  		"<renderers><renderer mime=\"application/pdf\">" +
+    	  		"<fonts><directory recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
+    	  		"<auto-detect/>" +
+    	  		"</fonts></renderer></renderers></fop>";
     	  	// See FOP's PrintRendererConfigurator
     	  
     	  Configuration cfg = cfgBuilder.build(
@@ -109,18 +119,49 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
        */
     	  
     	  Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);	
-
-    	  // Resulting SAX events (the generated FO) must be piped through to FOP
-    	  Result result = new SAXResult(fop.getDefaultHandler());
-    	   
-    	  // Uncomment this line to see the generated formatting objects
-//  		Result result =
-//			new javax.xml.transform.stream.StreamResult(System.out);		
     	  
     	  java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
 			settings.put("wmlPackage", wordMLPackage);
-    	  
-    	  XmlUtils.transform(domDoc, xslt, settings, result);
+	      	  // Resulting SAX events (the generated FO) must be piped through to FOP
+	      	  Result result = new SAXResult(fop.getDefaultHandler());
+	    	  
+	      	  log.info(System.getProperty("os.name"));
+	      	  
+	  		if (System.getProperty("os.name").toLowerCase().indexOf("windows")>-1) {
+		      	/* On Windows, I'm getting 
+		      	 * 
+		      	21.03.2009 22:31:45 *ERROR* FOTreeBuilder: javax.xml.transform.TransformerException: java.lang.ArrayIndexOutOfBoundsException: 273 (FOTreeBuilder.java, line 201)
+		      	Saved C:\Documents and Settings\Jason Harrop\My Documents\Downloads\AUMS.docx.pdf
+		      	SystemId Unknown; Line #163; Column #-1; java.lang.ArrayIndexOutOfBoundsException: 273
+		      	
+		      	It doesn't seem to matter whether we're using Xerces or Crimson though.
+		
+		  		System.setProperty("javax.xml.parsers.SAXParserFactory", "org.apache.xerces.jaxp.SAXParserFactoryImpl");
+		  		System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+		  		
+		  		So on Windows, do 2 transforms :-(
+		      	 */
+
+	  			ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
+	  			Result intermediateResult =  new StreamResult( intermediate );
+	  			
+	  			XmlUtils.transform(domDoc, xslt, settings, intermediateResult);
+	  			
+	  			String fo = intermediate.toString("UTF-8");
+	  			log.info(fo);
+	  			
+	  			Source src = new StreamSource(new StringReader(fo));
+		    	
+	  			Transformer transformer = XmlUtils.tfactory.newTransformer();
+	  			transformer.transform(src, result);
+	  		} else {
+	      	   
+	      	  // Uncomment this line to see the generated formatting objects
+//	    		Result result =
+//	  			new javax.xml.transform.stream.StreamResult(System.out);		
+	    	  XmlUtils.transform(domDoc, xslt, settings, result);
+	  			
+	  		}
     	  
     	} catch (Exception e) {
     		throw new Docx4JException("FOP issues", e);
@@ -169,7 +210,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
 			}        	
         	
-            // Create a DOM builder and parse the fragment
+            // Create a DOM builder and parse the fragment			
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
 			

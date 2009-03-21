@@ -52,11 +52,15 @@ public abstract class Substituter {
 	public Map<String, FontMapping> getFontMappings() {
 		return fontMappings;
 	}	
-	
-	
-	protected final static java.lang.CharSequence target;
-    protected final static java.lang.CharSequence replacement;
+		
+//	protected final static java.lang.CharSequence target;
+//	protected final static java.lang.CharSequence replacement;
     
+    // iText style modifiers
+    // see core.lowagie.text.pdf.BaseFont
+    // iText prepends a "," but that's
+    // problematic in xhtmlrenderer
+    // (since font-family is a comma separated list.
     public final static String BOLD   = "Bold";
     public final static String ITALIC = "Italic";
     public final static String BOLD_ITALIC = "BoldItalic";
@@ -65,8 +69,8 @@ public abstract class Substituter {
 	
 	static {
 		fontMappings = Collections.synchronizedMap(new HashMap<String, FontMapping>());
-		target = (new String(" ")).subSequence(0, 1);
-		replacement = (new String("")).subSequence(0, 0);
+//		target = (new String(" ")).subSequence(0, 1);
+//		replacement = (new String("")).subSequence(0, 0);
 	}
 	
 	/**
@@ -82,10 +86,10 @@ public abstract class Substituter {
 	
 	
 	
-	// Remove spaces and make lower case        
-	public final static String normalise(String realName) {		
-        return realName.replace(target, replacement).toLowerCase();
-	}
+//	// Remove spaces and make lower case        
+//	public final static String normalise(String realName) {		
+//        return realName.replace(target, replacement).toLowerCase();
+//	}
 	
 	
 	// For Xalan
@@ -96,24 +100,35 @@ public abstract class Substituter {
 	
 	public String getSubstituteFontXsltExtension(String documentStyleId, 
 			String bolditalic, boolean fontFamilyStack) {
+		
+		log.debug("Trying to insert HTML font-family value for " + documentStyleId);
 				
 		if (documentStyleId==null) {
 			log.error("passed null documentStyleId");
 			return "nullInputToExtension";
 		}
 		
+		if (this instanceof SubstituterWindowsPlatformImpl) {	
+			
+			if (documentStyleId.equals("")) {
+				return "EMPTY";
+			}
+			
+			return documentStyleId;
+		}
+		
 		// Try with bold italic modifier		
-		FontMapping fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId + bolditalic));
+		FontMapping fontMapping = (FontMapping)fontMappings.get((documentStyleId + bolditalic));
 
 		if (fontMapping==null) {
-			log.error("no mapping for:" + normalise(documentStyleId + bolditalic));
+			log.error("no mapping for:" + (documentStyleId + SEPARATOR + bolditalic));
 			
 			// try without  bold italic modifier
-			fontMapping = (FontMapping)fontMappings.get(normalise(documentStyleId));
+			fontMapping = (FontMapping)fontMappings.get((documentStyleId));
 			
 			if (fontMapping==null) {
-				log.error("still no good:" + normalise(documentStyleId));
-				return "noMappingFor" + normalise(documentStyleId);
+				log.error("still no good:" + (documentStyleId));
+				return "noMappingFor" + (documentStyleId);
 			}
 		} else {
 			
@@ -121,7 +136,7 @@ public abstract class Substituter {
 			
 		}
 		
-		log.info(documentStyleId + " -> " + fontMapping.getPhysicalFont().getFamilyName() );
+		log.info(documentStyleId + " -> " + fontMapping.getPhysicalFont().getName() );
 		
 		if (fontFamilyStack) {
 			
@@ -142,10 +157,20 @@ public abstract class Substituter {
 			// populateFontMappings, and added to the 
 			// FontMapping objects.
 			
-			return fontMapping.getPhysicalFont().getFamilyName();
+//			return normalise(fontMapping.getPhysicalFont().getFamilyName());
+			return fontMapping.getPhysicalFont().getName();
 		} else {
-			return fontMapping.getPhysicalFont().getFamilyName();
+//			return normalise(fontMapping.getPhysicalFont().getFamilyName());
+			return fontMapping.getPhysicalFont().getName();
 		}
+		
+		/*
+		 * We want to return eg "Times New Roman" 
+		 * or "Arial Unicode MS" here, ie _with spaces_, since that is 
+		 * what xhtmlrender's org.xhtmlrenderer.pdf.ITextFontResolver sets up.
+		 * 
+		 * 
+		 */
 		
 	}
 	

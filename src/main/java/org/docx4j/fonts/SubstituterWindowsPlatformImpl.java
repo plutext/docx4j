@@ -90,8 +90,8 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		
 	/** These are the physical fonts on the system which we have discovered. */ 
 	private final static Map<String, PhysicalFont> physicalFontMap;
-	private final static Map<String, PhysicalFontFamily> physicalFontFamiliesMap;
-	int lastSeenNumberOfPhysicalFonts = 0;
+//	private final static Map<String, PhysicalFontFamily> physicalFontFamiliesMap;
+//	int lastSeenNumberOfPhysicalFonts = 0;
 	
     
     /** Max difference for it to be considered an acceptable match.
@@ -121,7 +121,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 	        // We'll use panose first to see which of these is the best
 	        // substitute, then failing that, the explicit substitutions
 			physicalFontMap = new HashMap<String, PhysicalFont>();
-			physicalFontFamiliesMap = new HashMap<String, PhysicalFontFamily>();
+//			physicalFontFamiliesMap = new HashMap<String, PhysicalFontFamily>();
 			setupPhysicalFonts();
 			
 		} catch (Exception exc) {
@@ -151,7 +151,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
 		
 		for (MicrosoftFonts.Font font : msFontsList ) {			
-			msFontsFilenames.put( normalise(font.getName()), font); // 20080318 - normalised
+			msFontsFilenames.put( (font.getName()), font); // 20080318 - normalised
 			//log.debug( "put msFontsFilenames: " + normalise(font.getName()) );
 			
 			filenamesToMsFontNames.put( font.getFilename().toLowerCase() , font.getName());
@@ -215,7 +215,6 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
         }
         
         fontCache.save();
-        // TODO - reenable the cache
         
 	}
 	
@@ -252,12 +251,48 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 			return;
 		}
 		
+		StringBuffer debug = new StringBuffer();
+		
 		for ( EmbedFontInfo fontInfo : embedFontInfoList ) {
+			
+			/* EmbedFontInfo has:
+			 * - subFontName (if the underlying CustomFont is a TTC)
+			 * - PostScriptName = CustomFont.getFontName()
+			 * - FontTriplets named:
+			 * 		- CustomFont.getFullName() with quotes stripped
+			 * 		- CustomFont.getFontName() with whitespace stripped
+			 * 		- each family name        (with quotes stripped)
+			 * 
+			 * By creating one PhysicalFont object 
+			 * per triplet, each referring to the same
+			 * EmbedFontInfo, we increase the chances 
+			 * of a match
+			 * 
+				ComicSansMS
+				.. triplet Comic Sans MS (priority + 0
+				.. triplet ComicSansMS (priority + 0
+				
+				ComicSansMS-Bold
+				.. triplet Comic Sans MS Bold (priority + 0
+				.. triplet ComicSansMS-Bold (priority + 0
+				.. triplet Comic Sans MS (priority + 5
+			 * 
+			 * The alternative would be to just use
+			 * the first triplet.
+			 * 
+			 * I think that's all we need.
+			 * 
+			 */
 			
 			
 			if (fontInfo == null) {
-				return;
+//				return;
+				continue;
 			}
+			
+			debug.append("------- \n");
+			debug.append(fontInfo.getPostScriptName() + "\n" );
+			
 			 if (!fontInfo.isEmbeddable() ) {			        	
 	//	        	log.info(tokens[x] + " is not embeddable; skipping.");
 				 
@@ -279,13 +314,16 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 					 */
 		        	log.warn(fontInfo.getEmbedFile() + " is not embeddable; ignoring this font.");
 				 
-				 return;
+				 //return;
+		        continue;
 			 }
 				
 			PhysicalFont pf; 
 			
-			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
-				FontTriplet triplet = (FontTriplet)iterIn.next(); 
+//			for (Iterator iterIn = fontInfo.getFontTriplets().iterator() ; iterIn.hasNext();) {
+//				FontTriplet triplet = (FontTriplet)iterIn.next();
+			
+				FontTriplet triplet = (FontTriplet)fontInfo.getFontTriplets().get(0); 
 				// There is one triplet for each of the font family names
 				// this font has, and we create a PhysicalFont object 
 				// for each of them.  For our purposes though, each of
@@ -293,13 +331,15 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		    	
 		        String lower = fontInfo.getEmbedFile().toLowerCase();
 		        log.debug("Processing physical font: " + lower);
+				debug.append(".. triplet " + triplet.getName() 
+						+ " (priority " + triplet.getPriority() +"\n" );
 		        		        
 		        pf = null;
 		        // xhtmlrenderer's org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 		        // can handle
 		        // .otf, .ttf, .ttc, .pfb
 		        if (lower.endsWith(".otf") || lower.endsWith(".ttf") || lower.endsWith(".ttc") ) {
-		        	pf = new PhysicalFont(fontInfo);
+		        	pf = new PhysicalFont(triplet.getName(), fontInfo);
 		        } else if (lower.endsWith(".pfb") ) {
 		        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
@@ -308,7 +348,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 					//log.debug("Looking for: " + afm);					
 					File f = new File(afm);
 			        if (f.exists()) {				
-			        	pf = new PhysicalFont(fontInfo);
+			        	pf = new PhysicalFont(triplet.getName(),fontInfo);
 			        } else {
 			        	// Should we be doing afm first, or pfm?
 						String pfm = FontUtils.pathFromURL(lower);
@@ -316,7 +356,7 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 						//log.debug("Looking for: " + pfm);
 						f = new File(pfm);
 				        if (f.exists()) {				
-				        	pf = new PhysicalFont(fontInfo);
+				        	pf = new PhysicalFont(triplet.getName(), fontInfo);
 				        } else {
 				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
 				        }
@@ -332,23 +372,22 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 		        	physicalFontMap.put(pf.getName(), pf);
 		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
 		        	
-		        	// Handle the font family bit - this is critical, since
-		        	// it is what iText uses
-		        	String familyName = triplet.getName();
-		        	pf.setFamilyName(familyName);
-		        	
-		        	PhysicalFontFamily pff;
-		        	if (physicalFontFamiliesMap.get(familyName)==null) {
-		        		pff = new PhysicalFontFamily(familyName);
-		        		physicalFontFamiliesMap.put(familyName, pff);
-		        	} else {
-		        		pff = physicalFontFamiliesMap.get(familyName);
-		        	}
-		        	pff.addFont(pf);
+//		        	String familyName = triplet.getName();
+//		        	pf.setFamilyName(familyName);
+//		        	
+//		        	PhysicalFontFamily pff;
+//		        	if (physicalFontFamiliesMap.get(familyName)==null) {
+//		        		pff = new PhysicalFontFamily(familyName);
+//		        		physicalFontFamiliesMap.put(familyName, pff);
+//		        	} else {
+//		        		pff = physicalFontFamiliesMap.get(familyName);
+//		        	}
+//		        	pff.addFont(pf);
 		        	
 		        }
 			}            	
-		}
+		
+		log.debug(debug.toString() );
 	}
 	
 	
@@ -383,118 +422,124 @@ public class SubstituterWindowsPlatformImpl extends Substituter {
 //			fontsInFontTable.put( normalise(font.getName()), font );
 //		}
 		
-		// We need the documentFontNames normalised
-//		Map<String, String> documentFontNamesKeyedByNormalised = new HashMap<String, String>();
-//		Iterator documentFontIterator = documentFontNames.entrySet().iterator();
-//	    while (documentFontIterator.hasNext()) {
-//	        Map.Entry pairs = (Map.Entry)documentFontIterator.next();
-//	        
-//	        if(pairs.getKey()==null) {
-//	        	log.info("Skipped null key");
-//	        	pairs = (Map.Entry)documentFontIterator.next();
-//	        }
-//	        
-//	        String documentFontName = (String)pairs.getKey();
-//
-//			log.debug("Added normalised: " + documentFontName);
-//	        
-//	        String normalisedFontName = normalise(documentFontName);
-//	        
-//	        documentFontNamesKeyedByNormalised.put(normalisedFontName, documentFontName);
-//	        	// each name, keyed by its normalised value
-//	    }
 
-		// Iterate through the physical fonts, since their key is their 
-		// postscript name (non-normalised).  This way, we can do a single
-		// pass.
-		Iterator physicalFontMapIterator = physicalFontMap.entrySet().iterator();
-	    while (physicalFontMapIterator.hasNext()) {
-	        Map.Entry pairs = (Map.Entry)physicalFontMapIterator.next();
+		Iterator documentFontMapIterator = documentFontNames.entrySet().iterator();
+	    while (documentFontMapIterator.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)documentFontMapIterator.next();
 	        
 	        if(pairs.getKey()==null) {
 	        	log.info("Skipped null key");
-	        	pairs = (Map.Entry)physicalFontMapIterator.next();
+	        	pairs = (Map.Entry)documentFontMapIterator.next();
 	        }
+	        
+	        String documentFontname = (String)pairs.getKey();
+	        log.debug("Document font: " + documentFontname);
+	        
+	        if ( physicalFontMap.get(documentFontname)!=null ) {
+	        	
+	        	// An identity mapping; that is all
+	        	// this class knows how to do!
+        		fontMappings.put(documentFontname, 
+        				new FontMapping(documentFontname, physicalFontMap.get(documentFontname) ) );	        		        	
+	        } else {
+	        	
+	        	log.warn("- - No physical font for: " + documentFontname);
+	        }
+	    }	        	
 		
-	        String physicalFontName = (String)pairs.getKey();
-			//log.debug("\n\n" + physicalFontName);	        
-	        //String normalisedFontName = normalise(physicalFontName);
-			String fontPath = ((PhysicalFont)pairs.getValue()).getEmbeddedFile();
-			String physicalFilename = fontPath.substring( fontPath.lastIndexOf("/") +1).toLowerCase();
-			
-			String msFontName = filenamesToMsFontNames.get(physicalFilename);
-			
-			if (msFontName!=null) {
-			
-//				String msFontName = font.getName(); 
-				
-				String baseform = msFontName;
-				if (msFontName.indexOf(SEPARATOR)>0) {
-					baseform = msFontName.substring(0, msFontName.indexOf(SEPARATOR));
-				}
-				
-		        // Add it to the mapping if it is present in the document
-		        if ( documentFontNames.get(baseform)!=null ) {
-		        	
-					// for now, if the baseform is used, 
-		        	// we say bold, italic, and bolditalic are as well
-		        	
-		        	if (pairs.getValue()==null) {
-		        		log.debug("Handle that");
-		        	} else {
-		        		fontMappings.put(normalise(msFontName), 
-			        			new FontMapping(msFontName, (PhysicalFont)pairs.getValue() ) );
-		        		log.info("Added mapping for: " + normalise(msFontName));		        		
-		        	}
-		        	
-		        } else {
-		        	log.debug("Ignoring physical font " + msFontName
-		        			+ ((PhysicalFont)pairs.getValue()).getEmbeddedFile() );
-		        	
-		        }
-			} else {
-				
-				log.info("Unknown font: " + physicalFontName + "(" + physicalFilename);
-				
-			}
-				
-	    }
+		
+//		// Iterate through the physical fonts, since their key is their 
+//		// postscript name (non-normalised).  This way, we can do a single
+//		// pass.
+//		Iterator physicalFontMapIterator = physicalFontMap.entrySet().iterator();
+//	    while (physicalFontMapIterator.hasNext()) {
+//	        Map.Entry pairs = (Map.Entry)physicalFontMapIterator.next();
+//	        
+//	        if(pairs.getKey()==null) {
+//	        	log.info("Skipped null key");
+//	        	pairs = (Map.Entry)physicalFontMapIterator.next();
+//	        }
+//		
+//	        String physicalFontName = (String)pairs.getKey();
+//			//log.debug("\n\n" + physicalFontName);	        
+//	        //String normalisedFontName = normalise(physicalFontName);
+//			String fontPath = ((PhysicalFont)pairs.getValue()).getEmbeddedFile();
+//			String physicalFilename = fontPath.substring( fontPath.lastIndexOf("/") +1).toLowerCase();
+//			
+//			String msFontName = filenamesToMsFontNames.get(physicalFilename);
+//			
+//			if (msFontName!=null) {
+//			
+////				String msFontName = font.getName(); 
+//				
+//				String baseform = msFontName;
+//				if (msFontName.indexOf(SEPARATOR)>0) {
+//					baseform = msFontName.substring(0, msFontName.indexOf(SEPARATOR));
+//				}
+//				
+//		        // Add it to the mapping if it is present in the document
+//		        if ( documentFontNames.get(baseform)!=null ) {
+//		        	
+//					// for now, if the baseform is used, 
+//		        	// we say bold, italic, and bolditalic are as well
+//		        	
+//		        	if (pairs.getValue()==null) {
+//		        		log.debug("Handle that");
+//		        	} else {
+//		        		fontMappings.put((msFontName), 
+//			        			new FontMapping(msFontName, (PhysicalFont)pairs.getValue() ) );
+//		        		log.info("Added mapping for: " + (msFontName));		        		
+//		        	}
+//		        	
+//		        } else {
+//		        	log.debug("Ignoring physical font " + msFontName
+//		        			+ ((PhysicalFont)pairs.getValue()).getEmbeddedFile() );
+//		        	
+//		        }
+//			} else {
+//				
+//				log.info("Unknown font: " + physicalFontName + "(" + physicalFilename);
+//				
+//			}
+//				
+//	    }
 	        
 	}
 
 
-	public static class PhysicalFontFamily {
-
-		String familyName; // For example: Times New Roman
-		public String getFamilyName() {
-			return familyName;
-		}
-
-		PhysicalFontFamily(String familyName) {
-			this.familyName = familyName;
-		}
-
-		// We want this, so that when were are searching panose space
-		// for bold, bolditalic, italic, we can restrict the search
-		// to this list
-		Map<String, PhysicalFont> physicalFonts = new HashMap<String, PhysicalFont> ();
-		void addFont(PhysicalFont physicalFont){
-			physicalFonts.put(physicalFont.getName(), physicalFont);
-		}
-		
-		Map<String, PhysicalFont> getPhysicalFonts() {
-			return physicalFonts;
-		}
-		
-	}
+//	public static class PhysicalFontFamily {
+//
+//		String familyName; // For example: Times New Roman
+//		public String getFamilyName() {
+//			return familyName;
+//		}
+//
+//		PhysicalFontFamily(String familyName) {
+//			this.familyName = familyName;
+//		}
+//
+//		// We want this, so that when were are searching panose space
+//		// for bold, bolditalic, italic, we can restrict the search
+//		// to this list
+//		Map<String, PhysicalFont> physicalFonts = new HashMap<String, PhysicalFont> ();
+//		void addFont(PhysicalFont physicalFont){
+//			physicalFonts.put(physicalFont.getName(), physicalFont);
+//		}
+//		
+//		Map<String, PhysicalFont> getPhysicalFonts() {
+//			return physicalFonts;
+//		}
+//		
+//	}
 	
 	
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/Word2007-fonts.docx";
-		String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
+//		String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4j-001/sample-docs/fonts-modesOfApplication.docx";
 		//String inputfilepath = "/home/jharrop/workspace200711/docx4all/sample-docs/TargetFeatureSet.docx"; //docx4all-fonts.docx";
+		String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\Downloads\\AUMS-easy.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 				
