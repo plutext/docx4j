@@ -23,6 +23,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -88,8 +89,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		    	pairs = (Map.Entry)fontMappingsIterator.next();
 		    }
 		    
-		    String fontName = (String)pairs.getKey();
-		    
+		    String fontName = (String)pairs.getKey();		    
 		    
 		    PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
 		    
@@ -101,15 +101,46 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\">" );
 		    	// now add the first font triplet
 			    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-			    result.append("<font-triplet name=\"" + fontTriplet.getName() + "\""
-		    							+ " style=\"" + fontTriplet.getStyle() + "\""
-		    							+ " weight=\"" + weightToCSS2FontWeight(fontTriplet.getWeight()) + "\""
-		    									+ "/>" );		    		    
+			    addFontTriplet(result, fontTriplet);
 		    result.append("</font>" );
+		    
+		    // bold, italic etc
+		    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
+		    if (pfVariation!=null) {
+			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\">" );
+		    	addFontTriplet(result, pf.getName(), "normal", "bold");
+			    result.append("</font>" );
+		    }
+		    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
+		    if (pfVariation!=null) {
+			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\">" );
+		    	addFontTriplet(result, pf.getName(), "italic", "bold");
+			    result.append("</font>" );
+		    }
+		    pfVariation = PhysicalFonts.getItalicForm(pf);
+		    if (pfVariation!=null) {
+			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\">" );
+		    	addFontTriplet(result, pf.getName(), "italic", "normal");
+			    result.append("</font>" );
+		    }
+			    
 		}
 		
 		return result.toString();
 		
+	}
+		
+	private void addFontTriplet(StringBuffer result, FontTriplet fontTriplet) {
+	    result.append("<font-triplet name=\"" + fontTriplet.getName() + "\""
+				+ " style=\"" + fontTriplet.getStyle() + "\""
+				+ " weight=\"" + weightToCSS2FontWeight(fontTriplet.getWeight()) + "\""
+						+ "/>" );		
+	}
+	private void addFontTriplet(StringBuffer result, String familyName, String style, String weight) {
+	    result.append("<font-triplet name=\"" + familyName + "\""
+				+ " style=\"" + style + "\""
+				+ " weight=\"" + weight + "\""
+						+ "/>" );		
 	}
 	
 	private String weightToCSS2FontWeight(int i) {
@@ -166,7 +197,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 						// "<auto-detect/>" +
 						"</fonts></renderer></renderers></fop>";
 
-				log.debug("Using config: " + myConfig);
+				log.info("\nUsing config:\n " + myConfig + "\n");
 
 				// See FOP's PrintRendererConfigurator
 				// String myConfig = "<fop
@@ -403,11 +434,15 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					}
 				}
 			    
-				// bold
-				
+				// bold				
 				if ( rPr.getB()!=null ) {				
 					((Element)foBlockElement).setAttribute("font-weight", 
 							"bold" );
+				}
+				// italic
+				if ( rPr.getI()!=null ) {				
+					((Element)foBlockElement).setAttribute("font-style", 
+							"italic" );
 				}
 				// TODO - other rPr props.
 				

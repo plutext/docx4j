@@ -88,7 +88,6 @@ public class IdentityPlusMapper extends Mapper {
 		
 	}
 	
-	
 	static {
 		
 		try {
@@ -100,61 +99,6 @@ public class IdentityPlusMapper extends Mapper {
 		}
 	}
 
-	private static HashMap<String, MicrosoftFonts.Font> msFontsFilenames;
-	private static HashMap<String, String> filenamesToMsFontNames;
-	public final static Map<String, MicrosoftFonts.Font> getMsFontsFilenames() {
-		return msFontsFilenames;
-	}		
-	
-	/**
-	 * Get Microsoft fonts
-	 * docx4all - all platforms - to populate font dropdown list */	
-	private final static void setupMicrosoftFontFilenames() throws Exception {
-				
-		msFontsFilenames = new HashMap<String, MicrosoftFonts.Font>();
-		filenamesToMsFontNames = new HashMap<String, String>();
-
-		JAXBContext msFontsContext = JAXBContext.newInstance("org.docx4j.fonts.microsoft");		
-		Unmarshaller u = msFontsContext.createUnmarshaller();		
-		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-		log.info("unmarshalling fonts.microsoft \n\n" );									
-		// Get the xml file
-		java.io.InputStream is = null;
-		// Works in Eclipse - note absence of leading '/'
-		is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/fonts/microsoft/MicrosoftFonts.xml");
-					
-		org.docx4j.fonts.microsoft.MicrosoftFonts msFonts = (org.docx4j.fonts.microsoft.MicrosoftFonts)u.unmarshal( is );
-		
-		List<MicrosoftFonts.Font> msFontsList = msFonts.getFont();
-		
-		for (MicrosoftFonts.Font font : msFontsList ) {			
-			msFontsFilenames.put( (font.getName()), font); // 20080318 - normalised
-			//log.debug( "put msFontsFilenames: " + normalise(font.getName()) );
-			
-			filenamesToMsFontNames.put( font.getFilename().toLowerCase() , font.getName());
-//			log.debug( "put msFontsFilenames: " + font.getName() );
-			
-			if (font.getBold()!=null) {
-				filenamesToMsFontNames.put( font.getBold().getFilename().toLowerCase(), font.getName()+SEPARATOR+Mapper.BOLD);
-//				log.debug( "put bold: " +  font.getName()+SEPARATOR+Substituter.BOLD );				
-			}
-			if (font.getItalic()!=null) {
-				filenamesToMsFontNames.put( font.getItalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Mapper.ITALIC);
-//				log.debug( "put italic: " + font.getName()+SEPARATOR+Substituter.ITALIC );				
-			}
-			if (font.getBolditalic() !=null) {
-				filenamesToMsFontNames.put( font.getBolditalic().getFilename().toLowerCase(), font.getName()+SEPARATOR+Mapper.BOLD_ITALIC);
-//				log.debug( "put bold italic: " + font.getName()+SEPARATOR+Substituter.BOLD_ITALIC );				
-			}
-			
-		}
-		
-	}
-	
- 
-	
-	
 	
 	/**
 	 * Populate the fontMappings object. We make an entry for each

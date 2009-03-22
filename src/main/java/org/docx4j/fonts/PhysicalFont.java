@@ -39,6 +39,9 @@ public class PhysicalFont {
 		this.embedFontInfo = embedFontInfo;
 		
     	setName(name);
+    	
+    	//familyName = embedFontInfo.
+    	
 //    	setName(fontInfo.getPostScriptName());
     	setEmbeddedFile(embedFontInfo.getEmbedFile());
     	setPanose(embedFontInfo.getPanose());		
@@ -58,7 +61,9 @@ public class PhysicalFont {
 		return embedFontInfo;
 	}
 	
-	// // For example: Times New Roman
+	// // For example: Times New Roman - note this is an array;
+	// FOP doesn't ordinarily include it in EmbedFontInfo,
+	// instead it makes a font triplet to represent it
 //	String familyName;
 //	public String getFamilyName() {
 //		return familyName;
