@@ -15,6 +15,8 @@ import org.apache.fop.fonts.FontTriplet;
 import org.apache.fop.fonts.autodetect.FontFileFinder;
 import org.apache.fop.fonts.autodetect.FontInfoFinder;
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 
 /**
@@ -293,6 +295,11 @@ public class PhysicalFonts {
 		log.debug(debug.toString() );
 	}
 
+	public static void main(String[] args) throws Exception {
+
+		discoverPhysicalFonts();
+		System.out.println("That should have listed your physical fonts (provided you have logging enabled).");
+	}
 	
 
 }
