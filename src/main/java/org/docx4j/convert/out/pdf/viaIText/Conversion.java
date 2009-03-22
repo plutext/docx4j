@@ -246,14 +246,31 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 							&& run.getRPr().getI() != null
 							&& run.getRPr().getI().isVal()) {
 						
-						font = new Font( baseFonts.get(documentFont + BOLD_ITALIC), fontSize  );
+						if ( baseFonts.get(documentFont + BOLD_ITALIC)!=null) {						
+							log.debug(documentFont + BOLD_ITALIC + " not found; falling back to " + documentFont);
+							font = new Font( baseFonts.get(documentFont + BOLD_ITALIC), fontSize  );
+						} else {
+							font = new Font( baseFonts.get(documentFont), fontSize  );							
+						}
 						
 					} else if (run.getRPr().getI() != null
 							&& run.getRPr().getI().isVal()) {
-						font = new Font( baseFonts.get(documentFont + ITALIC), fontSize  );
+						
+						if ( baseFonts.get(documentFont + ITALIC)!=null) {						
+							log.debug(documentFont + ITALIC + " not found; falling back to " + documentFont);
+							font = new Font( baseFonts.get(documentFont + ITALIC), fontSize  );
+						} else {
+							font = new Font( baseFonts.get(documentFont), fontSize  );							
+						}
 					} else if (run.getRPr().getB() != null
 							&& run.getRPr().getB().isVal()) {
-						font = new Font( baseFonts.get(documentFont + BOLD), fontSize  );
+						
+						if ( baseFonts.get(documentFont + BOLD)!=null) {						
+							log.debug(documentFont + BOLD + " not found; falling back to " + documentFont);
+							font = new Font( baseFonts.get(documentFont + BOLD), fontSize  );
+						} else {
+							font = new Font( baseFonts.get(documentFont), fontSize  );							
+						}
 					} else {
 						font = new Font( baseFonts.get(documentFont), fontSize  );						
 					}
