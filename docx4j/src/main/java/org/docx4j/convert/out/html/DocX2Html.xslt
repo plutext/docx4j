@@ -98,7 +98,7 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
 <xsl:param name="imageDirPath"/>
    
 <!-- Used in extension function for mapping fonts --> 		
-<xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
+<xsl:param name="fontMapper"/> <!-- select="'passed in'"-->	
 <xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->
 
 <xsl:param name="conditionalComments"/> <!-- select="'passed in'"-->
@@ -3761,25 +3761,25 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
 	<xsl:choose>
 		<xsl:when test="count(../w:b)=1 and count(../w:i)=1">
 			<xsl:variable name="targetFont" 
-				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+				select="java:org.docx4j.fonts.Mapper.getSubstituteFontXsltExtension($fontMapper, 
 							string($documentFont), 'BoldItalic', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';						
 		</xsl:when>
 		<xsl:when test="count(../w:b)=1">
 			<xsl:variable name="targetFont" 
-				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+				select="java:org.docx4j.fonts.Mapper.getSubstituteFontXsltExtension($fontMapper, 
 							string($documentFont), 'Bold', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';									
 		</xsl:when>
 		<xsl:when test="count(../w:i)=1">
 			<xsl:variable name="targetFont" 
-				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+				select="java:org.docx4j.fonts.Mapper.getSubstituteFontXsltExtension($fontMapper, 
 							string($documentFont), 'Italic', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';									
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:variable name="targetFont" 
-				select="java:org.docx4j.fonts.Substituter.getSubstituteFontXsltExtension($substituterInstance, 
+				select="java:org.docx4j.fonts.Mapper.getSubstituteFontXsltExtension($fontMapper, 
 							string($documentFont), '', boolean($fontFamilyStack))" />
 			font-family:'<xsl:value-of select="$targetFont"/>';			
 		</xsl:otherwise>		

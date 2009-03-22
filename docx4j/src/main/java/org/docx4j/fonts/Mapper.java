@@ -124,18 +124,19 @@ public abstract class Mapper {
 			log.error("passed null documentStyleId");
 			return "nullInputToExtension";
 		}
+
 		
-		if (this instanceof IdentityPlusMapper) {	
+		PhysicalFont physicalFont = (PhysicalFont)fontMappings.get((documentStyleId));
+		if (physicalFont!=null) {
 			
-			if (documentStyleId.equals("")) {
-				return "EMPTY";
-			}
+			log.debug("Mapping " + documentStyleId + " to " + physicalFont.getName());
+			return physicalFont.getName();
 			
-			return documentStyleId;
 		}
 		
+		
 		// Try with bold italic modifier		
-		PhysicalFont physicalFont = (PhysicalFont)fontMappings.get((documentStyleId + bolditalic));
+		physicalFont = (PhysicalFont)fontMappings.get((documentStyleId + bolditalic));
 
 		if (physicalFont==null) {
 			log.error("no mapping for:" + (documentStyleId + SEPARATOR + bolditalic));
