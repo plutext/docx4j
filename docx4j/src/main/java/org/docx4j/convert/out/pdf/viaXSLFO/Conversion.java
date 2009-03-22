@@ -420,7 +420,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					
 					if (font==null) {
 						log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
-						font="Times New Roman";
+						font=Mapper.FONT_FALLBACK;
 					}
 					
 					log.info("Font: " + font);

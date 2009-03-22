@@ -340,51 +340,51 @@ public class BestMatchingMapper extends Mapper {
 					}
 				} 
 					
-				// However we found our match for the normal form of
-				// this document font, we still need to do
-				// bold, italic, and bolditalic?
-
-				MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(documentFontName);
-				
-				if (msFont==null) {
-					log.warn("Font not found in MicrosoftFonts.xml");
-					continue; 
-				} 
-				
-				PhysicalFont fmTmp;
-				
-				org.apache.fop.fonts.Panose seekingPanose = null; 
-				if (msFont.getBold()!=null) {
-					log.debug("this font has a bold form");
-					seekingPanose = documentFontPanose.getBold();
-					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose); 					
-					if (fmTmp!=null) {
-						fontMappings.put(documentFontName+BOLD, fmTmp);
-					}
-				} 
-				
-				fmTmp = null;
-				seekingPanose = null; 
-				if (msFont.getItalic()!=null) {
-					log.debug("this font has an italic form");
-					seekingPanose = documentFontPanose.getItalic();
-					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose);
-					if (fmTmp!=null) {
-						fontMappings.put(documentFontName+ITALIC, fmTmp);
-					}						
-				} 
-				
-				fmTmp = null;
-				seekingPanose = null; 
-				if (msFont.getBolditalic()!=null) {
-					log.debug("this font has a bold italic form");												
-					seekingPanose = documentFontPanose.getBold();
-					seekingPanose = seekingPanose.getItalic();
-					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose);
-					if (fmTmp!=null) {
-						fontMappings.put(documentFontName+BOLD_ITALIC, fmTmp);
-					}						
-				}
+//				// However we found our match for the normal form of
+//				// this document font, we still need to do
+//				// bold, italic, and bolditalic?
+//
+//				MicrosoftFonts.Font msFont = (MicrosoftFonts.Font)msFontsFilenames.get(documentFontName);
+//				
+//				if (msFont==null) {
+//					log.warn("Font not found in MicrosoftFonts.xml");
+//					continue; 
+//				} 
+//				
+////				PhysicalFont fmTmp;
+////				
+//				org.apache.fop.fonts.Panose seekingPanose = null; 
+//				if (msFont.getBold()!=null) {
+//					log.debug("this font has a bold form");
+//					seekingPanose = documentFontPanose.getBold();
+//					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose); 					
+//					if (fmTmp!=null) {
+//						fontMappings.put(documentFontName+BOLD, fmTmp);
+//					}
+//				} 
+//				
+//				fmTmp = null;
+//				seekingPanose = null; 
+//				if (msFont.getItalic()!=null) {
+//					log.debug("this font has an italic form");
+//					seekingPanose = documentFontPanose.getItalic();
+//					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose);
+//					if (fmTmp!=null) {
+//						fontMappings.put(documentFontName+ITALIC, fmTmp);
+//					}						
+//				} 
+//				
+//				fmTmp = null;
+//				seekingPanose = null; 
+//				if (msFont.getBolditalic()!=null) {
+//					log.debug("this font has a bold italic form");												
+//					seekingPanose = documentFontPanose.getBold();
+//					seekingPanose = seekingPanose.getItalic();
+//					fmTmp = getAssociatedPhysicalFont(documentFontName, panoseKey, seekingPanose);
+//					if (fmTmp!=null) {
+//						fontMappings.put(documentFontName+BOLD_ITALIC, fmTmp);
+//					}						
+//				}
 				
 				continue; // we're done with this document font
 				
