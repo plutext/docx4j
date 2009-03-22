@@ -129,6 +129,20 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		
 	}
 	
+	Configuration fopConfig;
+	/**
+	 * User can set their own fop configuration if they
+	 * wish, in which can it is their responsibility
+	 * to include the fonts the font mapper is using.
+	 * (If this method is not used, an appropriate
+	 *  configuration will be generated automatically)
+	 * @param fopConfig
+	 */
+	public void setFopConfig(Configuration fopConfig) {
+		this.fopConfig = fopConfig;
+	}
+	
+	
 	/** Create a pdf version of the document, using XSL FO. 
 	 * 
 	 * @param os
@@ -143,30 +157,39 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     	try {
                 
-    	  DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>" +
-	  		"<renderers><renderer mime=\"application/pdf\">" +
-	  		"<fonts>" + declareFonts() +  
-	  		//<directory>/home/dev/fonts</directory>" +
-	  		//"<directory>/usr/share/fonts/truetype/ttf-lucida</directory>" +
-	  		//"<directory>/var/lib/defoma/fontconfig.d/D</directory>" +
-	  		//"<directory>/var/lib/defoma/fontconfig.d/L</directory>" +
-//	  		"<auto-detect/>" +
-	  		"</fonts></renderer></renderers></fop>";
-    	  
-    	  log.debug("Using config: " + myConfig);
-    			  
-    	  	// See FOP's PrintRendererConfigurator
-//    	  String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>" +
-//	  		"<renderers><renderer mime=\"application/pdf\">" +
-//	  		"<fonts><directory recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
-//	  		"<auto-detect/>" +
-//	  		"</fonts></renderer></renderers></fop>";
-    	  
-    	  
-    	  Configuration cfg = cfgBuilder.build(
-    			  new ByteArrayInputStream(myConfig.getBytes()) );
-    	  fopFactory.setUserConfig(cfg);
+    		if (fopConfig == null) {
+    			
+				DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
+				String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>"
+						+ "<renderers><renderer mime=\"application/pdf\">"
+						+ "<fonts>" + declareFonts() +
+						// <directory>/home/dev/fonts</directory>" +
+						// "<directory>/usr/share/fonts/truetype/ttf-lucida</directory>"
+						// +
+						// "<directory>/var/lib/defoma/fontconfig.d/D</directory>"
+						// +
+						// "<directory>/var/lib/defoma/fontconfig.d/L</directory>"
+						// +
+						// "<auto-detect/>" +
+						"</fonts></renderer></renderers></fop>";
+
+				log.debug("Using config: " + myConfig);
+
+				// See FOP's PrintRendererConfigurator
+				// String myConfig = "<fop
+				// version=\"1.0\"><strict-configuration>true</strict-configuration>"
+				// +
+				// "<renderers><renderer mime=\"application/pdf\">" +
+				// "<fonts><directory
+				// recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
+				// "<auto-detect/>" +
+				// "</fonts></renderer></renderers></fop>";
+
+				fopConfig = cfgBuilder.build(new ByteArrayInputStream(myConfig
+						.getBytes()));
+			}
+    		
+    	  fopFactory.setUserConfig(fopConfig);
     	  
     	  Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
     	  
@@ -511,6 +534,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 //                    break;
             }
         }
+
     	
     }
     
