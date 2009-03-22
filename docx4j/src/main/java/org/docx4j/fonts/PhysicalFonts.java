@@ -15,6 +15,8 @@ import org.apache.fop.fonts.FontTriplet;
 import org.apache.fop.fonts.autodetect.FontFileFinder;
 import org.apache.fop.fonts.autodetect.FontInfoFinder;
 import org.apache.log4j.Logger;
+import org.docx4j.fonts.microsoft.MicrosoftFonts;
+import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
@@ -41,6 +43,9 @@ public class PhysicalFonts {
 		return physicalFontMap;
 	}
 
+	private final static Map<String, PhysicalFont> physicalFontMapByFilenameLowercase;
+	
+	
 	//	private final static Map<String, PhysicalFontFamily> physicalFontFamiliesMap;
 //	int lastSeenNumberOfPhysicalFonts = 0;
 //	
@@ -65,10 +70,10 @@ public class PhysicalFonts {
 	            fontCache = new FontCache();
 	        }			
 			
-			// Map of all physical fonts (normalised names) to file paths
-	        // We'll use panose first to see which of these is the best
-	        // substitute, then failing that, the explicit substitutions
 			physicalFontMap = new HashMap<String, PhysicalFont>();
+			physicalFontMapByFilenameLowercase 
+							= new HashMap<String, PhysicalFont>();
+			
 //			physicalFontFamiliesMap = new HashMap<String, PhysicalFontFamily>();
 			
 			fontResolver = FontSetup.createMinimalFontResolver();
@@ -275,7 +280,13 @@ public class PhysicalFonts {
 		        	
 		        	// Add it to the map
 		        	physicalFontMap.put(pf.getName(), pf);
-		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());                	
+		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());
+		    		
+		    		// We also need to add it to map by filename
+		    		String filename = pf.getEmbeddedFile();
+		    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
+		    		physicalFontMapByFilenameLowercase.put(filename, pf);
+		    		log.debug("added to filename map: " + filename);
 		        	
 //		        	String familyName = triplet.getName();
 //		        	pf.setFamilyName(familyName);
@@ -293,6 +304,76 @@ public class PhysicalFonts {
 			}            	
 		
 		log.debug(debug.toString() );
+	}
+	
+	public static PhysicalFont getBoldForm( PhysicalFont pf) {
+		
+		// look up the font in MicrosoftFontsRegistry
+		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
+		
+		if (msFont==null) {
+			log.warn("No entry in MicrosoftFontsRegistry for: " + pf.getName());
+			return null;
+		}
+		
+		if (msFont.getBold()==null) {
+			log.info("No bold form for: " + pf.getName());
+			return null;
+		} else {
+			
+			// We have to go via the file name, grrr..
+			// since MicrosoftFonts.xml doesn't give the associate font name
+			String filename = msFont.getBold().getFilename().toLowerCase();
+			log.debug("Fetching: " + filename);
+			return physicalFontMapByFilenameLowercase.get(filename);
+		}		
+	}
+	
+	public static PhysicalFont getBoldItalicForm( PhysicalFont pf) {
+		
+		// look up the font in MicrosoftFontsRegistry
+		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
+		
+		if (msFont==null) {
+			log.warn("No entry in MicrosoftFontsRegistry for: " + pf.getName());
+			return null;
+		}
+		
+		if (msFont.getBolditalic()==null) {
+			log.info("No Bolditalic form for: " + pf.getName());
+			return null;
+		} else {
+			
+			// We have to go via the file name, grrr..
+			// since MicrosoftFonts.xml doesn't give the associate font name
+			String filename = msFont.getBolditalic().getFilename().toLowerCase();
+			log.debug("Fetching: " + filename);
+			return physicalFontMapByFilenameLowercase.get(filename);
+		}		
+	}
+	
+	public static PhysicalFont getItalicForm( PhysicalFont pf) {
+		
+		// look up the font in MicrosoftFontsRegistry
+		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
+		
+		if (msFont==null) {
+			log.warn("No entry in MicrosoftFontsRegistry for: " + pf.getName());
+			return null;
+		}
+		
+		if (msFont.getItalic()==null) {
+			log.info("No italic form for: " + pf.getName());
+			return null;
+		} else {
+			
+			// We have to go via the file name, grrr..
+			// since MicrosoftFonts.xml doesn't give the associate font name
+			String filename = msFont.getItalic().getFilename().toLowerCase();
+			log.debug("Fetching: " + filename);
+			return physicalFontMapByFilenameLowercase.get(filename);
+		}
+		
 	}
 
 	public static void main(String[] args) throws Exception {
