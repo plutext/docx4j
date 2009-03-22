@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 
 /**
  * Maps font names used in the document to 
@@ -69,25 +70,12 @@ public abstract class Mapper {
 	public Map<String, PhysicalFont> getFontMappings() {
 		return fontMappings;
 	}	
-		
-//	protected final static java.lang.CharSequence target;
-//	protected final static java.lang.CharSequence replacement;
-    
-    // iText style modifiers
-    // see core.lowagie.text.pdf.BaseFont
-    // iText prepends a "," but that's
-    // problematic in xhtmlrenderer
-    // (since font-family is a comma separated list.
-    public final static String BOLD   = "Bold";
-    public final static String ITALIC = "Italic";
-    public final static String BOLD_ITALIC = "BoldItalic";
-    
-    public final static String SEPARATOR = "#";
+	
+	public final static String FONT_FALLBACK = "Times New Roman"; 
+
 	
 	static {
 		fontMappings = Collections.synchronizedMap(new HashMap<String, PhysicalFont>());
-//		target = (new String(" ")).subSequence(0, 1);
-//		replacement = (new String("")).subSequence(0, 0);
 	}
 	
 	/**
@@ -100,13 +88,6 @@ public abstract class Mapper {
 	 */
 	public abstract void populateFontMappings(Map documentFontNames, 
 			org.docx4j.wml.Fonts wmlFonts ) throws Exception;
-	
-	
-	
-//	// Remove spaces and make lower case        
-//	public final static String normalise(String realName) {		
-//        return realName.replace(target, replacement).toLowerCase();
-//	}
 	
 	
 	// For Xalan
@@ -127,60 +108,42 @@ public abstract class Mapper {
 
 		
 		PhysicalFont physicalFont = (PhysicalFont)fontMappings.get((documentStyleId));
-		if (physicalFont!=null) {
+		if (physicalFont==null) {
+
+			log.error("No mapping for: " + documentStyleId);
+			return Mapper.FONT_FALLBACK;
+		} else {
 			
 			log.debug("Mapping " + documentStyleId + " to " + physicalFont.getName());
 			return physicalFont.getName();
 			
 		}
 		
-		
-		// Try with bold italic modifier		
-		physicalFont = (PhysicalFont)fontMappings.get((documentStyleId + bolditalic));
-
-		if (physicalFont==null) {
-			log.error("no mapping for:" + (documentStyleId + SEPARATOR + bolditalic));
-			
-			// try without  bold italic modifier
-			physicalFont = (PhysicalFont)fontMappings.get((documentStyleId));
-			
-			if (physicalFont==null) {
-				log.error("still no good:" + (documentStyleId));
-				return "noMappingFor" + (documentStyleId);
-			}
-		} else {
-			
-			documentStyleId = documentStyleId + bolditalic;
-			
-		}
-		
-		log.info(documentStyleId + " -> " + physicalFont.getName() );
-		
-		if (fontFamilyStack) {
-			
-			// TODO - if this is an HTML document intended
-			// for viewing in a web browser, we need to add a 
-			// font-family cascade (since the true type font
-			// specified for PDF purposes won't necessarily be
-			// present on web browser's system).
-			
-			// The easiest way to do it might be to just
-			// see whether the substitute font is serif or
-			// not, and add cascade entries accordingly.
-			
-			// If we matched it via FontSubstitutions.xml,
-			// maybe that file contains an HTML match as well?
-			
-			// Either way, this stuff should be worked out in
-			// populateFontMappings, and added to the 
-			// FontMapping objects.
-			
-//			return normalise(fontMapping.getPhysicalFont().getFamilyName());
-			return physicalFont.getName();
-		} else {
-//			return normalise(fontMapping.getPhysicalFont().getFamilyName());
-			return physicalFont.getName();
-		}
+//		log.info(documentStyleId + " -> " + physicalFont.getName() );
+//		
+//		if (fontFamilyStack) {
+//			
+//			// TODO - if this is an HTML document intended
+//			// for viewing in a web browser, we need to add a 
+//			// font-family cascade (since the true type font
+//			// specified for PDF purposes won't necessarily be
+//			// present on web browser's system).
+//			
+//			// The easiest way to do it might be to just
+//			// see whether the substitute font is serif or
+//			// not, and add cascade entries accordingly.
+//			
+//			// If we matched it via FontSubstitutions.xml,
+//			// maybe that file contains an HTML match as well?
+//			
+//			// Either way, this stuff should be worked out in
+//			// populateFontMappings, and added to the 
+//			// FontMapping objects.
+//			
+//			return physicalFont.getName();
+//		} else {
+//			return physicalFont.getName();
+//		}
 		
 		/*
 		 * We want to return eg "Times New Roman" 

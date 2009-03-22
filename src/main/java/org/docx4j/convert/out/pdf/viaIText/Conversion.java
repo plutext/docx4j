@@ -3,18 +3,27 @@ package org.docx4j.convert.out.pdf.viaIText;
 import java.awt.Dimension;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
 
+import org.apache.fop.fonts.FontTriplet;
+import org.docx4j.XmlUtils;
 import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.Drawing;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
+import org.w3c.dom.Element;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
@@ -22,6 +31,7 @@ import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
 import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
@@ -30,7 +40,16 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		super(wordMLPackage);
 	}
 		
+    // iText style modifiers
+    // see core.lowagie.text.pdf.BaseFont
+    public final static String BOLD   = ",Bold";
+    public final static String ITALIC = ",Italic";
+    public final static String BOLD_ITALIC = ",BoldItalic";
 
+    public final static int DEFAULT_FONT_SIZE=11;
+
+	Map<String, BaseFont> baseFonts = new HashMap<String, BaseFont>();
+    
 	/** Create a pdf version of the document, using XSL FO. 
 	 * 
 	 * @param os
@@ -45,6 +64,55 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     		
     		PdfWriter.getInstance(pdfDoc, os);
     		pdfDoc.open();
+    		
+    		// Set up fonts
+    		Map fontsInUse = wordMLPackage.getMainDocumentPart().fontsInUse();
+    		Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
+    		while (fontMappingsIterator.hasNext()) {
+    		    Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
+    		    if(pairs.getKey()==null) {
+    		    	log.info("Skipped null key");
+    		    	pairs = (Map.Entry)fontMappingsIterator.next();
+    		    }
+    		    
+    		    String fontName = (String)pairs.getKey();		    
+    		    
+    		    PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
+    		    
+    		    if (pf==null) {
+    		    	log.error("Document font " + fontName + " is not mapped to a physical font!");
+    		    	continue;
+    		    }
+
+    		    BaseFont bf = BaseFont.createFont(pf.getEmbeddedFile(),
+    		    		BaseFont.IDENTITY_H, 
+						BaseFont.NOT_EMBEDDED);
+    		    baseFonts.put(fontName, bf);
+    		    
+    		    // bold, italic etc
+    		    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
+    		    if (pfVariation!=null) {
+        		    bf = BaseFont.createFont(pfVariation.getEmbeddedFile(),
+        		    		BaseFont.IDENTITY_H, 
+    						BaseFont.NOT_EMBEDDED);
+        		    baseFonts.put(fontName+BOLD, bf);
+    		    }
+    		    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
+    		    if (pfVariation!=null) {
+        		    bf = BaseFont.createFont(pfVariation.getEmbeddedFile(),
+        		    		BaseFont.IDENTITY_H, 
+    						BaseFont.NOT_EMBEDDED);
+        		    baseFonts.put(fontName+BOLD_ITALIC, bf);
+    		    }
+    		    pfVariation = PhysicalFonts.getItalicForm(pf);
+    		    if (pfVariation!=null) {
+        		    bf = BaseFont.createFont(pfVariation.getEmbeddedFile(),
+        		    		BaseFont.IDENTITY_H, 
+    						BaseFont.NOT_EMBEDDED);
+        		    baseFonts.put(fontName+ITALIC, bf);
+    		    }    			    
+    		}
+    		
     		
     		org.docx4j.wml.Document wmlDocumentEl 
     			= (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
@@ -136,35 +204,60 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 			if (o instanceof org.docx4j.wml.R) {
 
+				Font font = null;					
 				org.docx4j.wml.R run = (org.docx4j.wml.R) o;
-
-				Font font = null;
-				int fontSize;
-
 				if (run.getRPr() != null) {
 
-					// TODO - follow style
-
-					font = new Font(Font.TIMES_ROMAN); // TODO - FIXME
-
+					// TODO - follow inheritance
+					
+					Font iTextFont = null;
+					
+					RPr rPr = run.getRPr();
+					RFonts rFonts = rPr.getRFonts();
+					String documentFont = Mapper.FONT_FALLBACK; 
+					if (rFonts !=null ) {
+						
+						documentFont = rFonts.getAscii();
+						
+						if (documentFont==null) {
+							// TODO - actually what Word does in this case
+							// is inherit the default document font eg Calibri
+							// (which is what it shows in its user interface)
+							documentFont = rFonts.getCs();
+						}
+						
+						if (documentFont==null) {
+							log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
+							documentFont=Mapper.FONT_FALLBACK;
+						}
+						
+						log.info("Font: " + documentFont);
+						
+					}
+					
+					int fontSize = DEFAULT_FONT_SIZE;
 					if (run.getRPr().getSz() != null) {
 						org.docx4j.wml.HpsMeasure hps = run.getRPr().getSz();
-						font.setSize(hps.getVal().intValue() / 2);
-					}
+						fontSize = hps.getVal().intValue() / 2;
+					} 
 
 					if (run.getRPr().getB() != null
 							&& run.getRPr().getB().isVal()
 							&& run.getRPr().getI() != null
 							&& run.getRPr().getI().isVal()) {
-						font.setStyle(Font.BOLDITALIC);
+						
+						font = new Font( baseFonts.get(documentFont + BOLD_ITALIC), fontSize  );
+						
 					} else if (run.getRPr().getI() != null
 							&& run.getRPr().getI().isVal()) {
-						font.setStyle(Font.ITALIC);
+						font = new Font( baseFonts.get(documentFont + ITALIC), fontSize  );
 					} else if (run.getRPr().getB() != null
 							&& run.getRPr().getB().isVal()) {
-						font.setStyle(Font.BOLD);
+						font = new Font( baseFonts.get(documentFont + BOLD), fontSize  );
+					} else {
+						font = new Font( baseFonts.get(documentFont), fontSize  );						
 					}
-
+					
 				}
 
 				List<Object> runContent = run.getRunContent();

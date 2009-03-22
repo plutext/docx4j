@@ -1,19 +1,11 @@
 package org.docx4j.convert.out.pdf;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.docx4j.convert.out.html.HtmlExporter;
-import org.docx4j.fonts.FontUtils;
-import org.docx4j.fonts.Mapper;
-import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-
-import com.lowagie.text.pdf.BaseFont;
 
 /**
  * There are 3 ways a package can be converted to PDF:
@@ -98,73 +90,5 @@ public abstract class PdfConversion  {
 //    }	
  	
 	
-	/**
-	 * Used by HTML and iText based PDF conversions
-	 * 
-	 * @param renderer
-	 * @param fontName
-	 * @param fm
-	 */
-	protected void embed(org.xhtmlrenderer.pdf.ITextRenderer renderer,
-			String fontName) {
-		
-		PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get( fontName );
-		
-		if (pf == null) {
-			log.warn("No mapping found for: " + fontName);
-		} else  {
-			try {
-				if (pf.getEmbeddedFile().endsWith(".pfb")) {
-					
-//						String afm = fm.getPhysicalFont().getEmbeddedFile().substring(5, fm.getPhysicalFont().getEmbeddedFile().length()-4 ) + ".afm";  // drop the 'file:'
-					String afm = FontUtils.pathFromURL(pf.getEmbeddedFile());
-					afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
-					log.info("Looking for: " + afm);
-					
-					// Given the check in substituter, we expect to find one or the other.
-					File f = new File(afm);
-			        if (f.exists()) {				
-			        	log.info("Got it");
-//			        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
-			        	renderer.getFontResolver().addFont(afm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(pf.getEmbeddedFile()));  // drop the 'file:'	
-						log.info("Substituting " + fontName + " with embedding " + pf.getName() + " from " + pf.getEmbeddedFile() );
-			        } else {
-			        	// Should we be doing afm first, or pfm?
-						String pfm = FontUtils.pathFromURL(pf.getEmbeddedFile());
-						pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
-						log.info("Looking for: " + pfm);
-						f = new File(pfm);
-				        if (f.exists()) {				
-				        	log.info("Got it");
-//				        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
-				        	renderer.getFontResolver().addFont(pfm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(pf.getEmbeddedFile() ));  // drop the 'file:'
-							log.info("Substituting " + fontName + " with embedding " + pf.getName() + " from " + pf.getEmbeddedFile() );
-				        } else {
-				        	// Shouldn't happen.
-				        	log.error("Couldn't find afm or pfm corresponding to " + pf.getEmbeddedFile());
-				        }
-			        }
-				} else {				
-//					renderer.getFontResolver().addFont(FontUtils.pathFromURL(pf.getEmbeddedFile()), true);
-					renderer.getFontResolver().addFont(FontUtils.pathFromURL(pf.getEmbeddedFile()), BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-					log.info("Substituting " + fontName + " with embedding " + pf.getName() + " from " + pf.getEmbeddedFile() );
-				}
-			} catch (java.io.IOException e) {
-			
-			/* 
-			 * [AWT-EventQueue-0] INFO  packages.WordprocessingMLPackage - Substituting symbol with standardsymbolsl from file:/usr/share/fonts/type1/gsfonts/s050000l.pfb 
-java.io.IOException: Unsupported font type
-at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:199)
 
-.pfb not supported, even with iText 2.0.8
-
-			 */
-				e.printStackTrace();
-				log.warn("Shouldn't happen - should have been detected upstream ... " +  e.getMessage() + ": " + pf.getEmbeddedFile()); 
-			} catch (Exception e) {
-				e.printStackTrace();
-				log.error("Shouldn't happen - should have been detected upstream ... " + e.getMessage()); 
-			}
-	}	
-	}
 }
