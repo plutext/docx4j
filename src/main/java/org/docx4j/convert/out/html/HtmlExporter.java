@@ -196,7 +196,7 @@ public class HtmlExporter implements Output {
 
 		
 
-		if (htmlSettings.getFontSubstituter()==null) {
+		if (htmlSettings.getFontMapper()==null) {
 			
 			if (wmlPackage.getFontMapper()==null) {
 				log.debug("Creating new Substituter.");
@@ -205,7 +205,7 @@ public class HtmlExporter implements Output {
 			} else {
 				log.debug("Using existing Substituter.");
 			}
-			htmlSettings.setFontSubstituter(wmlPackage.getFontMapper());
+			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
 		}
 		
 		htmlSettings.setWmlPackage(wmlPackage);
@@ -697,12 +697,12 @@ public class HtmlExporter implements Output {
 		}
 		
 		
-		Mapper fontSubstituter = null;		
-		public void setFontSubstituter(Mapper fontSubstituter) {
-			this.fontSubstituter = fontSubstituter;
+		Mapper fontMapper = null;		
+		public void setFontMapper(Mapper fontMapper) {
+			this.fontMapper = fontMapper;
 		}
-		public Mapper getFontSubstituter() {
-			return fontSubstituter;
+		public Mapper getFontMapper() {
+			return fontMapper;
 		}
 		
 		// If this is set to something, images in
@@ -727,7 +727,7 @@ public class HtmlExporter implements Output {
 //			settings.put("docxWikiSdtID", docxWikiSdtID);
 //			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
 			settings.put("docID", docID);
-			settings.put("substituterInstance", fontSubstituter);
+			settings.put("fontMapper", fontMapper);
 			settings.put("imageDirPath", imageDirPath);
 			settings.put("conditionalComments", conditionalComments);
 			
