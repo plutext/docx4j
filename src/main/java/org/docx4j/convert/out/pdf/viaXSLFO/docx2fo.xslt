@@ -222,7 +222,7 @@
         NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>
       </fo:block>  
   </xsl:template>
-  
+
   <xsl:template match="w:br[@w:type = 'page']">
   	<fo:block break-before="page"/>
   </xsl:template>

@@ -20,7 +20,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.pdf.PdfConversion;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -42,12 +41,9 @@ import org.w3c.dom.traversal.NodeIterator;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
-import org.apache.fop.apps.FOPException;
-import org.apache.fop.apps.FOUserAgent;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
-import org.apache.fop.fo.FOEventHandler;
 import org.apache.fop.fonts.FontTriplet;
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
@@ -73,9 +69,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		}
 	}
 	
-	// TODO resolve WARN  [fop.apps.FOUserAgent] Glyph "Č" (0x10c, Ccaron) 
-	// not available in font "Helvetica".
-
 
 	/**
 	 * Create a FOP font configuration for each font used in the
@@ -200,40 +193,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	      	  // Resulting SAX events (the generated FO) must be piped through to FOP
 	      	  Result result = new SAXResult(fop.getDefaultHandler());
 	    	  
-	      	  log.info(System.getProperty("os.name"));
-	      	  
-	  		if (System.getProperty("os.name").toLowerCase().indexOf("windows")>-1) {
-		      	/* On Windows, I'm getting 
-		      	 * 
-		      	21.03.2009 22:31:45 *ERROR* FOTreeBuilder: javax.xml.transform.TransformerException: java.lang.ArrayIndexOutOfBoundsException: 273 (FOTreeBuilder.java, line 201)
-		      	Saved C:\Documents and Settings\Jason Harrop\My Documents\Downloads\AUMS.docx.pdf
-		      	SystemId Unknown; Line #163; Column #-1; java.lang.ArrayIndexOutOfBoundsException: 273
-		      	
-		      	It doesn't seem to matter whether we're using Xerces or Crimson though.
-				  		
-		  		So on Windows, do 2 transforms :-(
-		  		
-		  		Which doesn't fix the problem, but show it to be:
-		  		 
-				 java.lang.ArrayIndexOutOfBoundsException: 273
-				       at org.apache.fop.fo.StaticPropertyList.get(StaticPropertyList.java:70)
-				       at org.apache.fop.fo.PropertyList.get(PropertyList.java:155)
-				       at org.apache.fop.fo.flow.Block.bind(Block.java:133)
-				       at org.apache.fop.fo.FObj.processNode(FObj.java:123)
-				       at org.apache.fop.fo.FOTreeBuilder$MainFOHandler.startElement(FOTreeBuilder.java:282)
-				       at org.apache.fop.fo.FOTreeBuilder.startElement(FOTreeBuilder.java:171)
-				       at org.apache.xalan.transformer.TransformerIdentityImpl.startElement(TransformerIdentityImpl.java:1072)
-				       at com.bluecast.xml.Piccolo.reportStartTag(Piccolo.java:1082)
-				       at com.bluecast.xml.PiccoloLexer.parseOpenTagNS(PiccoloLexer.java:1471)
-				       at com.bluecast.xml.PiccoloLexer.parseTagNS(PiccoloLexer.java:1360)
-				       at com.bluecast.xml.PiccoloLexer.parseXMLNS(PiccoloLexer.java:1291)
-				       at com.bluecast.xml.PiccoloLexer.parseXML(PiccoloLexer.java:1259)
-				       at com.bluecast.xml.PiccoloLexer.yylex(PiccoloLexer.java:4716)
-				       at com.bluecast.xml.Piccolo.yylex(Piccolo.java:1290)
-				       at com.bluecast.xml.Piccolo.yyparse(Piccolo.java:1400)
-				       at com.bluecast.xml.Piccolo.parse(Piccolo.java:714)
-				       at org.apache.xalan.transformer.TransformerIdentityImpl.transform(TransformerIdentityImpl.java:484)		  		 
-		      	 */
+	  		if (log.isDebugEnabled()) {
 
 	  			ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
 	  			Result intermediateResult =  new StreamResult( intermediate );
@@ -241,7 +201,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	  			XmlUtils.transform(domDoc, xslt, settings, intermediateResult);
 	  			
 	  			String fo = intermediate.toString("UTF-8");
-	  			log.info(fo);
+	  			log.debug(fo);
 	  			
 	  			Source src = new StreamSource(new StringReader(fo));
 		    	
@@ -249,9 +209,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	  			transformer.transform(src, result);
 	  		} else {
 	      	   
-	      	  // Uncomment this line to see the generated formatting objects
-//	    		Result result =
-//	  			new javax.xml.transform.stream.StreamResult(System.out);		
 	    	  XmlUtils.transform(domDoc, xslt, settings, result);
 	  			
 	  		}
@@ -280,9 +237,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	// which implements org.w3c.dom.traversal.NodeIterator
 
     	
-    	log.info("style '" + pStyleVal );    	
-    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
-    	log.info("childResults:" + childResults.getClass().getName() ); 
+    	if (pStyleVal!=null && !pStyleVal.equals("")) {
+        	log.info("style '" + pStyleVal );     		
+    	}
+//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
+//    	log.info("childResults:" + childResults.getClass().getName() ); 
     	
     	
         try {
@@ -307,7 +266,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
 			
-			log.info("Document: " + document.getClass().getName() );
+			//log.info("Document: " + document.getClass().getName() );
 
 			Node foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");			
 			document.appendChild(foBlockElement);
@@ -317,6 +276,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				foBlockElement.appendChild(err);
 				
 			} else {
+				
+				if (log.isDebugEnabled()) {					
+					log.debug(XmlUtils.marshaltoString(pPr, true, true));					
+				}				
 			       
 				if ( pPr.getJc()!=null) {				
 					((Element)foBlockElement).setAttribute("text-align", 
@@ -371,8 +334,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	// which implements org.w3c.dom.traversal.NodeIterator
 
     	
-    	log.info("pPrNode:" + rPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
-    	log.info("childResults:" + childResults.getClass().getName() ); 
+//    	log.info("rPrNode:" + rPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
+//    	log.info("childResults:" + childResults.getClass().getName() ); 
     	
     	
         try {
@@ -397,7 +360,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
 			
-			log.info("Document: " + document.getClass().getName() );
+			//log.info("Document: " + document.getClass().getName() );
 
 			Node foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");			
 			document.appendChild(foBlockElement);
@@ -408,15 +371,37 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				
 			} else {
 				
+				if (log.isDebugEnabled()) {					
+					log.debug(XmlUtils.marshaltoString(rPr, true, true));					
+				}
+				
 				RFonts rFonts = rPr.getRFonts();
 				if (rFonts !=null ) {
 					
 					String font = rFonts.getAscii();
-					log.debug("Font: " + font);
-					((Element)foBlockElement).setAttribute("font-family", 
-							font );
+					
+					if (font==null) {
+						// TODO - actually what Word does in this case
+						// is inherit the default document font eg Calibri
+						// (which is what it shows in its user interface)
+						font = rFonts.getCs();
+					}
+					
+					if (font==null) {
+						log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
+						font="Times New Roman";
+					}
+					
+					log.info("Font: " + font);
+					
+					PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
+					if (pf!=null) {					
+						((Element)foBlockElement).setAttribute("font-family", 
+							 pf.getName() );
+					} else {
+						log.error("No mapping from " + font);
+					}
 				}
-				
 			    
 				// bold
 				
