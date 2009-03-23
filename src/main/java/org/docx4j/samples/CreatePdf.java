@@ -63,9 +63,6 @@ public class CreatePdf {
 				 * you view with Acrobat Reader .. it
 				 * seems to overwhelm pdfviewer, which
 				 * is weird, since viaIText works in both).
-				 * 
-				 * viaHTML seems to lose a lot of fonts 
-				 * 
 				 */
 				
 				 wordMLPackage = new WordprocessingMLPackage();
