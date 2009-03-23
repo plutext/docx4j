@@ -134,8 +134,10 @@ public class MainDocumentPart extends DocumentPart  {
     	// inspect these for fonts
     	Map stylesInUse = new java.util.HashMap();
 
-		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();
-		
+		org.docx4j.wml.Styles styles = null;
+		if (this.getStyleDefinitionsPart()!=null) {
+			styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();			
+		}
 		// It is convenient to have a HashMap of styles
 		Map stylesDefined = new java.util.HashMap();
 		if (styles!=null) {
@@ -192,7 +194,10 @@ public class MainDocumentPart extends DocumentPart  {
 		//	   (there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
 		//	   in this case Calibri and Cambria)
 		// 3.2 if there is no rFonts element, default to Times New Roman.
-		org.docx4j.wml.Styles styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();
+		org.docx4j.wml.Styles styles = null;
+		if (styleDefinitionsPart!=null) {
+			styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();			
+		}
 		
 		if (styles==null) {
 			log.info("No styles - default to Times New Roman");

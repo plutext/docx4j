@@ -107,15 +107,52 @@ public abstract class Mapper {
 		}
 
 		
+		
 		PhysicalFont physicalFont = (PhysicalFont)fontMappings.get((documentStyleId));
 		if (physicalFont==null) {
 
 			log.error("No mapping for: " + documentStyleId);
 			return Mapper.FONT_FALLBACK;
 		} else {
+
+			// iTextFontResolver wants a font family name
+			// Until such time as we get this from FOP,
+			// use the following heuristic..
 			
+			String fontFamily = physicalFont.getName();
+			
+			if (fontFamily.startsWith("Britannic")) { // special case
+				return fontFamily;
+			}
+			if (fontFamily.endsWith(" Demibold" ) ) {
+				fontFamily = fontFamily.substring(0, fontFamily.length() - 9);
+			}
+			if (fontFamily.endsWith(" Oblique" ) ) {
+				fontFamily = fontFamily.substring(0, fontFamily.length() - 8);
+			}
+			if (fontFamily.endsWith(" Italic" ) ) {
+				fontFamily = fontFamily.substring(0, fontFamily.length() - 7);
+			}
+			if (fontFamily.endsWith(" Bold" ) ) {
+				fontFamily = fontFamily.substring(0, fontFamily.length() - 5);
+			}
+			// NB, in that order, it handles " Bold Italic" and "Bold Oblique" as well.
 			log.debug("Mapping " + documentStyleId + " to " + physicalFont.getName());
-			return physicalFont.getName();
+			
+			/* On my Windows box, the following are passed
+			 * to ITextFontResolver, but still not found in its
+			 * _fontFamilies map:
+			 * 
+			 *      DejaVu Sans ExtraLight
+			 *      Lucida Sans Demibold
+			 *      Lucida Sans Regular
+			 *      Lucida Bright Demibold
+			 *      Lucida Sans Demibold Roman
+			 *      Lucida Fax Regular
+			 *      Lucida Fax Demibold
+			 */
+			
+			return fontFamily;
 			
 		}
 		

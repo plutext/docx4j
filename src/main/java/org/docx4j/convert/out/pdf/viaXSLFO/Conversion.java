@@ -316,7 +316,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					((Element)foBlockElement).setAttribute("text-align", 
 							pPr.getJc().getVal().value() );
 				}
-				// TODO - other pPr props.
+				// TODO - other pPr props, including rPr.
 				
 				// Our fo:block wraps whatever result tree fragment
 				// our style sheet produced when it applied-templates
@@ -384,7 +384,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			try {
 				rPr =  (RPr)jaxb;
 			} catch (ClassCastException e) {
-		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
+		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
 			}        	
         	
             // Create a DOM builder and parse the fragment
