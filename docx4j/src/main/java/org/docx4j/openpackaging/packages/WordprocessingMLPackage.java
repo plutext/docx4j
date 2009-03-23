@@ -35,6 +35,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.xmlPackage.XmlPackage;
+import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
@@ -256,23 +257,29 @@ public class WordprocessingMLPackage extends Package {
     	if (fm == null) {
     		throw new IllegalArgumentException("Font Substituter cannot be null.");
     	}
+		fontMapper = fm;
+		org.docx4j.wml.Fonts fonts = null;
+
 		// 1.  Get a list of all the fonts in the document
 		java.util.Map fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
-		// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
-		//     - do this in a general way, since docx4all needs this as well to display fonts		
-		fontMapper = fm;
-		org.docx4j.wml.Fonts fonts = null;
-		FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();	
-		
-		if (fontTablePart==null) {
-			log.warn("FontTable missing; creating default part.");
-			fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
-			fontTablePart.unmarshalDefaultFonts();
-			fontTablePart.processEmbeddings();
+		if ( fm instanceof BestMatchingMapper ) {
+			
+			
+			// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
+			//     - do this in a general way, since docx4all needs this as well to display fonts		
+			FontTablePart fontTablePart= this.getMainDocumentPart().getFontTablePart();	
+			
+			if (fontTablePart==null) {
+				log.warn("FontTable missing; creating default part.");
+				fontTablePart= new org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart();
+				fontTablePart.unmarshalDefaultFonts();
+				fontTablePart.processEmbeddings();
+			}
+			
+			fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
 		}
 		
-		fonts = (org.docx4j.wml.Fonts)fontTablePart.getJaxbElement();
 		fontMapper.populateFontMappings(fontsInUse, fonts);    	
     	
     }

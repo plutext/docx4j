@@ -3747,12 +3747,8 @@ Exception in thread "main" javax.xml.transform.TransformerConfigurationException
 	
 <xsl:template match="w:rFonts" mode="rpr">
 	
-	<!-- xhtml renderer probably is smart enough to convert <b> into a bold font?
-		
-		 But what if we don't have the corresponding bold font on the system?
-		
-		 Substituter will substitute something else.  This logic ensures that can happen.
-		
+	<!-- xhtml renderer is smart enough to convert font-weight=bold 
+				
 		 But it assumes the single rPr element contains both the font and the b or i. This isn't
 		 good enough ... but eventually we'll replace this stylesheet with writing
 		 PDF using iText directly. -->

@@ -21,10 +21,19 @@
 package org.docx4j.samples;
 
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
+import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 public class CreatePdf {
 	    
@@ -33,15 +42,48 @@ public class CreatePdf {
 
 	    	boolean save = true;
 	    	
-			String inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";
+	    	String inputfilepath = null;
 	    	
-//			String inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
-//			String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-//			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
-//			String inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
+//			 inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";	    	
+//			 inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
+//			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
+//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
+//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\Downloads\\AUMS-easy.docx";
+//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\font-bolditalic.docx";
 
-			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-
+			WordprocessingMLPackage wordMLPackage;
+			if (inputfilepath==null) {
+				
+				// If this is to be saved..
+				inputfilepath = System.getProperty("user.dir") + "/tmp/output";
+				/*
+				 * NB, this currently works nicely with
+				 * viaIText, and viaXSLFO (provided
+				 * you view with Acrobat Reader .. it
+				 * seems to overwhelm pdfviewer, which
+				 * is weird, since viaIText works in both).
+				 * 
+				 * viaHTML seems to lose a lot of fonts 
+				 * 
+				 */
+				
+				 wordMLPackage = new WordprocessingMLPackage();
+				MainDocumentPart wordDocumentPart = new MainDocumentPart();		
+				wordMLPackage.addTargetPart(wordDocumentPart);
+				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+				org.docx4j.wml.Body  body = factory.createBody();
+				org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
+				wmlDocumentEl.setBody(body);
+						
+				// Put the content in the part
+				((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)wordDocumentPart).setJaxbElement(wmlDocumentEl);
+	
+				createContent(wordDocumentPart);	
+			} else {
+				wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+			}
+			// Need document content first..
 			wordMLPackage.setFontMapper(new IdentityPlusMapper());
 			
 			/* Choose which of the three methods you want to use...
@@ -53,16 +95,19 @@ public class CreatePdf {
 			 * .. viaXSLFO uses docx2fo.xslt and FOP.  It is
 			 *    rudimentary right now, but should be
 			 *    easy enough to extend to include a basic
-			 *    feature set
+			 *    feature set 
 			 *    
 			 * .. viaItext - for developers who don't like xslt
 			 *    at all! Or want to use iText's features..
 			 *    Displays images, but as at 2009 03 19.
 			 *    doesn't try to scale them.
+			 *    
+			 * Fonts should work pretty well via any of these
+			 * methods!
 			 */
 			org.docx4j.convert.out.pdf.PdfConversion c 
-//				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
-				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
+				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
+//				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 //				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
 			
 			if (save) {
@@ -73,6 +118,92 @@ public class CreatePdf {
 				c.view();
 			}    
 	    }
+	    
+	    public static void createContent(MainDocumentPart wordDocumentPart ) {
+	    	
+	    	try {
+	    		// Do this explicitly, since we need
+	    		// it in order to create our content
+				PhysicalFonts.discoverPhysicalFonts(); 						
+																
+				Map<String, PhysicalFont> physicalFontMap = PhysicalFonts.getPhysicalFonts();			
+				Iterator physicalFontMapIterator = physicalFontMap.entrySet().iterator();
+				while (physicalFontMapIterator.hasNext()) {
+				    Map.Entry pairs = (Map.Entry)physicalFontMapIterator.next();
+				    if(pairs.getKey()==null) {
+				    	pairs = (Map.Entry)physicalFontMapIterator.next();
+				    }
+				    String fontName = (String)pairs.getKey();
+				    PhysicalFont pf = (PhysicalFont)pairs.getValue();
+				    
+				    //System.out.println("Added paragraph for " + fontName);
+				    addObject(wordDocumentPart, sampleText, fontName );
+
+				    // bold, italic etc
+				    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
+				    if (pfVariation!=null) {
+					    addObject(wordDocumentPart, sampleTextBold, pfVariation.getName() );
+				    }
+				    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
+				    if (pfVariation!=null) {
+					    addObject(wordDocumentPart, sampleTextBoldItalic, pfVariation.getName() );
+				    }
+				    pfVariation = PhysicalFonts.getItalicForm(pf);
+				    if (pfVariation!=null) {
+					    addObject(wordDocumentPart, sampleTextItalic, pfVariation.getName() );
+				    }
+				    
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}    		    
+	    	
+	    }
+	    
+	    static void addObject(MainDocumentPart wordDocumentPart, String template, String fontName ) {
+	    	
+		    HashMap substitution = new HashMap();
+		    substitution.put("fontname", fontName);
+		    Object o = XmlUtils.unmarshallFromTemplate(template, substitution);
+		    wordDocumentPart.addObject(o);    		    
+	    	
+	    }
+	    
+	    final static String sampleText = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+			+"<w:r>"
+			+"<w:rPr>"
+				+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
+			+"</w:rPr>"
+			+"<w:t xml:space=\"preserve\">${fontname}</w:t>"
+		+"</w:r>"
+		+"</w:p>";
+	    final static String sampleTextBold =	"<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"	+"<w:r>"
+			+"<w:rPr>"
+				+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
+				+"<w:b />"
+			+"</w:rPr>"
+			+"<w:t>${fontname} bold;</w:t>"
+		+"</w:r>"
+		+"</w:p>";
+	    final static String sampleTextItalic =	"<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"	+"<w:r>"
+			+"<w:rPr>"
+				+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
+				+"<w:i />"
+			+"</w:rPr>"
+			+"<w:t>${fontname} italic; </w:t>"
+		+"</w:r>"
+		+"</w:p>";
+	    final static String sampleTextBoldItalic ="<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+	    	+"<w:r>"
+			+"<w:rPr>"
+				+"<w:rFonts w:ascii=\"${fontname}\" w:eastAsia=\"${fontname}\" w:hAnsi=\"${fontname}\" w:cs=\"${fontname}\" />"
+				+"<w:b />"
+				+"<w:i />"
+			+"</w:rPr>"
+			+"<w:t>${fontname} bold italic</w:t>"
+		+"</w:r>"
+	+"</w:p>";
 	    
 	    
 	}
