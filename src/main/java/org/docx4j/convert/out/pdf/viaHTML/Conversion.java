@@ -128,9 +128,18 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					File f = new File(afm);
 			        if (f.exists()) {				
 //			        	renderer.getFontResolver().addFont(afm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile()));  // drop the 'file:'	
-			        	renderer.getFontResolver().addFont(afm, 
-			        			BaseFont.IDENTITY_H, true, 
-			        			FontUtils.pathFromURL(pf.getEmbeddedFile()));  // drop the 'file:'	
+			        	try {
+							renderer.getFontResolver().addFont(afm, 
+									BaseFont.IDENTITY_H, true, 
+									FontUtils.pathFromURL(pf.getEmbeddedFile()));  // drop the 'file:'	
+						} catch (java.io.UnsupportedEncodingException uee) {
+							uee.printStackTrace();
+							// Not a lot we can do here, unless we change
+							// the encoding of the HTML input
+							log.error(pf.getName() + " does not support UTF encoding");
+							// This shouldn't have been added to PhysicalFonts 
+							// in the first place
+						}
 			        } else {
 			        	// Should we be doing afm first, or pfm?
 						String pfm = FontUtils.pathFromURL(pf.getEmbeddedFile());
@@ -138,8 +147,19 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 						log.info("Looking for: " + pfm);
 						f = new File(pfm);
 				        if (f.exists()) {				
-//				        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
-				        	renderer.getFontResolver().addFont(pfm, BaseFont.IDENTITY_H, true, FontUtils.pathFromURL(pf.getEmbeddedFile() ));  // drop the 'file:'
+				        	try {
+//					        	renderer.getFontResolver().addFont(pfm, BaseFont.CP1252, true, FontUtils.pathFromURL(fm.getPhysicalFont().getEmbeddedFile() ));  // drop the 'file:'
+					        	renderer.getFontResolver().addFont(pfm, 
+					        			BaseFont.IDENTITY_H, true, 
+					        			FontUtils.pathFromURL(pf.getEmbeddedFile() ));  // drop the 'file:'
+							} catch (java.io.UnsupportedEncodingException uee) {
+								uee.printStackTrace();
+								// Not a lot we can do here, unless we change
+								// the encoding of the HTML input
+								log.error(pf.getName() + " does not support UTF encoding");
+								// This shouldn't have been added to PhysicalFonts 
+								// in the first place
+							}
 				        } else {
 				        	// Shouldn't happen.
 				        	log.error("Couldn't find afm or pfm corresponding to " + pf.getEmbeddedFile());
