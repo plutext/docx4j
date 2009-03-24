@@ -43,8 +43,8 @@ public abstract class PdfConversion  {
 		this.wordMLPackage = wordMLPackage;
 	}
 	
-	// Method to visualise using Flying Saucer.
-	// TODO - comment out, since we don't distribute that ...	
+	// Method to visualise using pdf-renderer
+	// TODO - comment out, if we choose not to distribute that ...
 	public void view() throws Exception {
 		
 		File tmpFile = File.createTempFile("output", ".pdf");
