@@ -11,15 +11,20 @@ import java.util.Map;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.fop.fonts.FontTriplet;
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.pdf.PdfConversion;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.model.HeaderFooterPolicy;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.Drawing;
+import org.docx4j.wml.Ftr;
+import org.docx4j.wml.Hdr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
@@ -28,16 +33,26 @@ import org.w3c.dom.Element;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
+import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfPageEvent;
+import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
+	protected static Logger log = Logger.getLogger(Conversion.class);	
+	
 	public Conversion(WordprocessingMLPackage wordMLPackage) {
 		super(wordMLPackage);
+		headerFooterPolicy = new HeaderFooterPolicy(wordMLPackage);
 	}
 		
     // iText style modifiers
@@ -49,6 +64,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     public final static int DEFAULT_FONT_SIZE=11;
 
 	Map<String, BaseFont> baseFonts = new HashMap<String, BaseFont>();
+	
+	HeaderFooterPolicy headerFooterPolicy;
+	
+	Document pdfDoc;
     
 	/** Create a pdf version of the document, using XSL FO. 
 	 * 
@@ -58,11 +77,14 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	 * */     
     public void output(OutputStream os) throws Docx4JException {
     	
-    	Document pdfDoc = new Document();
+//    	Document pdfDoc = new Document();
+    	pdfDoc = new Document(PageSize.A4, 50, 50, 70, 70);
+    		// TODO - use document size settings in sectPr
     	
     	try {
     		
-    		PdfWriter.getInstance(pdfDoc, os);
+    		PdfWriter writer = PdfWriter.getInstance(pdfDoc, os);
+            writer.setPageEvent(new EndPage());
     		pdfDoc.open();
     		
     		// Set up fonts
@@ -135,12 +157,14 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		
 	}
     
-	void traverseBlockLevelContent(List <Object> children, Document pdfDoc) throws Exception {
+	void traverseBlockLevelContent(List <Object> children, Object parent) throws Exception {
 
 		
 		for (Object o : children ) {
 						
 			log.debug("object: " + o.getClass().getName() );
+			
+			// TODO - handle tables (tbl)
 			
 			if (o instanceof org.docx4j.wml.P) {
 				
@@ -153,15 +177,25 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 //				}
 		
 				Paragraph pdfParagraph = new Paragraph();
-				getRunContent( p.getParagraphContent(), pdfDoc, pdfParagraph);
-				pdfDoc.add(pdfParagraph);
+				getRunContent( p.getParagraphContent(), parent, pdfParagraph);
+				
+				if (parent instanceof Document) {				
+					((Document)parent).add(pdfParagraph);
+				} else if (parent instanceof PdfPTable) {
+					
+					((PdfPTable)parent).addCell(
+							new PdfPCell(pdfParagraph)
+					);
+				} else {
+					log.error("Trying to add paragraph to " + parent.getClass().getName() );
+				}
 		
 			} else if (o instanceof org.docx4j.wml.SdtBlock) {
 
 				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) o;				
 				// Don't bother looking in SdtPr				
 				traverseBlockLevelContent(sdt.getSdtContent().getEGContentBlockContent(),
-						pdfDoc);
+						parent);
 				
 //			} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
 //
@@ -196,7 +230,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		}
 	}
 
-	void getRunContent(List<Object> children, Document pdfDoc,
+	void getRunContent(List<Object> children, Object paraParent,
 			Paragraph pdfParagraph) throws Exception {
 
 		for (Object o : children) {
@@ -315,7 +349,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 					} else if (rc instanceof org.docx4j.wml.Br) {
 
-						pdfDoc.newPage();
+						if (paraParent instanceof Document) {				
+							((Document)paraParent).newPage();
+						} else {
+							log.error("Trying to add new page to " + paraParent.getClass().getName() );
+						}
+						
 
 					} else {
 
@@ -345,7 +384,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	}
 
 	void addDrawing(org.docx4j.wml.Drawing o,
-			Document pdfDoc, Paragraph pdfParagraph) throws Exception {
+			Object paraParent, Paragraph pdfParagraph) throws Exception {
 	
 		org.docx4j.wml.Drawing drawing = (org.docx4j.wml.Drawing) o;
 		List<Object> list = drawing.getAnchorOrInline();
@@ -377,8 +416,56 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			byte[] imagedata = BinaryPartAbstractImage.getImage(wordMLPackage,
 					inline.getGraphic() );
 			Image img = Image.getInstance( imagedata );
-			pdfDoc.add(img);
+			if (paraParent instanceof Document) {				
+				((Document)paraParent).add(img);
+			} else if (paraParent instanceof PdfPTable) {				
+				((PdfPTable)paraParent).addCell(img);
+			} else {
+				log.error("Trying to add image to " + paraParent.getClass().getName() );
+			}
+			
 		}
-	}	    
+	}
+
+	
+	class EndPage extends PdfPageEventHelper {
+	    
+	    
+	    /**
+	     * @see com.lowagie.text.pdf.PdfPageEventHelper#onEndPage(com.lowagie.text.pdf.PdfWriter, com.lowagie.text.Document)
+	     */
+	    public void onEndPage(PdfWriter writer, Document document) {
+	        try {
+	            Rectangle page = document.getPageSize();
+
+	            if (headerFooterPolicy.getHeader(writer.getPageNumber())!=null) {
+		            Hdr hdr = (Hdr)headerFooterPolicy.getHeader(writer.getPageNumber()).getJaxbElement();
+		            PdfPTable head = new PdfPTable(1); // num cols	            
+		            // TODO - no cell borders
+		            traverseBlockLevelContent( hdr.getEGBlockLevelElts(), head);
+		            head.setTotalWidth(page.getWidth() - document.leftMargin() - document.rightMargin());
+		            head.writeSelectedRows(0, -1, document.leftMargin(), page.getHeight() - document.topMargin() + head.getTotalHeight(),
+		                writer.getDirectContent());
+	            }
+	            
+	            if (headerFooterPolicy.getFooter(writer.getPageNumber())!=null) {
+		            Ftr ftr = (Ftr)headerFooterPolicy.getHeader(writer.getPageNumber()).getJaxbElement();	            
+		            PdfPTable foot = new PdfPTable(1);
+		            traverseBlockLevelContent( ftr.getEGBlockLevelElts(), foot);
+		            foot.setTotalWidth(page.getWidth() - document.leftMargin() - document.rightMargin());
+		            foot.writeSelectedRows(0, -1, document.leftMargin(), document.bottomMargin(),
+		                writer.getDirectContent());
+	            }
+	        }
+	        catch (Exception e) {
+	            throw new ExceptionConverter(e);
+	        }
+	    }
+
+	}
+	
+	
+	
+
 	    }
     
