@@ -39,6 +39,7 @@ import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.HeaderFooterPolicy;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
@@ -102,6 +103,18 @@ public class WordprocessingMLPackage extends Package {
 	
 	// (optional) Glossary document
 	protected GlossaryDocumentPart glossaryDoc;
+	
+	private HeaderFooterPolicy headerFooterPolicy;
+	public HeaderFooterPolicy getHeaderFooterPolicy() {
+		if (headerFooterPolicy==null) {
+			headerFooterPolicy = new HeaderFooterPolicy(this);
+		}
+		return headerFooterPolicy;
+	}
+	public void setHeaderFooterPolicy(HeaderFooterPolicy headerFooterPolicy) {
+		this.headerFooterPolicy = headerFooterPolicy;
+	}
+	
 	
 	/**
 	 * Constructor.  Also creates a new content type manager
@@ -370,6 +383,7 @@ public class WordprocessingMLPackage extends Package {
 		
 		
 	}
+
 
 	
 }
