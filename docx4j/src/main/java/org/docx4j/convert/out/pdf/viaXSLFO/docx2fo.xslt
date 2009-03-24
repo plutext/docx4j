@@ -97,7 +97,9 @@
 					In this case there is only a simple-page-master which defines the
 					layout for all pages of the text
 					
-					We handle headers/footers, but not yet on a per section basis.					
+					We handle headers/footers, but not yet on a per section basis.	
+					
+					See http://www.dpawson.co.uk/xsl/sect3/headers.html				
 				-->
 
 				<xsl:choose>
