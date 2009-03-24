@@ -38,11 +38,11 @@ public class HeaderFooterPolicy {
 
 	protected static Logger log = Logger.getLogger(HeaderFooterPolicy.class);	
 	
-	private HeaderPart firstPageHeader;
-	private FooterPart firstPageFooter;
+	private HeaderPart firstHeader;
+	private FooterPart firstFooter;
 	
-	private HeaderPart evenPageHeader;
-	private FooterPart evenPageFooter;
+	private HeaderPart evenHeader;
+	private FooterPart evenFooter;
 	
 	private HeaderPart defaultHeader;
 	private FooterPart defaultFooter;
@@ -74,10 +74,10 @@ public class HeaderFooterPolicy {
 				
 				if (headerReference.getType() == HdrFtrRef.FIRST) {
 					log.debug("setting first page header");
-					firstPageHeader = (HeaderPart)part;
+					firstHeader = (HeaderPart)part;
 				} else if (headerReference.getType() == HdrFtrRef.EVEN) {
 					log.debug("setting even page header");
-					evenPageHeader =  (HeaderPart)part; 
+					evenHeader =  (HeaderPart)part; 
 				}  else {
 					log.debug("setting default page header");
 					defaultHeader = (HeaderPart)part;
@@ -88,10 +88,10 @@ public class HeaderFooterPolicy {
 				
 				if (footerReference.getType() == HdrFtrRef.FIRST) {
 					log.debug("setting first page footer");
-					firstPageFooter = (FooterPart)part;
+					firstFooter = (FooterPart)part;
 				} else if (footerReference.getType() == HdrFtrRef.EVEN) {
 					log.debug("setting even page footer");
-					evenPageFooter =  (FooterPart)part; 
+					evenFooter =  (FooterPart)part; 
 				}  else {
 					log.debug("setting default page footer");
 					defaultFooter = (FooterPart)part;
@@ -102,31 +102,31 @@ public class HeaderFooterPolicy {
 	}
 
 	
-	public HeaderPart getFirstPageHeader() {
-		return firstPageHeader;
+	public HeaderPart getFirstHeader() {
+		return firstHeader;
 	}
-	public FooterPart getFirstPageFooter() {
-		return firstPageFooter;
+	public FooterPart getFirstFooter() {
+		return firstFooter;
 	}
 	/**
 	 * Returns the odd page header. This is
 	 *  also the same as the default one...
 	 */
-	public HeaderPart getOddPageHeader() {
+	public HeaderPart getOddHeader() {
 		return defaultHeader;
 	}
 	/**
 	 * Returns the odd page footer. This is
 	 *  also the same as the default one...
 	 */
-	public FooterPart getOddPageFooter() {
+	public FooterPart getOddFooter() {
 		return defaultFooter;
 	}
-	public HeaderPart getEvenPageHeader() {
-		return evenPageHeader;
+	public HeaderPart getEvenHeader() {
+		return evenHeader;
 	}
-	public FooterPart getEvenPageFooter() {
-		return evenPageFooter;
+	public FooterPart getEvenFooter() {
+		return evenFooter;
 	}
 	public HeaderPart getDefaultHeader() {
 		return defaultHeader;
@@ -141,11 +141,11 @@ public class HeaderFooterPolicy {
 	 * @param pageNumber The one based page number
 	 */
 	public HeaderPart getHeader(int pageNumber) {
-		if(pageNumber == 1 && firstPageHeader != null) {
-			return firstPageHeader;
+		if(pageNumber == 1 && firstHeader != null) {
+			return firstHeader;
 		}
-		if(pageNumber % 2 == 0 && evenPageHeader != null) {
-			return evenPageHeader;
+		if(pageNumber % 2 == 0 && evenHeader != null) {
+			return evenHeader;
 		}
 		return defaultHeader;
 	}
@@ -155,11 +155,11 @@ public class HeaderFooterPolicy {
 	 * @param pageNumber The one based page number
 	 */
 	public FooterPart getFooter(int pageNumber) {
-		if(pageNumber == 1 && firstPageFooter != null) {
-			return firstPageFooter;
+		if(pageNumber == 1 && firstFooter != null) {
+			return firstFooter;
 		}
-		if(pageNumber % 2 == 0 && evenPageFooter != null) {
-			return evenPageFooter;
+		if(pageNumber % 2 == 0 && evenFooter != null) {
+			return evenFooter;
 		}
 		return defaultFooter;
 	}

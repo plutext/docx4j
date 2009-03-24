@@ -68,79 +68,297 @@
 <xsl:param name="docxWikiMenu"/>		
 <xsl:param name="docID"/>
 
+<!--  Not used, if we just pass in document.xml -->
 <xsl:template match="/pkg:package">
-
-		<xsl:variable name="logging" 
-			select="java:org.docx4j.convert.out.pdf.PdfConversion.log('/pkg:package')" />
 
 	<xsl:apply-templates select="pkg:part/pkg:xmlData/w:document"/>
 
   </xsl:template>
 
   <xsl:template match="w:document">
+  
+		<xsl:variable name="logging" 
+			select="java:org.docx4j.convert.out.pdf.PdfConversion.log('/pkg:package')" />
+
 		<!-- example for a simple fo file. At the beginning the page layout is set.
 		  Below fo:root there is always
 		- a single fo:layout-master-set which defines one or more page layouts
 		- an optional fo:declarations
 		- and a sequence of one or more fo:page-sequences containing the text and formatting instructions
 		-->
-		
+
 		<fo:root>
-		
-		  <fo:layout-master-set>
-		  <!-- fo:layout-master-set defines in its children the page layout:
-		       the pagination and layout specifications
-		      - page-masters: have the role of describing the intended subdivisions
-		                       of a page and the geometry of these subdivisions
-		                      In this case there is only a simple-page-master which defines the
-		                      layout for all pages of the text
-		  -->
-		    <!-- layout information 
-		    
-		    	  TODO: get this from sectPr -->
-		    <fo:simple-page-master master-name="simple"
-		                  page-height="29.7cm"
-		                  page-width="21cm"
-		                  margin-top="1cm"
-		                  margin-bottom="2cm"
-		                  margin-left="2.5cm"
-		                  margin-right="2.5cm">
-		      <fo:region-body margin-top="3cm"/>
-		      <fo:region-before extent="3cm"/>
-		      <fo:region-after extent="1.5cm"/>
-		    </fo:simple-page-master>
-		  </fo:layout-master-set>
-		  <!-- end: defines page layout -->
-		
-		
-		  <!-- start page-sequence
-		       here comes the text (contained in flow objects)
-		       the page-sequence can contain different fo:flows
-		       the attribute value of master-name refers to the page layout
-		       which is to be used to layout the text contained in this
-		       page-sequence-->
-		  <fo:page-sequence master-reference="simple">
-		
-		      <!-- start fo:flow
-		           each flow is targeted
-		           at one (and only one) of the following:
-		           xsl-region-body (usually: normal text)
-		           xsl-region-before (usually: header)
-		           xsl-region-after  (usually: footer)
-		           xsl-region-start  (usually: left margin)
-		           xsl-region-end    (usually: right margin)
-		           ['usually' applies here to languages with left-right and top-down
-		            writing direction like English]
-		           in this case there is only one target: xsl-region-body
-		        -->
-		    <fo:flow flow-name="xsl-region-body">
-		
-				<xsl:apply-templates select="w:body/*"/>		
-		
-		
-		    </fo:flow> <!-- closes the flow element-->
-		  </fo:page-sequence> <!-- closes the page-sequence -->
+
+			<fo:layout-master-set>
+				<!-- fo:layout-master-set defines in its children the page layout:
+					the pagination and layout specifications
+					- page-masters: have the role of describing the intended subdivisions
+					of a page and the geometry of these subdivisions
+					In this case there is only a simple-page-master which defines the
+					layout for all pages of the text
+					
+					We handle headers/footers, but not yet on a per section basis.					
+				-->
+
+				<xsl:choose>
+					<!--  First Page -->
+					<xsl:when
+						test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasFirstHeaderOrFooter($wmlPackage)">
+						<fo:simple-page-master master-name="firstpage"
+							page-height="297mm" page-width="210mm" margin-top="10mm"
+							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
+							
+							<fo:region-body margin-top="20mm"
+								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
+
+
+							<!--  First Page Header -->
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasFirstHeader($wmlPackage)">
+								<fo:region-before
+									region-name="xsl-region-before-firstpage" extent="10mm" />
+							</xsl:if>
+
+							<!--  First Page Footer -->
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasFirstFooter($wmlPackage)">
+								<fo:region-after
+									region-name="xsl-region-after-firstpage" extent="10mm" />
+							</xsl:if>
+
+						</fo:simple-page-master>
+					</xsl:when>
+					<xsl:when
+						test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasEvenOrOddHeaderOrFooter($wmlPackage)">
+						<!-- layout for the even page -->
+						<fo:simple-page-master master-name="evenpage"
+							page-height="297mm" page-width="210mm" margin-top="10mm"
+							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
+							
+							<fo:region-body margin-top="20mm"
+								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasEvenHeader($wmlPackage)">
+								<fo:region-before
+									region-name="xsl-region-before-evenpage" extent="10mm" />
+							</xsl:if>
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasEvenFooter($wmlPackage)">
+								<fo:region-after
+									region-name="xsl-region-after-evenpage" extent="10mm" />
+							</xsl:if>
+						</fo:simple-page-master>
+						<!-- layout for the odd page -->
+						<fo:simple-page-master master-name="oddpage"
+							page-height="297mm" page-width="210mm" margin-top="10mm"
+							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
+							
+							<fo:region-body margin-top="20mm"
+								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasOddHeader($wmlPackage)">
+								<fo:region-before
+									region-name="xsl-region-before-oddpage" extent="10mm" />
+							</xsl:if>
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasOddFooter($wmlPackage)">
+								<fo:region-after
+									region-name="xsl-region-after-oddpage" extent="10mm" />
+							</xsl:if>
+						</fo:simple-page-master>
+					</xsl:when>
+					<xsl:when
+						test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeaderOrFooter($wmlPackage)">
+						<fo:simple-page-master master-name="default"
+							page-height="297mm" page-width="210mm" margin-top="10mm"
+							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
+							
+							<fo:region-body margin-top="20mm"
+								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeader($wmlPackage)">
+								<fo:region-before
+									region-name="xsl-region-before-default" extent="10mm" />
+							</xsl:if>
+							<xsl:if
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultFooter($wmlPackage)">
+								<fo:region-after
+									region-name="xsl-region-after-default" extent="10mm" />
+							</xsl:if>
+						</fo:simple-page-master>
+					</xsl:when>
+					<xsl:otherwise>
+
+						<fo:simple-page-master master-name="simple"
+							page-height="29.7cm" page-width="21cm" margin-top="1cm"
+							margin-bottom="2cm" margin-left="2.5cm" margin-right="2.5cm">
+							<fo:region-body margin-top="3cm" />
+							<fo:region-before extent="3cm" />
+							<fo:region-after extent="1.5cm" />
+						</fo:simple-page-master>
+
+
+
+					</xsl:otherwise>
+				</xsl:choose>
+
+				<fo:page-sequence-master master-name="twoside">
+
+					<fo:repeatable-page-master-alternatives>
+						<xsl:choose>
+							<xsl:when
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasFirstHeaderOrFooter($wmlPackage)">
+								<fo:conditional-page-master-reference
+									master-reference="firstpage" page-position="first" />
+							</xsl:when>
+							<xsl:when
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasOddHeaderOrFooter($wmlPackage)">
+								<fo:conditional-page-master-reference
+									master-reference="oddpage" odd-or-even="odd" />
+							</xsl:when>
+							<xsl:when
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasEvenHeaderOrFooter($wmlPackage)">
+								<fo:conditional-page-master-reference
+									master-reference="evenpage" odd-or-even="even" />
+							</xsl:when>
+							<xsl:when
+								test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultFooter($wmlPackage)">
+								<fo:conditional-page-master-reference
+									master-reference="default" />
+							</xsl:when>
+							<xsl:otherwise>
+								<fo:conditional-page-master-reference
+									master-reference="simple" />
+							</xsl:otherwise>
+						</xsl:choose>
+					</fo:repeatable-page-master-alternatives>
+				</fo:page-sequence-master>
+			</fo:layout-master-set>
+
+			<!-- start page-sequence
+				here comes the text (contained in flow objects)
+				the page-sequence can contain different fo:flows
+				the attribute value of master-name refers to the page layout
+				which is to be used to layout the text contained in this
+				page-sequence-->
+			<fo:page-sequence master-reference="twoside">
+
+
+				<xsl:choose>
+					<!--  First Page -->
+					<xsl:when
+						test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasFirstHeaderOrFooter($wmlPackage)">
+						<!--  First Page Header -->
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasFirstHeader($wmlPackage)">
+							<fo:static-content
+								flow-name="xsl-region-before-firstpage">
+
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getFirstHeader($wmlPackage)" />
+
+							</fo:static-content>
+						</xsl:if>
+
+						<!--  First Page Footer -->
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasFirstFooter($wmlPackage)">
+
+							<fo:static-content
+								flow-name="xsl-region-after-firstpage">
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getFirstFooter($wmlPackage)" />
+							</fo:static-content>
+						</xsl:if>
+					</xsl:when>
+					<xsl:when
+						test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasEvenOrOddHeaderOrFooter($wmlPackage)">
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasEvenHeader($wmlPackage)">
+							<fo:static-content
+								flow-name="xsl-region-before-evenpage">
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getEvenHeader($wmlPackage)" />
+							</fo:static-content>
+						</xsl:if>
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasEvenFooter($wmlPackage)">
+							<fo:static-content
+								flow-name="xsl-region-after-evenpage">
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getEvenFooter($wmlPackage)" />
+							</fo:static-content>
+						</xsl:if>
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasOddHeader($wmlPackage)">
+							<fo:static-content
+								flow-name="xsl-region-before-oddpage">
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getOddHeader($wmlPackage)" />
+							</fo:static-content>
+						</xsl:if>
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasOddFooter($wmlPackage)">
+							<fo:static-content
+								flow-name="xsl-region-after-oddpage">
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getOddFooter($wmlPackage)" />
+							</fo:static-content>
+						</xsl:if>
+					</xsl:when>
+					<xsl:when
+						test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeaderOrFooter($wmlPackage)">
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeader($wmlPackage)">
+							<fo:static-content
+								flow-name="xsl-region-before-default">
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getDefaultHeader($wmlPackage)" />
+							</fo:static-content>
+						</xsl:if>
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultFooter($wmlPackage)">
+							<fo:static-content
+								flow-name="xsl-region-after-default">
+								<xsl:apply-templates
+									select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getDefaultFooter($wmlPackage)" />
+							</fo:static-content>
+						</xsl:if>
+					</xsl:when>
+				</xsl:choose>
+
+				<!-- start fo:flow
+					each flow is targeted
+					at one (and only one) of the following:
+					xsl-region-body (usually: normal text)
+					xsl-region-before (usually: header)
+					xsl-region-after  (usually: footer)
+					xsl-region-start  (usually: left margin)
+					xsl-region-end    (usually: right margin)
+					['usually' applies here to languages with left-right and top-down
+					writing direction like English]
+					in this case there is only one target: xsl-region-body
+				-->
+				<fo:flow flow-name="xsl-region-body">
+
+					<xsl:apply-templates select="w:body/*" />
+
+
+				</fo:flow><!-- closes the flow element-->
+			</fo:page-sequence><!-- closes the page-sequence -->
+
+			<!-- end: defines page layout -->
+
+
+
+
 		</fo:root>
+  </xsl:template>
+
+  <!--  the extension functions fetch these
+        for processing -->
+  <xsl:template match="w:hdr|w:ftr">
+  	<xsl:apply-templates/>
   </xsl:template>
 
   <!-- each paragraph is encapsulated in a block element

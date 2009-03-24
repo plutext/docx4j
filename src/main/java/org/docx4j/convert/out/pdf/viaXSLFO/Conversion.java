@@ -27,6 +27,8 @@ import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.Ftr;
+import org.docx4j.wml.Hdr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
@@ -47,7 +49,10 @@ import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.fonts.FontTriplet;
 import org.apache.log4j.Logger;
+import org.apache.xml.dtm.ref.DTMNodeIterator;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
+
+import com.lowagie.text.pdf.PdfPTable;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
@@ -216,8 +221,18 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	  fopFactory.setUserConfig(fopConfig);
     	  
     	  Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
-    	  
-    	  Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);	
+
+    	  /*
+    	   * Based on the principle that we'll do all the smarts via
+    	   * extension functions which can take advantage of Java
+    	   * and docx4j's model of the package, all the XSLT
+    	   * needs is the main document part.
+    	   * 
+    	   * This means we can skip the step of generating a
+    	   * Flat OPC XML file.
+    	   */
+    	  //Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
+    	  Document domDoc = XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
     	  
     	  java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
 			settings.put("wmlPackage", wordMLPackage);
@@ -256,7 +271,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	}		
 		
 	}
-	
+
+    /* ---------------Xalan XSLT Extension Functions ---------------- */
+    
     public static DocumentFragment createBlockForPPr( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
@@ -555,6 +572,133 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
             }
         }
 
-    	
-    }
+    
+    
+	public static boolean hasFirstHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getFirstHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getFirstFooter() ==null? false : true);     		
+	}
+	public static boolean hasEvenOrOddHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getOddFooter() ==null && 
+				wordmlPackage.getHeaderFooterPolicy().getEvenHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getEvenFooter() ==null? false : true);     		
+	}
+	public static boolean hasEvenHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getEvenHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getEvenFooter() ==null? false : true);     		
+	}
+	public static boolean hasOddHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getOddFooter() ==null ? false : true);     		
+	}
+	public static boolean hasDefaultHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getDefaultHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getDefaultFooter() ==null ? false : true);     		
+	}
+
+	public static boolean hasFirstHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getFirstHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasOddHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasEvenHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getEvenHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasDefaultHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getDefaultHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasFirstFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getFirstFooter() == null ? false
+				: true);
+	}
+
+	public static boolean hasOddFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getOddFooter() == null ? false
+				: true);
+	}
+
+	public static boolean hasEvenFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getEvenFooter() == null ? false
+				: true);
+	}
+
+	public static boolean hasDefaultFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getDefaultFooter() == null ? false
+				: true);
+	}
+
+	public static Node getFirstHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getFirstHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getFirstFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getFirstFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static Node getOddHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getOddHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getOddFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getOddFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static Node getEvenHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getEvenHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getEvenFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getEvenFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static Node getDefaultHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getDefaultHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getDefaultFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getDefaultFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+}
     

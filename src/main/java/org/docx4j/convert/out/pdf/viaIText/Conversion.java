@@ -52,7 +52,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 	public Conversion(WordprocessingMLPackage wordMLPackage) {
 		super(wordMLPackage);
-		headerFooterPolicy = new HeaderFooterPolicy(wordMLPackage);
+		
+		headerFooterPolicy = wordMLPackage.getHeaderFooterPolicy();
 	}
 		
     // iText style modifiers
