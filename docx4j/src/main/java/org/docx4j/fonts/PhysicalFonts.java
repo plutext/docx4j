@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.fop.fonts.EmbedFontInfo;
+import org.apache.fop.fonts.EncodingMode;
 import org.apache.fop.fonts.FontCache;
 import org.apache.fop.fonts.FontResolver;
 import org.apache.fop.fonts.FontSetup;
@@ -20,6 +21,9 @@ import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
+
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.BaseFont;
 
 /**
  * The fonts which are physically installed on the system.
@@ -255,17 +259,49 @@ public class PhysicalFonts {
 		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
 					String afm = FontUtils.pathFromURL(lower);
 					afm = afm.substring(0, afm.length()-4 ) + ".afm";  // drop the 'file:'
-					//log.debug("Looking for: " + afm);					
+					log.debug("Looking for: " + afm);					
 					File f = new File(afm);
-			        if (f.exists()) {				
+			        if (f.exists()) {
+			        	
+			        	log.debug(".. found");
+			        	
+			        	// We're only interested if this font supports UTF-8 encoding
+			        	// since otherwise iText can't use it (at least on a
+			        	// UTF8 encoded XHTML document) 
+			        	try {
+			    		    BaseFont bf = BaseFont.createFont(afm,
+			    		    		BaseFont.IDENTITY_H, 
+									BaseFont.NOT_EMBEDDED);
+						} catch (java.io.UnsupportedEncodingException uee) {
+							log.error(afm + " does not support UTF encoding, so ignoring");
+							continue;
+						} catch (Exception e) {
+							log.error(e);
+							continue;
+						}
 			        	pf = new PhysicalFont(triplet.getName(),fontInfo);
+			        	
+			        	
 			        } else {
 			        	// Should we be doing afm first, or pfm?
 						String pfm = FontUtils.pathFromURL(lower);
 						pfm = pfm.substring(0, pfm.length()-4 ) + ".pfm";  // drop the 'file:'
-						//log.debug("Looking for: " + pfm);
+						log.debug("Looking for: " + pfm);
 						f = new File(pfm);
 				        if (f.exists()) {				
+				        	log.debug(".. found");
+				        	// We're only interested if this font supports UTF-8 encoding
+				        	try {
+				    		    BaseFont bf = BaseFont.createFont(pfm,
+				    		    		BaseFont.IDENTITY_H, 
+										BaseFont.NOT_EMBEDDED);
+							} catch (java.io.UnsupportedEncodingException uee) {
+								log.error(pfm + " does not support UTF encoding, so ignoring");
+								continue;
+							} catch (Exception e) {
+								log.error(e);
+								continue;
+							}
 				        	pf = new PhysicalFont(triplet.getName(), fontInfo);
 				        } else {
 				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
