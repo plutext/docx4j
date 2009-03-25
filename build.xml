@@ -21,7 +21,10 @@
         -->
 		<!-- For Ole -->
     	<pathelement location="${m2Repository}/commons-codec/commons-codec/1.3/commons-codec-1.3.jar"/>
+<!--   	
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.3.1/xmlgraphics-commons-1.3.1.jar"/>
+         -->
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.3.757686/xmlgraphics-commons-1.3.757686.jar"/>
         <pathelement location="${m2Repository}/org/apache/poi/hwpf/3.4.0/hwpf-3.4.0.jar"/>
         <pathelement location="${m2Repository}/com/topologi/diffx/0.61/diffx-0.61.jar"/>
         <pathelement location="${m2Repository}/com/lowagie/itext-unsigned/2.0.8/itext-unsigned-2.0.8.jar"/>    	
@@ -33,11 +36,15 @@
         <pathelement location="${m2Repository}/bouncycastle/bcprov-jdk14/138/bcprov-jdk14-138.jar"/>
         -->
         <pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>
-        <pathelement location="${m2Repository}/pdf-renderer/pdf-renderer/0.2007/pdf-renderer-0.2007.jar"/>
+        <pathelement location="${m2Repository}/pdf-renderer/pdf-renderer/0.2009.0324/pdf-renderer-0.2009.0324.jar"/>
         <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
         <pathelement location="${m2Repository}/xhtmlrenderer/minium/0.1/minium-0.1.jar"/>
         <pathelement location="${m2Repository}/xhtmlrenderer/core-renderer/R8pre2/core-renderer-R8pre2.jar"/>
-        <pathelement location="${m2Repository}/docx4j/fop-fonts/0.2.0/fop-fonts-0.2.0.jar"/>
+
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
+        <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
+
+        <pathelement location="${m2Repository}/docx4j/fop-patched/0.95.756434/fop-patched-0.95.756434.jar"/>
         <pathelement location="${m2Repository}/org/apache/commons/commons-vfs-patched/1.9.1/commons-vfs-patched-1.9.1.jar"/>
     </path>
     <path id="docx4j.classpath">
@@ -88,5 +95,28 @@
 					
     </target>	
 	
+	<target name="javadoc">
+	
+        <delete dir="javadoc"/>
+        <mkdir dir="javadoc"/>
+	
+		<javadoc sourcepath="src/main/java" destdir="javadoc"/>
+		
+<!-- 		
+      <Doctitle><![CDATA[<h1>docx4j API Documentation</h1>]]></Doctitle>
+      <bottom>
+        <![CDATA[<i>Copyright 2007-2008 Plutext Pty Ltd.</i>]]>
+      </bottom>
+      <group>
+        <title>dml - DrawingML</title>
+        <package name="org.docx4j.dml*"/>
+      </group>
+      <group>
+        <title>wml - WordprocessingML</title>
+        <package name="org.docx4j.wml*"/>
+      </group>
+       -->		
+	
+	</target>
    
 </project>
