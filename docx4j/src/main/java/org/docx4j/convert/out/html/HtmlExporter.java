@@ -18,7 +18,7 @@ import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.Output;
-import org.docx4j.convert.out.xmlPackage.XmlPackage;
+import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
@@ -142,7 +142,7 @@ public class HtmlExporter implements Output {
     	 * pck:package/pck:part stuff emitted by Word 2007.
     	 * 
     	 */    	
-		XmlPackage worker = new XmlPackage(wmlPackage);
+		XmlPackageCreator worker = new XmlPackageCreator(wmlPackage);
 		org.docx4j.xmlPackage.Package pkg = worker.get();
 
 		/*  OpenXMLViewer merges the following parts into the XML:
