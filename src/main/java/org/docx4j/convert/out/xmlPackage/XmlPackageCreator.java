@@ -73,11 +73,11 @@ import org.w3c.dom.Document;
  * @author jharrop
  *
  */
-public class XmlPackage implements Output {
+public class XmlPackageCreator implements Output {
 	
-	private static Logger log = Logger.getLogger(XmlPackage.class);				
+	private static Logger log = Logger.getLogger(XmlPackageCreator.class);				
 	
-	public XmlPackage(Package p) {
+	public XmlPackageCreator(Package p) {
 		
 		this.packageIn = p;
 		
@@ -432,7 +432,7 @@ public class XmlPackage implements Output {
 	 */
 	public static Document getFlatDomDocument(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
-		XmlPackage worker = new XmlPackage(wordMLPackage);
+		XmlPackageCreator worker = new XmlPackageCreator(wordMLPackage);
 		org.docx4j.xmlPackage.Package pkg = worker.get();
 		
 		org.w3c.dom.Document doc;
@@ -478,7 +478,7 @@ public class XmlPackage implements Output {
 		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fonts-modesOfApplication.docx";
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
-		XmlPackage worker = new XmlPackage(wordMLPackage);
+		XmlPackageCreator worker = new XmlPackageCreator(wordMLPackage);
 		
 		org.docx4j.xmlPackage.Package result = worker.get();
 		
