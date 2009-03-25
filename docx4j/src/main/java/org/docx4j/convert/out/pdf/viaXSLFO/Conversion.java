@@ -5,9 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.Unmarshaller;
@@ -20,7 +18,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.xmlPackage.XmlPackage;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
@@ -49,10 +46,8 @@ import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.fonts.FontTriplet;
 import org.apache.log4j.Logger;
-import org.apache.xml.dtm.ref.DTMNodeIterator;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 
-import com.lowagie.text.pdf.PdfPTable;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
