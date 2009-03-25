@@ -34,7 +34,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
-import org.docx4j.convert.out.xmlPackage.XmlPackage;
+import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
 import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.FontUtils;
@@ -203,7 +203,7 @@ public class WordprocessingMLPackage extends Package {
 
     	// Prepare in the input document
     	
-		XmlPackage worker = new XmlPackage(this);
+		XmlPackageCreator worker = new XmlPackageCreator(this);
 		org.docx4j.xmlPackage.Package pkg = worker.get();
     	
 		JAXBContext jc = Context.jcXmlPackage;
@@ -220,7 +220,7 @@ public class WordprocessingMLPackage extends Package {
 		//org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)result.getResult();
 		javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
 		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)je.getValue();
-		org.docx4j.convert.in.XmlPackage xmlPackage = new org.docx4j.convert.in.XmlPackage( wmlPackageEl); 
+		org.docx4j.convert.in.XmlPackageImporter xmlPackage = new org.docx4j.convert.in.XmlPackageImporter( wmlPackageEl); 
 		
 		ContentTypeManager ctm = new ContentTypeManagerImpl();
 		
