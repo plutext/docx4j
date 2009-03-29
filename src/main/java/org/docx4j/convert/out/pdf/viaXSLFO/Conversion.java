@@ -12,7 +12,9 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -57,15 +59,16 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		super(wordMLPackage);
 	}
 	
-	// Get the xslt file - Works in Eclipse - note absence of leading '/'
-	static Source xslt;
-	
+	static Templates xslt;	
 	static {
 		try {
-			xslt = new StreamSource(
+			Source xsltSource  = new StreamSource(
 					org.docx4j.utils.ResourceUtils.getResource(
 							"org/docx4j/convert/out/pdf/viaXSLFO/docx2fo.xslt"));
+			xslt = XmlUtils.getTransformerTemplate(xsltSource);
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TransformerConfigurationException e) {
 			e.printStackTrace();
 		}
 	}

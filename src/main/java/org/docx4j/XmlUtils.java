@@ -37,7 +37,11 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -95,6 +99,7 @@ public class XmlUtils {
 		// It would be nice to reset to the original whenever we finish
 		// using, but that goal seems to be elusive!
 		
+		
 		javax.xml.transform.TransformerFactory tmpfactory = javax.xml.transform.TransformerFactory.newInstance();			
 		TRANSFORMER_FACTORY_ORIGINAL = tmpfactory.getClass().getName();
 		tmpfactory = null;
@@ -103,10 +108,21 @@ public class XmlUtils {
 		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't
 		// work with our extension functions.		
 		TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS = "org.apache.xalan.processor.TransformerFactoryImpl";
+		
+		setTFactory();
+	}
+	
+	private static void setTFactory() {
+		
 		System.setProperty("javax.xml.transform.TransformerFactory",
 				TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS);
 		tfactory = javax.xml.transform.TransformerFactory
 				.newInstance();
+		
+		LoggingErrorListener errorListener = new LoggingErrorListener(false);
+		tfactory.setErrorListener(errorListener);
+		
+		
 		// We've got our factory now, so set it back again!
 		System.setProperty("javax.xml.transform.TransformerFactory",
 				TRANSFORMER_FACTORY_ORIGINAL);
@@ -518,46 +534,9 @@ public class XmlUtils {
 		
 	}
 
-	
-    /**
-     * 
-     * Transform an input document using XSLT
-     * 
-     * @param doc
-     * @param xslt
-     * @param transformParameters
-     * @param result
-     * @throws Exception
-     */
-    public static void transform(org.w3c.dom.Document doc,
-    					  java.io.InputStream xslt, 
-    					  Map<String, Object> transformParameters, 
-    					  javax.xml.transform.Result result) throws Exception {
-    	
-    	if (doc == null ) {
-    		Throwable t = new Throwable();
-    		throw new Docx4JException( "Null DOM Doc", t);
-    	}
-    	
-		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
-
-		transform(domSource, xslt, transformParameters, result);
-    }
-
-    public static void transform(javax.xml.transform.Source source,
-    		java.io.InputStream xsltIS, 
-			  Map<String, Object> transformParameters, 
-			  javax.xml.transform.Result result) throws Exception {
-
-    	transform(source,
-    			new javax.xml.transform.stream.StreamSource(xsltIS), 
-    			 transformParameters, 
-    			 result);
-    }
-    
     
     public static void transform(org.w3c.dom.Document doc,
-    		javax.xml.transform.Source xsltSource, 
+    		javax.xml.transform.Templates template, 
 			  Map<String, Object> transformParameters, 
 			  javax.xml.transform.Result result) throws Exception {
 
@@ -569,12 +548,18 @@ public class XmlUtils {
 		javax.xml.transform.dom.DOMSource domSource = new javax.xml.transform.dom.DOMSource(doc);
 		
     	transform(domSource,
-    			xsltSource, 
+    			template, 
     			 transformParameters, 
     			 result);
     }
     
-	
+
+    public static Templates getTransformerTemplate(
+			  javax.xml.transform.Source xsltSource) throws TransformerConfigurationException {
+    
+    	return tfactory.newTemplates(xsltSource);
+    }    
+    
     /**
      * 
      * Transform an input document using XSLT
@@ -586,7 +571,7 @@ public class XmlUtils {
      * @throws Exception
      */
     public static void transform(javax.xml.transform.Source source,
-    					  javax.xml.transform.Source xsltSource, 
+    					  javax.xml.transform.Templates template, 
     					  Map<String, Object> transformParameters, 
     					  javax.xml.transform.Result result) throws Exception {
     	
@@ -594,80 +579,6 @@ public class XmlUtils {
     		Throwable t = new Throwable();
     		throw new Docx4JException( "Null Source doc", t);
     	}
-    	if (xsltSource == null ) {
-    		Throwable t = new Throwable();
-    		throw new Docx4JException( "Null xslt Source", t);
-    	}
-
-    	/*		
-    	 * 		We want to use plain old Xalan J, not xsltc
-    	 * 
-    	 * 		Following would not be necessary provided Xalan is on the classpath
-    	 * 
-    			System.setProperty("javax.xml.transform.TransformerFactory", "FQCN");
-
-    			examples of FQCN:
-    			
-    			  org.apache.xalan.processor.TransformerFactoryImpl (this is the one we want)
-    			  com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
-    			  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
-    			  net.sf.saxon.TransformerFactoryImpl
-    			  
-    			HOWEVER, docx4all encounters http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
-    			
-    				java.util.prefs.FileSystemPreferences syncWorld
-    				WARNING: Couldn't flush user prefs: java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
-    			
-    			every 30 seconds (on Linux, with JDK < Java 6u10 RC (as of b23)
-
-    			The workaround implemented is to remove META-INF/services from the xalan jar 
-    			to prevent xalan being picked up as the default provider for jaxp transform,
-    			so we have to use it explicitly.
-    			
-    			.. which means 
-
-    				System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
-
-    			  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
-    			   so we have to bundle xalan jar, which is 2.7 MB
-    			   
-    			   But we can make it smaller:
-    			   
-    			   	org/apache/xalan/lib$ rm sql -rf
-    			    org/apache/xalan$ rm xsltc -rf
-
-    	          That gets us from 2.7 MB to 1.85 MB.
-    	          
-    	          Sun already has:
-    	          
-    				com.sun.org.apache.xpath;			
-    				com.sun.org.apache.xml.internal.dtm;			
-    				com.sun.org.apache.xalan.internal.extensions|lib|res
-    			   
-    			  so you might think we can refactor Xalan to point to those, and them out of our jar.
-    			  
-    			  well, it turns out that its too messy leaving out org.apache.xpath or xalan.extensions	 
-    			  
-    			  so you have to keep xalan.extensions, processor, serialize, trace, transformer
-
-    			  leaving out just org.apache.xalan.resources and org.apache.xpath.resources
-    			  only gets us down to 1.5 MB. (and that's with just jar cvf xalan-minimal.jar org/apache/xalan org/apache/xpath
-    				- we'd still need to include org/apache/xml)
-    				
-    				ie once you include the whole of org.apache.xpath, you may as well just go with the 1.85 MB  :(
-    				
-    	*/		
-    			
-		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
-		// resolves the syncWorld problem
-		// net.sf.saxon.TransformerFactoryImpl is no good.
-
-		// Use the factory to create a template containing the xsl file
-		javax.xml.transform.Templates template = tfactory
-				.newTemplates(xsltSource);
-			// runtime representation of processed transformation instructions.
-			// Templates must be threadsafe for a given instance over multiple 
-			// threads running concurrently, and may be used multiple times in a given session.
 		
 		// Use the template to create a transformer
 		// A Transformer may not be used in multiple threads running concurrently. 
@@ -683,7 +594,8 @@ public class XmlUtils {
 							+ ", but require org.apache.xalan.transformer.TransformerImpl. "
 							+ "Ensure Xalan 2.7.0 is on your classpath!");
 		}
-
+		LoggingErrorListener errorListener = new LoggingErrorListener(false);
+		xformer.setErrorListener(errorListener);
 
 		if (transformParameters != null) {
 			Iterator parameterIterator = transformParameters.entrySet()
@@ -714,7 +626,6 @@ public class XmlUtils {
 		xformer.transform(source, result);
     	
     }
-    
    
      /**
 		 * Give a string of wml containing ${key1}, ${key2}, return a suitable
@@ -768,5 +679,109 @@ public class XmlUtils {
 			} 
      }
 	
-	
+     static class LoggingErrorListener implements ErrorListener {
+    	 
+    	 // See http://www.cafeconleche.org/slides/sd2003west/xmlandjava/346.html
+    	  
+    	 boolean strict;
+    	 
+    	  public LoggingErrorListener(boolean strict) {
+    	  }
+    	  
+    	  public void warning(TransformerException exception) {
+    	   
+    	    log.warn(exception.getMessage(), exception);
+    	   
+    	    // Don't throw an exception and stop the processor
+    	    // just for a warning; but do log the problem
+    	  }
+    	  
+    	  public void error(TransformerException exception)
+    	   throws TransformerException {
+    	    
+      	    log.error(exception.getMessage(), exception);
+    	    
+      	    // XSLT is not as draconian as XML. There are numerous errors
+    	    // which the processor may but does not have to recover from; 
+    	    // e.g. multiple templates that match a node with the same
+    	    // priority. If I do not want to allow that,  I'd throw this 
+    	    // exception here.
+      	    if (strict) {
+      	    	throw exception;
+      	    }
+    	    
+    	  }
+    	  
+    	  public void fatalError(TransformerException exception)
+    	   throws TransformerException {
+    	    
+       	    log.error(exception.getMessage(), exception);
+
+    	    // This is an error which the processor cannot recover from; 
+    	    // e.g. a malformed stylesheet or input document
+    	    // so I must throw this exception here.
+    	    throw exception;
+    	    
+    	  }
+    	     
+    	}	
 }
+
+/*		
+ * 		We want to use plain old Xalan J, not xsltc
+ * 
+ * 		Following would not be necessary provided Xalan is on the classpath
+ * 
+		System.setProperty("javax.xml.transform.TransformerFactory", "FQCN");
+
+		examples of FQCN:
+		
+		  org.apache.xalan.processor.TransformerFactoryImpl (this is the one we want)
+		  com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+		  org.apache.xalan.xsltc.trax.TransformerFactoryImpl
+		  net.sf.saxon.TransformerFactoryImpl
+		  
+		HOWEVER, docx4all encounters http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+		
+			java.util.prefs.FileSystemPreferences syncWorld
+			WARNING: Couldn't flush user prefs: java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
+		
+		every 30 seconds (on Linux, with JDK < Java 6u10 RC (as of b23)
+
+		The workaround implemented is to remove META-INF/services from the xalan jar 
+		to prevent xalan being picked up as the default provider for jaxp transform,
+		so we have to use it explicitly.
+		
+		.. which means 
+
+			System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+
+		  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
+		   so we have to bundle xalan jar, which is 2.7 MB
+		   
+		   But we can make it smaller:
+		   
+		   	org/apache/xalan/lib$ rm sql -rf
+		    org/apache/xalan$ rm xsltc -rf
+
+          That gets us from 2.7 MB to 1.85 MB.
+          
+          Sun already has:
+          
+			com.sun.org.apache.xpath;			
+			com.sun.org.apache.xml.internal.dtm;			
+			com.sun.org.apache.xalan.internal.extensions|lib|res
+		   
+		  so you might think we can refactor Xalan to point to those, and them out of our jar.
+		  
+		  well, it turns out that its too messy leaving out org.apache.xpath or xalan.extensions	 
+		  
+		  so you have to keep xalan.extensions, processor, serialize, trace, transformer
+
+		  leaving out just org.apache.xalan.resources and org.apache.xpath.resources
+		  only gets us down to 1.5 MB. (and that's with just jar cvf xalan-minimal.jar org/apache/xalan org/apache/xpath
+			- we'd still need to include org/apache/xml)
+			
+			ie once you include the whole of org.apache.xpath, you may as well just go with the 1.85 MB  :(
+			
+*/		

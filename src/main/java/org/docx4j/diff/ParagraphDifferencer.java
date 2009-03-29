@@ -39,6 +39,9 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -92,19 +95,26 @@ public class ParagraphDifferencer {
 		// final private static String RFC3339_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 		// final private static String RFC3339_PATTERN = "{0,date," + RFC3339_FORMAT + "}";    	
 
-    static java.io.InputStream xsltDiffx2Wml;
-    static java.io.InputStream xsltMarkupInsert;
-    static java.io.InputStream xsltMarkupDelete;
+    static Templates xsltDiffx2Wml;
+    static Templates xsltMarkupInsert;
+    static Templates xsltMarkupDelete;
     
     static {
 		try {
-			xsltDiffx2Wml = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/diffx2wml.xslt");
-			xsltMarkupInsert = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupInsert.xslt");
-			xsltMarkupDelete = 
-				org.docx4j.utils.ResourceUtils.getResource("org/docx4j/diff/MarkupDelete.xslt");
+			Source xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils
+					.getResource("org/docx4j/diff/diffx2wml.xslt"));
+			xsltDiffx2Wml = XmlUtils.getTransformerTemplate(xsltSource);
+
+			xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils
+					.getResource("org/docx4j/diff/MarkupInsert.xslt"));
+			xsltMarkupInsert = XmlUtils.getTransformerTemplate(xsltSource);
+
+			xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils
+					.getResource("org/docx4j/diff/MarkupDelete.xslt"));
+			xsltMarkupDelete = XmlUtils.getTransformerTemplate(xsltSource);
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (TransformerConfigurationException e) {
 			e.printStackTrace();
 		}
     	
