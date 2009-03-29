@@ -32,8 +32,12 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
 import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.Mapper;
@@ -194,11 +198,11 @@ public class WordprocessingMLPackage extends Package {
      * The output of the transformation must be valid
      * pck:package/pck:part format, as emitted by Word 2007.
      * 
-     * @param xslt
+     * @param is
      * @param transformParameters
      * @throws Exception
      */    
-    public void transform(java.io.InputStream xslt, 
+    public void transform(Templates xslt,
 			  Map<String, Object> transformParameters) throws Exception {
 
     	// Prepare in the input document
@@ -210,10 +214,10 @@ public class WordprocessingMLPackage extends Package {
 		Marshaller marshaller=jc.createMarshaller();
 		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 		marshaller.marshal(pkg, doc);
-    	
+    			
 		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
 		
-		// Perform the transformation
+		// Perform the transformation		
 		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 		
 
@@ -247,15 +251,17 @@ public class WordprocessingMLPackage extends Package {
     
     public void filter( FilterSettings filterSettings ) throws Exception {
 
-		java.io.InputStream xslt 
-			= org.docx4j.utils.ResourceUtils.getResource(
-					"org/docx4j/openpackaging/packages/filter.xslt");
-    	
-    	transform(xslt, filterSettings.getSettings() );
+    	if (filterTemplate==null) { // first use
+			Source xsltSource = new StreamSource(
+				org.docx4j.utils.ResourceUtils.getResource(
+						"org/docx4j/openpackaging/packages/filter.xslt"));
+			filterTemplate = XmlUtils.getTransformerTemplate(xsltSource);
+    	}
+    	transform(filterTemplate, filterSettings.getSettings() );
     	
     }
 
-    
+    static Templates filterTemplate;
     
 /* There should be a mapper per document,
  * but PhysicalFonts should be system wide.
