@@ -47,13 +47,17 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.w3c.dom.Attr;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class XmlUtils {
 	
@@ -743,7 +747,107 @@ public class XmlUtils {
     	    
     	  }
     	     
-    	}	
+    	}
+
+	public static void treeCopy( Node sourceNode, Node destParent ) {
+		// source node maybe org.apache.xml.dtm.ref.DTMNodeProxy
+		// (if its xslt output we are copying)
+		// or com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl
+		// (if its marshalled JAXB)
+	    	
+	    	//log.debug("node type" + sourceNode.getNodeType());
+	    	
+	            switch (sourceNode.getNodeType() ) {
+	
+	            	case Node.DOCUMENT_NODE: // type 9
+	            
+	                    // recurse on each child
+	                    NodeList nodes = sourceNode.getChildNodes();
+	                    if (nodes != null) {
+	                        for (int i=0; i<nodes.getLength(); i++) {
+	                        	//treeCopy((DTMNodeProxy)nodes.item(i), destParent);
+	                        	treeCopy((Node)nodes.item(i), destParent);
+	                        }
+	                    }
+	                    break;
+	                case Node.ELEMENT_NODE:
+	                    
+	                    // Copy of the node itself
+                		//log.debug("copying: " + sourceNode.getLocalName() );
+	            		Node newChild = destParent.getOwnerDocument().createElementNS(
+	            				sourceNode.getNamespaceURI(), sourceNode.getLocalName() );                    
+	            		destParent.appendChild(newChild);
+	            		
+	            		// .. its attributes
+	                	NamedNodeMap atts = sourceNode.getAttributes();
+	                	for (int i = 0 ; i < atts.getLength() ; i++ ) {
+	                		
+	                		Attr attr = (Attr)atts.item(i);
+	                		
+//	                		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
+//	                		log.debug("attr.getLocalName(): " + attr.getLocalName());
+	                		
+	                		if (attr.getNamespaceURI()!=null
+	                				&& attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
+		                		; // this is a namespace declaration. not our problem
+	                		} else {
+		                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
+		                				attr.getLocalName(), attr.getValue() );	                			
+	                		}
+	                	}
+	
+	                    // recurse on each child
+	                    NodeList children = sourceNode.getChildNodes();
+	                    if (children != null) {
+	                        for (int i=0; i<children.getLength(); i++) {
+	                        	//treeCopy( (DTMNodeProxy)children.item(i), newChild);
+	                        	treeCopy( (Node)children.item(i), newChild);
+	                        }
+	                    }
+	
+	                    break;
+	
+	                case Node.TEXT_NODE:
+	                	Node textNode = destParent.getOwnerDocument().createTextNode(sourceNode.getNodeValue());       
+	                	destParent.appendChild(textNode);
+	                    break;
+	
+	//                case Node.CDATA_SECTION_NODE:
+	//                    writer.write("<![CDATA[" +
+	//                                 node.getNodeValue() + "]]>");
+	//                    break;
+	//
+	//                case Node.COMMENT_NODE:
+	//                    writer.write(indentLevel + "<!-- " +
+	//                                 node.getNodeValue() + " -->");
+	//                    writer.write(lineSeparator);
+	//                    break;
+	//
+	//                case Node.PROCESSING_INSTRUCTION_NODE:
+	//                    writer.write("<?" + node.getNodeName() +
+	//                                 " " + node.getNodeValue() +
+	//                                 "?>");
+	//                    writer.write(lineSeparator);
+	//                    break;
+	//
+	//                case Node.ENTITY_REFERENCE_NODE:
+	//                    writer.write("&" + node.getNodeName() + ";");
+	//                    break;
+	//
+	//                case Node.DOCUMENT_TYPE_NODE:
+	//                    DocumentType docType = (DocumentType)node;
+	//                    writer.write("<!DOCTYPE " + docType.getName());
+	//                    if (docType.getPublicId() != null)  {
+	//                        System.out.print(" PUBLIC \"" +
+	//                            docType.getPublicId() + "\" ");
+	//                    } else {
+	//                        writer.write(" SYSTEM ");
+	//                    }
+	//                    writer.write("\"" + docType.getSystemId() + "\">");
+	//                    writer.write(lineSeparator);
+	//                    break;
+	            }
+	        }	
 }
 
 /*		
