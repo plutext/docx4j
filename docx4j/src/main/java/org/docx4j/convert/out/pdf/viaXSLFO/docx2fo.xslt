@@ -449,5 +449,65 @@
   
   <xsl:template match="w:lastRenderedPageBreak" />
   
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++ table support +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+<!-- 
+                    <w:tbl>
+                        <w:tblPr>
+                            <w:tblStyle w:val="TableGrid"/>
+                            <w:tblW w:type="auto" w:w="0"/>
+                            <w:tblLook w:val="04A0"/>
+                        </w:tblPr>
+                        <w:tblGrid>
+                            <w:gridCol w:w="3561"/>
+                            <w:gridCol w:w="3561"/>
+                            <w:gridCol w:w="3561"/>
+                        </w:tblGrid>
+                        <w:tr>
+                            <w:tc>
+                                <w:tcPr>
+
+ -->
+  <xsl:template match="w:tbl">
+
+		<xsl:variable name="childResults">
+			<xsl:apply-templates select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" />
+		</xsl:variable>
+
+		<xsl:variable name="tblNode" select="." />  			
+
+		<!--  Create the HTML table in Java -->
+	  	<xsl:variable name="tableWithWmlTcContents" select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createTable( 
+	  		$wmlPackage, $tblNode)" />
+	  			  		
+		<!--  Now convert the tc contents -->
+	  	<xsl:apply-templates select="$tableWithWmlTcContents" />
+  
+  </xsl:template>
+
+ <!--  Pass through the table structure  -->
+  <xsl:template match="fo:table-and-caption">  
+  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
+</xsl:template>
+  <xsl:template match="fo:table">  
+  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
+</xsl:template>
+  <xsl:template match="fo:table-body">  
+  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
+</xsl:template>
+  <xsl:template match="fo:table-row">  
+  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
+</xsl:template>
+  <xsl:template match="fo:table-cell">  
+  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
+</xsl:template>
+
+  <xsl:template match="w:tcPr"/>  
+
+  
+  
   
 </xsl:stylesheet>
