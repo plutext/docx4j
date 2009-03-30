@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.docx4j.convert.out.Output;
+import org.docx4j.convert.out.html.AbstractHtmlExporter;
+import org.docx4j.convert.out.html.HtmlExporter;
+import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.BestMatchingMapper;
@@ -36,7 +39,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			// Put the html in result
 			org.w3c.dom.Document xhtmlDoc = org.docx4j.XmlUtils.neww3cDomDocument();
 			javax.xml.transform.dom.DOMResult result = new javax.xml.transform.dom.DOMResult(xhtmlDoc);
-			org.docx4j.convert.out.html.HtmlExporter.html(wordMLPackage, result, false,
+			
+			AbstractHtmlExporter exporter = new HtmlExporter();
+			exporter.html(wordMLPackage, result, false,
 					System.getProperty("java.io.tmpdir") ); // false -> don't use HTML fonts.
 					
 			// Now render the XHTML

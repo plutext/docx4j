@@ -31,13 +31,10 @@ import org.docx4j.wml.Hdr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
@@ -350,7 +347,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				 * 
 				 * So instead of importNode, use 
 				 */
-				treeCopy( (DTMNodeProxy)n,  foBlockElement );
+				XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );
 			
 			}
 			
@@ -465,7 +462,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				// our style sheet produced when it applied-templates
 				// to the child nodes
 				Node n = childResults.nextNode();
-				treeCopy( (DTMNodeProxy)n,  foBlockElement );			
+				XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );			
 			}
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
@@ -482,93 +479,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	return null;
     	
     }
-    
-    
-    private static void treeCopy( org.apache.xml.dtm.ref.DTMNodeProxy sourceNode, Node destParent ) {
-    	
-    	log.debug("node type" + sourceNode.getNodeType());
-    	
-            switch (sourceNode.getNodeType() ) {
-
-            	case Node.DOCUMENT_NODE: // type 9
-            
-                    // recurse on each child
-                    NodeList nodes = sourceNode.getChildNodes();
-                    if (nodes != null) {
-                        for (int i=0; i<nodes.getLength(); i++) {
-                        	treeCopy((DTMNodeProxy)nodes.item(i), destParent);
-                        }
-                    }
-                    break;
-                case Node.ELEMENT_NODE:
-                    
-                    // Copy of the node itself
-            		Node newChild = destParent.getOwnerDocument().createElementNS(
-            				sourceNode.getNamespaceURI(), sourceNode.getLocalName() );                    
-            		destParent.appendChild(newChild);
-            		
-            		// .. its attributes
-                	NamedNodeMap atts = sourceNode.getAttributes();
-                	for (int i = 0 ; i < atts.getLength() ; i++ ) {
-                		
-                		Attr attr = (Attr)atts.item(i);
-                		
-                		((Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
-                				attr.getLocalName(), attr.getValue() );
-                		    		
-                	}
-
-                    // recurse on each child
-                    NodeList children = sourceNode.getChildNodes();
-                    if (children != null) {
-                        for (int i=0; i<children.getLength(); i++) {
-                        	treeCopy( (DTMNodeProxy)children.item(i), newChild);
-                        }
-                    }
-
-                    break;
-
-                case Node.TEXT_NODE:
-                	Node textNode = destParent.getOwnerDocument().createTextNode(sourceNode.getNodeValue());       
-                	destParent.appendChild(textNode);
-                    break;
-
-//                case Node.CDATA_SECTION_NODE:
-//                    writer.write("<![CDATA[" +
-//                                 node.getNodeValue() + "]]>");
-//                    break;
-//
-//                case Node.COMMENT_NODE:
-//                    writer.write(indentLevel + "<!-- " +
-//                                 node.getNodeValue() + " -->");
-//                    writer.write(lineSeparator);
-//                    break;
-//
-//                case Node.PROCESSING_INSTRUCTION_NODE:
-//                    writer.write("<?" + node.getNodeName() +
-//                                 " " + node.getNodeValue() +
-//                                 "?>");
-//                    writer.write(lineSeparator);
-//                    break;
-//
-//                case Node.ENTITY_REFERENCE_NODE:
-//                    writer.write("&" + node.getNodeName() + ";");
-//                    break;
-//
-//                case Node.DOCUMENT_TYPE_NODE:
-//                    DocumentType docType = (DocumentType)node;
-//                    writer.write("<!DOCTYPE " + docType.getName());
-//                    if (docType.getPublicId() != null)  {
-//                        System.out.print(" PUBLIC \"" +
-//                            docType.getPublicId() + "\" ");
-//                    } else {
-//                        writer.write(" SYSTEM ");
-//                    }
-//                    writer.write("\"" + docType.getSystemId() + "\">");
-//                    writer.write(lineSeparator);
-//                    break;
-            }
-        }
     
 }
     
