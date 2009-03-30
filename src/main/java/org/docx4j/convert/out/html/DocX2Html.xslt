@@ -6848,51 +6848,92 @@ if (msoBrowserCheck())
         <style>
           <xsl:comment>
 
-			/*font definitions*/
-            <xsl:apply-templates select="w:fonts[1]/w:font"/>
+						/*paged media */ 
+						div.header {display: none }
+						div.footer {display: none } 
+						/*@media print { */
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeader($wmlPackage)">
+							div.header {display: block; position: running(header) }
+						</xsl:if>
+						<xsl:if
+							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultFooter($wmlPackage)">
+							div.footer {display: block; position: running(footer) }
+						</xsl:if>
 
-			/*element styles*/
-            del {text-decoration:line-through;color:red;}
-            <xsl:choose>
-              <xsl:when test="/w:document/w:settings/w:trackRevisions">
-                ins {text-decoration:underline;color:teal;}
-              </xsl:when>
-              <xsl:otherwise>
-                ins {text-decoration:none;}
-              </xsl:otherwise>
-            </xsl:choose>
+						@page { size: A4; margin: 10%; @top-center {
+						content: element(header) } @bottom-center {
+						content: element(footer) } }
 
-            <xsl:apply-templates select="a:theme/a:themeElements/a:fontScheme"/>
 
-			/*class styles*/
-            <xsl:apply-templates select="$nsStyles"/>
-            
-			<xsl:if test="$docxWikiMenu=true()">
-				/*docxwiki*/
-				.docxwiki-headline {
-					color: black;
-					background: none;
-					font-weight: normal;
-					margin: 0;
-					padding-top: .5em;
-					padding-bottom: .17em;
-					border-bottom: 1px solid #aaa;
-				}
-				
-				.editsection { font-size: 80%; font-weight: normal; }
-				
-				div.editsection {
-					float: right;
-					margin-left: 5px;
-				}							
-			</xsl:if>
-            
+						/*font definitions*/
+						<xsl:apply-templates select="w:fonts[1]/w:font" />
+
+						/*element styles*/ del
+						{text-decoration:line-through;color:red;}
+						<xsl:choose>
+							<xsl:when
+								test="/w:document/w:settings/w:trackRevisions">
+								ins
+								{text-decoration:underline;color:teal;}
+							</xsl:when>
+							<xsl:otherwise>
+								ins {text-decoration:none;}
+							</xsl:otherwise>
+						</xsl:choose>
+
+						<xsl:apply-templates
+							select="a:theme/a:themeElements/a:fontScheme" />
+
+						/*class styles*/
+						<xsl:apply-templates select="$nsStyles" />
+
+						<xsl:if test="$docxWikiMenu=true()">
+							/*docxwiki*/ .docxwiki-headline { color:
+							black; background: none; font-weight:
+							normal; margin: 0; padding-top: .5em;
+							padding-bottom: .17em; border-bottom: 1px
+							solid #aaa; }
+
+							.editsection { font-size: 80%; font-weight:
+							normal; }
+
+							div.editsection { float: right; margin-left:
+							5px; }
+						</xsl:if>
+
 
           </xsl:comment>
         </style>
       </head>
 
       <body>
+
+		<!--  Headers and footers.
+		      Note that only the default is supported (ie if you are using
+		      others they won't appear).  To implement support for others,
+		      you'll need to get the corresponding CSS right.  For that, see
+		         http://www.w3.org/TR/css3-page/#margin-boxes 
+				 http://www.w3.org/TR/2007/WD-css3-gcpm-20070504		         
+		         http://www.w3.org/TR/css3-content/
+		      Appropriate extension functions similar to the below already exist 
+		       -->
+		<xsl:if
+			test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeader($wmlPackage)">
+			<div class="header">
+				<xsl:apply-templates
+					select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getDefaultHeader($wmlPackage)" />
+			</div>
+		</xsl:if>
+		<xsl:if
+			test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultFooter($wmlPackage)">
+			<div class="footer">
+				<xsl:apply-templates
+					select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getDefaultFooter($wmlPackage)" />
+			</div>
+		</xsl:if>
+
+      
         <xsl:if test="w:bgPict/w:background/@w:bgcolor">
           <xsl:attribute name="bgcolor">
             <xsl:value-of select="w:bgPict/w:background/@w:bgcolor"/>
@@ -6902,7 +6943,7 @@ if (msoBrowserCheck())
         <xsl:if test="$docxWikiMenu='true'">        
 			<div style="text-align:right">
 				<a href="/alfresco/docxwiki/edit{$docID}">edit</a>, 
-				<a href="/alfresco{$docID}">download</a>
+				<a href="{$docID}">download</a>
 			</div>        
         </xsl:if>
 
@@ -6997,6 +7038,11 @@ if (msoBrowserCheck())
     <xsl:apply-templates select="*"/>
   </xsl:template>
   
+  <!--  the extension functions fetch these
+        for processing -->
+  <xsl:template match="w:hdr|w:ftr">
+  	<xsl:apply-templates/>
+  </xsl:template>
   
   
   
