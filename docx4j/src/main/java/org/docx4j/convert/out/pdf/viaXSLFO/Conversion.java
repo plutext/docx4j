@@ -570,7 +570,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
             }
         }
 
-    
+
+    /* NB - the following are also used by DocX2Html.xslt,
+     *      so they probably should be somewhere else ..
+     */
     
 	public static boolean hasFirstHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
 		return (wordmlPackage.getHeaderFooterPolicy().getFirstHeader()==null && 
