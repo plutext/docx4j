@@ -81,7 +81,7 @@
 		fitness for a particular purpose and non-infringement.
 
  */
-package org.docx4j.listnumbering;
+package org.docx4j.model.listnumbering;
 
 import java.math.BigInteger;
 import java.util.HashMap;

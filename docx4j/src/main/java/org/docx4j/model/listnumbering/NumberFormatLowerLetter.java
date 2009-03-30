@@ -1,4 +1,4 @@
-package org.docx4j.listnumbering;
+package org.docx4j.model.listnumbering;
 
 public class NumberFormatLowerLetter extends NumberFormat {
 	
