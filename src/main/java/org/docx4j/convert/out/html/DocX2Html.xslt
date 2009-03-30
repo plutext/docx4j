@@ -6919,17 +6919,17 @@ if (msoBrowserCheck())
 		      Appropriate extension functions similar to the below already exist 
 		       -->
 		<xsl:if
-			test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeader($wmlPackage)">
+			test="java:org.docx4j.model.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
 			<div class="header">
 				<xsl:apply-templates
-					select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getDefaultHeader($wmlPackage)" />
+					select="java:org.docx4j.model.HeaderFooterPolicy.getDefaultHeader($wmlPackage)" />
 			</div>
 		</xsl:if>
 		<xsl:if
-			test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultFooter($wmlPackage)">
+			test="java:org.docx4j.model.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
 			<div class="footer">
 				<xsl:apply-templates
-					select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getDefaultFooter($wmlPackage)" />
+					select="java:org.docx4j.model.HeaderFooterPolicy.getDefaultFooter($wmlPackage)" />
 			</div>
 		</xsl:if>
 

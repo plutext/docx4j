@@ -23,6 +23,7 @@ limitations under the License.
 
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -30,9 +31,12 @@ import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.FooterReference;
+import org.docx4j.wml.Ftr;
+import org.docx4j.wml.Hdr;
 import org.docx4j.wml.HdrFtrRef;
 import org.docx4j.wml.HeaderReference;
 import org.docx4j.wml.SectPr;
+import org.w3c.dom.Node;
 
 public class HeaderFooterPolicy {
 
@@ -164,5 +168,135 @@ public class HeaderFooterPolicy {
 		return defaultFooter;
 	}
 	
+	// -------------------------------------------------------------
+	// XSLT extension functions, used by docx2fo.xslt
+	// and DocX2Html.xslt
+	
+	public static boolean hasFirstHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getFirstHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getFirstFooter() ==null? false : true);     		
+	}
+	public static boolean hasEvenOrOddHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getOddFooter() ==null && 
+				wordmlPackage.getHeaderFooterPolicy().getEvenHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getEvenFooter() ==null? false : true);     		
+	}
+	public static boolean hasEvenHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getEvenHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getEvenFooter() ==null? false : true);     		
+	}
+	public static boolean hasOddHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getOddFooter() ==null ? false : true);     		
+	}
+	public static boolean hasDefaultHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
+		return (wordmlPackage.getHeaderFooterPolicy().getDefaultHeader()==null && 
+				wordmlPackage.getHeaderFooterPolicy().getDefaultFooter() ==null ? false : true);     		
+	}
+
+	public static boolean hasFirstHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getFirstHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasOddHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasEvenHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getEvenHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasDefaultHeader(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getDefaultHeader() == null ? false
+				: true);
+	}
+
+	public static boolean hasFirstFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getFirstFooter() == null ? false
+				: true);
+	}
+
+	public static boolean hasOddFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getOddFooter() == null ? false
+				: true);
+	}
+
+	public static boolean hasEvenFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getEvenFooter() == null ? false
+				: true);
+	}
+
+	public static boolean hasDefaultFooter(WordprocessingMLPackage wordmlPackage) {
+		return (wordmlPackage.getHeaderFooterPolicy().getDefaultFooter() == null ? false
+				: true);
+	}
+
+	public static Node getFirstHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getFirstHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getFirstFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getFirstFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static Node getOddHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getOddHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getOddFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getOddFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static Node getEvenHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getEvenHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getEvenFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getEvenFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static Node getDefaultHeader(WordprocessingMLPackage wordmlPackage) {
+
+		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
+				.getDefaultHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getDefaultFooter(WordprocessingMLPackage wordmlPackage) {
+
+		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
+				.getDefaultFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
 
 }
