@@ -20,17 +20,24 @@
 
 package org.docx4j.samples;
 
+import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -40,12 +47,13 @@ public class CreatePdf {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-	    	boolean save = true;
+	    	boolean save = false;
 	    	
 	    	String inputfilepath = null;
 	    	
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";	    	
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
+			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/Header.docx";
 //			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
 //			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
 //			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
@@ -77,6 +85,19 @@ public class CreatePdf {
 				((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)wordDocumentPart).setJaxbElement(wmlDocumentEl);
 	
 				createContent(wordDocumentPart);	
+			} else if (inputfilepath.endsWith(".xml")) {
+				
+				JAXBContext jc = Context.jcXmlPackage;
+				Unmarshaller u = jc.createUnmarshaller();
+				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+						new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
+
+				org.docx4j.convert.in.XmlPackageImporter xmlPackage = new org.docx4j.convert.in.XmlPackageImporter( wmlPackageEl); 
+
+				wordMLPackage = (WordprocessingMLPackage)xmlPackage.get(); 
+			
 			} else {
 				wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 			}
@@ -133,7 +154,7 @@ public class CreatePdf {
 				    String fontName = (String)pairs.getKey();
 				    PhysicalFont pf = (PhysicalFont)pairs.getValue();
 				    
-				    //System.out.println("Added paragraph for " + fontName);
+				    System.out.println("Added paragraph for " + fontName);
 				    addObject(wordDocumentPart, sampleText, fontName );
 
 				    // bold, italic etc
