@@ -27,10 +27,10 @@ import java.util.HashMap;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.docx4j.listnumbering.AbstractListNumberingDefinition;
-import org.docx4j.listnumbering.Emulator;
-import org.docx4j.listnumbering.ListLevel;
-import org.docx4j.listnumbering.ListNumberingDefinition;
+import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
+import org.docx4j.model.listnumbering.Emulator;
+import org.docx4j.model.listnumbering.ListLevel;
+import org.docx4j.model.listnumbering.ListNumberingDefinition;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
