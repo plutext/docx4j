@@ -111,12 +111,23 @@ public class XmlUtils {
 		
 		setTFactory();
 		
-		// Not needed
-//    	System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-//				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-    	// Crimson fails to parse the HTML XSLT, so use Xerces ..  
-		System.setProperty("javax.xml.parsers.SAXParserFactory",
-				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
+    	// Crimson fails to parse the HTML XSLT, so use Xerces ..
+		// .. this one is available in Java 6.		
+		if (System.getProperty("java.version").startsWith("1.6")
+				&& System.getProperty("java.vendor").startsWith("Sun") ) {
+		
+			System.setProperty("javax.xml.parsers.SAXParserFactory", 
+			"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
+	//		System.setProperty("javax.xml.parsers.SAXParserFactory",
+	//				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
+			
+			// Not needed
+	//    	System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+	//				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+		
+		} else {
+			log.warn("Using default SAXParserFactory: " + System.getProperty("javax.xml.parsers.SAXParserFactory" ));
+		}
 		
 	}
 	
