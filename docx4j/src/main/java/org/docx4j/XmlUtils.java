@@ -110,6 +110,14 @@ public class XmlUtils {
 		TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS = "org.apache.xalan.processor.TransformerFactoryImpl";
 		
 		setTFactory();
+		
+		// Not needed
+//    	System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+//				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+    	// Crimson fails to parse the HTML XSLT, so use Xerces ..  
+		System.setProperty("javax.xml.parsers.SAXParserFactory",
+				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
+		
 	}
 	
 	private static void setTFactory() {
@@ -556,7 +564,7 @@ public class XmlUtils {
 
     public static Templates getTransformerTemplate(
 			  javax.xml.transform.Source xsltSource) throws TransformerConfigurationException {
-    
+    	    
     	return tfactory.newTemplates(xsltSource);
     }    
     
