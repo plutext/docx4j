@@ -20,28 +20,55 @@
 
 package org.docx4j.samples;
 
+import java.io.FileInputStream;
 import java.io.OutputStream;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
+
+import org.docx4j.convert.out.html.AbstractHtmlExporter;
+import org.docx4j.convert.out.html.HtmlExporterNG;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 public class CreateHtml {
 	    
 	    public static void main(String[] args) 
 	            throws Exception {
 
-			//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
-	    	String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
+	    	boolean save = false;
+	    	    	
+//			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
+	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
+			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
 	    	
 			System.out.println(inputfilepath);
+			WordprocessingMLPackage wordMLPackage;
+			if (inputfilepath.endsWith(".xml")) {
+				
+				JAXBContext jc = Context.jcXmlPackage;
+				Unmarshaller u = jc.createUnmarshaller();
+				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+						new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
+
+				org.docx4j.convert.in.XmlPackageImporter xmlPackage = new org.docx4j.convert.in.XmlPackageImporter( wmlPackageEl); 
+
+				wordMLPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 			
-//			String inputfilepath = "/home/jharrop/tmp/wordml2html.docx";
-			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));	    				
-			
+			} else {
+				wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+			}
+	    	
+			AbstractHtmlExporter exporter = new HtmlExporterNG(); 			
 			//OutputStream os = System.out;
 			OutputStream os = new java.io.FileOutputStream(inputfilepath + ".html");			
 			
 			javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(os);
-   			org.docx4j.convert.out.html.HtmlExporter.html(wordMLPackage, result, 
+			exporter.html(wordMLPackage, result, 
    					inputfilepath + "_files");
 	        	        
 	    }
