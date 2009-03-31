@@ -3331,8 +3331,9 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
   	<xsl:variable name="picLink" select="./wp:docPr/a:hlinkClick"/>
   	<xsl:variable name="linkDataNode" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip"/>
   	
-  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.createImgE20( $wmlPackage, string($imageDirPath),
+   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createHtmlImgE20( $wmlPackage, string($imageDirPath),
   			$pictureData, $picSize, $picLink, $linkDataNode)" />
+    
     
   </xsl:template>
 

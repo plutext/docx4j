@@ -236,21 +236,6 @@
   	<xsl:value-of select="."/>
   </xsl:template>  	
 
-  <xsl:template match="w:drawing">
-	<xsl:apply-templates select="*"/>
-  </xsl:template>
-
-  <xsl:template match="wp:inline|wp:anchor">
-  
-  	<xsl:variable name="pictureData" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill"/>
-  	<xsl:variable name="picSize" select="./wp:extent"/>
-  	<xsl:variable name="picLink" select="./wp:docPr/a:hlinkClick"/>
-  	<xsl:variable name="linkDataNode" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip"/>
-  	
-  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.createImgE20( $wmlPackage, string($imageDirPath),
-  			$pictureData, $picSize, $picLink, $linkDataNode)" />
-    
-  </xsl:template>
   
   <xsl:template match="w:sdt">
   	<xsl:apply-templates select="sdtContent"/>
@@ -321,6 +306,25 @@
   <!--  TODO - ignored for now -->
   <xsl:template match="w:sectPr"/>
 
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++ image support +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+  <xsl:template match="w:drawing">
+	<xsl:apply-templates select="*"/>
+  </xsl:template>
+
+  <xsl:template match="wp:inline|wp:anchor">
+  
+  	<xsl:variable name="pictureData" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill"/>
+  	<xsl:variable name="picSize" select="./wp:extent"/>
+  	<xsl:variable name="picLink" select="./wp:docPr/a:hlinkClick"/>
+  	<xsl:variable name="linkDataNode" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip"/>
+  	
+  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createHtmlImgE20( $wmlPackage, string($imageDirPath),
+  			$pictureData, $picSize, $picLink, $linkDataNode)" />
+    
+  </xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++ table support +++++++++++++++++++++++ -->
