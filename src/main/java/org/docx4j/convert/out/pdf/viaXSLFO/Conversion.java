@@ -26,6 +26,7 @@ import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Ftr;
@@ -283,6 +284,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults ) {
     	
+    	PropertyResolver propertyResolver = 
+    		wmlPackage.getMainDocumentPart().getPropertyResolver();
+    	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
@@ -307,12 +311,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 			Object jaxb = u.unmarshal(pPrNodeIt.nextNode());
 			
-			PPr pPr = null;
+			PPr pPrDirect = null;
 			try {
-				pPr =  (PPr)jaxb;
+				pPrDirect =  (PPr)jaxb;
 			} catch (ClassCastException e) {
 		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
 			}        	
+        	PPr pPr = propertyResolver.getEffectivePPr(pPrDirect);
         	
             // Create a DOM builder and parse the fragment			
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -379,6 +384,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
+
+    	PropertyResolver propertyResolver = 
+    		wmlPackage.getMainDocumentPart().getPropertyResolver();
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
@@ -401,12 +409,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 			Object jaxb = u.unmarshal(rPrNodeIt.nextNode());
 			
-			RPr rPr = null;
+			RPr rPrDirect = null;
 			try {
-				rPr =  (RPr)jaxb;
+				rPrDirect =  (RPr)jaxb;
 			} catch (ClassCastException e) {
 		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
 			}        	
+        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect);
         	
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        

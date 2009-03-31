@@ -44,6 +44,10 @@ several different classes).
 However, functionality which applies to several parts (eg the header/footer stuff), is clearly better
 placed here.
 
+In general, classes in the highest level will hold references to objects in the lower 2 levels, but
+not vice versa. (Although since there is no central/core object on the highest level, it may be
+convenient to store references to some of these in the package or MainDocumentPart). 
+
 Aside: typically, when working with docx4j, you use the lowest level to create/open/save a package,
 to add/remove parts, and to access the jaxb content tree for a particular part.  You use the second and highest levels
 to manipulate the document content.

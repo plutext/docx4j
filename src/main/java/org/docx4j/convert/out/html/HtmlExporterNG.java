@@ -2,6 +2,7 @@ package org.docx4j.convert.out.html;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -33,6 +34,7 @@ import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -41,9 +43,11 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
+import org.docx4j.wml.UnderlineEnumeration;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 
@@ -219,6 +223,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults ) {
     	
+    	PropertyResolver propertyResolver = 
+    		wmlPackage.getMainDocumentPart().getPropertyResolver();
+    	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
@@ -268,12 +275,19 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 				if (log.isDebugEnabled()) {					
 					log.debug(XmlUtils.marshaltoString(pPr, true, true));					
 				}				
-			       
-				if ( pPr.getJc()!=null) {				
-					((Element)xhtmlP).setAttribute("text-align", 
-							pPr.getJc().getVal().value() );
+			    
+				// Set @class
+				if ( pStyleVal !=null && !pStyleVal.equals("") ) {
+					// Or we could have got that from our pPr object					
+					((Element)xhtmlP).setAttribute("class", pStyleVal );
 				}
-				// TODO - other pPr props, including rPr.
+				
+				// Does our pPr contain anything else?
+				StringBuffer inlineStyle =  new StringBuffer();
+				createCss(pPr, inlineStyle);				
+				if (!inlineStyle.toString().equals("") ) {
+					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
+				}
 				
 				// Our fo:block wraps whatever result tree fragment
 				// our style sheet produced when it applied-templates
@@ -315,6 +329,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
+    
+    	PropertyResolver propertyResolver = 
+    		wmlPackage.getMainDocumentPart().getPropertyResolver();
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
@@ -342,7 +359,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 				rPr =  (RPr)jaxb;
 			} catch (ClassCastException e) {
 		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
-			}        	
+			}
         	
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -362,46 +379,22 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 				if (log.isDebugEnabled()) {					
 					log.debug(XmlUtils.marshaltoString(rPr, true, true));					
 				}
+
+				// Set @class				
+				if ( rPr.getRStyle()!=null) {
+					String rStyleVal = rPr.getRStyle().getVal();
+					if (!rStyleVal.toString().equals("") ) {
+						((Element)span).setAttribute("class", rStyleVal );
+					}
+				}
 				
-				RFonts rFonts = rPr.getRFonts();
-				if (rFonts !=null ) {
-					
-					String font = rFonts.getAscii();
-					
-					if (font==null) {
-						// TODO - actually what Word does in this case
-						// is inherit the default document font eg Calibri
-						// (which is what it shows in its user interface)
-						font = rFonts.getCs();
-					}
-					
-					if (font==null) {
-						log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
-						font=Mapper.FONT_FALLBACK;
-					}
-					
-					log.info("Font: " + font);
-					
-					PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
-					if (pf!=null) {					
-						((Element)span).setAttribute("font-family", 
-							 pf.getName() );
-					} else {
-						log.error("No mapping from " + font);
-					}
+				// Does our pPr contain anything else?
+				StringBuffer inlineStyle =  new StringBuffer();
+				createCss(wmlPackage, rPr, inlineStyle);				
+				if (!inlineStyle.toString().equals("") ) {
+					((Element)span).setAttribute("style", inlineStyle.toString() );
 				}
-			    
-				// bold				
-				if ( rPr.getB()!=null ) {				
-					((Element)span).setAttribute("font-weight", 
-							"bold" );
-				}
-				// italic
-				if ( rPr.getI()!=null ) {				
-					((Element)span).setAttribute("font-style", 
-							"italic" );
-				}
-				// TODO - other rPr props.
+				
 				
 				// Our fo:block wraps whatever result tree fragment
 				// our style sheet produced when it applied-templates
@@ -506,6 +499,285 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		} 
     	
     	return null;
+    	
+    }
+    
+    public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {
+    	
+    	StringBuffer result = new StringBuffer();
+    	
+    	Map stylesInUse = wmlPackage.getMainDocumentPart().getStylesInUse();
+
+    	PropertyResolver propertyResolver = 
+    		wmlPackage.getMainDocumentPart().getPropertyResolver();
+    	
+		Iterator it = stylesInUse.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)it.next();
+	        String styleId = (String)pairs.getKey();
+	        
+	        Style s = propertyResolver.getStyle(styleId);
+	        
+	        if (s.getType().equals("paragraph") ) {
+	        	PPr pPr = propertyResolver.getEffectivePPr(styleId);
+	        	if (pPr==null) {
+	        		log.debug("null pPr for style " + styleId);
+	        	} else {
+		        	result.append( "."+styleId + " {" );
+		        	createCss( pPr, result);
+		        	result.append( "}\n" );
+	        	}
+	        } else if (s.getType().equals("character") ) {
+	        	RPr rPr = propertyResolver.getEffectiveRPr(styleId);
+	        	if (rPr==null) {
+	        		log.debug("null rPr for style " + styleId);
+	        	} else {
+		        	result.append( "."+styleId + " {" );
+		        	createCss( wmlPackage, rPr, result);	        	
+		        	result.append( "}\n" );
+	        	}
+	        } // ignore table and numbering styles
+	        
+	    }
+	    return result.toString();
+    }
+    
+    private static void createCss(PPr pPr, StringBuffer result) {
+    	
+		if (pPr==null) {
+			return;
+		}
+    	
+		// Here is where we do the real work.  
+		// There are a lot of paragraph properties
+		// The below list is taken directly from PPrBase.
+		
+		//PPrBase.PStyle pStyle;
+		
+			// Ignore
+		
+		//BooleanDefaultTrue keepNext;
+		if (pPr.getKeepNext()!=null) {
+			if (pPr.getKeepNext().isVal() ) {
+				result.append( "page-break-after:avoid;" );
+			} else {
+				result.append( "page-break-after:auto;" );				
+			}
+		}
+		
+	
+		//BooleanDefaultTrue keepLines;
+		if (pPr.getKeepLines()!=null) {
+		}
+	
+		//BooleanDefaultTrue pageBreakBefore;
+		if (pPr.getPageBreakBefore()!=null) {
+			if (pPr.getPageBreakBefore().isVal() ) {
+				result.append( "page-break-before:always;" );
+			} else {
+				result.append( "page-break-before:auto;" );				
+			}
+		}
+	
+		//CTFramePr framePr;
+		//BooleanDefaultTrue widowControl;
+		if (pPr.getWidowControl()!=null) {
+		}
+	
+		//PPrBase.NumPr numPr;
+		
+			// High priority
+	
+		//BooleanDefaultTrue suppressLineNumbers;
+		if (pPr.getSuppressLineNumbers()!=null) {
+		}
+		//PPrBase.PBdr pBdr;
+		
+			// Medium priority
+	
+		//CTShd shd;
+		
+			// Medium priority
+	
+		//Tabs tabs;
+		
+			// ???
+	
+		//BooleanDefaultTrue suppressAutoHyphens;
+		//BooleanDefaultTrue kinsoku;
+		//BooleanDefaultTrue wordWrap;
+		//BooleanDefaultTrue overflowPunct;
+		//BooleanDefaultTrue topLinePunct;
+		//BooleanDefaultTrue autoSpaceDE;
+		//BooleanDefaultTrue autoSpaceDN;
+		//BooleanDefaultTrue bidi;
+		//BooleanDefaultTrue adjustRightInd;
+		//BooleanDefaultTrue snapToGrid;
+		//PPrBase.Spacing spacing;
+		
+			// High priority
+	
+		//PPrBase.Ind ind;
+		
+			// High priority
+	
+		//BooleanDefaultTrue contextualSpacing;
+		//BooleanDefaultTrue mirrorIndents;
+		//BooleanDefaultTrue suppressOverlap;
+		//Jc jc;
+		if ( pPr.getJc()!=null) {
+			String val = pPr.getJc().getVal().value();
+			if (val.equals("left") || val.equals("center") || val.equals("right")) {			
+				result.append( "text-align: " + val + ";" );
+			} else if (val.equals("both")) {
+				result.append( "text-align:justify;text-justify:inter-ideograph;" );
+			} // ignore the other possibilities for now
+		}
+	
+		//TextDirection textDirection;
+		//PPrBase.TextAlignment textAlignment;
+		if ( pPr.getTextAlignment()!=null) {	
+			String val = pPr.getTextAlignment().getVal();
+			if (val.equals("top") || val.equals("bottom") || val.equals("baseline") ) {						
+				result.append( "vertical-align: " + val + ";" );
+			} else if (val.equals("center")) {
+				result.append( "vertical-align: middle;" );
+			} else if (val.equals("auto")) {
+				result.append( "vertical-align: baseline;" );
+			}
+		}
+	
+		//CTTextboxTightWrap textboxTightWrap;
+		//PPrBase.OutlineLvl outlineLvl;
+		
+			// Medium priority
+	
+		//PPrBase.DivId divId;
+		//CTCnf cnfStyle;
+    
+    }
+    
+    private static void createCss(WordprocessingMLPackage wmlPackage, RPr rPr, StringBuffer result) {
+
+		// Here is where we do the real work.  
+		// There are a lot of run properties
+		// The below list is taken directly from RPr, and so
+		// is comprehensive.
+		
+		//RStyle rStyle;
+		//RFonts rFonts;
+		
+		RFonts rFonts = rPr.getRFonts();
+		if (rFonts !=null ) {
+			
+			String font = rFonts.getAscii();
+			
+			if (font==null) {
+				// TODO - actually what Word does in this case
+				// is inherit the default document font eg Calibri
+				// (which is what it shows in its user interface)
+				font = rFonts.getCs();
+			}
+			
+			if (font==null) {
+				log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
+				font=Mapper.FONT_FALLBACK;
+			}
+			
+			log.info("Font: " + font);
+			
+			PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
+			if (pf!=null) {					
+				result.append( "font-family: " + pf.getName() + ";" );
+			} else {
+				log.error("No mapping from " + font);
+			}
+		}
+	    
+
+		//BooleanDefaultTrue b;
+		if (rPr.getB()!=null) {
+			if (rPr.getB().isVal() ) {
+				result.append( "font-weight: bold;" );
+			} else {
+				result.append( "font-weight: normal;" );				
+			}
+		}
+
+		//BooleanDefaultTrue bCs;
+		//BooleanDefaultTrue i;
+		if (rPr.getI()!=null) {
+			if (rPr.getI().isVal() ) {
+				result.append( "font-style: italic;" );
+			} else {
+				result.append( "font-style: normal;" );				
+			}
+		}
+
+		//BooleanDefaultTrue iCs;
+		//BooleanDefaultTrue caps;
+		if (rPr.getCaps()!=null) {
+		}
+
+		//BooleanDefaultTrue smallCaps;
+		if (rPr.getSmallCaps()!=null) {
+		}
+
+		//BooleanDefaultTrue strike;
+		if (rPr.getStrike()!=null) {
+			if (rPr.getStrike().isVal() ) {
+				result.append( "text-decoration:line-through;" );
+			} else {
+				result.append( "text-decoration:none;" );				
+			}
+		}
+		//BooleanDefaultTrue dstrike;
+		//BooleanDefaultTrue outline;
+		//BooleanDefaultTrue shadow;
+		//BooleanDefaultTrue emboss;
+		//BooleanDefaultTrue imprint;
+		//BooleanDefaultTrue noProof;
+		//BooleanDefaultTrue snapToGrid;
+		//BooleanDefaultTrue vanish;
+		//BooleanDefaultTrue webHidden;
+		//Color color;
+		
+			// High priority
+
+		//CTSignedTwipsMeasure spacing;
+		//CTTextScale w;
+		//HpsMeasure kern;
+		//CTSignedHpsMeasure position;
+		//HpsMeasure sz;
+		if (rPr.getSz()!=null) {			
+			float pts = rPr.getSz().getVal().floatValue()/2;
+			result.append( "font-size:" + pts + "pt;" );
+		}
+		
+			// High priority
+
+		//HpsMeasure szCs;
+		//Highlight highlight;
+		//U u;
+		if (rPr.getU()!=null) {
+			if (!rPr.getU().getVal().equals( UnderlineEnumeration.NONE ) ) {
+				result.append( "text-decoration:underline;" );
+			} 
+		}
+
+		//CTTextEffect effect;
+		//CTBorder bdr;
+		//CTShd shd;
+		//CTFitText fitText;
+		//CTVerticalAlignRun vertAlign;
+		//BooleanDefaultTrue rtl;
+		//BooleanDefaultTrue cs;
+		//CTEm em;
+		//CTLanguage lang;
+		//CTEastAsianLayout eastAsianLayout;
+		//BooleanDefaultTrue specVanish;
+		//BooleanDefaultTrue oMath;
+		//CTRPrChange rPrChange;
     	
     }
 
