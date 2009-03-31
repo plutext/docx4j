@@ -90,6 +90,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
@@ -132,6 +133,8 @@ public class Emulator {
     	
     	org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart stylesPart =
     		wmlPackage.getMainDocumentPart().getStyleDefinitionsPart();
+    	
+    	PropertyResolver propertyResolver = wmlPackage.getMainDocumentPart().getPropertyResolver();
     	    	
     	// If numId is not provided explicitly, 
     	// is it provided by the style?
@@ -142,7 +145,8 @@ public class Emulator {
     		
     		org.docx4j.wml.Style style = null;
     		if (pStyleVal!=null && !pStyleVal.equals("") ) {    		
-    			style = stylesPart.getStyle(pStyleVal);    			
+    			style = propertyResolver.getStyle(pStyleVal);    			
+	        	// TODO: use propertyResolver to follow <w:basedOn w:val="blagh"/>
     		}
 	    	if (style == null) {
 	    		log.debug("Couldn't find style '" + pStyleVal + "'");
@@ -154,7 +158,6 @@ public class Emulator {
 //		        	System.out.println(
 //		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
 //		        			);
-		        	// TODO: follow  <w:basedOn w:val="blagh"/>
 		        	
 		    		return null;
 	    	} else {

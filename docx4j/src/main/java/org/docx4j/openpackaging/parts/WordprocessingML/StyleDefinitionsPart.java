@@ -22,12 +22,14 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.IOException;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -62,8 +64,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 	// A variety of pre-defined styles, available for use in a StyleDefinitionsPart.
 	private static java.util.Map<String, org.docx4j.wml.Style>  knownStyles = null;
 	
-	// Note, you need to manually keep this up to date
-	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
+	// private PropertyResolver propertyResolver;
+	
 	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
@@ -96,8 +98,6 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 						
 			jaxbElement = u.unmarshal( is );
 			
-			initialiseLiveStyles();
-			
 			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
@@ -119,8 +119,6 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			jaxbElement = u.unmarshal( el );
-
-			initialiseLiveStyles();
 			
 			return jaxbElement;
 			
@@ -131,16 +129,6 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 		}
 	}
 
-    private void initialiseLiveStyles() {
-    	
-		liveStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
-		
-		for ( org.docx4j.wml.Style s : ((org.docx4j.wml.Styles)jaxbElement).getStyle() ) {				
-			liveStyles.put(s.getStyleId(), s);	
-			log.debug("live style: " + s.getStyleId() );
-		}
-    	
-    }
     
     /**
      * Unmarshal a default set of styles, useful when creating this
@@ -176,7 +164,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
     	return unmarshal( is );    // side-effect is to set jaxbElement 	
     }
     
-    private void initKnownStyles() {
+    private static void initKnownStyles() {
 
 //    	Throwable t = new Throwable();
 //    	t.printStackTrace();
@@ -185,6 +173,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 		try {
 			is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml");						
 			
+			JAXBContext jc = Context.jc;
 			Unmarshaller u = jc.createUnmarshaller();			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
@@ -203,93 +192,14 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
     	
 		
     }
-    
-    public boolean activateStyle( String styleId  ) {
-    	
-    	if (liveStyles.get(styleId)!=null) {
-    		// Its already live - nothing to do
-    		return true;    		
-    	}
-    	
-    	if ( knownStyles == null ) {
-    		// First time used, 
-    		initKnownStyles();    		
-    	}
-    	
-    	org.docx4j.wml.Style s = knownStyles.get(styleId);
-    	
-    	if (s==null) {
-    		log.error("Unknown style: " + styleId);
-    		return false;
-    	}
-    	    	
-    	return activateStyle(s, false); 
-    		// false -> don't replace an existing live style with a template
-    	
-    }
-    
-    public boolean activateStyle(org.docx4j.wml.Style s) {
 
-    	return activateStyle(s, true);
-    	
-    }
-
-    private boolean activateStyle(org.docx4j.wml.Style s, boolean replace) {
-    	
-    	if (liveStyles.get(s.getStyleId())!=null) {
-    		// Its already live
-    		
-    		if (!replace) {    			
-    			return false;
-    		}
-    		
-    		// Remove existing entry
-			((org.docx4j.wml.Styles)jaxbElement).getStyle().remove( 
-					liveStyles.get(s.getStyleId()) );				
-    	}
-    	
-    	// Add it
-    	// .. to the JAXB object
-    	((org.docx4j.wml.Styles)jaxbElement).getStyle().add(s);
-    	// .. here
-    	liveStyles.put(s.getStyleId(), s);
-    	
-    	// Now, recursively check that what it is based on is present
-    	boolean result1;
-    	if (s.getBasedOn()!=null) {
-    		String basedOn = s.getBasedOn().getVal();
-    		result1 = activateStyle( basedOn );
-    		
-    	} else if ( s.getStyleId().equals("Normal")
-    			|| s.getStyleId().equals("DefaultParagraphFont") )
-    	{
-    		// stop condition
-    		result1 = true;
-    	} else {
-    		
-    		log.error("Expected " + s.getStyleId() + " to have <w:basedOn ??");
-    		// Not properly activated
-    		result1 = false;
-    	}
-    	
-    	// Also add the linked style, if any
-    	// .. Word might expect it to be there
-    	boolean result2 = true;
-    	if (s.getLink()!=null) {
-    		
-    		org.docx4j.wml.Style.Link link = s.getLink();
-    		result2 = activateStyle(link.getVal());
-    		
-    	}
-    	
-    	return (result1 & result2);
-    	    	
-    }
+	public static java.util.Map<String, org.docx4j.wml.Style> getKnownStyles() {
+		if (knownStyles==null) {
+			initKnownStyles();
+		}
+		return knownStyles;
+	}
     
-    public org.docx4j.wml.Style getStyle(String styleId) {
-    	
-    	return liveStyles.get(styleId);
-    }
     
     
 //	public static void main(String[] args) throws Exception {

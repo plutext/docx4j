@@ -27,6 +27,7 @@ import java.util.HashMap;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.ListLevel;
@@ -240,12 +241,14 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 		if (lvl.getPStyle()!=null) {
 			
 			// Get the style
-			StyleDefinitionsPart stylesPart = ((WordprocessingMLPackage)this.getPackage()).
-				getMainDocumentPart().getStyleDefinitionsPart();
+//			StyleDefinitionsPart stylesPart = ((WordprocessingMLPackage)this.getPackage()).
+//				getMainDocumentPart().getStyleDefinitionsPart();
+			PropertyResolver propertyResolver 
+				= ((WordprocessingMLPackage)this.getPackage()).getMainDocumentPart().getPropertyResolver(); 
 			
 			log.debug("override level has linked style: " + lvl.getPStyle().getVal() );
 			
-			org.docx4j.wml.Style style = stylesPart.getStyle( lvl.getPStyle().getVal() );
+			org.docx4j.wml.Style style = propertyResolver.getStyle( lvl.getPStyle().getVal() );
 			
 			// If the style has a w:ind, return it.
 			// Otherwise, continue
