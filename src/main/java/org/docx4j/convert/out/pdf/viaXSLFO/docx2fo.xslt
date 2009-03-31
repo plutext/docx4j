@@ -448,6 +448,27 @@
   </xsl:template>
   
   <xsl:template match="w:lastRenderedPageBreak" />
+
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++ image support +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+  <xsl:template match="w:drawing">
+	<xsl:apply-templates select="*"/>
+  </xsl:template>
+
+  <xsl:template match="wp:inline|wp:anchor">
+  
+  	<xsl:variable name="pictureData" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill"/>
+  	<xsl:variable name="picSize" select="./wp:extent"/>
+  	<xsl:variable name="picLink" select="./wp:docPr/a:hlinkClick"/>
+  	<xsl:variable name="linkDataNode" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip"/>
+  	
+   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE20( $wmlPackage, string($imageDirPath),
+  			$pictureData, $picSize, $picLink, $linkDataNode)" />
+    
+  </xsl:template>
+
   
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++ table support +++++++++++++++++++++++ -->
@@ -480,7 +501,8 @@
 		<xsl:variable name="tblNode" select="." />  			
 
 		<!--  Create the HTML table in Java -->
-	  	<xsl:variable name="tableWithWmlTcContents" select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createTable( 
+	  	<xsl:variable name="tableWithWmlTcContents" 
+	  		select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createTable( 
 	  		$wmlPackage, $tblNode)" />
 	  			  		
 		<!--  Now convert the tc contents -->

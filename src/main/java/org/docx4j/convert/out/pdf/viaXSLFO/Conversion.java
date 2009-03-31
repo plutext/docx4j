@@ -237,6 +237,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	  
     	  java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
 			settings.put("wmlPackage", wordMLPackage);
+	        String imageDirPath = System.getProperty("java.io.tmpdir");
+			settings.put("imageDirPath", imageDirPath);
+			
 	      	  // Resulting SAX events (the generated FO) must be piped through to FOP
 	      	  Result result = new SAXResult(fop.getDefaultHandler());
 	    	  
