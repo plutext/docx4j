@@ -72,6 +72,21 @@ import org.docx4j.wml.Styles.DocDefaults;
 	
 	Finally, we apply direct formatting (paragraph or run properties not from 
 	styles).
+	
+	-----------
+	
+	Things which are unclear:
+	
+	 - the role of w:link on a paragraph style (eg Heading1 links to "Heading1char"),
+	   experimentation in Word 2007 suggests the w:link is not used at all
+	   
+	 - indeed, "Heading1char" is not used at all?
+	 
+	-----------
+
+	 docx4all does not use this; its org.docx4all.swing.text.StyleSheet
+	 uses MutableAttributeSet's resolve function to climb the style hierarchy.
+	   
 
  * @author jharrop
  *
@@ -93,14 +108,11 @@ public class PropertyResolver {
 	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
 
 	private java.util.Map<String, PPr>  resolvedStylePPrComponent = new HashMap<String, PPr>();
-//	public java.util.Map<String, PPr> getResolvedStylePPrComponent() {
-//		return resolvedStylePPrComponent;
-//	}
 
+	/**
+	 * This map also contains the rPr component of a pPr
+	 */
 	private java.util.Map<String, RPr>  resolvedStyleRPrComponent = new HashMap<String, RPr>();
-//	public java.util.Map<String, RPr> getResolvedStyleRPrComponent() {
-//		return resolvedStyleRPrComponent;
-//	}
 	
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
@@ -329,13 +341,28 @@ public class PropertyResolver {
 		return resolvedPPr;
 	}
 	
-	public RPr getEffectiveRPr(RPr expressRPr) {
+	/**
+	 * @param expressRPr
+	 * @param pPr - 
+	 * @return
+	 */
+	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr) {
 		
-		RPr effectiveRPr = null;
+		log.debug("in getEffectiveRPr");
+		
+//		Idea is that you pass pPr if you are using this for XSL FO,
+//		since we need to take account of rPr in paragraph styles
+//		(but not the rPr in a pPr direct formatting, since
+//       that only applies to the paragraph mark). 
+//		 * For HTML/CSS, this would be null (since the pPr level rPr 
+//		 * is made into a separate style applied via a second value in
+//		 * the class attribute).  But, in the CSS case, this
+		// function is not used - since the rPr is made into a style as well.
+		
+		
 		//	First, the document defaults are applied
 		
-			// Done elsewhere
-			// RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
 		
 		//	Next, the table style properties are applied to each table in the document, 
 		//	following the conditional formatting inclusions and exclusions specified 
@@ -346,24 +373,47 @@ public class PropertyResolver {
 		//	Next, numbered item and paragraph properties are applied to each paragraph 
 		//	formatted with a *numbering *style**.
 		
-			// TODO - who uses numbering styles (as opposed to numbering
+//			 TODO - who uses numbering styles (as opposed to numbering
 			// via a paragraph style or direct formatting)?
 		
 		//  Next, paragraph and run properties are 
-		//	applied to each paragraph as defined by the paragraph style.
-		
-			// Not for pPr
-				
+		//	applied to each paragraph as defined by the paragraph style
+		// (this includes run properties defined in a paragraph style,
+		//  but not run properties directly included in a pPr in the
+		//  document (those only apply to a paragraph mark).
+			
+			if (pPr==null) {
+				log.warn("pPr was null");
+			} else {
+				// At the pPr level, what rPr do we have?
+				// .. ascend the paragraph style tree
+				if (pPr.getPStyle()==null) {
+					log.warn("No pstyle:");
+					log.debug(XmlUtils.marshaltoString(pPr, true, true));
+				} else {
+					log.warn("pstyle:" + pPr.getPStyle().getVal());
+					RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
+					// .. and apply those
+					applyRPr(pPrLevelRunStyle, effectiveRPr);
+				}
+			}
 		//	Next, run properties are applied to each run with a specific character style 
 		//	applied. 		
 		RPr resolvedRPr = null;
-		String styleId;
+		String runStyleId;
 		if (expressRPr == null || expressRPr.getRStyle() == null ) {
-			styleId = "DefaultParagraphFont";
+			runStyleId = "DefaultParagraphFont";
 		} else {
-			styleId = expressRPr.getRStyle().getVal();
+			runStyleId = expressRPr.getRStyle().getVal();
 		}
-		resolvedRPr = getEffectiveRPr(styleId);
+		resolvedRPr = getEffectiveRPr(runStyleId);
+		
+		if (pPr!=null) {
+			// apply the paragraph level rPr
+			// but we need to clone resolvedRPr 
+			resolvedRPr = (RPr)XmlUtils.deepCopy(resolvedRPr);			
+			applyRPr(effectiveRPr, resolvedRPr);  
+		}
 		
 		//	Finally, we apply direct formatting (run properties not from 
 		//	styles).		
@@ -378,6 +428,8 @@ public class PropertyResolver {
 	}
 	
 	public RPr getEffectiveRPr(String styleId) {
+		// styleId passed in could be a run style
+		// or a *paragraph* style
 		
 		RPr resolvedRPr = resolvedStyleRPrComponent.get(styleId);
 		
@@ -392,13 +444,16 @@ public class PropertyResolver {
 			log.error("Couldn't find style: " + styleId);
 			return null;
 		}
+
+		// Comment out - this style might not have rPr,
+		// but an ancestor might!
 		
-		RPr expressRPr = s.getRPr();
-		if (expressRPr==null) {
-			log.error("style: " + styleId + " has no RPr");
-			resolvedRPr = resolvedStyleRPrComponent.get("DefaultParagraphFont");
-			return resolvedRPr;
-		}
+//		RPr expressRPr = s.getRPr();
+//		if (expressRPr==null) {
+//			log.error("style: " + runStyleId + " has no RPr");
+//			resolvedRPr = resolvedStyleRPrComponent.get("DefaultParagraphFont");
+//			return resolvedRPr;
+//		}
 
 		
 		//	Next, run properties are applied to each run with a specific character style 

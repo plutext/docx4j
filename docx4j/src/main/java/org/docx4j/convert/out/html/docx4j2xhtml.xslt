@@ -169,45 +169,35 @@
   
   <xsl:template match="w:p">
   
-  	<xsl:choose>
-  		<xsl:when test="w:pPr">
-  			<!--  Invoke an extension function, so we can use
-  			      docx4j to populate the fo:block -->
-  		
-			<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  
+ 			<!--  Invoke an extension function, so we can use
+ 			      docx4j to populate the fo:block -->
+ 		
+		<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  
 
-			<xsl:variable name="numId" select="string( w:pPr/w:numPr/w:numId/@w:val )" />  
-			<xsl:variable name="levelId" select="string( w:pPr/w:numPr/w:ilvl/@w:val )" />  
+		<xsl:variable name="numId" select="string( w:pPr/w:numPr/w:numId/@w:val )" />  
+		<xsl:variable name="levelId" select="string( w:pPr/w:numPr/w:ilvl/@w:val )" />  
 
 
-			<xsl:variable name="childResults">
-				<!--  Numbering; consider further what CSS to use,
-				      and whether this should be done in createBlockForPPr extension -->
-				<span>								
-				  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.getNumberXmlNode( $wmlPackage, 
-				  			$pStyleVal, $numId, $levelId)" />					
-				</span>
-				<xsl:apply-templates/>
-			</xsl:variable>
+		<xsl:variable name="childResults">
+			<!--  Numbering; consider further what CSS to use,
+			      and whether this should be done in createBlockForPPr extension -->
+			<span> <!--  TODO span should be inside extension, so we don't get it if
+			             there is no number.  But this simple way of numbering
+			             should be formatted using better css? -->								
+			  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.getNumberXmlNode( $wmlPackage, 
+			  			$pStyleVal, $numId, $levelId)" />					
+			</span>
+			<xsl:apply-templates/>
+		</xsl:variable>
 
 
 
-			
-			<xsl:variable name="pPrNode" select="w:pPr" />  	
-			
-	
-		  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG.createBlockForPPr( 
-		  		$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
-	  		
-	  	</xsl:when>
-	  	<xsl:otherwise>
-	  		<!--  TODO: use sensible defaults here .. -->
-		      <p>
-		        	<xsl:apply-templates/>
-		      </p>
-	  	</xsl:otherwise>
-	  </xsl:choose>					
 		
+		<xsl:variable name="pPrNode" select="w:pPr" />  	
+		
+
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG.createBlockForPPr( 
+	  		$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
 		
   </xsl:template>
 
@@ -223,10 +213,12 @@
 				<xsl:apply-templates/>
 			</xsl:variable>
 			
+			<xsl:variable name="pStyleVal" select="string( ../w:pPr/w:pStyle/@w:val )" />  			
+			
 			<xsl:variable name="rPrNode" select="w:rPr" />  	
 	
 		  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG.createBlockForRPr( 
-		  		$wmlPackage, $rPrNode, $childResults)" />
+		  		$wmlPackage, $pStyleVal, $rPrNode, $childResults)" />
 	  		
 	  	</xsl:when>
 	  	<xsl:otherwise>

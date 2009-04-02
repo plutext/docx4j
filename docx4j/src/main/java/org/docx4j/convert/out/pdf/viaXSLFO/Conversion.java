@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
+import org.docx4j.wml.UnderlineEnumeration;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -279,6 +281,16 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
     /* ---------------Xalan XSLT Extension Functions ---------------- */
     
+    /**
+     * On the block representing the w:p, we want to put both
+     * pPr and rPr attributes.
+     * 
+     * @param wmlPackage
+     * @param pPrNodeIt
+     * @param pStyleVal
+     * @param childResults
+     * @return
+     */
     public static DocumentFragment createBlockForPPr( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
@@ -291,12 +303,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
     	// which implements org.w3c.dom.traversal.NodeIterator
-
     	
-    	if (pStyleVal!=null && !pStyleVal.equals("")) {
-        	log.info("style '" + pStyleVal );     		
-    	}
-//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
+		if ( pStyleVal ==null || pStyleVal.equals("") ) {
+			pStyleVal = "Normal";
+		}
+    	log.debug("style '" + pStyleVal );     		
+
+    	//    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
     	
     	
@@ -307,17 +320,32 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	// methods.  Its a bit sad that we 
         	// can't just adorn our DOM tree with the
         	// original JAXB objects?
-			Unmarshaller u = Context.jc.createUnmarshaller();			
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			Object jaxb = u.unmarshal(pPrNodeIt.nextNode());
-			
-			PPr pPrDirect = null;
-			try {
-				pPrDirect =  (PPr)jaxb;
-			} catch (ClassCastException e) {
-		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
-			}        	
-        	PPr pPr = propertyResolver.getEffectivePPr(pPrDirect);
+        	PPr pPr = null;
+        	RPr rPr = null;
+        	if (pPrNodeIt==null) {  // Never happens?        		
+    			log.debug("Here after all!!");        		
+        		pPr = propertyResolver.getEffectivePPr("Normal");
+        		rPr = propertyResolver.getEffectiveRPr("Normal");
+        	} else {
+        		Node n = pPrNodeIt.nextNode();
+        		if (n==null) {
+        			log.warn("pPrNodeIt.nextNode() was null.");
+            		pPr = propertyResolver.getEffectivePPr("Normal");
+            		rPr = propertyResolver.getEffectiveRPr("Normal");
+            		// TODO - in this case, we should be able to compute once,
+            		// and on subsequent calls, just return pre computed value
+        		} else {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+    				PPr pPrDirect =  (PPr)jaxb;
+    				pPr = propertyResolver.getEffectivePPr(pPrDirect);   
+    				log.warn("getting rPr for paragraph style");    				
+    				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
+    					// rPr in pPr direct formatting only applies to paragraph mark, 
+    					// so pass null here       				
+        		}
+        	}        	
         	
             // Create a DOM builder and parse the fragment			
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -327,43 +355,33 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 			Node foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");			
 			document.appendChild(foBlockElement);
+							
+			if (log.isDebugEnabled() && pPr!=null) {				
+				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
+			}				
+		       
+			createFoAttributes(pPr, ((Element)foBlockElement) );
+			createFoAttributes(wmlPackage, rPr, ((Element)foBlockElement) );
 			
-			if (pPr==null) {
-				Text err = document.createTextNode( "Couldn't cast " + jaxb.getClass().getName() + " to PPr!" );
-				foBlockElement.appendChild(err);
-				
-			} else {
-				
-				if (log.isDebugEnabled()) {					
-					log.debug(XmlUtils.marshaltoString(pPr, true, true));					
-				}				
-			       
-				if ( pPr.getJc()!=null) {				
-					((Element)foBlockElement).setAttribute("text-align", 
-							pPr.getJc().getVal().value() );
-				}
-				// TODO - other pPr props, including rPr.
-				
-				// Our fo:block wraps whatever result tree fragment
-				// our style sheet produced when it applied-templates
-				// to the child nodes
-				Node n = childResults.nextNode();
-				
+			// Our fo:block wraps whatever result tree fragment
+			// our style sheet produced when it applied-templates
+			// to the child nodes
+			Node n = childResults.nextNode();
+			
 //				log.info("Node we are importing: " + n.getClass().getName() );
 //				foBlockElement.appendChild(
 //						document.importNode(n, true) );
-				/*
-				 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-				 * which causes
-				 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-				 * 
-				 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-				 * 
-				 * So instead of importNode, use 
-				 */
-				XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );
+			/*
+			 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
+			 * which causes
+			 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
+			 * 
+			 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+			 * 
+			 * So instead of importNode, use 
+			 */
+			XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );
 			
-			}
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
@@ -380,8 +398,150 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     }
 
+	public static void createFoAttributes(PPr pPr, Element foBlockElement){
+		
+		// TODO - other pPr props, including rPr.
+		// Here is where we do the real work.  
+		// There are a lot of paragraph properties
+		// The below list is taken directly from PPrBase.
+		
+		//PPrBase.PStyle pStyle;
+		
+			// Ignore
+		
+		//BooleanDefaultTrue keepNext;
+		if (pPr.getKeepNext()!=null) {
+			if (pPr.getKeepNext().isVal() ) {
+				((Element)foBlockElement).setAttribute("keep-with-next", "always");
+			} 
+		}
+		
+	
+		//BooleanDefaultTrue keepLines;
+		if (pPr.getKeepLines()!=null) {
+		}
+	
+		//BooleanDefaultTrue pageBreakBefore;
+		if (pPr.getPageBreakBefore()!=null) {
+			if (pPr.getPageBreakBefore().isVal() ) {
+				((Element)foBlockElement).setAttribute("break-before", "page");
+			} 
+		}
+	
+		//CTFramePr framePr;
+		//BooleanDefaultTrue widowControl;
+		if (pPr.getWidowControl()!=null) {
+		}
+	
+		//PPrBase.NumPr numPr;
+		
+			// High priority
+	
+		//BooleanDefaultTrue suppressLineNumbers;
+		if (pPr.getSuppressLineNumbers()!=null) {
+		}
+		//PPrBase.PBdr pBdr;
+		
+			// Medium priority
+	
+		//CTShd shd;
+		
+			// Medium priority
+	
+		//Tabs tabs;
+		
+			// ???
+	
+		//BooleanDefaultTrue suppressAutoHyphens;
+		//BooleanDefaultTrue kinsoku;
+		//BooleanDefaultTrue wordWrap;
+		//BooleanDefaultTrue overflowPunct;
+		//BooleanDefaultTrue topLinePunct;
+		//BooleanDefaultTrue autoSpaceDE;
+		//BooleanDefaultTrue autoSpaceDN;
+		//BooleanDefaultTrue bidi;
+		//BooleanDefaultTrue adjustRightInd;
+		//BooleanDefaultTrue snapToGrid;
+		//PPrBase.Spacing spacing;
+		
+			// High priority
+	
+		//PPrBase.Ind ind;
+		if (pPr.getInd()!=null ) {
+			
+			// Just handle left for the moment
+			// TODO hanging, something like start-indent="1in" text-indent="-1in"
+			BigInteger left = pPr.getInd().getLeft();
+			if (left!=null) {
+				// 720 twip = 1 inch;
+				// Try to guess whether inches or cm
+				// looks nicer
+				int leftL = left.intValue();
+				float inch4f = 4*leftL/720;
+				float inch4fabit = inch4f + 0.49f;
+				int inch4 = Math.round(inch4f);
+				int inch4next = Math.round( inch4fabit);
+				float inches = leftL/720;
+				if (inch4==inch4next) {
+					// inches work 
+					((Element)foBlockElement).setAttribute("start-indent", inches + "in" );
+				} else {
+					float mm = inches/0.0394f;
+					((Element)foBlockElement).setAttribute("start-indent", Math.round(mm) + "mm" );
+				} 
+				
+			}
+			
+		}
+	
+		//BooleanDefaultTrue contextualSpacing;
+		//BooleanDefaultTrue mirrorIndents;
+		//BooleanDefaultTrue suppressOverlap;
+		//Jc jc;
+		if ( pPr.getJc()!=null) {				
+			String val = pPr.getJc().getVal().value();
+			if (val.equals("left") || val.equals("center") || val.equals("right")) {			
+				((Element)foBlockElement).setAttribute("text-align", 
+					val );
+			} // ignore the other possibilities for now
+		}
+	
+		//TextDirection textDirection;
+		//PPrBase.TextAlignment textAlignment;
+		if ( pPr.getTextAlignment()!=null) {	
+			String val = pPr.getTextAlignment().getVal();
+			if (val.equals("top") || val.equals("bottom") || val.equals("baseline") ) {						
+				((Element)foBlockElement).setAttribute( "vertical-align", val );
+			} else if (val.equals("center")) {
+				((Element)foBlockElement).setAttribute("vertical-align","middle" );
+			} else if (val.equals("auto")) {
+				((Element)foBlockElement).setAttribute("vertical-align", "baseline" );
+			}
+		}
+	
+		//CTTextboxTightWrap textboxTightWrap;
+		//PPrBase.OutlineLvl outlineLvl;
+		
+			// Medium priority
+	
+		//PPrBase.DivId divId;
+		//CTCnf cnfStyle;
+		
+	}
+
+    /**
+     * On a block representing a run, we just put run properties
+     * from this rPr node. The paragraph style rPr's have been
+     * taken care of on the fo block which represents the paragraph.
+     * 
+     * @param wmlPackage
+     * @param rPrNodeIt
+     * @param childResults
+     * @return
+     */
     public static DocumentFragment createBlockForRPr( 
     		WordprocessingMLPackage wmlPackage,
+    		//NodeIterator pPrNodeIt,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
 
@@ -407,15 +567,29 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	// original JAXB objects?
 			Unmarshaller u = Context.jc.createUnmarshaller();			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			Object jaxb = u.unmarshal(rPrNodeIt.nextNode());
-			
+
+//			// We might not have a pPr node
+//			PPr pPrDirect = null;
+//        	if (pPrNodeIt!=null) {
+//        		Node n = pPrNodeIt.nextNode();
+//        		if (n!=null) {
+//        			Object jaxb = u.unmarshal(n);
+//        			try {
+//        				pPrDirect =  (PPr)jaxb;
+//        			} catch (ClassCastException e) {
+//        		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
+//        			}        	        			
+//        		}
+//        	}
+        	
+			Object jaxbR = u.unmarshal(rPrNodeIt.nextNode());			
 			RPr rPrDirect = null;
 			try {
-				rPrDirect =  (RPr)jaxb;
+				rPrDirect =  (RPr)jaxbR;
 			} catch (ClassCastException e) {
-		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to RPr!");
+		    	log.error("Couldn't cast .." );
 			}        	
-        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect);
+        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect, null);
         	
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -423,65 +597,23 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			
 			//log.info("Document: " + document.getClass().getName() );
 
-			Node foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");			
-			document.appendChild(foBlockElement);
+			Node foInlineElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");			
+			document.appendChild(foInlineElement);
 			
-			if (rPr==null) {
-				Text err = document.createTextNode( "Couldn't cast " + jaxb.getClass().getName() + " to PPr!" );
-				foBlockElement.appendChild(err);
 				
-			} else {
-				
-				if (log.isDebugEnabled()) {					
-					log.debug(XmlUtils.marshaltoString(rPr, true, true));					
-				}
-				
-				RFonts rFonts = rPr.getRFonts();
-				if (rFonts !=null ) {
-					
-					String font = rFonts.getAscii();
-					
-					if (font==null) {
-						// TODO - actually what Word does in this case
-						// is inherit the default document font eg Calibri
-						// (which is what it shows in its user interface)
-						font = rFonts.getCs();
-					}
-					
-					if (font==null) {
-						log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
-						font=Mapper.FONT_FALLBACK;
-					}
-					
-					log.info("Font: " + font);
-					
-					PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
-					if (pf!=null) {					
-						((Element)foBlockElement).setAttribute("font-family", 
-							 pf.getName() );
-					} else {
-						log.error("No mapping from " + font);
-					}
-				}
-			    
-				// bold				
-				if ( rPr.getB()!=null ) {				
-					((Element)foBlockElement).setAttribute("font-weight", 
-							"bold" );
-				}
-				// italic
-				if ( rPr.getI()!=null ) {				
-					((Element)foBlockElement).setAttribute("font-style", 
-							"italic" );
-				}
-				// TODO - other rPr props.
-				
-				// Our fo:block wraps whatever result tree fragment
-				// our style sheet produced when it applied-templates
-				// to the child nodes
-				Node n = childResults.nextNode();
-				XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );			
+			if (log.isDebugEnabled() && rPr!=null) {					
+				log.debug(XmlUtils.marshaltoString(rPr, true, true));					
 			}
+			
+			//if (rPr!=null) {				
+				createFoAttributes(wmlPackage, rPr, ((Element)foInlineElement) );
+			//}
+			
+			// Our fo:block wraps whatever result tree fragment
+			// our style sheet produced when it applied-templates
+			// to the child nodes
+			Node n = childResults.nextNode();
+			XmlUtils.treeCopy( (DTMNodeProxy)n,  foInlineElement );			
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
@@ -497,7 +629,134 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	return null;
     	
     }
-    
+
+	public static void createFoAttributes(WordprocessingMLPackage wmlPackage,
+			RPr rPr, Element foInlineElement){
+
+		// Here is where we do the real work.  
+		// There are a lot of run properties
+		// The below list is taken directly from RPr, and so
+		// is comprehensive.
+		
+		//RStyle rStyle;
+		//RFonts rFonts;
+		
+		RFonts rFonts = rPr.getRFonts();
+		if (rFonts !=null ) {
+			
+			String font = rFonts.getAscii();
+			
+			if (font==null) {
+				// TODO - actually what Word does in this case
+				// is inherit the default document font eg Calibri
+				// (which is what it shows in its user interface)
+				font = rFonts.getCs();
+			}
+			
+			if (font==null) {
+				log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
+				font=Mapper.FONT_FALLBACK;
+			}
+			
+			log.info("Font: " + font);
+			
+			PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
+			if (pf!=null) {					
+				((Element)foInlineElement).setAttribute("font-family", 
+					 pf.getName() );
+			} else {
+				log.error("No mapping from " + font);
+			}
+		}
+	    
+
+		//BooleanDefaultTrue b;
+		// bold				
+		if ( rPr.getB()!=null ) {				
+			((Element)foInlineElement).setAttribute("font-weight", 
+					"bold" );
+		}
+
+		//BooleanDefaultTrue bCs;
+		//BooleanDefaultTrue i;
+		// italic
+		if ( rPr.getI()!=null ) {				
+			((Element)foInlineElement).setAttribute("font-style", 
+					"italic" );
+		}
+
+		//BooleanDefaultTrue iCs;
+		//BooleanDefaultTrue caps;
+		if (rPr.getCaps()!=null) {
+		}
+
+		//BooleanDefaultTrue smallCaps;
+		if (rPr.getSmallCaps()!=null) {
+		}
+
+		//BooleanDefaultTrue strike;
+		if (rPr.getStrike()!=null) {
+			if (rPr.getStrike().isVal() ) {
+				((Element)foInlineElement).setAttribute("text-decoration", "line-through" );
+			} else {
+				((Element)foInlineElement).setAttribute("text-decoration", "none" );
+			}
+		}
+		//BooleanDefaultTrue dstrike;
+		//BooleanDefaultTrue outline;
+		//BooleanDefaultTrue shadow;
+		//BooleanDefaultTrue emboss;
+		//BooleanDefaultTrue imprint;
+		//BooleanDefaultTrue noProof;
+		//BooleanDefaultTrue snapToGrid;
+		//BooleanDefaultTrue vanish;
+		//BooleanDefaultTrue webHidden;
+		//Color color;
+		if (rPr.getColor()!=null) {
+			if (rPr.getColor().getVal()!=null) {
+				((Element)foInlineElement).setAttribute("color", "#" + rPr.getColor().getVal() );
+			} // ignore theme stuff
+		}
+
+		//CTSignedTwipsMeasure spacing;
+		//CTTextScale w;
+		//HpsMeasure kern;
+		//CTSignedHpsMeasure position;
+		//HpsMeasure sz;
+		if (rPr.getSz()!=null) {			
+			float pts = rPr.getSz().getVal().floatValue()/2;
+			((Element)foInlineElement).setAttribute("font-size", pts + "pt" );
+		}
+
+		//HpsMeasure szCs;
+		//Highlight highlight;
+		//U u;
+		if (rPr.getU()!=null) {
+			if (rPr.getU().getVal()==null ) {
+				// This does happen
+				((Element)foInlineElement).setAttribute("text-decoration", "underline" );
+			} else if (!rPr.getU().getVal().equals( UnderlineEnumeration.NONE ) ) {
+				((Element)foInlineElement).setAttribute("text-decoration", "underline" );
+			} 
+			// How to handle <w:u w:color="FF0000"> ie coloured underline?
+		}
+
+		//CTTextEffect effect;
+		//CTBorder bdr;
+		//CTShd shd;
+		//CTFitText fitText;
+		//CTVerticalAlignRun vertAlign;
+		//BooleanDefaultTrue rtl;
+		//BooleanDefaultTrue cs;
+		//CTEm em;
+		//CTLanguage lang;
+		//CTEastAsianLayout eastAsianLayout;
+		//BooleanDefaultTrue specVanish;
+		//BooleanDefaultTrue oMath;
+		//CTRPrChange rPrChange;
+		
+	}
+	
     public static DocumentFragment createTable( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator tblNodeIt ) {

@@ -28,6 +28,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
+import org.docx4j.convert.out.html.HtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -38,11 +39,13 @@ public class CreateHtml {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-	    	boolean save = false;
+	    	boolean save = true;	    	
+	    	boolean useHtmlExporterNG = true;
 	    	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
 			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+//			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;
@@ -63,13 +66,27 @@ public class CreateHtml {
 				wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 			}
 	    	
-			AbstractHtmlExporter exporter = new HtmlExporterNG(); 			
-			//OutputStream os = System.out;
-			OutputStream os = new java.io.FileOutputStream(inputfilepath + ".html");			
+			AbstractHtmlExporter exporter;
+			if (useHtmlExporterNG) {
+				exporter = new HtmlExporterNG(); 			
+			} else {
+				exporter = new HtmlExporter();
+			}
+			
+			OutputStream os; 
+			if (save) {
+				os = new java.io.FileOutputStream(inputfilepath + ".html");
+			} else {
+				os = System.out;
+
+			}
 			
 			javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(os);
 			exporter.html(wordMLPackage, result, 
    					inputfilepath + "_files");
+			if (save) {
+				System.out.println("Saved: " + inputfilepath + ".html using " +  exporter.getClass().getName() );
+			}
 	        	        
 	    }
 	}

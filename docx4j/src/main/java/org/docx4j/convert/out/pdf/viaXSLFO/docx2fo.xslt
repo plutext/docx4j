@@ -368,34 +368,19 @@
        font-family and size, line-heigth etc. -->
   <xsl:template match="w:p">
   
-  	<xsl:choose>
-  		<xsl:when test="w:pPr">
-  			<!--  Invoke an extension function, so we can use
-  			      docx4j to populate the fo:block -->
-  		
-			<xsl:variable name="childResults">
-				<xsl:apply-templates/>
-			</xsl:variable>
-			
-			<xsl:variable name="pPrNode" select="w:pPr" />  	
-			<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
-	
-		  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
-		  		$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
-	  		
-	  	</xsl:when>
-	  	<xsl:otherwise>
-	  		<!--  TODO: use sensible defaults here .. -->
-		      <fo:block font-size="12pt"
-		                font-family="sans-serif"
-		                line-height="15pt"
-		                space-after.optimum="3pt"
-		                text-align="justify">
-		        	<xsl:apply-templates/>
-		      </fo:block>
-	  	</xsl:otherwise>
-	  </xsl:choose>					
+ 			<!--  Invoke an extension function, so we can use
+ 			      docx4j to populate the fo:block -->
+ 		
+		<xsl:variable name="childResults">
+			<xsl:apply-templates/>
+		</xsl:variable>
 		
+		<xsl:variable name="pPrNode" select="w:pPr" />  	
+		<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
+
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
+	  		$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+	  		
 		
   </xsl:template>
 
@@ -411,6 +396,7 @@
 				<xsl:apply-templates/>
 			</xsl:variable>
 			
+			<!-- <xsl:variable name="pPrNode" select="../w:pPr" />  -->  	
 			<xsl:variable name="rPrNode" select="w:rPr" />  	
 	
 		  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForRPr( 
