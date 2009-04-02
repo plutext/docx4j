@@ -1,6 +1,7 @@
 package org.docx4j.model;
 
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,9 +16,22 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.CTShd;
+import org.docx4j.wml.Color;
+import org.docx4j.wml.HpsMeasure;
+import org.docx4j.wml.Jc;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Tabs;
+import org.docx4j.wml.U;
+import org.docx4j.wml.PPrBase.Ind;
+import org.docx4j.wml.PPrBase.NumPr;
+import org.docx4j.wml.PPrBase.OutlineLvl;
+import org.docx4j.wml.PPrBase.PBdr;
+import org.docx4j.wml.PPrBase.Spacing;
+import org.docx4j.wml.PPrBase.TextAlignment;
 import org.docx4j.wml.Styles.DocDefaults;
 
 /**
@@ -79,14 +93,14 @@ public class PropertyResolver {
 	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
 
 	private java.util.Map<String, PPr>  resolvedStylePPrComponent = new HashMap<String, PPr>();
-	public java.util.Map<String, PPr> getResolvedStylePPrComponent() {
-		return resolvedStylePPrComponent;
-	}
+//	public java.util.Map<String, PPr> getResolvedStylePPrComponent() {
+//		return resolvedStylePPrComponent;
+//	}
 
 	private java.util.Map<String, RPr>  resolvedStyleRPrComponent = new HashMap<String, RPr>();
-	public java.util.Map<String, RPr> getResolvedStyleRPrComponent() {
-		return resolvedStyleRPrComponent;
-	}
+//	public java.util.Map<String, RPr> getResolvedStyleRPrComponent() {
+//		return resolvedStyleRPrComponent;
+//	}
 	
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
@@ -451,24 +465,30 @@ public class PropertyResolver {
 		}
 	
 		//PPrBase.NumPr numPr;
-		
-			// High priority
+		//NumPr numPr;
+		if (pPrToApply.getNumPr()!=null) {
+			return true;		
+		}
 	
 		//BooleanDefaultTrue suppressLineNumbers;
 		if (pPrToApply.getSuppressLineNumbers()!=null) {
 			return true;		
 		}
-		//PPrBase.PBdr pBdr;
 		
-			// Medium priority
+		// PBdr pBdr;
+		if (pPrToApply.getPBdr()!=null) {
+			return true;		
+		}
 	
 		//CTShd shd;
-		
-			// Medium priority
-	
+		if (pPrToApply.getShd()!=null) {
+			return true;		
+		}
+			
 		//Tabs tabs;
-		
-			// High priority
+		if (pPrToApply.getTabs()!=null) {
+			return true;		
+		}
 	
 		//BooleanDefaultTrue suppressAutoHyphens;
 		//BooleanDefaultTrue kinsoku;
@@ -481,30 +501,34 @@ public class PropertyResolver {
 		//BooleanDefaultTrue adjustRightInd;
 		//BooleanDefaultTrue snapToGrid;
 		//PPrBase.Spacing spacing;
-		
-			// High priority
+		if (pPrToApply.getSpacing()!=null) {
+			return true;		
+		}
 	
 		//PPrBase.Ind ind;
-		
-			// High priority
+		if (pPrToApply.getInd()!=null) {
+			return true;		
+		}
 	
 		//BooleanDefaultTrue contextualSpacing;
 		//BooleanDefaultTrue mirrorIndents;
 		//BooleanDefaultTrue suppressOverlap;
 		//Jc jc;
-		
-			// High priority
+		if (pPrToApply.getJc()!=null) {
+			return true;		
+		}
 	
 		//TextDirection textDirection;
 		//PPrBase.TextAlignment textAlignment;
-		
-			// High priority
+		if (pPrToApply.getTextAlignment()!=null ) {
+			return true;		
+		}
 	
 		//CTTextboxTightWrap textboxTightWrap;
 		//PPrBase.OutlineLvl outlineLvl;
-		
-			// Medium priority
-	
+		if (pPrToApply.getOutlineLvl()!=null ) {
+			return true;		
+		}
 		//PPrBase.DivId divId;
 		//CTCnf cnfStyle;
 		
@@ -557,9 +581,11 @@ public class PropertyResolver {
 							pPrToApply.getWidowControl().isVal()));			
 		}
 	
-		//PPrBase.NumPr numPr;
-		
-			// High priority
+		//NumPr numPr;
+		if (pPrToApply.getNumPr()!=null) {
+			NumPr numPrClone = (NumPr)XmlUtils.deepCopy(pPrToApply.getNumPr());
+			effectivePPr.setNumPr(numPrClone);			
+		}
 	
 		//BooleanDefaultTrue suppressLineNumbers;
 		if (pPrToApply.getSuppressLineNumbers()!=null) {
@@ -567,17 +593,24 @@ public class PropertyResolver {
 					newBooleanDefaultTrue(
 							pPrToApply.getSuppressLineNumbers().isVal()));			
 		}
-		//PPrBase.PBdr pBdr;
 		
-			// Medium priority
+		// PBdr pBdr;
+		if (pPrToApply.getPBdr()!=null) {
+			PBdr pBdrClone = (PBdr)XmlUtils.deepCopy(pPrToApply.getPBdr());
+			effectivePPr.setPBdr(pBdrClone);						
+		}
 	
 		//CTShd shd;
-		
-			// Medium priority
-	
+		if (pPrToApply.getShd()!=null) {
+			CTShd shdClone = (CTShd)XmlUtils.deepCopy(pPrToApply.getShd());
+			effectivePPr.setShd(shdClone);
+		}
+			
 		//Tabs tabs;
-		
-			// High priority
+		if (pPrToApply.getTabs()!=null) {
+			Tabs tabs = (Tabs)XmlUtils.deepCopy(pPrToApply.getTabs());
+			effectivePPr.setTabs(tabs);
+		}
 	
 		//BooleanDefaultTrue suppressAutoHyphens;
 		//BooleanDefaultTrue kinsoku;
@@ -590,29 +623,39 @@ public class PropertyResolver {
 		//BooleanDefaultTrue adjustRightInd;
 		//BooleanDefaultTrue snapToGrid;
 		//PPrBase.Spacing spacing;
-		
-			// High priority
+		if (pPrToApply.getSpacing()!=null) {
+			Spacing spacing = (Spacing)XmlUtils.deepCopy(pPrToApply.getSpacing());
+			effectivePPr.setSpacing(spacing);
+		}
 	
 		//PPrBase.Ind ind;
-		
-			// High priority
+		if (pPrToApply.getInd()!=null) {
+			Ind ind = (Ind)XmlUtils.deepCopy(pPrToApply.getInd());
+			effectivePPr.setInd(ind);
+		}
 	
 		//BooleanDefaultTrue contextualSpacing;
 		//BooleanDefaultTrue mirrorIndents;
 		//BooleanDefaultTrue suppressOverlap;
 		//Jc jc;
-		
-			// High priority
+		if (pPrToApply.getJc()!=null) {
+			Jc jc = (Jc)XmlUtils.deepCopy(pPrToApply.getJc() );
+			effectivePPr.setJc(jc);
+		}
 	
 		//TextDirection textDirection;
 		//PPrBase.TextAlignment textAlignment;
-		
-			// High priority
+		if (pPrToApply.getTextAlignment()!=null ) {
+			TextAlignment ta = (TextAlignment)XmlUtils.deepCopy(pPrToApply.getTextAlignment() );
+			effectivePPr.setTextAlignment(ta);
+		}
 	
 		//CTTextboxTightWrap textboxTightWrap;
 		//PPrBase.OutlineLvl outlineLvl;
-		
-			// Medium priority
+		if (pPrToApply.getOutlineLvl()!=null ) {
+			OutlineLvl ol = (OutlineLvl)XmlUtils.deepCopy(pPrToApply.getOutlineLvl() );
+			effectivePPr.setOutlineLvl(ol);
+		}
 	
 		//PPrBase.DivId divId;
 		//CTCnf cnfStyle;
@@ -632,8 +675,9 @@ public class PropertyResolver {
 		
 		//RStyle rStyle;
 		//RFonts rFonts;
-		
-			// High priority
+		if (rPrToApply.getRFonts()!=null ) {
+			return true;
+		}
 
 		//BooleanDefaultTrue b;
 		if (rPrToApply.getB()!=null) {
@@ -671,22 +715,25 @@ public class PropertyResolver {
 		//BooleanDefaultTrue vanish;
 		//BooleanDefaultTrue webHidden;
 		//Color color;
-		
-			// High priority
+		if (rPrToApply.getColor()!=null ) {
+			return true;			
+		}
 
 		//CTSignedTwipsMeasure spacing;
 		//CTTextScale w;
 		//HpsMeasure kern;
 		//CTSignedHpsMeasure position;
 		//HpsMeasure sz;
-		
-			// High priority
+		if (rPrToApply.getSz()!=null ) {
+			return true;			
+		}
 
 		//HpsMeasure szCs;
 		//Highlight highlight;
 		//U u;
-		
-			// High priority
+		if (rPrToApply.getU()!=null ) {
+			return true;			
+		}
 
 		//CTTextEffect effect;
 		//CTBorder bdr;
@@ -719,8 +766,10 @@ public class PropertyResolver {
 		
 		//RStyle rStyle;
 		//RFonts rFonts;
-		
-			// High priority
+		if (rPrToApply.getRFonts()!=null ) {
+			RFonts rf = (RFonts)XmlUtils.deepCopy( rPrToApply.getRFonts() );
+			effectiveRPr.setRFonts(rf);
+		}
 
 		//BooleanDefaultTrue b;
 		if (rPrToApply.getB()!=null) {
@@ -768,22 +817,31 @@ public class PropertyResolver {
 		//BooleanDefaultTrue vanish;
 		//BooleanDefaultTrue webHidden;
 		//Color color;
-		
-			// High priority
+		if (rPrToApply.getColor()!=null ) {
+			Color c = (Color)XmlUtils.deepCopy( rPrToApply.getColor() );
+			effectiveRPr.setColor(c);
+		}
 
 		//CTSignedTwipsMeasure spacing;
 		//CTTextScale w;
 		//HpsMeasure kern;
 		//CTSignedHpsMeasure position;
 		//HpsMeasure sz;
-		
-			// High priority
+		if (rPrToApply.getSz()!=null ) {
+			// We don't have @XmlRootElement on HpsMeasure, so can't deepCopy
+			HpsMeasure sz = factory.createHpsMeasure(); 
+			long szLong = rPrToApply.getSz().getVal().longValue();
+			sz.setVal( BigInteger.valueOf(szLong)  );
+			effectiveRPr.setSz(sz);
+		}
 
 		//HpsMeasure szCs;
 		//Highlight highlight;
 		//U u;
-		
-			// High priority
+		if (rPrToApply.getU()!=null ) {
+			U rf = (U)XmlUtils.deepCopy( rPrToApply.getU() );
+			effectiveRPr.setU(rf);
+		}
 
 		//CTTextEffect effect;
 		//CTBorder bdr;
