@@ -26,6 +26,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -1225,6 +1226,7 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "ind")        
     public static class Ind
         implements Child
     {
@@ -1524,6 +1526,7 @@ public class PPrBase
         "numberingChange",
         "ins"
     })
+    @XmlRootElement(name = "numPr")    
     public static class NumPr
         implements Child
     {
@@ -1856,6 +1859,7 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "outlineLvl")        
     public static class OutlineLvl
         implements Child
     {
@@ -1951,6 +1955,7 @@ public class PPrBase
         "between",
         "bar"
     })
+    @XmlRootElement(name = "pBdr")        
     public static class PBdr
         implements Child
     {
@@ -2244,6 +2249,7 @@ public class PPrBase
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "spacing")        
     public static class Spacing
         implements Child
     {
