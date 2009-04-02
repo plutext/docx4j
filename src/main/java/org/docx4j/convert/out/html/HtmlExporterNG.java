@@ -2,6 +2,7 @@ package org.docx4j.convert.out.html;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -231,10 +232,11 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
     	// which implements org.w3c.dom.traversal.NodeIterator
 
+		if ( pStyleVal ==null || pStyleVal.equals("") ) {
+			pStyleVal = "Normal";
+		}
+    	log.debug("style '" + pStyleVal );     		
     	
-    	if (pStyleVal!=null && !pStyleVal.equals("")) {
-        	log.info("style '" + pStyleVal );     		
-    	}
 //    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
     	
@@ -246,16 +248,20 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
         	// methods.  Its a bit sad that we 
         	// can't just adorn our DOM tree with the
         	// original JAXB objects?
-			Unmarshaller u = Context.jc.createUnmarshaller();			
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			Object jaxb = u.unmarshal(pPrNodeIt.nextNode());
-			
-			PPr pPr = null;
-			try {
-				pPr =  (PPr)jaxb;
-			} catch (ClassCastException e) {
-		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
-			}        	
+        	PPr pPr = null;
+        	if (pPrNodeIt!=null) {
+        		Node n = pPrNodeIt.nextNode();
+        		if (n!=null) {
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			Object jaxb = u.unmarshal(n);
+        			try {
+        				pPr =  (PPr)jaxb;
+        			} catch (ClassCastException e) {
+        		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
+        			}        	        			
+        		}
+        	}
         	
             // Create a DOM builder and parse the fragment			
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -265,50 +271,44 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 
 			Node xhtmlP = document.createElement("p");			
 			document.appendChild(xhtmlP);
+							
+			if (log.isDebugEnabled() && pPr!=null) {					
+				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
+			}				
+		    
+			// Set @class
+			((Element)xhtmlP).setAttribute("class", 
+					pStyleVal + PPR_COMPONENT + " " 
+				  + pStyleVal + RPR_COMPONENT);
 			
-			if (pPr==null) {
-				Text err = document.createTextNode( "Couldn't cast " + jaxb.getClass().getName() + " to PPr!" );
-				xhtmlP.appendChild(err);
-				
-			} else {
-				
-				if (log.isDebugEnabled()) {					
-					log.debug(XmlUtils.marshaltoString(pPr, true, true));					
-				}				
-			    
-				// Set @class
-				if ( pStyleVal !=null && !pStyleVal.equals("") ) {
-					// Or we could have got that from our pPr object					
-					((Element)xhtmlP).setAttribute("class", pStyleVal );
-				}
-				
-				// Does our pPr contain anything else?
+			
+			// Does our pPr contain anything else?
+			if (pPr!=null) {
 				StringBuffer inlineStyle =  new StringBuffer();
 				createCss(pPr, inlineStyle);				
 				if (!inlineStyle.toString().equals("") ) {
 					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
 				}
-				
-				// Our fo:block wraps whatever result tree fragment
-				// our style sheet produced when it applied-templates
-				// to the child nodes
-				Node n = childResults.nextNode();
-				
+			}
+			// Our fo:block wraps whatever result tree fragment
+			// our style sheet produced when it applied-templates
+			// to the child nodes
+			Node n = childResults.nextNode();
+			
 //				log.info("Node we are importing: " + n.getClass().getName() );
 //				foBlockElement.appendChild(
 //						document.importNode(n, true) );
-				/*
-				 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-				 * which causes
-				 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-				 * 
-				 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-				 * 
-				 * So instead of importNode, use 
-				 */
-				XmlUtils.treeCopy( (DTMNodeProxy)n,  xhtmlP );
+			/*
+			 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
+			 * which causes
+			 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
+			 * 
+			 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+			 * 
+			 * So instead of importNode, use 
+			 */
+			XmlUtils.treeCopy( (DTMNodeProxy)n,  xhtmlP );
 			
-			}
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
@@ -327,6 +327,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 
     public static DocumentFragment createBlockForRPr( 
     		WordprocessingMLPackage wmlPackage,
+    		String pStyleVal,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
     
@@ -379,12 +380,16 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 				if (log.isDebugEnabled()) {					
 					log.debug(XmlUtils.marshaltoString(rPr, true, true));					
 				}
+				
+				if (pStyleVal==null || pStyleVal.equals("")) {
+					pStyleVal = "Normal";
+				}
 
 				// Set @class				
 				if ( rPr.getRStyle()!=null) {
 					String rStyleVal = rPr.getRStyle().getVal();
 					if (!rStyleVal.toString().equals("") ) {
-						((Element)span).setAttribute("class", rStyleVal );
+						((Element)span).setAttribute("class", rStyleVal + " " + pStyleVal + RPR_COMPONENT );
 					}
 				}
 				
@@ -502,6 +507,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     	
     }
     
+    public static final String PPR_COMPONENT = "_pPr";
+    public static final String RPR_COMPONENT = "_rPr";
+    
     public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {
     	
     	StringBuffer result = new StringBuffer();
@@ -512,6 +520,8 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     		wmlPackage.getMainDocumentPart().getPropertyResolver();
     	
 		Iterator it = stylesInUse.entrySet().iterator();
+		// First iteration - paragraph level pPr *and rPr*
+		result.append("\n /* PARAGRAPH STYLES */ ");
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
 	        String styleId = (String)pairs.getKey();
@@ -519,15 +529,38 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	        Style s = propertyResolver.getStyle(styleId);
 	        
 	        if (s.getType().equals("paragraph") ) {
+	        	// the pPr component
 	        	PPr pPr = propertyResolver.getEffectivePPr(styleId);
 	        	if (pPr==null) {
 	        		log.debug("null pPr for style " + styleId);
 	        	} else {
-		        	result.append( "."+styleId + " {" );
+		        	result.append( "."+styleId + PPR_COMPONENT + " {" );
 		        	createCss( pPr, result);
 		        	result.append( "}\n" );
 	        	}
-	        } else if (s.getType().equals("character") ) {
+	        	// the rPr component
+	        	RPr rPr = propertyResolver.getEffectiveRPr(styleId);
+	        	if (rPr==null) {
+	        		log.debug("null rPr for style " + styleId);
+	        	} else {
+		        	result.append( "."+styleId + RPR_COMPONENT + " {" );
+		        	createCss(wmlPackage, rPr, result);
+		        	result.append( "}\n" );
+	        	}
+	        } // ignore character, and table and numbering styles
+	        
+	    }
+	    // Second iteration, character styles
+		result.append("\n /* CHARACTER STYLES */ ");
+		result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ ");
+		it = stylesInUse.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)it.next();
+	        String styleId = (String)pairs.getKey();
+	        
+	        Style s = propertyResolver.getStyle(styleId);
+	        
+	        if (s.getType().equals("character") ) {
 	        	RPr rPr = propertyResolver.getEffectiveRPr(styleId);
 	        	if (rPr==null) {
 	        		log.debug("null rPr for style " + styleId);
@@ -618,8 +651,31 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 			// High priority
 	
 		//PPrBase.Ind ind;
-		
-			// High priority
+		if (pPr.getInd()!=null ) {
+			
+			// Just handle left for the moment
+			BigInteger left = pPr.getInd().getLeft();
+			if (left!=null) {
+				// 720 twip = 1 inch;
+				// Try to guess whether inches or cm
+				// looks nicer
+				int leftL = left.intValue();
+				float inch4f = 4*leftL/720;
+				float inch4fabit = inch4f + 0.49f;
+				int inch4 = Math.round(inch4f);
+				int inch4next = Math.round( inch4fabit);
+				float inches = leftL/720;
+				if (inch4==inch4next) {
+					// inches work 
+					result.append( "position: relative; left: " + inches + "in;" );
+				} else {
+					float mm = inches/0.0394f;
+					result.append( "position: relative; left: " + Math.round(mm) + "mm;" );
+				} 
+				
+			}
+			
+		}
 	
 		//BooleanDefaultTrue contextualSpacing;
 		//BooleanDefaultTrue mirrorIndents;
@@ -741,8 +797,11 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		//BooleanDefaultTrue vanish;
 		//BooleanDefaultTrue webHidden;
 		//Color color;
-		
-			// High priority
+		if (rPr.getColor()!=null) {
+			if (rPr.getColor().getVal()!=null) {
+				result.append( "color: #" + rPr.getColor().getVal() + ";" );
+			} // ignore theme stuff
+		}
 
 		//CTSignedTwipsMeasure spacing;
 		//CTTextScale w;
@@ -753,16 +812,18 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 			float pts = rPr.getSz().getVal().floatValue()/2;
 			result.append( "font-size:" + pts + "pt;" );
 		}
-		
-			// High priority
 
 		//HpsMeasure szCs;
 		//Highlight highlight;
 		//U u;
 		if (rPr.getU()!=null) {
-			if (!rPr.getU().getVal().equals( UnderlineEnumeration.NONE ) ) {
+			if (rPr.getU().getVal()==null ) {
+				// This does happen
+				result.append( "text-decoration:underline;" );
+			} else if (!rPr.getU().getVal().equals( UnderlineEnumeration.NONE ) ) {
 				result.append( "text-decoration:underline;" );
 			} 
+			// How to handle <w:u w:color="FF0000"> ie coloured underline?
 		}
 
 		//CTTextEffect effect;
