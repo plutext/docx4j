@@ -348,6 +348,8 @@ public class PropertyResolver {
 	 */
 	public RPr getEffectiveRPr(RPr expressRPr, PPr pPr) {
 		
+		// NB Currently used in PDF viaXSLFO only
+		
 		log.debug("in getEffectiveRPr");
 		
 //		Idea is that you pass pPr if you are using this for XSL FO,
@@ -363,6 +365,13 @@ public class PropertyResolver {
 		//	First, the document defaults are applied
 		
 			RPr effectiveRPr = (RPr)XmlUtils.deepCopy(documentDefaultRPr);
+			
+			// Apply DefaultParagraphFont.  We only do it explicitly
+			// here as per conditions, because if there is a run style,
+			// walking the hierarchy will include this if it is needed
+			if (expressRPr == null || expressRPr.getRStyle() == null ) {
+				applyRPr(resolvedStyleRPrComponent.get("DefaultParagraphFont"), effectiveRPr);								
+			}
 		
 		//	Next, the table style properties are applied to each table in the document, 
 		//	following the conditional formatting inclusions and exclusions specified 
@@ -388,8 +397,8 @@ public class PropertyResolver {
 				// At the pPr level, what rPr do we have?
 				// .. ascend the paragraph style tree
 				if (pPr.getPStyle()==null) {
-					log.warn("No pstyle:");
-					log.debug(XmlUtils.marshaltoString(pPr, true, true));
+//					log.warn("No pstyle:");
+//					log.debug(XmlUtils.marshaltoString(pPr, true, true));
 				} else {
 					log.warn("pstyle:" + pPr.getPStyle().getVal());
 					RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
@@ -401,29 +410,19 @@ public class PropertyResolver {
 		//	applied. 		
 		RPr resolvedRPr = null;
 		String runStyleId;
-		if (expressRPr == null || expressRPr.getRStyle() == null ) {
-			runStyleId = "DefaultParagraphFont";
-		} else {
+		if (expressRPr != null && expressRPr.getRStyle() != null ) {
 			runStyleId = expressRPr.getRStyle().getVal();
+			resolvedRPr = getEffectiveRPr(runStyleId);
+			applyRPr(resolvedRPr, effectiveRPr);  
 		}
-		resolvedRPr = getEffectiveRPr(runStyleId);
-		
-		if (pPr!=null) {
-			// apply the paragraph level rPr
-			// but we need to clone resolvedRPr 
-			resolvedRPr = (RPr)XmlUtils.deepCopy(resolvedRPr);			
-			applyRPr(effectiveRPr, resolvedRPr);  
-		}
-		
+				
 		//	Finally, we apply direct formatting (run properties not from 
 		//	styles).		
 		if (hasDirectRPrFormatting(expressRPr) ) {			
-			effectiveRPr = (RPr)XmlUtils.deepCopy(resolvedRPr);			
+			//effectiveRPr = (RPr)XmlUtils.deepCopy(effectiveRPr);			
 			applyRPr(expressRPr, effectiveRPr);
-			return effectiveRPr;
-		} else {
-			return resolvedRPr;
-		}
+		} 
+		return effectiveRPr;
 		
 	}
 	
