@@ -13,7 +13,7 @@
   </xs:annotation>
   
   <xs:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
-             schemaLocation="/home/dev/workspace/docx4j/xsd/wml/wml.xsd"/>
+             schemaLocation="http://dev.plutext.org/trac/docx4j/export/765/trunk/docx4j/xsd/wml/wml.xsd"/>
 
   <!--  
   <xs:redefine schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml-basic10.xsd">  
