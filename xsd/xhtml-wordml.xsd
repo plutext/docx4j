@@ -18,10 +18,10 @@
   <xs:redefine schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml-basic10.xsd">
 
     <xs:group name="xhtml.html.content">
-      <xs:choice>
+      <xs:sequence>
         <xs:group ref="xhtml.html.content"/>
         <xs:element ref="w:document"/>
-      </xs:choice>
+      </xs:sequence>
     </xs:group>
   </xs:redefine> 
     
