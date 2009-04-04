@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.w3.org/1999/xhtml"
+           xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+           xmlns="http://www.w3.org/1999/xhtml"
+           blockDefault="#all">
+
+  <xs:annotation>
+    <xs:documentation>
+      This is the XML Schema Driver for new 
+      Document Type XHTML Basic 1.0 + WordprocessingML
+    </xs:documentation>
+  </xs:annotation>
+  
+  <xs:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+             schemaLocation="wml/wml.xsd"/>
+  
+  <xs:redefine schemaLocation="http://www.w3.org/MarkUp/SCHEMA/xhtml-basic10.xsd">
+
+    <xs:group name="xhtml.html.content">
+      <xs:choice>
+        <xs:group ref="xhtml.html.content"/>
+        <xs:element ref="w:document"/>
+      </xs:choice>
+    </xs:group>
+  </xs:redefine> 
+    
+</xs:schema>
+  
