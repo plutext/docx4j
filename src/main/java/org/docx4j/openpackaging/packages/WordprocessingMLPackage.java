@@ -225,7 +225,7 @@ public class WordprocessingMLPackage extends Package {
 		//org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)result.getResult();
 		javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
 		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)je.getValue();
-		org.docx4j.convert.in.XmlPackageImporter xmlPackage = new org.docx4j.convert.in.XmlPackageImporter( wmlPackageEl); 
+		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 		
 		ContentTypeManager ctm = new ContentTypeManagerImpl();
 		

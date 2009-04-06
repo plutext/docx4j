@@ -77,12 +77,12 @@ import org.docx4j.relationships.Relationship;
  * @author jharrop
  *
  */
-public class XmlPackageImporter  {
+public class FlatOpcXmlImporter  {
 	
-	private static Logger log = Logger.getLogger(XmlPackageImporter.class);
+	private static Logger log = Logger.getLogger(FlatOpcXmlImporter.class);
 
 	
-	public XmlPackageImporter(org.docx4j.xmlPackage.Package xmlPackage) {
+	public FlatOpcXmlImporter(org.docx4j.xmlPackage.Package xmlPackage) {
 				
 		parts = new HashMap<String, org.docx4j.xmlPackage.Part>();
 		
@@ -476,8 +476,8 @@ public class XmlPackageImporter  {
 		org.docx4j.xmlPackage.Package xmlPackage 
 			= (org.docx4j.xmlPackage.Package)((JAXBElement)o).getValue();
 				
-		org.docx4j.convert.in.XmlPackageImporter inWorker = 
-			new org.docx4j.convert.in.XmlPackageImporter(xmlPackage);
+		org.docx4j.convert.in.FlatOpcXmlImporter inWorker = 
+			new org.docx4j.convert.in.FlatOpcXmlImporter(xmlPackage);
 		
 		WordprocessingMLPackage wordMLPackage = (WordprocessingMLPackage)inWorker.get();
 		

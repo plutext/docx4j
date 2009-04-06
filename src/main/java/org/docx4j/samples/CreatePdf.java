@@ -51,10 +51,11 @@ public class CreatePdf {
 	    	
 	    	String inputfilepath = null;
 	    	
+//			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";	    	
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
-			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/Header.docx";
-//			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+//			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/Header.docx";
 //			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
 //			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
 //			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\Downloads\\AUMS-easy.docx";
@@ -94,7 +95,7 @@ public class CreatePdf {
 				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
 						new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
 
-				org.docx4j.convert.in.XmlPackageImporter xmlPackage = new org.docx4j.convert.in.XmlPackageImporter( wmlPackageEl); 
+				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 
 				wordMLPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 			
@@ -111,9 +112,8 @@ public class CreatePdf {
 			 *    and tables, but is pretty hard to understand
 			 *    
 			 * .. viaXSLFO uses docx2fo.xslt and FOP.  It is
-			 *    rudimentary right now, but should be
-			 *    easy enough to extend to include a basic
-			 *    feature set 
+			 *    rudimentary right now, but does support
+			 *    headers/footers, images and very basic tables
 			 *    
 			 * .. viaItext - for developers who don't like xslt
 			 *    at all! Or want to use iText's features..
@@ -124,8 +124,8 @@ public class CreatePdf {
 			 * methods!
 			 */
 			org.docx4j.convert.out.pdf.PdfConversion c 
-				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
-//				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
+//				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
+				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 //				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
 			
 			if (save) {
