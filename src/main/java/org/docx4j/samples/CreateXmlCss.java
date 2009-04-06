@@ -42,7 +42,12 @@ public class CreateXmlCss {
 	public final static String HTML_TOP = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">"
 		+"\n<html>"
 		+"\n<head>"
-		+"\n  <style type=\"text/css\">";
+		+"\n<style type=\"text/css\">";
+	
+	public final static String CSS_FOR_TABLES = "\n\n/* TABLE STYLES */"
+		+ "\n.table { display:table; table-layout:fixed; border-color: #600; border-style: solid; border-width: 0 0 1px 1px; border-spacing: 0; border-collapse: collapse;}"
+		+ "\n.tr { display:table-row;}"
+		+ "\n.td { display:table-cell; border-color: #600; border-style: solid; margin: 0; padding: 4px; border-width: 1px 1px 0 0; background-color: #FFC;}\n";
 	
 	public final static String HTML_MIDDLE =  "</style>"
 		+ "\n</head>\n<body>";
@@ -58,8 +63,8 @@ public class CreateXmlCss {
 	    	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
-//			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
+			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+//			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;
@@ -87,10 +92,10 @@ public class CreateXmlCss {
 			serialise(doc, buff, "  " );
 			
 			// Generate CSS   	
-			String css = HtmlExporterNG.getCssForStyles(wordMLPackage); 			
+			String css_other = HtmlExporterNG.getCssForStyles(wordMLPackage); 			
 			
 			// Join it all together
-			String result = HTML_TOP + css + HTML_MIDDLE + buff.toString() + HTML_TAIL;
+			String result = HTML_TOP + CSS_FOR_TABLES + css_other + HTML_MIDDLE + buff.toString() + HTML_TAIL;
 						
 						
 			OutputStream os; 

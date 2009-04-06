@@ -1,13 +1,15 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2009, Plutext Pty Ltd.
  *   
- *  This Javascript file is kept in the svn repository of docx4j project
- 	(see http://dev.plutext.org).
+ *  This Javascript file is currently kept in the svn repository of docx4j project
+ 	(see http://dev.plutext.org), at
+ 	http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/javascript/wml_fix.js
+ 	(contributions welcome!)
  
     It is not however, considered part of the docx4j project, which is
     is licensed under the Apache License, Version 2.0.
 
-	This JavaScript is free software: you can
+	This JavaScript file is free software: you can
     redistribute it and/or modify it under the terms of the GNU
     General Public License (GNU GPL) as published by the Free Software
     Foundation, either version 3 of the License, or (at your option)
@@ -73,6 +75,28 @@
 			}
 		}
 	}
+
+	// tables - just basic formatting for now
+	// w:tbl should look like a table
+	var tables = document.getElementsByTagName("w:tbl");
+	for (var i=0 ; i<tables.length; i++) {
+
+		tables[i].setAttribute("class", "table");
+
+		// w:tr should look like a table row
+		var rows = tables[i].getElementsByTagName("w:tr");
+		for (var j=0 ; j<rows.length; j++) {
+			rows[j].setAttribute("class", "tr");
+
+			// w:tc should look like a table cell
+			var cells = rows[j].getElementsByTagName("w:tc");
+			for (var k=0 ; k<cells.length; k++) {
+				cells[k].setAttribute("class", "td");
+			} 
+		}
+	}
+
+
 }
 
     function createBlockCss(pPr) {
