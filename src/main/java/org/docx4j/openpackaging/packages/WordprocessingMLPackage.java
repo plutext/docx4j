@@ -38,7 +38,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
@@ -208,7 +208,7 @@ public class WordprocessingMLPackage extends Package {
 
     	// Prepare in the input document
     	
-		XmlPackageCreator worker = new XmlPackageCreator(this);
+		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(this);
 		org.docx4j.xmlPackage.Package pkg = worker.get();
     	
 		JAXBContext jc = Context.jcXmlPackage;

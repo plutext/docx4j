@@ -27,7 +27,7 @@ import java.io.FileOutputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -60,7 +60,7 @@ public class Filter {
 		wmlPackage.filter(filterSettings);
 		
 	   	// Create a org.docx4j.wml.Package object
-		XmlPackageCreator worker = new XmlPackageCreator(wmlPackage);
+		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPackage);
 		org.docx4j.xmlPackage.Package pkg = worker.get();
     	
     	// Now marshall it

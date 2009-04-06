@@ -50,8 +50,8 @@ public class AddImage {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		
-		//File file = new File("/home/dev/lanl/testing/fig1.pdf" );
-		File file = new File("C:\\Documents and Settings\\Jason Harrop\\My Documents\\LANL\\fig1.pdf" );
+		File file = new File("/home/dev/lanl/testing/fig1.pdf" );
+		//File file = new File("C:\\Documents and Settings\\Jason Harrop\\My Documents\\LANL\\fig1.pdf" );
 		
 		// Our utility method wants that as a byte array
 		
@@ -86,14 +86,29 @@ public class AddImage {
         
 		// Now add our p to the document
 		wordMLPackage.getMainDocumentPart().addObject(p);
+
+        org.docx4j.wml.P p2 = newImage( wordMLPackage, bytes, 
+        		filenameHint, altText, 
+    			id1, id2, 3000 );
         
+		// Now add our p to the document
+		wordMLPackage.getMainDocumentPart().addObject(p2);
+
+        org.docx4j.wml.P p3 = newImage( wordMLPackage, bytes, 
+        		filenameHint, altText, 
+    			id1, id2, 6000 );
+        
+		// Now add our p to the document
+		wordMLPackage.getMainDocumentPart().addObject(p3);
+		
+		
 		// Now save it 
 		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/result.docx") );
 		
 		System.out.println("Done.");
 				
 	}
-	
+
 	public static org.docx4j.wml.P newImage( WordprocessingMLPackage wordMLPackage,
 			byte[] bytes,
 			String filenameHint, String altText, 
@@ -103,6 +118,29 @@ public class AddImage {
 		
         Inline inline = imagePart.createImageInline( filenameHint, altText, 
     			id1, id2);
+        
+        // Now add the inline in w:p/w:r/w:drawing
+		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		org.docx4j.wml.P  p = factory.createP();
+		org.docx4j.wml.R  run = factory.createR();		
+		p.getParagraphContent().add(run);        
+		org.docx4j.wml.Drawing drawing = factory.createDrawing();		
+		run.getRunContent().add(drawing);		
+		drawing.getAnchorOrInline().add(inline);
+		
+		return p;
+		
+	}	
+	
+	public static org.docx4j.wml.P newImage( WordprocessingMLPackage wordMLPackage,
+			byte[] bytes,
+			String filenameHint, String altText, 
+			int id1, int id2, long cx) throws Exception {
+		
+        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes);
+		
+        Inline inline = imagePart.createImageInline( filenameHint, altText, 
+    			id1, id2, cx);
         
         // Now add the inline in w:p/w:r/w:drawing
 		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
