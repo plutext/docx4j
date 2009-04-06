@@ -73,7 +73,7 @@ public class ImportFromPackageFormat {
 			org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
 					new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
 
-			org.docx4j.convert.in.XmlPackage xmlPackage = new org.docx4j.convert.in.XmlPackage( wmlPackageEl); 
+			org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 
 			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 			

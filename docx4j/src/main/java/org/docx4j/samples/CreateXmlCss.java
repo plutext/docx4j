@@ -59,7 +59,13 @@ public class CreateXmlCss {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-	    	boolean save = true;	    	
+	    	boolean save = true;
+	    	
+	    	// If you want to be able to display non-external images,
+	    	// or you are extending wml_fix.js to do client-side
+	    	// style resolution, you'll want to embed the entire
+	    	// Flat OPC, rather than just document.xml
+	    	boolean useFlatOPC = true;
 	    	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
@@ -74,10 +80,10 @@ public class CreateXmlCss {
 				Unmarshaller u = jc.createUnmarshaller();
 				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+				org.docx4j.xmlPackage.Package flatOPC = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
 						new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
 
-				org.docx4j.convert.in.XmlPackageImporter xmlPackage = new org.docx4j.convert.in.XmlPackageImporter( wmlPackageEl); 
+				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( flatOPC); 
 
 				wordMLPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 			

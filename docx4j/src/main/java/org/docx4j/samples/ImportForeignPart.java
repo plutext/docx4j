@@ -33,7 +33,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import org.docx4j.JcrNodeMapper.NodeMapper;
-import org.docx4j.convert.out.xmlPackage.XmlPackage;
+import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
 import org.docx4j.dml.Inline;
 import org.docx4j.docProps.extended.Properties;
 import org.docx4j.jaxb.Context;
