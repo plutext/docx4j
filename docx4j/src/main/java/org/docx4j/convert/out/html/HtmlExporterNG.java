@@ -393,7 +393,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 					}
 				}
 				
-				// Does our pPr contain anything else?
+				// Does our rPr contain anything else?
 				StringBuffer inlineStyle =  new StringBuffer();
 				createCss(wmlPackage, rPr, inlineStyle);				
 				if (!inlineStyle.toString().equals("") ) {
@@ -515,13 +515,17 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     	StringBuffer result = new StringBuffer();
     	
     	Map stylesInUse = wmlPackage.getMainDocumentPart().getStylesInUse();
+    	if (stylesInUse.get("Normal")==null) {
+    		stylesInUse.put("Normal", "Normal");
+    	}
+    	
 
     	PropertyResolver propertyResolver = 
     		wmlPackage.getMainDocumentPart().getPropertyResolver();
     	
 		Iterator it = stylesInUse.entrySet().iterator();
 		// First iteration - paragraph level pPr *and rPr*
-		result.append("\n /* PARAGRAPH STYLES */ ");
+		result.append("\n /* PARAGRAPH STYLES */ \n");
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
 	        String styleId = (String)pairs.getKey();
@@ -534,7 +538,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	        	if (pPr==null) {
 	        		log.debug("null pPr for style " + styleId);
 	        	} else {
-		        	result.append( "."+styleId + PPR_COMPONENT + " {" );
+		        	result.append( "."+styleId + PPR_COMPONENT + " {display:block;" );
 		        	createCss( pPr, result);
 		        	result.append( "}\n" );
 	        	}
@@ -552,7 +556,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	    }
 	    // Second iteration, character styles
 		result.append("\n /* CHARACTER STYLES */ ");
-		result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ ");
+		result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ \n ");
 		it = stylesInUse.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
@@ -565,7 +569,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	        	if (rPr==null) {
 	        		log.debug("null rPr for style " + styleId);
 	        	} else {
-		        	result.append( "."+styleId + " {" );
+		        	result.append( "."+styleId + " {display:inline;" );
 		        	createCss( wmlPackage, rPr, result);	        	
 		        	result.append( "}\n" );
 	        	}
