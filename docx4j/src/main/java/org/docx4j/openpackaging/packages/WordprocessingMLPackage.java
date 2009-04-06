@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
 import org.docx4j.fonts.BestMatchingMapper;
+import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
@@ -304,6 +305,9 @@ public class WordprocessingMLPackage extends Package {
     }
 
     public Mapper getFontMapper() {
+    	if (fontMapper==null) {
+    		fontMapper = new IdentityPlusMapper();
+    	}
 		return fontMapper;
 	}
 
