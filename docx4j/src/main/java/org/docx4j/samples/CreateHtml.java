@@ -58,7 +58,7 @@ public class CreateHtml {
 				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
 						new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
 
-				org.docx4j.convert.in.XmlPackageImporter xmlPackage = new org.docx4j.convert.in.XmlPackageImporter( wmlPackageEl); 
+				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 
 				wordMLPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 			

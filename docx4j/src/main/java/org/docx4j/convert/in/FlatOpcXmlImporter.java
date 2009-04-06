@@ -483,8 +483,8 @@ public class FlatOpcXmlImporter  {
 		
 		// Ok, now spit it out again
 			
-		org.docx4j.convert.out.xmlPackage.XmlPackageCreator outWorker 
-			= new org.docx4j.convert.out.xmlPackage.XmlPackageCreator(wordMLPackage);
+		org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator outWorker 
+			= new org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator(wordMLPackage);
 		
 		org.docx4j.xmlPackage.Package result = outWorker.get();
 		

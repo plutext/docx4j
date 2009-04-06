@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ConvertUtils;
 import org.docx4j.convert.out.Output;
-import org.docx4j.convert.out.xmlPackage.XmlPackageCreator;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
