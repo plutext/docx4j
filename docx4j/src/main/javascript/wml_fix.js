@@ -96,8 +96,109 @@
 		}
 	}
 
+	// images - just inline ones for now
+	// <w:drawing><wp:inline>
+	// we use XPath / XSLT compatibility library 0.1 (zip) 
+	// for  http://www.ajax.org/downloads/get/did/11
+	// since DOM 3 xpath fails (in FF3 at least) to find
+	// namespaced nodes in our HTML doc
+	// see http://www.rubendaniels.com/2007/02/23/safari-wrench/3/
+	var parts = XPath.selectNodes("//pkg:part", document);
+	//alert("Found document rels; count: " + parts.length);
+	var images = new Array();
+	var documentRelsPart;
+	for( i=0 ; i<parts.length; i++) {
+		var pkgName = parts[i].getAttribute("pkg:name");
+		var pkgContentType = parts[i].getAttribute("pkg:contentType");
+		if (pkgName!="/word/document.xml") {
+			parts[i].setAttribute("style", "display:none;");
+		}
+		//    <pkg:part pkg:name="/word/_rels/document.xml.rels">
+		if (pkgName=="/word/_rels/document.xml.rels") {
+			documentRelsPart=parts[i];
+			//alert("Found doc rels " + pkgName);
+		}
+		if (pkgContentType.startsWith("image/")) {
+			images[pkgName]=parts[i];
+			//alert("Found image " + pkgName);
+		} 
+		 
+	}
+	var wbody = XPath.selectNodes("//w:body", document)[0];
+	var drawings = XPath.selectNodes("//w:drawing", wbody);
+	//alert("Found w:drawing; count: " + drawings.length);
+
+	var documentRels = new Array();
+	if (drawings.length>0) {
+		// We need a map of the rels
+		// <rel:Relationship Id="rId10" Target="media/image3.png" 
+		//	Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" />
+		var rels = XPath.selectNodes("//rel:Relationship", documentRelsPart);
+		if (rels.length==0) {
+			// default namespace?
+			rels = XPath.selectNodes("//Relationship", documentRelsPart);
+		}
+		if (rels.length==0) {
+			alert("Couldn't find any rels in the rels!");
+		}
+		for( i=0 ; i<rels.length; i++) {
+			var id = rels[i].getAttribute("Id");
+			documentRels[id] = rels[i];
+		}
+	}
+
+	for( i=0 ; i<drawings.length; i++) {
+		// look at <a:blip r:embed="rId10">
+		var wblip = XPath.selectNodes("//a:blip", drawings[i])[0];
+		if (wblip.getAttribute("r:link")!=null) {
+			// TODO
+			alert("Linked images aren't handled yet");
+		} else if (wblip.getAttribute("r:embed")!=null) {
+			// get the rel
+			var theRel = documentRels[wblip.getAttribute("r:embed")];
+			var thePartName = "/word/" + theRel.getAttribute("Target");
+			alert("Looking for image part: " + thePartName);
+			var imagePart = images[thePartName];
+			// now embed it :-)
+
+			var img = document.createElement("img");
+			// <img src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub/
+			var binaryData = XPath.selectNodes("//pkg:binaryData", imagePart)[0];
+			var base64data = "";
+			// Get the value, trying to handle the case
+			// where it is split across separate text nodes
+			for( j=0 ; j<binaryData.childNodes.length; j++) {
+				base64data = base64data + binaryData.childNodes[j].nodeValue;
+			}
+			alert("base64data:" + base64data);
+			img.setAttribute("src", "data:" + imagePart.getAttribute("pkg:contentType")
+				+";base64,"+base64data); 
+			drawings[i].appendChild(img);
+		}
+	}
+
 
 }
+
+String.prototype.startsWith = function(str){
+    return (this.indexOf(str) === 0);
+}
+
+
+/*
+function resolver(prefix){
+    switch(prefix){
+	case "w"  : return "http://schemas.openxmlformats.org/wordprocessingml/2006/main"; 
+	case "pkg": return "http://schemas.microsoft.com/office/2006/xmlPackage"; 
+	case "rel": return "http://schemas.openxmlformats.org/package/2006/relationships"
+	case "r"  : return "http://schemas.openxmlformats.org/officeDocument/2006/relationships"; 
+	case "a"  : return "http://schemas.openxmlformats.org/drawingml/2006/main"; 
+	case "ns6": return "http://schemas.openxmlformats.org/schemaLibrary/2006/main"; 
+	case "pic": return "http://schemas.openxmlformats.org/drawingml/2006/picture"; 
+	case "wp" : return "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+        default: return null;  // or xhtml?
+    }
+} */
 
     function createBlockCss(pPr) {
 

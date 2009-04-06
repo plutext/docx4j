@@ -21,13 +21,16 @@
 package org.docx4j.samples;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -74,13 +77,14 @@ public class CreateXmlCss {
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;
+			org.docx4j.xmlPackage.Package flatOPC = null;
 			if (inputfilepath.endsWith(".xml")) {
 				
 				JAXBContext jc = Context.jcXmlPackage;
 				Unmarshaller u = jc.createUnmarshaller();
 				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-				org.docx4j.xmlPackage.Package flatOPC = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+				flatOPC = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
 						new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
 
 				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( flatOPC); 
@@ -92,8 +96,22 @@ public class CreateXmlCss {
 			}
 			
 			// Convert it to HTML (ie no self-closing tags)
-			Object o = wordMLPackage.getMainDocumentPart().getJaxbElement();
-			Document doc = XmlUtils.marshaltoW3CDomDocument(o);
+			Object o;
+			Document doc;
+			if (useFlatOPC) {
+				if (flatOPC==null) {
+					// We must have started with a .docx
+					FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
+					o = worker.get();
+				} else {
+					o = flatOPC;
+				}
+				doc = XmlUtils.marshaltoW3CDomDocument(o, Context.jcXmlPackage);
+			} else {
+				o = wordMLPackage.getMainDocumentPart().getJaxbElement();
+				doc = XmlUtils.marshaltoW3CDomDocument(o);
+			}
+			
 			StringBuffer buff = new StringBuffer();
 			serialise(doc, buff, "  " );
 			
