@@ -97,6 +97,8 @@ PRINCIPLES:
 		But I can't do this for <sdt>, since there are multiple
 	    local definitions of <sdt>.
 	 	
+	 6. Don't define locally elements which we may wish to
+	    unmarshall by themselves!
 	
 -->
 
@@ -13581,290 +13583,326 @@ PRINCIPLES:
 		</xsd:complexType>
 		
 	</xsd:element>
-	
-<xsd:element name="style">	
-  <xsd:complexType>
+
+	<xsd:element name="docDefaults">
+		<xsd:annotation>
+			<xsd:documentation>
+				Document Default Paragraph and Run Properties
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="rPrDefault" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Default Run Properties
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
 						<xsd:sequence>
-							<xsd:element name="name" minOccurs="0" maxOccurs="1">
-								<xsd:annotation>
-									<xsd:documentation>Primary Style
-										Name</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:attribute name="val" type="xsd:string"/>
-								</xsd:complexType>
-								
-							</xsd:element>
-							<xsd:element name="aliases" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Alternate Style
-										Names</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:attribute name="val" type="xsd:string"/>
-								</xsd:complexType>
-								
-							</xsd:element>
-							<xsd:element name="basedOn" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Parent Style
-										ID</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:attribute name="val" type="xsd:string"/>
-								</xsd:complexType>
-								
-							</xsd:element>
-							<xsd:element name="next" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Style For Next
-										Paragraph</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:attribute name="val" type="xsd:string"/>
-								</xsd:complexType>
-								
-							</xsd:element>
-							<xsd:element name="link" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Linked Style
-										Reference</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:attribute name="val" type="xsd:string"/>
-								</xsd:complexType>
-								
-							</xsd:element>
-							<xsd:element name="autoRedefine"
-								type="BooleanDefaultTrue" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Automatically Merge User
-										Formatting Into Style
-										Definition</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="hidden" type="BooleanDefaultTrue"
-								minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Hide Style From User
-										Interface</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="uiPriority" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Optional User Interface
-										Sorting Order</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:attribute name="val" use="required">
-										<xsd:simpleType>
-											<xsd:restriction base="xsd:integer"/>
-										</xsd:simpleType>
-									</xsd:attribute>
-								</xsd:complexType>
-								
-							</xsd:element>
-							<xsd:element name="semiHidden"
-								type="BooleanDefaultTrue" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Hide Style From Main User
-										Interface</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="unhideWhenUsed"
-								type="BooleanDefaultTrue" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Remove Semi-Hidden Property
-										When Style Is Used</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="qFormat" type="BooleanDefaultTrue"
-								minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Primary
-										Style</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="locked" type="BooleanDefaultTrue"
-								minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Style Cannot Be
-										Applied</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="personal" type="BooleanDefaultTrue"
-								minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>E-Mail Message Text
-										Style</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="personalCompose"
-								type="BooleanDefaultTrue" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>E-Mail Message Composition
-										Style</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="personalReply"
-								type="BooleanDefaultTrue" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>E-Mail Message Reply
-										Style</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="rsid" type="CT_LongHexNumber"
-								minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Revision Identifier for
-										Style Definition</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="pPr" type="CT_PPr" minOccurs="0"
-								maxOccurs="1">
-								<xsd:annotation>
-									<xsd:documentation>Style Paragraph
-										Properties</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="rPr" type="CT_RPr" minOccurs="0"
-								maxOccurs="1">
-								<xsd:annotation>
-									<xsd:documentation>Run
-										Properties</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="tblPr" type="CT_TblPrBase"
-								minOccurs="0" maxOccurs="1">
-								<xsd:annotation>
-									<xsd:documentation>Style Table
-										Properties</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="trPr" type="CT_TrPr" minOccurs="0"
-								maxOccurs="1">
-								<xsd:annotation>
-									<xsd:documentation>Style Table Row
-										Properties</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="tcPr" type="CT_TcPr" minOccurs="0"
-								maxOccurs="1">
-								<xsd:annotation>
-									<xsd:documentation>Style Table Cell
-										Properties</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
-							<xsd:element name="tblStylePr" type="CT_TblStylePr"
-								minOccurs="0" maxOccurs="unbounded">
-								<xsd:annotation>
-									<xsd:documentation>Style Conditional Table
-										Formatting Properties</xsd:documentation>
-								</xsd:annotation>
-							</xsd:element>
+							<xsd:element name="rPr" type="CT_RPr"
+								minOccurs="0" />
 						</xsd:sequence>
-						<xsd:attribute name="type" use="optional">
-							<xsd:annotation>
-								<xsd:documentation>Style Type</xsd:documentation>
-							</xsd:annotation>
-							<xsd:simpleType>
-								<xsd:annotation>
-									<xsd:documentation>Style
-										Types</xsd:documentation>
-								</xsd:annotation>
-								<xsd:restriction base="xsd:string">
-									<xsd:enumeration value="paragraph">
-										<xsd:annotation>
-											<xsd:documentation> Paragraph
-												Style</xsd:documentation>
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="character">
-										<xsd:annotation>
-											<xsd:documentation> Character
-												Style</xsd:documentation>
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="table">
-										<xsd:annotation>
-											<xsd:documentation>Table
-												Style</xsd:documentation>
-										</xsd:annotation>
-									</xsd:enumeration>
-									<xsd:enumeration value="numbering">
-										<xsd:annotation>
-											<xsd:documentation> Numbering
-												Style</xsd:documentation>
-										</xsd:annotation>
-									</xsd:enumeration>
-								</xsd:restriction>
-							</xsd:simpleType>
-							
-						</xsd:attribute>
-						<xsd:attribute name="styleId" type="ST_String"
-							use="optional">
-							<xsd:annotation>
-								<xsd:documentation>Style ID</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="default" type="xsd:boolean"
-							default="false" use="optional">
-							<xsd:annotation>
-								<xsd:documentation>Default
-									Style</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-						<xsd:attribute name="customStyle" type="xsd:boolean"
-							default="true" use="optional">
-							<xsd:annotation>
-								<xsd:documentation>User-Defined
-									Style</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
 					</xsd:complexType>
 				</xsd:element>
-	
+				<xsd:element name="pPrDefault" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Default Paragraph Properties
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:sequence>
+							<xsd:element name="pPr" type="CT_PPr"
+								minOccurs="0" />
+						</xsd:sequence>
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+
+	<xsd:element name="style">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="name" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Primary Style Name
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="val" type="xsd:string" />
+					</xsd:complexType>
+
+				</xsd:element>
+				<xsd:element name="aliases" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Alternate Style Names
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="val" type="xsd:string" />
+					</xsd:complexType>
+
+				</xsd:element>
+				<xsd:element name="basedOn" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Parent Style ID
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="val" type="xsd:string" />
+					</xsd:complexType>
+
+				</xsd:element>
+				<xsd:element name="next" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Style For Next Paragraph
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="val" type="xsd:string" />
+					</xsd:complexType>
+
+				</xsd:element>
+				<xsd:element name="link" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Linked Style Reference
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="val" type="xsd:string" />
+					</xsd:complexType>
+
+				</xsd:element>
+				<xsd:element name="autoRedefine"
+					type="BooleanDefaultTrue" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Automatically Merge User Formatting Into
+							Style Definition
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="hidden" type="BooleanDefaultTrue"
+					minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Hide Style From User Interface
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="uiPriority" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Optional User Interface Sorting Order
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:complexType>
+						<xsd:attribute name="val" use="required">
+							<xsd:simpleType>
+								<xsd:restriction base="xsd:integer" />
+							</xsd:simpleType>
+						</xsd:attribute>
+					</xsd:complexType>
+
+				</xsd:element>
+				<xsd:element name="semiHidden" type="BooleanDefaultTrue"
+					minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Hide Style From Main User Interface
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="unhideWhenUsed"
+					type="BooleanDefaultTrue" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Remove Semi-Hidden Property When Style Is
+							Used
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="qFormat" type="BooleanDefaultTrue"
+					minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Primary Style
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="locked" type="BooleanDefaultTrue"
+					minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Style Cannot Be Applied
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="personal" type="BooleanDefaultTrue"
+					minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							E-Mail Message Text Style
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="personalCompose"
+					type="BooleanDefaultTrue" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							E-Mail Message Composition Style
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="personalReply"
+					type="BooleanDefaultTrue" minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							E-Mail Message Reply Style
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="rsid" type="CT_LongHexNumber"
+					minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Revision Identifier for Style Definition
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="pPr" type="CT_PPr" minOccurs="0"
+					maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Style Paragraph Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="rPr" type="CT_RPr" minOccurs="0"
+					maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Run Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="tblPr" type="CT_TblPrBase"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Style Table Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="trPr" type="CT_TrPr" minOccurs="0"
+					maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Style Table Row Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="tcPr" type="CT_TcPr" minOccurs="0"
+					maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Style Table Cell Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="tblStylePr" type="CT_TblStylePr"
+					minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>
+							Style Conditional Table Formatting
+							Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="type" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>Style Type</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:annotation>
+						<xsd:documentation>
+							Style Types
+						</xsd:documentation>
+					</xsd:annotation>
+					<xsd:restriction base="xsd:string">
+						<xsd:enumeration value="paragraph">
+							<xsd:annotation>
+								<xsd:documentation>
+									Paragraph Style
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:enumeration>
+						<xsd:enumeration value="character">
+							<xsd:annotation>
+								<xsd:documentation>
+									Character Style
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:enumeration>
+						<xsd:enumeration value="table">
+							<xsd:annotation>
+								<xsd:documentation>
+									Table Style
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:enumeration>
+						<xsd:enumeration value="numbering">
+							<xsd:annotation>
+								<xsd:documentation>
+									Numbering Style
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:enumeration>
+					</xsd:restriction>
+				</xsd:simpleType>
+
+			</xsd:attribute>
+			<xsd:attribute name="styleId" type="ST_String"
+				use="optional">
+				<xsd:annotation>
+					<xsd:documentation>Style ID</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="default" type="xsd:boolean"
+				default="false" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>Default Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="customStyle" type="xsd:boolean"
+				default="true" use="optional">
+				<xsd:annotation>
+					<xsd:documentation>
+						User-Defined Style
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+
 	<xsd:element name="styles">
 		<xsd:annotation>
 			<xsd:documentation>Style Definitions</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="docDefaults" minOccurs="0">
-					<xsd:annotation>
-						<xsd:documentation>Document Default Paragraph and Run
-							Properties</xsd:documentation>
-					</xsd:annotation>
-					<xsd:complexType>
-						<xsd:sequence>
-							<xsd:element name="rPrDefault" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Default Run
-										Properties</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:sequence>
-										<xsd:element name="rPr" type="CT_RPr"
-											minOccurs="0"/>
-									</xsd:sequence>
-								</xsd:complexType>
-							</xsd:element>
-							<xsd:element name="pPrDefault" minOccurs="0">
-								<xsd:annotation>
-									<xsd:documentation>Default Paragraph
-										Properties</xsd:documentation>
-								</xsd:annotation>
-								<xsd:complexType>
-									<xsd:sequence>
-										<xsd:element name="pPr" type="CT_PPr"
-											minOccurs="0"/>
-									</xsd:sequence>
-								</xsd:complexType>
-							</xsd:element>
-						</xsd:sequence>
-					</xsd:complexType>
+
+      			<xsd:element ref="docDefaults" minOccurs="0"/>
 					
-				</xsd:element>
 				<xsd:element name="latentStyles" minOccurs="0" maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation>Latent Style
