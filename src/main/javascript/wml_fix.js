@@ -157,7 +157,6 @@
 			// get the rel
 			var theRel = documentRels[wblip.getAttribute("r:embed")];
 			var thePartName = "/word/" + theRel.getAttribute("Target");
-			alert("Looking for image part: " + thePartName);
 			var imagePart = images[thePartName];
 			// now embed it :-)
 
@@ -170,7 +169,6 @@
 			for( j=0 ; j<binaryData.childNodes.length; j++) {
 				base64data = base64data + binaryData.childNodes[j].nodeValue;
 			}
-			alert("base64data:" + base64data);
 			img.setAttribute("src", "data:" + imagePart.getAttribute("pkg:contentType")
 				+";base64,"+base64data); 
 			drawings[i].appendChild(img);
@@ -182,6 +180,37 @@
 
 String.prototype.startsWith = function(str){
     return (this.indexOf(str) === 0);
+}
+
+
+function mySave(url) {
+	var xmlDocument = new DOMParser().parseFromString("<root />", "text/xml"); 
+	xmlDocument.documentElement.appendChild( XPath.selectNodes("//pkg:package", document)[0] );
+		// works, but since this is HTML, element names are still capitalised
+  //alert(xmlDocument.length);
+  if (xmlDocument) {
+    var httpRequest = postXML(url, xmlDocument);
+    if (httpRequest && httpRequest.status==200) {
+    
+      //alert('HTTP response status: ' + httpRequest.status);
+      
+      // Convert to object with data url
+      var contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      var dataURL = "data:"+contentType + ";base64," + httpRequest.responseText;
+      
+      // Use iframe, not <object>, since for the latter,
+      // Firefox insists on looking for a plugin
+      var obj = document.createElement("iframe");
+	 obj.setAttribute("src", dataURL); 
+         obj.setAttribute("style", "display:none;");
+	 //obj.setAttribute("type", contentType);
+       var body = document.getElementsByTagName("body")[0];
+       body.appendChild(obj);
+
+    } else {
+     	alert("What happened??");
+    }
+  }
 }
 
 
@@ -435,6 +464,23 @@ function resolver(prefix){
 	return result;
     	
     }
+
+function postXML (url, xmlDocument) {
+  try {
+    var httpRequest = new XMLHttpRequest();
+    httpRequest.open('POST', url, false);
+    httpRequest.send(xmlDocument);
+    return httpRequest;
+  }
+  catch (e) {
+    output("Can't post XML document");
+    return null;
+  }
+}
+
+
+
+
 
 
 setAttributes();
