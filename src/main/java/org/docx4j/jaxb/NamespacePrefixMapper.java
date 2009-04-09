@@ -79,6 +79,15 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/custom-properties")) {
     		return "prop";
     	}
+
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties")) {
+    		return "properties";
+    	}
+    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/metadata/core-properties")) {
+    		return "cp";
+    	}
+
     	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")) {
     		return "vt";
@@ -103,6 +112,46 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/picture")) {
     		return "pic";
     	}
+
+    	if (namespaceUri.equals("urn:schemas-microsoft-com:office:office")) {
+    		return "o";
+    	}
+    	
+    	if (namespaceUri.equals("urn:schemas-microsoft-com:vml")) {
+    		return "v";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2003/auxHint")) {
+    		return "WX";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.microsoft.com/aml/2001/core")) {
+    		return "aml";
+    	}
+
+    	if (namespaceUri.equals("urn:schemas-microsoft-com:office:word")) {
+    		return "w10";
+    	}
+
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/math")) {
+    		return "m";
+    	}
+    	
+    	if (namespaceUri.equals("http://www.w3.org/2001/XMLSchema-instance")) {
+    		return "xsi";
+    	}
+
+    	if (namespaceUri.equals("http://purl.org/dc/elements/1.1/")) {
+    		return "dc";
+    	}
+    	if (namespaceUri.equals("http://purl.org/dc/terms/")) {
+    		return "dcterms";
+    	}
+    	
+    	if (namespaceUri.equals("http://www.w3.org/XML/1998/namespace")) {
+    		return "xml";
+    	}
+    	
     	
     	return suggestion;
     }
