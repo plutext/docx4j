@@ -379,6 +379,7 @@ public class FlatOpcXmlImporter  {
 				}
 				
 				String contentType = pkgPart.getContentType();
+				log.debug("contentType: " + contentType);
 				
 				org.w3c.dom.Element el = null; 
 				
@@ -424,12 +425,11 @@ public class FlatOpcXmlImporter  {
 					
 					((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).setDocument( convertW3CtoDom4J(el).getDocument() );
 
-				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart) {
+//				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart) {
+				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
-					log.debug("Detected ObfuscatedFontPart");
-					((BinaryPart)part).setBinaryData( pkgPart.getBinaryData() );
-					log.info("Stored as BinaryData" );
-					
+					log.debug("Detected BinaryPart " + part.getClass().getName() );
+					((BinaryPart)part).setBinaryData( pkgPart.getBinaryData() );					
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
@@ -443,6 +443,8 @@ public class FlatOpcXmlImporter  {
 			} catch (PartUnrecognisedException e) {
 
 				// Try to get it as a binary part
+				log.error("Part unrecognised: " + resolvedPartUri);
+				part = new BinaryPart( new PartName(resolvedPartUri)); // /?
 				((BinaryPart)part).setBinaryData( pkgPart.getBinaryData() );
 			}
 		} catch (Exception ex) {
