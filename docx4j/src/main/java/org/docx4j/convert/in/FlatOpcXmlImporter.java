@@ -33,6 +33,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
@@ -369,6 +370,7 @@ public class FlatOpcXmlImporter  {
 		
 		try {
 			org.docx4j.xmlPackage.Part pkgPart = parts.get(resolvedPartUri);
+			org.w3c.dom.Element el = null; 
 
 			try {
 				
@@ -381,7 +383,6 @@ public class FlatOpcXmlImporter  {
 				String contentType = pkgPart.getContentType();
 				log.debug("contentType: " + contentType);
 				
-				org.w3c.dom.Element el = null; 
 				
 				if (pkgPart.getXmlData()!=null) {
 					// if its not binary
@@ -439,7 +440,14 @@ public class FlatOpcXmlImporter  {
 					log.error("No suitable part found for: " + resolvedPartUri);
 					part = null;					
 				}
-			
+			} catch (java.lang.IllegalArgumentException e) {
+
+				if (el!=null) {
+					log.error(e.getMessage());
+					log.error(XmlUtils.w3CDomNodeToString(el));
+				}
+				throw e;				
+				
 			} catch (PartUnrecognisedException e) {
 
 				// Try to get it as a binary part
