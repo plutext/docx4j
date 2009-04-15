@@ -27,10 +27,6 @@
 
 package org.docx4j.document.wordprocessingml;
 
-
-import org.dom4j.Namespace;
-
-
 public interface Constants {
 
 	// TODO -replace with Tag class 16/11/07xx
