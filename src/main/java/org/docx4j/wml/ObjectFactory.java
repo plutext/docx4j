@@ -1477,13 +1477,13 @@ public class ObjectFactory {
     public CTTblPrChange createCTTblPrChange() {
         return new CTTblPrChange();
     }
-
+    
     /**
-     * Create an instance of {@link Styles.DocDefaults.PPrDefault }
+     * * Create an instance of {@link DocDefaults.PPrDefault }
      * 
      */
-    public Styles.DocDefaults.PPrDefault createStylesDocDefaultsPPrDefault() {
-        return new Styles.DocDefaults.PPrDefault();
+    public DocDefaults.PPrDefault createDocDefaultsPPrDefault() {
+    	return new DocDefaults.PPrDefault();
     }
 
     /**
@@ -1726,12 +1726,13 @@ public class ObjectFactory {
         return new FontPitch();
     }
 
+    
     /**
-     * Create an instance of {@link Styles.DocDefaults }
+     * * Create an instance of {@link DocDefaults }
      * 
      */
-    public Styles.DocDefaults createStylesDocDefaults() {
-        return new Styles.DocDefaults();
+    public DocDefaults createDocDefaults() {
+    	return new DocDefaults();
     }
 
     /**
@@ -2590,12 +2591,13 @@ public class ObjectFactory {
         return new CTRPrDefault();
     }
 
+    
     /**
-     * Create an instance of {@link Styles.DocDefaults.RPrDefault }
+     * * Create an instance of {@link DocDefaults.RPrDefault }
      * 
      */
-    public Styles.DocDefaults.RPrDefault createStylesDocDefaultsRPrDefault() {
-        return new Styles.DocDefaults.RPrDefault();
+    public DocDefaults.RPrDefault createDocDefaultsRPrDefault() {
+    	return new DocDefaults.RPrDefault();
     }
 
     /**
