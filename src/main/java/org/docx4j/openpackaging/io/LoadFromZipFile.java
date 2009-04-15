@@ -446,7 +446,7 @@ public class LoadFromZipFile extends Load {
 		InputStream is = null;
 		try {
 			try {
-
+				log.debug("resolved uri: " + resolvedPartUri);
 				is = getInputStreamFromZippedPart( zf,  resolvedPartUri);
 				
 				// Get a subclass of Part appropriate for this content type	

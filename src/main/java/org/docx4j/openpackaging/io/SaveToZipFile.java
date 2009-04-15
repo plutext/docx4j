@@ -54,7 +54,7 @@ import org.dom4j.io.XMLWriter;
 
 
 /**
- * Save a Package object to a Zip file.
+ * Save a Package object to a Zip file or output stream
  * @author jharrop
  *
  */
