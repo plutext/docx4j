@@ -23,6 +23,7 @@ package org.docx4j.openpackaging.packages;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
+import org.docx4j.openpackaging.io.LoadFromZipNG;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
@@ -149,8 +151,16 @@ public class WordprocessingMLPackage extends Package {
 	 */	
 	public static WordprocessingMLPackage load(java.io.File docxFile) throws Docx4JException {
 		
-		LoadFromZipFile loader = new LoadFromZipFile();
-		return (WordprocessingMLPackage)loader.get(docxFile);		
+//		LoadFromZipFile loader = new LoadFromZipFile();
+		LoadFromZipNG loader = new LoadFromZipNG();
+//		return (WordprocessingMLPackage)loader.get(docxFile);		
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(docxFile);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return (WordprocessingMLPackage)loader.get(fis);
 	}
 
 	/**
