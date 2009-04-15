@@ -398,7 +398,7 @@ public class MainDocumentPart extends DocumentPart  {
 		StyleDefinitionsPart styleDefinitionsPart 
 			= this.getStyleDefinitionsPart();
 
-		if (propertyResolver.activateStyle(styleId)) {
+		if (getPropertyResolver().activateStyle(styleId)) {
 			// Style is available 
 			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();			
 			org.docx4j.wml.PPr  pPr = factory.createPPr();
@@ -474,7 +474,7 @@ public class MainDocumentPart extends DocumentPart  {
 	        	
 	        	log.warn("Style definitions part was null!");
 	        	
-	        } else if (propertyResolver.activateStyle(styleName)) {
+	        } else if (getPropertyResolver().activateStyle(styleName)) {
 	        
 	        	// Cool
 	        	
