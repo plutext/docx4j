@@ -30,9 +30,6 @@
 	//alert(paragraphs.length);
 	for (var i=0 ; i<paragraphs.length; i++) {
 
-		// @contentEditable
-		paragraphs[i].setAttribute("contentEditable", "true");
-
 		// @class
 		var pStyle = paragraphs[i].getElementsByTagName("w:pStyle");
 		var styleVal;
@@ -183,51 +180,6 @@ String.prototype.startsWith = function(str){
 }
 
 
-function mySave(url) {
-	var xmlDocument = new DOMParser().parseFromString("<root />", "text/xml"); 
-	xmlDocument.documentElement.appendChild( XPath.selectNodes("//pkg:package", document)[0] );
-		// works, but since this is HTML, element names are still capitalised
-  //alert(xmlDocument.length);
-  if (xmlDocument) {
-    var httpRequest = postXML(url, xmlDocument);
-    if (httpRequest && httpRequest.status==200) {
-    
-      //alert('HTTP response status: ' + httpRequest.status);
-      
-      // Convert to object with data url
-      var contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      var dataURL = "data:"+contentType + ";base64," + httpRequest.responseText;
-      
-      // Use iframe, not <object>, since for the latter,
-      // Firefox insists on looking for a plugin
-      var obj = document.createElement("iframe");
-	 obj.setAttribute("src", dataURL); 
-         obj.setAttribute("style", "display:none;");
-	 //obj.setAttribute("type", contentType);
-       var body = document.getElementsByTagName("body")[0];
-       body.appendChild(obj);
-
-    } else {
-     	alert("What happened??");
-    }
-  }
-}
-
-
-/*
-function resolver(prefix){
-    switch(prefix){
-	case "w"  : return "http://schemas.openxmlformats.org/wordprocessingml/2006/main"; 
-	case "pkg": return "http://schemas.microsoft.com/office/2006/xmlPackage"; 
-	case "rel": return "http://schemas.openxmlformats.org/package/2006/relationships"
-	case "r"  : return "http://schemas.openxmlformats.org/officeDocument/2006/relationships"; 
-	case "a"  : return "http://schemas.openxmlformats.org/drawingml/2006/main"; 
-	case "ns6": return "http://schemas.openxmlformats.org/schemaLibrary/2006/main"; 
-	case "pic": return "http://schemas.openxmlformats.org/drawingml/2006/picture"; 
-	case "wp" : return "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
-        default: return null;  // or xhtml?
-    }
-} */
 
     function createBlockCss(pPr) {
 
@@ -464,23 +416,5 @@ function resolver(prefix){
 	return result;
     	
     }
-
-function postXML (url, xmlDocument) {
-  try {
-    var httpRequest = new XMLHttpRequest();
-    httpRequest.open('POST', url, false);
-    httpRequest.send(xmlDocument);
-    return httpRequest;
-  }
-  catch (e) {
-    output("Can't post XML document");
-    return null;
-  }
-}
-
-
-
-
-
 
 setAttributes();
