@@ -254,6 +254,7 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	public void loadPart(Part part) {
 
 		if (part == null) {
+			log.error("Failed trying to load null part." );			
 			throw new IllegalArgumentException("part");
 		}
 		
