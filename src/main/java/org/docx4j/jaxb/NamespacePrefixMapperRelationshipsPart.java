@@ -25,7 +25,8 @@ public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.mar
 
 	
     /**
-     * Returns a preferred prefix for the given namespace URI.
+     * Returns a preferred prefix for the given namespace URI;
+     * this one is used *only* when we marshal the relationships part.
      * 
      * This method is intended to be overrided by a derived class.
      * 
