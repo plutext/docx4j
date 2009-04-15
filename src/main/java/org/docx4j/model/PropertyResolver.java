@@ -15,6 +15,7 @@ import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Color;
@@ -32,7 +33,7 @@ import org.docx4j.wml.PPrBase.OutlineLvl;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.Spacing;
 import org.docx4j.wml.PPrBase.TextAlignment;
-import org.docx4j.wml.Styles.DocDefaults;
+import org.docx4j.wml.DocDefaults;
 
 /**
  * This class works out the actual set of properties (paragraph or run)
@@ -1052,18 +1053,19 @@ public class PropertyResolver {
 			}						
 		} 
 	}
+	final static String wNamespaceDec = " xmlns:w=\"" + Namespaces.NS_WORD12 + "\""; 
 
-	final static String rPrDefaultsString = "<w:rPr>"
+	final static String rPrDefaultsString = "<w:rPr" + wNamespaceDec + ">"
 		// Word 2007 still uses Times New Roman if there is no theme part, and we'd like to replicate that 
         // + "<w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\" />"
         + "<w:sz w:val=\"22\" />"
         + "<w:szCs w:val=\"22\" />"
         + "<w:lang w:val=\"en-US\" w:eastAsia=\"en-US\" w:bidi=\"ar-SA\" />"
       + "</w:rPr>";
-	final static String pPrDefaultsString = "<w:pPr>"
+	final static String pPrDefaultsString = "<w:pPr" + wNamespaceDec + ">"
 	        + "<w:ind w:left=\"86\" w:right=\"86\" />"
 	      + "</w:pPr>";
-	final static String docDefaultsString = "<w:docDefaults>"
+	final static String docDefaultsString = "<w:docDefaults" + wNamespaceDec + ">"
 	    + "<w:rPrDefault>"
 	    + 	rPrDefaultsString
 	    + "</w:rPrDefault>"
@@ -1071,6 +1073,7 @@ public class PropertyResolver {
 	    + 	pPrDefaultsString
 	    + "</w:pPrDefault>"
 	  + "</w:docDefaults>";
+	
 	
     public boolean activateStyle( String styleId  ) {
     	
