@@ -455,40 +455,52 @@ public class XmlUtils {
 		return null;				
 	}
 
+	
+	
 	/** Marshal to a W3C document */ 
 	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o) {
+
+		return marshaltoW3CDomDocument(o, Context.jc);
+	}
+
+	/** Marshal to a W3C document */
+	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc) {
 		// TODO - refactor this.
 		try {
-			JAXBContext jc = Context.jc;
 
-			Marshaller marshaller=jc.createMarshaller();
-			
-			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			Marshaller marshaller = jc.createMarshaller();
+
+			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
+					.newInstance();
 			dbf.setNamespaceAware(true);
 			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
 
-			try { 
-				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
+			try {
+				marshaller.setProperty(
+						"com.sun.xml.bind.namespacePrefixMapper",
+						new org.docx4j.jaxb.NamespacePrefixMapper());
 
-				// Reference implementation appears to be present (in endorsed dir?)
+				// Reference implementation appears to be present (in endorsed
+				// dir?)
 				log.info("using com.sun.xml.bind.namespacePrefixMapper");
-				
+
 			} catch (javax.xml.bind.PropertyException cnfe) {
-				
+
 				log.error(cnfe);
 
-				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
-				
-				// Use JAXB distributed in Java 6 - note 'internal' 
-				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-						new org.docx4j.jaxb.NamespacePrefixMapper() ); 
-				
+				log
+						.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+
+				// Use JAXB distributed in Java 6 - note 'internal'
+				marshaller.setProperty(
+						"com.sun.xml.internal.bind.namespacePrefixMapper",
+						new org.docx4j.jaxb.NamespacePrefixMapper());
+
 			}
-			
+
 			marshaller.marshal(o, doc);
-			
-		    return doc;
+
+			return doc;
 		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -496,7 +508,7 @@ public class XmlUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;				
+		return null;
 	}
 	
 	
