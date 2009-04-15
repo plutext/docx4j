@@ -82,6 +82,9 @@ import org.dom4j.io.SAXReader;
  * @version 1.0
  */
 public class ContentTypeManagerImpl implements ContentTypeManager {
+	
+	// TODO - merge this with interface. 
+	// There is no value in having a separate implementation.
 
 	protected static Logger log = Logger.getLogger(ContentTypeManagerImpl.class);
 
