@@ -55,7 +55,8 @@ public class CreateXmlCss {
 	public final static String HTML_MIDDLE =  "</style>"
 		+ "\n</head>\n<body>";
 
-	public final static String HTML_TAIL =  "\n  </body>" 
+	public final static String HTML_TAIL =  "\n  </body>"
+		    + "\n  <script type=\"text/javascript\" src=\"javeline_xpath.js\"></script>" 
 			+ "\n  <script type=\"text/javascript\" src=\"wml_fix.js\"></script>"
 			+ "\n</html>";
 	
@@ -72,8 +73,8 @@ public class CreateXmlCss {
 	    	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
-			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-//			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
+//			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;
