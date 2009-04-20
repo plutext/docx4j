@@ -690,7 +690,8 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 			if (val.equals("left") || val.equals("center") || val.equals("right")) {			
 				result.append( "text-align: " + val + ";" );
 			} else if (val.equals("both")) {
-				result.append( "text-align:justify;text-justify:inter-ideograph;" );
+				result.append( "text-align:justify;");
+				// IE only: text-justify:inter-ideograph;" );
 			} // ignore the other possibilities for now
 		}
 	
