@@ -72,17 +72,19 @@ public class OpenMainDocumentAndTraverse {
 		
 		org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart commentsPart = documentPart.getCommentsPart();
 		
-		Object o = commentsPart.getJaxbElement();
-		System.out.println( o.getClass().getName() );
-//		System.out.println( ((JAXBElement)o).getName() );
-//		System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
+		if (commentsPart!=null ) {
 		
-		org.docx4j.wml.Comments comments = (org.docx4j.wml.Comments)o;
-		
-		List<org.docx4j.wml.Comments.Comment> commentList = comments.getComment();
-		
-		//walkJAXBElements(comments.getComment());		
-		
+			Object o = commentsPart.getJaxbElement();
+			System.out.println( o.getClass().getName() );
+	//		System.out.println( ((JAXBElement)o).getName() );
+	//		System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
+			
+			org.docx4j.wml.Comments comments = (org.docx4j.wml.Comments)o;
+			
+			List<org.docx4j.wml.Comments.Comment> commentList = comments.getComment();
+			
+			//walkJAXBElements(comments.getComment());		
+		}
 				
 		// Save it
 		
