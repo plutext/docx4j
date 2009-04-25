@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.vfs.CacheStrategy;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
@@ -146,114 +147,133 @@ public class WordXmlPicture {
             	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
             	
             	if (rel.getTargetMode() == null
-            			|| rel.getTargetMode().equals("Internal") ) {            		
-            		
-            		if ( !imageDirPath.equals("") ) {
-            			// Need to save the image 
-            			
-            			try {
+						|| rel.getTargetMode().equals("Internal")) {
+
+					// Get the part
+					Part part = wmlPackage.getMainDocumentPart()
+							.getRelationshipsPart().getPart(rel);
+					try {
+
+						if (imageDirPath.equals("")) {
+
+							// <img
+							// src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub/
+							//
+							// which is nice, except it doesn't work in IE7,
+							// and is limited to 32KB in IE8!
+
+							java.nio.ByteBuffer bb = ((BinaryPart) part)
+									.getBuffer();
+							bb.clear();
+							byte[] bytes = new byte[bb.capacity()];
+							bb.get(bytes, 0, bytes.length);
+							
+							byte[] encoded = Base64.encodeBase64(bytes, true);
+
+							picture
+									.setSrc("data:" + part.getContentType()
+											+ ";base64,"
+											+ (new String(encoded, "UTF-8")));
+
+						} else {
+							// Need to save the image
+
 							// To create directory:
-							FileObject folder = getFileSystemManager().resolveFile(imageDirPath);
-							if (!folder.exists() ) {
-							    folder.createFolder();
+							FileObject folder = getFileSystemManager()
+									.resolveFile(imageDirPath);
+							if (!folder.exists()) {
+								folder.createFolder();
 							}
-							
-							// Get the part
-							Part part = wmlPackage.getMainDocumentPart().getRelationshipsPart().getPart(rel);
-							
-							// Construct a file name from the part name	
+
+							// Construct a file name from the part name
 							String partname = part.getPartName().toString();
-							String filename = partname.substring(partname.lastIndexOf("/") + 1);
+							String filename = partname.substring(partname
+									.lastIndexOf("/") + 1);
 							log.debug("image file name: " + filename);
-							
+
 							FileObject fo = folder.resolveFile(filename);
-							if (fo.exists() ) {
-								
-								log.warn("Overwriting (!) existing file!"); 
-								
+							if (fo.exists()) {
+
+								log.warn("Overwriting (!) existing file!");
+
 							} else {
-							   fo.createFile();
+								fo.createFile();
 							}
-//							System.out.println("URL: " + fo.getURL().toExternalForm() );
-//							System.out.println("String: " + fo.toString() );
-							
+							// System.out.println("URL: " +
+							// fo.getURL().toExternalForm() );
+							// System.out.println("String: " + fo.toString() );
+
 							// Save the file
-			       			OutputStream out = fo.getContent().getOutputStream();
-			    	        java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-			    	        bb.clear();
-			    	        byte[] bytes = new byte[bb.capacity()];
-			    	        bb.get(bytes, 0, bytes.length);
-			    	        	        
-			    	        out.write( bytes );
-							
+							OutputStream out = fo.getContent()
+									.getOutputStream();
+							java.nio.ByteBuffer bb = ((BinaryPart) part)
+									.getBuffer();
+							bb.clear();
+							byte[] bytes = new byte[bb.capacity()];
+							bb.get(bytes, 0, bytes.length);
+
+							out.write(bytes);
+
 							// Set the attribute
-			    	        String src = fixImgSrcURL( fo );
-	                		picture.setSrc( src );  
-			    	        log.info("Wrote @src='" + src);
-							
-						} catch (Exception e) {
-							log.error(e);
+							String src = fixImgSrcURL(fo);
+							picture.setSrc(src);
+							log.info("Wrote @src='" + src);
+
 						}
-            			
-            		} else {
-                		picture.setSrc("BinaryPart_" + rel.getTarget() );
-            		}
-            		
-            	} else {
-                    picture.setSrc( rel.getTarget() );            	
-            	}
 
-            }
+					} catch (Exception e) {
+						log.error(e);
+					}
 
-            // if the relationship isn't found, produce a warning
-            //if (String.IsNullOrEmpty(picture.Src))
-            //{
-            //    this.embeddedPicturesDropped++;
-            //}
-        }
-    	
-        return picture;        
-    }
-    
+				} else { // External
+					picture.setSrc(rel.getTarget());
+				}
 
-    private static FileSystemManager fileSystemManager;
-    private static ReadWriteLock aLock = new ReentrantReadWriteLock(true);
-    
-    public static FileSystemManager getFileSystemManager()
-    {
-        aLock.readLock().lock();
+			}
 
-        try
-        {
-            if (fileSystemManager == null)
-            {
-                try
-                {
-                    StandardFileSystemManager fm = new StandardFileSystemManager();
-                    fm.setCacheStrategy(CacheStrategy.MANUAL);
-                    fm.init();
-                    fileSystemManager = fm;
-                }
-                catch (Exception exc)
-                {
-                    throw new RuntimeException(exc);
-                }
-            }
+			// if the relationship isn't found, produce a warning
+			// if (String.IsNullOrEmpty(picture.Src))
+			// {
+			// this.embeddedPicturesDropped++;
+			// }
+		}
 
-            return fileSystemManager;
-        }
+		return picture;
+	}
+
+	private static FileSystemManager fileSystemManager;
+	private static ReadWriteLock aLock = new ReentrantReadWriteLock(true);
+
+	public static FileSystemManager getFileSystemManager() {
+		aLock.readLock().lock();
+
+		try {
+			if (fileSystemManager == null) {
+				try {
+					StandardFileSystemManager fm = new StandardFileSystemManager();
+					fm.setCacheStrategy(CacheStrategy.MANUAL);
+					fm.init();
+					fileSystemManager = fm;
+				} catch (Exception exc) {
+					throw new RuntimeException(exc);
+				}
+			}
+
+			return fileSystemManager;
+		}
         finally
         {
             aLock.readLock().unlock();
         }
     }
     
-	/* imageDirPath is anything VFSJFileChooser can resolve into a FileObject.
-	// That's enough for saving the image.
-	// In order for a web browser to display it, the URI Scheme has to
-	// be something a web browser can understand.
-	// So at that point, webdav:// will have to become http://,
-	// and smb:// become file:// ... */
+	/*
+	 * imageDirPath is anything VFSJFileChooser can resolve into a FileObject. //
+	 * That's enough for saving the image. // In order for a web browser to
+	 * display it, the URI Scheme has to // be something a web browser can
+	 * understand. // So at that point, webdav:// will have to become http://, //
+	 * and smb:// become file:// ...
+	 */
     static String fixImgSrcURL( FileObject fo)
     {
     	String itemUrl = null;
