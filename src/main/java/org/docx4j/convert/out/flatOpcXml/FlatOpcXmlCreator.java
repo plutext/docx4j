@@ -377,11 +377,6 @@ public class FlatOpcXmlCreator implements Output {
 
 			partResult.setBinaryData( bytes );
 			
-			// Note that I didn't need to Base64 encode this.
-			// Suspect marshaller.marshal must Base64 encode
-			// automatically?
-
-			
 		} catch (Exception e ) {
 			throw new Docx4JException("Failed to put binary part", e);			
 		}
