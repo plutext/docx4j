@@ -1,14 +1,14 @@
 package org.docx4j.convert.out.html;
 
 import java.util.*;
-import org.docx4j.Dom4jUtils;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
 import org.docx4j.model.table.TableModel;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.apache.log4j.Logger;
 import javax.xml.transform.TransformerException;
 
@@ -17,33 +17,39 @@ import javax.xml.transform.TransformerException;
  *  
 */
 public class TableWriter extends ModelConverter {
-
-	// TODO: rewrite without use of dom4j
 	
   private final static Logger logger = Logger.getLogger(TableWriter.class);
 
   public Node toNode(Model tableModel) throws TransformerException {
     TableModel table = (TableModel)tableModel;
     logger.debug("Table asXML:\n" + table.debugStr());
-    Document doc = DocumentHelper.createDocument();
+    
+    org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument();   
+	DocumentFragment docfrag = doc.createDocumentFragment();
 
-    Element tbl = doc.addElement("table");
+    Element tbl = doc.createElement("table");
+    docfrag.appendChild(tbl);
+    
     int cols = table.getColCount();
-    Element tgroup = tbl.addElement("colgroup")
-      .addAttribute("span", String.valueOf(cols));
+    Element tgroup =  doc.createElement("colgroup");
+    tbl.appendChild(tgroup);
+    tgroup.setAttribute("span",  String.valueOf(cols));
     for (List<TableModel.Cell> rows : table.getCells()) {
-			Element row = tbl.addElement("tr");
+			Element row = doc.createElement("tr");
+			tbl.appendChild(row);
 			for (TableModel.Cell cell : rows) {
 				// process cell
 				if (!cell.isDummy()) {
 					int col = cell.getColumn();
-					Element cellNode = row.addElement("td");
+					Element cellNode = doc.createElement("td");
+					row.appendChild(cellNode);
 					if (cell.getExtraCols() > 0) {
-						cellNode.addAttribute("colspan", Integer.toString(cell
+						cellNode.setAttribute("colspan", Integer.toString(cell
 								.getExtraCols() + 1));
+						
 					}
 					if (cell.getExtraRows() > 0) {
-						cellNode.addAttribute("rowspan", Integer.toString(cell
+						cellNode.setAttribute("rowspan", Integer.toString(cell
 								.getExtraRows() + 1));
 					}
 					// insert content into cell
@@ -52,12 +58,12 @@ public class TableWriter extends ModelConverter {
 						logger.warn("model cell had no contents!");
 					} else {
 						logger.debug("copying cell contents..");
-						Dom4jUtils.treeCopy(cell.getContent().getChildNodes(),
+						XmlUtils.treeCopy(cell.getContent().getChildNodes(),
 								cellNode);
 					}
 				}
 			}
 		}
-    return Dom4jUtils.asDocumentFragment(doc);
+    return docfrag;
   }
 }
