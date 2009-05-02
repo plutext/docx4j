@@ -347,33 +347,27 @@
  -->
   <xsl:template match="w:tbl">
 
-		<xsl:variable name="childResults">
-			<xsl:apply-templates select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" />
-		</xsl:variable>
-
 		<xsl:variable name="tblNode" select="." />  			
 
-		<!--  Create the HTML table in Java -->
-	  	<xsl:variable name="tableWithWmlTcContents" select="java:org.docx4j.convert.out.html.HtmlExporterNG.createTable( 
-	  		$wmlPackage, $tblNode)" />
+		<xsl:variable name="childResults">
+			<xsl:apply-templates />  <!--   select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" -->
+		</xsl:variable>
+
+		<!--  Create the HTML table in Java --> 
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults)"/>
 	  			  		
-		<!--  Now convert the tc contents -->
-	  	<xsl:apply-templates select="$tableWithWmlTcContents" />
-  
   </xsl:template>
 
- <!--  Pass through the table structure  -->
-  <xsl:template match="table">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
-  <xsl:template match="tr">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
-  <xsl:template match="td">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
+<xsl:template match="w:tblPr"/>  
+<xsl:template match="w:tblGrid"/>  
+<xsl:template match="w:tr|w:tc">
+	<xsl:copy>
+		<xsl:apply-templates select="@*"/>	
+		<xsl:apply-templates/>
+	</xsl:copy>
+</xsl:template>  
+<xsl:template match="w:tcPr"/>
 
-  <xsl:template match="w:tcPr"/>  
 
    
   <xsl:template match="*">
