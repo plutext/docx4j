@@ -142,7 +142,8 @@
         <xsl:if test="$docxWikiMenu='true'">        
 			<div style="text-align:right">
 				<a href="/alfresco/docxwiki/edit{$docID}">edit</a>, 
-				<a href="{$docID}">download</a>
+				<a href="{$docID}">download</a>, 
+				<a href="/alfresco/docx2web{$docID}">(ttw)</a> 				
 			</div>        
         </xsl:if>
 
@@ -234,7 +235,7 @@
 
   
   <xsl:template match="w:sdt">
-  	<xsl:apply-templates select="sdtContent"/>
+  	<xsl:apply-templates select="w:sdtContent/*"/>
   </xsl:template>
 
 
