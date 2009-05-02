@@ -182,7 +182,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     		HtmlSettings htmlSettings) throws Exception {
     			
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
-				wmlPackage.getMainDocumentPart().getJaxbElement() ); 		
+				wmlPackage.getMainDocumentPart().getJaxbElement() ); 	
+		
+		//log.debug( XmlUtils.w3CDomNodeToString(doc));
 			
 		// Prep parameters
 		if (htmlSettings==null) {
@@ -532,7 +534,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	        
 	        Style s = propertyResolver.getStyle(styleId);
 	        
-	        if (s.getType().equals("paragraph") ) {
+	        if (s == null ) {
+	        	log.error("Couldn't find style: " + styleId);
+	        } else if (s.getType().equals("paragraph") ) {
 	        	// the pPr component
 	        	PPr pPr = propertyResolver.getEffectivePPr(styleId);
 	        	if (pPr==null) {
@@ -564,7 +568,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	        
 	        Style s = propertyResolver.getStyle(styleId);
 	        
-	        if (s.getType().equals("character") ) {
+	        if (s == null ) {
+	        	log.error("Couldn't find style: " + styleId);
+	        } else if (s.getType().equals("character") ) {
 	        	RPr rPr = propertyResolver.getEffectiveRPr(styleId);
 	        	if (rPr==null) {
 	        		log.debug("null rPr for style " + styleId);
