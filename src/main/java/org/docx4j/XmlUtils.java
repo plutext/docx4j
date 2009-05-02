@@ -51,10 +51,14 @@ import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
+import org.dom4j.io.DOMWriter;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -236,6 +240,14 @@ public class XmlUtils {
 			log.error("Caught and ignored: \n" + ex);
 		}		
 		return o;
+	}
+
+	public static Object unmarshal(Node n) throws JAXBException {
+			
+		Unmarshaller u = Context.jc.createUnmarshaller();					
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+		return u.unmarshal( n );
 	}
 	
 	/** Marshal to a Dom4j document */ 
@@ -761,6 +773,13 @@ public class XmlUtils {
     	     
     	}
 
+ 	public static void treeCopy( NodeList sourceNodes, Node destParent ) { 		
+        for (int i=0; i<sourceNodes.getLength(); i++) {
+        	treeCopy((Node)sourceNodes.item(i), destParent);
+        } 		
+ 	}
+     
+     
 	public static void treeCopy( Node sourceNode, Node destParent ) {
 		// source node maybe org.apache.xml.dtm.ref.DTMNodeProxy
 		// (if its xslt output we are copying)
@@ -785,7 +804,7 @@ public class XmlUtils {
 	                case Node.ELEMENT_NODE:
 	                    
 	                    // Copy of the node itself
-                		//log.debug("copying: " + sourceNode.getLocalName() );
+                		log.debug("copying: " + sourceNode.getNodeName() );
 	            		Node newChild = destParent.getOwnerDocument().createElementNS(
 	            				sourceNode.getNamespaceURI(), sourceNode.getLocalName() );                    
 	            		destParent.appendChild(newChild);
@@ -796,13 +815,31 @@ public class XmlUtils {
 	                		
 	                		Attr attr = (Attr)atts.item(i);
 	                		
-//	                		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
-//	                		log.debug("attr.getLocalName(): " + attr.getLocalName());
+	                		log.debug("attr.getNodeName(): " + attr.getNodeName());
+	                		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
+	                		log.debug("attr.getLocalName(): " + attr.getLocalName());
+	                		log.debug("attr.getPrefix(): " + attr.getPrefix());
 	                		
-	                		if (attr.getNamespaceURI()!=null
-	                				&& attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
+	                		if ( attr.getNodeName().startsWith("xmlns:")) {
+	                			/* A document created from a dom4j document using dom4j 1.6.1's io.domWriter
+		                			does this ?!
+		                			attr.getNodeName(): xmlns:w 
+		                			attr.getNamespaceURI(): null
+		                			attr.getLocalName(): null
+		                			attr.getPrefix(): null
+		                			
+		                			unless i'm doing something wrong, this is another reason to
+		                			remove use of dom4j from docx4j
+	                			*/ 
+		                		; 
+		                		// this is a namespace declaration. not our problem
+	                		} else if (attr.getNamespaceURI()==null) {
+		                		log.debug("attr.getLocalName(): " + attr.getLocalName() + "=" + attr.getValue());
+	                			((org.w3c.dom.Element)newChild).setAttribute(
+		                				attr.getLocalName(), attr.getValue() );
+	                		} else if ( attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
 		                		; // this is a namespace declaration. not our problem
-	                		} else {
+	                		} else  {
 		                		((org.w3c.dom.Element)newChild).setAttributeNS(attr.getNamespaceURI(), 
 		                				attr.getLocalName(), attr.getValue() );	                			
 	                		}
@@ -859,7 +896,8 @@ public class XmlUtils {
 	//                    writer.write(lineSeparator);
 	//                    break;
 	            }
-	        }	
+	        }
+	
 }
 
 /*		

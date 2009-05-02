@@ -44,8 +44,9 @@ public class CreateHtml {
 	    	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
-			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
+//			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
 //			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
+			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;

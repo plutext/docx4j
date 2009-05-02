@@ -28,6 +28,7 @@ import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.Mapper;
@@ -210,6 +211,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		
 		htmlSettings.setWmlPackage(wmlPackage);
 		
+		Converter c = new Converter();
+		c.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+		c.start(wmlPackage);
 		
 		// Now do the transformation
 		log.debug("About to transform...");

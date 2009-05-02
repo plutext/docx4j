@@ -66,6 +66,11 @@ public class HeaderFooterPolicy {
 		Document doc = (Document)wordmlPackage.getMainDocumentPart().getJaxbElement();
 		
 		SectPr sectPr = doc.getBody().getSectPr();
+		
+		if (sectPr == null || sectPr.getEGHdrFtrReferences() == null) {
+			return;
+		}
+		
 		for (CTRel rel : sectPr.getEGHdrFtrReferences()) {
 			
 			String relId = rel.getId();
