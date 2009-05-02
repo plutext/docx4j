@@ -23,6 +23,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.Converter;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
@@ -245,6 +246,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			
 	      	  // Resulting SAX events (the generated FO) must be piped through to FOP
 	      	  Result result = new SAXResult(fop.getDefaultHandler());
+	      	  
+	  		Converter c = new Converter();
+			c.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+			c.start(wordMLPackage);
+	      	  
 	    	  
 	  		if (log.isDebugEnabled()) {
 

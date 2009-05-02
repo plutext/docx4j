@@ -52,7 +52,8 @@ public class CreatePdf {
 	    	String inputfilepath = null;
 	    	
 //			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
+			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";	    	
+//			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";	    	
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
 //			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/Header.docx";
@@ -113,7 +114,8 @@ public class CreatePdf {
 			 *    
 			 * .. viaXSLFO uses docx2fo.xslt and FOP.  It is
 			 *    rudimentary right now, but does support
-			 *    headers/footers, images and very basic tables
+			 *    headers/footers, images and fairly basic tables
+			 *    (but supporting merged cells)
 			 *    
 			 * .. viaItext - for developers who don't like xslt
 			 *    at all! Or want to use iText's features..

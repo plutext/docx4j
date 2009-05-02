@@ -481,41 +481,25 @@
   <xsl:template match="w:tbl">
 
 		<xsl:variable name="childResults">
-			<xsl:apply-templates select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" />
+			<xsl:apply-templates /> <!--  select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" /-->
 		</xsl:variable>
 
 		<xsl:variable name="tblNode" select="." />  			
 
-		<!--  Create the HTML table in Java -->
-	  	<xsl:variable name="tableWithWmlTcContents" 
-	  		select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createTable( 
-	  		$wmlPackage, $tblNode)" />
+		<!--  Create the XSL FO table in Java -->
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults)"/>	  		
 	  			  		
-		<!--  Now convert the tc contents -->
-	  	<xsl:apply-templates select="$tableWithWmlTcContents" />
-  
   </xsl:template>
-
- <!--  Pass through the table structure  -->
-  <xsl:template match="fo:table-and-caption">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
-  <xsl:template match="fo:table">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
-  <xsl:template match="fo:table-body">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
-  <xsl:template match="fo:table-row">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
-  <xsl:template match="fo:table-cell">  
-  		<xsl:copy><xsl:apply-templates select="@* | node()"/></xsl:copy>    	  
-</xsl:template>
-
-  <xsl:template match="w:tcPr"/>  
-
   
+<xsl:template match="w:tblPr"/>  
+<xsl:template match="w:tblGrid"/>  
+<xsl:template match="w:tr|w:tc">
+	<xsl:copy>
+		<xsl:apply-templates select="@*"/>	
+		<xsl:apply-templates/>
+	</xsl:copy>
+</xsl:template>  
+<xsl:template match="w:tcPr"/>
   
   
 </xsl:stylesheet>
