@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.docx4j</groupId>
+	<artifactId>docx4j</artifactId>
+	<name>docx4j</name>
+	<version>2.1.0</version>
+	<description>
+		docx4j is a library which helps you to work with the Office Open
+		XML file format, specifically WordprocessingML as used in docx
+		documents.
+	</description>
+	<url>http://dev.plutext.org/</url>
+	<prerequisites />
+	<inceptionYear>2007</inceptionYear>
+	<developers>
+		<developer>
+			<id>jharrop</id>
+			<name>Jason Harrop</name>
+			<email>jason@plutext.org</email>
+			<organization>Plutext</organization>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>+10</timezone>
+		</developer>
+	</developers>
+	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<testSourceDirectory>src/test/java</testSourceDirectory>
+		<outputDirectory>bin</outputDirectory>
+		<testOutputDirectory>bin</testOutputDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<verbose>false</verbose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.0</version>
+			</plugin>
+		</plugins>
+		<extensions>
+			<extension>
+				<groupId>org.jvnet.wagon-svn</groupId>
+				<artifactId>wagon-svn</artifactId>
+				<version>1.8</version>
+			</extension>
+		</extensions>
+	</build>
+	<repositories>
+		<repository>
+			<id>Maven Snapshots</id>
+			<url>
+				http://people.apache.org/repo/m2-snapshot-repository
+			</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>docx4j</id>
+			<name>docx4j Maven 2 repository</name>
+			<url>http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2</url>
+		</repository>
+		<repository>
+			<id>webdavclient4j</id>
+			<name>webdavclient4j Maven 2 repository</name>
+			<url>https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2</url>
+		</repository>
+
+		<repository>
+      <id>maven2-repository.dev.java.net</id>
+      <name>Java.net Repository for Maven</name>
+      <url>http://download.java.net/maven/2/</url>
+    </repository>		
+	</repositories>
+	<dependencies>
+   			<dependency>
+   				<groupId>javax.xml.bind</groupId>
+   				<artifactId>jaxb-api</artifactId>
+   				<version>2.1</version>
+   			</dependency>
+
+   			<dependency>
+   				<groupId>com.sun.xml.bind</groupId>
+   				<artifactId>jaxb-impl</artifactId>
+   				<version>2.1.3</version> <!--  nothing newer in the repository! -->
+   			</dependency>
+	
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.4</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.jcr</groupId>
+			<artifactId>jcr</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.13</version>
+		</dependency>
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+		<dependency>
+			<!-- required for fop fonts -->
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+			<!-- These are required for commons-logging 1.1, otherwise these unwanted dependencies are included.
+				See http://raibledesigns.com/rd/entry/maven_2_hates_commons_logging
+				
+				<exclusions>
+				<exclusion>
+				<groupId>log4j</groupId>
+				<artifactId>log4j</artifactId>
+				</exclusion>
+				<exclusion>
+				<groupId>logkit</groupId>
+				<artifactId>logkit</artifactId>
+				</exclusion>
+				<exclusion>
+				<groupId>avalon-framework</groupId>
+				<artifactId>avalon-framework</artifactId>
+				</exclusion>
+				<exclusion>
+				<groupId>javax.servlet</groupId>
+				<artifactId>servlet-api</artifactId>
+				</exclusion>
+				</exclusions> -->
+		</dependency>
+		<dependency>
+			<!-- required for fop fonts -->
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>1.3.1</version>
+		</dependency>
+
+		<dependency>
+			<!-- required by commons-vfs
+				 TODO that POM should declare this.  -->
+			<groupId>jdom</groupId>
+			<artifactId>jdom</artifactId>
+			<version>1.0</version>
+		</dependency>
+ 
+ 
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>xmlgraphics-commons</artifactId>
+			<version>1.3</version>
+		</dependency>
+
+		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 
+			
+			(stuff not available in public repositories) 
+			
+			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=lib/xalan-2.7.0-patched-6396599-stripped.jar -DgroupId=xalan -DartifactId=xalan-patched -Dversion=2.7.0 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+			
+			
+		-->
+
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>hwpf</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.topologi</groupId>
+			<artifactId>diffx</artifactId>
+			<version>0.61</version>
+		</dependency>
+				
+ 		<dependency>
+			<groupId>com.lowagie</groupId>
+			<artifactId>itext-unsigned</artifactId>
+			<version>2.0.8</version>
+			<exclusions>
+				<!-- not that these are in our pom, 
+				     but they are in the official one -->
+				<exclusion>
+					<artifactId>bouncycastle</artifactId>
+					<groupId>bcmail-jdk14</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>bouncycastle</artifactId>
+					<groupId>bcprov-jdk14</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>xalan</groupId>
+			<artifactId>xalan-patched</artifactId>
+			<version>2.7.0</version>
+			<!-- required for transforming to xhtml 
+				
+				But we use a patched copy as a workaround
+				for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+				
+				remove META-INF/services from the xalan jar to prevent xalan 
+				being picked up as the default provider for jaxp transform.
+				
+				6396599 has been fixed in the on-going release JDK7. 
+				6396599 has also been committed to backport to 6u release 6u10 -->
+		</dependency>
+
+		<dependency>
+			<groupId>pdf-renderer</groupId>
+			<artifactId>pdf-renderer</artifactId>
+			<version>0.2007</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons.ppp</groupId>
+			<artifactId>parent-pointer-plugin</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>xhtmlrenderer</groupId>
+			<artifactId>minium</artifactId>
+			<version>0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>xhtmlrenderer</groupId>
+			<artifactId>core-renderer</artifactId>
+			<version>R8pre2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>docx4j</groupId>
+			<artifactId>fop-fonts</artifactId>
+			<version>0.2.0</version>
+		</dependency>
+
+		<!-- end of svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 -->
+
+		<!-- https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2
+
+			(stuff not available in public repositories)                                 
+  -->
+ 
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-vfs-patched</artifactId>
+			<version>1.9.1</version>			
+		</dependency>
+
+	</dependencies>
+	<distributionManagement>
+		<repository>
+			<uniqueVersion>false</uniqueVersion>
+			<id>docx4j</id>
+			<url>svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2</url>
+		</repository>
+	</distributionManagement>
+
+   		<!--  NB as at 20080521, docx4j can't be built using 1.5. There are 2 issues:
+   		
+   			1.  fop-fonts-0.1.jar was built targeting 1.6
+   			
+   			2.  NamespacePrefixMapper.java imports com.sun.xml.internal.bind.marshaller
+   		   		
+	so comment this out, until:
+	(a) above issues are addressed
+	(b) the Windows path issues below are fixed in m2eclipse
+	
+   <profiles>
+   	<profile>
+   		<id>jdk15</id>
+   		<activation>
+   			<jdk>1.5</jdk>
+   		</activation>
+   		<dependencies>
+   			<dependency>
+   				<groupId>javax.xml.bind</groupId>
+   				<artifactId>jaxb-api</artifactId>
+   				<version>2.1</version>
+   			</dependency>
+
+   			<dependency>
+   				<groupId>com.sun.xml.bind</groupId>
+   				<artifactId>jaxb-impl</artifactId>
+   				<version>2.1.3</version>
+   			</dependency>
+   		</dependencies>
+   	</profile>
+   	<profile>
+   		<id>jdk16</id>
+   		<activation>
+   			<jdk>1.6</jdk>
+   		</activation>
+   		<dependencies>
+   			<dependency>
+   				<groupId>com.sun.xml.bind</groupId>
+   				<artifactId>jaxb-impl</artifactId>
+   				<version>2.0</version>
+   				<scope>system</scope>
+                <systemPath>${env.JAVA_HOME}/jre/lib/rt.jar</systemPath>
+   			</dependency>
+   		</dependencies>
+   	</profile>
+   </profiles>
+   		 -->
+
+   				<!--
+                <systemPath>
+                    /usr/lib/jvm/java-6-sun/jre/lib/rt.jar
+                </systemPath>
+   					Note for Windows users: Maven won't find rt.jar if systemPath
+   					contains a space (eg "Program Files"). Either copy rt.jar 
+   					to a path that doesn't contain spaces, or use:
+   					
+   					    <systemPath>${env.JAVA_HOME}/jre/lib/rt.jar</systemPath>
+   					
+   					which works on the command line, but not in m2eclipse 0.9.x. 
+   					See http://jira.codehaus.org/browse/MNGECLIPSE-581
+   					
+   					<systemPath>${java.home}/lib/rt.jar</systemPath>
+   					broken (mvn 2.0.9) even though java.home is supposed to point to JRE_HOME: 
+   					
+   				-->
+	
+</project>
