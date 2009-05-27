@@ -669,7 +669,7 @@ public class P implements Child
 
     // Not generated
     /** Get the text content of all runs in the P.  WARNING: this only gets ./w:r/w:t.
-     *  That is incomplete.  */
+     *  That is incomplete.  Try org.docx4j.TextUtils.extractText instead.  */
     @Deprecated
     public String toString() {
 
