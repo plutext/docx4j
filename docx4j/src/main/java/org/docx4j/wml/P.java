@@ -668,7 +668,9 @@ public class P implements Child
     }
 
     // Not generated
-    /** Get the text content of all runs in the P */
+    /** Get the text content of all runs in the P.  WARNING: this only gets ./w:r/w:t.
+     *  That is incomplete.  */
+    @Deprecated
     public String toString() {
 
     	StringBuilder result = new StringBuilder();
