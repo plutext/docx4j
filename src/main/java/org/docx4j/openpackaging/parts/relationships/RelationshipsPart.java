@@ -142,6 +142,18 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 */
 	
 	/**
+	 * Unless this is set to false, relationship id's
+	 * will be allocated automatically.
+	 */
+	boolean automaticIds = true;
+	public boolean isAutomaticIds() {
+		return automaticIds;
+	}
+	public void setAutomaticIds(boolean automaticIds) {
+		this.automaticIds = automaticIds;
+	}
+
+	/**
 	 * Constructor.
 	 */
 	public RelationshipsPart(PartName partName) throws InvalidFormatException {
@@ -601,18 +613,22 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 */
 	public void addRelationship(Relationship rel) {
 
-		// Relationship part always 
-		// determines the Relationship Id
-		// but warn if we are overwriting
-		String id = getNextId();
-		if ( rel.getId() !=null 
-				&& !rel.getId().equals("") ) {
-			logger.warn("replacing relationship id '" + rel.getId() + "' with '"
-					+ id + "'");
-		} else {
-			logger.debug("Using id: " + id);
+		if (isAutomaticIds()
+				|| rel.getId() ==null) {
+			
+			// Relationship part  
+			// determines the Relationship Id
+			// but warn if we are overwriting		
+			String id = getNextId();
+			if ( rel.getId() !=null 
+					&& !rel.getId().equals("") ) {
+				logger.warn("replacing relationship id '" + rel.getId() + "' with '"
+						+ id + "'");
+			} else {
+				logger.debug("Using id: " + id);
+			}
+			rel.setId( id );
 		}
-		rel.setId( id );
 		
 		relationships.getRelationship().add(rel);
 	}
