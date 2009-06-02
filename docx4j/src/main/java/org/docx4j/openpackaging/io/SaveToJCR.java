@@ -235,11 +235,15 @@ public class SaveToJCR {
 		
 	}
 
-	/* @displayName - a human readable description for this content
-	 * object.  Pass null if you don't want the displayName property set. 
-	 * Returns the resource.
-	 */
-	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
+	@Deprecated // since MIME type unspecified
+	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, 
+			String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
+
+		return saveRawXmlPart( jcrSession,  baseNode,  partName, "text/xml",  w3cDoc);		
+	}
+
+	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, 
+			String partName, String mimeType, org.w3c.dom.Document w3cDoc) throws Docx4JException {
 
 		try {
 			
@@ -255,26 +259,23 @@ public class SaveToJCR {
 	        DOMSerializerEngine engine 
 	        	= new DOMSerializerEngine( (org.w3c.dom.Node)w3cDoc.getDocumentElement() );
 	        
-	        return saveRawXmlPart(jcrSession, baseNode, partName, new OutputEngineInputStream(engine)); 
-			
+	        return saveRawXmlPart(jcrSession, baseNode, partName, mimeType, new OutputEngineInputStream(engine)); 			
 	
 		} catch (Exception e ) {
 			e.printStackTrace();
 			throw new Docx4JException("Failed to put " + partName, e);
 		}
-				
-	}
-
-	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, String partName, InputStream is) throws Docx4JException {
-
-		return saveRawXmlPart( jcrSession,  baseNode,  partName, "text/plain",  is);
 		
 	}
 	
-	/* @displayName - a human readable description for this content
-	 * object.  Pass null if you don't want the displayName property set. 
-	 * Returns the resource.
-	 */
+	@Deprecated // since MIME type unspecified
+	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, 
+			String partName, InputStream is) throws Docx4JException {
+
+		return saveRawXmlPart( jcrSession,  baseNode,  partName, "text/xml",  is);
+		
+	}
+	
 	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, 
 			String partName, String mimeType, InputStream is) throws Docx4JException {
 
@@ -369,10 +370,15 @@ public class SaveToJCR {
 	        // javax.jcr.nodetype.ConstraintViolationException: no matching property definition found for {http://www.jcp.org/jcr/1.0}data
 			
 			// 20090226 - Alfresco's writeValue method guesses mimetype
-			// when we do .setJcrDataProperty below, so for
-			// Alfresco, this is redundant.
+			// when we do .setJcrDataProperty below, but even so,
+			// that doesn't actually set jcr:mimeType
 	        cmContentNode.setProperty("jcr:mimeType", mimeType);
-	        	
+	        // .. so there is the possibility that what we explicitly
+	        // set it to here is different to what Alfresco guesses and stores
+	        // 20090531 - comment out, since calling method should be getting this right
+//	        if (partName.endsWith("rels")) {	        	
+//		        cmContentNode.setProperty("jcr:mimeType", "text/xml");	        	
+//	        }
 	        
 //	        contentNode.setProperty("jcr:encoding", "");
 	        
@@ -405,12 +411,7 @@ public class SaveToJCR {
 	        log.info("using " + nodeMapper.getClass().getName());
 	        
 	        nodeMapper.setJcrDataProperty(cmContentNode, is );	
-	        
-	        // special case - this method NOT USED?  Chunking version used instead?
-	        if (partName.endsWith("rels")) {	        	
-		        cmContentNode.setProperty("jcr:mimeType", "text/xml");	        	
-	        }
-	        
+	        	        
 	        Calendar lastModified = Calendar.getInstance();
 	        lastModified.setTimeInMillis(lastModified.getTimeInMillis());
 	        cmContentNode.setProperty("jcr:lastModified", lastModified);	
