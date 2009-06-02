@@ -58,6 +58,8 @@ import org.docx4j.wml.R;
 import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.docx4j.diff.StringComparator;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 
 import org.eclipse.compare.rangedifferencer.RangeDifferencer;
 import org.w3c.dom.Document;
@@ -80,10 +82,24 @@ public class ParagraphDifferencer {
 	 */
 
 	protected static Logger log = Logger.getLogger(ParagraphDifferencer.class);
+
+	// For XSLT
+	public static void log(String message ) {		
+		log.info(message);
+	}
+	
 	
 	public static Integer nextId = 0;
 
 	static org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory();
+	
+	// The rels used in the resulting diff
+	private List<Relationship> composedRels = new ArrayList<Relationship>();
+	public List<Relationship> getComposedRels() {
+		return composedRels;
+	}
+	
+	
 	
     final private static SimpleDateFormat RFC3339_FORMAT 
     	= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -120,7 +136,6 @@ public class ParagraphDifferencer {
     	
     }
     
-	
 	/**
 	 * @param args
 	 */
@@ -137,8 +152,9 @@ public class ParagraphDifferencer {
 		// Result format
 		StreamResult result = new StreamResult(System.out);
 
-		// Run the diff
-		diff(pl, pr, result, null, null);
+		// Run the diff - FIXME
+		ParagraphDifferencer pd = new ParagraphDifferencer();
+		pd.diff(pl, pr, result, null, null, null, null);
 		
 	}
 	
@@ -146,6 +162,37 @@ public class ParagraphDifferencer {
 		
 		return ++nextId;
 		
+	}
+	
+	/**
+	 * Any rel which is present in the results of the comparison must point to
+	 * a valid target of the correct type, or the resulting document will
+	 * be broken.  
+	 * 
+	 * So we pass the old and new rels objects, and
+	 * progressively build up a composite one.
+	 * 
+	 * @return the 
+	 */
+	public static void registerRelationship(ParagraphDifferencer pd, 
+			RelationshipsPart docPartRels, String relId,
+			String newRelId ) {
+		
+		if (docPartRels==null) {
+			return;
+		}
+		
+		Relationship r = docPartRels.getRelationshipByID(relId);
+		if (r==null) {
+			log.error("Couldn't find rel " + relId);
+			return;
+		}
+		
+		Relationship r2 = (Relationship)XmlUtils.deepCopy(r, Context.jcRelationships);
+		
+		r2.setId(newRelId);
+		
+		pd.composedRels.add(r2);
 	}
 
 	/**
@@ -156,16 +203,22 @@ public class ParagraphDifferencer {
 	 * @param pr - the right paragraph
 	 * @param result 
 	 */
-	public static void diff(P pl, P pr, javax.xml.transform.Result result, String author, java.util.Calendar date) {
+	public void diff(P pl, P pr, javax.xml.transform.Result result, 
+			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
 
-		diff(pl, pr, result, author, date, false);
+		diff(pl, pr, result, 
+				author, date, 
+				docPartRelsLeft, docPartRelsRight,
+				false);
 	}
 
 	
-	public static void diff(org.docx4j.wml.SdtContentBlock cbLeft, 
+	public void diff(org.docx4j.wml.SdtContentBlock cbLeft, 
 			org.docx4j.wml.SdtContentBlock cbRight, 
 			javax.xml.transform.Result result,
-			String author, java.util.Calendar date) {
+			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
 
 		Writer diffxResult = new StringWriter();
 		
@@ -207,9 +260,12 @@ public class ParagraphDifferencer {
 				// to omit the @date entirely if its unknown
 				dateString = "2009-03-11T17:57:00Z";
 			}
+			transformParameters.put("ParagraphDifferencer", this);
 			transformParameters.put("date", dateString);
-			
 			transformParameters.put("author", author);
+			transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
+			transformParameters.put("docPartRelsRight", docPartRelsRight);
+			
 			XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 			
 		} catch (Exception exc) {
@@ -218,9 +274,10 @@ public class ParagraphDifferencer {
 		
 	}
 	
-	public static void markupAsInsertion(org.docx4j.wml.SdtContentBlock cbLeft, 
+	public void markupAsInsertion(org.docx4j.wml.SdtContentBlock cbLeft, 
 			javax.xml.transform.Result result,
-			String author, java.util.Calendar date) {
+			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsLeft) {
 
 		Writer diffxResult = new StringWriter();
 				
@@ -241,7 +298,10 @@ public class ParagraphDifferencer {
 				transformParameters.put("date", dateString);
 			}
 			
+			transformParameters.put("ParagraphDifferencer", this);
 			transformParameters.put("author", author);
+			transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
+			transformParameters.put("docPartRelsRight", null);
 			XmlUtils.transform(doc, xsltMarkupInsert, transformParameters, result);
 			
 		} catch (Exception exc) {
@@ -250,9 +310,10 @@ public class ParagraphDifferencer {
 
 	}
 
-	public static void markupAsDeletion(org.docx4j.wml.SdtContentBlock cbLeft, 
+	public void markupAsDeletion(org.docx4j.wml.SdtContentBlock cbLeft, 
 			javax.xml.transform.Result result,
-			String author, java.util.Calendar date) {
+			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsRight) {
 
 		Writer diffxResult = new StringWriter();
 				
@@ -273,7 +334,10 @@ public class ParagraphDifferencer {
 				transformParameters.put("date", dateString);
 			}
 			
+			transformParameters.put("ParagraphDifferencer", this);
 			transformParameters.put("author", author);
+			transformParameters.put("docPartRelsLeft",  null);
+			transformParameters.put("docPartRelsRight", docPartRelsRight);
 			XmlUtils.transform(doc, xsltMarkupDelete, transformParameters, result);
 			
 		} catch (Exception exc) {
@@ -291,8 +355,9 @@ public class ParagraphDifferencer {
 	 * @param pr - the right paragraph
 	 * @param result 
 	 */
-	public static void diff(P pl, P pr, javax.xml.transform.Result result,
+	public void diff(P pl, P pr, javax.xml.transform.Result result,
 			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight,
 			boolean preProcess) {
 		
 		
@@ -400,7 +465,10 @@ public class ParagraphDifferencer {
 								
 				StreamSource src = new StreamSource(new StringReader(simplified));
 				Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+				transformParameters.put("ParagraphDifferencer", this);
 				transformParameters.put("author", author);
+				transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
+				transformParameters.put("docPartRelsRight", docPartRelsRight);
 				XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 				
 			} catch (Exception exc) {
@@ -632,7 +700,10 @@ public class ParagraphDifferencer {
 		try {
 			StreamSource src = new StreamSource(new StringReader(diffx));
 			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+			transformParameters.put("ParagraphDifferencer", this);
 			transformParameters.put("author", author);
+			transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
+			transformParameters.put("docPartRelsRight", docPartRelsRight);
 			XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 			
 		} catch (Exception exc) {
