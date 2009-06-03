@@ -177,8 +177,15 @@ public class ParagraphDifferencer {
 	public static void registerRelationship(ParagraphDifferencer pd, 
 			RelationshipsPart docPartRels, String relId,
 			String newRelId ) {
+
 		
 		if (docPartRels==null) {
+			// (In this case, Xalan won't even be able to find this function)
+			return;
+		}
+		
+		if (docPartRels.getRelationships()==null) {
+			log.warn("relationships object is null!");
 			return;
 		}
 		
