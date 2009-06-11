@@ -1,5 +1,7 @@
 package org.docx4j.model.images;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -117,7 +119,8 @@ public class WordXmlPicture {
     	Node picLinkNode = picLink.nextNode();
         if (picLinkNode != null)
         {
-            String linkRelId = ConvertUtils.getAttributeValueNS(picLinkNode, "http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+            String linkRelId = ConvertUtils.getAttributeValueNS(picLinkNode, 
+            		"http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
 
             if ( linkRelId!=null && !linkRelId.equals("") ) 
             {
@@ -206,22 +209,43 @@ public class WordXmlPicture {
 							// Save the file
 							OutputStream out = fo.getContent()
 									.getOutputStream();
-							java.nio.ByteBuffer bb = ((BinaryPart) part)
-									.getBuffer();
-							bb.clear();
-							byte[] bytes = new byte[bb.capacity()];
-							bb.get(bytes, 0, bytes.length);
+							// instance of org.apache.commons.vfs.provider.DefaultFileContent$FileContentOutputStream
+							// which extends MonitorOutputStream
+						    // which in turn extends BufferedOutputStream
+						    // which in turn extends FilterOutputStream.
+							
+							try {
+								java.nio.ByteBuffer bb = ((BinaryPart) part)
+										.getBuffer();
+								bb.clear();
+								byte[] bytes = new byte[bb.capacity()];
+								bb.get(bytes, 0, bytes.length);
 
-							out.write(bytes);
+								out.write(bytes);
+								
+								// Set the attribute
+								String src = fixImgSrcURL(fo);
+								picture.setSrc(src);
+								log.info("Wrote @src='" + src);
+								
+							} finally {
+								try {
+									fo.close();
+									// That Closes this file, and its content.
+									// Closing the content in turn
+									// closes any open stream.
+									// out.flush() is unnecessary, since 
+									// FilterOutputStream's close() does do flush() first.
+								} catch (IOException ioe) {
+									ioe.printStackTrace();
+								}
+							}
 
-							// Set the attribute
-							String src = fixImgSrcURL(fo);
-							picture.setSrc(src);
-							log.info("Wrote @src='" + src);
 
 						}
 
 					} catch (Exception e) {
+						e.printStackTrace();
 						log.error(e);
 					}
 
