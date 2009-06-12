@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/officedocument/2006/2/customXml" 
+elementFormDefault="qualified" attributeFormDefault="qualified" 
+blockDefault="#all" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns="http://schemas.openxmlformats.org/officedocument/2006/2/customXml" 
+xmlns:wbld="http://schemas.microsoft.com/office/word/2004/5/build" 
+xmlns:odoc="http://schemas.microsoft.com/office/internal/2005/internalDocumentation"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!-- 
+	
+o generate the classes (from the same directory)	
+			
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh  shared-customxmlprops.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0	
+	
+	 -->
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.customXmlProperties"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
+  <xsd:element name="schemaRefs">
+  	<xsd:complexType>
+  		<xsd:sequence>
+  			<xsd:element name="schemaRef"  minOccurs="0" >
+  				<xsd:complexType>
+  					<xsd:attribute name="uri" type="xsd:string"
+  						use="required" />
+  				</xsd:complexType>
+  			</xsd:element>
+  		</xsd:sequence>
+  	</xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="datastoreItem">
+  	<xsd:annotation>
+  		<xsd:documentation>
+  			Custom XML Data Properties
+  		</xsd:documentation>
+  	</xsd:annotation>
+  	<xsd:complexType>
+  		<xsd:sequence>
+  			<xsd:element ref="schemaRefs" minOccurs="0" />
+  		</xsd:sequence>
+  		<xsd:attribute name="itemID" use="required">
+  			<xsd:annotation>
+  				<xsd:documentation>
+  					Custom XML Data ID
+  				</xsd:documentation>
+  			</xsd:annotation>
+  			<xsd:simpleType>
+  				<xsd:restriction base="xsd:token">
+  					<xsd:pattern
+  						value="\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}" />
+  				</xsd:restriction>
+  			</xsd:simpleType>
+  		</xsd:attribute>
+  	</xsd:complexType>
+  </xsd:element>
+</xsd:schema>

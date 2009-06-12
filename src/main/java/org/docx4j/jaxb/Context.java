@@ -31,6 +31,7 @@ public class Context {
 	public static JAXBContext jcDocPropsExtended;
 	public static JAXBContext jcXmlPackage;
 	public static JAXBContext jcRelationships;
+	public static JAXBContext jcCustomXmlProperties;
 	
 	static {
 		
@@ -42,6 +43,8 @@ public class Context {
 			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended");
 			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage");
 			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships");
+			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties");
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}				

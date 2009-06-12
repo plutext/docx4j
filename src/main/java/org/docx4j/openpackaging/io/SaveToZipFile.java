@@ -179,6 +179,23 @@ public class SaveToZipFile {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
+
+		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
+
+				try {				
+			        // Add ZIP entry to output stream.
+			        out.putNextEntry(new ZipEntry(zipEntryName));		        
+
+			        ((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().marshal( out );
+			        
+			        // Complete the entry
+			        out.closeEntry();
+					log.info( "PUT SUCCESS: " + zipEntryName);		
+			        
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
 			
 		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
 

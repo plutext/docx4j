@@ -29,6 +29,7 @@ import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -72,6 +73,12 @@ public class Package extends Base {
 		= new HashMap<ExternalTarget, Part>();
 	public HashMap<ExternalTarget, Part> getExternalResources() {
 		return externalResources;		
+	}	
+	
+	protected HashMap<String, CustomXmlDataStoragePart> customXmlDataStorageParts
+		= new HashMap<String, CustomXmlDataStoragePart>();
+	public HashMap<String, CustomXmlDataStoragePart> getCustomXmlDataStorageParts() {
+		return customXmlDataStorageParts;
 	}	
 	
 	protected ContentTypeManager contentTypeManager;

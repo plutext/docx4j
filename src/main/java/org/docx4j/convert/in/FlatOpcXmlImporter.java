@@ -22,6 +22,8 @@ package org.docx4j.convert.in;
 
 
 
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -31,10 +33,14 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentType;
@@ -43,6 +49,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
+import org.docx4j.openpackaging.io.Load;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -414,6 +421,11 @@ public class FlatOpcXmlImporter  {
 
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsExtended);
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );
+
+				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart ) {
+
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );					
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
@@ -430,8 +442,26 @@ public class FlatOpcXmlImporter  {
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
-					((BinaryPart)part).setBinaryData( pkgPart.getBinaryData() );					
+					((BinaryPart)part).setBinaryData( pkgPart.getBinaryData() );	
 					
+				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
+
+					CustomXmlDataStorage data = Load
+							.getCustomXmlDataStorageClass().factory();
+
+					// Need an inputStream
+					DOMSource source = new DOMSource(el);
+					StringWriter xmlAsWriter = new StringWriter();
+					StreamResult result = new StreamResult(xmlAsWriter);
+					TransformerFactory.newInstance().newTransformer()
+							.transform(source, result);
+					ByteArrayInputStream inputStream = new ByteArrayInputStream(
+							xmlAsWriter.toString().getBytes("UTF-8"));
+
+					data.unmarshal(inputStream); // Not really JAXB, that's just our method name
+					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
+							.setData(data);
+
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
 					// return an instance of one of the above, or throw an

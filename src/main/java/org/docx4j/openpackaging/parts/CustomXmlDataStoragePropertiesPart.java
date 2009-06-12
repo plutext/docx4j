@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.parts;
 
 
+import org.docx4j.customXmlProperties.DatastoreItem;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -29,7 +30,7 @@ import org.dom4j.Document;
 
 
 
-public final class CustomXmlDataStoragePropertiesPart extends Dom4jXmlPart {
+public final class CustomXmlDataStoragePropertiesPart extends JaxbXmlPart {
 	
 	public CustomXmlDataStoragePropertiesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -53,9 +54,9 @@ public final class CustomXmlDataStoragePropertiesPart extends Dom4jXmlPart {
 		
 	}
 
-	@Override
-	public Document getDocument() {
-		return document;
-	}	
-	
+	public String getItemId() {
+		
+		return ((DatastoreItem)this.jaxbElement).getItemID();
+		
+	}
 }
