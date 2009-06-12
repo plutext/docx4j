@@ -367,8 +367,10 @@ public class MainDocumentPart extends DocumentPart  {
 	}
 
 	/**
-	 * Add this paragraph of text using the specified style
-	 * (up to user to ensure it is a paragraph style).
+	 * Create a paragraph containing the string simpleText, styled 
+	 * using the specified style
+	 * (up to user to ensure it is a paragraph style)
+	 * and add it to the document.
 	 * 
 	 * @param styleId
 	 * @param text
@@ -384,8 +386,9 @@ public class MainDocumentPart extends DocumentPart  {
 	}
 
 	/**
-	 * Add this paragraph of text using the specified style
-	 * (up to user to ensure it is a paragraph style).
+	 * Create a paragraph containing the string simpleText, styled 
+	 * using the specified style (up to user to ensure it is a paragraph style)
+	 * without adding it to the document.
 	 * 
 	 * @param styleId
 	 * @param text
@@ -413,8 +416,13 @@ public class MainDocumentPart extends DocumentPart  {
 	}
 	
 	
-	/*
-	 * If passed null, will create, add and return an empty P
+	/**
+	 * Create a paragraph containing the string simpleText,
+	 * and add it to the document.  If passed null, the result
+	 * is an empty P.
+	 * 
+	 * @param simpleText
+	 * @return
 	 */
 	public org.docx4j.wml.P addParagraphOfText(String simpleText) {
 		
@@ -425,8 +433,13 @@ public class MainDocumentPart extends DocumentPart  {
 		
 	}
 
-	/*
-	 * If passed null, will create and return an empty P
+	/**
+	 * Create a paragraph containing the string simpleText,
+	 * without adding it to the document.  If passed null, the result
+	 * is an empty P.
+	 * 
+	 * @param simpleText
+	 * @return
 	 */
 	public org.docx4j.wml.P createParagraphOfText(String simpleText) {
 		
@@ -451,6 +464,11 @@ public class MainDocumentPart extends DocumentPart  {
 	}
 	
 	
+	/**
+	 * Add the object o to the document.  
+	 * 
+	 * @param o
+	 */
 	public void addObject(Object o) {
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
@@ -490,14 +508,21 @@ public class MainDocumentPart extends DocumentPart  {
 		
 	}
 	
-	public void addParagraph(String pXml) {
+	/**
+	 * Create a paragraph from the xml string <w:p>...</w:p> ,
+	 * and add it to the document.  You'll need to ensure the 
+	 * string contains namespace declarations (including for w:)
+	 * 
+	 * @param simpleText
+	 * @return
+	 */
+	public org.docx4j.wml.P addParagraph(String pXml) {
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
-		body.getEGBlockLevelElts().add(
-				(org.docx4j.wml.P)org.docx4j.XmlUtils.unmarshalString(pXml) );
-		
-	
+		org.docx4j.wml.P  para = (org.docx4j.wml.P)org.docx4j.XmlUtils.unmarshalString(pXml); 
+		body.getEGBlockLevelElts().add( para );
+		return para;
 	}
 }
 

@@ -23,6 +23,7 @@ package org.docx4j.samples;
 
 import java.io.File;
 
+import org.docx4j.model.datastorage.Dom4jCustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -71,7 +72,12 @@ public class CreateDocxWithCustomXml {
 				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart(parts);
 				// Defaults to /customXml/item1.xml
 			
-			customXmlDataStoragePart.setDocument( createCustomXmlDocument() );
+			Dom4jCustomXmlDataStorage data = new Dom4jCustomXmlDataStorage();
+			data.unmarshal(createCustomXmlDocument());
+			
+			customXmlDataStoragePart.setData(data);
+			
+//			customXmlDataStoragePart.setDocument( createCustomXmlDocument() );
 					
 			base.addTargetPart(customXmlDataStoragePart);
 			

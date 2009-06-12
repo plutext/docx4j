@@ -214,6 +214,18 @@ public class SaveToJCR {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
+		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
+
+			try {
+				javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+				dbf.setNamespaceAware(true);
+				w3cDoc = dbf.newDocumentBuilder().newDocument();
+				
+				((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().marshal( w3cDoc );
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 			
 		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
 

@@ -40,6 +40,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -234,6 +235,8 @@ public class LoadFromZipNG extends Load {
 		     String key = (String)myVeryOwnIterator.next();
 		     log.info( key + "  " + unusedZipEntries.get(key));
 		 }
+		 
+		registerCustomXmlDataStorageParts(p);
 		 
 		 return p;
 	}
@@ -534,6 +537,11 @@ public class LoadFromZipNG extends Load {
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsExtended);
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
+				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart ) {
+
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+						
 				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 					// MainDocument part, Styles part, Font part etc
@@ -549,6 +557,12 @@ public class LoadFromZipNG extends Load {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
 					((BinaryPart)part).setBinaryData(is);
+
+				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
+					
+					CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();					
+					data.unmarshal(is); // Not necessarily JAXB, that's just our method name
+					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
