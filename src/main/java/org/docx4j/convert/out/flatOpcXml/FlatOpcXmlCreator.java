@@ -215,13 +215,8 @@ public class FlatOpcXmlCreator implements Output {
 		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
 		        
 			try {
-				javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory
-						.newInstance();
-				dbf.setNamespaceAware(true);
-				w3cDoc = dbf.newDocumentBuilder().newDocument();
-
-				((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().marshal( w3cDoc );
-				dataResult.setAny(w3cDoc.getDocumentElement());
+				dataResult.setAny(
+						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().getDocument().getDocumentElement());
 				log.info("PUT SUCCESS: " + partName);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
