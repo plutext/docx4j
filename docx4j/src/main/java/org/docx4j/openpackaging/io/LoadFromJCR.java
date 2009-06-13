@@ -661,7 +661,7 @@ public class LoadFromJCR extends Load {
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
 					
 					CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();					
-					data.unmarshal(is); // Not necessarily JAXB, that's just our method name
+					data.setDocument(is); // Not necessarily JAXB, that's just our method name
 					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);					
 										
 				} else {

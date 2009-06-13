@@ -23,6 +23,7 @@ package org.docx4j.openpackaging.io;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -195,7 +196,7 @@ public class Load {
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
 					
 					CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();					
-					data.unmarshal(is); // Not necessarily JAXB, that's just our method name
+					data.setDocument(is); // Not necessarily JAXB, that's just our method name
 					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);																				
 										
 				} else {
@@ -278,7 +279,9 @@ public class Load {
 		// But it doesn't do much harm to register a CustomXmlDataStoragePart
 		// which has a data store item ID, even if it isn't in document.xml.rels 
 		
-		Iterator iterator = parts.entrySet().iterator();
+		//Iterator iterator = parts.entrySet().iterator();
+		Collection col = parts.values();
+		Iterator iterator = col.iterator();
 		while( iterator.hasNext() ) {
 			Part entry = (Part)iterator.next();
 			

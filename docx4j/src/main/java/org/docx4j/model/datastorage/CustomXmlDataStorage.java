@@ -46,7 +46,7 @@ public interface CustomXmlDataStorage {
 	 * @return
 	 */
 	public String getXPath(String xpath, String prefixMappings) throws Docx4JException;
-	
+		
 	/**
 	 * Set the contents of this object from the input stream
 	 * 
@@ -54,7 +54,11 @@ public interface CustomXmlDataStorage {
 	 * @return
 	 * @throws Docx4JException
 	 */
-	public Object unmarshal( java.io.InputStream is ) throws Docx4JException;
+	public void setDocument( java.io.InputStream is ) throws Docx4JException;
+
+	
+	public void setDocument( org.w3c.dom.Document doc ) throws Docx4JException;
+	
 	
 	/**
 	 * Write the contents of this object to the output stream
@@ -62,7 +66,7 @@ public interface CustomXmlDataStorage {
 	 * @param os
 	 * @throws Docx4JException
 	 */
-	public void marshal(java.io.OutputStream os) throws Docx4JException;	
+	public void writeDocument(java.io.OutputStream os) throws Docx4JException;	
 
 	/**
 	 * Write the contents of this object to the org.w3c.dom.Document
@@ -70,6 +74,8 @@ public interface CustomXmlDataStorage {
 	 * @param os
 	 * @throws Docx4JException
 	 */
-	public void marshal(org.w3c.dom.Document w3cDoc) throws Docx4JException;	
+	public org.w3c.dom.Document getDocument() throws Docx4JException;	
+
+	public void setNamespaceContext(String prefixMappings) throws Docx4JException;	
 	
 }

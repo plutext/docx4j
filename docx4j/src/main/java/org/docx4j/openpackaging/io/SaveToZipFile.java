@@ -186,7 +186,7 @@ public class SaveToZipFile {
 			        // Add ZIP entry to output stream.
 			        out.putNextEntry(new ZipEntry(zipEntryName));		        
 
-			        ((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().marshal( out );
+			        ((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().writeDocument( out );
 			        
 			        // Complete the entry
 			        out.closeEntry();

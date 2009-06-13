@@ -73,7 +73,7 @@ public class CreateDocxWithCustomXml {
 				// Defaults to /customXml/item1.xml
 			
 			Dom4jCustomXmlDataStorage data = new Dom4jCustomXmlDataStorage();
-			data.unmarshal(createCustomXmlDocument());
+			data.setDocument(createCustomXmlDocument());
 			
 			customXmlDataStoragePart.setData(data);
 			

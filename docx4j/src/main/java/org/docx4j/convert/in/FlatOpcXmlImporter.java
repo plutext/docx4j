@@ -449,16 +449,14 @@ public class FlatOpcXmlImporter  {
 					CustomXmlDataStorage data = Load
 							.getCustomXmlDataStorageClass().factory();
 
-					// Need an inputStream
-					DOMSource source = new DOMSource(el);
-					StringWriter xmlAsWriter = new StringWriter();
-					StreamResult result = new StreamResult(xmlAsWriter);
-					TransformerFactory.newInstance().newTransformer()
-							.transform(source, result);
-					ByteArrayInputStream inputStream = new ByteArrayInputStream(
-							xmlAsWriter.toString().getBytes("UTF-8"));
-
-					data.unmarshal(inputStream); // Not really JAXB, that's just our method name
+					// Copy el into a new document
+					javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+					dbf.setNamespaceAware(true);
+					org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+					XmlUtils.treeCopy(el, doc);
+					
+					data.setDocument(doc); 
+					
 					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
 							.setData(data);
 
