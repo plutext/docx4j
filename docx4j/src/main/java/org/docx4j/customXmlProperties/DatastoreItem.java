@@ -63,7 +63,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class DatastoreItem {
 
     protected SchemaRefs schemaRefs;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officedocument/2006/2/customXml", required = true)
+    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/customXml", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String itemID;
 

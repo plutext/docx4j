@@ -109,7 +109,7 @@ public class SchemaRefs {
     @XmlType(name = "")
     public static class SchemaRef {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officedocument/2006/2/customXml", required = true)
+        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/customXml", required = true)
         protected String uri;
 
         /**
