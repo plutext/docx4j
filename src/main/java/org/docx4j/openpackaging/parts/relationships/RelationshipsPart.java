@@ -611,7 +611,7 @@ public final class RelationshipsPart extends JaxbXmlPart {
 	 * @param rel
 	 *            The relationship to add.
 	 */
-	public void addRelationship(Relationship rel) {
+	public boolean addRelationship(Relationship rel) {
 
 		if (isAutomaticIds()
 				|| rel.getId() ==null) {
@@ -630,7 +630,19 @@ public final class RelationshipsPart extends JaxbXmlPart {
 			rel.setId( id );
 		}
 		
+		String relId = rel.getId();
+		
+		// Only add it if there is no rel with the same
+		// id there already
+		for (Relationship existing : relationships.getRelationship() ) {			
+			if (existing.getId().equals(relId) ) {
+				// A rel with this id is already present
+				log.info("Refusing to add another rel with id " + relId + ". Target is " + rel.getTarget() );
+				return false;
+			}			
+		}
 		relationships.getRelationship().add(rel);
+		return true;
 	}
 
 
