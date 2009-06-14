@@ -4,7 +4,9 @@
     xmlns:del="http://www.topologi.org/2004/Diff-X/Delete"
     xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+ 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"    
     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+    xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"    
 	xmlns:java="http://xml.apache.org/xalan/java"    
   xmlns:xml="http://www.w3.org/XML/1998/namespace"
@@ -229,7 +231,7 @@ java.lang.IllegalArgumentException:
   
     -->
         
-  <xsl:template match="w:drawing" priority="5">
+  <xsl:template match="w:drawing" priority="3">
   
 	<xsl:variable name="logdummy" 
 		select="java:org.docx4j.diff.ParagraphDifferencer.log('in my w:drawing template')" /> 
@@ -578,6 +580,232 @@ java.lang.IllegalArgumentException:
       </w:r>
     
   </xsl:template>
+
+<!--  special case where diffx picks up a delete and insert as changes 
+      to a single w:drawing  -->      
+<xsl:template match="w:drawing[not(@dfx:delete='true') and not(@dfx:insert='true') and 
+			(descendant::*/@del:* or descendant::*/@dfx:*)] " priority="4">
+			
+	<xsl:variable name="logdummy" 
+		select="java:org.docx4j.diff.ParagraphDifferencer.log('Special case .. bifurcating w:drawing diff')" /> 
+			
+	<xsl:variable name="id" 
+						select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+			<!--  a copy of it deleted -->
+		    <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
+		      <w:r>
+			      <xsl:copy>
+			        <xsl:apply-templates select="node()" mode="deletedimage"/> <!--  drop @ -->
+			      </xsl:copy>
+		      </w:r>
+		    </w:del>    		
+	
+			<!--  a copy of it inserted -->
+			<xsl:variable name="id2" 
+						select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+		    <w:ins w:id="{$id2}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
+		      <w:r>
+			      <xsl:copy>
+			        <xsl:apply-templates select="node()" mode="insertedimage" /> <!--  drop @ -->
+			      </xsl:copy>
+		      </w:r>
+		    </w:ins>    		  		
+
+</xsl:template>
+
+  <xsl:template match="/ | @*|node()" mode="deletedimage">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" mode="deletedimage"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:template match="/ | @*|node()" mode="insertedimage">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" mode="insertedimage"/>
+    </xsl:copy>
+  </xsl:template>
+
+    <xsl:template match="wp:extent|a:ext"  mode="deletedimage">
+    
+    	<xsl:variable name="cx">
+    		<xsl:choose>
+    			<xsl:when test="@del:cx">
+    				<xsl:value-of select="string(@del:cx)"/>
+    			</xsl:when>
+    			<xsl:otherwise>
+    				<xsl:value-of select="string(@cx)"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		    			
+    	<xsl:variable name="cy">
+    		<xsl:choose>
+    			<xsl:when test="@del:cy">
+    				<xsl:value-of select="string(@del:cy)"/>
+    			</xsl:when>
+    			<xsl:otherwise>
+    				<xsl:value-of select="string(@cy)"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<xsl:choose>
+			<xsl:when test="self::wp:extent">
+				<wp:extent cx="{$cx}" cy="{$cy}" />
+			</xsl:when>		
+			<xsl:when test="self::a:ext">
+				<a:ext cx="{$cx}" cy="{$cy}" />
+			</xsl:when>		
+		</xsl:choose>	
+
+</xsl:template>
+
+<!--  
+
+ <wp:docPr id="3" name="Picture 3" del:id="1" del:name="Picture 1" /> 
+
+ <pic:cNvPr id="0" name="Picture 3" del:name="Picture 1" />
+
+-->
+    <xsl:template match="wp:docPr|pic:cNvPr"  mode="deletedimage">
+    
+    	<xsl:variable name="id">
+    		<xsl:choose>
+    			<xsl:when test="@del:id">
+    				<xsl:value-of select="string(@del:id)"/>
+    			</xsl:when>
+    			<xsl:otherwise>
+    				<xsl:value-of select="string(@id)"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		    			
+    	<xsl:variable name="name">
+    		<xsl:choose>
+    			<xsl:when test="@del:name">
+    				<xsl:value-of select="string(@del:name)"/>
+    			</xsl:when>
+    			<xsl:otherwise>
+    				<xsl:value-of select="string(@name)"/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
+		
+		<xsl:choose>
+			<xsl:when test="self::wp:docPr">
+				<wp:docPr id="{$id}" name="{$name}" />
+			</xsl:when>		
+			<xsl:when test="self::pic:cNvPr">
+				<pic:cNvPr id="{$id}" name="{$name}" />
+			</xsl:when>		
+		</xsl:choose>	
+
+</xsl:template>
+
+
+    <!--  xsl:template match="wp:extent"  mode="insertedimage"
+    
+    		nothing special needed for this
+    
+    -->
+  
+  <!--  TODO: consolidate the following 2 templates to call a single named template,
+        and pass in parameters LorR, and $docpartRels -->
+
+    <xsl:template match="a:blip"  mode="deletedimage">
+    
+  			<xsl:choose>
+  				<xsl:when test="count(@del:link)=1">
+  					<xsl:variable name="oldid" select="string(@del:link)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'R', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsRight, $oldid, $newid)" />
+  					<a:blip r:link="{$newid}" />
+  				</xsl:when>
+  				<xsl:when test="count(@del:link)=1">
+  					<xsl:variable name="oldid" select="string(@del:embed)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'R', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsRight, $oldid, $newid)" />
+  					<a:blip r:embed="{$newid}" />    				
+  				</xsl:when>
+  				<xsl:when test="count(@r:link)=1">
+  					<xsl:variable name="oldid" select="string(@r:link)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'R', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsRight, $oldid, $newid)" />
+  					<a:blip r:link="{$newid}" />
+  				</xsl:when>
+  				<xsl:when test="count(@r:embed)=1">
+  					<xsl:variable name="oldid" select="string(@r:embed)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'R', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsRight, $oldid, $newid)" />
+  					<a:blip r:embed="{$newid}" />
+  				</xsl:when>
+   				<xsl:otherwise> <!--  unexpected -->
+   					<xsl:variable name="logdummy" 
+						select="java:org.docx4j.diff.ParagraphDifferencer.log('UNEXPECTED - how to handle this a:blip?')" /> 
+   				
+				    <xsl:copy>
+				      <xsl:apply-templates select="@*|node()" /> <!--  revert to normal mode -->
+				    </xsl:copy>
+   				</xsl:otherwise>
+  			</xsl:choose>    		
+    
+    </xsl:template>
+
+    <xsl:template match="a:blip"  mode="insertedimage">
+
+  			<xsl:choose>
+  				<xsl:when test="count(@del:link)=1">
+  					<xsl:variable name="oldid" select="string(@del:link)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+  					<a:blip r:link="{$newid}" />
+  				</xsl:when>
+  				<xsl:when test="count(@del:link)=1">
+  					<xsl:variable name="oldid" select="string(@del:embed)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+  					<a:blip r:embed="{$newid}" />    				
+  				</xsl:when>
+  				<xsl:when test="count(@r:link)=1">
+  					<xsl:variable name="oldid" select="string(@r:link)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+  					<a:blip r:link="{$newid}" />
+  				</xsl:when>
+  				<xsl:when test="count(@r:embed)=1">
+  					<xsl:variable name="oldid" select="string(@r:embed)" />
+  					<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
+  					<xsl:variable name="dummy" 
+  					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
+  					     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+  					<a:blip r:embed="{$newid}" />
+  				</xsl:when>
+   				<xsl:otherwise> <!--  unexpected -->
+   					<xsl:variable name="logdummy" 
+						select="java:org.docx4j.diff.ParagraphDifferencer.log('UNEXPECTED - how to handle this a:blip?')" /> 
+   				
+				    <xsl:copy>
+				      <xsl:apply-templates select="@*|node()" /> <!--  revert to normal mode -->
+				    </xsl:copy>
+   				</xsl:otherwise>
+  			</xsl:choose>    		
+    
+    
+    </xsl:template>
 
 
 
