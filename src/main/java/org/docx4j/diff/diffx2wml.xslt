@@ -582,9 +582,58 @@ java.lang.IllegalArgumentException:
   </xsl:template>
 
 <!--  special case where diffx picks up a delete and insert as changes 
-      to a single w:drawing  -->      
+      to a single w:drawing  
+      
+      A new w:drawing inserted next to an existing w:drawing seems to
+      confuse diffx, leading it to produce something which
+      includes:
+      
+									
+									<a:prstGeom dfx:insert="true"
+										prst="rect">
+										<a:avLst dfx:insert="true" />
+									</a:prstGeom>
+									<a:noFill dfx:insert="true" />
+									<a:ln dfx:insert="true" w="9525">
+										<a:noFill dfx:insert="true" />
+										<a:miter dfx:insert="true"
+											lim="800000" />
+										<a:headEnd dfx:insert="true" />
+										<a:tailEnd dfx:insert="true" />
+									</a:ln>
+									
+									
+									<a:prstGeom dfx:delete="true"
+										del:prst="rect">
+										<a:avLst dfx:delete="true" />
+									</a:prstGeom>
+									<a:noFill dfx:delete="true" />
+									<a:ln dfx:delete="true"
+										del:w="9525">
+										<a:noFill dfx:delete="true" />
+										<a:miter dfx:delete="true"
+											del:lim="800000" />
+										<a:headEnd dfx:delete="true" />
+										<a:tailEnd dfx:delete="true" />
+									</a:ln>
+
+		WORKAROUND: In an effort to avoid using this template on something which
+		includes that, instead of 
+		
+			match="w:drawing[not(@dfx:delete='true') and not(@dfx:insert='true') and 
+						(descendant::*/@del:* or descendant::*/@dfx:*)] "
+						
+		require descendant::wp:docPr to have @del:*.
+		
+		NB also, there is a strange problem in which templates of mode deletedimage,
+		insertedimage don't seem to be doing the right thing with 
+		attributes if @dfx:insert="true" or @dfx:delete="true" is true???
+		The WORKAROUND hides this...
+		
+      
+      -->      
 <xsl:template match="w:drawing[not(@dfx:delete='true') and not(@dfx:insert='true') and 
-			(descendant::*/@del:* or descendant::*/@dfx:*)] " priority="4">
+			(descendant::wp:docPr/@del:*)] " priority="4">
 			
 	<xsl:variable name="logdummy" 
 		select="java:org.docx4j.diff.ParagraphDifferencer.log('Special case .. bifurcating w:drawing diff')" /> 
@@ -613,13 +662,37 @@ java.lang.IllegalArgumentException:
 
 </xsl:template>
 
-  <xsl:template match="/ | @*|node()" mode="deletedimage">
+  <xsl:template match="@*|node()" mode="deletedimage">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()" mode="deletedimage"/>
     </xsl:copy>
   </xsl:template>
+  
+  <!--  WORKAROUND 2 .. this is currently untested.  To test it, 
+        you have to disable Workaround 1, then test on a document
+        in which a new image is inserted next to an existing one.  -->
+  
+	    <!--  If there is an unexpected mixture of delete and insert,
+	          in deletedimage mode, lets try keeping the deleted bit
+	          (as opposed to the inserted bit?) -->  
+		<xsl:template match="@dfx:delete" priority="5" mode="deletedimage"/>    
+		<xsl:template match="@del:*"  priority="5" mode="deletedimage">
+			<xsl:attribute name="{local-name(.)}">
+				<xsl:value-of select="." />
+			</xsl:attribute>	
+		</xsl:template>
+		<xsl:template match="*[@dfx:insert]" priority="5" mode="deletedimage" />	
+		    
+	    <!--  If there is an unexpected mixture of delete and insert,
+	          in insertedimage mode, lets try keeping the inserted bit
+	          (as opposed to the deleted bit?) -->  
+		<xsl:template match="@dfx:insert" priority="5" mode="insertedimage"/>    
+		<xsl:template match="*[@dfx:delete]" priority="5" mode="insertedimage" />	
+    
+  <!-- end WORKAROUND 2 .. this is untested -->
+  
 
-  <xsl:template match="/ | @*|node()" mode="insertedimage">
+  <xsl:template match="@*|node()" mode="insertedimage">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()" mode="insertedimage"/>
     </xsl:copy>
