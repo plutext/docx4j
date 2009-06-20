@@ -84,6 +84,10 @@ public class Dom4jCustomXmlDataStorage implements CustomXmlDataStorage {
 		this.customXmlDom4jDoc = customXmlDom4jDoc;
 	}
 	
+	public Document getDom4jDocument() {
+		return this.customXmlDom4jDoc;
+	}
+	
 	public void setNamespaceContext(String prefixMappings) throws Docx4JException {
 		// Not implemented yet
 		throw new UnsupportedOperationException();		
