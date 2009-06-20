@@ -31,7 +31,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.docx4j.diff.ParagraphDifferencer;
+import org.docx4j.diff.Differencer;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -76,7 +76,7 @@ public class CompareDocuments {
 				sw);
 		Calendar changeDate = null;
 
-		ParagraphDifferencer pd = new ParagraphDifferencer();
+		Differencer pd = new Differencer();
 		pd.setRelsDiffIdentifier("blagh"); // not necessary in this case 
 		pd.diff(olderBody, newerBody, result, "someone", changeDate,
 				olderPackage.getMainDocumentPart().getRelationshipsPart(), 
@@ -111,7 +111,7 @@ public class CompareDocuments {
 		 we do it anyway for the purposes of illustration.
 		 
 	 */
-	private static void handleRels(ParagraphDifferencer pd, RelationshipsPart rp) {
+	private static void handleRels(Differencer pd, RelationshipsPart rp) {
 		// Since we are going to add rels appropriate to the docs being 
 		// compared, for neatness and to avoid duplication
 		// (duplication of internal part names is fatal in Word,

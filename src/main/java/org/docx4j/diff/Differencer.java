@@ -83,7 +83,7 @@ import com.topologi.diffx.config.DiffXConfig;
  * @author jason
  *
  */
-public class ParagraphDifferencer {
+public class Differencer {
 	
 	/*
 	 * TODO:
@@ -93,7 +93,7 @@ public class ParagraphDifferencer {
 	 *    
 	 */
 
-	protected static Logger log = Logger.getLogger(ParagraphDifferencer.class);
+	protected static Logger log = Logger.getLogger(Differencer.class);
 
 
 	// For XSLT
@@ -165,7 +165,7 @@ public class ParagraphDifferencer {
 		StreamResult result = new StreamResult(System.out);
 
 		// Run the diff - FIXME
-		ParagraphDifferencer pd = new ParagraphDifferencer();
+		Differencer pd = new Differencer();
 		pd.diff(pl, pr, result, null, null, null, null);
 		
 	}
@@ -213,7 +213,7 @@ public class ParagraphDifferencer {
 	 * 
 	 * @return the 
 	 */
-	public static void registerRelationship(ParagraphDifferencer pd, 
+	public static void registerRelationship(Differencer pd, 
 			RelationshipsPart docPartRels, String relId,
 			String newRelId ) {
 
