@@ -132,7 +132,7 @@ abstract class DiffXEventBase implements DiffXEvent {
   /**
    * @see java.lang.Object#hashCode()
    */
-  public abstract int hashCode();
+//  public abstract int hashCode();
 
   /**
    * Implementation must implement this method.

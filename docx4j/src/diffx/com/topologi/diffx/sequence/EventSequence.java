@@ -103,6 +103,7 @@ package com.topologi.diffx.sequence;
  * ============================================================================
  */
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -110,7 +111,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.topologi.diffx.event.DiffXEvent;
+import com.topologi.diffx.format.DiffXFormatter;
 
 /**
  * A sequence of events used for the Diff-X algorithm.
@@ -125,7 +129,7 @@ public final class EventSequence {
 
 // Class attributes ---------------------------------------------------------------------------
 
-  /**
+/**
    * The prefix mapping for the elements in this sequence.
    */
   private PrefixMapping prefixMapping = new PrefixMapping();
@@ -133,7 +137,7 @@ public final class EventSequence {
   /**
    * The sequence of events.
    */
-  private final List sequence;
+  private final List<DiffXEvent> sequence;
 
 // Constructors -------------------------------------------------------------------------------
 
@@ -141,7 +145,7 @@ public final class EventSequence {
    * Creates a new event sequence. 
    */
   public EventSequence() {
-    this.sequence = new LinkedList();
+    this.sequence = new LinkedList<DiffXEvent>();
   }
   
   /**
@@ -150,7 +154,7 @@ public final class EventSequence {
    * @param size The size of the sequence.
    */
   public EventSequence(int size) {
-    this.sequence = new ArrayList(size);
+    this.sequence = new ArrayList<DiffXEvent>(size);
   }
 
 // List methods -------------------------------------------------------------------------------
@@ -242,18 +246,34 @@ public final class EventSequence {
   /**
    * @see java.lang.Object#hashCode()
    */
-  public int hashCode() {
-    return this.sequence.size();
-  }
+//  public int hashCode() {
+//    return this.sequence.size();
+//  }
+  
+
+  private int fHashCode;
+
+	public int hashCode() {
+		if (fHashCode == 0) {
+			HashCodeBuilder builder = new HashCodeBuilder();
+			for (Iterator i = this.sequence.iterator(); i.hasNext();) {
+				builder.append(i.next());
+			}
+			fHashCode = builder.toHashCode();
+		}
+		return fHashCode;
+	}
 
   /**
-   * Returns <code>true</code> if the specified event sequence is the same as this one.
-   * 
-   * @param seq The sequence of events to compare with this one.
-   * 
-   * @return <code>true</code> if the specified event sequence is equal to this one;
-   *         <code>false</code> otherwise. 
-   */
+	 * Returns <code>true</code> if the specified event sequence is the same
+	 * as this one.
+	 * 
+	 * @param seq
+	 *            The sequence of events to compare with this one.
+	 * 
+	 * @return <code>true</code> if the specified event sequence is equal to
+	 *         this one; <code>false</code> otherwise.
+	 */
   public boolean equals(EventSequence seq) {
     if (seq == null) return false;
     if (seq.getClass() != this.getClass()) return false;
@@ -312,17 +332,37 @@ public final class EventSequence {
     }
     w.flush();
   }
+  
+  /**
+   * Send this entire EventSequence to the formatter.
+   * Used by Docx4jDriver
+   * 
+ * @param formatter
+ * @throws NullPointerException
+ * @throws IOException
+ */
+public void format(DiffXFormatter formatter) throws NullPointerException,
+			IOException {
+		DiffXEvent x = null;
+		for (int i = 0; i < sequence.size(); i++) {
+			x = (DiffXEvent) sequence.get(i);
+			formatter.format(x);
+		}
+	}  
 
   /**
-   * Maps a uri to a prefix.
-   * 
-   * @see PrefixMapping#add(String, String)
-   * 
-   * @param uri    The namespace URI to map. 
-   * @param prefix The prefix to use.
-   * 
-   * @throws NullPointerException if the URI or prefix is <code>null</code>
-   */
+	 * Maps a uri to a prefix.
+	 * 
+	 * @see PrefixMapping#add(String, String)
+	 * 
+	 * @param uri
+	 *            The namespace URI to map.
+	 * @param prefix
+	 *            The prefix to use.
+	 * 
+	 * @throws NullPointerException
+	 *             if the URI or prefix is <code>null</code>
+	 */
   public void mapPrefix(String uri, String prefix) throws NullPointerException {
     this.prefixMapping.add(uri, prefix);
   }
@@ -335,7 +375,7 @@ public final class EventSequence {
   public PrefixMapping getPrefixMapping() {
     return this.prefixMapping;
   }
-
+    
 // Inner class --------------------------------------------------------------------------------
 
   /**

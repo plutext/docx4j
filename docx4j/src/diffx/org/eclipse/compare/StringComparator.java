@@ -1,5 +1,5 @@
 
-package org.docx4j.diff;
+package org.eclipse.compare;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -125,6 +125,7 @@ import org.w3c.dom.ProcessingInstruction;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
+import com.topologi.diffx.Docx4jDriver;
 import com.topologi.diffx.config.DiffXConfig;
 import com.topologi.diffx.event.AttributeEvent;
 import com.topologi.diffx.event.CloseElementEvent;
@@ -458,13 +459,15 @@ public final class DOMRecorder implements XMLRecorder {
     // a namespace declaration, translate the event into a prefix mapping
     if ("http://www.w3.org/2000/xmlns/".equals(e.getURI())) {
     	
+    	//Docx4jDriver.log("Encountered namespace declaration: " + e.getValue() );
+    	
     	// Trap/handle xmlns:xmlns="",
     	// which JAXB seems to produce 
     	// and will later cause errors since
     	// Non-default namespace can not map to empty URI (as per Namespace 1.0 # 2) in XML 1.0 documents
     	if (e.getName().equals("xmlns") &&
     			e.getValue().equals("") ) {
-    		System.out.println("Ignoring xmlns:xmlns='' ");
+    		Docx4jDriver.log("Ignoring xmlns:xmlns='' ");
     		return;
     	}
     	

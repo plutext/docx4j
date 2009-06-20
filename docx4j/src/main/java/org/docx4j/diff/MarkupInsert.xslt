@@ -43,6 +43,7 @@
 <xsl:param name="date"/>
 <xsl:param name="docPartRelsLeft"/>
 <xsl:param name="docPartRelsRight"/>
+<xsl:param name="relsDiffIdentifier"/>
 
 <xsl:preserve-space elements="w:t"/> 
 
@@ -106,7 +107,7 @@
   
     -->
     
-<xsl:template match="w:drawing" priority="5">
+<xsl:template match="w:drawing" priority="3">
   
   	<xsl:choose>
   		<xsl:when test="@dfx:delete='true'"> <!--  NOT RELEVANT TO MarkupInsert -->
@@ -141,8 +142,7 @@
 	</xsl:choose>  		
   
   </xsl:template>
-      
-    
+          
     <xsl:template match="a:blip"  priority="5">
     
     	<xsl:choose>
@@ -323,6 +323,7 @@
     
   </xsl:template>
   
+
 
 </xsl:stylesheet>
 

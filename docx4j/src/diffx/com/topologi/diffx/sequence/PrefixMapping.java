@@ -42,11 +42,20 @@ public final class PrefixMapping {
     }
   }
 
+  public void add(PrefixMapping others) throws NullPointerException {
+
+		String key;
+		for (Enumeration e = others.mappings.keys(); e.hasMoreElements();) {
+			key = (String) e.nextElement();
+			this.mappings.put(key, others.mappings.get(key));
+		}
+	}
+  
   /**
-   * Returns an enumeration of the namespace URIs used in this mapping.
-   * 
-   * @return An enumeration of the namespace URIs used in this mapping.
-   */
+	 * Returns an enumeration of the namespace URIs used in this mapping.
+	 * 
+	 * @return An enumeration of the namespace URIs used in this mapping.
+	 */
   public Enumeration getURIs() {
     return this.mappings.keys();
   }

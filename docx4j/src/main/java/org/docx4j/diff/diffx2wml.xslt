@@ -572,7 +572,7 @@ java.lang.IllegalArgumentException:
 
   </xsl:template>
 
-  <xsl:template match="text()">
+  <xsl:template match="text()[not(ancestor::wp:*)]">
   
       <w:r>
    		<xsl:apply-templates select="../../w:rPr" mode="omitDeletions"/>

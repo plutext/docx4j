@@ -249,6 +249,8 @@ public final class Main {
     // start slicing
     diff(seq1, seq2, out, config);
   }
+  
+  // NB: The signatures which takes Reader objects appear to be broken!!
 
   /**
    * Compares the two specified xml files and prints the diff onto the given writer. 
@@ -303,18 +305,25 @@ public final class Main {
   private static void diff(EventSequence seq1, EventSequence seq2, Writer out, DiffXConfig config)
       throws DiffXException, IOException {
     SmartXMLFormatter formatter = new SmartXMLFormatter(out);
-    formatter.declarePrefixMapping(seq1.getPrefixMapping());
-    formatter.declarePrefixMapping(seq2.getPrefixMapping());
-    
     if (config != null) formatter.setConfig(config);
-    SequenceSlicer slicer = new SequenceSlicer(seq1, seq2);
-    slicer.slice();
-    slicer.formatStart(formatter);
-    DiffXAlgorithm df = new DiffXFitopsy(seq1, seq2);
-    df.process(formatter);
-    slicer.formatEnd(formatter);
+    
+    diff(seq1, seq2, formatter, config);
   }
 
+  public static void diff(EventSequence seq1, EventSequence seq2, SmartXMLFormatter formatter , DiffXConfig config)
+  	throws DiffXException, IOException {
+	    formatter.declarePrefixMapping(seq1.getPrefixMapping());
+	    formatter.declarePrefixMapping(seq2.getPrefixMapping());
+	    
+	    if (config != null) formatter.setConfig(config);
+	    SequenceSlicer slicer = new SequenceSlicer(seq1, seq2);
+	    slicer.slice();
+	    slicer.formatStart(formatter);
+	    DiffXAlgorithm df = new DiffXFitopsy(seq1, seq2);
+	    df.process(formatter);
+	    slicer.formatEnd(formatter);
+  }
+  
 // command line ------------------------------------------------------------------------- 
 
   /**
