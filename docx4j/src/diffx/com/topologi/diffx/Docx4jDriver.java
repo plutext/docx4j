@@ -132,19 +132,23 @@ public class Docx4jDriver {
 	}
 	
 	
-	public static void diff(Node xml1, Node xml2, Writer out)
+	public static void diff(Node xml2, Node xml1, Writer out) // swapped, 
 			throws DiffXException, IOException {
 
 		DiffXConfig diffxConfig = new DiffXConfig();
 		diffxConfig.setIgnoreWhiteSpace(false);
 		diffxConfig.setPreserveWhiteSpace(true);
-
+		
+//		log(xml1.getNodeName());
+//		log(""+ xml1.getChildNodes().getLength());
+//		log(xml2.getNodeName());
+//		log(""+ xml2.getChildNodes().getLength());
+				
 		// Root nodes must be the same to do divide+conquer.
 		// Even then, only do it if there
 		// are more than 3 children.  (If there are 3 children
 		// and the first and last are the same, then diffx slice
-		// would detect that anyway).
-		//log(xml1.getNodeName());
+		// would detect that anyway).		
 		if (!xml1.getNodeName().equals(xml2.getNodeName())
 			|| (	
 				(xml1.getChildNodes().getLength() <= 3)
@@ -218,8 +222,12 @@ public class Docx4jDriver {
 		// We could create an open event and pass it to the formatter,
 	    // but why bother when we can just write directly to Writer out?
 	    String rootNodeName = xml1.getNodeName();
-	    out.append("<" + rootNodeName + 
-	    		" xmlns:" + xml1.getPrefix() + "=\"" + xml1.getNamespaceURI() + "\" >" );
+	    out.append("<" + rootNodeName  
+	    		+ " xmlns:" + xml1.getPrefix() + "=\"" + xml1.getNamespaceURI() + "\""  // w: namespace 
+	    		+ " xmlns:dfx=\"" + Constants.BASE_NS + "\""  // Add these, since SmartXMLFormatter only writes them on the first fragment
+	    		+ " xmlns:del=\"" + Constants.DELETE_NS + "\""   
+	    		+ " xmlns:ins=\"" + Constants.BASE_NS + "\""   
+	    				+ " >" );
 		
 		int leftIdx = 0;
 		for (int i=0; i<rd.length; i++ ) {

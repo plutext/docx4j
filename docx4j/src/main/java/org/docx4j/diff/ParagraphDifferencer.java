@@ -72,6 +72,17 @@ import com.topologi.diffx.config.DiffXConfig;
 
 
 
+/**
+ * Capable of comparing a pair of:
+ * - w:body (only lightly tested)
+ * - w:sdtContent (used extensively)
+ * - w:p (includes an algorithm aimed at producing a better diff)
+ * 
+ * See org.docx4j.samples.CompareDocuments for an example of how to use.
+ * 
+ * @author jason
+ *
+ */
 public class ParagraphDifferencer {
 	
 	/*
@@ -257,16 +268,20 @@ public class ParagraphDifferencer {
 			String author, java.util.Calendar date,
 			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
 		
-		this.diffWorker(cbLeft, cbRight, result, author, date, docPartRelsLeft, docPartRelsRight);
+		this.diffWorker(org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbLeft).getDocumentElement(), 
+				org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbRight).getDocumentElement(), 
+				result, author, date, docPartRelsLeft, docPartRelsRight);
 	}
 
-	public void diff(org.docx4j.wml.Body bodyLeft, 
-			org.docx4j.wml.Body bodyRight, 
+	public void diff(org.docx4j.wml.Body older, 
+			org.docx4j.wml.Body newer, 
 			javax.xml.transform.Result result,
 			String author, java.util.Calendar date,
 			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
 		
-		this.diffWorker(bodyLeft, bodyRight, result, author, date, docPartRelsLeft, docPartRelsRight);
+		this.diffWorker(org.docx4j.XmlUtils.marshaltoW3CDomDocument(older).getDocumentElement(), 
+				org.docx4j.XmlUtils.marshaltoW3CDomDocument(newer).getDocumentElement(),
+				result, author, date, docPartRelsLeft, docPartRelsRight);
 	}
 	
 	/**
@@ -276,8 +291,8 @@ public class ParagraphDifferencer {
 	 * 
 	 * TODO: consider/test w:table! 
 	 */
-	private void diffWorker(Object objectLeft, 
-			Object objectRight, 
+	private void diffWorker(Node left, 
+			Node right, 
 			javax.xml.transform.Result result,
 			String author, java.util.Calendar date,
 			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
@@ -285,8 +300,8 @@ public class ParagraphDifferencer {
 		Writer diffxResult = new StringWriter();
 
 		try {
-			Docx4jDriver.diff(org.docx4j.XmlUtils.marshaltoW3CDomDocument(objectLeft),
-					   org.docx4j.XmlUtils.marshaltoW3CDomDocument(objectRight),
+			Docx4jDriver.diff(left,
+					   right,
 					   diffxResult);
 				// The signature which takes Reader objects appears to be broken
 			diffxResult.close();
@@ -300,21 +315,21 @@ public class ParagraphDifferencer {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
 			Reader reader;
-//			if (log.isDebugEnabled() ) {
-//				String res = diffxResult.toString();
-//				log.debug(res);
-//				reader = new StringReader(res);
-//			} else {
+			if (log.isDebugEnabled() ) {
+				String res = diffxResult.toString();
+				log.debug(res);
+				reader = new StringReader(res);
+			} else {
 				reader = new StringReader(diffxResult.toString());				
-//			}
+			}
 			
 			String simplified = null;
 				try {
 					simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
 				} catch (XMLStreamException e) {
 					e.printStackTrace();
-					log.debug("left: " + XmlUtils.marshaltoString(objectLeft, true, false));
-					log.debug("right: " + XmlUtils.marshaltoString(objectRight, true, false));					
+//					log.debug("left: " + XmlUtils.marshaltoString(objectLeft, true, false));
+//					log.debug("right: " + XmlUtils.marshaltoString(objectRight, true, false));					
 				}
 			
 			log.debug("\n\n Diff'd input to transform: \n\n" + simplified );
