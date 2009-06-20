@@ -55,8 +55,8 @@ import org.docx4j.XmlUtils;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
 
+import org.eclipse.compare.StringComparator;
 import org.eclipse.compare.rangedifferencer.RangeDifference;
-import org.docx4j.diff.StringComparator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -66,6 +66,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
+import com.topologi.diffx.Docx4jDriver;
 import com.topologi.diffx.Main;
 import com.topologi.diffx.config.DiffXConfig;
 
@@ -83,13 +84,13 @@ public class ParagraphDifferencer {
 
 	protected static Logger log = Logger.getLogger(ParagraphDifferencer.class);
 
+
 	// For XSLT
 	public static void log(String message ) {		
 		log.info(message);
 	}
 	
 	
-	public static Integer nextId = 0;
 
 	static org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory();
 	
@@ -158,19 +159,46 @@ public class ParagraphDifferencer {
 		
 	}
 	
-	public final static Integer getId() {
-		
-		return ++nextId;
-		
+	/**
+	 * The id to be allocated to the ins/del
+	 * @return
+	 */
+	public final static Integer getId() {		
+		return ++nextId;		
 	}
+	public static Integer nextId = 0;
+
 	
+	/**
+	 * Because the resulting document might be built out of the 
+	 * results of a number of diffs, we need to be sure that the id's
+	 * are unique across these diffs.
+	 * 
+	 * This is passed into the XSLT, where it is used as part
+	 * of the generated rel id.
+	 * 
+	 * @return the 
+	 */
+	private String relsDiffIdentifier;  
+	/**
+	 * @param relsDiffIdentifier the relsDiffIdentifier to set
+	 */
+	public void setRelsDiffIdentifier(String relsDiffIdentifier) {
+		this.relsDiffIdentifier = relsDiffIdentifier;
+	}
+
 	/**
 	 * Any rel which is present in the results of the comparison must point to
 	 * a valid target of the correct type, or the resulting document will
 	 * be broken.  
 	 * 
 	 * So we pass the old and new rels objects, and
-	 * progressively build up a composite one.
+	 * progressively build up a List of relationships which will need to be
+	 * in the resulting document.
+	 * 
+	 * Because the resulting document might be built out of the 
+	 * results of a number of diffs, we need to be sure that the id's
+	 * are unique across these diffs.
 	 * 
 	 * @return the 
 	 */
@@ -189,6 +217,8 @@ public class ParagraphDifferencer {
 			return;
 		}
 		
+		
+		log.error("Looking for rel " + relId);
 		Relationship r = docPartRels.getRelationshipByID(relId);
 		if (r==null) {
 			log.error("Couldn't find rel " + relId);
@@ -198,6 +228,7 @@ public class ParagraphDifferencer {
 		Relationship r2 = (Relationship)XmlUtils.deepCopy(r, Context.jcRelationships);
 		
 		r2.setId(newRelId);
+		log.error(".. added rel " + newRelId + " -- " + r2.getTarget() );
 		
 		pd.composedRels.add(r2);
 	}
@@ -220,23 +251,43 @@ public class ParagraphDifferencer {
 				false);
 	}
 
-	
 	public void diff(org.docx4j.wml.SdtContentBlock cbLeft, 
 			org.docx4j.wml.SdtContentBlock cbRight, 
 			javax.xml.transform.Result result,
 			String author, java.util.Calendar date,
 			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
+		
+		this.diffWorker(cbLeft, cbRight, result, author, date, docPartRelsLeft, docPartRelsRight);
+	}
+
+	public void diff(org.docx4j.wml.Body bodyLeft, 
+			org.docx4j.wml.Body bodyRight, 
+			javax.xml.transform.Result result,
+			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
+		
+		this.diffWorker(bodyLeft, bodyRight, result, author, date, docPartRelsLeft, docPartRelsRight);
+	}
+	
+	/**
+	 * This is private, in order to control what objects the user
+	 * can invoke diff on.  At present there are public methods for
+	 * pairs of w:body, w:sdtContent, and w:p.  
+	 * 
+	 * TODO: consider/test w:table! 
+	 */
+	private void diffWorker(Object objectLeft, 
+			Object objectRight, 
+			javax.xml.transform.Result result,
+			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
 
 		Writer diffxResult = new StringWriter();
-		
-		DiffXConfig diffxConfig = new DiffXConfig();
-		diffxConfig.setIgnoreWhiteSpace(false);
-		diffxConfig.setPreserveWhiteSpace(true);
 
 		try {
-			Main.diff( org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbLeft),
-					   org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbRight),
-					   diffxResult, diffxConfig);
+			Docx4jDriver.diff(org.docx4j.XmlUtils.marshaltoW3CDomDocument(objectLeft),
+					   org.docx4j.XmlUtils.marshaltoW3CDomDocument(objectRight),
+					   diffxResult);
 				// The signature which takes Reader objects appears to be broken
 			diffxResult.close();
 		} catch (Exception exc) {
@@ -248,37 +299,70 @@ public class ParagraphDifferencer {
 			
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
-			Reader reader = new StringReader(diffxResult.toString());
+			Reader reader;
+//			if (log.isDebugEnabled() ) {
+//				String res = diffxResult.toString();
+//				log.debug(res);
+//				reader = new StringReader(res);
+//			} else {
+				reader = new StringReader(diffxResult.toString());				
+//			}
 			
-			String simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
+			String simplified = null;
+				try {
+					simplified = combineAdjacent(inputFactory.createXMLStreamReader(reader) );
+				} catch (XMLStreamException e) {
+					e.printStackTrace();
+					log.debug("left: " + XmlUtils.marshaltoString(objectLeft, true, false));
+					log.debug("right: " + XmlUtils.marshaltoString(objectRight, true, false));					
+				}
 			
 			log.debug("\n\n Diff'd input to transform: \n\n" + simplified );
 							
 			StreamSource src = new StreamSource(new StringReader(simplified));
-			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
-						
-			String dateString;
-			if (date!=null) {				
-				dateString = RFC3339_FORMAT.format(date.getTime()) ;
-			} else {
-				// TODO FIXME - JAXB requires a real date.
-				// What to give it?  
-				// The alternative is to change the xslt
-				// to omit the @date entirely if its unknown
-				dateString = "2009-03-11T17:57:00Z";
-			}
-			transformParameters.put("ParagraphDifferencer", this);
-			transformParameters.put("date", dateString);
-			transformParameters.put("author", author);
-			transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
-			transformParameters.put("docPartRelsRight", docPartRelsRight);
-			
-			XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
+			transformDiffxOutputToWml(result, author, date, docPartRelsLeft,
+					docPartRelsRight, src);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}			
 		
+	}
+
+	/**
+	 * @param result
+	 * @param author
+	 * @param date
+	 * @param docPartRelsLeft
+	 * @param docPartRelsRight
+	 * @param src
+	 * @throws Exception
+	 */
+	private void transformDiffxOutputToWml(javax.xml.transform.Result result,
+			String author, java.util.Calendar date,
+			RelationshipsPart docPartRelsLeft,
+			RelationshipsPart docPartRelsRight, StreamSource src)
+			throws Exception {
+		Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
+					
+		String dateString;
+		if (date!=null) {				
+			dateString = RFC3339_FORMAT.format(date.getTime()) ;
+		} else {
+			// TODO FIXME - JAXB requires a real date.
+			// What to give it?  
+			// The alternative is to change the xslt
+			// to omit the @date entirely if its unknown
+			dateString = "2009-03-11T17:57:00Z";
+		}
+		transformParameters.put("ParagraphDifferencer", this);
+		transformParameters.put("date", dateString);
+		transformParameters.put("author", author);
+		transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
+		transformParameters.put("docPartRelsRight", docPartRelsRight);
+		transformParameters.put("relsDiffIdentifier", relsDiffIdentifier);  
+		
+		XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 	}
 	
 	public void markupAsInsertion(org.docx4j.wml.SdtContentBlock cbLeft, 
@@ -309,6 +393,7 @@ public class ParagraphDifferencer {
 			transformParameters.put("author", author);
 			transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
 			transformParameters.put("docPartRelsRight", null);
+			transformParameters.put("relsDiffIdentifier", relsDiffIdentifier);  
 			XmlUtils.transform(doc, xsltMarkupInsert, transformParameters, result);
 			
 		} catch (Exception exc) {
@@ -345,6 +430,7 @@ public class ParagraphDifferencer {
 			transformParameters.put("author", author);
 			transformParameters.put("docPartRelsLeft",  null);
 			transformParameters.put("docPartRelsRight", docPartRelsRight);
+			transformParameters.put("relsDiffIdentifier", relsDiffIdentifier);  
 			XmlUtils.transform(doc, xsltMarkupDelete, transformParameters, result);
 			
 		} catch (Exception exc) {
@@ -476,6 +562,7 @@ public class ParagraphDifferencer {
 				transformParameters.put("author", author);
 				transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
 				transformParameters.put("docPartRelsRight", docPartRelsRight);
+				transformParameters.put("relsDiffIdentifier", relsDiffIdentifier);  
 				XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
 				
 			} catch (Exception exc) {
@@ -706,13 +793,8 @@ public class ParagraphDifferencer {
         log.info("\n\n <p> difference with pre-processing</p> \n\n" );
 		try {
 			StreamSource src = new StreamSource(new StringReader(diffx));
-			Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
-			transformParameters.put("ParagraphDifferencer", this);
-			transformParameters.put("author", author);
-			transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
-			transformParameters.put("docPartRelsRight", docPartRelsRight);
-			XmlUtils.transform(src, xsltDiffx2Wml, transformParameters, result);
-			
+			transformDiffxOutputToWml(result, author, date, docPartRelsLeft,
+					docPartRelsRight, src);			
 		} catch (Exception exc) {
 			exc.printStackTrace();
 		}

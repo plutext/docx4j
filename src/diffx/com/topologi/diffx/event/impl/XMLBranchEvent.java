@@ -2,6 +2,8 @@ package com.topologi.diffx.event.impl;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.topologi.diffx.event.DiffXEvent;
 import com.topologi.diffx.xml.XMLWriter;
 
@@ -35,10 +37,13 @@ public final class XMLBranchEvent extends DiffXEventBase implements DiffXEvent {
    */
   public XMLBranchEvent(DiffXEvent[] events) {
     this.branch = events;
-    int tmpHash = 0;
-    for (int i = 0; i < events.length; i++)
-      tmpHash += events[i].hashCode();
-    this.hashCode = tmpHash;
+//    int tmpHash = 0;
+//    for (int i = 0; i < events.length; i++)
+//      tmpHash += events[i].hashCode();
+//    this.hashCode = tmpHash;
+    hashCode = new HashCodeBuilder(17, 37).
+	  append(events).
+	  toHashCode();
   }
 
   /**

@@ -105,6 +105,10 @@ package com.topologi.diffx.event.impl;
 
 import java.io.IOException;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 
 import com.topologi.diffx.Constants;
 import com.topologi.diffx.event.DiffXEvent;
@@ -159,6 +163,7 @@ public final class OpenElementEventNSImpl extends DiffXEventBase
       throw new NullPointerException("The URI cannot be null, use \"\".");
     if (name == null)
       throw new NullPointerException("Element must have a name.");
+    	// that will happen if you forgot to setNamespaceAware(true) on your DocumentBuilderFactory
     this.uri = uri;
     this.name = name;
   }
@@ -180,10 +185,23 @@ public final class OpenElementEventNSImpl extends DiffXEventBase
   /**
    * @see java.lang.Object#hashCode()
    */
-  public int hashCode() {
-    return this.uri.hashCode() + this.name.hashCode();
-  }
+//  public int hashCode() {
+//    return this.uri.hashCode() + this.name.hashCode();
+//  }
 
+  private int fHashCode;  
+  @Override public int hashCode() {
+	    if ( fHashCode == 0) {
+	  	  // you pick a hard-coded, randomly chosen, non-zero, odd number
+		  // ideally different for each class
+	      fHashCode = new HashCodeBuilder(17, 37).
+							  append(this.uri).
+							  append(this.name).
+							  toHashCode();
+	    }
+	    return fHashCode;
+	  }  
+  
   /**
    * Returns <code>true</code> if the event is a  
    * 

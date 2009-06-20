@@ -105,6 +105,7 @@ package com.topologi.diffx.algorithm;
 
 import java.io.IOException;
 
+import com.topologi.diffx.Docx4jDriver;
 import com.topologi.diffx.event.DiffXEvent;
 import com.topologi.diffx.event.AttributeEvent;
 import com.topologi.diffx.format.DiffXFormatter;
@@ -226,14 +227,26 @@ public final class DiffXFitopsy extends DiffXAlgorithmBase {
   public void process(DiffXFormatter formatter) throws IOException {
     // handle the case when one of the two sequences is empty
     processEmpty(formatter);
+    
+    Docx4jDriver.log("length first: " + this.length1);
+    Docx4jDriver.log("length second: " + this.length2);
+    
     if (this.length1 == 0 || this.length2 == 0) return;
-    // calculate the LCS length to fill the matrix
+
+    // Phase I: calculate the LCS length to fill the matrix (slow for lengths in order of > 10^2)
+    long startTime = System.currentTimeMillis();
     length();
+    long endTime = System.currentTimeMillis();
+    long duration = endTime - startTime;
+    Docx4jDriver.log("diffx LCS phase took: " + duration + " ms ");
+    
     int i = 0;
     int j = 0;
     DiffXEvent e1 = sequence1.getEvent(i);
     DiffXEvent e2 = sequence2.getEvent(j);
-    // start walking the matrix
+    
+    
+    // Phase II: start walking the matrix (this should be quick)
     while (i < super.length1 && j < super.length2) {
       e1 = sequence1.getEvent(i);
       e2 = sequence2.getEvent(j);

@@ -110,6 +110,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
+import com.topologi.diffx.Docx4jDriver;
 import com.topologi.diffx.event.AttributeEvent;
 
 /**
@@ -593,12 +594,15 @@ public final class NSAwareXMLWriter extends XMLWriterBase implements XMLWriter {
   private String getQName(String uri, String name) throws UndeclaredNamespaceException {
     String prefix = (String)this.prefixMapping.get((uri != null)? uri : "");
     if (prefix == null) {
-      //throw new UndeclaredNamespaceException(uri);
-    	
-    	// Horrible temporary nasty hack
-    	// TODO
-    	//System.out.println("FIX ME - com.topologi.diffx.xml.NSAwareXMLWriter.getQName(NSAwareXMLWriter.java:599)");    	
-    	return "xml:"+name;    	
+    	if (uri.equals("http://www.w3.org/XML/1998/namespace")) {
+    		// eg xml:space .. 
+    		// per the namespace recommendation, this namespace may, but need not, be declared
+    		// It is bound by definition to ...
+        	return "xml:"+name;    	    		
+    	} else {
+    		Docx4jDriver.log("FIX ME - com.topologi.diffx.xml.NSAwareXMLWriter.getQName(null, " + name + ") @599)");    	
+    		throw new UndeclaredNamespaceException(uri + " for " + name);
+    	}
     } else if ("".equals(prefix)) {
         return name;    	
     } else {    	
@@ -643,48 +647,52 @@ public final class NSAwareXMLWriter extends XMLWriterBase implements XMLWriter {
   }
 
   /**
-   * Restores the prefix mapping after clsing an element.
+   * Restores the prefix mapping after closing an element.
    * 
    * <p>This costly operation need only to be done if the method
    * {@link NSAwareXMLWriter#setPrefixMapping(String, String)} have been used
-   * immediately before, therefor it should not happen often.
+   * immediately before, therefore it should not happen often.
    * 
    * @param elt The element that had some new mappings.
    */
   private void restorePrefixMapping(Element elt) {
-    if (elt.mappings != null) {
-      // for each mapping of this element
-      for (int i = 0; i < elt.mappings.size(); i++) {
-        PrefixMapping mpi = (PrefixMapping)elt.mappings.get(i);
-        if (DEBUG) System.err.print(mpi.prefix+" -< ");
-        // find the first previous namespace mapping amongst the parents
-        // that defines namespace mappings
-        for (int j = elements.size() - 1; j > 0; j--) {
-          if (((Element)this.elements.get(j)).mappings != null) {
-            List mps = ((Element)elements.get(j)).mappings;
-            // iterate through the define namespace mappings of the parent
-            for (int k = 0; k < mps.size(); k++) {
-              PrefixMapping mpk = (PrefixMapping)mps.get(k);
-              // if we found a namespace prefix for the namespace
-              if (mpk.prefix.equals(mpi.prefix)) {
-                removeIfNeeded(mpk.prefix);
-                this.prefixMapping.put(mpk.uri, mpk.prefix);
-                if (DEBUG) System.err.println(mpk.uri+" [R]");
-                j = 0; // exit from the previous loop
-                break; // exit from this one
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+		if (elt.mappings != null) {
+			// for each mapping of this element
+			for (int i = 0; i < elt.mappings.size(); i++) {
+				PrefixMapping mpi = (PrefixMapping) elt.mappings.get(i);
+				if (DEBUG)
+					System.err.print(mpi.prefix + " -< ");
+				// find the first previous namespace mapping amongst the parents
+				// that defines namespace mappings
+				for (int j = elements.size() - 1; j > 0; j--) {
+					if (((Element) this.elements.get(j)).mappings != null) {
+						List mps = ((Element) elements.get(j)).mappings;
+						// iterate through the define namespace mappings of the
+						// parent
+						for (int k = 0; k < mps.size(); k++) {
+							PrefixMapping mpk = (PrefixMapping) mps.get(k);
+							// if we found a namespace prefix for the namespace
+							if (mpk.prefix.equals(mpi.prefix)) {
+								removeIfNeeded(mpk.prefix);
+								this.prefixMapping.put(mpk.uri, mpk.prefix);
+								if (DEBUG)
+									System.err.println(mpk.uri + " [R]");
+								j = 0; // exit from the previous loop
+								break; // exit from this one
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
   /**
-   * Removes the mapping associated to the specified prefix.
-   * 
-   * @param prefix The prefix which mapping should be removed. 
-   */
+	 * Removes the mapping associated to the specified prefix.
+	 * 
+	 * @param prefix
+	 *            The prefix which mapping should be removed.
+	 */
   private void removeIfNeeded(String prefix) {
     // remove the previous mapping to the prefix
     if (this.prefixMapping.containsValue(prefix)) {
@@ -695,6 +703,8 @@ public final class NSAwareXMLWriter extends XMLWriterBase implements XMLWriter {
           break;
       }
       this.prefixMapping.remove(key); // we know key should have a value
+	  if (DEBUG) System.err.println("Removed " + prefix);
+      
     }
   }
   

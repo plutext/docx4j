@@ -1,5 +1,6 @@
 package com.topologi.diffx.event.impl;
 
+import com.topologi.diffx.Docx4jDriver;
 import com.topologi.diffx.event.AttributeEvent;
 import com.topologi.diffx.event.CloseElementEvent;
 import com.topologi.diffx.event.OpenElementEvent;
@@ -151,6 +152,13 @@ public final class EventFactory {
    * @return The open element event from the uri and name given.
    */
   public AttributeEvent makeAttribute(String uri, String localName, String qName, String value) {
+	  
+//	if (localName.equals("space")) {
+//		Docx4jDriver.log("space!");
+//		Docx4jDriver.log(uri);
+//		Docx4jDriver.log(qName);
+//	}	  
+	  
     if (this.isNamespaceAware) {
       return new AttributeEventNSImpl("".equals(uri)? null : uri, localName, value);
     } else {

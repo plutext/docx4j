@@ -105,6 +105,8 @@ package com.topologi.diffx.event.impl;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.topologi.diffx.event.DiffXEvent;
 import com.topologi.diffx.xml.XMLWriter;
 
@@ -134,10 +136,23 @@ public final class CharEvent extends DiffXEventBase {
   /**
    * @see com.topologi.diffx.event.impl.DiffXEventBase#hashCode()
    */
-  public int hashCode() {
-    return c;
-  }
+//  public int hashCode() {
+//    return c;
+//  }
 
+  private int fHashCode;  
+  @Override public int hashCode() {
+	    if ( fHashCode == 0) {
+	  	  // you pick a hard-coded, randomly chosen, non-zero, odd number
+		  // ideally different for each class
+	      fHashCode = new HashCodeBuilder(17, 37).
+							  append(this.c).
+							  toHashCode();
+	    }
+	    return fHashCode;
+	  }  
+  
+  
   /**
    * @see com.topologi.diffx.event.impl.DiffXEventBase#equals(com.topologi.diffx.event.DiffXEvent)
    */
