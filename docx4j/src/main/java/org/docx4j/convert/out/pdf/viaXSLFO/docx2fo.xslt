@@ -413,6 +413,24 @@
   <xsl:template match="w:t">
   	<xsl:value-of select="."/>
   </xsl:template>  	
+
+  <xsl:template match="w:ins">
+  	<fo:inline color="blue"
+  			   text-decoration="underline">
+  		<xsl:apply-templates/>
+  	</fo:inline>
+  </xsl:template>  	
+
+  <xsl:template match="w:del">
+  		<xsl:apply-templates/>
+  </xsl:template>  	
+
+  <xsl:template match="w:delText">
+  	<fo:inline color="red"
+  				text-decoration="line-through">
+  		<xsl:apply-templates/>
+  	</fo:inline>
+  </xsl:template>  	
   
   <xsl:template match="w:sdt">
   	<xsl:apply-templates select="sdtContent"/>
