@@ -261,11 +261,14 @@ public class SdtPr
     }
     
     // Not generated!
-    public void setId() {
+    public java.math.BigInteger setId() {
 
     	Id id = new Id();
-    	id.setVal( java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt())) );
+    	java.math.BigInteger newIdVal = java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt()));
+    	id.setVal( newIdVal );
     	setId(id);    	
+		log.warn("Generated random id: " + newIdVal.toString() );
+		return newIdVal;
     }
 
     /**
