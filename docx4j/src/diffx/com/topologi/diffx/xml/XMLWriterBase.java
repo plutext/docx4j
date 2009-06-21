@@ -316,6 +316,7 @@ abstract class XMLWriterBase implements XMLWriter {
   public void writeComment(String comment) throws IOException, IllegalArgumentException {
     if (comment != null && comment.indexOf("--") >= 0)
       throw new IllegalArgumentException("A comment should not contain '--'.");
+    if (indent) this.writer.write('\n');
     this.writer.write("<!-- ");
     this.writer.write(comment);
     this.writer.write(" -->");

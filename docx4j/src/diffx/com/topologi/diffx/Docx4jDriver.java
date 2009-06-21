@@ -33,11 +33,19 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.eclipse.compare.EventSequenceComparator;
 import org.eclipse.compare.rangedifferencer.RangeDifference;
 import org.eclipse.compare.rangedifferencer.RangeDifferencer;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.topologi.diffx.config.DiffXConfig;
+import com.topologi.diffx.event.AttributeEvent;
+import com.topologi.diffx.event.CloseElementEvent;
+import com.topologi.diffx.event.OpenElementEvent;
+import com.topologi.diffx.event.impl.AttributeEventNSImpl;
+import com.topologi.diffx.event.impl.CloseElementEventNSImpl;
+import com.topologi.diffx.event.impl.CommentEvent;
+import com.topologi.diffx.event.impl.OpenElementEventNSImpl;
 import com.topologi.diffx.format.SmartXMLFormatter;
 import com.topologi.diffx.load.DOMRecorder;
 import com.topologi.diffx.sequence.EventSequence;
@@ -134,184 +142,240 @@ public class Docx4jDriver {
 	public static void diff(Node xml2, Node xml1, Writer out) // swapped, 
 			throws DiffXException, IOException {
 
-		DiffXConfig diffxConfig = new DiffXConfig();
-		diffxConfig.setIgnoreWhiteSpace(false);
-		diffxConfig.setPreserveWhiteSpace(true);
-		
-//		log(xml1.getNodeName());
-//		log(""+ xml1.getChildNodes().getLength());
-//		log(xml2.getNodeName());
-//		log(""+ xml2.getChildNodes().getLength());
-				
-		// Root nodes must be the same to do divide+conquer.
-		// Even then, only do it if there
-		// are more than 3 children.  (If there are 3 children
-		// and the first and last are the same, then diffx slice
-		// would detect that anyway).		
-		if (!xml1.getNodeName().equals(xml2.getNodeName())
-			|| (	
-				(xml1.getChildNodes().getLength() <= 3)
-				&& (xml2.getChildNodes().getLength() <= 3))) {
-			// Don't bother with anything tricky
-			// (In due course, could try doing it on their 
-			// children?)
-
-			// .. just normal diffx
-			log("Skipping top level LCS");
-			Main.diff(xml1, xml2, out, diffxConfig);
-				// The signature which takes Reader objects appears to be broken
+		try {
+			DiffXConfig diffxConfig = new DiffXConfig();
+			diffxConfig.setIgnoreWhiteSpace(false);
+			diffxConfig.setPreserveWhiteSpace(true);
 			
-			out.close();
-			return;
-		} 
-		  
-		// Divide and conquer
-		
-	    DOMRecorder loader = new DOMRecorder();
-	    loader.setConfig(diffxConfig);		
-		
-		log("top level LCS - creating EventSequences...");
-		List<EventSequence> leftES = new ArrayList<EventSequence>();
-		for (int i = 0 ; i < xml1.getChildNodes().getLength(); i++ ) {
-			//log( Integer.toString(xml1.getChildNodes().item(i).getNodeType()));
-			
-			// A text node at this level is assumed to be pretty printing
-			if (xml1.getChildNodes().item(i).getNodeType()!=3) {
-				//log("Adding " + xml1.getChildNodes().item(i).getNodeName() );
-				Element e = (Element)xml1.getChildNodes().item(i);
-				e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w", 
-						"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
-				leftES.add(loader.process( e ));
-				//log("" + leftES.get( leftES.size()-1 ).hashCode() );
-			}
-		}
-		EventSequenceComparator leftESC = new EventSequenceComparator(leftES); 
-
-		
-		//log("\n\n right");
-		List<EventSequence> rightES = new ArrayList<EventSequence>();
-		for (int i = 0 ; i < xml2.getChildNodes().getLength(); i++ ) {
-			if (xml2.getChildNodes().item(i).getNodeType()!=3) {
-				Element e = (Element)xml2.getChildNodes().item(i);
-				e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w", 
-						"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
-				rightES.add(loader.process( e ));
-				//log("" + rightES.get( rightES.size()-1 ).hashCode() );
-			}
-		}
-		EventSequenceComparator rightESC = new EventSequenceComparator(rightES); 
-		
-		log("top level LCS - determining top level LCS...");
-		RangeDifference[] rd = RangeDifferencer.findDifferences(leftESC, rightESC);
-		
-		// Debug: Raw output
-		for (int i=0; i<rd.length; i++ ) {			
-			RangeDifference rdi = rd[i];
-			log( rdi.kindString() + " left " + rdi.leftStart() + "," + rdi.leftLength()
-					+ " right " + rdi.rightStart() + "," + rdi.rightLength() );
-		}
-				
-		log("top level LCS done; now performing child actions ...");
-		
-		
-	    SmartXMLFormatter formatter = new SmartXMLFormatter(out);
-	    formatter.setConfig(diffxConfig);
-	    	    
-		// Write out parent open element
-		// We could create an open event and pass it to the formatter,
-	    // but why bother when we can just write directly to Writer out?
-	    String rootNodeName = xml1.getNodeName();
-	    out.append("<" + rootNodeName  
-	    		+ " xmlns:" + xml1.getPrefix() + "=\"" + xml1.getNamespaceURI() + "\""  // w: namespace 
-	    		+ " xmlns:dfx=\"" + Constants.BASE_NS + "\""  // Add these, since SmartXMLFormatter only writes them on the first fragment
-	    		+ " xmlns:del=\"" + Constants.DELETE_NS + "\""   
-	    		+ " xmlns:ins=\"" + Constants.BASE_NS + "\""   
-	    				+ " >" );
-		
-		int leftIdx = 0;
-		for (int i=0; i<rd.length; i++ ) {
-			
-			RangeDifference rdi = rd[i];
-
-			// No change
-			if (rdi.leftStart() > leftIdx) {
-			
-				for (int k = leftIdx ; k< rdi.leftStart() ; k++) {
-					// This just goes straight into the output,
-					// since it is the same on the left and the right.
-					// Since it is the same on both side, we handle
-					// it here (on the left side), and
-					// ignore it on the right
-					out.append("\n<!-- Adding same -->\n");
-				    formatter.declarePrefixMapping(leftESC.getItem(k).getPrefixMapping());					
-					leftESC.getItem(k).format(formatter);
-					out.append("\n<!-- .. Adding same done -->");
+			log(xml1.getNodeName());
+			log(""+ xml1.getChildNodes().getLength());
+			log(xml2.getNodeName());
+			log(""+ xml2.getChildNodes().getLength());
 					
-					// If we wanted to difference sdt's which 
-					// were treated the as the same (via their id)
-					// this is where we'd have to change
-					// (in addition to changing EventSequence for
-					//  such things so that hashcode returned their
-					//  id!)
+			// Root nodes must be the same to do divide+conquer.
+			// Even then, only do it if there
+			// are more than 3 children.  (If there are 3 children
+			// and the first and last are the same, then diffx slice
+			// would detect that anyway).		
+			if (!xml1.getNodeName().equals(xml2.getNodeName())
+				|| (	
+					(xml1.getChildNodes().getLength() <= 3)
+					&& (xml2.getChildNodes().getLength() <= 3))) {
+				// Don't bother with anything tricky
+				// (In due course, could try doing it on their 
+				// children?)
+
+				// .. just normal diffx
+				log("Skipping top level LCS");
+				Main.diff(xml1, xml2, out, diffxConfig);
+					// The signature which takes Reader objects appears to be broken
+				
+				out.close();
+				return;
+			} 
+			  
+			// Divide and conquer
+			
+			DOMRecorder loader = new DOMRecorder();
+			loader.setConfig(diffxConfig);		
+			
+			log("top level LCS - creating EventSequences...");
+			List<EventSequence> leftES = new ArrayList<EventSequence>();
+			for (int i = 0 ; i < xml1.getChildNodes().getLength(); i++ ) {
+				//log( Integer.toString(xml1.getChildNodes().item(i).getNodeType()));
+				
+				// A text node at this level is assumed to be pretty printing
+				if (xml1.getChildNodes().item(i).getNodeType()!=3) {
+					//log("Adding " + xml1.getChildNodes().item(i).getNodeName() );
+					Element e = (Element)xml1.getChildNodes().item(i);
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w", 
+							"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+					leftES.add(loader.process( e ));
+					//log("" + leftES.get( leftES.size()-1 ).hashCode() );
 				}
-				leftIdx = rdi.leftStart(); 
 			}
+			EventSequenceComparator leftESC = new EventSequenceComparator(leftES); 
+
 			
-			EventSequence seq1 = new EventSequence();
-			for (int k = rdi.leftStart() ; k< rdi.leftEnd() ; k++) {
+			//log("\n\n right");
+			List<EventSequence> rightES = new ArrayList<EventSequence>();
+			for (int i = 0 ; i < xml2.getChildNodes().getLength(); i++ ) {
+				if (xml2.getChildNodes().item(i).getNodeType()!=3) {
+					Element e = (Element)xml2.getChildNodes().item(i);
+					e.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:w", 
+							"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+					rightES.add(loader.process( e ));
+					//log("" + rightES.get( rightES.size()-1 ).hashCode() );
+				}
+			}
+			EventSequenceComparator rightESC = new EventSequenceComparator(rightES); 
+			
+			log("top level LCS - determining top level LCS...");
+			RangeDifference[] rd = RangeDifferencer.findDifferences(leftESC, rightESC);
+			
+			// Debug: Raw output
+			for (int i=0; i<rd.length; i++ ) {			
+				RangeDifference rdi = rd[i];
+				log( rdi.kindString() + " left " + rdi.leftStart() + "," + rdi.leftLength()
+						+ " right " + rdi.rightStart() + "," + rdi.rightLength() );
+			}
+					
+			log("top level LCS done; now performing child actions ...");
+			
+			
+			SmartXMLFormatter formatter = new SmartXMLFormatter(out);
+			formatter.setConfig(diffxConfig);
+
+			// In general, we need to avoid writing directly to Writer out...
+			// since it can happen before formatter output gets there
+			
+
+			// namespaces not properly declared:
+			// 4 options:
+			// 1:
+			// OpenElementEvent containerOpen = new OpenElementEventNSImpl(xml1.getNamespaceURI(), rootNodeName);
+			// formatter.format(containerOpen);
+			// // AttributeEvent wNS = new AttributeEventNSImpl("http://www.w3.org/2000/xmlns/" , "w",
+			// //		"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+			// // formatter.format(wNS);
+			// but AttributeEvent is too late in the process to set the mapping.
+			// so you can comment that out.
+			// But you still have to add w: and the other namespaces in
+			// SmartXMLFormatter constructor. So may as well do 2.:
+			// 2: stick all known namespaces on our root element above
+			// 3: fix SmartXMLFormatter
+			// Go with option 2 .. since this is clear
+			
+			String rootNodeName = xml1.getNodeName();
+			out.append("<" + rootNodeName  
+					+ " xmlns:" + xml1.getPrefix() + "=\"" + xml1.getNamespaceURI() + "\""  // w: namespace
+					+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+					+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
+					+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""    
+					+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
+					+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\"" 
+					+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""    
+					+ " xmlns:dfx=\"" + Constants.BASE_NS + "\""  // Add these, since SmartXMLFormatter only writes them on the first fragment
+					+ " xmlns:del=\"" + Constants.DELETE_NS + "\""   
+					+ " xmlns:ins=\"" + Constants.BASE_NS + "\""   
+							+ " >" );
+					
+			int leftIdx = 0;
+			for (int i=0; i<rd.length; i++ ) {
 				
-				if (rdi.kind()==rdi.CHANGE) {
-					// This we need to diff
-					//leftReport.append( "#" );
-					seq1.addSequence(leftESC.getItem(k));
-					
-					// Don't forget our existing prefix mappings!
-					PrefixMapping existingPM = leftESC.getItem(k).getPrefixMapping();
-					seq1.getPrefixMapping().add(existingPM);
-				} else {
-					// Does this happen?
-					// This just goes straight into the output,
-				    formatter.declarePrefixMapping(leftESC.getItem(k).getPrefixMapping());										
-					out.append("\n<!-- Adding same II -->\n");
-					leftESC.getItem(k).format(formatter);
-					out.append("\n<!-- .. Adding same done -->");
-				}				
-			}
-			EventSequence seq2 = new EventSequence();
-			for (int k = rdi.rightStart() ; k< rdi.rightEnd() ; k++) {				
-				if (rdi.kind()==rdi.CHANGE) {
-					// This is the RHS of the diff
-					//rightReport.append( "#" );
-					seq2.addSequence(rightESC.getItem(k));
-					
-					// Don't forget our existing prefix mappings!
-					PrefixMapping existingPM = rightESC.getItem(k).getPrefixMapping();
-					seq2.getPrefixMapping().add(existingPM);
-					
-				}				
-			}
-			
-			leftIdx = rdi.leftEnd();
-			
-			// ok, now perform this diff
-			//log("performing diff");
-			out.append("\n<!-- Differencing -->\n");
-			Main.diff(seq1, seq2, formatter, diffxConfig);
-			out.append("\n<!-- .. Differencing done -->");
+				RangeDifference rdi = rd[i];
+
+				// No change
+				if (rdi.leftStart() > leftIdx) {
+				
+					for (int k = leftIdx ; k< rdi.leftStart() ; k++) {
+						// This just goes straight into the output,
+						// since it is the same on the left and the right.
+						// Since it is the same on both side, we handle
+						// it here (on the left side), and
+						// ignore it on the right
+						//out.append("\n<!-- Adding same -->\n");
+						addComment("Adding same", formatter);
+					    formatter.declarePrefixMapping(leftESC.getItem(k).getPrefixMapping());					
+						leftESC.getItem(k).format(formatter);
+						//out.append("\n<!-- .. Adding same done -->");
+						addComment(".. Adding same done ", formatter);
 						
-		}
-		// Tail, if any, goes straight into output
-		
-		out.append("\n<!-- Adding tail -->\n");
-		for (int k = rd[rd.length-1].leftEnd(); k < leftESC.getRangeCount(); k++ ) {
-			//leftReport.append( left.getItem(k) );
-			leftESC.getItem(k).format(formatter);
-		}
-		
-		// write out parent close element
-	    out.append("</" + rootNodeName + ">" );
-		
+						// If we wanted to difference sdt's which 
+						// were treated the as the same (via their id)
+						// this is where we'd have to change
+						// (in addition to changing EventSequence for
+						//  such things so that hashcode returned their
+						//  id!)
+					}
+					leftIdx = rdi.leftStart(); 
+				}
+				
+				EventSequence seq1 = new EventSequence();
+				// Evil hack - doesn't work 
+				// seq1.mapPrefix("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "w");
+							
+				for (int k = rdi.leftStart() ; k< rdi.leftEnd() ; k++) {
+					
+					if (rdi.kind()==rdi.CHANGE) {
+						// This we need to diff
+						//leftReport.append( "#" );
+						seq1.addSequence(leftESC.getItem(k));
+						
+						// Don't forget our existing prefix mappings!
+						PrefixMapping existingPM = leftESC.getItem(k).getPrefixMapping();
+						seq1.getPrefixMapping().add(existingPM);
+					} else {
+						// Does this happen?
+						// This just goes straight into the output,
+					    formatter.declarePrefixMapping(leftESC.getItem(k).getPrefixMapping());										
+						//out.append("\n<!-- Adding same II -->\n");
+						addComment("Adding same II", formatter);
+						leftESC.getItem(k).format(formatter);
+						//out.append("\n<!-- .. Adding same done -->");
+						addComment(".. Adding same done", formatter);
+					}				
+				}
+				
+				
+				EventSequence seq2 = new EventSequence();
+				// Evil hack - doesn't work 
+				//seq2.mapPrefix("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "w");
+				for (int k = rdi.rightStart() ; k< rdi.rightEnd() ; k++) {				
+					if (rdi.kind()==rdi.CHANGE) {
+						// This is the RHS of the diff
+						//rightReport.append( "#" );
+						seq2.addSequence(rightESC.getItem(k));
+						
+						// Don't forget our existing prefix mappings!
+						PrefixMapping existingPM = rightESC.getItem(k).getPrefixMapping();
+						seq2.getPrefixMapping().add(existingPM);
+						
+					}				
+				}
+				
+				leftIdx = rdi.leftEnd();
+				
+				// ok, now perform this diff
+				//log("performing diff");
+				//out.append("\n<!-- Differencing -->\n");
+				addComment("Differencing", formatter);
+				
+				Main.diff(seq1, seq2, formatter, diffxConfig);
+				//out.append("\n<!-- .. Differencing done -->");
+				addComment(".. Differencing done", formatter);
+							
+			}
+			// Tail, if any, goes straight into output
+			
+			//out.append("\n<!-- Adding tail -->\n");
+			addComment("Adding tail", formatter);
+			if (rd.length>0) {
+				for (int k = rd[rd.length-1].leftEnd(); k < leftESC.getRangeCount(); k++ ) {
+					//leftReport.append( left.getItem(k) );
+					leftESC.getItem(k).format(formatter);
+				}
+			}
+			// write out parent close element
+			// .. hope all our formatter output is there $
+			out.append("</" + rootNodeName + ">" );
+			
+		} catch (IndexOutOfBoundsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new DiffXException(e);
+		} 		
 	  }
+	
+	// <w:sdtContent 
+	//	<!-- Adding same -->
+	//    >
+	// ie dangerous to use writer directly!!
+	// so do this...
+	public static void addComment(String message, SmartXMLFormatter formatter ) throws IOException {		
+		CommentEvent ce = new CommentEvent(message);
+		formatter.format(ce);
+	}
 	
 	public static void main(String[] args) throws Exception {
 					

@@ -187,10 +187,12 @@ public final class SmartXMLFormatter implements XMLDiffXFormatter {
    * @throws IOException should an I/O exception occurs.
    */
   public SmartXMLFormatter(Writer w) throws IOException {
-    this.xml = new NSAwareXMLWriter(w, false);
+    this.xml = new NSAwareXMLWriter(w, false);  //indent
     this.xml.xmlDecl();
     this.xml.setPrefixMapping(Constants.BASE_NS, "dfx");
     this.xml.setPrefixMapping(Constants.DELETE_NS, "del");
+    //this.xml.setPrefixMapping("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "w");
+    
   }
 
 // methods ------------------------------------------------------------------------------------
