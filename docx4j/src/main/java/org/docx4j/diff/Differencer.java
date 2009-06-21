@@ -370,7 +370,7 @@ public class Differencer {
 			// to omit the @date entirely if its unknown
 			dateString = "2009-03-11T17:57:00Z";
 		}
-		transformParameters.put("ParagraphDifferencer", this);
+		transformParameters.put("Differencer", this);
 		transformParameters.put("date", dateString);
 		transformParameters.put("author", author);
 		transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
@@ -404,7 +404,7 @@ public class Differencer {
 				transformParameters.put("date", dateString);
 			}
 			
-			transformParameters.put("ParagraphDifferencer", this);
+			transformParameters.put("Differencer", this);
 			transformParameters.put("author", author);
 			transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
 			transformParameters.put("docPartRelsRight", null);
@@ -441,7 +441,7 @@ public class Differencer {
 				transformParameters.put("date", dateString);
 			}
 			
-			transformParameters.put("ParagraphDifferencer", this);
+			transformParameters.put("Differencer", this);
 			transformParameters.put("author", author);
 			transformParameters.put("docPartRelsLeft",  null);
 			transformParameters.put("docPartRelsRight", docPartRelsRight);
@@ -573,7 +573,7 @@ public class Differencer {
 								
 				StreamSource src = new StreamSource(new StringReader(simplified));
 				Map<String, Object> transformParameters = new java.util.HashMap<String, Object>();
-				transformParameters.put("ParagraphDifferencer", this);
+				transformParameters.put("Differencer", this);
 				transformParameters.put("author", author);
 				transformParameters.put("docPartRelsLeft",  docPartRelsLeft);
 				transformParameters.put("docPartRelsRight", docPartRelsRight);
