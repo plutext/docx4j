@@ -9,7 +9,7 @@ package com.topologi.diffx;
  * @author Christophe Lauret
  * @version 3 February 2005
  */
-public abstract class DiffXException extends Exception {
+public class DiffXException extends Exception {
 
   /**
    * Creates a new Diff-X exception.
