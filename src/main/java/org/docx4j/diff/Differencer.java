@@ -262,26 +262,27 @@ public class Differencer {
 				false);
 	}
 
-	public void diff(org.docx4j.wml.SdtContentBlock cbLeft, 
-			org.docx4j.wml.SdtContentBlock cbRight, 
+	public void diff(org.docx4j.wml.SdtContentBlock cbNewer, 
+			org.docx4j.wml.SdtContentBlock cbOlder, 
 			javax.xml.transform.Result result,
 			String author, java.util.Calendar date,
-			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
+			RelationshipsPart docPartRelsNewer, RelationshipsPart docPartRelsOlder) {
 		
-		this.diffWorker(org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbLeft).getDocumentElement(), 
-				org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbRight).getDocumentElement(), 
-				result, author, date, docPartRelsLeft, docPartRelsRight);
+		this.diffWorker(org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbNewer).getDocumentElement(), 
+				org.docx4j.XmlUtils.marshaltoW3CDomDocument(cbOlder).getDocumentElement(), 
+				result, author, date, docPartRelsNewer, docPartRelsOlder);
 	}
 
-	public void diff(org.docx4j.wml.Body older, 
-			org.docx4j.wml.Body newer, 
+	public void diff(org.docx4j.wml.Body newer, 
+			org.docx4j.wml.Body older, 
 			javax.xml.transform.Result result,
 			String author, java.util.Calendar date,
-			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
+			RelationshipsPart docPartRelsNewer, RelationshipsPart docPartRelsOlder) {
 		
-		this.diffWorker(org.docx4j.XmlUtils.marshaltoW3CDomDocument(older).getDocumentElement(), 
+		this.diffWorker(
 				org.docx4j.XmlUtils.marshaltoW3CDomDocument(newer).getDocumentElement(),
-				result, author, date, docPartRelsLeft, docPartRelsRight);
+				org.docx4j.XmlUtils.marshaltoW3CDomDocument(older).getDocumentElement(), 				
+				result, author, date, docPartRelsNewer, docPartRelsOlder);
 	}
 	
 	/**
@@ -291,17 +292,17 @@ public class Differencer {
 	 * 
 	 * TODO: consider/test w:table! 
 	 */
-	private void diffWorker(Node left, 
-			Node right, 
+	private void diffWorker(Node newer, 
+			Node older, 
 			javax.xml.transform.Result result,
 			String author, java.util.Calendar date,
-			RelationshipsPart docPartRelsLeft, RelationshipsPart docPartRelsRight) {
+			RelationshipsPart docPartRelsNewer, RelationshipsPart docPartRelsOlder) {
 
 		Writer diffxResult = new StringWriter();
 
 		try {
-			Docx4jDriver.diff(left,
-					   right,
+			Docx4jDriver.diff(newer,
+					   older,
 					   diffxResult);
 				// The signature which takes Reader objects appears to be broken
 			diffxResult.close();
@@ -335,8 +336,8 @@ public class Differencer {
 			log.debug("\n\n Diff'd input to transform: \n\n" + simplified );
 							
 			StreamSource src = new StreamSource(new StringReader(simplified));
-			transformDiffxOutputToWml(result, author, date, docPartRelsLeft,
-					docPartRelsRight, src);
+			transformDiffxOutputToWml(result, author, date, docPartRelsNewer,
+					docPartRelsOlder, src);
 			
 		} catch (Exception exc) {
 			exc.printStackTrace();

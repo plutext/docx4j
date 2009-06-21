@@ -139,7 +139,7 @@ public class Docx4jDriver {
 	}
 	
 	
-	public static void diff(Node xml2, Node xml1, Writer out) // swapped, 
+	public static void diff(Node xml1, Node xml2, Writer out) // swapped, 
 			throws DiffXException, IOException {
 
 		try {
