@@ -4,6 +4,7 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.5"/>
     <property name="source" value="1.5"/>
+	<property name="dist" value="./dist"/>
 
 	
 	<property name="m2Repository" value="../../.m2/repository"/>	
@@ -12,9 +13,10 @@
         <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
         <pathelement location="${m2Repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
-        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar"/>
+        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.03/xml-apis-1.3.03.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+    	<pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
         <pathelement location="${m2Repository}/jdom/jdom/1.0/jdom-1.0.jar"/> <!--  for commons-vfs -->
 <!--    	
         <pathelement location="${m2Repository}/junit/junit/3.8.1/junit-3.8.1.jar"/>
@@ -40,6 +42,7 @@
         <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
         <pathelement location="${m2Repository}/xhtmlrenderer/minium/0.1/minium-0.1.jar"/>
         <pathelement location="${m2Repository}/xhtmlrenderer/core-renderer/R8pre2/core-renderer-R8pre2.jar"/>
+        	<!--  core-renderer R8pre2 incompatible with iText SVN  -->	
 
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
@@ -65,28 +68,28 @@
 	
     <target name="clean">
         <delete dir="bin"/>
+        <delete dir="dist"/>
     </target>
     <target depends="build-project" name="build"/>
    
-    <target depends="init" name="build-project">
+    <target name="build-project" depends="init" >
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
         	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src/main/java"/>
+            <src path="src/diffx"/>
             <classpath refid="docx4j.classpath"/>
         </javac>
     </target>
  
     <target name="dist"  depends="clean, build-project" >
-		
-		<property name="lib" value="./dist"/>
-		
-        <mkdir dir="${lib}"/>
 				
-		<jar destfile="${lib}/docx4j.jar" basedir="./bin"/>		
+        <mkdir dir="${dist}"/>
+				
+		<jar destfile="${dist}/docx4j.jar" basedir="./bin"/>		
 		
 		<!-- copy all the jar files! -->
-		<copy todir="${lib}" flatten="true">
+		<copy todir="${dist}" flatten="true">
 			<!-- requires Ant 1.7.0 -->
 			<path>
 			    <path refid="docx4j.classpath"/>
@@ -94,6 +97,22 @@
 		</copy>		
 					
     </target>	
+
+
+	<!--  build just diffx; the usual targets build diffx as part of docx4j -->
+    <target name="build-diffx" depends="init" >
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src/diffx"/>
+            <classpath refid="docx4j.classpath"/>
+        </javac>
+    </target>
+
+    <target name="diffxjar"  depends="clean, build-diffx" >							
+		<jar destfile="diffx.jar" basedir="./bin"/>									
+    </target>	
+
 	
 	<target name="javadoc">
 	
