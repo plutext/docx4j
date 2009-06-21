@@ -38,7 +38,7 @@
 
   -->
 
-<xsl:param name="ParagraphDifferencer"/>
+<xsl:param name="Differencer"/>
 <xsl:param name="author"/>
 <xsl:param name="date"/>
 <xsl:param name="docPartRelsLeft"/>
@@ -56,7 +56,7 @@
 
   <xsl:template match="w:r">
     <xsl:variable name="id" 
-        select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+        select="java:org.docx4j.diff.Differencer.getId()" />
   
     <w:del w:id="{$id}" w:author="{$author}"  w:date="{$date}">  <!--  w:date is optional -->
         <xsl:copy>
@@ -87,7 +87,7 @@
   
   <!-- Drop these.
        If you want them, you'll need to attend to their r:id, using
-       java:org.docx4j.diff.ParagraphDifferencer.registerRelationship  
+       java:org.docx4j.diff.Differencer.registerRelationship  
        (see example below) -->
   <xsl:template match="w:headerReference" />
   <xsl:template match="w:footerReference" />
@@ -106,7 +106,7 @@
   	<xsl:choose>
   		<xsl:when test="@dfx:delete='true'">
 			<xsl:variable name="id" 
-						select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+						select="java:org.docx4j.diff.Differencer.getId()" />
 		    <w:del w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
 		      <w:r>
 			      <xsl:copy>
@@ -117,7 +117,7 @@
   		</xsl:when>
   		<xsl:when test="@dfx:insert='true'"> <!--  not relevant in MarkupDelete -->
 			<xsl:variable name="id" 
-						select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+						select="java:org.docx4j.diff.Differencer.getId()" />
 		    <w:ins w:id="{$id}" w:author="{$author}" w:date="{$date}">  <!--  w:date is optional -->
 		      <w:r>
 			      <xsl:copy>
@@ -149,16 +149,16 @@
     					<xsl:variable name="oldid" select="string(@del:link)" />
     					<xsl:variable name="newid" select="concat($oldid, 'R', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
     					<xsl:variable name="dummy" 
-    					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
-    					     	$ParagraphDifferencer, $docPartRelsRight, $oldid, $newid)" />
+    					     select="java:org.docx4j.diff.Differencer.registerRelationship(
+    					     	$Differencer, $docPartRelsRight, $oldid, $newid)" />
     					<a:blip r:link="{$newid}" />
     				</xsl:when>
     				<xsl:otherwise> <!--  r:embed -->
     					<xsl:variable name="oldid" select="string(@del:embed)" />
     					<xsl:variable name="newid" select="concat($oldid, 'R', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
     					<xsl:variable name="dummy" 
-    					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
-    					     	$ParagraphDifferencer, $docPartRelsRight, $oldid, $newid)" />
+    					     select="java:org.docx4j.diff.Differencer.registerRelationship(
+    					     	$Differencer, $docPartRelsRight, $oldid, $newid)" />
     					<a:blip r:embed="{$newid}" />    				
     				</xsl:otherwise>
     			</xsl:choose>    		
@@ -176,16 +176,16 @@
     					<xsl:variable name="oldid" select="string(@r:link)" />
     					<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  LEFT -->
     					<xsl:variable name="dummy" 
-    					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
-    					     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+    					     select="java:org.docx4j.diff.Differencer.registerRelationship(
+    					     	$Differencer, $docPartRelsLeft, $oldid, $newid)" />
     					<a:blip r:link="{$newid}" />
     				</xsl:when>
     				<xsl:otherwise> <!--  r:embed -->
     					<xsl:variable name="oldid" select="string(@r:embed)" />
     					<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  LEFT -->
     					<xsl:variable name="dummy" 
-    					     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
-    					     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+    					     select="java:org.docx4j.diff.Differencer.registerRelationship(
+    					     	$Differencer, $docPartRelsLeft, $oldid, $newid)" />
     					<a:blip r:embed="{$newid}" />    				
     				</xsl:otherwise>
     			</xsl:choose>    					
@@ -294,25 +294,25 @@
   	<xsl:choose>
   		<xsl:when test="@dfx:delete='true'">
 			<xsl:variable name="id" 
-						select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+						select="java:org.docx4j.diff.Differencer.getId()" />
 		    
 				<xsl:variable name="oldid" select="string(@del:id)" />
 				<xsl:variable name="newid" select="concat($oldid, 'R', $relsDiffIdentifier)" /> <!--  From RIGHT rels -->
 				<xsl:variable name="dummy" 
-				     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
-				     	$ParagraphDifferencer, $docPartRelsRight, $oldid, $newid)" />
+				     select="java:org.docx4j.diff.Differencer.registerRelationship(
+				     	$Differencer, $docPartRelsRight, $oldid, $newid)" />
 				<w:hyperlink r:id="{$newid}">
 			    	<xsl:apply-templates select="@*|node()"/>
 				</w:hyperlink>
   		</xsl:when>
   		<xsl:when test="@dfx:insert='true'">
 			<xsl:variable name="id" 
-						select="java:org.docx4j.diff.ParagraphDifferencer.getId()" />
+						select="java:org.docx4j.diff.Differencer.getId()" />
 				<xsl:variable name="oldid" select="string(@r:id)" />
 				<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  LEFT -->
 				<xsl:variable name="dummy" 
-				     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
-				     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+				     select="java:org.docx4j.diff.Differencer.registerRelationship(
+				     	$Differencer, $docPartRelsLeft, $oldid, $newid)" />
 				<w:hyperlink r:id="{$newid}">
 			    	<xsl:apply-templates select="@*|node()"/>
 				</w:hyperlink>
@@ -321,8 +321,8 @@
 				<xsl:variable name="oldid" select="string(@r:id)" />
 				<xsl:variable name="newid" select="concat($oldid, 'L', $relsDiffIdentifier)" /> <!--  LEFT -->
 				<xsl:variable name="dummy" 
-				     select="java:org.docx4j.diff.ParagraphDifferencer.registerRelationship(
-				     	$ParagraphDifferencer, $docPartRelsLeft, $oldid, $newid)" />
+				     select="java:org.docx4j.diff.Differencer.registerRelationship(
+				     	$Differencer, $docPartRelsLeft, $oldid, $newid)" />
 				<w:hyperlink r:id="{$newid}">
 			    	<xsl:apply-templates select="@*|node()"/>
 				</w:hyperlink>
