@@ -192,6 +192,13 @@ public final class SmartXMLFormatter implements XMLDiffXFormatter {
     this.xml.setPrefixMapping(Constants.BASE_NS, "dfx");
     this.xml.setPrefixMapping(Constants.DELETE_NS, "del");
     this.xml.setPrefixMapping("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "w");
+    this.xml.setPrefixMapping("http://schemas.openxmlformats.org/drawingml/2006/main", "a");
+    this.xml.setPrefixMapping("http://schemas.openxmlformats.org/drawingml/2006/picture", "pic");
+    this.xml.setPrefixMapping("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "r");    
+    this.xml.setPrefixMapping("urn:schemas-microsoft-com:vml", "v");
+    this.xml.setPrefixMapping("urn:schemas-microsoft-com:office:word", "w10"); 
+    this.xml.setPrefixMapping("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", "wp");    
+    
     
   }
 

@@ -59,16 +59,15 @@ public class CompareDocuments {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String olderfilepath = "/home/dev/workspace/docx4j/sample-docs/differencing_older.docx";
 		String newerfilepath = "/home/dev/workspace/docx4j/sample-docs/differencing_newer.docx";
-		
-				
+		String olderfilepath = "/home/dev/workspace/docx4j/sample-docs/differencing_older.docx";
+						
 		// 1. Load the Packages
-		WordprocessingMLPackage olderPackage = WordprocessingMLPackage.load(new java.io.File(olderfilepath));
 		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath));
+		WordprocessingMLPackage olderPackage = WordprocessingMLPackage.load(new java.io.File(olderfilepath));
 		
-		Body olderBody = ((Document)olderPackage.getMainDocumentPart().getJaxbElement()).getBody();
 		Body newerBody = ((Document)newerPackage.getMainDocumentPart().getJaxbElement()).getBody();
+		Body olderBody = ((Document)olderPackage.getMainDocumentPart().getJaxbElement()).getBody();
 		
 		// 2. Do the differencing
 		java.io.StringWriter sw = new java.io.StringWriter();
@@ -78,9 +77,10 @@ public class CompareDocuments {
 
 		Differencer pd = new Differencer();
 		pd.setRelsDiffIdentifier("blagh"); // not necessary in this case 
-		pd.diff(olderBody, newerBody, result, "someone", changeDate,
-				olderPackage.getMainDocumentPart().getRelationshipsPart(), 
-				newerPackage.getMainDocumentPart().getRelationshipsPart());
+		pd.diff(newerBody, olderBody, result, "someone", changeDate,
+				newerPackage.getMainDocumentPart().getRelationshipsPart(),
+				olderPackage.getMainDocumentPart().getRelationshipsPart() 
+				);
 		
 		// 3. Get the result
 		String contentStr = sw.toString();
@@ -89,17 +89,17 @@ public class CompareDocuments {
 				.unmarshalString(contentStr);
 		
 		// 4. Display the result as a PDF
-		// To do this, we'll replace the body in the older document
-		((Document)olderPackage.getMainDocumentPart().getJaxbElement()).setBody(newBody);
+		// To do this, we'll replace the body in the newer document
+		((Document)newerPackage.getMainDocumentPart().getJaxbElement()).setBody(newBody);
 
-		RelationshipsPart rp = olderPackage.getMainDocumentPart().getRelationshipsPart(); 
+		RelationshipsPart rp = newerPackage.getMainDocumentPart().getRelationshipsPart(); 
 		handleRels(pd, rp);						
 		
 		
-		olderPackage.setFontMapper(new IdentityPlusMapper());		
+		newerPackage.setFontMapper(new IdentityPlusMapper());		
 		org.docx4j.convert.out.pdf.PdfConversion c 
 //			= new org.docx4j.convert.out.pdf.viaHTML.Conversion(olderPackage);
-			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(olderPackage);
+			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(newerPackage);
 //			= new org.docx4j.convert.out.pdf.viaIText.Conversion(olderPackage);		
 			c.view();
 				
