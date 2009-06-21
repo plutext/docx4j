@@ -7,7 +7,9 @@ import java.io.UnsupportedEncodingException;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 /**
@@ -67,8 +69,14 @@ public class Dom4jCustomXmlDataStorage implements CustomXmlDataStorage {
 	 * @see org.docx4j.model.datastorage.CustomXmlDataStorage#unmarshal(java.io.InputStream)
 	 */
 	public void setDocument(InputStream is) throws Docx4JException {
-		// Not implemented yet
-		throw new UnsupportedOperationException();
+		// docx4all needs this
+		try {
+			SAXReader xmlReader = new SAXReader();
+			customXmlDom4jDoc = xmlReader.read(is);
+		} catch (DocumentException e) {
+			e.printStackTrace();
+			throw new Docx4JException("dom4j couldn't read input stream", e);
+		}
 	}
 
 	/* (non-Javadoc)
