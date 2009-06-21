@@ -81,9 +81,9 @@ import com.topologi.diffx.sequence.PrefixMapping;
  * Ultimately, we should migrate to / develop a library which doesn't have 
  * this problem, and supports:
  * 
- * - word level diff
+ * - word level diff (diffx does, but Fuego doesn't but could)
  * - 3 way merge
- * - move
+ * - move (though why, can OpenXML represent a move?)
  * 
  * An intermediate step might be to add an implementation of the Lindholm 
  * heuristically guided greedy matcher to the com.topologi.diffx.algorithm
@@ -212,6 +212,26 @@ public class Docx4jDriver {
 			
 			log("top level LCS - determining top level LCS...");
 			RangeDifference[] rd = RangeDifferencer.findDifferences(leftESC, rightESC);
+
+			SmartXMLFormatter formatter = new SmartXMLFormatter(out);
+			formatter.setConfig(diffxConfig);			
+
+			String rootNodeName = xml1.getNodeName();
+			openResult(rootNodeName, out);
+			
+			if (rd.length==0) {
+				log("top level LCS done; there are no differences!");
+				addComment("No differences", formatter);
+				// Note that our hashcode acts like a canonicaliser
+				// - attribute order doesn't matter.
+				
+				// So just feed the leftESC into the formatter and return
+				for(EventSequence es : leftES) {
+					es.format(formatter);
+				}
+				closeResult(rootNodeName, out);
+				return;
+			}
 			
 			// Debug: Raw output
 			for (int i=0; i<rd.length; i++ ) {			
@@ -222,43 +242,6 @@ public class Docx4jDriver {
 					
 			log("top level LCS done; now performing child actions ...");
 			
-			
-			SmartXMLFormatter formatter = new SmartXMLFormatter(out);
-			formatter.setConfig(diffxConfig);
-
-			// In general, we need to avoid writing directly to Writer out...
-			// since it can happen before formatter output gets there
-			
-
-			// namespaces not properly declared:
-			// 4 options:
-			// 1:
-			// OpenElementEvent containerOpen = new OpenElementEventNSImpl(xml1.getNamespaceURI(), rootNodeName);
-			// formatter.format(containerOpen);
-			// // AttributeEvent wNS = new AttributeEventNSImpl("http://www.w3.org/2000/xmlns/" , "w",
-			// //		"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
-			// // formatter.format(wNS);
-			// but AttributeEvent is too late in the process to set the mapping.
-			// so you can comment that out.
-			// But you still have to add w: and the other namespaces in
-			// SmartXMLFormatter constructor. So may as well do 2.:
-			// 2: stick all known namespaces on our root element above
-			// 3: fix SmartXMLFormatter
-			// Go with option 2 .. since this is clear
-			
-			String rootNodeName = xml1.getNodeName();
-			out.append("<" + rootNodeName  
-					+ " xmlns:" + xml1.getPrefix() + "=\"" + xml1.getNamespaceURI() + "\""  // w: namespace
-					+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
-					+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
-					+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""    
-					+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
-					+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\"" 
-					+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""    
-					+ " xmlns:dfx=\"" + Constants.BASE_NS + "\""  // Add these, since SmartXMLFormatter only writes them on the first fragment
-					+ " xmlns:del=\"" + Constants.DELETE_NS + "\""   
-					+ " xmlns:ins=\"" + Constants.BASE_NS + "\""   
-							+ " >" );
 					
 			int leftIdx = 0;
 			for (int i=0; i<rd.length; i++ ) {
@@ -358,7 +341,7 @@ public class Docx4jDriver {
 			}
 			// write out parent close element
 			// .. hope all our formatter output is there $
-			out.append("</" + rootNodeName + ">" );
+			closeResult(rootNodeName, out);
 			
 		} catch (IndexOutOfBoundsException e) {
 			// TODO Auto-generated catch block
@@ -376,6 +359,42 @@ public class Docx4jDriver {
 		CommentEvent ce = new CommentEvent(message);
 		formatter.format(ce);
 	}
+
+	public static void openResult(String nodename,  Writer out) throws IOException {
+		// In general, we need to avoid writing directly to Writer out...
+		// since it can happen before formatter output gets there
+		
+		// namespaces not properly declared:
+		// 4 options:
+		// 1:
+		// OpenElementEvent containerOpen = new OpenElementEventNSImpl(xml1.getNamespaceURI(), rootNodeName);
+		// formatter.format(containerOpen);
+		// // AttributeEvent wNS = new AttributeEventNSImpl("http://www.w3.org/2000/xmlns/" , "w",
+		// //		"http://schemas.openxmlformats.org/wordprocessingml/2006/main");
+		// // formatter.format(wNS);
+		// but AttributeEvent is too late in the process to set the mapping.
+		// so you can comment that out.
+		// But you still have to add w: and the other namespaces in
+		// SmartXMLFormatter constructor. So may as well do 2.:
+		// 2: stick all known namespaces on our root element above
+		// 3: fix SmartXMLFormatter
+		// Go with option 2 .. since this is clear
+		out.append("<" + nodename  
+				+ " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\""  // w: namespace
+				+ " xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\""
+				+ " xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\""
+				+ " xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\""    
+				+ " xmlns:v=\"urn:schemas-microsoft-com:vml\""
+				+ " xmlns:w10=\"urn:schemas-microsoft-com:office:word\"" 
+				+ " xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""    
+				+ " xmlns:dfx=\"" + Constants.BASE_NS + "\""  // Add these, since SmartXMLFormatter only writes them on the first fragment
+				+ " xmlns:del=\"" + Constants.DELETE_NS + "\""   
+				+ " xmlns:ins=\"" + Constants.BASE_NS + "\""   
+						+ " >" );		
+	}
+	public static void closeResult(String nodename,  Writer out) throws IOException {
+		out.append("</" + nodename + ">" );
+	}	
 	
 	public static void main(String[] args) throws Exception {
 					
