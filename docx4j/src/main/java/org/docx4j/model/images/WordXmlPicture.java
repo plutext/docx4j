@@ -304,32 +304,29 @@ public class WordXmlPicture {
     	String itemUrl = null;
 		try {
 			itemUrl = fo.getURL().toExternalForm();
+			log.debug(itemUrl);
+
+			String itemUrlLower = itemUrl.toLowerCase();			
+	        if (itemUrlLower.startsWith("http://") 
+	        		 || itemUrlLower.startsWith("https://")) {
+				return itemUrl;
+			} else if (itemUrlLower.toLowerCase().startsWith("file://")) {
+				// convert file protocol to relative reference
+				if (fo.getParent() == null) {
+					return itemUrl;					
+				} else {
+					return  fo.getParent().getName().getBaseName() 
+								+ "/" + fo.getName().getBaseName();
+				}
+			} else if (itemUrlLower.startsWith("webdav://")) {
+				// TODO - convert to http:, dropping username / password
+				return itemUrl;
+			} 			
+	        log.warn("How to handle scheme: " + itemUrl );        
 		} catch (FileSystemException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		System.out.println(itemUrl);
-    	
-        if (
-            itemUrl.toLowerCase().startsWith("file://") ||
-            itemUrl.toLowerCase().startsWith("http://") ||
-            itemUrl.toLowerCase().startsWith("https://"))
-        	
-        {
-        	
-            return itemUrl;
-        }
-        
-        if ( itemUrl.toLowerCase().startsWith("webdav://")  ) {
-        	
-        	// TODO - convert to http:, dropping username / password
-        	return itemUrl;
-        	
-        }
-        log.warn("How to handle scheme: " + itemUrl );
-        
-    	return itemUrl;
-        
+			log.error("Problem fixing Img Src URL", e);
+		}		    	
+    	return itemUrl;        
     }
     
     /* Extension function to create an <img> element
