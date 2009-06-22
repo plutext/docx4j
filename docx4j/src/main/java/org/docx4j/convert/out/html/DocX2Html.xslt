@@ -3358,11 +3358,19 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
   -->
 <xsl:template match="w:pict">
 
-  	<xsl:variable name="shape" select="./v:shape"/>
-  	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
-  	
-  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createImgE10( $wmlPackage, string($imageDirPath),
-  			$shape, $imageData)" />
+	<xsl:choose>
+		<xsl:when test="./v:shape/v:imagedata">
+
+		  	<xsl:variable name="shape" select="./v:shape"/>
+		  	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
+		  	
+		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createImgE10( $wmlPackage, string($imageDirPath),
+		  			$shape, $imageData)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
+		</xsl:otherwise>
+	</xsl:choose>  			
 
 </xsl:template>
 

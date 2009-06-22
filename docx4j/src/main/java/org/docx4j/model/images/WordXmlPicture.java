@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.vfs.CacheStrategy;
@@ -339,39 +340,57 @@ public class WordXmlPicture {
     public static DocumentFragment createImgE10(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator shape, NodeIterator imageData) {
+
+    	// Sanity check; though XSLT should check these nodes are non null
+    	// before invoking this extension function.
+    	Node shapeNode = null;
+    	Node imageDataNode = null;
+    	if (shape!=null) {
+    		shapeNode = shape.nextNode();
+    	}
+    	if (imageData!=null) {
+    		imageDataNode = imageData.nextNode();
+    	}
+    	if (shapeNode==null
+    			|| imageDataNode ==null ) {
+    		log.error("w:pict contains something other than an image?");
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            Document d;
+			try {
+				d = factory.newDocumentBuilder().newDocument();
+	    		return d.createDocumentFragment();
+			} catch (ParserConfigurationException e) {
+				log.error(e);
+				return null;
+			}    		
+    	}
+    	// OK
     	
-    	// NB as at 2008 10 24, this code has not been tested
-    	    	
     	WordXmlPicture picture = new WordXmlPicture();
-    	picture.readStandardAttributes( shape.nextNode() );
-    	
-    	Node imageDataNode = imageData.nextNode();
-    	if ( imageDataNode==null ) {    		
-        	log.warn("Couldn't find v:imagedata!");
-        } else {
-            String imgRelId = ConvertUtils.getAttributeValueNS(imageDataNode, "http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"); 
+    	picture.readStandardAttributes( shapeNode );    	
 
-            if (imgRelId!=null && !imgRelId.equals(""))
-            {
-            	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
-            	
-            	if (rel.getTargetMode() == null
-            			|| rel.getTargetMode().equals("Internal") ) {
-            		
-            		picture.setSrc("TODO - save object " + rel.getTarget() );
-            		
-            	} else {
-                    picture.setSrc( rel.getTarget() );            	
-            	}
+        String imgRelId = ConvertUtils.getAttributeValueNS(imageDataNode, "http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"); 
 
-            }
+        if (imgRelId!=null && !imgRelId.equals(""))
+        {
+        	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
+        	
+        	if (rel.getTargetMode() == null
+        			|| rel.getTargetMode().equals("Internal") ) {
+        		
+        		picture.setSrc("TODO - save object " + rel.getTarget() );
+        		
+        	} else {
+                picture.setSrc( rel.getTarget() );            	
+        	}
+
+        }
 
             // if the relationship isn't found, produce a warning
             //if (String.IsNullOrEmpty(picture.Src))
             //{
             //    this.embeddedPicturesDropped++;
             //}
-        }
     	
         Document d = picture.createHtmlImageElement();
 
