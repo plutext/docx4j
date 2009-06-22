@@ -21,6 +21,8 @@
 package org.docx4j.diff;
 
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -148,27 +150,27 @@ public class Differencer {
     	
     }
     
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws Exception {
-		
-		String BASE_DIR = "/home/dev/workspace/docx4j/src/test/java/org/docx4j/diff/";
-		
-		// Test setup
-		String paraL = BASE_DIR + "t2R";		
-		String paraR = BASE_DIR + "t3L";
-		P pl = loadParagraph(paraL);
-		P pr = loadParagraph(paraR);
-		
-		// Result format
-		StreamResult result = new StreamResult(System.out);
-
-		// Run the diff - FIXME
-		Differencer pd = new Differencer();
-		pd.diff(pl, pr, result, null, null, null, null);
-		
-	}
+//	/**
+//	 * @param args
+//	 */
+//	public static void main(String[] args) throws Exception {
+//		
+//		String BASE_DIR = "/home/dev/workspace/docx4j/src/test/java/org/docx4j/diff/";
+//		
+//		// Test setup
+//		String paraL = BASE_DIR + "t2R";		
+//		String paraR = BASE_DIR + "t3L";
+//		P pl = loadParagraph(paraL);
+//		P pr = loadParagraph(paraR);
+//		
+//		// Result format
+//		StreamResult result = new StreamResult(System.out);
+//
+//		// Run the diff - FIXME
+//		Differencer pd = new Differencer();
+//		pd.diff(pl, pr, result, null, null, null, null);
+//		
+//	}
 	
 	/**
 	 * The id to be allocated to the ins/del
@@ -318,7 +320,7 @@ public class Differencer {
 			Reader reader;
 			if (log.isDebugEnabled() ) {
 				String res = diffxResult.toString();
-				log.debug(res);
+				log.debug("Diff result:" + res);
 				reader = new StringReader(res);
 			} else {
 				reader = new StringReader(diffxResult.toString());				
@@ -1144,7 +1146,7 @@ spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w
         while ( reader.hasNext() ) {
         	
         	int event = reader.next();
-        	
+        	        	
         	switch (event) {
         	
         		case XMLStreamConstants.END_ELEMENT: 
@@ -1168,45 +1170,59 @@ spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w
            
 
                 case XMLStreamConstants.START_ELEMENT:
+                	
+                    try {
+						if (memory != null)
+						{
+						    // There is an </ins> (or </del>) we have just ignored
 
-                    if (memory != null)
-                    {
-                        // There is an </ins> (or </del>) we have just ignored
-
-                        if (memory.equals(reader.getLocalName()))
-                        {
-                            // Hit </ins><ins> 
-                            // This is the case where
-                            // we don't write either of them ...
-                            memory = null;
-                            continue;
-                        }
-                        else
-                        {
-                            // This is a different node,
-                            // so write the </ins>
-                        	writer.writeEndElement();
-                            memory = null;
-                        }
-                    }
-                    if (reader.getNamespaceURI() == null ) {
-                    	writer.writeStartElement(reader.getLocalName());
-                    	
-                    } else {
-                    	writer.writeStartElement(reader.getPrefix(), reader.getLocalName(), reader.getNamespaceURI());
-                    }
-                    for (int i=0; i<reader.getAttributeCount() ; i++ ) {
-                    	writer.writeAttribute(
-                    			reader.getAttributePrefix(i), 
-                    			reader.getAttributeNamespace(i), 
-                    			reader.getAttributeLocalName(i), 
-                    			reader.getAttributeValue(i));
-                    }
-                    for (int i=0; i<reader.getNamespaceCount() ; i++ ) {
-                    	writer.writeNamespace(
-                    			reader.getNamespacePrefix(i),
-                    			reader.getNamespaceURI(i) );
-                    }
+						    if (memory.equals(reader.getLocalName()))
+						    {
+						        // Hit </ins><ins> 
+						        // This is the case where
+						        // we don't write either of them ...
+						        memory = null;
+						        continue;
+						    }
+						    else
+						    {
+						        // This is a different node,
+						        // so write the </ins>
+						    	writer.writeEndElement();
+						        memory = null;
+						    }
+						}
+						if (reader.getNamespaceURI() == null ) {
+							writer.writeStartElement(reader.getLocalName());
+							
+						} else {
+							writer.writeStartElement(reader.getPrefix(), reader.getLocalName(), reader.getNamespaceURI());
+						}
+						for (int i=0; i<reader.getAttributeCount() ; i++ ) {
+							
+							if (reader.getAttributeNamespace(i)==null) {
+								//log.debug("Writing " + reader.getLocalName() + "/@" + reader.getAttributeLocalName(i) );
+								writer.writeAttribute(
+										reader.getAttributeLocalName(i), 
+										reader.getAttributeValue(i) );
+							} else {
+								writer.writeAttribute(
+										reader.getAttributePrefix(i), 
+										reader.getAttributeNamespace(i), 
+										reader.getAttributeLocalName(i), 
+										reader.getAttributeValue(i));
+							}
+						}
+						for (int i=0; i<reader.getNamespaceCount() ; i++ ) {
+							writer.writeNamespace(
+									reader.getNamespacePrefix(i),
+									reader.getNamespaceURI(i) );
+						}
+					} catch (XMLStreamException e) {
+						System.out.println("Issue at element: " + reader.getLocalName() + "\n");
+						e.printStackTrace();
+						throw e;
+					}
                     
                     break;
 
@@ -1264,5 +1280,26 @@ spacing<ins> properly I would</ins> <ins>say.</ins><del>property.</del></w:t></w
 	
 	runtContents = "b  c".trim().split("\\s");
 	System.out.println( "'b  c' " + runtContents.length );*/
+    
+	public static void main(String[] args) throws Exception {
+		
+		// Result format
+		Writer diffxResult = new StringWriter();
+
+		// Run the diff
+		try {
+			
+			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+			//java.io.InputStream is = new java.io.ByteArrayInputStream(naive.getBytes("UTF-8"));
+			String simplified = combineAdjacent(
+					inputFactory.createXMLStreamReader(new FileInputStream(new File("tmp_adj.xml"))) );
+			
+			System.out.println("Done");
+		} catch (Exception exc) {
+			exc.printStackTrace();
+			diffxResult = null;
+		}
+	}
+    
 
 }
