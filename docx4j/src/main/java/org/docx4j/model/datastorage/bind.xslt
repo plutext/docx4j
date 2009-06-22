@@ -31,6 +31,8 @@
   		<xsl:when test="w:sdtPr/w:dataBinding">
 		    <xsl:copy>
 		      <xsl:copy-of select="w:sdtPr"/>
+	  		<!-- xsl:variable name="dummy" 
+	  			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('Entering bind mode')"/-->
 		      <xsl:apply-templates select="w:sdtContent" mode="bind">		      
 		      	<xsl:with-param name="storeItemID"  select="string(w:sdtPr/w:dataBinding/@w:storeItemID)" />
 	  			<xsl:with-param name="xpath"  select="string(w:sdtPr/w:dataBinding/@w:xpath)" />
@@ -50,11 +52,13 @@
       	<xsl:param name="storeItemID" />
 		<xsl:param name="xpath" />
 		<xsl:param name="prefixMappings" />
+  		<!-- >xsl:variable name="dummy" 
+  			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:* bind')"/-->
 		    <xsl:copy>
-		      <xsl:apply-templates>
-		      	<xsl:with-param name="storeItemID"  select="string(w:sdtPr/w:dataBinding/@w:storeItemID)" />
-	  			<xsl:with-param name="xpath"  select="string(w:sdtPr/w:dataBinding/@w:xpath)" />
-  				<xsl:with-param name="prefixMappings"  select="string(w:sdtPr/w:dataBinding/@w:prefixMappings)" />
+		      <xsl:apply-templates mode="bind">
+		      	<xsl:with-param name="storeItemID"  select="$storeItemID" />
+	  			<xsl:with-param name="xpath"  select="$xpath" />
+  				<xsl:with-param name="prefixMappings"  select="$prefixMappings" />
 		      </xsl:apply-templates> 
 		    </xsl:copy>  		  			
   </xsl:template>
@@ -63,8 +67,10 @@
       	<xsl:param name="storeItemID" />
 		<xsl:param name="xpath" />
 		<xsl:param name="prefixMappings" />
+  		<!-- >xsl:variable name="dummy" 
+  			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:r bind')"/-->
 		<xsl:choose>
-			<xsl:when test="w:rPr/w:rStyle[@val='Entry' or @val='PlaceholderText']">
+			<xsl:when test="w:rPr/w:rStyle/@w:val='Entry' or w:rPr/w:rStyle/@w:val='PlaceholderText'">
 				<w:r>
 					<w:rPr>
 						<w:rStyle w:val="Entry"/>

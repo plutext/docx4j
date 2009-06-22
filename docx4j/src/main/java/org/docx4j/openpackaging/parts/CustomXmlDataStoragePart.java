@@ -52,6 +52,11 @@ public final class CustomXmlDataStoragePart extends Part {
 	
 	private static Logger log = Logger.getLogger(CustomXmlDataStoragePart.class);		
 	
+	public static void log(String message ) {
+		
+		log.info(message);
+	}
+	
 	/*
 	 * If this contains XML which is bound in an sdt
 	 * via w:sdtPr/w:dataBinding, then its rels
@@ -84,7 +89,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		try {
 			Source xsltSource = new StreamSource(
 						org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/convert/out/html/docx4j2xhtml.xslt"));
+								"org/docx4j/model/datastorage/bind.xslt"));
 			xslt = XmlUtils.getTransformerTemplate(xsltSource);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -172,8 +177,9 @@ public final class CustomXmlDataStoragePart extends Part {
 					
 			org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 			
-			javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
-			documentPart.setJaxbElement(je.getValue());
+			//javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
+			org.docx4j.wml.Document d = (org.docx4j.wml.Document)result.getResult();
+			documentPart.setJaxbElement(d);
 		} catch (Exception e) {
 			throw new Docx4JException("Problems applying bindings", e);			
 		}
@@ -189,7 +195,13 @@ public final class CustomXmlDataStoragePart extends Part {
 			return null;
 		}
 		try {
-			return part.getData().getXPath(xpath, prefixMappings);
+			if (log.isDebugEnabled() ) {
+				String r = part.getData().getXPath(xpath, prefixMappings);
+				log.debug(xpath + " yielded result " + r);
+				return r;
+			} else {
+				return part.getData().getXPath(xpath, prefixMappings);
+			}
 		} catch (Docx4JException e) {
 			e.printStackTrace();
 			return null;
