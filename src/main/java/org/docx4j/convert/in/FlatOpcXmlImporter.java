@@ -153,6 +153,8 @@ public class FlatOpcXmlImporter  {
 //		(ii) add the new Part to the package
 //		(iii) cross the PartName off unusedZipEntries
 		addPartsFromRelationships(wmlPackageResult, rp );
+		
+		Load.registerCustomXmlDataStorageParts(wmlPackageResult);
 		 
 		 return wmlPackageResult;
 		

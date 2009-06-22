@@ -86,9 +86,10 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 	public String getXPath(String xpathString, String prefixMappings)  throws Docx4JException {
 		try {
 			// TODO use the prefixMappings!
-			//xPath.setNamespaceContext(nsContext);
+			NamespaceContext nsContext = new XmlNamespaceContext(null);
+			xPath.setNamespaceContext(nsContext);
 			
-			String result = xPath.evaluate(xpathString, getInputSource() );
+			String result = xPath.evaluate(xpathString, doc );
 			log.debug(xpathString + " ---> " + result);
 			return result;
 		} catch (Exception e) {
@@ -107,9 +108,10 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 //	public boolean setNodeValueAtXPath(String xpath, String value) throws Docx4JException {
 //
 //		// No good, since this modifies the input source, not our document :-(
+//      // TODO - try with doc instead of getInputSource()	
 //		
 //		try {
-//			Node n = (Node)xPath.evaluate(xpath, getInputSource(), XPathConstants.NODE );
+//			Node n = (Node)xPath.evaluate(xpath, doc, XPathConstants.NODE );
 //			if (n==null) {
 //				log.debug("xpath returned null");
 //				return false;
@@ -126,20 +128,20 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 //	}
 	
 	
-	InputSource is;
-	private InputSource getInputSource() throws Exception {
-		if (is!=null) {
-			return is;
-		}
-		// Clunky
-		 DOMSource source = new DOMSource(doc);
-		 StringWriter xmlAsWriter = new StringWriter();
-		 StreamResult result = new StreamResult(xmlAsWriter);
-		 TransformerFactory.newInstance().newTransformer().transform(source, result);
-		 StringReader xmlReader = new StringReader(xmlAsWriter.toString());
-		 is = new InputSource(xmlReader);
-		 return is;
-	}
+//	InputSource is;
+//	private InputSource getInputSource() throws Exception {
+////		if (is!=null) {
+////			return is;
+////		}
+//		// Clunky
+//		 DOMSource source = new DOMSource(doc);
+//		 StringWriter xmlAsWriter = new StringWriter();
+//		 StreamResult result = new StreamResult(xmlAsWriter);
+//		 TransformerFactory.newInstance().newTransformer().transform(source, result);
+//		 StringReader xmlReader = new StringReader(xmlAsWriter.toString());
+//		 is = new InputSource(xmlReader);
+//		 return is;
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.docx4j.model.datastorage.CustomXmlDataStorage#marshal(java.io.OutputStream)
