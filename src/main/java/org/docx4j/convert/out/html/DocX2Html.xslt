@@ -3361,7 +3361,7 @@ output of Word 2007's ActiveDocument.WordOpenXML, which looks like:
   	<xsl:variable name="shape" select="./v:shape"/>
   	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
   	
-  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.createImgE10( $wmlPackage, string($imageDirPath),
+  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createImgE10( $wmlPackage, string($imageDirPath),
   			$shape, $imageData)" />
 
 </xsl:template>
