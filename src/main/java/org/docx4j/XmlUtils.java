@@ -804,7 +804,7 @@ public class XmlUtils {
             case Node.ELEMENT_NODE:
                 
                 // Copy of the node itself
-        		log.debug("copying: " + sourceNode.getNodeName() );
+        		//log.debug("copying: " + sourceNode.getNodeName() );
         		Node newChild;
         		if ( destParent instanceof Document ) {
         			newChild = ((Document)destParent).createElementNS(
@@ -821,10 +821,10 @@ public class XmlUtils {
             		
             		Attr attr = (Attr)atts.item(i);
             		
-            		log.debug("attr.getNodeName(): " + attr.getNodeName());
-            		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
-            		log.debug("attr.getLocalName(): " + attr.getLocalName());
-            		log.debug("attr.getPrefix(): " + attr.getPrefix());
+//            		log.debug("attr.getNodeName(): " + attr.getNodeName());
+//            		log.debug("attr.getNamespaceURI(): " + attr.getNamespaceURI());
+//            		log.debug("attr.getLocalName(): " + attr.getLocalName());
+//            		log.debug("attr.getPrefix(): " + attr.getPrefix());
             		
             		if ( attr.getNodeName().startsWith("xmlns:")) {
             			/* A document created from a dom4j document using dom4j 1.6.1's io.domWriter
@@ -840,7 +840,7 @@ public class XmlUtils {
                 		; 
                 		// this is a namespace declaration. not our problem
             		} else if (attr.getNamespaceURI()==null) {
-                		log.debug("attr.getLocalName(): " + attr.getLocalName() + "=" + attr.getValue());
+                		//log.debug("attr.getLocalName(): " + attr.getLocalName() + "=" + attr.getValue());
             			((org.w3c.dom.Element)newChild).setAttribute(
                 				attr.getLocalName(), attr.getValue() );
             		} else if ( attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
