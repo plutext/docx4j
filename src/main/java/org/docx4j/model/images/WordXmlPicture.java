@@ -292,15 +292,15 @@ public class WordXmlPicture {
         }
     }
     
-	/*
-	 * imageDirPath is anything VFSJFileChooser can resolve into a FileObject. //
-	 * That's enough for saving the image. // In order for a web browser to
-	 * display it, the URI Scheme has to // be something a web browser can
-	 * understand. // So at that point, webdav:// will have to become http://, //
+	/**
+	 * imageDirPath is anything VFSJFileChooser can resolve into a FileObject. 
+	 * That's enough for saving the image. In order for a web browser to
+	 * display it, the URI Scheme has to be something a web browser can
+	 * understand. So at that point, webdav:// will have to become http://, 
 	 * and smb:// become file:// ...
 	 */
     static String fixImgSrcURL( FileObject fo)
-    {
+    {   	
     	String itemUrl = null;
 		try {
 			itemUrl = fo.getURL().toExternalForm();
@@ -310,14 +310,30 @@ public class WordXmlPicture {
 	        if (itemUrlLower.startsWith("http://") 
 	        		 || itemUrlLower.startsWith("https://")) {
 				return itemUrl;
-			} else if (itemUrlLower.toLowerCase().startsWith("file://")) {
-				// convert file protocol to relative reference
+			} else if (itemUrlLower.startsWith("file://")) {
+				// we'll convert file protocol to relative reference
+				// if this is html output
+				
 				if (fo.getParent() == null) {
 					return itemUrl;					
+				} else if (fo.getParent().getURL().toExternalForm().equalsIgnoreCase(
+						    getFileSystemManager().resolveFile(System.getProperty("java.io.tmpdir")).getURL().toExternalForm() )) {
+					
+					// The image is being stored in the system temp directory,
+					// so assume this is a pdf export, and preserve the absolute
+					// file path
+
+					// org.apache.commons.vfs.provider.local.LocalFile has a
+					// method doIsSameFile, but the point of using FileObject is
+					// that it won't necessarily be a local file. 
+					
+					return itemUrl;						
 				} else {
+		             // Otherwise, assume it is an html export and return a relative path
 					return  fo.getParent().getName().getBaseName() 
 								+ "/" + fo.getName().getBaseName();
 				}
+				
 			} else if (itemUrlLower.startsWith("webdav://")) {
 				// TODO - convert to http:, dropping username / password
 				return itemUrl;
