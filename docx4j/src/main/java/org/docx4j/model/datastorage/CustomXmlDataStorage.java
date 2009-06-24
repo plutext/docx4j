@@ -76,6 +76,5 @@ public interface CustomXmlDataStorage {
 	 */
 	public org.w3c.dom.Document getDocument() throws Docx4JException;	
 
-	public void setNamespaceContext(String prefixMappings) throws Docx4JException;	
 	
 }
