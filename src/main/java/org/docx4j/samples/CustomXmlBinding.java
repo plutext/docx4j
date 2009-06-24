@@ -33,6 +33,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
+import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -41,6 +42,17 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
 
 
+/**
+ * This sample demonstrates populating content controls
+ * from a custom xml part (based on the xpaths given
+ * in the content controls).
+ * 
+ * Word does this itself automatically, but if you
+ * have a Word document containing content controls,
+ * this sample demonstrates how you could
+ * populate those programmatically.  You might
+ * then use docx4j to generate a pdf or an html.
+ */
 public class CustomXmlBinding {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
@@ -49,15 +61,15 @@ public class CustomXmlBinding {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
+		
+		String example_value_to_inject = "Flynnie";
 
 		// Convenient to read from .xml file,
 		// so it is easy to manually edit it (ie without having to unzip etc etc) 
 		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/MedicalChartSample.xml";
+			// To get the sample file, google for "Content Control Toolkit"
+			// I've saved as xml, but docx works as well
 		String itemId = "{DD6E220C-54BC-47B3-8AE8-A0A61D4934FF}";
-		
-//		boolean save = true;
-//		String outputfilepath = "/home/dev/workspace/docx4j/sample-docs/MedicalChartSample-out.docx";		
-		
 		
 		// Load the Package
 		WordprocessingMLPackage wordMLPackage;
@@ -82,14 +94,16 @@ public class CustomXmlBinding {
 		// Get the part
 		CustomXmlDataStoragePart customXmlDataStoragePart = wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
 		
-		// Get the contents
-		
+		// Get the contents		
 		CustomXmlDataStorage customXmlDataStorage = customXmlDataStoragePart.getData();
+			// In a real program what you might do is populate this with your own data.
+			// You could replace the whole part, or as we show below, just set some
+			// particular value
 		
-		customXmlDataStorage.setNamespaceContext("FIXME");
-		
-		
+				
 		// Change its contents
+		((CustomXmlDataStorageImpl)customXmlDataStorage).setNodeValueAtXPath("/ns0:chart[1]/ns0:personal[1]/ns0:name[1]", example_value_to_inject,
+				"xmlns:ns0='http://schemas.medchart'"); 
 		/*<chart xmlns="http://schemas.medchart" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 		  <personal>
 		    <id/>
@@ -110,6 +124,9 @@ public class CustomXmlBinding {
 		// Apply the bindings
 		customXmlDataStoragePart.applyBindings(wordMLPackage.getMainDocumentPart());
 		
+		// If you inspect the output, you should see your data in 2 places:
+		// 1. the custom xml part 
+		// 2. (more importantly) the main document part
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);

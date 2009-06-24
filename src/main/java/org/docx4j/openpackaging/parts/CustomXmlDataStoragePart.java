@@ -186,6 +186,13 @@ public final class CustomXmlDataStoragePart extends Part {
 				
 	}
 	
+	/**
+	 * @param customXmlDataStorageParts
+	 * @param storeItemId
+	 * @param xpath
+	 * @param prefixMappings a string such as "xmlns:ns0='http://schemas.medchart'"
+	 * @return
+	 */
 	public static String getXPath(HashMap<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 			String storeItemId, String xpath, String prefixMappings) {
 		

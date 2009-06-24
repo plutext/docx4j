@@ -40,6 +40,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.lang.text.StrTokenizer;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -72,6 +73,15 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 			e.printStackTrace();
 		} 
 	}
+	
+	private XmlNamespaceContext nsContext;
+	private XmlNamespaceContext getNamespaceContext() {
+		if (nsContext==null) {
+			nsContext = new XmlNamespaceContext();
+			xPath.setNamespaceContext(nsContext);
+		}
+		return nsContext;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.docx4j.model.datastorage.CustomXmlDataStorage#factory()
@@ -85,9 +95,7 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 	 */
 	public String getXPath(String xpathString, String prefixMappings)  throws Docx4JException {
 		try {
-			// TODO use the prefixMappings!
-			NamespaceContext nsContext = new XmlNamespaceContext(null);
-			xPath.setNamespaceContext(nsContext);
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
 			
 			String result = xPath.evaluate(xpathString, doc );
 			log.debug(xpathString + " ---> " + result);
@@ -97,51 +105,34 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 		}
 	}
 	
-//	/**
-//	 * Set the value of the node referenced in the xpath expression.
-//	 * 
-//	 * @param xpath
-//	 * @param value
-//	 * @return
-//	 * @throws Docx4JException
-//	 */
-//	public boolean setNodeValueAtXPath(String xpath, String value) throws Docx4JException {
-//
-//		// No good, since this modifies the input source, not our document :-(
-//      // TODO - try with doc instead of getInputSource()	
-//		
-//		try {
-//			Node n = (Node)xPath.evaluate(xpath, doc, XPathConstants.NODE );
-//			if (n==null) {
-//				log.debug("xpath returned null");
-//				return false;
-//			}
-//			n.setTextContent(value);
-//			
-//			// cache is now invalid
-//			is = null;
-//			return true;
-//		} catch (Exception e) {
-//			throw new Docx4JException("Problem setting value at xpath " + xpath);
-//		} 
-//		
-//	}
-	
-	
-//	InputSource is;
-//	private InputSource getInputSource() throws Exception {
-////		if (is!=null) {
-////			return is;
-////		}
-//		// Clunky
-//		 DOMSource source = new DOMSource(doc);
-//		 StringWriter xmlAsWriter = new StringWriter();
-//		 StreamResult result = new StreamResult(xmlAsWriter);
-//		 TransformerFactory.newInstance().newTransformer().transform(source, result);
-//		 StringReader xmlReader = new StringReader(xmlAsWriter.toString());
-//		 is = new InputSource(xmlReader);
-//		 return is;
-//	}
+	/**
+	 * Set the value of the node referenced in the xpath expression.
+	 * 
+	 * @param xpath
+	 * @param value
+	 * @param prefixMappings a string such as "xmlns:ns0='http://schemas.medchart'"
+	 * @return
+	 * @throws Docx4JException
+	 */
+	public boolean setNodeValueAtXPath(String xpath, String value, String prefixMappings) throws Docx4JException {
+
+		try {
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+
+			Node n = (Node)xPath.evaluate(xpath, doc, XPathConstants.NODE );
+			if (n==null) {
+				log.debug("xpath returned null");
+				return false;
+			}
+			n.setTextContent(value);
+			
+			// cache is now invalid
+			return true;
+		} catch (Exception e) {
+			throw new Docx4JException("Problem setting value at xpath " + xpath);
+		} 
+		
+	}
 
 	/* (non-Javadoc)
 	 * @see org.docx4j.model.datastorage.CustomXmlDataStorage#marshal(java.io.OutputStream)
@@ -181,19 +172,15 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 		this.doc = doc;
 	}
 	
-	public void setNamespaceContext(String prefixMappings) throws Docx4JException {
-		
-		xPath.setNamespaceContext(new XmlNamespaceContext(prefixMappings) );
-		
-	}
+//	public void setNamespaceContext(String prefixMappings) throws Docx4JException {		
+//		xPath.setNamespaceContext(new XmlNamespaceContext(prefixMappings) );		
+//	}
 	
 	public class XmlNamespaceContext implements NamespaceContext {
 
 		Map<String, String> namespaces = new HashMap<String, String>();
-		public XmlNamespaceContext(String prefixMappings) {
-			
-			// TODO
-			namespaces.put("ns0", "http://schemas.medchart");			
+		public XmlNamespaceContext() {
+			//namespaces.put("ns0", "http://schemas.medchart");			
 		}
 		
 		/* (non-Javadoc)
@@ -225,6 +212,28 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 			throw new UnsupportedOperationException();
 		}
 		
+		public void registerPrefixMappings(String prefixMappings) {
+			// eg  w:prefixMappings="xmlns:ns0='http://schemas.medchart'"
+			// according to the spec, whitespace is the delimiter
+			
+			// we get one of these each time we encounter a w:dataBinding
+			// element in a content control; pity it is not done just
+			// once!
+			
+			// first tokenise on space
+			StrTokenizer tokens = new StrTokenizer(prefixMappings);
+			while (tokens.hasNext() ) {
+				String token = tokens.nextToken();
+				//log.debug("Got: " + token);
+				int pos = token.indexOf("=");
+				String prefix = token.substring(6, pos); // drop xmlns:
+				//log.debug("Got: " + prefix);
+				String uri = token.substring(pos+2, token.lastIndexOf("'"));
+				//log.debug("Got: " + uri);
+				namespaces.put(prefix, uri);
+			}
+			
+		}
 		
 	}
 	
