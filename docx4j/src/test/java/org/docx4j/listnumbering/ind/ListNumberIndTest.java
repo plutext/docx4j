@@ -23,7 +23,7 @@ import static org.junit.Assert.*;
 
 import java.io.FileInputStream;
 
-import org.docx4j.diff.ParagraphDifferencer;
+import org.docx4j.diff.Differencer;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -81,7 +81,7 @@ public class ListNumberIndTest {
 				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
 						new javax.xml.transform.stream.StreamSource(new FileInputStream(BASE_DIR + filename)))).getValue(); 
 
-				org.docx4j.convert.in.XmlPackage xmlPackage = new org.docx4j.convert.in.XmlPackage( wmlPackageEl); 
+				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 
 				WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 				
