@@ -50,7 +50,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.Package;
@@ -118,7 +117,7 @@ public class LoadFromJCR extends Load {
 	public NodeMapper nodeMapper = null;
 	
 	public LoadFromJCR(NodeMapper nodeMapper) {
-		this(new ContentTypeManagerImpl(), nodeMapper );
+		this(new ContentTypeManager(), nodeMapper );
 	}
 
 	public LoadFromJCR(ContentTypeManager ctm, NodeMapper nodeMapper) {

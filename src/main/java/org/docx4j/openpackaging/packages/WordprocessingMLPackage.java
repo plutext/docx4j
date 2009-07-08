@@ -48,7 +48,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.HeaderFooterPolicy;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -237,7 +236,7 @@ public class WordprocessingMLPackage extends Package {
 		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)je.getValue();
 		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 		
-		ContentTypeManager ctm = new ContentTypeManagerImpl();
+		ContentTypeManager ctm = new ContentTypeManager();
 		
 		Part tmpDocPart = xmlPackage.getRawPart(ctm,  "/word/document.xml");
 		Part tmpStylesPart = xmlPackage.getRawPart(ctm,  "/word/styles.xml");

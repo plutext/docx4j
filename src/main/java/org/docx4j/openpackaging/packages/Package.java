@@ -27,7 +27,6 @@ import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
@@ -100,7 +99,7 @@ public class Package extends Base {
 		try {
 			partName = new PartName("/", false);
 			
-			contentTypeManager = new ContentTypeManagerImpl();
+			contentTypeManager = new ContentTypeManager();
 		} catch (Exception e) {
 			log.error(e.getMessage());
 			// TODO: handle exception
