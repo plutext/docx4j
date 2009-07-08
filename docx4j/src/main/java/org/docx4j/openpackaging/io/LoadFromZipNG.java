@@ -44,7 +44,6 @@ import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
@@ -90,7 +89,7 @@ public class LoadFromZipNG extends Load {
 	public HashMap unusedZipEntries = new HashMap();
 	
 	public LoadFromZipNG() {
-		this(new ContentTypeManagerImpl() );
+		this(new ContentTypeManager() );
 	}
 
 	public LoadFromZipNG(ContentTypeManager ctm) {

@@ -45,7 +45,6 @@ import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
@@ -115,7 +114,7 @@ public class FlatOpcXmlImporter  {
 		//		Eventually, you'll also be able to create an Excel package etc
 		//		but only the WordML package exists at present
 		
-		ctm = new ContentTypeManagerImpl();
+		ctm = new ContentTypeManager();
 		
 		ctm.addDefaultContentType("rels", "application/vnd.openxmlformats-package.relationships+xml");
 		ctm.addDefaultContentType("xml", "application/xml");
