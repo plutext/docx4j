@@ -41,12 +41,14 @@ public class ExportInPackageFormat {
 	public static void main(String[] args) throws Exception {
 
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Table.docx";
-		String inputfilepath = "/home/dev/simple.docx";
+		String dir =  "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\";
+		String file = "tmp1261";
+		String inputfilepath = dir + file + ".docx";
 				
 		// Do we want to save output? 
 		boolean save = true;
 		// If so, whereto?
-		String outputfilepath = "/home/dev/simple.xml";
+		String outputfilepath = dir + file + ".xml";
 			//System.getProperty("user.dir") + "/sample-docs/tmp.pkg";		
 		
 		
@@ -77,7 +79,7 @@ public class ExportInPackageFormat {
 			//log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
 			
 			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
+					new org.docx4j.jaxb.NamespacePrefixMapperSunInternal() ); // Must use 'internal' for Java 6
 			
 		}
 		

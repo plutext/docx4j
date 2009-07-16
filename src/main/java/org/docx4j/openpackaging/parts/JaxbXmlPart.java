@@ -148,8 +148,19 @@ public abstract class JaxbXmlPart extends Part {
 				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
 				
 				// Use JAXB distributed in Java 6 - note 'internal' 
-				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-						namespacePrefixMapper ); 
+				if ( namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapper ) {
+					// Switch to other mapper
+					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+							new org.docx4j.jaxb.NamespacePrefixMapperSunInternal()  );
+				} else if ( namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart ) {
+					// Switch to other mapper
+					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+							new org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPartSunInternal()  ); 					
+				} else {
+					// Just use what we have been given
+					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+							namespacePrefixMapper ); 										
+				}
 				
 			}
 			
@@ -209,8 +220,21 @@ public abstract class JaxbXmlPart extends Part {
 				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
 				
 				// Use JAXB distributed in Java 6 - note 'internal' 
-				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-						namespacePrefixMapper ); 
+				if ( namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapper ) {
+					// Switch to other mapper
+					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+							new org.docx4j.jaxb.NamespacePrefixMapperSunInternal()  ); 	
+					
+				} else if ( namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart ) {
+						// Switch to other mapper
+						marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+								new org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPartSunInternal()  ); 					
+				} else {
+					// Just use what we have been given
+					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
+							namespacePrefixMapper ); 										
+				}
+				
 				
 			}
 			

@@ -49,7 +49,6 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypeManagerImpl;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
@@ -81,7 +80,7 @@ public class ImportForeignPart {
 			e.printStackTrace();
 			throw e;
 		}
-		ContentTypeManager externalCtm = new ContentTypeManagerImpl();
+		ContentTypeManager externalCtm = new ContentTypeManager();
 		externalCtm.parseContentTypesFile(ctmDocument);
 		
 		// Example of a part which become a rel of the word document
