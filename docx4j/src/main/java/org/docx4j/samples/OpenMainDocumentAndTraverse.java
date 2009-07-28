@@ -21,6 +21,7 @@
 package org.docx4j.samples;
 
 
+import java.io.FileInputStream;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -28,6 +29,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -44,8 +46,9 @@ public class OpenMainDocumentAndTraverse {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/jpeg.docx";
-		String inputfilepath = "/home/dev/sample1.docx";
+		String inputfilepath = "/tmp/Default TOC with 3 levels.docx";
+		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/jbtemplate.docx";
+		//String inputfilepath = "/home/dev/s.docx";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
 		
 		boolean save = false;
@@ -53,8 +56,28 @@ public class OpenMainDocumentAndTraverse {
 		
 		
 		// Open a document from the file system
-		// 1. Load the Package
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		// 1. Load the Package - .docx or .xml
+		WordprocessingMLPackage wordMLPackage;// = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		if (inputfilepath.endsWith(".xml")) {
+			// You can create one of these in Word 2007, by 
+			// choosing Save As .xml
+			// These are easier to look at / edit in a text editor than a zipped up docx
+			JAXBContext jc = Context.jcXmlPackage;
+			Unmarshaller u = jc.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+					new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
+
+			org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
+
+			wordMLPackage = (WordprocessingMLPackage)xmlPackage.get(); 
+		
+		} else {
+			// Its just a docx
+			wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		}
+		
 		
 		// 2. Fetch the document part 		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
@@ -140,7 +163,15 @@ public class OpenMainDocumentAndTraverse {
 					describeDrawing( (org.docx4j.wml.Drawing)((JAXBElement)o).getValue() );
 				}
 				
+				if ( ((JAXBElement)o).getName().getLocalPart().equals("bookmarkStart") ) {
+					org.docx4j.wml.CTBookmark bs = (org.docx4j.wml.CTBookmark)((JAXBElement)o).getValue(); 
+					System.out.println(" .. bookmarkStart" );
+				}
 				
+				if ( ((JAXBElement)o).getName().getLocalPart().equals("bookmarkEnd") ) {
+					org.docx4j.wml.CTMarkupRange be = (org.docx4j.wml.CTMarkupRange)((JAXBElement)o).getValue(); 
+					System.out.println(" .. bookmarkEnd" );
+				}
 				
 			} else if (o instanceof org.w3c.dom.Node) {
 				System.out.println(" IGNORED " + ((org.w3c.dom.Node)o).getNodeName() );					
