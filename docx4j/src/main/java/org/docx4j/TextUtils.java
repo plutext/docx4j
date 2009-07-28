@@ -111,7 +111,7 @@ public class TextUtils {
 			log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");			
 			// Use JAXB distributed in Java 6 - note 'internal' 
 			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); 			
+					new org.docx4j.jaxb.NamespacePrefixMapperSunInternal() ); 			
 		}
 				
 		marshaller.marshal(o, new TextExtractor(w));
