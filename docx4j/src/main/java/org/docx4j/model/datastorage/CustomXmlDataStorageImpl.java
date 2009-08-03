@@ -48,6 +48,8 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
 public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
@@ -61,7 +63,13 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 	private static DocumentBuilderFactory documentFactory;
 	private static DocumentBuilder documentBuilder;
 	
-	static {		
+	static {
+		
+		// Crimson doesn't support setTextContent; this is one way
+		// around that ..
+//		System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+//			"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+		
 		xPathFactory = XPathFactory.newInstance();
 		xPath = xPathFactory.newXPath();
 		
@@ -71,7 +79,9 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 			documentBuilder = documentFactory.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			e.printStackTrace();
-		} 
+		}
+		
+		
 	}
 	
 	private XmlNamespaceContext nsContext;
@@ -124,7 +134,27 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 				log.debug("xpath returned null");
 				return false;
 			}
-			n.setTextContent(value);
+			log.debug(n.getClass().getName());
+			
+			// Method 1: Crimson throws error
+			// Could avoid with System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+			// 		"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+			//n.setTextContent(value);
+			
+			// Method 2: crimson ignores
+			// n.setNodeValue(value);
+
+			// Method 3: createTextNode, then append it
+			// First, need to delete/replace existing text node 
+			if (n.getChildNodes() !=null
+					&& n.getChildNodes().getLength() > 0) {
+				NodeList nodes = n.getChildNodes();
+				for (int i = nodes.getLength(); i>0; i--) {
+					n.removeChild( nodes.item(i-1));
+				}
+			}
+			Text t = n.getOwnerDocument().createTextNode(value);
+			n.appendChild(t);			
 			
 			// cache is now invalid
 			return true;
