@@ -350,9 +350,15 @@
 		<xsl:variable name="tblNode" select="." />  			
 
 		<xsl:variable name="childResults">
-			<xsl:apply-templates />  <!--   select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" -->
+			<xsl:apply-templates /> <!-- select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" /-->
 		</xsl:variable>
 
+<!--
+		<xsl:comment>debug start</xsl:comment>
+			<xsl:copy-of select="$childResults"/>
+		<xsl:comment>debug end</xsl:comment>
+  -->
+  
 		<!--  Create the HTML table in Java --> 
 	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults)"/>
 	  			  		
@@ -362,11 +368,12 @@
 <xsl:template match="w:tblGrid"/>  
 <xsl:template match="w:tr|w:tc">
 	<xsl:copy>
-		<xsl:apply-templates select="@*"/>	
+		<!--xsl:apply-templates select="@*"/-->	
 		<xsl:apply-templates/>
 	</xsl:copy>
 </xsl:template>  
 <xsl:template match="w:tcPr"/>
+<xsl:template match="w:trPr"/>
 
 
    

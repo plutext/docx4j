@@ -135,11 +135,17 @@ public class Converter {
 //  }
   
   public static Node toNode(Node node, NodeList children) {
+
     Converter inst = Converter.getInstance();
-    Class c = inst.modelClasses.get(node.getNodeName());
-    if (c == null)
+    Class c = inst.modelClasses.get(node.getNodeName());    
+    if (c == null) {
+    	logger.error("No model registered for " + 
+        node.getNodeName());
       throw new IllegalArgumentException("No model registered for " + 
         node.getNodeName());
+    } else {
+    	logger.debug("Using model " + c.getName() + " for node " + node.getNodeName());
+    }
     ModelConverter converter = inst.converters.get(node.getNodeName());
     if (converter == null)
       throw new IllegalArgumentException("No writer registered for " + 

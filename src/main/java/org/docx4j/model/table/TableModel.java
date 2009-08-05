@@ -147,7 +147,7 @@ public class TableModel extends Model {
    */
   public void build(Converter inst, Node node, NodeList children) 
   	throws TransformerException {
-	  
+	  	  
     Tbl tbl = null;
 		try {
 			tbl = (Tbl) XmlUtils.unmarshal(node);
@@ -155,7 +155,7 @@ public class TableModel extends Model {
 			throw new TransformerException("Node: " + node.getNodeName() + "="
 					+ node.getNodeValue(), e);
 		}
-		NodeList cellContents = children.item(0).getChildNodes();
+		NodeList cellContents = children.item(0).getChildNodes(); // the w:tr
 		List<Object> rows = tbl.getEGContentRowContent();
 		// int i = 0;
 		int r = 0;
@@ -165,15 +165,40 @@ public class TableModel extends Model {
 			List<Object> cells = tr.getEGContentCellContent();
 			int c = 0;
 			for (Object o2 : cells) {
-				Tc tc = (Tc) ((JAXBElement) o2).getValue();
-				Node wtrNode = cellContents.item(r);
-				addCell(tc, wtrNode.getChildNodes().item(c));
-				// addCell(tc, cellContents.item(i));
-				// i++;
-				c++;
+				
+				if ( o2 instanceof javax.xml.bind.JAXBElement) {
+				
+//					System.out.println( ((JAXBElement)o2).getName() );
+//					System.out.println( ((JAXBElement)o2).getDeclaredType().getName() + "\n\n");
+				
+					Tc tc = (Tc) ((JAXBElement) o2).getValue();
+					Node wtrNode = cellContents.item(r); //w:tr
+					addCell(tc, wtrNode.getChildNodes().item(c));
+					// addCell(tc, cellContents.item(i));
+					// i++;
+					c++;
+					
+				} else {
+					
+					logger.warn( "Encountered unexpected: " + o2.getClass().getName() );
+				}
 			}
 			r++;
 		}
+  }
+  
+  private void debugCellContents(NodeList children) {
+	  
+	  for(int i=0; i<children.getLength(); i++) {
+		  
+		  System.out.println(i);
+		  
+		  System.out.println( children.item(i).getTextContent() );
+		  System.out.println( children.item(i).getLocalName() );
+		  
+	  }
+	  
+	  
   }
 
   public String debugStr() {
