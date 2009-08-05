@@ -513,7 +513,7 @@
 <xsl:template match="w:tblGrid"/>  
 <xsl:template match="w:tr|w:tc">
 	<xsl:copy>
-		<xsl:apply-templates select="@*"/>	
+		<!--xsl:apply-templates select="@*"/-->	
 		<xsl:apply-templates/>
 	</xsl:copy>
 </xsl:template>  
