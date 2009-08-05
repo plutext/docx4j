@@ -57,6 +57,7 @@ import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
 
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 
 import java.io.InputStream;
@@ -775,7 +776,11 @@ public final class RelationshipsPart extends JaxbXmlPart {
     
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
     	
-    	marshal(node, new org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart() );
+    	try {
+			marshal(node, NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() );
+		} catch (ClassNotFoundException e) {
+			throw new JAXBException("Neither JAXB RI nor Java 6 implementation present", e);
+		}
     	
 	}
     
