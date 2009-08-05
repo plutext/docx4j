@@ -592,7 +592,7 @@ public class PropertyResolver {
 	}
 	
 	
-	private void applyPPr(PPr pPrToApply, PPr effectivePPr) {
+	protected void applyPPr(PPr pPrToApply, PPr effectivePPr) {
 		
 		if (pPrToApply==null) {
 			return;
@@ -808,7 +808,7 @@ public class PropertyResolver {
 		return false;
 	}
 	
-	private void applyRPr(RPr rPrToApply, RPr effectiveRPr) {
+	protected void applyRPr(RPr rPrToApply, RPr effectiveRPr) {
 		
 		if (rPrToApply==null) {
 			return;
