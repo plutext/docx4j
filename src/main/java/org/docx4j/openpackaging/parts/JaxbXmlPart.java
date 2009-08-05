@@ -31,6 +31,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.ValidationEventHandler;
 
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.dom4j.Document;
 
@@ -111,7 +112,11 @@ public abstract class JaxbXmlPart extends Part {
      */
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
     	
-    	marshal(node, new org.docx4j.jaxb.NamespacePrefixMapper() );
+    	try {
+			marshal(node, NamespacePrefixMapperUtils.getPrefixMapper()  );
+		} catch (ClassNotFoundException e) {
+			throw new JAXBException("Neither JAXB RI nor Java 6 implementation present", e);
+		}
     	
 	}
 
@@ -129,38 +134,35 @@ public abstract class JaxbXmlPart extends Part {
      *      If any unexpected problem occurs during the marshalling.
      */
     public void marshal(org.w3c.dom.Node node, 
-    		com.sun.xml.bind.marshaller.NamespacePrefixMapper namespacePrefixMapper) throws JAXBException {
+    		Object namespacePrefixMapper) throws JAXBException {
 
 		try {
 			Marshaller marshaller = jc.createMarshaller();
 
-			try { 
-				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-						namespacePrefixMapper ); 
-
-				// Reference implementation appears to be present (in endorsed dir?)
-				log.info("using com.sun.xml.bind.namespacePrefixMapper");
+			try {
+				
+				if ( (namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapper)
+						|| (namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart) ) {
+				
+					marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+							namespacePrefixMapper ); 
+				
+					// Reference implementation appears to be present (in endorsed dir?)
+					log.info("setProperty: com.sun.xml.bind.namespacePrefixMapper");
+					
+				} else {
+					
+					// Use JAXB distributed in Java 6 - note 'internal' 
+					// Switch to other mapper
+					log.info("attempting to setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", namespacePrefixMapper);
+					
+				}
 				
 			} catch (javax.xml.bind.PropertyException cnfe) {
 				
 				log.error(cnfe);
-
-				log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
-				
-				// Use JAXB distributed in Java 6 - note 'internal' 
-				if ( namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapper ) {
-					// Switch to other mapper
-					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-							new org.docx4j.jaxb.NamespacePrefixMapperSunInternal()  );
-				} else if ( namespacePrefixMapper instanceof  org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart ) {
-					// Switch to other mapper
-					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-							new org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPartSunInternal()  ); 					
-				} else {
-					// Just use what we have been given
-					marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-							namespacePrefixMapper ); 										
-				}
+				throw cnfe;
 				
 			}
 			

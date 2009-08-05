@@ -36,6 +36,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.Output;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.Package;
@@ -187,7 +188,7 @@ public class FlatOpcXmlCreator implements Output {
 				w3cDoc = dbf.newDocumentBuilder().newDocument();
 				
 				((org.docx4j.openpackaging.parts.JaxbXmlPart)part).marshal( w3cDoc, 
-						new org.docx4j.jaxb.NamespacePrefixMapper() );
+						NamespacePrefixMapperUtils.getPrefixMapper() );
 					/* Force the RelationshipsPart to be marshalled using
 					 * the normal non-rels part NamespacePrefixMapper,
 					 * since otherwise (because we'd be using 2 namespace
