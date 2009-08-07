@@ -1,5 +1,8 @@
 package org.docx4j.jaxb;
 
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
 import org.apache.log4j.Logger;
 
 public class NamespacePrefixMapperUtils {
@@ -38,6 +41,50 @@ public class NamespacePrefixMapperUtils {
         	// so if we get here ..
         	return new NamespacePrefixMapperRelationshipsPartSunInternal();
     	}
+	}
+	
+	/**
+	 * setProperty on 'com.sun.xml.bind.namespacePrefixMapper' or
+	 * 'com.sun.xml.internal.bind.namespacePrefixMapper', as appropriate,
+	 * depending on whether JAXB reference implementation, or Java 6 
+	 * implementation is being used.
+	 * 
+	 * @param marshaller
+	 * @param namespacePrefixMapper
+	 * @throws JAXBException
+	 */
+	public static void setProperty(Marshaller marshaller, Object namespacePrefixMapper) throws JAXBException {
+		
+		try {
+			if ( namespacePrefixMapper.getClass().getName().equals(
+						"org.docx4j.jaxb.NamespacePrefixMapper")
+					|| namespacePrefixMapper.getClass().getName().equals(
+							"org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart") ) {
+			
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+						namespacePrefixMapper ); 
+			
+				// Reference implementation appears to be present (in endorsed dir?)
+				log.info("setProperty: com.sun.xml.bind.namespacePrefixMapper");
+//				System.out.println("setProperty: com.sun.xml.bind.namespacePrefixMapper");
+				
+			} else {
+				
+				// Use JAXB distributed in Java 6 - note 'internal' 
+				// Switch to other mapper
+				log.info("attempting to setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", namespacePrefixMapper);
+//				System.out.println("setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+			}
+			
+		} catch (javax.xml.bind.PropertyException cnfe) {
+			
+//			cnfe.printStackTrace();
+			log.error(cnfe);
+			throw cnfe;
+			
+		}
+		
 	}
 	
 }
