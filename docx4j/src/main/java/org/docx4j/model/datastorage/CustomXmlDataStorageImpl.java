@@ -65,10 +65,12 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 	
 	static {
 		
-		// Crimson doesn't support setTextContent; this is one way
-		// around that ..
-//		System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-//			"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+		// Crimson doesn't support setTextContent; this.writeDocument also fails.
+		// We've already worked around the problem with setTextContent,
+		// but rather than do the same for writeDocument,
+		// let's just stop using it.
+		System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+			"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 		
 		xPathFactory = XPathFactory.newInstance();
 		xPath = xPathFactory.newXPath();
@@ -169,6 +171,19 @@ public class CustomXmlDataStorageImpl implements CustomXmlDataStorage {
 	 */
 	public void writeDocument(OutputStream os) throws Docx4JException {
 		// Used when saving to zip file
+		/*
+		 * With Crimson, this gives:
+		 * 
+			Exception in thread "main" java.lang.AbstractMethodError: org.apache.crimson.tree.XmlDocument.getXmlStandalone()Z
+				at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.setDocumentInfo(DOM2TO.java:373)
+				at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.parse(DOM2TO.java:127)
+				at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.parse(DOM2TO.java:94)
+				at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transformIdentity(TransformerImpl.java:662)
+				at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(TransformerImpl.java:708)
+				at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(TransformerImpl.java:313)
+				at org.docx4j.model.datastorage.CustomXmlDataStorageImpl.writeDocument(CustomXmlDataStorageImpl.java:174)
+		 * 
+		 */
 		 try {
 			DOMSource source = new DOMSource(doc);
 			 TransformerFactory.newInstance().newTransformer().transform(source, 
