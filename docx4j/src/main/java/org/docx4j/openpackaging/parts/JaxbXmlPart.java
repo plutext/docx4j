@@ -112,11 +112,7 @@ public abstract class JaxbXmlPart extends Part {
      */
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
     	
-    	try {
-			marshal(node, NamespacePrefixMapperUtils.getPrefixMapper()  );
-		} catch (ClassNotFoundException e) {
-			throw new JAXBException("Neither JAXB RI nor Java 6 implementation present", e);
-		}
+		marshal(node, NamespacePrefixMapperUtils.getPrefixMapper()  );
     	
 	}
 
@@ -159,14 +155,8 @@ public abstract class JaxbXmlPart extends Part {
 	 *             If any unexpected problem occurs during the marshalling.
 	 */
     public void marshal(java.io.OutputStream os) throws JAXBException {
-
 		
-    	try {
-			marshal(os, NamespacePrefixMapperUtils.getPrefixMapper()  );
-		} catch (ClassNotFoundException e) {
-			throw new JAXBException("Neither JAXB RI nor Java 6 implementation present", e);
-		}
-
+		marshal(os, NamespacePrefixMapperUtils.getPrefixMapper()  );
 	}
 
     /**

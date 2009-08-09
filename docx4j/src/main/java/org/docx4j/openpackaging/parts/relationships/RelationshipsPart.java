@@ -776,19 +776,14 @@ public final class RelationshipsPart extends JaxbXmlPart {
     
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
     	
-    	try {
-			marshal(node, NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() );
-		} catch (ClassNotFoundException e) {
-			throw new JAXBException("Neither JAXB RI nor Java 6 implementation present", e);
-		}
-    	
+		marshal(node, NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() );
 	}
     
     
     public void marshal(java.io.OutputStream os) throws JAXBException {
 
 		
-		marshal( os, new org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart() ); 
+		marshal( os, NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() ); 
 
 	}
     
