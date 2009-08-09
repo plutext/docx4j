@@ -29,6 +29,7 @@ import javax.xml.bind.Marshaller;
 
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
@@ -68,25 +69,8 @@ public class Filter {
 		Marshaller marshaller=jc.createMarshaller();
 		
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		try { 
-			marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); 
-
-			// Reference implementation appears to be present (in endorsed dir?)
-			//log.info("using com.sun.xml.bind.namespacePrefixMapper");
-			
-		} catch (javax.xml.bind.PropertyException cnfe) {
-			
-			//log.error(cnfe);
-
-			//log.info("attempting to use com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
-			
-			marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", 
-					new org.docx4j.jaxb.NamespacePrefixMapper() ); // Must use 'internal' for Java 6
-			
-		}
-		
-
+		NamespacePrefixMapperUtils.setProperty(marshaller, 
+				NamespacePrefixMapperUtils.getPrefixMapper());			
 		
 		//org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();	
 		if (save) {

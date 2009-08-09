@@ -10,7 +10,7 @@ public class NamespacePrefixMapperUtils {
 	private static Logger log = Logger.getLogger(NamespacePrefixMapperUtils.class);				
 	
 	
-	public static Object getPrefixMapper() throws ClassNotFoundException {
+	public static Object getPrefixMapper() throws JAXBException {
 		
     	Class c;
     	try {
@@ -19,15 +19,19 @@ public class NamespacePrefixMapperUtils {
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
     		log.info("JAXB RI (com.sun.xml.bind.marshaller.NamespacePrefixMapper) not present.  Trying Java 6 implementation.");
-        	c = Class.forName("com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper");
-        	// will throw ClassNotFoundException if not present,
-        	// so if we get here ..
+        	try {
+				c = Class.forName("com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", e);
+				throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+			}
         	return new NamespacePrefixMapperSunInternal();
     	}
 	}
 
 	
-	public static Object getPrefixMapperRelationshipsPart() throws ClassNotFoundException {
+	public static Object getPrefixMapperRelationshipsPart() throws JAXBException {
 		
     	Class c;
     	try {
@@ -36,9 +40,13 @@ public class NamespacePrefixMapperUtils {
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
     		log.info("JAXB RI (com.sun.xml.bind.marshaller.NamespacePrefixMapper) not present.  Trying Java 6 implementation.");
-        	c = Class.forName("com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper");
-        	// will throw ClassNotFoundException if not present,
-        	// so if we get here ..
+        	try {
+				c = Class.forName("com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper");
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", e);
+				throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+			}
         	return new NamespacePrefixMapperRelationshipsPartSunInternal();
     	}
 	}
