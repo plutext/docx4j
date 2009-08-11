@@ -39,6 +39,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 
 import org.w3c.dom.traversal.NodeIterator;
+import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -161,27 +162,47 @@ public abstract class AbstractHtmlExporter implements Output {
         	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
         			wmlPackage, pStyleVal, numId, levelId);   
         	
-        	if (triple==null) {
-        		log.info("computed number was null");
-        		System.out.println("computed number was null!");
-        		return null;
-        	}
-
+//    		System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+//    			"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+        	
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
-			       
-			Node spanElement = document.createElement("span");			
-			document.appendChild(spanElement);
+			DocumentFragment docfrag = document.createDocumentFragment();
+
+			if (triple==null) {
+        		log.info("computed number ResultTriple was null");
+    			Node spanElement = document.createElement("span");
+
+    			// It would be nice to include a comment in the
+    			// output HTML, but Sun's Xalan copy-of ignores it.
+    			
+//        		Comment c = document.createComment("computed number ResultTriple was null");
+//        		spanElement.appendChild(c);
+    			    			
+    			document.appendChild(spanElement);
+        		docfrag.appendChild(document.getDocumentElement());
+    			return docfrag;
+        	}
 
 	    	if (triple.getNumString()==null) {
 	    		log.error("computed NumString was null!");
-	    		System.out.println("computed NumString was null!");
+    			Node spanElement = document.createElement("span");
+    			
+    			// It would be nice to include a comment in the
+    			// output HTML, but Sun's Xalan copy-of ignores it.
+    			
+//        		Comment c = document.createComment("computed number triple.getNumString() was null");
+//        		spanElement.appendChild(c);
+        		    			
+    			document.appendChild(spanElement);
+    			docfrag.appendChild(document.getDocumentElement());
+    			return docfrag;
 	    	}
 			
+			Node spanElement = document.createElement("span");			
+			document.appendChild(spanElement);
 			Text number = document.createTextNode( triple.getNumString() );
-			spanElement.appendChild(number);
-			
-			DocumentFragment docfrag = document.createDocumentFragment();
+			spanElement.appendChild(number);			
 			docfrag.appendChild(document.getDocumentElement());
 
 			return docfrag;
