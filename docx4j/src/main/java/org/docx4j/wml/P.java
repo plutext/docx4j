@@ -677,24 +677,24 @@ public class P implements Child
     	
     	List<Object> children = getParagraphContent();
     	
-//    	System.out.println("p.toString");
+//    	log.debug("p.toString");
     	
 		for (Object o : children ) {					
-//			System.out.println("  " + o.getClass().getName() );
+//			log.debug("  " + o.getClass().getName() );
 			if ( o instanceof org.docx4j.wml.R) {
-//		    	System.out.println("Hit R");
+//		    	log.debug("Hit R");
 				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
 		    	List runContent = run.getRunContent();
 				for (Object o2 : runContent ) {					
 					if ( o2 instanceof javax.xml.bind.JAXBElement) {
 						// TODO - unmarshall directly to Text.
 						if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
-//					    	System.out.println("Found Text");
+//					    	log.debug("Found Text");
 							org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o2).getValue();
 							result.append( t.getValue() );					
 						}
 					} else {
-//				    	System.out.println(o2.getClass().getName());						
+//				    	log.debug(o2.getClass().getName());						
 					}
 				}
 			} 

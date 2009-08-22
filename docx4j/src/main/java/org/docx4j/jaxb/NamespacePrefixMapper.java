@@ -67,7 +67,16 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
      *      If this method returns "" when requirePrefix=true, the return
      *      value will be ignored and the system will generate one.
      */
-    public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {    
+    public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) 
+    // Implement the interface
+    {
+    	
+    	return getPreferredPrefixStatic(namespaceUri, suggestion, requirePrefix);
+    	
+    }
+    
+    
+    protected static String getPreferredPrefixStatic(String namespaceUri, String suggestion, boolean requirePrefix) {    
     	
     	if (namespaceUri.equals(Namespaces.NS_WORD12)) {
     		return "w";
@@ -214,6 +223,11 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
     
 	public String getNamespaceURI(String prefix) {
 		
+		return getNamespaceURIStatic(prefix);
+	}
+	
+	protected static String getNamespaceURIStatic(String prefix) {
+	
 		if (prefix.equals("w"))  
 			return Namespaces.NS_WORD12;
 		else if (prefix.equals("r"))

@@ -113,12 +113,12 @@ public class DocPropsExtendedPart extends JaxbXmlPart {
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			System.out.println("unmarshalling " + this.getClass().getName() + " \n\n" );									
+			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
 			jaxbElement = u.unmarshal( is );
 			
 			
-			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();

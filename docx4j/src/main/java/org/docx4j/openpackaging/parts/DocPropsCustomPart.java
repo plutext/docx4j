@@ -126,12 +126,12 @@ public class DocPropsCustomPart extends JaxbXmlPart {
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			System.out.println("unmarshalling " + this.getClass().getName() + " \n\n" );									
+			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
 			jaxbElement = u.unmarshal( is );
 			
 			
-			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();
@@ -148,7 +148,7 @@ public class DocPropsCustomPart extends JaxbXmlPart {
     	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
 		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
 			
-			System.out.println(prop.getName());
+			log.info(prop.getName());
 			
 			if (prop.getName().equals(propName)) {
 				log.info("GOT IT! returning " + prop.getLpwstr());

@@ -40,7 +40,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.FontUtils;
@@ -292,7 +291,8 @@ public class WordprocessingMLPackage extends Package {
 		// 1.  Get a list of all the fonts in the document
 		java.util.Map fontsInUse = this.getMainDocumentPart().fontsInUse();
 		
-		if ( fm instanceof BestMatchingMapper ) {
+		//if ( fm instanceof BestMatchingMapper ) {
+		if ( fm.getClass().getName().equals("org.docx4j.fonts.BestMatchingMapper") ) {
 			
 			
 			// 2.  For each font, find the closest match on the system (use OO's VCL.xcu to do this)
