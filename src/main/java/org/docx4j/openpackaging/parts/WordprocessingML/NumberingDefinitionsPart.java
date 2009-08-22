@@ -309,7 +309,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 						
 			jaxbElement = u.unmarshal( is );
 			
-			System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();

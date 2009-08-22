@@ -81,7 +81,7 @@ public abstract class Base {
 		if (contentType!=null ) {
 			return contentType.toString();
 		} else {
-			System.out.println("WARNING: content type was null. " +
+			log.warn("WARNING: content type was null. " +
 					"You should set this before adding the part.");
 			return null;
 		}

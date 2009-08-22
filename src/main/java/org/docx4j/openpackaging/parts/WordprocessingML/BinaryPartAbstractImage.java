@@ -522,11 +522,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		  Dimension2D dPt = size.getDimensionPt();
 		  Dimension dPx = size.getDimensionPx();
 
-		  System.out.println(info.getOriginalURI() + " " + info.getMimeType() 
+		  log.debug(info.getOriginalURI() + " " + info.getMimeType() 
 				  + " " + Math.round(dPx.getWidth()) +"x" + Math.round(dPx.getHeight()));
 		  		  
-		  System.out.println("Resolution:" + Math.round(size.getDpiHorizontal()) + "x" + Math.round(size.getDpiVertical()) );
-		  System.out.println("Print size: " + Math.round(dPt.getWidth()/72) + "\" x" + Math.round(dPt.getHeight()/72)+"\"" ); 
+		  log.debug("Resolution:" + Math.round(size.getDpiHorizontal()) + "x" + Math.round(size.getDpiVertical()) );
+		  log.debug("Print size: " + Math.round(dPt.getWidth()/72) + "\" x" + Math.round(dPt.getHeight()/72)+"\"" ); 
 		
 	}
 	
@@ -604,7 +604,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * 
 	 */
 		
-	 System.out.println("Start ImageMagick...");
+	 log.info("Start ImageMagick...");
 	 Process p = Runtime.getRuntime().exec("imconvert -density " + density + " -units PixelsPerInch - png:-");  
 	 
 	 // GraphicsMagick is a little quicker than ImageMagick,
@@ -634,7 +634,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 try {
 		 copy2(is, new BufferedOutputStream(p.getOutputStream()));
 		 p.getOutputStream().close();
-		 System.out.println("Image copied...");
+		 log.debug("Image copied...");
 	 } catch (IOException ioe) {
 		 
 		 ioe.printStackTrace();
@@ -643,9 +643,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 }
 	 
 	 if (p.waitFor()!=0) {
-	  System.err.println("Error");
+	  log.error("Error");
 	 }
-	 System.out.println("End Process...");
+	 log.debug("End Process...");
 	}
 
 	public static void copy2(InputStream is, OutputStream os) throws IOException {

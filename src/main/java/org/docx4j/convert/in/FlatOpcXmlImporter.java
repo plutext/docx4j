@@ -530,7 +530,7 @@ public class FlatOpcXmlImporter  {
 		boolean suppressDeclaration = true;
 		boolean prettyprint = true;
 		
-		System.out.println( 
+		log.debug( 
 				org.docx4j.XmlUtils.
 					marshaltoString(result, suppressDeclaration, prettyprint, 
 							org.docx4j.jaxb.Context.jcXmlPackage) );

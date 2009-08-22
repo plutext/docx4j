@@ -20,7 +20,11 @@
 
 package org.docx4j.utils;
 
+import org.apache.log4j.Logger;
+
 public class ResourceUtils {
+	
+	protected static Logger log = Logger.getLogger(ResourceUtils.class);	
 	
     public static java.io.InputStream getResource(String filename) throws java.io.IOException
     {
@@ -29,7 +33,7 @@ public class ResourceUtils {
         
         
         if (url == null ) {
-        	System.out.println("Couldn't get resource!!");
+        	log.error("Couldn't get resource: " + filename);
         }
         
         // Get the jar file

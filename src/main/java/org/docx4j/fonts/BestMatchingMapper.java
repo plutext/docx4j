@@ -169,7 +169,7 @@ public class BestMatchingMapper extends Mapper {
 		Unmarshaller u2 = substitutionsContext.createUnmarshaller();		
 		u2.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-		System.out.println("unmarshalling fonts.substitutions \n\n" );									
+		log.info("unmarshalling fonts.substitutions" );									
 		// Get the xml file
 		java.io.InputStream is2 = null;
 		// Works in Eclipse - note absence of leading '/'
@@ -713,9 +713,9 @@ public class BestMatchingMapper extends Mapper {
 			org.apache.fop.fonts.Panose fopPanose = pf.getPanose();
 			
 				if (fopPanose == null ) {
-					System.out.println(fontName + " .. lacks Panose!");					
+					log.warn(fontName + " .. lacks Panose!");					
 				} else if (fopPanose!=null ) {
-					System.out.println(fontName + " .. " + fopPanose);
+					log.debug(fontName + " .. " + fopPanose);
 				}
 //				        long pd = fopPanose.difference(nfontInfo.getPanose().getPanoseArray());
 //						System.out.println(".. panose distance: " + pd);					

@@ -165,8 +165,8 @@ public class Emulator {
 	    		NumPr numPr = style.getPPr().getNumPr();
 	    		
 	    		if (numPr==null) {
-		        	System.out.println("Couldn't get NumPr from " +  pStyleVal);
-		        	System.out.println(
+		        	log.warn("Couldn't get NumPr from " +  pStyleVal);
+		        	log.debug(
 		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
 		        			);
 		        	// So there is no numbering set on the style either

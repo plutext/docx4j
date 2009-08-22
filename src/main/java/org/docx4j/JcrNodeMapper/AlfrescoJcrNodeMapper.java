@@ -67,7 +67,6 @@ public class AlfrescoJcrNodeMapper implements NodeMapper {
  throws PathNotFoundException, RepositoryException {
 		
 		log.info("getting {http://www.alfresco.org/model/content/1.0}content"); 
-		System.out.println("getting {http://www.alfresco.org/model/content/1.0}content"); 
 		// Jackrabbit's jcr:data = Alfresco's cm:content
 		
 /*		
