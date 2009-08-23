@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.fop.fonts.EmbedFontInfo;
-import org.apache.fop.fonts.EncodingMode;
 import org.apache.fop.fonts.FontCache;
 import org.apache.fop.fonts.FontResolver;
 import org.apache.fop.fonts.FontSetup;
@@ -18,11 +17,8 @@ import org.apache.fop.fonts.autodetect.FontInfoFinder;
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 
 /**
@@ -145,6 +141,8 @@ public class PhysicalFonts {
     	}        	
 	}
 
+	private static boolean loggedWarningAlready = false;
+	
 	/**
 	 * Add a physical font's EmbedFontInfo object.
 	 * 
@@ -154,6 +152,9 @@ public class PhysicalFonts {
 		
 		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
+		/* FOP r644208 (Bugzilla #44737) 3/04/08 made this an array,
+		// so if you are using non-patched FOP, it needs to be at least this revision
+		// (but doesn't seem to be in FOP 0.95 binary?!) */ 
 		
 		if (embedFontInfoList==null) {
 			// Quite a few fonts exist that we can't seem to get
@@ -205,32 +206,38 @@ public class PhysicalFonts {
 			}
 			
 			debug.append("------- \n");
-			debug.append(fontInfo.getPostScriptName() + "\n" );
 			
-			 if (!fontInfo.isEmbeddable() ) {			        	
-	//	        	log.info(tokens[x] + " is not embeddable; skipping.");
-				 
-					// NB isEmbeddable() only exists in our patched FOP
-			        
-					/*
-					 * No point looking at this font, since if we tried to use it,
-					 * later, we'd get:
-					 *  
-					 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
-						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
-						at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
-						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
-						at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
-						at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
-						
-						will be thrown if os_2.fsType == 2
-						
-					 */
-		        	log.warn(fontInfo.getEmbedFile() + " is not embeddable; ignoring this font.");
-				 
-				 //return;
-		        continue;
-			 }
+			 try {
+				debug.append(fontInfo.getPostScriptName() + "\n" );
+				if (!fontInfo.isEmbeddable() ) {			        	
+//	        	log.info(tokens[x] + " is not embeddable; skipping.");
+					 
+						/*
+						 * No point looking at this font, since if we tried to use it,
+						 * later, we'd get:
+						 *  
+						 * com.lowagie.text.DocumentException: file:/usr/share/fonts/truetype/ttf-tamil-fonts/lohit_ta.ttf cannot be embedded due to licensing restrictions.
+							at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:364)
+							at com.lowagie.text.pdf.TrueTypeFont.<init>(TrueTypeFont.java:335)
+							at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:399)
+							at com.lowagie.text.pdf.BaseFont.createFont(BaseFont.java:345)
+							at org.xhtmlrenderer.pdf.ITextFontResolver.addFont(ITextFontResolver.java:164)
+							
+							will be thrown if os_2.fsType == 2
+							
+						 */
+				    	log.warn(fontInfo.getEmbedFile() + " is not embeddable; ignoring this font.");
+					 
+					 //return;
+				    continue;
+				 }
+			} catch (Exception e1) {
+				// NB isEmbeddable() only exists in our patched FOP
+				if (!loggedWarningAlready) {
+					log.warn("Not using patched FOP; isEmbeddable() method missing.");
+					loggedWarningAlready = true;
+				}				
+			}
 				
 			PhysicalFont pf; 
 			

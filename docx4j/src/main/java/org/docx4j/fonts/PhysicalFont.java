@@ -5,7 +5,6 @@ package org.docx4j.fonts;
 
 import org.apache.fop.fonts.EmbedFontInfo;
 import org.apache.log4j.Logger;
-import org.docx4j.convert.out.pdf.viaXSLFO.Conversion;
 
 /**
  * This class represents a font which is
@@ -30,10 +29,18 @@ public class PhysicalFont {
 	
 	PhysicalFont(String name, EmbedFontInfo embedFontInfo) {
 		
-		// Sanity check
-		if (embedFontInfo.getPostScriptName()==null) {
-			log.error("Not set!");
-			//log.error(((org.apache.fop.fonts.FontTriplet)fontInfo.getFontTriplets().get(0)).getName());
+		try {
+			// Sanity check
+			if (embedFontInfo.getPostScriptName()==null) {
+				log.error("Not set!");
+				//log.error(((org.apache.fop.fonts.FontTriplet)fontInfo.getFontTriplets().get(0)).getName());
+			}
+		} catch (Exception e1) {
+			// NB getPanose() only exists in our patched FOP
+			if (!loggedWarningAlready) {
+				log.warn("Not using patched FOP; getPostScriptName() method missing.");
+				loggedWarningAlready = true;
+			}							
 		}
 		
 		this.embedFontInfo = embedFontInfo;
@@ -43,9 +50,20 @@ public class PhysicalFont {
     	//familyName = embedFontInfo.
     	
 //    	setName(fontInfo.getPostScriptName());
-    	setEmbeddedFile(embedFontInfo.getEmbedFile());
-    	setPanose(embedFontInfo.getPanose());		
+    	
+		setEmbeddedFile(embedFontInfo.getEmbedFile());
+    	try {
+        	setPanose(embedFontInfo.getPanose());		
+		} catch (Exception e) {
+			// NB getPanose() only exists in our patched FOP
+			if (!loggedWarningAlready) {
+				log.warn("Not using patched FOP; getPanose() method missing.");
+				loggedWarningAlready = true;
+			}							
+		}
 	}
+	
+	private static boolean loggedWarningAlready = false;
 	
 	// postscript name eg 
 	String name;
@@ -80,11 +98,11 @@ public class PhysicalFont {
 		this.embeddedFile = embeddedFile;
 	}
 	
-	org.apache.fop.fonts.Panose panose;
-	public org.apache.fop.fonts.Panose getPanose() {
+	org.foray.font.format.Panose panose;
+	public org.foray.font.format.Panose getPanose() {
 		return panose;
 	}
-	public void setPanose(org.apache.fop.fonts.Panose panose) {
+	public void setPanose(org.foray.font.format.Panose panose) {
 		this.panose = panose;
 	}
 
