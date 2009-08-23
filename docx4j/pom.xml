@@ -6,7 +6,7 @@
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
 	<name>docx4j</name>
-	<version>2.1.0</version>
+	<version>2.2.1</version>
 	<description>
 		docx4j is a library which helps you to work with the Office Open
 		XML file format, specifically WordprocessingML as used in docx
@@ -208,6 +208,8 @@
 			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=lib/xalan-2.7.0-patched-6396599-stripped.jar -DgroupId=xalan -DartifactId=xalan-patched -Dversion=2.7.0 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 			
 			 mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=../fop/tmp/fop-patched.jar -DgroupId=docx4j -DartifactId=fop-patched -Dversion=0.95.756436 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+			 
+			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2			 
 		-->
 
 		<!--  We need SVN build, not v1.3.1,
