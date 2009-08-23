@@ -27,10 +27,7 @@ import javax.xml.namespace.NamespaceContext;
 
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
-public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper 
-	implements NamespaceContext{
-	// Must use 'internal' for Java 6
-
+public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
 	
     /**
      * Returns a preferred prefix for the given namespace URI.
@@ -69,102 +66,9 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
      */
     public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) 
     // Implement the interface
-    {
-    	
-    	return getPreferredPrefixStatic(namespaceUri, suggestion, requirePrefix);
-    	
+    {    	
+    	return NamespacePrefixMappings.getPreferredPrefixStatic(namespaceUri, suggestion, requirePrefix);    	
     }
-    
-    
-    protected static String getPreferredPrefixStatic(String namespaceUri, String suggestion, boolean requirePrefix) {    
-    	
-    	if (namespaceUri.equals(Namespaces.NS_WORD12)) {
-    		return "w";
-    	}
-    	if (namespaceUri.equals(Namespaces.PKG_XML)) {
-    		return "pkg";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/custom-properties")) {
-    		return "prop";
-    	}
-
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/extended-properties")) {
-    		return "properties";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/metadata/core-properties")) {
-    		return "cp";
-    	}
-
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")) {
-    		return "vt";
-    	}
-    	    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/package/2006/relationships")) {
-    		return "rel";
-    	}
-
-    	if (namespaceUri.equals(Namespaces.RELATIONSHIPS_OFFICEDOC)) {
-    		return "r";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")) {
-    		return "wp";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/main")) {
-    		return "a";
-    	}
-    	
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/picture")) {
-    		return "pic";
-    	}
-
-    	if (namespaceUri.equals("urn:schemas-microsoft-com:office:office")) {
-    		return "o";
-    	}
-    	
-    	if (namespaceUri.equals("urn:schemas-microsoft-com:vml")) {
-    		return "v";
-    	}
-
-    	if (namespaceUri.equals("http://schemas.microsoft.com/office/word/2003/auxHint")) {
-    		return "WX";
-    	}
-
-    	if (namespaceUri.equals("http://schemas.microsoft.com/aml/2001/core")) {
-    		return "aml";
-    	}
-
-    	if (namespaceUri.equals("urn:schemas-microsoft-com:office:word")) {
-    		return "w10";
-    	}
-
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/math")) {
-    		return "m";
-    	}
-    	
-    	if (namespaceUri.equals("http://www.w3.org/2001/XMLSchema-instance")) {
-    		return "xsi";
-    	}
-
-    	if (namespaceUri.equals("http://purl.org/dc/elements/1.1/")) {
-    		return "dc";
-    	}
-    	if (namespaceUri.equals("http://purl.org/dc/terms/")) {
-    		return "dcterms";
-    	}
-    	
-    	if (namespaceUri.equals("http://www.w3.org/XML/1998/namespace")) {
-    		return "xml";
-    	}
-    	
-    	
-    	return suggestion;
-    }
-    
        
     
     /**
@@ -216,44 +120,5 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
 //    public String[] getPreDeclaredNamespaceUris() {
 //        return new String[] { "urn:abc", "urn:def" };
 //    }
-
-    // ----------------------------------------------------
-    // implement NamespaceContext,
-    // for use with for use with javax.xml.xpath
-    
-	public String getNamespaceURI(String prefix) {
-		
-		return getNamespaceURIStatic(prefix);
-	}
-	
-	protected static String getNamespaceURIStatic(String prefix) {
-	
-		if (prefix.equals("w"))  
-			return Namespaces.NS_WORD12;
-		else if (prefix.equals("r"))
-			return Namespaces.RELATIONSHIPS_OFFICEDOC;
-		else if (prefix.equals("pkg"))
-			return Namespaces.PKG_XML;
-		else
-			return XMLConstants.NULL_NS_URI;
-		
-	}
-
-	public String getPrefix(String namespaceURI) {
-		
-		return getPreferredPrefix(namespaceURI, null, false );
-		
-//		if (namespaceURI.equals(Namespaces.NS_WORD12))
-//			return "w";
-//		else if (namespaceURI.equals(Namespaces.RELATIONSHIPS_OFFICEDOC))
-//			return "r";
-//		else if (namespaceURI.equals(Namespaces.PKG_XML))
-//			return "pkg";
-//		else return null;
-	}
-
-	public Iterator getPrefixes(String namespaceURI) {
-		return null;
-	}
     
 }
