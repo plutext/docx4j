@@ -19,35 +19,20 @@
  */
 package org.docx4j.fonts;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.fop.fonts.EmbedFontInfo;
-import org.apache.fop.fonts.FontCache;
-import org.apache.fop.fonts.FontResolver;
-import org.apache.fop.fonts.FontSetup;
-import org.apache.fop.fonts.FontTriplet;
-import org.apache.fop.fonts.autodetect.FontFileFinder;
-import org.apache.fop.fonts.autodetect.FontInfoFinder;
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.substitutions.FontSubstitutions;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.wml.Fonts;
-
-import com.lowagie.text.pdf.BaseFont;
 
 /**
  * 
@@ -266,10 +251,10 @@ public class BestMatchingMapper extends Mapper {
 			} else {
 				wmlFontPanoseForDocumentFont = font.getPanose1();
 			}
-			org.apache.fop.fonts.Panose documentFontPanose = null;
+			org.foray.font.format.Panose documentFontPanose = null;
 			if (wmlFontPanoseForDocumentFont!=null && wmlFontPanoseForDocumentFont.getVal()!=null ) {
 				try {
-					documentFontPanose = org.apache.fop.fonts.Panose.makeInstance(wmlFontPanoseForDocumentFont.getVal() );
+					documentFontPanose = org.foray.font.format.Panose.makeInstance(wmlFontPanoseForDocumentFont.getVal() );
 				} catch (IllegalArgumentException e) {					
 					log.error(e.getMessage());
 					// For example:
@@ -301,9 +286,9 @@ public class BestMatchingMapper extends Mapper {
 			} else {
 								
 				// Is the Panose value valid?
-				if (log.isDebugEnabled() &&  org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray())!=null) {														
+				if (log.isDebugEnabled() &&  org.foray.font.format.Panose.validPanose(documentFontPanose.getPanoseArray())!=null) {														
 					// NB org.apache.fop.fonts.Panose only exists in our patched FOP
-					log.debug(documentFontName + " : " + org.apache.fop.fonts.Panose.validPanose(documentFontPanose.getPanoseArray()));					
+					log.debug(documentFontName + " : " + org.foray.font.format.Panose.validPanose(documentFontPanose.getPanoseArray()));					
 					//This is the case for 'Impact' which has 
 					//Invalid value 9 > 8 in position 5 of 2 11 8 6 3 9 2 5 2 4 
 				}
@@ -426,9 +411,9 @@ public class BestMatchingMapper extends Mapper {
 						if (fontMatched.getPanose() == null ) {
 							log.debug(".. as expected, lacking Panose");					
 						} else if (documentFontPanose!=null  ) {
-							org.apache.fop.fonts.Panose physicalFontPanose = null;
+							org.foray.font.format.Panose physicalFontPanose = null;
 							try {
-								physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(fontMatched
+								physicalFontPanose = org.foray.font.format.Panose.makeInstance(fontMatched
 												.getPanose()
 												.getPanoseArray());
 							} catch (IllegalArgumentException e) {					
@@ -492,7 +477,7 @@ public class BestMatchingMapper extends Mapper {
 	 * @param fm
 	 * @param soughtPanose
 	 */
-	private PhysicalFont getAssociatedPhysicalFont(String documentFontName, String orignalKey, org.apache.fop.fonts.Panose soughtPanose) {
+	private PhysicalFont getAssociatedPhysicalFont(String documentFontName, String orignalKey, org.foray.font.format.Panose soughtPanose) {
 
 		log.debug("Looking for " + soughtPanose);
 		
@@ -537,7 +522,7 @@ public class BestMatchingMapper extends Mapper {
 		font file. 
 		
 		Returns key of matching font in physicalFontMap. */
-	private String findClosestPanoseMatch(String documentFontName, org.apache.fop.fonts.Panose documentFontPanose, 
+	private String findClosestPanoseMatch(String documentFontName, org.foray.font.format.Panose documentFontPanose, 
 			Map<String, PhysicalFont> physicalFontSpace, int matchThreshold) {
 		
 		// documentFontName enables us to use a name match to break a tie;
@@ -563,10 +548,10 @@ public class BestMatchingMapper extends Mapper {
 	        	//log.info(physicalFontKey + " has no Panose data; skipping.");
 	        	continue;
 	        }
-			org.apache.fop.fonts.Panose physicalFontPanose = null;
+			org.foray.font.format.Panose physicalFontPanose = null;
 	        long panoseMatchValue = MATCH_THRESHOLD + 1; // inititaliase to a non-match
 			try {
-				physicalFontPanose = org.apache.fop.fonts.Panose.makeInstance(physicalFont.getPanose().getPanoseArray() );
+				physicalFontPanose = org.foray.font.format.Panose.makeInstance(physicalFont.getPanose().getPanoseArray() );
 		        panoseMatchValue = documentFontPanose.difference(physicalFontPanose, null);
 			} catch (IllegalArgumentException e) {					
 				log.error(e.getMessage());
@@ -710,7 +695,7 @@ public class BestMatchingMapper extends Mapper {
 
 			PhysicalFont pf = (PhysicalFont)pairs.getValue();
 			
-			org.apache.fop.fonts.Panose fopPanose = pf.getPanose();
+			org.foray.font.format.Panose fopPanose = pf.getPanose();
 			
 				if (fopPanose == null ) {
 					log.warn(fontName + " .. lacks Panose!");					

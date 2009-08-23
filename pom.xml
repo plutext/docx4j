@@ -207,7 +207,7 @@
 			
 			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=lib/xalan-2.7.0-patched-6396599-stripped.jar -DgroupId=xalan -DartifactId=xalan-patched -Dversion=2.7.0 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 			
-			
+			 mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=../fop/tmp/fop-patched.jar -DgroupId=docx4j -DartifactId=fop-patched -Dversion=0.95.756436 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 		-->
 
 		<!--  We need SVN build, not v1.3.1,
@@ -285,8 +285,14 @@
 		<dependency>
 			<groupId>docx4j</groupId>
 			<artifactId>fop-patched</artifactId>
-			<version>0.95.756434</version>
+			<version>0.95.756436</version>
 		</dependency>
+			<!--  its really 95.756434, but i had to re-build it to remove
+			      Class-Path from the MANIFEST.MF, which was 
+			      being used by Java Web Start to try to fetch certain
+			      jars. So the number is incremented (0.95.756435).
+			      And then, Panose.java moved to original foray package (0.95.756436) -->
+
 
 <!-- 
 		<dependency>

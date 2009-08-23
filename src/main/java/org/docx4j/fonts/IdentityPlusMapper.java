@@ -19,35 +19,12 @@
  */
 package org.docx4j.fonts;
 
-import java.io.File;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.apache.fop.fonts.EmbedFontInfo;
-import org.apache.fop.fonts.FontCache;
-import org.apache.fop.fonts.FontResolver;
-import org.apache.fop.fonts.FontSetup;
-import org.apache.fop.fonts.FontTriplet;
-import org.apache.fop.fonts.autodetect.FontFileFinder;
-import org.apache.fop.fonts.autodetect.FontInfoFinder;
 import org.apache.log4j.Logger;
-import org.docx4j.fonts.microsoft.MicrosoftFonts;
-import org.docx4j.fonts.substitutions.FontSubstitutions;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
-import org.docx4j.wml.Fonts;
-
-import com.lowagie.text.pdf.BaseFont;
 
 /**
  *
