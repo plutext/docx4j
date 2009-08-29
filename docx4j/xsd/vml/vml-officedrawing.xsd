@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="urn:schemas-microsoft-com:office:office" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:schemas-microsoft-com:office:office" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:odoc="http://schemas.microsoft.com/office/internal/2005/internalDocumentation">
+  <xsd:import namespace="urn:schemas-microsoft-com:vml" schemaLocation="vml.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationships.xsd" />
+  <xsd:attribute name="bwmode" type="ST_BWMode" />
+  <xsd:simpleType name="ST_BWMode">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="color" />
+      <xsd:enumeration value="auto" />
+      <xsd:enumeration value="grayscale" />
+      <xsd:enumeration value="lightGrayScale" />
+      <xsd:enumeration value="inverseGray" />
+      <xsd:enumeration value="grayOutline" />
+      <xsd:enumeration value="highContrast" />
+      <xsd:enumeration value="black" />
+      <xsd:enumeration value="white" />
+      <xsd:enumeration value="hide" />
+      <xsd:enumeration value="numModes" />
+      <xsd:enumeration value="undrawn" />
+      <xsd:enumeration value="blackTextAndLines" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_BWModePure">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="color" />
+      <xsd:enumeration value="auto" />
+      <xsd:enumeration value="grayscale" />
+      <xsd:enumeration value="lighGrayscale" />
+      <xsd:enumeration value="grayOutline" />
+      <xsd:enumeration value="highContrast" />
+      <xsd:enumeration value="black" />
+      <xsd:enumeration value="white" />
+      <xsd:enumeration value="hide" />
+      <xsd:enumeration value="numModes" />
+      <xsd:enumeration value="blackTextAndLines" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:attribute name="bwpure" type="ST_BWModePure" />
+  <xsd:attribute name="bwnormal" type="ST_BWModePure" />
+  <xsd:attribute name="targetscreensize" type="ST_TargetScreenSz" />
+  <xsd:simpleType name="ST_TargetScreenSz">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="544,376" />
+      <xsd:enumeration value="640,480" />
+      <xsd:enumeration value="720,512" />
+      <xsd:enumeration value="800,600" />
+      <xsd:enumeration value="1024,768" />
+      <xsd:enumeration value="1152,862" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="shapedefaults" type="CT_ShapeDefaults" />
+  <xsd:complexType name="CT_ShapeDefaults">
+    <xsd:sequence>
+      <xsd:element ref="v:fill" minOccurs="0" />
+      <xsd:element ref="v:stroke" minOccurs="0" />
+      <xsd:element ref="v:textbox" minOccurs="0" />
+      <xsd:element ref="v:shadow" minOccurs="0" />
+      <xsd:element ref="v:textpath" minOccurs="0" />
+      <xsd:element ref="v:imagedata" minOccurs="0" />
+      <xsd:element ref="skew" minOccurs="0" />
+      <xsd:element ref="extrusion" minOccurs="0" />
+      <xsd:element ref="callout" minOccurs="0" />
+      <xsd:element ref="lock" minOccurs="0" />
+      <xsd:element name="colormru" type="CT_ColorMRU" minOccurs="0" />
+      <xsd:element name="colormenu" type="CT_ColorMenu" minOccurs="0" />
+    </xsd:sequence>
+    <xsd:attribute name="spidmax" type="xsd:integer" use="optional" />
+    <xsd:attribute name="style" type="xsd:string" use="optional" />
+    <xsd:attribute name="fill" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="fillcolor" type="xsd:string" use="optional" />
+    <xsd:attribute ref="v:ext" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_ColorMRU">
+    <xsd:sequence>
+      <xsd:element name="colors" type="xsd:string" minOccurs="0" maxOccurs="8" />
+    </xsd:sequence>
+    <xsd:attribute ref="v:ext" use="optional" />
+    <xsd:attribute name="colors" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_ColorMenu">
+    <xsd:attribute name="fillcolor" type="xsd:string" use="optional" default="rgb(0,0,255)" />
+    <xsd:attribute name="strokecolor" type="xsd:string" use="optional" default="rgb(255,0,0)" />
+    <xsd:attribute name="shadowcolor" type="xsd:string" use="optional" default="rgb(128,128,12)" />
+    <xsd:attribute name="extrusioncolor" type="xsd:string" use="optional" default="rgb(0,0,0)" />
+    <xsd:attribute name="colors" type="xsd:string" use="optional" />
+    <xsd:attribute ref="v:ext" use="optional" />
+  </xsd:complexType>
+  <xsd:element name="shapelayout" type="CT_ShapeLayout" />
+  <xsd:complexType name="CT_ShapeLayout">
+    <xsd:all>
+      <xsd:element name="idmap" type="CT_IdMap" minOccurs="0" />
+      <xsd:element name="regrouptable" type="CT_RegroupTable" minOccurs="0" />
+      <xsd:element name="rules" type="CT_Rules" minOccurs="0" />
+    </xsd:all>
+    <xsd:attribute ref="v:ext" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_IdMap">
+    <xsd:attribute ref="v:ext" use="optional" />
+    <xsd:attribute name="data" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_RegroupTable">
+    <xsd:sequence>
+      <xsd:element name="entry" type="CT_Entry" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute ref="v:ext" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_Entry">
+    <xsd:attribute name="new" type="xsd:int" use="optional" />
+    <xsd:attribute name="old" type="xsd:int" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_Rules">
+    <xsd:sequence>
+      <xsd:element name="r" type="CT_R" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute ref="v:ext" use="optional" />
+  </xsd:complexType>
+  <xsd:simpleType name="ST_RType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="arc" />
+      <xsd:enumeration value="callout" />
+      <xsd:enumeration value="connector" />
+      <xsd:enumeration value="align" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_How">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="top" />
+      <xsd:enumeration value="middle" />
+      <xsd:enumeration value="bottom" />
+      <xsd:enumeration value="left" />
+      <xsd:enumeration value="center" />
+      <xsd:enumeration value="right" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_R">
+    <xsd:sequence>
+      <xsd:element name="proxy" type="CT_Proxy" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:string" use="required" />
+    <xsd:attribute name="type" type="ST_RType" use="optional" />
+    <xsd:attribute name="how" type="ST_How" use="optional" />
+    <xsd:attribute name="idref" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:simpleType name="ST_InsetMode">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="auto" />
+      <xsd:enumeration value="custom" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Proxy">
+    <xsd:attribute name="start" type="ST_TrueFalse" use="optional" default="f" />
+    <xsd:attribute name="end" type="ST_TrueFalse" use="optional" default="f" />
+    <xsd:attribute name="idref" type="xsd:string" use="optional" />
+    <xsd:attribute name="connectloc" type="xsd:int" use="optional" />
+  </xsd:complexType>
+  <xsd:attribute name="insetmode" type="ST_InsetMode" default="custom" />
+  <xsd:element name="skew" type="CT_Skew" />
+  <xsd:complexType name="CT_Skew">
+    <xsd:attribute name="id" type="xsd:string" use="optional" />
+    <xsd:attribute ref="v:ext" use="optional" />
+    <xsd:attribute name="on" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="offset" type="xsd:string" use="optional" />
+    <xsd:attribute name="origin" type="xsd:string" use="optional" />
+    <xsd:attribute name="matrix" type="xsd:string" use="optional" />
+  </xsd:complexType>
+  <xsd:element name="extrusion" type="CT_Extrusion" />
+  <xsd:simpleType name="ST_ExtrusionType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="perspective" />
+      <xsd:enumeration value="parallel" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ExtrusionRender">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="solid" />
+      <xsd:enumeration value="wireFrame" />
+      <xsd:enumeration value="boundingcube" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ExtrusionPlane">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="XY" />
+      <xsd:enumeration value="ZX" />
+      <xsd:enumeration value="YZ" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Extrusion">
+    <xsd:attribute ref="v:ext" use="optional" />
+    <xsd:attribute name="on" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="type" type="ST_ExtrusionType" default="parallel" use="optional" />
+    <xsd:attribute name="render" type="ST_ExtrusionRender" default="solid" use="optional" />
+    <xsd:attribute name="viewpointorigin" type="xsd:string" use="optional" />
+    <xsd:attribute name="viewpoint" type="xsd:string" use="optional" />
+    <xsd:attribute name="plane" type="ST_ExtrusionPlane" default="XY" use="optional" />
+    <xsd:attribute name="skewangle" type="xsd:float" use="optional" />
+    <xsd:attribute name="skewamt" type="xsd:string" use="optional" />
+    <xsd:attribute name="foredepth" type="xsd:float" use="optional" />
+    <xsd:attribute name="backdepth" type="xsd:string" use="optional" />
+    <xsd:attribute name="orientation" type="xsd:string" use="optional" />
+    <xsd:attribute name="orientationangle" type="xsd:float" use="optional" />
+    <xsd:attribute name="lockrotationcenter" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="autorotationcenter" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="rotationcenter" type="xsd:string" use="optional" />
+    <xsd:attribute name="rotationangle" type="xsd:string" use="optional" />
+    <xsd:attribute name="colormode" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="color" type="xsd:string" use="optional" />
+    <xsd:attribute name="shininess" type="xsd:float" use="optional" />
+    <xsd:attribute name="specularity" type="xsd:string" use="optional" />
+    <xsd:attribute name="diffusity" type="xsd:string" use="optional" />
+    <xsd:attribute name="metal" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="edge" type="xsd:string" use="optional" />
+    <xsd:attribute name="facet" type="xsd:string" use="optional" />
+    <xsd:attribute name="lightface" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="brightness" type="xsd:string" use="optional" />
+    <xsd:attribute name="lightposition" type="xsd:string" use="optional" />
+    <xsd:attribute name="lightlevel" type="xsd:string" use="optional" />
+    <xsd:attribute name="lightharsh" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="lightposition2" type="xsd:string" use="optional" />
+    <xsd:attribute name="lightlevel2" type="xsd:string" use="optional" />
+    <xsd:attribute name="lightharsh2" type="ST_TrueFalse" use="optional" />
+  </xsd:complexType>
+  <xsd:element name="callout" type="CT_Callout" />
+  <xsd:simpleType name="ST_Angle">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="any" />
+      <xsd:enumeration value="auto" />
+      <xsd:enumeration value="30" />
+      <xsd:enumeration value="45" />
+      <xsd:enumeration value="60" />
+      <xsd:enumeration value="90" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_CalloutDrop">
+    <xsd:union memberTypes="ST_Float ST_CalloutPlacement" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Float">
+    <xsd:restriction base="xsd:float" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_CalloutPlacement">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="top" />
+      <xsd:enumeration value="center" />
+      <xsd:enumeration value="bottom" />
+      <xsd:enumeration value="user" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Callout">
+    <xsd:attribute ref="v:ext" use="optional" />
+    <xsd:attribute name="on" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="type" type="xsd:string" use="optional" />
+    <xsd:attribute name="gap" type="xsd:string" use="optional" />
+    <xsd:attribute name="angle" type="ST_Angle" use="optional" />
+    <xsd:attribute name="dropauto" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="drop" type="ST_CalloutDrop" use="optional" />
+    <xsd:attribute name="distance" type="xsd:string" use="optional" />
+    <xsd:attribute name="lengthspecified" type="ST_TrueFalse" default="f" use="optional" />
+    <xsd:attribute name="length" type="xsd:float" use="optional" />
+    <xsd:attribute name="accentbar" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="textborder" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="minusx" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="minusy" type="ST_TrueFalse" use="optional" />
+  </xsd:complexType>
+  <xsd:element name="lock" type="CT_Lock" />
+  <xsd:complexType name="CT_Lock">
+    <xsd:attribute ref="v:ext" use="optional" />
+    <xsd:attribute name="position" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="selection" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="grouping" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="rotation" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="cropping" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="verticies" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="adjusthandles" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="text" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="aspectratio" type="ST_TrueFalse" use="optional" />
+    <xsd:attribute name="shapetype" type="ST_TrueFalse" use="optional" />
+  </xsd:complexType>
+  <xsd:attribute name="spt" type="xsd:float" />
+  <xsd:attribute name="wrapcoords" type="xsd:string" />
+  <xsd:attribute name="oned" type="ST_TrueFalse" />
+  <xsd:attribute name="regroupid" type="xsd:integer" />
+  <xsd:attribute name="doubleclicknotify" type="ST_TrueFalse" />
+  <xsd:attribute name="ruleinitiator" type="ST_TrueFalse" />
+  <xsd:attribute name="ruleproxy" type="ST_TrueFalse" />
+  <xsd:attribute name="connectortype" type="ST_ConnectorType" default="straight" />
+  <xsd:simpleType name="ST_ConnectorType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="none" />
+      <xsd:enumeration value="straight" />
+      <xsd:enumeration value="elbow" />
+      <xsd:enumeration value="curved" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:attribute name="button" type="ST_TrueFalse" />
+  <xsd:attribute name="userhidden" type="ST_TrueFalse" />
+  <xsd:attribute name="forcedash" type="ST_TrueFalse" />
+  <xsd:attribute name="oleicon" type="ST_TrueFalse" />
+  <xsd:attribute name="ole" type="ST_TrueFalse" />
+  <xsd:attribute name="preferrelative" type="ST_TrueFalse" />
+  <xsd:attribute name="bullet" type="ST_TrueFalse" />
+  <xsd:attribute name="hr" type="ST_TrueFalse" />
+  <xsd:attribute name="hrstd" type="ST_TrueFalse" />
+  <xsd:attribute name="hrnoshade" type="ST_TrueFalse" />
+  <xsd:attribute name="hrheight" type="xsd:float" />
+  <xsd:attribute name="hrwidth" type="xsd:float" />
+  <xsd:attribute name="hrpct" type="xsd:float" />
+  <xsd:attribute name="hralign" type="ST_HrAlign" default="left" />
+  <xsd:simpleType name="ST_HrAlign">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="left" />
+      <xsd:enumeration value="right" />
+      <xsd:enumeration value="center" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:attribute name="relativeposition" type="xsd:string" />
+  <xsd:attribute name="allowincell" type="ST_TrueFalse" />
+  <xsd:attribute name="allowoverlap" type="ST_TrueFalse" />
+  <xsd:attribute name="userdrawn" type="ST_TrueFalse" />
+  <xsd:attribute name="tableproperties" type="xsd:int" />
+  <xsd:attribute name="tablelimits" type="xsd:string" />
+  <xsd:attribute name="bordertopcolor" type="xsd:string" />
+  <xsd:attribute name="borderleftcolor" type="xsd:string" />
+  <xsd:attribute name="borderbottomcolor" type="xsd:string" />
+  <xsd:attribute name="borderrightcolor" type="xsd:string" />
+  <xsd:attribute name="connecttype" type="ST_ConnectType" />
+  <xsd:simpleType name="ST_ConnectType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="none" />
+      <xsd:enumeration value="rect" />
+      <xsd:enumeration value="segments" />
+      <xsd:enumeration value="custom" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:element name="OLEObject" type="CT_OLEObject" />
+  <xsd:complexType name="CT_OLEObject">
+    <xsd:sequence>
+      <xsd:element minOccurs="0" ref="WordFieldCodes" />
+    </xsd:sequence>
+    <xsd:attribute name="Type" type="xsd:string" use="optional" />
+    <xsd:attribute name="ProgID" type="xsd:string" use="optional" />
+    <xsd:attribute name="ShapeID" type="xsd:string" use="optional" />
+    <xsd:attribute name="DrawAspect" type="xsd:string" use="optional" />
+    <xsd:attribute name="ObjectID" type="xsd:string" use="optional" />
+    <xsd:attribute ref="r:id" use="optional" />
+  </xsd:complexType>
+  <xsd:element name="WordFieldCodes" type="xsd:string" />
+  <xsd:element name="complex" type="CT_Complex" />
+  <xsd:complexType name="CT_Complex">
+    <xsd:attribute ref="v:ext" use="optional" />
+  </xsd:complexType>
+  <xsd:attribute name="connectlocs" type="xsd:string" />
+  <xsd:attribute name="connectangles" type="xsd:string" />
+  <xsd:attribute name="master" type="xsd:string" />
+  <xsd:attribute name="extrusionok" type="ST_TrueFalse" />
+  <xsd:attribute name="href" type="xsd:string" />
+  <xsd:attribute name="althref" type="xsd:string" />
+  <xsd:attribute name="title" type="xsd:string" />
+  <xsd:attribute name="singleclick" type="ST_TrueFalse" />
+  <xsd:attribute name="oleid" type="xsd:float" />
+  <xsd:attribute name="detectmouseclick" type="ST_TrueFalse" />
+  <xsd:attribute name="movie" type="xsd:float" />
+  <xsd:attribute name="spid" type="xsd:string" />
+  <xsd:attribute name="opacity2" type="xsd:integer" />
+  <xsd:simpleType name="ST_TrueFalse">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="t" />
+      <xsd:enumeration value="f" />
+      <xsd:enumeration value="" />
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>
