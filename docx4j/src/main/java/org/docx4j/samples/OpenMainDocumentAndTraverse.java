@@ -46,10 +46,11 @@ public class OpenMainDocumentAndTraverse {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = "/tmp/Default TOC with 3 levels.docx";
+		//String inputfilepath = "/tmp/Default TOC with 3 levels.docx";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/jbtemplate.docx";
 		//String inputfilepath = "/home/dev/s.docx";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word2003-vml.docx";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
@@ -161,7 +162,12 @@ public class OpenMainDocumentAndTraverse {
 					
 				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Drawing") ) {
 					describeDrawing( (org.docx4j.wml.Drawing)((JAXBElement)o).getValue() );
+
+				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Pict") ) {
+					org.docx4j.wml.Pict pic = (org.docx4j.wml.Pict)((JAXBElement)o).getValue();
+					walkList(pic.getAnyAndAny());
 				}
+				
 				
 				if ( ((JAXBElement)o).getName().getLocalPart().equals("bookmarkStart") ) {
 					org.docx4j.wml.CTBookmark bs = (org.docx4j.wml.CTBookmark)((JAXBElement)o).getValue(); 
