@@ -167,14 +167,77 @@ public class SaveToJCR {
 		 return true;
 	}
 	
-	public static String encodeSlashes(NodeMapper nodeMapper,  String partName) {		
+	/**
+	 * Create folder for any missing path segments. 
+	 * 
+	 * @param nodeMapper
+	 * @param partName
+	 * @param baseNode
+	 * @return true if any folders had to be added
+	 */
+	public static boolean makeParentFolders(NodeMapper nodeMapper,  String partName, Node baseNode) 
+		throws PathNotFoundException, RepositoryException
+	{
+				
+		log.debug("incoming path:" + partName);
+		boolean created = false;
+					
+		StringBuffer retVal = new StringBuffer();
+		String[] partNameSegments = partName.split("/");
+
+		for (short i = 0 ; i < partNameSegments.length; ++i) {
+			if (i>0) retVal.append("/");
+			if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
+				retVal.append(CM_NAMESPACE + org.docx4j.JcrNodeMapper.ISO9075.encode(partNameSegments[i]) );
+			} else {
+				retVal.append(java.net.URLEncoder.encode( partNameSegments[i] ));
+					// or org.docx4j.JcrNodeMapper.ISO9075.encode ??
+			}
+			
+			if (i < (partNameSegments.length-1)) {
+				try {
+					// Does it exist already?
+					baseNode.getNode(retVal.toString());
+					log.debug(retVal.toString() + " found .. ");				
+				} catch (PathNotFoundException pnf) {
+					log.info(retVal.toString() + " not found .. so adding");
+//				        cmContentNode = baseNode.addNode( encodeSlashes(nodeMapper, partName), "nt:file" );
+					Node newFolder = nodeMapper.addFolder(baseNode, retVal.toString() );
+					created = true;
+					log.debug("folder added");
+					
+					newFolder.setProperty("cm:name",  partNameSegments[i] ); // not ISO9075.encoded
+					newFolder.setProperty("cm:title", partNameSegments[i] );
+					
+				} catch (RepositoryException re) {
+					re.printStackTrace();
+				}
+			}
+			
+		}
+		return created;
+		
+	}
+
+	/**
+	 * For JCR implementations other than Alfresco, this URL encodes the partName,
+	 * including any '/', with the result that all content is stored in JCR in
+	 * a single folder.  TODO: this should probably change.
+	 * 
+	 * For Alfresco, this ISO9075.encodes path segment names. 
+	 *  
+	 * @param nodeMapper
+	 * @param partName
+	 * @param baseNode
+	 * @return
+	 */
+	public static String encodeSlashes(NodeMapper nodeMapper,  String partName) {
 		
 		if (nodeMapper instanceof org.docx4j.JcrNodeMapper.AlfrescoJcrNodeMapper) {
 			
 //			log.info("incoming path:" + partName);
 						
-			// Add CM_NAMESPACE prefix
-			
+			// Add CM_NAMESPACE prefix			
 			// Split it into segments, and add CM_NAMESPACE prefix
 			StringBuffer retVal = new StringBuffer();
 			String[] partNameSegments = partName.split("/");
@@ -192,7 +255,7 @@ public class SaveToJCR {
 		}
 		
 	}
-
+	
 
 	public Node saveRawXmlPart(Node baseNode, Part part) throws Docx4JException {
 		
@@ -296,16 +359,29 @@ public class SaveToJCR {
 		
 			// Create an nt:file node to represent each file name
 			// Encode '/' so it is a flat structure
+			
+			// NB: For Alfresco, our encodeSlashes function does *NOT*
+			// encode '/'.  
 
-			Node cmContentNode;			
+			Node cmContentNode = null;	
+			String enc = null;
 			try {
 				// Does it exist already?
-				cmContentNode = baseNode.getNode(encodeSlashes(nodeMapper, partName));
-				log.info(encodeSlashes(nodeMapper, partName) + " found .. ");				
+				enc = encodeSlashes(nodeMapper, partName);
+				cmContentNode = baseNode.getNode(enc);
+				log.info(enc + " found .. ");				
 			} catch (PathNotFoundException pnf) {
-				log.info(encodeSlashes(nodeMapper, partName) + " not found .. so adding");
-//		        cmContentNode = baseNode.addNode( encodeSlashes(nodeMapper, partName), "nt:file" );
-				cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, partName));
+				log.info(enc + " not found .. so adding");
+				
+				try {
+					cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, partName));
+				} catch (PathNotFoundException pnf2) {
+					// That was optimistic; a parent folder is missing? 
+					if (makeParentFolders(nodeMapper, partName, baseNode) ) {
+						// Try again
+						cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, partName));
+					}					
+				}
 				
 		    }	        
 			
@@ -555,15 +631,27 @@ public class SaveToJCR {
 		
 			// Create an nt:file node to represent each file name
 			// Encode '/' so it is a flat structure
-			Node cmContentNode;			
+			Node cmContentNode = null;	
+			String enc = null;
 			try {
+				enc = encodeSlashes(nodeMapper, resolvedPartUri);
 				// Does it exist already?
-				cmContentNode = baseNode.getNode(encodeSlashes(nodeMapper, resolvedPartUri));
-				log.info(encodeSlashes(nodeMapper, resolvedPartUri) + " found .. ");				
+				cmContentNode = baseNode.getNode(enc);
+				log.debug(enc + " found .. ");				
 			} catch (PathNotFoundException pnf) {
-				log.info(encodeSlashes(nodeMapper, resolvedPartUri) + " not found .. so adding");
-//		        cmContentNode = baseNode.addNode( encodeSlashes(nodeMapper, resolvedPartUri), "nt:file" );
-				cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, resolvedPartUri));				
+				log.debug(enc + " not found .. so adding");
+				
+				try {
+					cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, resolvedPartUri));
+				} catch (PathNotFoundException pnf2) {
+					// That was optimistic; a parent folder is missing? 
+					if (makeParentFolders(nodeMapper, resolvedPartUri, baseNode) ) {
+						// Try again
+						cmContentNode = nodeMapper.addFileNode(baseNode, encodeSlashes(nodeMapper, resolvedPartUri));
+					}
+					
+				}
+				
 		    }
 			
 			// New

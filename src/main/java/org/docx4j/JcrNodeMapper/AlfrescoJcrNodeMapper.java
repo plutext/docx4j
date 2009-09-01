@@ -60,6 +60,12 @@ public class AlfrescoJcrNodeMapper implements NodeMapper {
 		return baseNode.addNode(partName, "cm:content" ); 
 		
 	}
+
+	public  Node addFolder(Node baseNode, String partName )  throws PathNotFoundException, RepositoryException {
+				
+		return baseNode.addNode(partName, "cm:folder" ); 
+		
+	}
 	
 	
 	
