@@ -32,6 +32,8 @@ public interface NodeMapper {
 	public abstract Node getContentNode(Node node) throws PathNotFoundException, RepositoryException;
 
 	public abstract Node addFileNode(Node baseNode, String partName )  throws PathNotFoundException, RepositoryException;
+
+	public abstract Node addFolder(Node baseNode, String partName )  throws PathNotFoundException, RepositoryException;
 	
 	
 	public abstract Property getJcrData(Node contentNode) 

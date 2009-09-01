@@ -38,6 +38,12 @@ public class JackrabbitJcrNodeMapper implements NodeMapper {
 		return baseNode.addNode(partName, "nt:file" );
 		
 	}
+
+	public  Node addFolder(Node baseNode, String partName )  throws PathNotFoundException, RepositoryException {
+		
+		return baseNode.addNode(partName, "nt:folder" );
+		
+	}
 	
 	
 	public  Property getJcrData(Node contentNode) 
