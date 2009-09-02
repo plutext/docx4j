@@ -1,6 +1,5 @@
 package org.docx4j.convert.out.pdf.viaIText;
 
-import java.awt.Dimension;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -10,10 +9,8 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
 
-import org.apache.fop.fonts.FontTriplet;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.pdf.PdfConversion;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
@@ -22,17 +19,13 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.Drawing;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
-import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
-import org.w3c.dom.Element;
 
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.ExceptionConverter;
 import com.lowagie.text.Font;
 import com.lowagie.text.Image;
@@ -42,7 +35,6 @@ import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfPageEvent;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 
@@ -138,7 +130,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     		
     		
     		org.docx4j.wml.Document wmlDocumentEl 
-    			= (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
+    			= wordMLPackage.getMainDocumentPart().getJaxbElement();
     		Body body =  wmlDocumentEl.getBody();
     		List <Object> bodyChildren = body.getEGBlockLevelElts();
     		
@@ -440,7 +432,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	            Rectangle page = document.getPageSize();
 
 	            if (headerFooterPolicy.getHeader(writer.getPageNumber())!=null) {
-		            Hdr hdr = (Hdr)headerFooterPolicy.getHeader(writer.getPageNumber()).getJaxbElement();
+		            Hdr hdr = headerFooterPolicy.getHeader(writer.getPageNumber()).getJaxbElement();
 		            PdfPTable head = new PdfPTable(1); // num cols	            
 		            // TODO - no cell borders
 		            traverseBlockLevelContent( hdr.getEGBlockLevelElts(), head);
@@ -450,7 +442,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	            }
 	            
 	            if (headerFooterPolicy.getFooter(writer.getPageNumber())!=null) {
-		            Ftr ftr = (Ftr)headerFooterPolicy.getHeader(writer.getPageNumber()).getJaxbElement();	            
+		            Ftr ftr = headerFooterPolicy.getFooter(writer.getPageNumber()).getJaxbElement();	            
 		            PdfPTable foot = new PdfPTable(1);
 		            traverseBlockLevelContent( ftr.getEGBlockLevelElts(), foot);
 		            foot.setTotalWidth(page.getWidth() - document.leftMargin() - document.rightMargin());

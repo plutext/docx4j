@@ -21,21 +21,19 @@
 package org.docx4j.openpackaging.parts;
 
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
-
+import org.docx4j.docProps.extended.Properties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.dom4j.Document;
 
 
 
 
-public class DocPropsExtendedPart extends JaxbXmlPart {
+public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 	
 	/*
 	 * <?xml version="1.0" encoding="UTF-8" standalone="yes"?> 
@@ -99,7 +97,8 @@ public class DocPropsExtendedPart extends JaxbXmlPart {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public Properties unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 			
@@ -115,7 +114,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart {
 
 			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
-			jaxbElement = u.unmarshal( is );
+			jaxbElement = (Properties) u.unmarshal( is );
 			
 			
 			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									

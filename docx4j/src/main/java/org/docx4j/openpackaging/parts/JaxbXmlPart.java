@@ -20,20 +20,14 @@
 package org.docx4j.openpackaging.parts;
 
 
-import java.io.File;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.MarshalException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.ValidationEventHandler;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.dom4j.Document;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
@@ -56,9 +50,9 @@ import org.dom4j.Document;
  *  (ie from a zip file or JCR via org.docx4j.io.*).  
  *  TODO - what is the best thing to unmarshall from?
  *  
- *  
+ *  @param <E> type of the content tree object
  * */
-public abstract class JaxbXmlPart extends Part {
+public abstract class JaxbXmlPart<E> extends Part {
 	
 	// This class is abstract
 	// Most applications ought to be able to instantiate
@@ -85,13 +79,13 @@ public abstract class JaxbXmlPart extends Part {
 	
 	
 	/** The content tree (ie JAXB representation of the Part) */
-	public Object jaxbElement = null;
+	public E jaxbElement = null;
 
-	public Object getJaxbElement() {
+	public E getJaxbElement() {
 		return jaxbElement;
 	}
 
-	public void setJaxbElement(Object jaxbElement) {
+	public void setJaxbElement(E jaxbElement) {
 		this.jaxbElement = jaxbElement;
 	}
 	
@@ -205,7 +199,7 @@ public abstract class JaxbXmlPart extends Part {
 	 * @throws JAXBException
 	 *             If any unexpected errors occur while unmarshalling
 	 */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+    public E unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 			
@@ -219,7 +213,7 @@ public abstract class JaxbXmlPart extends Part {
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			log.debug("unmarshalling " + this.getClass().getName() );															
-			jaxbElement = u.unmarshal( is );						
+			jaxbElement = (E) u.unmarshal( is );						
 			log.debug( this.getClass().getName() + " unmarshalled" );									
 
 		} catch (JAXBException e ) {
@@ -233,7 +227,7 @@ public abstract class JaxbXmlPart extends Part {
     }	
 //    public abstract Object unmarshal( java.io.InputStream is ) throws JAXBException;
 
-    public Object unmarshal(org.w3c.dom.Element el) throws JAXBException {
+    public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
 
@@ -241,7 +235,7 @@ public abstract class JaxbXmlPart extends Part {
 						
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			jaxbElement = u.unmarshal( el );
+			jaxbElement = (E) u.unmarshal( el );
 
 			return jaxbElement;
 			

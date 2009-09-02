@@ -50,33 +50,27 @@
 
 package org.docx4j.openpackaging.parts.relationships;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.docx4j.relationships.Relationships;
-import org.docx4j.relationships.Relationship;
-
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
-
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.log4j.Logger;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
+import org.apache.log4j.Logger;
+import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.openpackaging.exceptions.Docx4JRuntimeException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.exceptions.InvalidOperationException;
-import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.ExternalTarget;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.relationships.Relationship;
+import org.docx4j.relationships.Relationships;
 
 
 
@@ -89,7 +83,7 @@ import org.docx4j.openpackaging.parts.PartName;
  * @author Julien Chable, CDubettier
  * @version 0.1
  */
-public final class RelationshipsPart extends JaxbXmlPart { 
+public final class RelationshipsPart extends JaxbXmlPart<Relationships> { 
 	// implements Iterable<Relationship> {
 
 	private static Logger logger = Logger.getLogger(RelationshipsPart.class);
@@ -742,7 +736,8 @@ public final class RelationshipsPart extends JaxbXmlPart {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public Relationships unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 			
@@ -757,7 +752,7 @@ public final class RelationshipsPart extends JaxbXmlPart {
 
 			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
-			jaxbElement = u.unmarshal( is );
+			jaxbElement = (Relationships) u.unmarshal( is );
 			
 			
 			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									

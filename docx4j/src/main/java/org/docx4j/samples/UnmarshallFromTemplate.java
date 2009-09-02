@@ -22,19 +22,14 @@ package org.docx4j.samples;
 
 
 import java.util.HashMap;
-import java.util.List;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
+import org.docx4j.wml.Document;
 
 
 public class UnmarshallFromTemplate {
@@ -74,7 +69,7 @@ public class UnmarshallFromTemplate {
 	      Object obj = XmlUtils.unmarshallFromTemplate(xml, mappings);
 	      
 	      //change  JaxbElement
-	      documentPart.setJaxbElement(obj);
+	      documentPart.setJaxbElement((Document) obj);
 
 	      // Save it		
 		if (save) {		

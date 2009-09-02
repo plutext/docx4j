@@ -28,19 +28,15 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 //import java.net.URI;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-//import org.docx4j.openpackaging.exceptions.Docx4JException;
-//import org.docx4j.openpackaging.parts.DocPropsCorePart;
-//import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.ThemePart;
-//import org.dom4j.Document;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
 
-public abstract class DocumentPart extends JaxbXmlPart {
+public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 	
 	/** Parts which can be the target of a relationship from either
 	 *  the Main Document or the Glossary Document

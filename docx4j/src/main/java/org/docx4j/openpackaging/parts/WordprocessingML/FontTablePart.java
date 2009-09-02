@@ -29,23 +29,16 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
-//import org.docx4j.jaxb.Context;
-
-import org.docx4j.wml.Fonts;
-import org.docx4j.wml.FontRel;
-import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
-
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
-//import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.FontRel;
+import org.docx4j.wml.Fonts;
 
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 
-
-public final class FontTablePart extends JaxbXmlPart {
+public final class FontTablePart extends JaxbXmlPart<Fonts> {
 	
 	private static Logger log = Logger.getLogger(FontTablePart.class);		
 	
@@ -82,7 +75,8 @@ public final class FontTablePart extends JaxbXmlPart {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public Fonts unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 			
@@ -97,7 +91,7 @@ public final class FontTablePart extends JaxbXmlPart {
 
 			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
-			jaxbElement = u.unmarshal( is );
+			jaxbElement = (Fonts) u.unmarshal( is );
 			
 			
 			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									

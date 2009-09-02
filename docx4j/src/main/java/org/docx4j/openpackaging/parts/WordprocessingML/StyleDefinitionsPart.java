@@ -23,21 +23,19 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import java.io.IOException;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.Styles;
 
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 
-
-public final class StyleDefinitionsPart extends JaxbXmlPart {
+public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 	
 	private static Logger log = Logger.getLogger(StyleDefinitionsPart.class);		
 	
@@ -81,7 +79,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public Styles unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 			
@@ -96,7 +95,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 
 			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
-			jaxbElement = u.unmarshal( is );
+			jaxbElement = (Styles) u.unmarshal( is );
 			
 			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
@@ -108,7 +107,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
     	
     }
     
-    public Object unmarshal(org.w3c.dom.Element el) throws JAXBException {
+	@Override
+    public Styles unmarshal(org.w3c.dom.Element el) throws JAXBException {
     	
     	// Note: This is used when we read in a pkg:package 
 
@@ -118,7 +118,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart {
 						
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			jaxbElement = u.unmarshal( el );
+			jaxbElement = (Styles) u.unmarshal( el );
 			
 			return jaxbElement;
 			
