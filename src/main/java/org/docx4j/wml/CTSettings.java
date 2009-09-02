@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.customxml.SchemaLibrary;
+import org.docx4j.math.CTMathPr;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -209,6 +210,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="compat" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Compat" minOccurs="0"/>
  *         &lt;element name="docVars" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_DocVars" minOccurs="0"/>
  *         &lt;element name="rsids" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_DocRsids" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.openxmlformats.org/officeDocument/2006/math}mathPr" minOccurs="0"/>
  *         &lt;element name="uiCompat97To2003" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *         &lt;element name="attachedSchema" maxOccurs="unbounded" minOccurs="0">
  *           &lt;complexType>
@@ -348,6 +350,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "compat",
     "docVars",
     "rsids",
+    "mathPr",
     "uiCompat97To2003",
     "attachedSchema",
     "themeFontLang",
@@ -451,6 +454,8 @@ public class CTSettings
     protected CTCompat compat;
     protected CTDocVars docVars;
     protected CTDocRsids rsids;
+    @XmlElement(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math")
+    protected CTMathPr mathPr;
     protected BooleanDefaultTrue uiCompat97To2003;
     protected List<CTSettings.AttachedSchema> attachedSchema;
     protected CTLanguage themeFontLang;
@@ -2465,6 +2470,30 @@ public class CTSettings
      */
     public void setRsids(CTDocRsids value) {
         this.rsids = value;
+    }
+
+    /**
+     * properties of math in the document
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTMathPr }
+     *     
+     */
+    public CTMathPr getMathPr() {
+        return mathPr;
+    }
+
+    /**
+     * Sets the value of the mathPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTMathPr }
+     *     
+     */
+    public void setMathPr(CTMathPr value) {
+        this.mathPr = value;
     }
 
     /**

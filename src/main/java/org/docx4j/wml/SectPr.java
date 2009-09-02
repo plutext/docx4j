@@ -89,8 +89,8 @@ public class SectPr
 {
 
     @XmlElements({
-        @XmlElement(name = "footerReference", type = FooterReference.class),
-        @XmlElement(name = "headerReference", type = HeaderReference.class)
+        @XmlElement(name = "headerReference", type = HeaderReference.class),
+        @XmlElement(name = "footerReference", type = FooterReference.class)
     })
     protected List<CTRel> egHdrFtrReferences;
     protected CTFtnProps footnotePr;
@@ -142,8 +142,8 @@ public class SectPr
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link FooterReference }
      * {@link HeaderReference }
+     * {@link FooterReference }
      * 
      * 
      */
