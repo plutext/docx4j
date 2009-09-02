@@ -19,6 +19,8 @@ REVISION HISTORY
   :
   
 20081001 - get rid of CT_HdrFtr (just use hdr and ftr)  
+
+20090902 - add math back in
 	
 USAGE INSTRUCTIONS
 	  
@@ -50,7 +52,15 @@ USAGE INSTRUCTIONS
   
   You can't just use the xjc included in Java 6, since it says unrecognized parameter -Xparent-pointer
 	
-  (Note that we generate package.xsd - every time - otherwise it gets left out of object factory)
+  (Note that we generate package.xsd - every time - otherwise it gets left out of object factory
+  
+  	?? 2009 09 02 ?? so do
+  
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer package.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+  
+  )
+  
+  
 	
 	cd to the directory containing the new sources
 	
@@ -119,9 +129,8 @@ PRINCIPLES:
 	<xsd:import id="sl"
 		namespace="http://schemas.openxmlformats.org/schemaLibrary/2006/main"
 		schemaLocation="../customXml/shared-customXmlSchemaProperties.xsd"/>
-	<!--	
-	<xsd:import id="m" namespace="http://schemas.openxmlformats.org/officeDocument/2006/math" schemaLocation="shared-math.xsd" />
-	-->
+	<xsd:import id="m" namespace="http://schemas.openxmlformats.org/officeDocument/2006/math" 
+		schemaLocation="../shared/shared-math.xsd" />
 	
 	
 	<xsd:import id="wp" namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" 
@@ -3480,8 +3489,8 @@ PRINCIPLES:
 		<xsd:complexContent>
 			<xsd:extension base="CT_TrackChange">
 				<xsd:choice minOccurs="0" maxOccurs="unbounded">
+					<xsd:group ref="m:EG_OMathMathElements" />
 					<xsd:group ref="EG_ContentRunContent"></xsd:group>
-					<!--<xsd:group ref="m:EG_OMathMathElements" />-->
 				</xsd:choice>
 			</xsd:extension>
 		</xsd:complexContent>
@@ -11377,13 +11386,12 @@ PRINCIPLES:
 					<xsd:documentation>Listing of All Revision Save ID
 						Values</xsd:documentation>
 				</xsd:annotation>
-			</xsd:element> <!-- 
+			</xsd:element> 
 			<xsd:element ref="m:mathPr" minOccurs="0" maxOccurs="1">
-			<xsd:annotation>
-			<xsd:documentation>properties of math in the document</xsd:documentation>
-			</xsd:annotation>
+				<xsd:annotation>
+					<xsd:documentation>properties of math in the document</xsd:documentation>
+				</xsd:annotation>
 			</xsd:element>
-			-->
 			<xsd:element name="uiCompat97To2003" type="BooleanDefaultTrue"
 				minOccurs="0">
 				<xsd:annotation>
@@ -12401,13 +12409,12 @@ PRINCIPLES:
 			<xsd:documentation>Rich Text Box Content Container</xsd:documentation>
 		</xsd:annotation>
 	</xsd:element>
-	<!--	
 	<xsd:group name="EG_MathContent">
-	<xsd:choice>
-	<xsd:element ref="m:oMathPara"></xsd:element>
-	<xsd:element ref="m:oMath"></xsd:element>
-	</xsd:choice>
-	</xsd:group> -->
+		<xsd:choice>
+			<xsd:element ref="m:oMathPara"></xsd:element>
+			<xsd:element ref="m:oMath"></xsd:element>
+		</xsd:choice>
+	</xsd:group> 
 	<xsd:group name="EG_BlockLevelChunkElts">
 		<xsd:choice>
 			<xsd:group ref="EG_ContentBlockContent" minOccurs="0"
@@ -12447,7 +12454,7 @@ PRINCIPLES:
 				<xsd:extension base="CT_TrackChange">
 					<xsd:choice minOccurs="0" maxOccurs="unbounded">
 						<xsd:group ref="EG_ContentRunContent"></xsd:group>
-						<!--<xsd:group ref="m:EG_OMathMathElements" />-->
+						<xsd:group ref="m:EG_OMathMathElements" />
 					</xsd:choice>
 				</xsd:extension>
 			</xsd:complexContent>
@@ -12466,7 +12473,7 @@ PRINCIPLES:
 				<xsd:extension base="CT_TrackChange">
 					<xsd:choice minOccurs="0" maxOccurs="unbounded">
 						<xsd:group ref="EG_ContentRunContent"></xsd:group>
-						<!--<xsd:group ref="m:EG_OMathMathElements" />-->
+						<xsd:group ref="m:EG_OMathMathElements" />
 					</xsd:choice>
 				</xsd:extension>
 			</xsd:complexContent>

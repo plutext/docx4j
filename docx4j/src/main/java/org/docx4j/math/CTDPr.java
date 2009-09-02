@@ -1,0 +1,248 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
+
+package org.docx4j.math;
+
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
+
+
+/**
+ * <p>Java class for CT_DPr complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="CT_DPr">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="begChr" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}CT_Char" minOccurs="0"/>
+ *         &lt;element name="sepChr" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}CT_Char" minOccurs="0"/>
+ *         &lt;element name="endChr" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}CT_Char" minOccurs="0"/>
+ *         &lt;element name="grow" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}CT_OnOff" minOccurs="0"/>
+ *         &lt;element name="shp" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}CT_Shp" minOccurs="0"/>
+ *         &lt;element name="ctrlPr" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}CT_CtrlPr" minOccurs="0"/>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "CT_DPr", propOrder = {
+    "begChr",
+    "sepChr",
+    "endChr",
+    "grow",
+    "shp",
+    "ctrlPr"
+})
+public class CTDPr
+    implements Child
+{
+
+    protected CTChar begChr;
+    protected CTChar sepChr;
+    protected CTChar endChr;
+    protected CTOnOff grow;
+    protected CTShp shp;
+    protected CTCtrlPr ctrlPr;
+    @XmlTransient
+    private Object parent;
+
+    /**
+     * Gets the value of the begChr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTChar }
+     *     
+     */
+    public CTChar getBegChr() {
+        return begChr;
+    }
+
+    /**
+     * Sets the value of the begChr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTChar }
+     *     
+     */
+    public void setBegChr(CTChar value) {
+        this.begChr = value;
+    }
+
+    /**
+     * Gets the value of the sepChr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTChar }
+     *     
+     */
+    public CTChar getSepChr() {
+        return sepChr;
+    }
+
+    /**
+     * Sets the value of the sepChr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTChar }
+     *     
+     */
+    public void setSepChr(CTChar value) {
+        this.sepChr = value;
+    }
+
+    /**
+     * Gets the value of the endChr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTChar }
+     *     
+     */
+    public CTChar getEndChr() {
+        return endChr;
+    }
+
+    /**
+     * Sets the value of the endChr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTChar }
+     *     
+     */
+    public void setEndChr(CTChar value) {
+        this.endChr = value;
+    }
+
+    /**
+     * Gets the value of the grow property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTOnOff }
+     *     
+     */
+    public CTOnOff getGrow() {
+        return grow;
+    }
+
+    /**
+     * Sets the value of the grow property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTOnOff }
+     *     
+     */
+    public void setGrow(CTOnOff value) {
+        this.grow = value;
+    }
+
+    /**
+     * Gets the value of the shp property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTShp }
+     *     
+     */
+    public CTShp getShp() {
+        return shp;
+    }
+
+    /**
+     * Sets the value of the shp property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTShp }
+     *     
+     */
+    public void setShp(CTShp value) {
+        this.shp = value;
+    }
+
+    /**
+     * Gets the value of the ctrlPr property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTCtrlPr }
+     *     
+     */
+    public CTCtrlPr getCtrlPr() {
+        return ctrlPr;
+    }
+
+    /**
+     * Sets the value of the ctrlPr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTCtrlPr }
+     *     
+     */
+    public void setCtrlPr(CTCtrlPr value) {
+        this.ctrlPr = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
+    }
+
+}

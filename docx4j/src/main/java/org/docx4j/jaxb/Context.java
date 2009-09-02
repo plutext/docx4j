@@ -36,7 +36,7 @@ public class Context {
 	static {
 		
 		try {		
-			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.vml:org.docx4j.vml.officedrawing");
+			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math");
 			jcThemePart = JAXBContext.newInstance("org.docx4j.dml");
 			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms");
 			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom");
