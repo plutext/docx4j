@@ -22,44 +22,33 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
-import org.docx4j.dml.BaseStyles;
+import org.apache.log4j.Logger;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
-import org.docx4j.wml.SdtBlock;
-
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBElement; 
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 
 /**
  * @author jharrop
  *
  */
-public class MainDocumentPart extends DocumentPart  {
+public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	
 	private static Logger log = Logger.getLogger(MainDocumentPart.class);
 		
@@ -109,7 +98,8 @@ public class MainDocumentPart extends DocumentPart  {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public org.docx4j.wml.Document unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 		    		    
@@ -121,7 +111,7 @@ public class MainDocumentPart extends DocumentPart  {
 //			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );			
 //			jaxbElement = (org.docx4j.wml.Document)root.getValue();
 			
-			jaxbElement =  u.unmarshal( is );
+			jaxbElement =  (org.docx4j.wml.Document) u.unmarshal( is );
 			return jaxbElement;
 			
 			//System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									

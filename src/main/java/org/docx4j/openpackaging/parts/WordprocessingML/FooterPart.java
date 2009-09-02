@@ -21,22 +21,18 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import java.io.IOException;
-
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.Ftr;
 
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 
-
-public final class FooterPart extends JaxbXmlPart {
+public final class FooterPart extends JaxbXmlPart<Ftr> {
 	
 	private static Logger log = Logger.getLogger(FooterPart.class);			
 	
@@ -75,7 +71,8 @@ public final class FooterPart extends JaxbXmlPart {
 	     * @throws JAXBException 
 	     *     If any unexpected errors occur while unmarshalling
 	     */
-	    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+		@Override
+	    public Ftr unmarshal( java.io.InputStream is ) throws JAXBException {
 	    	
 			try {
 				
@@ -90,7 +87,7 @@ public final class FooterPart extends JaxbXmlPart {
 
 				log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 							
-				jaxbElement = u.unmarshal( is );
+				jaxbElement = (Ftr) u.unmarshal( is );
 								
 				log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 

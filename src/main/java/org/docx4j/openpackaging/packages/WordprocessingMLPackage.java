@@ -21,18 +21,12 @@
 package org.docx4j.openpackaging.packages;
 
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.OutputStream;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
@@ -42,7 +36,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
-import org.docx4j.fonts.FontUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.HeaderFooterPolicy;
 import org.docx4j.openpackaging.contenttype.ContentType;
@@ -50,7 +43,6 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.LoadFromZipNG;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
@@ -61,10 +53,9 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import com.lowagie.text.pdf.BaseFont;
+import org.docx4j.wml.Document;
+import org.docx4j.wml.Styles;
 
 
 
@@ -247,14 +238,16 @@ public class WordprocessingMLPackage extends Package {
 //		} else {
 //			this.getMainDocumentPart().setJaxbElement(wmlDocument);
 //		}	
-		this.getMainDocumentPart().setJaxbElement(  ((JaxbXmlPart)tmpDocPart).getJaxbElement() );
+		this.getMainDocumentPart().setJaxbElement(
+				((JaxbXmlPart<Document>) tmpDocPart).getJaxbElement() );
 //				
 //		if (wmlStyles==null) {
 //			log.warn("Couldn't get style definitions part from package transform result!");			
 //		} else {
 //			this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(wmlStyles);
 //		}
-		this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(  ((JaxbXmlPart)tmpStylesPart).getJaxbElement() );
+		this.getMainDocumentPart().getStyleDefinitionsPart().setJaxbElement(
+				((JaxbXmlPart<Styles>) tmpStylesPart).getJaxbElement() );
     	
     }
     

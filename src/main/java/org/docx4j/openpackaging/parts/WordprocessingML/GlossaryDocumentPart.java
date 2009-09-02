@@ -21,7 +21,6 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
@@ -29,10 +28,11 @@ import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.GlossaryDocument;
 
 
 
-public final class GlossaryDocumentPart extends DocumentPart  {
+public final class GlossaryDocumentPart extends DocumentPart<GlossaryDocument> {
 
 	
 	private static Logger log = Logger.getLogger(GlossaryDocumentPart.class);
@@ -72,7 +72,8 @@ public final class GlossaryDocumentPart extends DocumentPart  {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public GlossaryDocument unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 		    		    
@@ -84,7 +85,7 @@ public final class GlossaryDocumentPart extends DocumentPart  {
 //			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );			
 //			jaxbElement = (org.docx4j.wml.Document)root.getValue();
 			
-			jaxbElement =  u.unmarshal( is );
+			jaxbElement =  (GlossaryDocument) u.unmarshal( is );
 			return jaxbElement;
 			
 			//System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									

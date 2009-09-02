@@ -21,14 +21,12 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
 import java.math.BigInteger;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
@@ -56,7 +54,7 @@ public class NumberingRestart {
 		// Add numbering part
 		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
 		wordMLPackage.getMainDocumentPart().addTargetPart(ndp);
-		ndp.setJaxbElement( XmlUtils.unmarshalString(initialNumbering) );
+		ndp.setJaxbElement( (Numbering) XmlUtils.unmarshalString(initialNumbering) );
 		
 		
 		// 

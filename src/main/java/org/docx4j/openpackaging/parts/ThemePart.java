@@ -24,15 +24,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.docx4j.dml.Theme;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
-import org.dom4j.Document;
 
 
-
-public final class ThemePart extends JaxbXmlPart {
+public final class ThemePart extends JaxbXmlPart<Theme> {
 	
 	private static Logger log = Logger.getLogger(ThemePart.class);		
 	
@@ -86,7 +84,8 @@ public final class ThemePart extends JaxbXmlPart {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+    @Override
+    public Theme unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 			
@@ -99,7 +98,7 @@ public final class ThemePart extends JaxbXmlPart {
 
 			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
-			jaxbElement = u.unmarshal( is );
+			jaxbElement = (Theme) u.unmarshal( is );
 			
 			
 			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									

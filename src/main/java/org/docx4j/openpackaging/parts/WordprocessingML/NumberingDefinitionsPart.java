@@ -35,10 +35,9 @@ import org.docx4j.model.listnumbering.ListNumberingDefinition;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Numbering.Num;
@@ -49,7 +48,7 @@ import org.docx4j.wml.PPrBase.Ind;
 
 
 
-public final class NumberingDefinitionsPart extends JaxbXmlPart {
+public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 	
 	public NumberingDefinitionsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -289,7 +288,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public Numbering unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 		    		    
@@ -307,7 +307,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart {
 			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 						
-			jaxbElement = u.unmarshal( is );
+			jaxbElement = (Numbering) u.unmarshal( is );
 			
 			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 

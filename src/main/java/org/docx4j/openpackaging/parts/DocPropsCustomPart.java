@@ -21,15 +21,11 @@
 package org.docx4j.openpackaging.parts;
 
 
-import java.util.Iterator;
-import java.util.Map;
-
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-
 import org.apache.log4j.Logger;
-
+import org.docx4j.docProps.custom.Properties;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
@@ -39,7 +35,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * @author jharrop
  *
  */
-public class DocPropsCustomPart extends JaxbXmlPart {
+public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 	
 	/* Specification > Shared ML > Metadata > Custom Properties
 	 * 
@@ -112,7 +108,8 @@ public class DocPropsCustomPart extends JaxbXmlPart {
      * @throws JAXBException 
      *     If any unexpected errors occur while unmarshalling
      */
-    public Object unmarshal( java.io.InputStream is ) throws JAXBException {
+	@Override
+    public Properties unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
 			
@@ -128,7 +125,7 @@ public class DocPropsCustomPart extends JaxbXmlPart {
 
 			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
 						
-			jaxbElement = u.unmarshal( is );
+			jaxbElement = (Properties) u.unmarshal( is );
 			
 			
 			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
