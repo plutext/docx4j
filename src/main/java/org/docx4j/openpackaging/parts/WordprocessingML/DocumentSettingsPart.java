@@ -21,21 +21,27 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
-import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import org.dom4j.Document;
-
+import org.docx4j.wml.CTSettings;
 
 
-public final class DocumentSettingsPart extends Dom4jXmlPart { 
+
+public final class DocumentSettingsPart extends JaxbXmlPart<CTSettings> { 
 	
 
-	public DocumentSettingsPart(PartName partName) 
-	throws InvalidFormatException {
+	public DocumentSettingsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init();
+	}
+
+	public DocumentSettingsPart() throws InvalidFormatException {
+		super(new PartName("/word/settings.xml"));
+		init();
+	}
+	
+	public void init() {		
 		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
@@ -45,10 +51,5 @@ public final class DocumentSettingsPart extends Dom4jXmlPart {
 		setRelationshipType(Namespaces.SETTINGS);
 				
 	}
-
-	@Override
-	public Document getDocument() {
-		return document;
-	}	
 	
 }
