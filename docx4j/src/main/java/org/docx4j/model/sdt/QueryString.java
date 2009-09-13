@@ -44,6 +44,15 @@ public class QueryString {
 	
 	private static Logger log = Logger.getLogger(QueryString.class);
 	
+	/**
+	 * Encode the map as a query string, suitable for storing
+	 * in w:/sdtPr/w:tag
+	 * 
+	 * Note that if you intend to use unmarshalString on this,
+	 * you'll first need to encode the '&' as '&amp;'
+	 * @param map
+	 * @return
+	 */
 	public static String create(HashMap<String, String> map){
 
 		StringBuffer sb = new StringBuffer();
