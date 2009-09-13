@@ -159,6 +159,7 @@ public class XmlUtils {
 	
 
 	/** Unmarshal a Dom4j element as JAXB object using  JAXBContext Context.jc */ 
+	@Deprecated
 	public static Object unmarshalDom4jDoc(org.dom4j.Document doc) {
 				
 		JAXBContext jc = Context.jc;
@@ -190,6 +191,7 @@ public class XmlUtils {
 	 *  See https://jaxb.dev.java.net/guide/_XmlRootElement_and_unmarshalling.html  
 	 *  
 	 *  */ 
+	@Deprecated
 	public static  <T> JAXBElement<T> unmarshalDom4jEl(Element el, Class<T> declaredType) {
 		
 		JAXBElement<T> o = null;
@@ -252,6 +254,7 @@ public class XmlUtils {
 	}
 	
 	/** Marshal to a Dom4j document */ 
+	@Deprecated
 	public static org.dom4j.Document marshaltoDom4jDocument(Object o) {
 		// TODO - refactor this.
 		try {
