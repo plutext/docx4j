@@ -171,13 +171,12 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	}
 	
 	
-	private Relationships relationships;
 	public Relationships getRelationships() {
-		return relationships;
+		return jaxbElement;
 	}
 
-	public void setRelationships(Relationships relationships) {
-		this.relationships = relationships;
+	public void setRelationships(Relationships jaxbElement) {
+		this.jaxbElement = jaxbElement;
 	}	
 
 	// NB partName is the partName of this relationship part,
@@ -241,9 +240,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		org.docx4j.relationships.ObjectFactory factory =
 			new org.docx4j.relationships.ObjectFactory();
 		
-		relationships = factory.createRelationships();
-		jaxbElement = relationships;
-
+		jaxbElement = factory.createRelationships();
 		
 	}
 	
@@ -404,7 +401,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			// since the docx is constructed by walking the
 			// rels tree.
 			Relationship relToBeRemoved = null;
-			for (Relationship relic : relationships.getRelationship() ) {
+			for (Relationship relic : jaxbElement.getRelationship() ) {
 				
 				if (relic.getTarget().equals( rel.getTarget() )) {
 					
@@ -452,7 +449,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 		// Make a list in order to avoid concurrent modification exception
 		java.util.ArrayList<Relationship> relationshipsToGo = new java.util.ArrayList<Relationship>();
-		for (Relationship r : relationships.getRelationship() ) {
+		for (Relationship r : jaxbElement.getRelationship() ) {
 			relationshipsToGo.add(r);
 		}
 
@@ -501,7 +498,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			// Throw an error if this can't be found!
 			Relationship relToBeRemoved = null;
 //			for (Relationship rel : relationshipsByID.values() ) {
-			for (Relationship rel : relationships.getRelationship() ) {
+			for (Relationship rel : jaxbElement.getRelationship() ) {
 				
 				if (rel.getTargetMode() !=null
 						&& rel.getTargetMode().equals("External") ) {
@@ -579,7 +576,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public void resetIdAllocator() {
 		
 		int highestId = 0;
-		for (Relationship rel : relationships.getRelationship() ) {
+		for (Relationship rel : jaxbElement.getRelationship() ) {
 
 			String id = rel.getId();
 			try {
@@ -629,14 +626,14 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 		// Only add it if there is no rel with the same
 		// id there already
-		for (Relationship existing : relationships.getRelationship() ) {			
+		for (Relationship existing : jaxbElement.getRelationship() ) {			
 			if (existing.getId().equals(relId) ) {
 				// A rel with this id is already present
 				log.info("Refusing to add another rel with id " + relId + ". Target is " + rel.getTarget() );
 				return false;
 			}			
 		}
-		relationships.getRelationship().add(rel);
+		jaxbElement.getRelationship().add(rel);
 		return true;
 	}
 
@@ -651,7 +648,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		if (rel == null)
 			throw new IllegalArgumentException("rel");
 		
-		relationships.getRelationship().remove(rel);
+		jaxbElement.getRelationship().remove(rel);
 
 	}
 
@@ -665,7 +662,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 */
 	public Relationship getRelationshipByID(String id) {
 		
-		for ( Relationship r : relationships.getRelationship()  ) {
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
 			
 			if (r.getId().equals(id) ) {
 				return r;
@@ -678,7 +675,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 	public Relationship getRelationshipByType(String type) {
 		
-		for ( Relationship r : relationships.getRelationship()  ) {
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
 			
 			if (r.getType().equals(type) ) {
 				return r;
@@ -693,7 +690,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * Get the number of relationships in the collection.
 	 */
 	public int size() {
-		return relationships.getRelationship().size();
+		return jaxbElement.getRelationship().size();
 	}
 
 	/**
@@ -761,7 +758,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			e.printStackTrace();
 		}
 		
-		relationships = (Relationships)jaxbElement;
+		jaxbElement = (Relationships)jaxbElement;
 		
 		nextId = size() + 1;
 		    	
