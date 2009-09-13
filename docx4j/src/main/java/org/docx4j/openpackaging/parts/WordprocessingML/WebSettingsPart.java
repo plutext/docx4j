@@ -22,34 +22,34 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
-import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import org.dom4j.Document;
-
+import org.docx4j.wml.CTWebSettings;
 
 
-public final class WebSettingsPart extends Dom4jXmlPart  {
+
+public final class WebSettingsPart extends JaxbXmlPart<CTWebSettings> {
 	
-	public WebSettingsPart(PartName partName) 
-			throws InvalidFormatException {
+	public WebSettingsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init();
+	}
+
+	public WebSettingsPart() throws InvalidFormatException {
+		super(new PartName("/word/webSettings.xml"));
+		init();
+	}
+
+	public void init() {		
 		
-		// Used if this Part is added to [Content_Types].xml 
+		// Used if this Part is added to [Content_Types].xml
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.WORDPROCESSINGML_WEBSETTINGS));
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.WEB_SETTINGS);
 		
-	}
-
-	@Override
-	public Document getDocument() {
-		return document;
 	}	
-	
 
 }
