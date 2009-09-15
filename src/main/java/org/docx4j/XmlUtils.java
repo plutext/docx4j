@@ -21,6 +21,7 @@
 
 package org.docx4j;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +35,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -455,48 +457,56 @@ public class XmlUtils {
 		return null;
 	}
 	
-	
 	/** Clone this JAXB object, using default JAXBContext. */ 
-	public static Object deepCopy(Object in) {
-		
-		JAXBContext jc = Context.jc;
-		
-		return deepCopy(in, jc);
-		
-	}
-
-	/** Clone this JAXB object */ 
-	public static Object deepCopy(Object in, JAXBContext jc) {
-
-		log.debug("Attempting to clone: " + in.getClass().getName() );
-
-		// This isn't strictly necessary,
-		// but it makes debugging easier, because it causes
-		// any missing @XmlRootElement to be identified in the stack trace.
-		if (in instanceof javax.xml.bind.JAXBElement) {
-			in = ((javax.xml.bind.JAXBElement)in).getValue();
-			log.debug("Attempting to clone: " + in.getClass().getName() );
-		}		
-		
-		Object o = null;
-		try {				
-
-			Unmarshaller u = jc.createUnmarshaller();
-			
-			// Temp
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			//javax.xml.bind.util.JAXBSource source = new javax.xml.bind.util.JAXBSource(jc, in); 
-			
-			o = u.unmarshal( new javax.xml.bind.util.JAXBSource(jc, in) );
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}		
-		return o;
-		
+	public static <T> T deepCopy(T value) {		
+		return deepCopy(value, Context.jc);		
 	}
 	
+	/** Clone this JAXB object
+	 * @param value
+	 * @param jc
+	 * @return
+	 */
+	public static <T> T deepCopy(T value, JAXBContext jc) {
+		try {
+			JAXBElement<?> elem;
+			Class<?> valueClass;
+			if (value instanceof JAXBElement<?>) {
+				log.debug("deep copy of JAXBElement..");
+				elem = (JAXBElement<?>) value;
+				valueClass = elem.getDeclaredType();
+			} else {
+				log.debug("deep copy of " + value.getClass().getName() );
+				@SuppressWarnings("unchecked")
+				Class<T> classT = (Class<T>) value.getClass();
+				elem = new JAXBElement<T>(new QName("temp"), classT, value);
+				valueClass = classT;
+			}
+
+			Marshaller mar = Context.jc.createMarshaller();
+			ByteArrayOutputStream bout = new ByteArrayOutputStream(256);
+			mar.marshal(elem, bout);
+
+			Unmarshaller unmar = Context.jc.createUnmarshaller();
+			elem = unmar.unmarshal(new StreamSource(new ByteArrayInputStream(
+					bout.toByteArray())), valueClass);
+
+			T res;
+			if (value instanceof JAXBElement<?>) {
+				@SuppressWarnings("unchecked")
+				T resT = (T) elem;
+				res = resT;
+			} else {
+				@SuppressWarnings("unchecked")
+				T resT = (T) elem.getValue();
+				res = resT;
+			}
+			log.info("deep copy success!");
+			return res;
+		} catch (JAXBException ex) {
+			throw new IllegalArgumentException(ex);
+		}
+	}
 	
 	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
 	public static org.w3c.dom.Document neww3cDomDocument() {
