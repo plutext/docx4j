@@ -20,20 +20,16 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.dom4j.Document;
 
 
 
-public final class AlternativeFormatInputPart extends Dom4jXmlPart {
+public final class AlternativeFormatInputPart extends XmlPart {
 	
 	public AlternativeFormatInputPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -47,8 +43,9 @@ public final class AlternativeFormatInputPart extends Dom4jXmlPart {
 	}
 
 	@Override
-	public Document getDocument() {
-		return document;
-	}	
+	public org.w3c.dom.Document getDocument() throws Docx4JException {
+		// Used when saving to JCR
+		return doc;
+	}
 	
 }
