@@ -35,15 +35,21 @@ public class Context {
 	
 	static {
 		
-		try {		
-			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math");
-			jcThemePart = JAXBContext.newInstance("org.docx4j.dml");
-			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms");
-			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom");
-			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended");
-			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage");
-			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships");
-			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties");
+		try {	
+			
+			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
+			// so explicitly specify our class loader.
+			Context tmp = new Context();
+			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
+			
+			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math",classLoader );
+			jcThemePart = JAXBContext.newInstance("org.docx4j.dml",classLoader );
+			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader );
+			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader );
+			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader );
+			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader );
+			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
+			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader );
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
