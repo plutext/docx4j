@@ -36,8 +36,13 @@ import org.dom4j.io.SAXReader;
  *  at present there are some parts for which we don't have
  *  JAXB representations. 
  *  
- *  Until such time as a JAXB representation for an XML Part exists,
- *  the Part should extend this class.   
+ *  It used to be the case that where a JAXB representation for an XML Part 
+ *  didn't exist, it would extend this class.
+ *  
+ *  However, all dependencies on dom4j are being removed from docx4j.
+ *  See instead XmlPart.   
+ *  
+ *  Dom4jXmlPart will be removed from docx4j for the docx4j v3 release.
  * */
 @Deprecated
 public abstract class Dom4jXmlPart extends Part {

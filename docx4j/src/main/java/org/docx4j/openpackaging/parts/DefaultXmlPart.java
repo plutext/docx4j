@@ -20,22 +20,21 @@
 
 package org.docx4j.openpackaging.parts;
 
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Part;
-
-import org.dom4j.Document;
 
 
 /** Part to use if no specialised Part exists */
-public final class DefaultXmlPart extends Dom4jXmlPart {
+public final class DefaultXmlPart extends XmlPart {
 	
 	public DefaultXmlPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 	}
 
 	@Override
-	public Document getDocument() {
-		return document;
-	}	
+	public org.w3c.dom.Document getDocument() throws Docx4JException {
+		// Used when saving to JCR
+		return doc;
+	}
 	
 }

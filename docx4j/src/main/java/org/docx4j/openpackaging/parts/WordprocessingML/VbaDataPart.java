@@ -21,15 +21,24 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.dom4j.Document;
 
 
-public final class VbaDataPart extends Dom4jXmlPart {
+public final class VbaDataPart extends XmlPart {
+	
+	/*
+	 * eg <wne:vbaSuppData xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml">
+				<wne:mcds>
+					<wne:mcd wne:macroName="PROJECT.THISDOCUMENT.AUTOOPEN" wne:name="Project.ThisDocument.AutoOpen" wne:bEncrypt="00" wne:cmg="56"/>
+				</wne:mcds>
+			</wne:vbaSuppData>
+
+	 * 
+	 */
 	
 	public VbaDataPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -53,8 +62,9 @@ public final class VbaDataPart extends Dom4jXmlPart {
 	}
 
 	@Override
-	public Document getDocument() {
-		return document;
-	}	
+	public org.w3c.dom.Document getDocument() throws Docx4JException {
+		// Used when saving to JCR
+		return doc;
+	}
 	
 }

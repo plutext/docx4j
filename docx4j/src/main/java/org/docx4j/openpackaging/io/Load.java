@@ -104,11 +104,16 @@ public class Load {
 	 * @return the customXmlDataStorageClass
 	 */
 	static public CustomXmlDataStorage getCustomXmlDataStorageClass() {
-		if (customXmlDataStorageClass==null) {
-			customXmlDataStorageClass = new CustomXmlDataStorageImpl();
+		try {
+			if (customXmlDataStorageClass==null) {
+				customXmlDataStorageClass = new CustomXmlDataStorageImpl();
+			}			
+			return customXmlDataStorageClass;
+		} catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
-		
-		return customXmlDataStorageClass;
 	}
 	
 	protected static void debugPrint( Document coreDoc) {
