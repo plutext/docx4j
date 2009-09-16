@@ -1,0 +1,22 @@
+docx4j release process
+----------------------
+
+Check jar versions in pom.xml, build.xml
+
+Update README.txt with release info.
+
+Update pom,xml with target version number
+
+Tag the version in svn
+
+Create docx4j-x.x.x.tar.gz (ant dist)
+
+Create javadoc (ant javadoc)
+
+Maven upload
+
+Announce release in docx4j forum
+
+
+
+ 
