@@ -483,11 +483,11 @@ public class XmlUtils {
 				valueClass = classT;
 			}
 
-			Marshaller mar = Context.jc.createMarshaller();
+			Marshaller mar = jc.createMarshaller();
 			ByteArrayOutputStream bout = new ByteArrayOutputStream(256);
 			mar.marshal(elem, bout);
 
-			Unmarshaller unmar = Context.jc.createUnmarshaller();
+			Unmarshaller unmar = jc.createUnmarshaller();
 			elem = unmar.unmarshal(new StreamSource(new ByteArrayInputStream(
 					bout.toByteArray())), valueClass);
 
