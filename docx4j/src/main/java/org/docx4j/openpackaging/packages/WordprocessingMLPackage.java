@@ -26,7 +26,10 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
@@ -133,12 +136,30 @@ public class WordprocessingMLPackage extends Package {
 	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
-	 * from an existing File.
+	 * from an existing File (.docx zip or .xml Flat OPC).
      *
 	 * @param docxFile
 	 *            The docx file 
 	 */	
 	public static WordprocessingMLPackage load(java.io.File docxFile) throws Docx4JException {
+		
+		if (docxFile.getName().endsWith(".xml")) {
+			
+			org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage;
+			try {
+				Unmarshaller u = Context.jcXmlPackage.createUnmarshaller();
+				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+						new javax.xml.transform.stream.StreamSource(new FileInputStream(docxFile.getAbsolutePath())))).getValue(); 
+
+				xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl);
+			} catch (Exception e) {
+				log.error(e);
+				throw new Docx4JException("Couldn't load xml from " + docxFile.getAbsolutePath(), e);
+			} 
+			return (WordprocessingMLPackage)xmlPackage.get(); 
+		}
 		
 //		LoadFromZipFile loader = new LoadFromZipFile();
 		LoadFromZipNG loader = new LoadFromZipNG();
@@ -147,7 +168,8 @@ public class WordprocessingMLPackage extends Package {
 		try {
 			fis = new FileInputStream(docxFile);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			log.error(e);
+			throw new Docx4JException("Couldn't load docx from " + docxFile.getAbsolutePath(), e);
 		}
 		return (WordprocessingMLPackage)loader.get(fis);
 	}
@@ -382,7 +404,7 @@ public class WordprocessingMLPackage extends Package {
 		}
 		
 		
-		Map<String, Object> getSettings() {
+		public Map<String, Object> getSettings() {
 			Map<String, Object> settings = new java.util.HashMap<String, Object>();
 			
 			settings.put("removeProofErrors", removeProofErrors);
