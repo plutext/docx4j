@@ -83,6 +83,21 @@ import java.util.Calendar;
  *
  */
 public class SaveToJCR {
+
+	/*  20091001; a cursory examination suggests it would be nice
+	 *  to have the following method:
+	 *  
+		public static Node savePart(Session jcrSession, Node baseNode, 
+				Part part, boolean followRels) throws Docx4JException;
+		
+	 *  - static
+	 *  - work whether its an XML part or not
+	 *  - each part would have to know its mime type (add this to part
+	 *    interface? but that's usurping CTM's responsibility?)
+	 *  - ability to decide whether you are just saving this part,
+	 *    or also those pointed to by its rels
+	 *
+	 */	
 	
 	private static Logger log = Logger.getLogger(SaveToJCR.class);		
 
@@ -301,6 +316,7 @@ public class SaveToJCR {
 		
 	}
 
+	
 	@Deprecated // since MIME type unspecified
 	public static Node saveRawXmlPart(Session jcrSession, Node baseNode, 
 			String partName, org.w3c.dom.Document w3cDoc) throws Docx4JException {
