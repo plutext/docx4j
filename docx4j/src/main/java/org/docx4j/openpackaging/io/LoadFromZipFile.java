@@ -64,7 +64,7 @@ public class LoadFromZipFile extends Load {
 		
 	private static Logger log = Logger.getLogger(LoadFromZipFile.class);
 	
-	private static boolean conserveMemory = true;
+	private static boolean conserveMemory = false;
 	public static void setConserveMemory(boolean conserveMemoryVal) {
 		conserveMemory = conserveMemoryVal;
 	}
