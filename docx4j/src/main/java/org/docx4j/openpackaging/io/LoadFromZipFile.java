@@ -48,9 +48,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
@@ -63,15 +61,14 @@ import org.dom4j.io.SAXReader;
  *
  */
 public class LoadFromZipFile extends Load {
-	
-	/*
-	 * It would be nice to be about to load a zip file from 
-	 * an input stream, rather than from a file, but java.util.zip
-	 * doesn't support this.  Nor does truezip (?). jazzlib?
-	 *
-	 */
-	
+		
 	private static Logger log = Logger.getLogger(LoadFromZipFile.class);
+	
+	private static boolean conserveMemory = true;
+	public static void setConserveMemory(boolean conserveMemoryVal) {
+		conserveMemory = conserveMemoryVal;
+	}
+	
 
 	// Testing
 	public static void main(String[] args) throws Exception {
@@ -496,7 +493,12 @@ public class LoadFromZipFile extends Load {
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
-					((BinaryPart)part).setBinaryData(is);
+					if (conserveMemory) {
+						((BinaryPart)part).setBinaryDataRef(
+							zf.getName(), resolvedPartUri);
+					} else {
+						((BinaryPart)part).setBinaryData(is);
+					}
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
 					
@@ -517,7 +519,13 @@ public class LoadFromZipFile extends Load {
 
 				// Try to get it as a binary part
 				part = getBinaryPart(zf, ctm, resolvedPartUri);
-				((BinaryPart)part).setBinaryData(is);
+				if (conserveMemory) {
+					((BinaryPart)part).setBinaryDataRef(
+							zf.getName(), resolvedPartUri);
+				} else {
+					((BinaryPart)part).setBinaryData(is);
+				}
+						
 			}
 		} catch (Exception ex) {
 			// IOException, URISyntaxException
@@ -545,7 +553,13 @@ public class LoadFromZipFile extends Load {
 			in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
 			part = new BinaryPart( new PartName("/" + resolvedPartUri));
 			
-			((BinaryPart)part).setBinaryData(in);
+			if (conserveMemory) {
+				((BinaryPart)part).setBinaryDataRef(
+						zf.getName(), resolvedPartUri);
+			} else {
+				((BinaryPart)part).setBinaryData(in);
+			}
+					
 			log.info("Stored as BinaryData" );
 			
 		} catch (IOException ioe) {
@@ -596,6 +610,7 @@ public class LoadFromZipFile extends Load {
 		}
 		
 	}
+
 	
 	
 	
