@@ -91,7 +91,18 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		log.info(message);
 	}
 	
-	static Templates xslt;			
+	static Templates xslt;		
+
+	/**
+	 * org/docx4j/convert/out/html/docx4j2xhtml.xslt will be used by default
+	 * to transform the docx to html.
+	 * This method allows you to use your own xslt instead.
+	 * @param xslt
+	 */	
+	public static void setXslt(Templates xslt) {
+		HtmlExporterNG.xslt = xslt;
+	}
+	
 	static {
 		try {
 			Source xsltSource = new StreamSource(
@@ -772,5 +783,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		//CTRPrChange rPrChange;
     	
     }
+
+
 
 }
