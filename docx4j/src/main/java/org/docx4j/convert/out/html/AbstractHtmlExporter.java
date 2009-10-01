@@ -270,11 +270,11 @@ public abstract class AbstractHtmlExporter implements Output {
 			this.docxWikiMenu = docxWikiMenu;
 		}
 		
-//		String docxWiki = null;	// edit | open	
-//		public void setDocxWiki(String docxWiki) {
-//			this.docxWiki = docxWiki;
-//		}
-//
+		String docxWiki = null;	// edit | open	
+		public void setDocxWiki(String docxWiki) {
+			this.docxWiki = docxWiki;
+		}
+
 //		String docxWikiSdtID = null;	
 //		public void setDocxWikiSdtID(String docxWikiSdtID) {
 //			this.docxWikiSdtID = docxWikiSdtID;
@@ -317,7 +317,7 @@ public abstract class AbstractHtmlExporter implements Output {
 			settings.put("wmlPackage", wmlPackage);
 			settings.put("fontFamilyStack", fontFamilyStack);
 			settings.put("docxWikiMenu", docxWikiMenu);
-//			settings.put("docxWiki", docxWiki);
+			settings.put("docxWiki", docxWiki);
 //			settings.put("docxWikiSdtID", docxWikiSdtID);
 //			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
 			settings.put("docID", docID);
