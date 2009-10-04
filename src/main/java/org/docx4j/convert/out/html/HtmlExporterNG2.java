@@ -111,7 +111,23 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 		
 		log.info(message);
 	}
-	
+
+	/**
+	 * org/docx4j/convert/out/html/docx2xhtmlNG2.xslt will be used by default
+	 * to transform the docx to html.
+	 * This method allows you to use your own xslt instead.
+	 * @param xslt
+	 */		
+	public static void setXslt(Templates xslt) {
+		
+		// This method is here, although it appears to duplicate the
+		// method in the superclass, 
+		// to force the class's static initializer to
+		// run now, so it doesn't run later and overwrite
+		// our explicit setting, which could be quite confusing.
+		
+		HtmlExporterNG.xslt = xslt;
+	}	
 	
 	static {
 		try {
