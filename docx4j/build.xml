@@ -75,12 +75,30 @@
    
     <target name="build-project" depends="init" >
         <echo message="${ant.project.name}: ${ant.file}"/>
+        
+        <!--  TODO 2009 10 05
+        
+	         http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6665356 (fixed in  7(b44) )
+	         affects compilation of new class StyleTree.java with Sun's javac < JDK 1.7 (b44)
+	        	                    
+	         Compile works with JDK 1.7 Preview Milestone 4 (which is b66)  
+	         (remember, you need jdk1.7.0/jre/lib/endorsed/jaxb-* )
+	         
+	         TODO: if javac < 1.7, write warning, and exclude StyleTree and HTMLExporterNG2 
+	         from build. 
+        
+         -->
+        
         <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
-        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}"
+        	includeDestClasses="false">
             <src path="src/main/java"/>
             <src path="src/diffx"/>
             <classpath refid="docx4j.classpath"/>
         </javac>
+    	<!-- nb, this doesn't put eg xslt files into the relevant dir;
+    	     eclipse does though (provided its build path is pointing to the correct dir).
+    	     TODO: fix this! -->         
     </target>
  
     <target name="dist"  depends="clean, build-project" >
@@ -120,6 +138,7 @@
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
 	
+		<javadoc sourcepath="src/diffx" destdir="javadoc"/>
 		<javadoc sourcepath="src/main/java" destdir="javadoc"/>
 		
 <!-- 		

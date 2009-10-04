@@ -175,6 +175,11 @@ public class StyleTree {
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
 	        
+	        // Eclipse is fine with this, but not Ant.
+	        // Underlying problem is http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6665356 (fixed in  7(b44) )   
+	        // Preview Milestone 4 is b66.  
+	        // Which fixes this problem (remember, you need jdk1.7.0/jre/lib/endorsed/jaxb-*
+	        
 	        Tree<AugmentedStyle>.Node<AugmentedStyle> n 
 	        	= (Tree<AugmentedStyle>.Node<AugmentedStyle>)pairs.getValue();
 	        List<Tree<AugmentedStyle>.Node<AugmentedStyle>> classVals =  st.pTree.climb(n);
@@ -188,7 +193,7 @@ public class StyleTree {
 		it = st.cTree.nodes.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
-	        
+	        	        
 	        Tree<AugmentedStyle>.Node<AugmentedStyle> n 
 	        	= (Tree<AugmentedStyle>.Node<AugmentedStyle>)pairs.getValue();
 	        List<Tree<AugmentedStyle>.Node<AugmentedStyle>> classVals =  st.cTree.climb(n);
