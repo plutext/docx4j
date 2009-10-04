@@ -240,10 +240,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults ) {
-    	
-    	PropertyResolver propertyResolver = 
-    		wmlPackage.getMainDocumentPart().getPropertyResolver();
-    	
+    	    	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
@@ -347,10 +344,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     		String pStyleVal,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
-    
-    	PropertyResolver propertyResolver = 
-    		wmlPackage.getMainDocumentPart().getPropertyResolver();
-    	
+        	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
@@ -516,7 +510,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	    return result.toString();
     }
     
-    private static void createCss(PPr pPr, StringBuffer result) {
+    protected static void createCss(PPr pPr, StringBuffer result) {
     	
 		if (pPr==null) {
 			return;
@@ -655,7 +649,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     
     }
     
-    private static void createCss(WordprocessingMLPackage wmlPackage, RPr rPr, StringBuffer result) {
+    protected static void createCss(WordprocessingMLPackage wmlPackage, RPr rPr, StringBuffer result) {
 
 		// Here is where we do the real work.  
 		// There are a lot of run properties
