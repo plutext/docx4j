@@ -82,7 +82,10 @@
 	         affects compilation of new class StyleTree.java with Sun's javac < JDK 1.7 (b44)
 	        	                    
 	         Compile works with JDK 1.7 Preview Milestone 4 (which is b66)  
-	         (remember, you need jdk1.7.0/jre/lib/endorsed/jaxb-* )
+	         (remember, you need jdk1.7.0/jre/lib/endorsed/jaxb-* ), but, 
+	         this creates jaxb classes which don't run properly with our jaxb!
+	         
+	         So, best at present to create jar from eclipse output folder.
 	         
 	         TODO: if javac < 1.7, write warning, and exclude StyleTree and HTMLExporterNG2 
 	         from build. 
