@@ -186,7 +186,7 @@ public class PropertyResolver {
 	}
 
 
-	public void addNormalToResolvedStylePPrComponent() {
+	private void addNormalToResolvedStylePPrComponent() {
 		
 		Stack<PPr> pPrStack = new Stack<PPr>();
 		String styleId = "Normal";
@@ -203,7 +203,7 @@ public class PropertyResolver {
 		resolvedStylePPrComponent.put(styleId, effectivePPr);		
 	}
 
-	public void addDefaultParagraphFontToResolvedStyleRPrComponent() {
+	private void addDefaultParagraphFontToResolvedStyleRPrComponent() {
 		
 		Stack<RPr> rPrStack = new Stack<RPr>();
 		String styleId = "DefaultParagraphFont";
