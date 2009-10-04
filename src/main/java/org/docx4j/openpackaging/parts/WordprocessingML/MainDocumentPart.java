@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,12 +34,15 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.Style;
+import org.docx4j.wml.Styles;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
@@ -82,6 +86,40 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		}
 		return propertyResolver;
 	}
+	
+	private StyleTree styleTree;
+	public StyleTree getStyleTree() {
+		
+		if (styleTree==null) {
+
+			List<String> stylesInUse = new ArrayList<String>();
+			Iterator it = getStylesInUse().entrySet().iterator();
+		    while (it.hasNext()) {
+		        Map.Entry pairs = (Map.Entry)it.next();
+		        String styleId = (String)pairs.getKey();
+		        stylesInUse.add(styleId);
+		    }
+		    
+//	    	if (!stylesInUse.contains("Normal") ) {
+//	    		stylesInUse.add("Normal");
+//	    	}
+//	    	if (!stylesInUse.contains("DefaultParagraphFont") ) {
+//	    		stylesInUse.add("DefaultParagraphFont");
+//	    	}		    
+	    	
+			Map<String, Style> allStyles = new HashMap<String, Style>();
+			Styles styles = getStyleDefinitionsPart().getJaxbElement();		
+			for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
+				allStyles.put(s.getStyleId(), s);	
+				log.debug("live style: " + s.getStyleId() );
+			}
+			styleTree = new StyleTree(stylesInUse, allStyles);
+				
+		}
+		return styleTree;
+		
+	}
+	
 	
 	
     /**
@@ -135,21 +173,21 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
     	
     // Setup 
     	
-    	Map fontsDiscovered = new java.util.HashMap();
+    	Map<String, String> fontsDiscovered = new java.util.HashMap<String, String>();
     	
     	// Keep track of styles we encounter, so we can
     	// inspect these for fonts
-    	Map stylesInUse = new java.util.HashMap();
+    	Map<String, String> stylesInUse = new java.util.HashMap<String, String>();
 
 		org.docx4j.wml.Styles styles = null;
 		if (this.getStyleDefinitionsPart()!=null) {
 			styles = (org.docx4j.wml.Styles)this.getStyleDefinitionsPart().getJaxbElement();			
 		}
 		// It is convenient to have a HashMap of styles
-		Map stylesDefined = new java.util.HashMap();
+		Map<String, Style> stylesDefined = new java.util.HashMap<String, Style>();
 		if (styles!=null) {
-		     for (Iterator iter = styles.getStyle().iterator(); iter.hasNext();) {
-		            org.docx4j.wml.Style s = (org.docx4j.wml.Style)iter.next();
+		     for (Iterator<Style> iter = styles.getStyle().iterator(); iter.hasNext();) {
+		            Style s = iter.next();
 		            stylesDefined.put(s.getStyleId(), s);
 		     }
 		}
@@ -194,9 +232,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	 * others are just BasedOn).
 	 * @return
 	 */
-	public Map getStylesInUse(){
+	public Map<String, String> getStylesInUse(){
 
-		Map stylesInUse = new HashMap();
+		Map<String, String> stylesInUse = new HashMap<String, String>();
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
@@ -208,7 +246,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		return stylesInUse;
 	}
     
-	private void traverseMainDocumentRecursive(List <Object> children, Map fontsDiscovered, Map stylesInUse){
+	private void traverseMainDocumentRecursive(List <Object> children, Map fontsDiscovered, Map<String, String> stylesInUse){
 		
 		for (Object o : children ) {
 						
