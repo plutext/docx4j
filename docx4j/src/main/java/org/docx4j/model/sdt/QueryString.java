@@ -88,7 +88,7 @@ public class QueryString {
      * an array of strings containing the multiple values sent
      * by the query string.
      * 
-     * <p>When the keys and values are moved into the hashtable,
+     * <p>When the keys (only - *not* values) are moved into the hashtable,
      * any + characters are converted to spaces, and characters
      * sent in hexadecimal notation (like <i>%xx</i>) are
      * converted to ASCII characters.
@@ -114,7 +114,6 @@ public class QueryString {
 			throw new IllegalArgumentException();
 		}
 		HashMap<String, String> map = new HashMap<String, String>();
-		StringBuffer sb = new StringBuffer();
 		StringTokenizer st = new StringTokenizer(s, "&");
 		while (st.hasMoreTokens()) {
 			String pair = (String) st.nextToken();
@@ -124,9 +123,8 @@ public class QueryString {
 				// should give more detail about the illegal argument
 				throw new IllegalArgumentException();
 			}
-			String key = parseName(pair.substring(0, pos), sb);
-			String val = parseName(pair.substring(pos + 1, pair.length()),
-					sb);
+			String key = parseName(pair.substring(0, pos) );
+			String val = pair.substring(pos + 1, pair.length());
 			map.put(key, val);
 		}
 		return map;
@@ -136,7 +134,8 @@ public class QueryString {
 	 * Parse a name in the query string.
 	 */
 
-	static private String parseName(String s, StringBuffer sb) {
+	static private String parseName(String s) {
+		StringBuffer sb = new StringBuffer();
 		sb.setLength(0);
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
