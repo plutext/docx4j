@@ -144,7 +144,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 	
     
     /* ---------------Xalan XSLT Extension Functions ---------------- */
-
+    
     public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {
     	
     	StringBuffer result = new StringBuffer();
@@ -263,25 +263,56 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
 				}
 			}
+			
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
-			Node n = childResults.nextNode();
-			
-//				log.info("Node we are importing: " + n.getClass().getName() );
-//				foBlockElement.appendChild(
-//						document.importNode(n, true) );
-			/*
-			 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-			 * which causes
-			 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-			 * 
-			 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-			 * 
-			 * So instead of importNode, use 
-			 */
-			XmlUtils.treeCopy( (DTMNodeProxy)n,  xhtmlP );
-			
+			// init
+			DTMNodeProxy n = (DTMNodeProxy)childResults.nextNode();
+			do {	
+				
+				// getNumberXmlNode creates a span node, which is empty
+				// if there is no numbering.
+				// Let's get rid of any such <span/>.
+				
+				// What we actually get is a document node
+				if (n.getNodeType()==Node.DOCUMENT_NODE) {
+					log.debug("handling DOCUMENT_NODE");
+					// Do just enough of the handling here
+	                NodeList nodes = n.getChildNodes();
+	                if (nodes != null) {
+	                    for (int i=0; i<nodes.getLength(); i++) {
+	                    	
+	        				if (((Node)nodes.item(i)).getLocalName().equals("span")
+	        						&& ! ((Node)nodes.item(i)).hasChildNodes() ) {
+	        					// ignore
+	        					log.debug(".. ignoring <span/> ");
+	        				} else {
+	        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlP );	        					
+	        				}
+	                    }
+	                }					
+				} else {
+					log.debug("handling DOCUMENT_NODE");
+					
+	//					log.info("Node we are importing: " + n.getClass().getName() );
+	//					foBlockElement.appendChild(
+	//							document.importNode(n, true) );
+					/*
+					 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
+					 * which causes
+					 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
+					 * 
+					 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+					 * 
+					 * So instead of importNode, use 
+					 */
+					XmlUtils.treeCopy( n,  xhtmlP );
+				}
+				// next 
+				n = (DTMNodeProxy)childResults.nextNode();
+				
+			} while ( n !=null ); 
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());

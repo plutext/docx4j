@@ -143,6 +143,8 @@ public abstract class AbstractHtmlExporter implements Output {
     /**
 	 * The method used by the XSLT extension function during HTML export.
 	 * 
+	 * If there is no number, it returns an empty span element.
+	 * 
 	 * @param em
 	 * @param levelId
 	 * @param numId
