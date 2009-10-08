@@ -55,5 +55,18 @@ public class Context {
 			ex.printStackTrace();
 		}				
 	}
+	
+	public static org.docx4j.wml.ObjectFactory wmlObjectFactory;
+	
+	public static org.docx4j.wml.ObjectFactory getWmlObjectFactory() {
+		
+		if (wmlObjectFactory==null) {
+			wmlObjectFactory = new org.docx4j.wml.ObjectFactory();
+		}
+		return wmlObjectFactory;
+		
+	}
+	
+	
 		
 }
