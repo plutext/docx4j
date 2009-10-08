@@ -54,6 +54,8 @@ public class StyleTree {
 	public StyleTree(List<String> stylesInUse, Map<String, Style> allStyles) {
 
 		// Set up Paragraph style tree 
+        // but first, add Normal.  (Doesn't matter if its already there)
+		stylesInUse.add("Normal");
         for (String styleId : stylesInUse ) {
         	if (pTree.get(styleId)==null) {
         		
@@ -71,6 +73,8 @@ public class StyleTree {
         }
         
 		// Set up Character style tree 
+        // but first, add DefaultParagraphFont.  (Doesn't matter if its already there)
+		stylesInUse.add("DefaultParagraphFont");
         for (String styleId : stylesInUse ) {
         	if (cTree.get(styleId)==null) {
         		
