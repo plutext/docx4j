@@ -39,6 +39,8 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.properties.Property;
+import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.StyleTree.Tree;
@@ -427,5 +429,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	return null;
     	
     }
+    
+    
 
 }
