@@ -29,6 +29,8 @@ import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.properties.Property;
+import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Ftr;
@@ -406,132 +408,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 	public static void createFoAttributes(PPr pPr, Element foBlockElement){
 		
-		// TODO - other pPr props, including rPr.
-		// Here is where we do the real work.  
-		// There are a lot of paragraph properties
-		// The below list is taken directly from PPrBase.
-		
-		//PPrBase.PStyle pStyle;
-		
-			// Ignore
-		
-		//BooleanDefaultTrue keepNext;
-		if (pPr.getKeepNext()!=null) {
-			if (pPr.getKeepNext().isVal() ) {
-				((Element)foBlockElement).setAttribute("keep-with-next", "always");
-			} 
-		}
-		
-	
-		//BooleanDefaultTrue keepLines;
-		if (pPr.getKeepLines()!=null) {
-		}
-	
-		//BooleanDefaultTrue pageBreakBefore;
-		if (pPr.getPageBreakBefore()!=null) {
-			if (pPr.getPageBreakBefore().isVal() ) {
-				((Element)foBlockElement).setAttribute("break-before", "page");
-			} 
-		}
-	
-		//CTFramePr framePr;
-		//BooleanDefaultTrue widowControl;
-		if (pPr.getWidowControl()!=null) {
-		}
-	
-		//PPrBase.NumPr numPr;
-		
-			// High priority
-	
-		//BooleanDefaultTrue suppressLineNumbers;
-		if (pPr.getSuppressLineNumbers()!=null) {
-		}
-		//PPrBase.PBdr pBdr;
-		
-			// Medium priority
-	
-		//CTShd shd;
-		
-			// Medium priority
-	
-		//Tabs tabs;
-		
-			// ???
-	
-		//BooleanDefaultTrue suppressAutoHyphens;
-		//BooleanDefaultTrue kinsoku;
-		//BooleanDefaultTrue wordWrap;
-		//BooleanDefaultTrue overflowPunct;
-		//BooleanDefaultTrue topLinePunct;
-		//BooleanDefaultTrue autoSpaceDE;
-		//BooleanDefaultTrue autoSpaceDN;
-		//BooleanDefaultTrue bidi;
-		//BooleanDefaultTrue adjustRightInd;
-		//BooleanDefaultTrue snapToGrid;
-		//PPrBase.Spacing spacing;
-		
-			// High priority
-	
-		//PPrBase.Ind ind;
-		if (pPr.getInd()!=null ) {
-			
-			// Just handle left for the moment
-			// TODO hanging, something like start-indent="1in" text-indent="-1in"
-			BigInteger left = pPr.getInd().getLeft();
-			if (left!=null) {
-				// 720 twip = 1 inch;
-				// Try to guess whether inches or cm
-				// looks nicer
-				int leftL = left.intValue();
-				float inch4f = 4*leftL/720;
-				float inch4fabit = inch4f + 0.49f;
-				int inch4 = Math.round(inch4f);
-				int inch4next = Math.round( inch4fabit);
-				float inches = leftL/720;
-				if (inch4==inch4next) {
-					// inches work 
-					((Element)foBlockElement).setAttribute("start-indent", inches + "in" );
-				} else {
-					float mm = inches/0.0394f;
-					((Element)foBlockElement).setAttribute("start-indent", Math.round(mm) + "mm" );
-				} 
-				
+    	List<Property> properties = PropertyFactory.createProperties(pPr);
+    	
+    	for( Property p :  properties ) {
+			if (p!=null) {
+				p.setXslFO(foBlockElement);
 			}
-			
-		}
-	
-		//BooleanDefaultTrue contextualSpacing;
-		//BooleanDefaultTrue mirrorIndents;
-		//BooleanDefaultTrue suppressOverlap;
-		//Jc jc;
-		if ( pPr.getJc()!=null) {				
-			String val = pPr.getJc().getVal().value();
-			if (val.equals("left") || val.equals("center") || val.equals("right")) {			
-				((Element)foBlockElement).setAttribute("text-align", 
-					val );
-			} // ignore the other possibilities for now
-		}
-	
-		//TextDirection textDirection;
-		//PPrBase.TextAlignment textAlignment;
-		if ( pPr.getTextAlignment()!=null) {	
-			String val = pPr.getTextAlignment().getVal();
-			if (val.equals("top") || val.equals("bottom") || val.equals("baseline") ) {						
-				((Element)foBlockElement).setAttribute( "vertical-align", val );
-			} else if (val.equals("center")) {
-				((Element)foBlockElement).setAttribute("vertical-align","middle" );
-			} else if (val.equals("auto")) {
-				((Element)foBlockElement).setAttribute("vertical-align", "baseline" );
-			}
-		}
-	
-		//CTTextboxTightWrap textboxTightWrap;
-		//PPrBase.OutlineLvl outlineLvl;
-		
-			// Medium priority
-	
-		//PPrBase.DivId divId;
-		//CTCnf cnfStyle;
+    	}
 		
 	}
 
@@ -639,127 +522,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	public static void createFoAttributes(WordprocessingMLPackage wmlPackage,
 			RPr rPr, Element foInlineElement){
 
-		// Here is where we do the real work.  
-		// There are a lot of run properties
-		// The below list is taken directly from RPr, and so
-		// is comprehensive.
-		
-		//RStyle rStyle;
-		//RFonts rFonts;
-		
-		RFonts rFonts = rPr.getRFonts();
-		if (rFonts !=null ) {
-			
-			String font = rFonts.getAscii();
-			
-			if (font==null) {
-				// TODO - actually what Word does in this case
-				// is inherit the default document font eg Calibri
-				// (which is what it shows in its user interface)
-				font = rFonts.getCs();
-			}
-			
-			if (font==null) {
-				log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
-				font=Mapper.FONT_FALLBACK;
-			}
-			
-			log.info("Font: " + font);
-			
-			PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
-			if (pf!=null) {					
-				((Element)foInlineElement).setAttribute("font-family", 
-					 pf.getName() );
-			} else {
-				log.error("No mapping from " + font);
-			}
-		}
-	    
-
-		//BooleanDefaultTrue b;
-		// bold				
-		if ( rPr.getB()!=null ) {				
-			((Element)foInlineElement).setAttribute("font-weight", 
-					"bold" );
-		}
-
-		//BooleanDefaultTrue bCs;
-		//BooleanDefaultTrue i;
-		// italic
-		if ( rPr.getI()!=null ) {				
-			((Element)foInlineElement).setAttribute("font-style", 
-					"italic" );
-		}
-
-		//BooleanDefaultTrue iCs;
-		//BooleanDefaultTrue caps;
-		if (rPr.getCaps()!=null) {
-		}
-
-		//BooleanDefaultTrue smallCaps;
-		if (rPr.getSmallCaps()!=null) {
-		}
-
-		//BooleanDefaultTrue strike;
-		if (rPr.getStrike()!=null) {
-			if (rPr.getStrike().isVal() ) {
-				((Element)foInlineElement).setAttribute("text-decoration", "line-through" );
-			} else {
-				((Element)foInlineElement).setAttribute("text-decoration", "none" );
-			}
-		}
-		//BooleanDefaultTrue dstrike;
-		//BooleanDefaultTrue outline;
-		//BooleanDefaultTrue shadow;
-		//BooleanDefaultTrue emboss;
-		//BooleanDefaultTrue imprint;
-		//BooleanDefaultTrue noProof;
-		//BooleanDefaultTrue snapToGrid;
-		//BooleanDefaultTrue vanish;
-		//BooleanDefaultTrue webHidden;
-		//Color color;
-		if (rPr.getColor()!=null) {
-			if (rPr.getColor().getVal()!=null) {
-				((Element)foInlineElement).setAttribute("color", "#" + rPr.getColor().getVal() );
-			} // ignore theme stuff
-		}
-
-		//CTSignedTwipsMeasure spacing;
-		//CTTextScale w;
-		//HpsMeasure kern;
-		//CTSignedHpsMeasure position;
-		//HpsMeasure sz;
-		if (rPr.getSz()!=null) {			
-			float pts = rPr.getSz().getVal().floatValue()/2;
-			((Element)foInlineElement).setAttribute("font-size", pts + "pt" );
-		}
-
-		//HpsMeasure szCs;
-		//Highlight highlight;
-		//U u;
-		if (rPr.getU()!=null) {
-			if (rPr.getU().getVal()==null ) {
-				// This does happen
-				((Element)foInlineElement).setAttribute("text-decoration", "underline" );
-			} else if (!rPr.getU().getVal().equals( UnderlineEnumeration.NONE ) ) {
-				((Element)foInlineElement).setAttribute("text-decoration", "underline" );
-			} 
-			// How to handle <w:u w:color="FF0000"> ie coloured underline?
-		}
-
-		//CTTextEffect effect;
-		//CTBorder bdr;
-		//CTShd shd;
-		//CTFitText fitText;
-		//CTVerticalAlignRun vertAlign;
-		//BooleanDefaultTrue rtl;
-		//BooleanDefaultTrue cs;
-		//CTEm em;
-		//CTLanguage lang;
-		//CTEastAsianLayout eastAsianLayout;
-		//BooleanDefaultTrue specVanish;
-		//BooleanDefaultTrue oMath;
-		//CTRPrChange rPrChange;
+    	List<Property> properties = PropertyFactory.createProperties(wmlPackage, rPr);
+    	
+    	for( Property p :  properties ) {
+    		p.setXslFO(foInlineElement);
+    	}
 		
 	}
     

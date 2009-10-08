@@ -4,11 +4,16 @@ package org.docx4j.model;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.model.properties.Property;
+import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
+import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -598,123 +603,15 @@ public class PropertyResolver {
 			return;
 		}
 		
-		// Here is where we do the real work.  
-		// There are a lot of paragraph properties
-		// The below list is taken directly from PPrBase.
-		
-		//PPrBase.PStyle pStyle;
-		
-			// Ignore
-		
-		//BooleanDefaultTrue keepNext;
-		if (pPrToApply.getKeepNext()!=null) {
-			effectivePPr.setKeepNext(
-					newBooleanDefaultTrue(
-							pPrToApply.getKeepNext().isVal()));			
-		}
-		
-	
-		//BooleanDefaultTrue keepLines;
-		if (pPrToApply.getKeepLines()!=null) {
-			effectivePPr.setKeepLines(
-					newBooleanDefaultTrue(
-							pPrToApply.getKeepLines().isVal()));			
-		}
-	
-		//BooleanDefaultTrue pageBreakBefore;
-		if (pPrToApply.getPageBreakBefore()!=null) {
-			effectivePPr.setPageBreakBefore(
-					newBooleanDefaultTrue(
-							pPrToApply.getPageBreakBefore().isVal()));			
-		}
-	
-		//CTFramePr framePr;
-		//BooleanDefaultTrue widowControl;
-		if (pPrToApply.getWidowControl()!=null) {
-			effectivePPr.setWidowControl(
-					newBooleanDefaultTrue(
-							pPrToApply.getWidowControl().isVal()));			
-		}
-	
-		//NumPr numPr;
-		if (pPrToApply.getNumPr()!=null) {
-			NumPr numPrClone = (NumPr)XmlUtils.deepCopy(pPrToApply.getNumPr());
-			effectivePPr.setNumPr(numPrClone);			
-		}
-	
-		//BooleanDefaultTrue suppressLineNumbers;
-		if (pPrToApply.getSuppressLineNumbers()!=null) {
-			effectivePPr.setSuppressLineNumbers(
-					newBooleanDefaultTrue(
-							pPrToApply.getSuppressLineNumbers().isVal()));			
-		}
-		
-		// PBdr pBdr;
-		if (pPrToApply.getPBdr()!=null) {
-			PBdr pBdrClone = (PBdr)XmlUtils.deepCopy(pPrToApply.getPBdr());
-			effectivePPr.setPBdr(pBdrClone);						
-		}
-	
-		//CTShd shd;
-		if (pPrToApply.getShd()!=null) {
-			CTShd shdClone = (CTShd)XmlUtils.deepCopy(pPrToApply.getShd());
-			effectivePPr.setShd(shdClone);
-		}
-			
-		//Tabs tabs;
-		if (pPrToApply.getTabs()!=null) {
-			Tabs tabs = (Tabs)XmlUtils.deepCopy(pPrToApply.getTabs());
-			effectivePPr.setTabs(tabs);
-		}
-	
-		//BooleanDefaultTrue suppressAutoHyphens;
-		//BooleanDefaultTrue kinsoku;
-		//BooleanDefaultTrue wordWrap;
-		//BooleanDefaultTrue overflowPunct;
-		//BooleanDefaultTrue topLinePunct;
-		//BooleanDefaultTrue autoSpaceDE;
-		//BooleanDefaultTrue autoSpaceDN;
-		//BooleanDefaultTrue bidi;
-		//BooleanDefaultTrue adjustRightInd;
-		//BooleanDefaultTrue snapToGrid;
-		//PPrBase.Spacing spacing;
-		if (pPrToApply.getSpacing()!=null) {
-			Spacing spacing = (Spacing)XmlUtils.deepCopy(pPrToApply.getSpacing());
-			effectivePPr.setSpacing(spacing);
-		}
-	
-		//PPrBase.Ind ind;
-		if (pPrToApply.getInd()!=null) {
-			Ind ind = (Ind)XmlUtils.deepCopy(pPrToApply.getInd());
-			effectivePPr.setInd(ind);
-		}
-	
-		//BooleanDefaultTrue contextualSpacing;
-		//BooleanDefaultTrue mirrorIndents;
-		//BooleanDefaultTrue suppressOverlap;
-		//Jc jc;
-		if (pPrToApply.getJc()!=null) {
-			Jc jc = (Jc)XmlUtils.deepCopy(pPrToApply.getJc() );
-			effectivePPr.setJc(jc);
-		}
-	
-		//TextDirection textDirection;
-		//PPrBase.TextAlignment textAlignment;
-		if (pPrToApply.getTextAlignment()!=null ) {
-			TextAlignment ta = (TextAlignment)XmlUtils.deepCopy(pPrToApply.getTextAlignment() );
-			effectivePPr.setTextAlignment(ta);
-		}
-	
-		//CTTextboxTightWrap textboxTightWrap;
-		//PPrBase.OutlineLvl outlineLvl;
-		if (pPrToApply.getOutlineLvl()!=null ) {
-			OutlineLvl ol = (OutlineLvl)XmlUtils.deepCopy(pPrToApply.getOutlineLvl() );
-			effectivePPr.setOutlineLvl(ol);
-		}
-	
-		//PPrBase.DivId divId;
-		//CTCnf cnfStyle;
-		
+    	List<Property> properties = PropertyFactory.createProperties( pPrToApply); // wmlPackage null
+    	
+    	for( Property p :  properties ) {
+			if (p!=null) {
+				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
+			}
+    	}
+
+
 	}
 	
 	private boolean hasDirectRPrFormatting(RPr rPrToApply) {
@@ -814,103 +711,13 @@ public class PropertyResolver {
 			return;
 		}
 		
-		// Here is where we do the real work.  
-		// There are a lot of run properties
-		// The below list is taken directly from RPr, and so
-		// is comprehensive.
-		
-		//RStyle rStyle;
-		//RFonts rFonts;
-		if (rPrToApply.getRFonts()!=null ) {
-			RFonts rf = (RFonts)XmlUtils.deepCopy( rPrToApply.getRFonts() );
-			effectiveRPr.setRFonts(rf);
-		}
-
-		//BooleanDefaultTrue b;
-		if (rPrToApply.getB()!=null) {
-			effectiveRPr.setB(
-					newBooleanDefaultTrue(
-							rPrToApply.getB().isVal()));			
-		}
-
-		//BooleanDefaultTrue bCs;
-		//BooleanDefaultTrue i;
-		if (rPrToApply.getI()!=null) {
-			effectiveRPr.setI(
-					newBooleanDefaultTrue(
-							rPrToApply.getI().isVal()));			
-		}
-
-		//BooleanDefaultTrue iCs;
-		//BooleanDefaultTrue caps;
-		if (rPrToApply.getCaps()!=null) {
-			effectiveRPr.setCaps(
-					newBooleanDefaultTrue(
-							rPrToApply.getCaps().isVal()));			
-		}
-
-		//BooleanDefaultTrue smallCaps;
-		if (rPrToApply.getSmallCaps()!=null) {
-			effectiveRPr.setSmallCaps(
-					newBooleanDefaultTrue(
-							rPrToApply.getSmallCaps().isVal()));			
-		}
-
-		//BooleanDefaultTrue strike;
-		if (rPrToApply.getStrike()!=null) {
-			effectiveRPr.setStrike(
-					newBooleanDefaultTrue(
-							rPrToApply.getStrike().isVal()));			
-		}
-		//BooleanDefaultTrue dstrike;
-		//BooleanDefaultTrue outline;
-		//BooleanDefaultTrue shadow;
-		//BooleanDefaultTrue emboss;
-		//BooleanDefaultTrue imprint;
-		//BooleanDefaultTrue noProof;
-		//BooleanDefaultTrue snapToGrid;
-		//BooleanDefaultTrue vanish;
-		//BooleanDefaultTrue webHidden;
-		//Color color;
-		if (rPrToApply.getColor()!=null ) {
-			Color c = (Color)XmlUtils.deepCopy( rPrToApply.getColor() );
-			effectiveRPr.setColor(c);
-		}
-
-		//CTSignedTwipsMeasure spacing;
-		//CTTextScale w;
-		//HpsMeasure kern;
-		//CTSignedHpsMeasure position;
-		//HpsMeasure sz;
-		if (rPrToApply.getSz()!=null ) {
-			// We don't have @XmlRootElement on HpsMeasure, so can't deepCopy
-			HpsMeasure sz = factory.createHpsMeasure(); 
-			long szLong = rPrToApply.getSz().getVal().longValue();
-			sz.setVal( BigInteger.valueOf(szLong)  );
-			effectiveRPr.setSz(sz);
-		}
-
-		//HpsMeasure szCs;
-		//Highlight highlight;
-		//U u;
-		if (rPrToApply.getU()!=null ) {
-			U rf = (U)XmlUtils.deepCopy( rPrToApply.getU() );
-			effectiveRPr.setU(rf);
-		}
-
-		//CTTextEffect effect;
-		//CTBorder bdr;
-		//CTShd shd;
-		//CTFitText fitText;
-		//CTVerticalAlignRun vertAlign;
-		//BooleanDefaultTrue rtl;
-		//BooleanDefaultTrue cs;
-		//CTEm em;
-		//CTLanguage lang;
-		//CTEastAsianLayout eastAsianLayout;
-		//BooleanDefaultTrue specVanish;
-		//BooleanDefaultTrue oMath;
-		//CTRPrChange rPrChange;
+    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
+    	
+    	for( Property p :  properties ) {
+			if (p!=null) {    		
+				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
+			}
+    	}
 		
 	}	
 	
