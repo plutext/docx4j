@@ -41,6 +41,7 @@ import org.apache.xmlgraphics.image.loader.ImageSessionContext;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.apache.xmlgraphics.image.loader.impl.DefaultImageContext;
 import org.apache.xmlgraphics.image.loader.impl.DefaultImageSessionContext;
+import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.Inline;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -258,10 +259,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 			}
 	
-	// Defaults - if values aren't defined in sectPr 
-	private static int DEFAULT_PAGE_WIDTH_TWIPS = 12240;  // Letter; A4 would be 11907  
-	private static int DEFAULT_LEFT_MARGIN_TWIPS = 1440;  // 1 inch
-	private static int DEFAULT_RIGHT_MARGIN_TWIPS = 1440;
 
 	/**
 	 * Create a <wp:inline> element suitable for this image,
@@ -292,7 +289,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		if (sectPr==null) {
 			
 			log.debug("PgSz and PgMar not defined in this doc's SectPr element");
-			writableWidthTwips = DEFAULT_PAGE_WIDTH_TWIPS - (DEFAULT_LEFT_MARGIN_TWIPS + DEFAULT_RIGHT_MARGIN_TWIPS); 
+			writableWidthTwips = UnitsOfMeasurement.DEFAULT_PAGE_WIDTH_TWIPS - (UnitsOfMeasurement.DEFAULT_LEFT_MARGIN_TWIPS + UnitsOfMeasurement.DEFAULT_RIGHT_MARGIN_TWIPS); 
 				
 		} else {
 			
@@ -304,19 +301,19 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			double rightMargin;
 			
 			if ( pgSz == null ) {
-				pageWidth = DEFAULT_PAGE_WIDTH_TWIPS;
+				pageWidth = UnitsOfMeasurement.DEFAULT_PAGE_WIDTH_TWIPS;
 			} else {
 				pageWidth = pgSz.getW().doubleValue();
 			}
 			if ( pgMar == null 
 					|| pgMar.getLeft()==null) {
-				leftMargin = DEFAULT_LEFT_MARGIN_TWIPS;
+				leftMargin = UnitsOfMeasurement.DEFAULT_LEFT_MARGIN_TWIPS;
 			} else {
 				leftMargin = pgMar.getLeft().doubleValue();
 			}
 			if ( pgMar == null 
 					|| pgMar.getRight()==null) {
-				rightMargin = DEFAULT_RIGHT_MARGIN_TWIPS;
+				rightMargin = UnitsOfMeasurement.DEFAULT_RIGHT_MARGIN_TWIPS;
 			} else {
 				rightMargin = pgMar.getRight().doubleValue();
 			}
@@ -338,15 +335,15 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			
 			log.debug("Scaling image to fit page width");
 			
-			cx = twipToEMU(writableWidthTwips);
-			cy = twipToEMU(dPt.getHeight() * 20 * writableWidthTwips/imageWidthTwips);
+			cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
+			cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips/imageWidthTwips);
 			
 		} else {
 
 			log.debug("Scaling image - not necessary");
 			
-			cx = twipToEMU(imageWidthTwips);
-			cy = twipToEMU(dPt.getHeight() * 20);			
+			cx = UnitsOfMeasurement.twipToEMU(imageWidthTwips);
+			cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
 			
 		}
 		
@@ -383,10 +380,10 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		long cy;
 
 		log.debug("Scaling image height to retain aspect ratio");
-		cy = twipToEMU(dPt.getHeight() * 20 * cx / imageWidthTwips);
+		cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * cx / imageWidthTwips);
 
 		// Now convert cx to EMU
-		cx = twipToEMU(cx);
+		cx = UnitsOfMeasurement.twipToEMU(cx);
 		
 
 		log.debug("cx=" + cx + "; cy=" + cy);
@@ -458,11 +455,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" " +
 			"xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\"";
 	
-	public static long twipToEMU(double twips) {
-		
-		return Math.round(635 * twips);
-				
-	}
 	
 	public static ImageInfo getImageInfo(String uri) throws Exception {
 		
