@@ -78,41 +78,41 @@ public class CTR
 {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "dayShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "endnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "pgNum", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "ruby", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "fldChar", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sym", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "monthShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "t", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = CTR.TMath.class),
         @XmlElementRef(name = "ptab", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "br", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Br.class),
-        @XmlElementRef(name = "annotationRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "pict", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "dayLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "footnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "lastRenderedPageBreak", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "t", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "object", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "endnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "delInstrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "continuationSeparator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "commentReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "ruby", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sym", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "drawing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "delText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = DelText.class),
-        @XmlElementRef(name = "tab", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "instrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "noBreakHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "yearShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "footnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "yearLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "separator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "rPr", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = CTR.RPrMath.class),
-        @XmlElementRef(name = "cr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "monthLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "continuationSeparator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "fldChar", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "instrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "rPr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "softHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "t", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "footnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dayShort", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "noBreakHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "monthLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "tab", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "br", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = Br.class),
+        @XmlElementRef(name = "softHyphen", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "pgNum", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "lastRenderedPageBreak", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "endnoteReference", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "endnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "separator", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "pict", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "cr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "dayLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "delText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = DelText.class),
+        @XmlElementRef(name = "delInstrText", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "t", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = CTR.TMath.class),
+        @XmlElementRef(name = "yearLong", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "rPr", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = CTR.RPrMath.class),
+        @XmlElementRef(name = "annotationRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "object", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "footnoteRef", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<Object> content;
     @XmlTransient
@@ -124,7 +124,7 @@ public class CTR
      * <p>
      * You are getting this "catch-all" property because of the following reason: 
      * The field name "RPr" is used by two different parts of a schema. See: 
-     * line 7153 of file:/home/dev/workspace/docx4j/xsd/wml/wml.xsd
+     * line 7165 of file:/home/dev/workspace/docx4j/xsd/wml/wml.xsd
      * line 480 of file:/home/dev/workspace/docx4j/xsd/shared/shared-math.xsd
      * <p>
      * To get rid of this property, apply a property customization to one 
@@ -146,41 +146,41 @@ public class CTR
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.EndnoteRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.DayShort }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.PgNum }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTRuby }{@code >}
-     * {@link JAXBElement }{@code <}{@link FldChar }{@code >}
      * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.MonthShort }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.Sym }{@code >}
      * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.Ptab }{@code >}
-     * {@link CTR.TMath }
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.AnnotationRef }{@code >}
-     * {@link Br }
-     * {@link JAXBElement }{@code <}{@link Pict }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.DayLong }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.LastRenderedPageBreak }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.FootnoteRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTObject }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFtnEdnRef }{@code >}
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.CommentReference }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.ContinuationSeparator }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.Sym }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRuby }{@code >}
      * {@link JAXBElement }{@code <}{@link Drawing }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.Tab }{@code >}
-     * {@link DelText }
-     * {@link JAXBElement }{@code <}{@link Text }{@code >}
      * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.YearShort }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.ContinuationSeparator }{@code >}
+     * {@link JAXBElement }{@code <}{@link FldChar }{@code >}
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
+     * {@link JAXBElement }{@code <}{@link RPr }{@code >}
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFtnEdnRef }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.CommentReference }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.DayShort }{@code >}
      * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.NoBreakHyphen }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.MonthLong }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.Tab }{@code >}
+     * {@link Br }
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.SoftHyphen }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.LastRenderedPageBreak }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.PgNum }{@code >}
      * {@link JAXBElement }{@code <}{@link CTFtnEdnRef }{@code >}
      * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.Separator }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.YearLong }{@code >}
-     * {@link CTR.RPrMath }
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.EndnoteRef }{@code >}
+     * {@link JAXBElement }{@code <}{@link Pict }{@code >}
      * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.Cr }{@code >}
-     * {@link JAXBElement }{@code <}{@link RPr }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.MonthLong }{@code >}
-     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.SoftHyphen }{@code >}
+     * {@link DelText }
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.DayLong }{@code >}
+     * {@link JAXBElement }{@code <}{@link Text }{@code >}
+     * {@link CTR.TMath }
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.YearLong }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTObject }{@code >}
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.AnnotationRef }{@code >}
+     * {@link CTR.RPrMath }
+     * {@link JAXBElement }{@code <}{@link org.docx4j.wml.R.FootnoteRef }{@code >}
      * 
      * 
      */

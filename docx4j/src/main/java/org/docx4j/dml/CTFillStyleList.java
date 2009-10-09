@@ -41,12 +41,12 @@ public class CTFillStyleList
 {
 
     @XmlElements({
-        @XmlElement(name = "grpFill", type = CTGroupFillProperties.class),
-        @XmlElement(name = "gradFill", type = CTGradientFillProperties.class),
         @XmlElement(name = "pattFill", type = CTPatternFillProperties.class),
-        @XmlElement(name = "blipFill", type = CTBlipFillProperties.class),
+        @XmlElement(name = "gradFill", type = CTGradientFillProperties.class),
         @XmlElement(name = "solidFill", type = CTSolidColorFillProperties.class),
-        @XmlElement(name = "noFill", type = CTNoFillProperties.class)
+        @XmlElement(name = "noFill", type = CTNoFillProperties.class),
+        @XmlElement(name = "grpFill", type = CTGroupFillProperties.class),
+        @XmlElement(name = "blipFill", type = CTBlipFillProperties.class)
     })
     protected List<Object> egFillProperties;
     @XmlTransient
@@ -70,12 +70,12 @@ public class CTFillStyleList
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTGroupFillProperties }
-     * {@link CTGradientFillProperties }
      * {@link CTPatternFillProperties }
-     * {@link CTBlipFillProperties }
+     * {@link CTGradientFillProperties }
      * {@link CTSolidColorFillProperties }
      * {@link CTNoFillProperties }
+     * {@link CTGroupFillProperties }
+     * {@link CTBlipFillProperties }
      * 
      * 
      */

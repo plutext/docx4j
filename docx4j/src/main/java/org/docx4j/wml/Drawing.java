@@ -66,8 +66,8 @@ public class Drawing
 {
 
     @XmlElements({
-        @XmlElement(name = "inline", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Inline.class),
-        @XmlElement(name = "anchor", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Anchor.class)
+        @XmlElement(name = "anchor", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Anchor.class),
+        @XmlElement(name = "inline", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Inline.class)
     })
     protected List<Object> anchorOrInline;
     @XmlTransient
@@ -91,8 +91,8 @@ public class Drawing
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Inline }
      * {@link Anchor }
+     * {@link Inline }
      * 
      * 
      */
