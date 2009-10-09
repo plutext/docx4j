@@ -114,18 +114,18 @@ public class CTTrPrBase
 {
 
     @XmlElementRefs({
+        @XmlElementRef(name = "gridAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "cantSplit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "wBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "jc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "cnfStyle", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "tblHeader", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "wAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "divId", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "gridBefore", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "gridAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "hidden", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "cantSplit", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "tblCellSpacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "jc", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "trHeight", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
+        @XmlElementRef(name = "trHeight", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "wAfter", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "tblHeader", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "tblCellSpacing", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<JAXBElement<?>> cnfStyleOrDivIdOrGridBefore;
     @XmlTransient
@@ -149,18 +149,18 @@ public class CTTrPrBase
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTCnf }{@code >}
-     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrPrBase.DivId }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrPrBase.GridBefore }{@code >}
-     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * {@link JAXBElement }{@code <}{@link CTTrPrBase.GridAfter }{@code >}
      * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
-     * {@link JAXBElement }{@code <}{@link Jc }{@code >}
      * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
+     * {@link JAXBElement }{@code <}{@link Jc }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCnf }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrPrBase.DivId }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrPrBase.GridBefore }{@code >}
      * {@link JAXBElement }{@code <}{@link CTHeight }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
+     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
+     * {@link JAXBElement }{@code <}{@link TblWidth }{@code >}
+     * {@link JAXBElement }{@code <}{@link BooleanDefaultTrue }{@code >}
      * 
      * 
      */

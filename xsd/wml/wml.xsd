@@ -6,7 +6,9 @@
 	http://www.ecma-international.org/publications/standards/Ecma-376.htm says
 	"Copy these file(s), free of charge"
 	
-	
+WHICH VERSION?
+
+This is based on ECMA-376, first edition (as opposed to 2ed, which was not then available).	
 
 REVISION HISTORY
 
@@ -21,6 +23,8 @@ REVISION HISTORY
 20081001 - get rid of CT_HdrFtr (just use hdr and ftr)  
 
 20090902 - add math back in
+
+20091010 - oops, added EG_MathContent back into EG_RunElements
 	
 USAGE INSTRUCTIONS
 	  
@@ -38,7 +42,10 @@ USAGE INSTRUCTIONS
 	
   To CLEAN previously generated classes: 
 
-	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/dml/*.java -rf ; rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/wml/*.java -rf
+	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/dml/*.java -rf 
+	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/wml/*.java -rf
+	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/customxml/*.java -rf
+	 rm /home/dev/workspace/docx4j/src/main/java/org/docx4j/math/*.java -rf
 	
   To generate the classes (from the same directory)	
 			
@@ -12530,26 +12537,7 @@ PRINCIPLES:
 						Content</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<!--
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			<xsd:group ref="EG_MathContent" minOccurs="0" maxOccurs="unbounded" />-->
+			<xsd:group ref="EG_MathContent" minOccurs="0" maxOccurs="unbounded" />
 		</xsd:choice>
 	</xsd:group>
 	
