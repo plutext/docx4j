@@ -1,7 +1,85 @@
-diff -u -r ./org/docx4j/wml/Id.java ../previously-modified-sources/org/docx4j/wml/Id.java
---- ./org/docx4j/wml/Id.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/Id.java	2008-05-06 01:02:39.000000000 +1000
-@@ -115,4 +114,20 @@
+diff -u -r ./org/docx4j/wml/Body.java ../patched/org/docx4j/wml/Body.java
+--- ./org/docx4j/wml/Body.java	2009-10-10 09:56:01.000000000 +1100
++++ ../patched/org/docx4j/wml/Body.java	2009-10-10 01:22:54.000000000 +1100
+@@ -29,6 +29,7 @@
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlElementRef;
+ import javax.xml.bind.annotation.XmlElementRefs;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.docx4j.math.CTOMath;
+diff -u -r ./org/docx4j/wml/CTBookmark.java ../patched/org/docx4j/wml/CTBookmark.java
+--- ./org/docx4j/wml/CTBookmark.java	2009-10-10 09:56:01.000000000 +1100
++++ ../patched/org/docx4j/wml/CTBookmark.java	2009-07-12 14:55:46.000000000 +1000
+@@ -25,6 +25,7 @@
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlAttribute;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+@@ -49,6 +50,7 @@
+  */
+ @XmlAccessorType(XmlAccessType.FIELD)
+ @XmlType(name = "CT_Bookmark")
++@XmlRootElement(name = "bookmarkStart")
+ public class CTBookmark
+     extends CTBookmarkRange
+     implements Child
+diff -u -r ./org/docx4j/wml/CTMarkupRange.java ../patched/org/docx4j/wml/CTMarkupRange.java
+--- ./org/docx4j/wml/CTMarkupRange.java	2009-10-10 09:56:01.000000000 +1100
++++ ../patched/org/docx4j/wml/CTMarkupRange.java	2009-07-12 14:55:46.000000000 +1000
+@@ -25,6 +25,7 @@
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlAttribute;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+@@ -49,6 +50,8 @@
+  */
+ @XmlAccessorType(XmlAccessType.FIELD)
+ @XmlType(name = "CT_MarkupRange")
++// We don't have @XmlRootElement here, because in addition to bookmarkEnd, there are elements
++// which become this.
+ public class CTMarkupRange
+     extends CTMarkup
+     implements Child
+diff -u -r ./org/docx4j/wml/Drawing.java ../patched/org/docx4j/wml/Drawing.java
+--- ./org/docx4j/wml/Drawing.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Drawing.java	2009-10-10 01:22:54.000000000 +1100
+@@ -28,6 +28,7 @@
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlElement;
+ import javax.xml.bind.annotation.XmlElements;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.docx4j.dml.Anchor;
+@@ -59,13 +60,14 @@
+ @XmlType(name = "CT_Drawing", propOrder = {
+     "anchorOrInline"
+ })
++@XmlRootElement(name ="drawing")
+ public class Drawing
+     implements Child
+ {
+ 
+     @XmlElements({
+-        @XmlElement(name = "inline", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Inline.class),
+-        @XmlElement(name = "anchor", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Anchor.class)
++        @XmlElement(name = "anchor", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Anchor.class),
++        @XmlElement(name = "inline", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", type = Inline.class)
+     })
+     protected List<Object> anchorOrInline;
+     @XmlTransient
+diff -u -r ./org/docx4j/wml/Id.java ../patched/org/docx4j/wml/Id.java
+--- ./org/docx4j/wml/Id.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Id.java	2008-05-05 17:10:49.000000000 +1000
+@@ -115,4 +115,20 @@
          setParent(parent);
      }
  
@@ -22,24 +100,44 @@ diff -u -r ./org/docx4j/wml/Id.java ../previously-modified-sources/org/docx4j/wm
 +    
 +    
  }
-diff -u -r ./org/docx4j/wml/P.java ../previously-modified-sources/org/docx4j/wml/P.java
---- ./org/docx4j/wml/P.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/P.java	2008-05-06 01:02:39.000000000 +1000
-@@ -33,6 +32,8 @@
- import javax.xml.bind.annotation.XmlRootElement;
+diff -u -r ./org/docx4j/wml/Jc.java ../patched/org/docx4j/wml/Jc.java
+--- ./org/docx4j/wml/Jc.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Jc.java	2009-04-02 23:16:12.000000000 +1100
+@@ -25,6 +25,7 @@
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlAttribute;
++import javax.xml.bind.annotation.XmlRootElement;
  import javax.xml.bind.annotation.XmlTransient;
  import javax.xml.bind.annotation.XmlType;
-+
+ import org.jvnet.jaxb2_commons.ppp.Child;
+@@ -49,6 +50,7 @@
+  */
+ @XmlAccessorType(XmlAccessType.FIELD)
+ @XmlType(name = "CT_Jc")
++@XmlRootElement(name = "jc")        
+ public class Jc implements Child
+ {
+ 
+diff -u -r ./org/docx4j/wml/P.java ../patched/org/docx4j/wml/P.java
+--- ./org/docx4j/wml/P.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/P.java	2009-10-10 01:22:54.000000000 +1100
+@@ -35,6 +35,7 @@
+ import javax.xml.bind.annotation.XmlType;
+ import org.docx4j.math.CTOMath;
+ import org.docx4j.math.CTOMathPara;
 +import org.apache.log4j.Logger;
  import org.jvnet.jaxb2_commons.ppp.Child;
  
  
-@@ -345,4 +348,54 @@
-         setParent(parent);
+@@ -673,4 +675,56 @@
+ 
      }
  
 +    // Not generated
-+    /** Get the text content of all runs in the P */
++    /** Get the text content of all runs in the P.  WARNING: this only gets ./w:r/w:t.
++     *  That is incomplete.  Try org.docx4j.TextUtils.extractText instead.  */
++    @Deprecated
 +    public String toString() {
 +
 +    	StringBuilder result = new StringBuilder();
@@ -89,9 +187,78 @@ diff -u -r ./org/docx4j/wml/P.java ../previously-modified-sources/org/docx4j/wml
 +    }    
 +    
  }
-diff -u -r ./org/docx4j/wml/PPr.java ../previously-modified-sources/org/docx4j/wml/PPr.java
---- ./org/docx4j/wml/PPr.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/PPr.java	2008-05-06 01:02:39.000000000 +1000
+diff -u -r ./org/docx4j/wml/PPrBase.java ../patched/org/docx4j/wml/PPrBase.java
+--- ./org/docx4j/wml/PPrBase.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/PPrBase.java	2009-04-02 12:24:15.000000000 +1100
+@@ -26,6 +26,7 @@
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlAttribute;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+@@ -1225,6 +1226,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "ind")        
+     public static class Ind
+         implements Child
+     {
+@@ -1524,6 +1526,7 @@
+         "numberingChange",
+         "ins"
+     })
++    @XmlRootElement(name = "numPr")    
+     public static class NumPr
+         implements Child
+     {
+@@ -1856,6 +1859,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "outlineLvl")        
+     public static class OutlineLvl
+         implements Child
+     {
+@@ -1951,6 +1955,7 @@
+         "between",
+         "bar"
+     })
++    @XmlRootElement(name = "pBdr")        
+     public static class PBdr
+         implements Child
+     {
+@@ -2244,6 +2249,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "spacing")        
+     public static class Spacing
+         implements Child
+     {
+@@ -2325,7 +2331,7 @@
+          */
+         public boolean isBeforeAutospacing() {
+             if (beforeAutospacing == null) {
+-                return true;
++                return false;
+             } else {
+                 return beforeAutospacing;
+             }
+@@ -2401,7 +2407,7 @@
+          */
+         public boolean isAfterAutospacing() {
+             if (afterAutospacing == null) {
+-                return true;
++                return false;
+             } else {
+                 return afterAutospacing;
+             }
+diff -u -r ./org/docx4j/wml/PPr.java ../patched/org/docx4j/wml/PPr.java
+--- ./org/docx4j/wml/PPr.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/PPr.java	2008-05-01 17:48:11.000000000 +1000
 @@ -18,12 +18,12 @@
  
   */
@@ -114,10 +281,10 @@ diff -u -r ./org/docx4j/wml/PPr.java ../previously-modified-sources/org/docx4j/w
  public class PPr
      extends PPrBase
      implements Child
-diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml/R.java
---- ./org/docx4j/wml/R.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/R.java	2008-05-06 01:02:39.000000000 +1000
-@@ -312,6 +311,7 @@
+diff -u -r ./org/docx4j/wml/R.java ../patched/org/docx4j/wml/R.java
+--- ./org/docx4j/wml/R.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/R.java	2009-10-10 01:22:54.000000000 +1100
+@@ -315,6 +315,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -125,7 +292,15 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class AnnotationRef
          implements Child
      {
-@@ -366,6 +366,7 @@
+@@ -370,6 +371,7 @@
+      */
+     @XmlAccessorType(XmlAccessType.FIELD)
+     @XmlType(name = "")
++    @XmlRootElement(name = "commentReference")    
+     public static class CommentReference
+         implements Child
+     {
+@@ -450,6 +452,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -133,7 +308,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class ContinuationSeparator
          implements Child
      {
-@@ -420,6 +421,7 @@
+@@ -504,6 +507,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -141,7 +316,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class Cr
          implements Child
      {
-@@ -474,6 +476,7 @@
+@@ -558,6 +562,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -149,7 +324,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class DayLong
          implements Child
      {
-@@ -528,6 +531,7 @@
+@@ -612,6 +617,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -157,7 +332,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class DayShort
          implements Child
      {
-@@ -582,6 +586,7 @@
+@@ -666,6 +672,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -165,7 +340,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class EndnoteRef
          implements Child
      {
-@@ -636,6 +641,7 @@
+@@ -720,6 +727,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -173,7 +348,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class FootnoteRef
          implements Child
      {
-@@ -690,6 +696,7 @@
+@@ -774,6 +782,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -181,7 +356,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class LastRenderedPageBreak
          implements Child
      {
-@@ -744,6 +751,7 @@
+@@ -828,6 +837,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -189,7 +364,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class MonthLong
          implements Child
      {
-@@ -798,6 +806,7 @@
+@@ -882,6 +892,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -197,7 +372,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class MonthShort
          implements Child
      {
-@@ -852,6 +861,7 @@
+@@ -936,6 +947,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -205,7 +380,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class NoBreakHyphen
          implements Child
      {
-@@ -906,6 +916,7 @@
+@@ -990,6 +1002,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -213,7 +388,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class PgNum
          implements Child
      {
-@@ -963,6 +974,7 @@
+@@ -1047,6 +1060,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -221,7 +396,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class Ptab
          implements Child
      {
-@@ -1095,6 +1107,7 @@
+@@ -1179,6 +1193,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -229,7 +404,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class Separator
          implements Child
      {
-@@ -1149,6 +1162,7 @@
+@@ -1233,6 +1248,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -237,7 +412,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class SoftHyphen
          implements Child
      {
-@@ -1205,6 +1219,7 @@
+@@ -1289,6 +1305,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -245,7 +420,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class Sym
          implements Child
      {
-@@ -1311,6 +1326,7 @@
+@@ -1395,6 +1412,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -253,7 +428,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class Tab
          implements Child
      {
-@@ -1365,6 +1381,7 @@
+@@ -1449,6 +1467,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -261,7 +436,7 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class YearLong
          implements Child
      {
-@@ -1419,6 +1436,7 @@
+@@ -1503,6 +1522,7 @@
       */
      @XmlAccessorType(XmlAccessType.FIELD)
      @XmlType(name = "")
@@ -269,9 +444,9 @@ diff -u -r ./org/docx4j/wml/R.java ../previously-modified-sources/org/docx4j/wml
      public static class YearShort
          implements Child
      {
-diff -u -r ./org/docx4j/wml/RPr.java ../previously-modified-sources/org/docx4j/wml/RPr.java
---- ./org/docx4j/wml/RPr.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/RPr.java	2008-05-06 01:02:39.000000000 +1000
+diff -u -r ./org/docx4j/wml/RPr.java ../patched/org/docx4j/wml/RPr.java
+--- ./org/docx4j/wml/RPr.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/RPr.java	2008-05-01 18:38:43.000000000 +1000
 @@ -18,12 +18,12 @@
  
   */
@@ -294,21 +469,18 @@ diff -u -r ./org/docx4j/wml/RPr.java ../previously-modified-sources/org/docx4j/w
  public class RPr
      implements Child
  {
-diff -u -r ./org/docx4j/wml/SdtBlock.java ../previously-modified-sources/org/docx4j/wml/SdtBlock.java
---- ./org/docx4j/wml/SdtBlock.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/SdtBlock.java	2008-05-06 01:02:39.000000000 +1000
-@@ -18,14 +18,17 @@
+diff -u -r ./org/docx4j/wml/SdtBlock.java ../patched/org/docx4j/wml/SdtBlock.java
+--- ./org/docx4j/wml/SdtBlock.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/SdtBlock.java	2008-05-06 11:45:03.000000000 +1000
+@@ -21,12 +21,15 @@
  
-  */
- 
--
  package org.docx4j.wml;
  
 +import javax.xml.bind.JAXBElement;
  import javax.xml.bind.Unmarshaller;
  import javax.xml.bind.annotation.XmlAccessType;
  import javax.xml.bind.annotation.XmlAccessorType;
-+import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlRootElement;
  import javax.xml.bind.annotation.XmlTransient;
  import javax.xml.bind.annotation.XmlType;
 +
@@ -316,13 +488,8 @@ diff -u -r ./org/docx4j/wml/SdtBlock.java ../previously-modified-sources/org/doc
  import org.jvnet.jaxb2_commons.ppp.Child;
  
  
-@@ -56,10 +59,13 @@
-     "sdtEndPr",
-     "sdtContent"
- })
-+@XmlRootElement(name = "sdt")
- public class SdtBlock
-     implements Child
+@@ -63,6 +66,8 @@
+ public class SdtBlock implements Child
  {
  
 +	private static Logger log = Logger.getLogger(SdtBlock.class);		
@@ -330,7 +497,7 @@ diff -u -r ./org/docx4j/wml/SdtBlock.java ../previously-modified-sources/org/doc
      protected SdtPr sdtPr;
      protected CTSdtEndPr sdtEndPr;
      protected SdtContentBlock sdtContent;
-@@ -164,4 +170,103 @@
+@@ -167,4 +172,103 @@
          setParent(parent);
      }
  
@@ -434,9 +601,9 @@ diff -u -r ./org/docx4j/wml/SdtBlock.java ../previously-modified-sources/org/doc
 +    
 +    
  }
-diff -u -r ./org/docx4j/wml/SdtContentBlock.java ../previously-modified-sources/org/docx4j/wml/SdtContentBlock.java
---- ./org/docx4j/wml/SdtContentBlock.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/SdtContentBlock.java	2008-05-06 01:02:39.000000000 +1000
+diff -u -r ./org/docx4j/wml/SdtContentBlock.java ../patched/org/docx4j/wml/SdtContentBlock.java
+--- ./org/docx4j/wml/SdtContentBlock.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/SdtContentBlock.java	2009-10-10 01:22:54.000000000 +1100
 @@ -18,7 +18,6 @@
  
   */
@@ -445,19 +612,20 @@ diff -u -r ./org/docx4j/wml/SdtContentBlock.java ../previously-modified-sources/
  package org.docx4j.wml;
  
  import java.util.ArrayList;
-@@ -29,8 +28,11 @@
+@@ -29,10 +28,12 @@
  import javax.xml.bind.annotation.XmlAccessorType;
  import javax.xml.bind.annotation.XmlElementRef;
  import javax.xml.bind.annotation.XmlElementRefs;
 +import javax.xml.bind.annotation.XmlRootElement;
  import javax.xml.bind.annotation.XmlTransient;
  import javax.xml.bind.annotation.XmlType;
-+
+ import org.docx4j.math.CTOMath;
+ import org.docx4j.math.CTOMathPara;
 +import org.apache.log4j.Logger;
  import org.jvnet.jaxb2_commons.ppp.Child;
  
  
-@@ -173,4 +178,39 @@
+@@ -179,4 +182,39 @@
          setParent(parent);
      }
  
@@ -497,10 +665,10 @@ diff -u -r ./org/docx4j/wml/SdtContentBlock.java ../previously-modified-sources/
 +    }
 +    
  }
-diff -u -r ./org/docx4j/wml/SdtPr.java ../previously-modified-sources/org/docx4j/wml/SdtPr.java
---- ./org/docx4j/wml/SdtPr.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/SdtPr.java	2008-05-06 01:02:39.000000000 +1000
-@@ -30,10 +29,12 @@
+diff -u -r ./org/docx4j/wml/SdtPr.java ../patched/org/docx4j/wml/SdtPr.java
+--- ./org/docx4j/wml/SdtPr.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/SdtPr.java	2009-10-10 01:22:54.000000000 +1100
+@@ -30,10 +30,12 @@
  import javax.xml.bind.annotation.XmlAttribute;
  import javax.xml.bind.annotation.XmlElementRef;
  import javax.xml.bind.annotation.XmlElementRefs;
@@ -513,7 +681,7 @@ diff -u -r ./org/docx4j/wml/SdtPr.java ../previously-modified-sources/org/docx4j
  
  /**
   * <p>Java class for CT_SdtPr complex type.
-@@ -209,6 +213,109 @@
+@@ -209,6 +213,112 @@
          }
          return this.rPrOrAliasOrLock;
      }
@@ -565,11 +733,14 @@ diff -u -r ./org/docx4j/wml/SdtPr.java ../previously-modified-sources/org/docx4j
 +    }
 +    
 +    // Not generated!
-+    public void setId() {
++    public java.math.BigInteger setId() {
 +
 +    	Id id = new Id();
-+    	id.setVal( java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt())) );
++    	java.math.BigInteger newIdVal = java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt()));
++    	id.setVal( newIdVal );
 +    	setId(id);    	
++		log.warn("Generated random id: " + newIdVal.toString() );
++		return newIdVal;
 +    }
 +
 +    /**
@@ -623,10 +794,36 @@ diff -u -r ./org/docx4j/wml/SdtPr.java ../previously-modified-sources/org/docx4j
  
      /**
       * Gets the parent object in the object tree representing the unmarshalled xml document.
-diff -u -r ./org/docx4j/wml/Styles.java ../previously-modified-sources/org/docx4j/wml/Styles.java
---- ./org/docx4j/wml/Styles.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/Styles.java	2008-05-06 01:02:39.000000000 +1000
-@@ -997,7 +1093,12 @@
+diff -u -r ./org/docx4j/wml/SectPr.java ../patched/org/docx4j/wml/SectPr.java
+--- ./org/docx4j/wml/SectPr.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/SectPr.java	2009-09-02 14:23:32.000000000 +1000
+@@ -24,12 +24,14 @@
+ import java.math.BigInteger;
+ import java.util.ArrayList;
+ import java.util.List;
++import javax.xml.bind.JAXBElement;
+ import javax.xml.bind.Unmarshaller;
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlAttribute;
+ import javax.xml.bind.annotation.XmlElement;
+ import javax.xml.bind.annotation.XmlElements;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+@@ -81,6 +83,7 @@
+     "printerSettings",
+     "sectPrChange"
+ })
++@XmlRootElement(name = "sectPr")
+ public class SectPr
+     implements Child
+ {
+diff -u -r ./org/docx4j/wml/Styles.java ../patched/org/docx4j/wml/Styles.java
+--- ./org/docx4j/wml/Styles.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Styles.java	2009-09-02 14:23:32.000000000 +1000
+@@ -667,7 +667,12 @@
               *     
               */
              public Boolean isQFormat() {
@@ -640,9 +837,28 @@ diff -u -r ./org/docx4j/wml/Styles.java ../previously-modified-sources/org/docx4
              }
  
              /**
-diff -u -r ./org/docx4j/wml/Tbl.java ../previously-modified-sources/org/docx4j/wml/Tbl.java
---- ./org/docx4j/wml/Tbl.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/Tbl.java	2008-05-06 01:02:39.000000000 +1000
+diff -u -r ./org/docx4j/wml/Tabs.java ../patched/org/docx4j/wml/Tabs.java
+--- ./org/docx4j/wml/Tabs.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Tabs.java	2009-06-22 14:41:30.000000000 +1000
+@@ -27,6 +27,7 @@
+ import javax.xml.bind.annotation.XmlAccessType;
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlElement;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.jvnet.jaxb2_commons.ppp.Child;
+@@ -55,6 +56,7 @@
+ @XmlType(name = "CT_Tabs", propOrder = {
+     "tab"
+ })
++@XmlRootElement(name = "tabs")
+ public class Tabs
+     implements Child
+ {
+diff -u -r ./org/docx4j/wml/Tbl.java ../patched/org/docx4j/wml/Tbl.java
+--- ./org/docx4j/wml/Tbl.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Tbl.java	2009-10-10 01:22:54.000000000 +1100
 @@ -18,7 +18,6 @@
  
   */
@@ -658,8 +874,8 @@ diff -u -r ./org/docx4j/wml/Tbl.java ../previously-modified-sources/org/docx4j/w
 +import javax.xml.bind.annotation.XmlRootElement;
  import javax.xml.bind.annotation.XmlTransient;
  import javax.xml.bind.annotation.XmlType;
- import org.jvnet.jaxb2_commons.ppp.Child;
-@@ -62,6 +62,7 @@
+ import org.docx4j.math.CTOMath;
+@@ -64,6 +64,7 @@
      "tblGrid",
      "egContentRowContent"
  })
@@ -667,9 +883,20 @@ diff -u -r ./org/docx4j/wml/Tbl.java ../previously-modified-sources/org/docx4j/w
  public class Tbl
      implements Child
  {
-diff -u -r ./org/docx4j/wml/Text.java ../previously-modified-sources/org/docx4j/wml/Text.java
---- ./org/docx4j/wml/Text.java	2008-05-06 01:06:34.000000000 +1000
-+++ ../previously-modified-sources/org/docx4j/wml/Text.java	2008-05-06 01:02:39.000000000 +1000
+diff -u -r ./org/docx4j/wml/Tc.java ../patched/org/docx4j/wml/Tc.java
+--- ./org/docx4j/wml/Tc.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Tc.java	2009-10-10 01:22:54.000000000 +1100
+@@ -29,6 +29,7 @@
+ import javax.xml.bind.annotation.XmlAccessorType;
+ import javax.xml.bind.annotation.XmlElementRef;
+ import javax.xml.bind.annotation.XmlElementRefs;
++import javax.xml.bind.annotation.XmlRootElement;
+ import javax.xml.bind.annotation.XmlTransient;
+ import javax.xml.bind.annotation.XmlType;
+ import org.docx4j.math.CTOMath;
+diff -u -r ./org/docx4j/wml/Text.java ../patched/org/docx4j/wml/Text.java
+--- ./org/docx4j/wml/Text.java	2009-10-10 09:56:02.000000000 +1100
++++ ../patched/org/docx4j/wml/Text.java	2008-04-09 13:11:16.000000000 +1000
 @@ -18,12 +18,12 @@
  
   */
@@ -692,4 +919,3 @@ diff -u -r ./org/docx4j/wml/Text.java ../previously-modified-sources/org/docx4j/
  public class Text
      implements Child
  {
-
