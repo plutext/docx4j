@@ -223,31 +223,45 @@ public class PropertyFactory {
 		
 		// Run properties
 		if (name.equals(Font.CSS_NAME )) {
+			// font-family
 			return new Font(value);
 		} else if (name.equals(Bold.CSS_NAME )) {
+			// font-weight
 			return new Bold(value);
 		} else if (name.equals(Italics.CSS_NAME )) {
+			// font-style
 			return new Italics(value);
-		} else if (name.equals(Strike.CSS_NAME)) {
-			return new Strike(value);
+		} else if (name.equals("text-decoration")) {
+			if (value.getCssText().toLowerCase().equals("line-through")) {
+				return new Strike(value);
+			} else if (value.getCssText().toLowerCase().equals("underline")) {
+				return new Underline(value);
+			} else {
+				log.error("What to do for " + name + ":" + value.getCssText());
+			}
 		} else if (name.equals(FontColor.CSS_NAME )) {
+			// color
 			return new FontColor(value);
 		} else if (name.equals(FontSize.CSS_NAME )) {
+			// font-size
 			return new FontSize(value);
-		} else if (name.equals(Underline.CSS_NAME )) {
-			return new Underline(value);
 		} 
 		
 		// Paragraph properties
 		if (name.equals(Indent.CSS_NAME )) {
+			// left
 			return new Indent(value);
 		} else if (name.equals(Justification.CSS_NAME )) {
+			// text-align
 			return new Justification(value);
 		} else if (name.equals(KeepNext.CSS_NAME )) {
+			// page-break-after
 			return new KeepNext(value);
 		} else if (name.equals(PageBreakBefore.CSS_NAME)) {
+			// page-break-before
 			return new PageBreakBefore(value);
 		} else if (name.equals(TextAlignmentVertical.CSS_NAME )) {
+			// vertical-align
 			return new TextAlignmentVertical(value);
 		}		
 		

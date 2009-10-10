@@ -19,6 +19,7 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.docx4j.jaxb.Context;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
@@ -37,6 +38,19 @@ public class Underline extends AbstractRunProperty {
 	public Underline(CSSValue value) {
 		
 		debug(CSS_NAME, value);
+		
+		U u = Context.getWmlObjectFactory().createU();
+		
+		if (value.getCssText().toLowerCase().equals("underline")) {
+			u.setVal(UnderlineEnumeration.SINGLE);
+		} else if (value.getCssText().toLowerCase().equals("underline")) {
+			u.setVal(UnderlineEnumeration.NONE);
+		} else {
+			log.error("How to handle " + CSS_NAME + " " + value.getCssText().toLowerCase());
+		}
+
+		this.setObject( u );
+		
 	}
 	
 	@Override
@@ -46,7 +60,7 @@ public class Underline extends AbstractRunProperty {
 			// This does happen			
 			return composeCss(CSS_NAME, "underline");
 		} else if (!((U)this.getObject()).getVal().equals( UnderlineEnumeration.NONE ) ) {
-			return composeCss(CSS_NAME, "underline");
+			return composeCss(CSS_NAME, "none");  // Hmm, what if it was also Strike (a la line-through)
 		} else {
 			return CSS_NULL;
 		}
