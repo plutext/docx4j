@@ -164,6 +164,10 @@ public class TableModel extends Model {
 			throw new TransformerException("Node: " + node.getNodeName() + "="
 					+ node.getNodeValue(), e);
 		}
+		
+		this.tblPr = tbl.getTblPr();
+		this.tblGrid = tbl.getTblGrid();
+		
 		NodeList cellContents = children.item(0).getChildNodes(); // the w:tr
 		List<Object> rows = tbl.getEGContentRowContent();
 		// int i = 0;
