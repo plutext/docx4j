@@ -4,6 +4,7 @@ import java.util.*;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
+import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -34,10 +35,10 @@ public class TableWriter extends ModelConverter {
     Element tgroup =  doc.createElement("colgroup");
     tbl.appendChild(tgroup);
     tgroup.setAttribute("span",  String.valueOf(cols));
-    for (List<TableModel.Cell> rows : table.getCells()) {
+    for (List<Cell> rows : table.getCells()) {
 			Element row = doc.createElement("tr");
 			tbl.appendChild(row);
-			for (TableModel.Cell cell : rows) {
+			for (Cell cell : rows) {
 				// process cell
 				if (!cell.isDummy()) {
 					int col = cell.getColumn();

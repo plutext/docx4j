@@ -20,33 +20,35 @@
 
 package org.docx4j.model.table;
 
-import java.util.*;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Vector;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
 import org.apache.log4j.Logger;
+import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.model.Model;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+
+import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblGrid;
+import org.docx4j.wml.TblGridCol;
+import org.docx4j.wml.TblPr;
+import org.docx4j.wml.TblWidth;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Tr;
-//import d4n.util.XmlUtils;
-import org.docx4j.XmlUtils;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.io.DOMWriter;
-import org.w3c.dom.DocumentFragment;
+import org.docx4j.wml.TcPrInner.GridSpan;
+import org.docx4j.wml.TcPrInner.VMerge;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.traversal.NodeIterator;
-import javax.xml.transform.TransformerException;
 
 /**
  * There are different ways to represent a table with possibly merged
@@ -75,80 +77,87 @@ import javax.xml.transform.TransformerException;
  * 
  */
 public class TableModel extends Model {
-  private final static Logger logger = Logger.getLogger(TableModel.class);
+	private final static Logger logger = Logger.getLogger(TableModel.class);
 
-  /**
-   * A list of rows
-   */
-  private List<List<Cell>> cells;
-  
-  private int row;
-  private int col;
+	/**
+	 * A list of rows
+	 */
+	protected List<List<Cell>> cells;
 
-  public TableModel() {
-    resetIndexes();
-    cells = new Vector<List<Cell>>();
-  }
+	private int row;
+	private int col;
 
-  /**
-   * Reset <var>row</var> and <var>col</var>.
-   */
-  public void resetIndexes() {
-    row = -1;
-    col = -1;
-  }
+	/**
+	 * Table properties are represented using the
+	 * docx model. 
+	 */
+	private TblPr tblPr;
+	
+	private TblGrid tblGrid;
+	
+	public TableModel() {
+		resetIndexes();
+		cells = new Vector<List<Cell>>();
+	}
 
-  public void startRow() {
-    cells.add(new Vector<Cell>());
-    row++;
-    col = -1;
-  }
+	/**
+	 * Reset <var>row</var> and <var>col</var>.
+	 */
+	public void resetIndexes() {
+		row = -1;
+		col = -1;
+	}
 
-  /**
-   * Add a new cell to this table and copy processed content of
-   * <var>tc</var> to it.
-   */
-  public void addCell(Tc tc, Node content) {
-    col++;
-    Cell newCell = new Cell(this, row, col, tc, content);
-    cells.get(row).add(newCell);
-    // populate table with dummy cells to the right of this one
-    for (int i = 0; i < newCell.getExtraCols(); i++)
-      addDummyCell();
-    // TODO: handle cell's gridBefore/gridAfter attrs by adding dummy cells if needed
-  }
+	public void startRow() {
+		cells.add(new Vector<Cell>());
+		row++;
+		col = -1;
+	}
 
-  private void addDummyCell() {
-    col++;
-    cells.get(row).add(new Cell(this, row, col));
-  }
+	/**
+	 * Add a new cell to this table and copy processed content of
+	 * <var>tc</var> to it.
+	 */
+	public void addCell(Tc tc, Node content) {
+		col++;
+		Cell newCell = new Cell(this, row, col, tc, content);
+		cells.get(row).add(newCell);
+		// populate table with dummy cells to the right of this one
+		for (int i = 0; i < newCell.getExtraCols(); i++)
+			addDummyCell();
+		// TODO: handle cell's gridBefore/gridAfter attrs by adding dummy cells if needed
+	}
 
-  public Cell getCell(int row, int col) {
-    return cells.get(row).get(col);
-  }
+	private void addDummyCell() {
+		col++;
+		cells.get(row).add(new Cell(this, row, col));
+	}
 
-  /**
-   * @return "colX" where X is a 1-based index
-   */
-  public String getColName(int col) {
-    return "col" + String.valueOf(col + 1);
-  }
+	public Cell getCell(int row, int col) {
+		return cells.get(row).get(col);
+	}
 
-  public int getColCount() {
-    return cells.get(0).size();
-  }
+	/**
+	 * @return "colX" where X is a 1-based index
+	 */
+	public String getColName(int col) {
+		return "col" + String.valueOf(col + 1);
+	}
 
-  public List<List<Cell>> getCells() {
-    return cells;
-  }
+	public int getColCount() {
+		return cells.get(0).size();
+	}
 
-  /**
-   * Build a table representation from a <var>tbl</var> instance
-   */
-  public void build(Converter inst, Node node, NodeList children) 
-  	throws TransformerException {
-	  	  
-    Tbl tbl = null;
+	public List<List<Cell>> getCells() {
+		return cells;
+	}
+
+	/**
+	 * Build a table representation from a <var>tbl</var> instance
+	 */
+	public void build(Node node, NodeList children) throws TransformerException {
+
+		Tbl tbl = null;
 		try {
 			tbl = (Tbl) XmlUtils.unmarshal(node);
 		} catch (JAXBException e) {
@@ -165,172 +174,169 @@ public class TableModel extends Model {
 			List<Object> cells = tr.getEGContentCellContent();
 			int c = 0;
 			for (Object o2 : cells) {
-				
-				if ( o2 instanceof javax.xml.bind.JAXBElement) {
-				
-//					System.out.println( ((JAXBElement)o2).getName() );
-//					System.out.println( ((JAXBElement)o2).getDeclaredType().getName() + "\n\n");
-				
+
+				if (o2 instanceof javax.xml.bind.JAXBElement) {
+
+					//					System.out.println( ((JAXBElement)o2).getName() );
+					//					System.out.println( ((JAXBElement)o2).getDeclaredType().getName() + "\n\n");
+
 					Tc tc = (Tc) ((JAXBElement) o2).getValue();
 					Node wtrNode = cellContents.item(r); //w:tr
 					addCell(tc, wtrNode.getChildNodes().item(c));
 					// addCell(tc, cellContents.item(i));
 					// i++;
 					c++;
-					
+
 				} else {
-					
-					logger.warn( "Encountered unexpected: " + o2.getClass().getName() );
+
+					logger.warn("Encountered unexpected: "
+							+ o2.getClass().getName());
 				}
 			}
 			r++;
 		}
-  }
-  
-  private void debugCellContents(NodeList children) {
-	  
-	  for(int i=0; i<children.getLength(); i++) {
-		  
-		  System.out.println(i);
-		  
-		  System.out.println( children.item(i).getTextContent() );
-		  System.out.println( children.item(i).getLocalName() );
-		  
-	  }
-	  
-	  
-  }
+	}
 
-  public String debugStr() {
-    StringBuffer buf = new StringBuffer();
-    for (List<Cell> rows: cells) {
-      for (Cell c: rows) {
-        buf.append(c.debugStr());
-      }
-      buf.append("\n");
-    }
-    return buf.toString();
-  }
+	/* (non-Javadoc)
+	 * @see org.docx4j.model.Model#toJAXB()
+	 */
+	@Override
+	public Object toJAXB() {
+		
+		ObjectFactory factory = Context.getWmlObjectFactory();		
+		Tbl tbl = factory.createTbl();
+		
+		// <w:tblPr>
+		if (tblPr==null) {
+			logger.warn("tblPr is null");
+			tblPr = factory.createTblPr();
+			
+			// Default to page width
+			TblWidth tblWidth = factory.createTblWidth();
+			tblWidth.setW(BigInteger.valueOf(UnitsOfMeasurement.DEFAULT_PAGE_WIDTH_TWIPS));
+			tblWidth.setType("dxa"); // twips
+			tblPr.setTblW(tblWidth);			
+		} 
+		tbl.setTblPr(tblPr);
+		
+		// <w:tblGrid>
+		// This specifies the number of columns,
+		// and also their width
+		if (tblGrid==null) {
+			logger.warn("tblGrid is null");
+			tblGrid = factory.createTblGrid();
+			// Default to equal width
+			int width = Math.round( tbl.getTblPr().getTblW().getW().floatValue()/getColCount() );
+			for (int i=0; i<getColCount(); i++) {
+				TblGridCol tblGridCol = factory.createTblGridCol();
+				tblGridCol.setW(BigInteger.valueOf(width)); // twips
+				tblGrid.getGridCol().add(tblGridCol);
+			}
+		} 
+		tbl.setTblGrid(tblGrid);
+		
+		// <w:tr>
+		// we need a table row, even if every entry is just a vertical span,
+		// so that is easy
+		for (int i=0; i<cells.size(); i++) {
+			Tr tr = factory.createTr();
+			tbl.getEGContentRowContent().add(tr);
+			
+			// populate the row
+			for(int j=0; j<getColCount(); j++) {
+				Tc tc = factory.createTc();
+				Cell cell = cells.get(i).get(j);
+				if (cell==null) {
+					// easy, nothing to do.
+					// this is just an empty tc	
+					tr.getEGContentCellContent().add(tc);
+				} else {
+					if (cell.isDummy() ) {
+						// we need to determine whether this is a result of 
+						// a vertical merge or a horizontal merge
+						if (j>0 && (cells.get(i).get(j-1).isDummy() 
+										|| cells.get(i).get(j-1).colspan >1 ) ) {
+							// Its a horizontal merge, so
+							// just leave it out
+						} else if (i>0 && (cells.get(i-1).get(j).isDummy() 
+								|| cells.get(i-1).get(j).rowspan >1 ) ) {
+							// Its a vertical merge
+							TcPr tcPr = factory.createTcPr();
+							VMerge vm = factory.createTcPrInnerVMerge();
+							tcPr.setVMerge( vm );
+							tc.setTcPr(tcPr);
+							tr.getEGContentCellContent().add(tc);
+						} else {
+							logger.error("Encountered phantom dummy cell at (" + i + "," + j + ") " );
+							logger.debug(debugStr());
+						}
+						
+					} else { // a real cell
+						TcPr tcPr = factory.createTcPr();
+						
+						if (cell.colspan>1) {
+							// add <w:gridSpan>
+							GridSpan gridSpan = factory.createTcPrInnerGridSpan();
+							gridSpan.setVal(BigInteger.valueOf(cell.colspan));
+							tcPr.setGridSpan(gridSpan);
+							tc.setTcPr(tcPr);
+						}
+						if (cell.rowspan>1) {
+							// Its a vertical merge
+							VMerge vm = factory.createTcPrInnerVMerge();
+							vm.setVal("restart");
+							tcPr.setVMerge( vm );
+							tc.setTcPr(tcPr);
+						}
+						
+						if (cell.colspan>1 && cell.rowspan>1) {
+							logger.warn("Both rowspan & colspan set; that will be interesting..");
+						}
+												
+						tr.getEGContentCellContent().add(tc);
+						
+						// TODO: add the cell content, if we have it.
+						// We won't have compatible content if this model has
+						// been created via XSLT for an outward bound conversion.
+						// But in that case, this method isn't needed
+						// because the developer started with the JAXB model. 
+						
+					}
+				}
+			}
+			
+			
+		}
+		
+		return tbl;
+	}
 
-  /**
-   * A cell in the table holding its own content, too
-   */
-  public class Cell {
-    private TableModel table;
-    private int row;
-    private int col;
-    private int rowspan = 0;
-    private int colspan = 0;
-    /** If this is a real cell or only a placeholder.  Vertically merged
-     * cells are represented as a real cell on the top and dummy cell(s)
-     * below */
-    private boolean dummy = false;
-    private Node content = null;
+	private void debugCellContents(NodeList children) {
 
-    /**
-     * Create a dummy cell without content
-     */
-    public Cell(TableModel table, int row, int col) {
-      this.table = table;
-      this.row = row;
-      this.col = col;
-      this.dummy = true;
-    }
+		for (int i = 0; i < children.getLength(); i++) {
 
-    public Cell(TableModel table, int row, int col, Tc tc, Node content) {
-      this(table, row, col);
-      dummy = false;
-      this.content = content;
-      
-      logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
-      
-      /* xhtmlTc.appendChild(
-         document.importNode(tcDoc, true) );
-         com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.importNode
-         org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation
-         */
-      // rowspan
-      try {
-        String vm = tc.getTcPr().getVMerge().getVal();
-        if (vm == null)
-          dummy = true;
-        // dummy cells propagate this call upwards until a real cell is found
-        incrementRowSpan();
-      }
-      catch (NullPointerException ne) {
-        // no vMerge
-      }
-      if (dummy) {
-        // set its colspan to the same value as its upper neighbor,
-        // so dummy cells will be created to the right if colspan>1
-        colspan = table.getCell(row - 1, col).colspan;
-      }
-      else {
-        // real cell
-        // colspan
-        try {
-          int gridSpan = tc.getTcPr().getGridSpan().getVal().intValue();
-          colspan = gridSpan;
-        }
-        catch (NullPointerException ne) {
-          // no gridSpan
-        }
-      }
-    }
+			System.out.println(i);
 
-    /**
-     * How many columns are merged into this cell
-     * @return 0 if none merged; 1 if two cells are merged so there is one
-     * extra; etc.  A dummy cell has the same extraCols value as its upper
-     * neighbor.
-     */
-    public int getExtraCols() {
-      if (colspan < 2)
-        return 0;
-      else
-        return colspan - 1;
-    }
+			System.out.println(children.item(i).getTextContent());
+			System.out.println(children.item(i).getLocalName());
 
-    public int getExtraRows() {
-      if (rowspan > 1)
-        return rowspan - 1;
-      else
-        return 0;
-    }
+		}
 
-    public boolean isDummy() {
-      return dummy;
-    }
+	}
 
-    public Node getContent() {
-      return content;
-    }
+	public String debugStr() {
+		StringBuffer buf = new StringBuffer();
+		for (List<Cell> rows : cells) {
+			for (Cell c : rows) {
+				if (c==null) {
+					buf.append("null     ");
+				} else {
+					buf.append(c.debugStr());
+				}
+			}
+			buf.append("\n");
+		}
+		return buf.toString();
+	}
 
-    public int getColumn() {
-      return col;
-    }
-
-    /**
-     * If this is a real cell, increment rowspan; if this is a dummy,
-     * propagate the call to the cell upwards
-     */
-    protected void incrementRowSpan() {
-      if (dummy)
-        table.getCell(row - 1, col).incrementRowSpan();
-      else
-        rowspan++;
-    }
-
-    public String debugStr() {
-      String s = null;
-      if (dummy)
-        s = "d";
-      else
-        s = "r";
-      s += "(" + row + "" + col + ")";
-      s += colspan;
-      s += rowspan;
-      return s + " ";
-    }
-  }
 }

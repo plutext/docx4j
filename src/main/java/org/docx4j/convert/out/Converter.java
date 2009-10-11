@@ -152,7 +152,7 @@ public class Converter {
         node.getNodeName());
     try {
       Model model = (Model)c.newInstance();
-      model.build(inst, node, children);
+      model.build( node, children);
       return converter.toNode(model);
     }
     catch (Exception e) {
