@@ -167,6 +167,9 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 			if (prop.getName().equals(propName)) {
 				log.warn("Replacing existing property: " + propName);
 				newProp = prop;
+				if (!newProp.getFmtid().equals(fmtidValLpwstr )) {
+					log.warn("Wrong fmtid?  This might not work...");
+				}
 				break;
 			}			
 		}
@@ -175,17 +178,17 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 		if (newProp==null) {
 			org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
 			newProp = factory.createPropertiesProperty();
+
+			newProp.setName(propName);
+			newProp.setFmtid(fmtidValLpwstr ); // Magic string
+			newProp.setPid( getNextPid() ); 
+			
+			customProps.getProperty().add(newProp);
 		}
 		
-		// .. set it up
-		newProp.setName(propName);
-		newProp.setFmtid(this.fmtidValLpwstr ); // Magic string
-		newProp.setPid( getNextPid() ); 
+		// set the value
 		newProp.setLpwstr(propValue);
-		
-		// .. add it
-		customProps.getProperty().add(newProp);
-    	
+		    	
     }
     
     /**
