@@ -160,9 +160,22 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
     	
 		// NB, at present this assumes the property is a string
     	
-		// Ok, let's add one.
-		org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
-		org.docx4j.docProps.custom.Properties.Property newProp = factory.createPropertiesProperty();
+    	// does it exist already?
+    	org.docx4j.docProps.custom.Properties.Property newProp = null;
+    	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
+		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
+			if (prop.getName().equals(propName)) {
+				log.warn("Replacing existing property: " + propName);
+				newProp = prop;
+				break;
+			}			
+		}
+    	
+		// If not, let's add one.
+		if (newProp==null) {
+			org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
+			newProp = factory.createPropertiesProperty();
+		}
 		
 		// .. set it up
 		newProp.setName(propName);
@@ -171,9 +184,7 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 		newProp.setLpwstr(propValue);
 		
 		// .. add it
-    	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
 		customProps.getProperty().add(newProp);
-    	
     	
     }
     
