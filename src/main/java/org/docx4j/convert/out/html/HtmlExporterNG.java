@@ -224,9 +224,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		
 		htmlSettings.setWmlPackage(wmlPackage);
 		
-		Converter c = new Converter();
-		c.getInstance().registerModelConverter("w:tbl", new TableWriter() );
-		c.start(wmlPackage);
+		//Converter c = new Converter();
+		Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+		Converter.getInstance().start(wmlPackage);
 		
 		// Now do the transformation
 		log.debug("About to transform...");
