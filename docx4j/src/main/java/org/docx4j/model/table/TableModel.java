@@ -36,6 +36,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
 
 import org.docx4j.wml.ObjectFactory;
+import org.docx4j.wml.P;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblGrid;
 import org.docx4j.wml.TblGridCol;
@@ -91,9 +92,9 @@ public class TableModel extends Model {
 	 * Table properties are represented using the
 	 * docx model. 
 	 */
-	private TblPr tblPr;
+	protected TblPr tblPr;
 	
-	private TblGrid tblGrid;
+	protected TblGrid tblGrid;
 	
 	public TableModel() {
 		resetIndexes();
@@ -270,6 +271,10 @@ public class TableModel extends Model {
 							tcPr.setVMerge( vm );
 							tc.setTcPr(tcPr);
 							tr.getEGContentCellContent().add(tc);
+							
+							// Must have an empty paragraph
+							P p = factory.createP();
+							tc.getEGBlockLevelElts().add(p);
 						} else {
 							logger.error("Encountered phantom dummy cell at (" + i + "," + j + ") " );
 							logger.debug(debugStr());
@@ -299,12 +304,21 @@ public class TableModel extends Model {
 												
 						tr.getEGContentCellContent().add(tc);
 						
-						// TODO: add the cell content, if we have it.
+						// Add the cell content, if we have it.
 						// We won't have compatible content if this model has
 						// been created via XSLT for an outward bound conversion.
 						// But in that case, this method isn't needed
 						// because the developer started with the JAXB model. 
-						
+						Node foreign = cell.getContent(); // eg a <td>
+						for (int n = 0 ; n < foreign.getChildNodes().getLength(); n++) {						
+							Object o;
+							try {
+								o = XmlUtils.unmarshal(foreign.getChildNodes().item(n));
+								tc.getEGBlockLevelElts().add(o);
+							} catch (JAXBException e) {
+								e.printStackTrace();
+							}
+						}
 					}
 				}
 			}

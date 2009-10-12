@@ -728,7 +728,7 @@ public class XmlUtils {
 		// or com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl
 		// (if its marshalled JAXB)
 	    	
-    	//log.debug("node type" + sourceNode.getNodeType());
+    	log.debug("node type" + sourceNode.getNodeType());
     	
         switch (sourceNode.getNodeType() ) {
 
@@ -738,6 +738,7 @@ public class XmlUtils {
                 NodeList nodes = sourceNode.getChildNodes();
                 if (nodes != null) {
                     for (int i=0; i<nodes.getLength(); i++) {
+                    	log.debug("child " + i + "of DOCUMENT_NODE");
                     	//treeCopy((DTMNodeProxy)nodes.item(i), destParent);
                     	treeCopy((Node)nodes.item(i), destParent);
                     }
@@ -746,7 +747,7 @@ public class XmlUtils {
             case Node.ELEMENT_NODE:
                 
                 // Copy of the node itself
-        		//log.debug("copying: " + sourceNode.getNodeName() );
+        		log.debug("copying: " + sourceNode.getNodeName() );
         		Node newChild;
         		if ( destParent instanceof Document ) {
         			newChild = ((Document)destParent).createElementNS(
