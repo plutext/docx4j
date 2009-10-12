@@ -50,7 +50,7 @@ public class OpenMainDocumentAndTraverse {
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/jbtemplate.docx";
 		//String inputfilepath = "/home/dev/s.docx";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word2003-vml.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/math.docx";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		

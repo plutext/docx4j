@@ -23,8 +23,11 @@ package org.docx4j.convert.out;
 import java.io.*;
 import java.util.*;
 import org.apache.log4j.Logger;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -88,6 +91,10 @@ public class Converter {
     converters = new HashMap<String, ModelConverter>();
     
   }
+  
+  public void registerModel(String name, Class c) {
+	  modelClasses.put(name, c);
+  }
 
   /**
    * Called before a document is processed.  Converters are assumed to
@@ -136,29 +143,41 @@ public class Converter {
   
   public static Node toNode(Node node, NodeList children) {
 
-    Converter inst = Converter.getInstance();
-    Class c = inst.modelClasses.get(node.getNodeName());    
-    if (c == null) {
-    	logger.error("No model registered for " + 
-        node.getNodeName());
-      throw new IllegalArgumentException("No model registered for " + 
-        node.getNodeName());
-    } else {
-    	logger.debug("Using model " + c.getName() + " for node " + node.getNodeName());
-    }
-    ModelConverter converter = inst.converters.get(node.getNodeName());
-    if (converter == null)
-      throw new IllegalArgumentException("No writer registered for " + 
-        node.getNodeName());
-    try {
-      Model model = (Model)c.newInstance();
-      model.build( node, children);
-      return converter.toNode(model);
-    }
-    catch (Exception e) {
-      logger.error("Cannot convert " + node, e);
-      return null;
-    }
-  }
+		Converter inst = Converter.getInstance();
+		Class c = inst.modelClasses.get(node.getNodeName());
+		if (c == null) {
+			logger.error("No model registered for " + node.getNodeName());
+			throw new IllegalArgumentException("No model registered for "
+					+ node.getNodeName());
+		} else {
+			logger.debug("Using model " + c.getName() + " for node "
+					+ node.getNodeName());
+		}
+		try {
+			Model model = (Model) c.newInstance();
+			model.build(node, children);
+
+			ModelConverter converter = inst.converters.get(node.getNodeName());
+			if (converter == null) {
+
+				// We don't have a converter for writing to an output format
+				// Either this is a problem ..
+				logger.warn("No writer registered for " + node.getNodeName());
+				// .. or the intent is to import to docx
+				logger.info("Generating wml from model.");
+				Object o = model.toJAXB();
+				org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(o);
+				DocumentFragment docfrag = doc.createDocumentFragment();
+				docfrag.appendChild(doc.getDocumentElement());
+				return docfrag;
+
+			} else {
+				return converter.toNode(model);
+			}
+		} catch (Exception e) {
+			logger.error("Cannot convert " + node, e);
+			return null;
+		}
+	}
 
 }
