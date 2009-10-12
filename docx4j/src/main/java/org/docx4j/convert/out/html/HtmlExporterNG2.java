@@ -295,7 +295,6 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 	                    }
 	                }					
 				} else {
-					log.debug("handling DOCUMENT_NODE");
 					
 	//					log.info("Node we are importing: " + n.getClass().getName() );
 	//					foBlockElement.appendChild(
