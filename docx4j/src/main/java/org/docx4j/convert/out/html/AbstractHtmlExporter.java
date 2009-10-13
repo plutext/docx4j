@@ -248,33 +248,45 @@ public abstract class AbstractHtmlExporter implements Output {
 //    }    
     
 	public static class HtmlSettings {
+
+		private Map<String, Object> settings;
 		
-		private WordprocessingMLPackage wmlPackage = null;
+		public HtmlSettings() {
+			settings = new java.util.HashMap<String, Object>();
+			settings.put("conditionalComments", Boolean.FALSE);
+			settings.put("fontFamilyStack",     Boolean.FALSE);
+			settings.put("imageDirPath", "");
+			
+//			settings.put("docxWikiSdtID", docxWikiSdtID);
+//			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
+			
+		}
+		
+		public Map<String, Object> getSettings() {
+			return settings;
+		}
+		
 		public void setWmlPackage(WordprocessingMLPackage wmlPackage) {
-			this.wmlPackage = wmlPackage;
+			settings.put("wmlPackage", wmlPackage);
 		}
 		public WordprocessingMLPackage getWmlPackage() {
-			return wmlPackage;
+			return (WordprocessingMLPackage)settings.get("wmlPackage");
 		}
 		
-		Boolean conditionalComments = Boolean.FALSE; 
 		public void setConditionalComments(Boolean conditionalComments) {
-			this.conditionalComments = conditionalComments;
+			settings.put("conditionalComments", conditionalComments);
 		}
 		
-		Boolean fontFamilyStack = Boolean.FALSE;		
 		public void setFontFamilyStack(boolean val) {
-			fontFamilyStack = new Boolean(val);
+			settings.put("fontFamilyStack", new Boolean(val));
 		}
 
-		String docxWikiMenu = null;		
 		public void setDocxWikiMenu(String docxWikiMenu) {
-			this.docxWikiMenu = docxWikiMenu;
+			settings.put("docxWikiMenu", docxWikiMenu);
 		}
 		
-		String docxWiki = null;	// edit | open	
-		public void setDocxWiki(String docxWiki) {
-			this.docxWiki = docxWiki;
+		public void setDocxWiki(String docxWiki) { // edit | open
+			settings.put("docxWiki", docxWiki);
 		}
 
 //		String docxWikiSdtID = null;	
@@ -287,50 +299,27 @@ public abstract class AbstractHtmlExporter implements Output {
 //			this.docxWikiSdtVersion = docxWikiSdtVersion;
 //		}		
 		
-		String docID = null;
 		public void setDocID(String docID) {
-			this.docID = docID;
+			settings.put("docID", docID);
 		}
-		
-		
-		Mapper fontMapper = null;		
+				
 		public void setFontMapper(Mapper fontMapper) {
-			this.fontMapper = fontMapper;
+			settings.put("fontMapper", fontMapper);
 		}
 		public Mapper getFontMapper() {
-			return fontMapper;
+			return (Mapper)settings.get("fontMapper");
 		}
 		
 		// If this is set to something, images in
 		// internal binary parts will be saved to this directory;
 		// otherwise they won't
-		private String imageDirPath = "";
 		public void setImageDirPath(String imageDirPath) {
-			this.imageDirPath = imageDirPath;
+			settings.put("imageDirPath", imageDirPath);
 		}
 		public String getImageDirPath() {
-			return imageDirPath;
+			return (String)settings.get("imageDirPath");
 		}
-		
-		
-		Map<String, Object> getSettings() {
-			Map<String, Object> settings = new java.util.HashMap<String, Object>();
-			
-			settings.put("wmlPackage", wmlPackage);
-			settings.put("fontFamilyStack", fontFamilyStack);
-			settings.put("docxWikiMenu", docxWikiMenu);
-			settings.put("docxWiki", docxWiki);
-//			settings.put("docxWikiSdtID", docxWikiSdtID);
-//			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
-			settings.put("docID", docID);
-			settings.put("fontMapper", fontMapper);
-			settings.put("imageDirPath", imageDirPath);
-			settings.put("conditionalComments", conditionalComments);
-			
-			
-			return settings;
-		}
-		
+				
 	}
 	
 
