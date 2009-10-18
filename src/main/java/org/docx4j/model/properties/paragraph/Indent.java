@@ -33,7 +33,9 @@ public class Indent extends AbstractParagraphProperty {
 	
 	// Just handles left for the moment
 	
-	public final static String CSS_NAME = "left"; 
+	public final static String CSS_NAME = "margin-left";  // Use 'margin-left' instead of 'left' for CSS.
+	// 'Left' pushes the box to the right, which results can result in a horizontal scroll bar in the web browser.
+	
 	public final static String FO_NAME  = "start-indent"; 
 	
 	
