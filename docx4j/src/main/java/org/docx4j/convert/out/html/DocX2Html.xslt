@@ -6862,11 +6862,11 @@ if (msoBrowserCheck())
 						div.footer {display: none } 
 						/*@media print { */
 						<xsl:if
-							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultHeader($wmlPackage)">
+							test="java:org.docx4j.model.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
 							div.header {display: block; position: running(header) }
 						</xsl:if>
 						<xsl:if
-							test="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.hasDefaultFooter($wmlPackage)">
+							test="java:org.docx4j.model.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
 							div.footer {display: block; position: running(footer) }
 						</xsl:if>
 
