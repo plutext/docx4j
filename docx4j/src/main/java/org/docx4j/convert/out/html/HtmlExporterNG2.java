@@ -43,7 +43,7 @@ import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.model.styles.StyleTree.Tree;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
@@ -156,7 +156,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 		// First iteration - paragraph level pPr *and rPr*
 		result.append("\n /* PARAGRAPH STYLES */ \n");    	
 		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
-    	for (Tree<AugmentedStyle>.Node<AugmentedStyle> n : pTree.toList() ) {
+    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : pTree.toList() ) {
     		Style s = n.getData().getStyle();
 
     		result.append( "."+ s.getStyleId()  + " {display:block;" );
@@ -178,7 +178,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 		//result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ \n ");
 		
 		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-    	for (Tree<AugmentedStyle>.Node<AugmentedStyle> n : cTree.toList() ) {
+    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : cTree.toList() ) {
     		Style s = n.getData().getStyle();
 
     		result.append( "."+ s.getStyleId()  + " {display:inline;" );
@@ -251,7 +251,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 			// Set @class
 			log.debug(pStyleVal);
 			Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
-	    	Tree<AugmentedStyle>.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
+			org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
 			((Element)xhtmlP).setAttribute("class", 
 					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
 			);
@@ -393,7 +393,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 				if ( rPr.getRStyle()!=null) {
 					String rStyleVal = rPr.getRStyle().getVal();
 					Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-			    	Tree<AugmentedStyle>.Node<AugmentedStyle> asn = cTree.get(rStyleVal);						
+					org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);						
 					((Element)span).setAttribute("class", 
 							StyleTree.getHtmlClassAttributeValue(cTree, asn)			
 					);				
