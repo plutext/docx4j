@@ -369,8 +369,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			}				
 		       
 			createFoAttributes(pPr, ((Element)foBlockElement) );
-			createFoAttributes(wmlPackage, rPr, ((Element)foBlockElement) );
-			
+			if (rPr!=null) {											
+				createFoAttributes(wmlPackage, rPr, ((Element)foBlockElement) );
+	        }
+        
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
