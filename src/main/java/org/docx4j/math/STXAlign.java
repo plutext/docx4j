@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "ST_XAlign")
+@XmlType(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", name = "ST_XAlign")
 @XmlEnum
 public enum STXAlign {
 

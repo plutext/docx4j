@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "ST_ColorSchemeIndex")
+@XmlType(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", name = "ST_ColorSchemeIndex")
 @XmlEnum
 public enum STColorSchemeIndex {
 

@@ -48,7 +48,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_F")
+@XmlType(namespace = "urn:schemas-microsoft-com:vml", name = "CT_F")
 public class CTF
     implements Child
 {

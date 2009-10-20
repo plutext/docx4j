@@ -48,7 +48,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_TwipsMeasure")
+@XmlType(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", name = "CT_TwipsMeasure")
 public class CTTwipsMeasure
     implements Child
 {

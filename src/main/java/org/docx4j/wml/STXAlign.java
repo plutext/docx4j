@@ -44,7 +44,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "ST_XAlign")
+@XmlType(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "ST_XAlign")
 @XmlEnum
 public enum STXAlign {
 
