@@ -6,6 +6,7 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 
+    <property name="src.main.java.dir" value="src/main/java"/>
 	
 	<property name="m2Repository" value="../../.m2/repository"/>	
     <path id="Maven Dependencies.libraryclasspath">
@@ -63,7 +64,7 @@
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src/main/java" excludes="**/*.launch, **/*.java"/>
+            <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
         </copy>
     </target>
 	
@@ -75,16 +76,39 @@
    
     <target name="build-project" depends="init" >
         <echo message="${ant.project.name}: ${ant.file}"/>
+        <echo message="${ant.java.version}"/>
         
         <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
         	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
-            <src path="src/main/java"/>
+            <src path="${src.main.java.dir}"/>
             <src path="src/diffx"/>
             <classpath refid="docx4j.classpath"/>
+            <!--  nb, you need JAXB RI, for example, in jre/lib/endorsed -->
         </javac>
-    	<!-- nb, this doesn't put eg xslt files into the relevant dir;
-    	     eclipse does though (provided its build path is pointing to the correct dir).
-    	     TODO: fix this! -->         
+        
+        <!--  Force ant to compile package-info.java.
+              Without these, you'll get JAXB "unexpected element" errors.
+        	  This is necessary because of a dubious change in ant behaviour, 
+              starting with 1.7.1 (see javac task doc, and ant bug 43114).  
+              
+			  "In Ant 1.7.1 the package-info.java will only be compiled if:
+				
+				   1. If a package-info.class file exists and is older than the package-info.java file.
+				   2. If the directory for the package-info.class file does not exist.
+				   3. If the directory for the package-info.class file exists, and has an older modification 
+				   time than the the package-info.java file. In this case <javac> will touch the corresponding 
+				   .class directory on successful compilation."              
+              -->
+        <sleep seconds="2"/> <!--  wait a little, so our modifications times are newer -->
+        <touch><fileset dir="${src.main.java.dir}" includes="**/package-info.java" /></touch>        
+        <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}"
+        	srcdir="${src.main.java.dir}">
+        	<include name="**/package-info.java"/>
+            <classpath refid="docx4j.classpath"/>
+        </javac>
+        
+        
     </target>
  
     <target name="dist"  depends="clean, build-project" >
@@ -125,7 +149,7 @@
         <mkdir dir="javadoc"/>
 	
 		<javadoc sourcepath="src/diffx" destdir="javadoc"/>
-		<javadoc sourcepath="src/main/java" destdir="javadoc"/>
+		<javadoc sourcepath="${src.main.java.dir}" destdir="javadoc"/>
 		
 <!-- 		
       <Doctitle><![CDATA[<h1>docx4j API Documentation</h1>]]></Doctitle>
