@@ -53,7 +53,9 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_ShapeDefaults", propOrder = {
+@XmlType(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", 
+		 name = "CT_ShapeDefaults", 
+		 propOrder = {
     "any"
 })
 public class CTShapeDefaults
