@@ -19,6 +19,7 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -43,8 +44,6 @@ public class Font extends AbstractRunProperty {
 		
 		debug(CSS_NAME, value);
 		log.warn("TODO");
-		
-
 	}
 	
 
@@ -75,17 +74,24 @@ public class Font extends AbstractRunProperty {
 		}
 		
 		if (font==null) {
-//				log.error("Font was null in: " + XmlUtils.marshaltoString(rPr, true, true));
-			log.error("Font was null!"  );
+			log.error("Font was null in: " + XmlUtils.marshaltoString(object, true, true));
+			
+			/* TODO - handle
+			 *  <w:rFonts w:cstheme="minorBidi"     w:eastAsiaTheme="minorHAnsi" 
+			 *            w:hAnsiTheme="minorHAnsi" w:asciiTheme="minorHAnsi" />
+			 */
+			
+			log.error("Font was null in RFonts; falling back to " + Mapper.FONT_FALLBACK );
 			font=Mapper.FONT_FALLBACK;
 		}
 		
-		log.info("Font: " + font);
 		
 		PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
-		if (pf!=null) {					
+		if (pf!=null) {
+			log.debug("Font '" + font + "' maps to " + pf.getName() );
 			return pf.getName();
 		} else {
+			log.warn("Font '" + font + "' is not mapped to a physical font. " );			
 			return null;
 		}
 		
@@ -98,9 +104,7 @@ public class Font extends AbstractRunProperty {
 		
 		if (font!=null) {					
 			foElement.setAttribute(FO_NAME, font );
-		} else {
-			log.error("No mapping from " + font);
-		}
+		} 
 		
 	}
 
