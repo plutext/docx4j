@@ -45,7 +45,7 @@ public abstract class Property {
 	
 	protected static Logger log = Logger.getLogger(Property.class);	
 	
-	private Object object;
+	protected Object object;
 	/**
 	 * @return the object
 	 */
