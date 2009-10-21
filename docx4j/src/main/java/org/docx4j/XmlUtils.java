@@ -336,6 +336,10 @@ public class XmlUtils {
 		 *  as it escapes characters to things like &#x1824; correctly. 
 		 */
 		
+		if(o==null) {
+			return null;			
+		}
+		
 		try {			
 			Marshaller m=jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(m, 
@@ -501,7 +505,7 @@ public class XmlUtils {
 				T resT = (T) elem.getValue();
 				res = resT;
 			}
-			log.info("deep copy success!");
+//			log.info("deep copy success!");
 			return res;
 		} catch (JAXBException ex) {
 			throw new IllegalArgumentException(ex);
