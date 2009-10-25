@@ -2197,4 +2197,29 @@
 			<w:u w:val="single" />
 		</w:rPr>
 	</w:style>
+    <w:style w:type="table" w:styleId="TableGrid">
+        <w:name w:val="Table Grid"/>
+        <w:basedOn w:val="TableNormal"/>
+        <w:uiPriority w:val="59"/>
+        <w:pPr>
+            <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        </w:pPr>
+        <w:tblPr>
+            <w:tblInd w:w="0" w:type="dxa"/>
+            <w:tblBorders>
+                <w:top w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
+                <w:left w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
+                <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
+                <w:right w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
+                <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
+                <w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
+            </w:tblBorders>
+            <w:tblCellMar>
+                <w:top w:w="0" w:type="dxa"/>
+                <w:left w:w="108" w:type="dxa"/>
+                <w:bottom w:w="0" w:type="dxa"/>
+                <w:right w:w="108" w:type="dxa"/>
+            </w:tblCellMar>
+        </w:tblPr>
+    </w:style>
 </w:styles>
