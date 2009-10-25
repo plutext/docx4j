@@ -20,24 +20,63 @@
 
 package org.docx4j;
 
+import java.text.DecimalFormat;
+
+import org.apache.log4j.Logger;
+
 public class UnitsOfMeasurement {
+	private final static Logger log = Logger.getLogger(UnitsOfMeasurement.class);
+	
+	private final static DecimalFormat format2DP;
+	static {
+		format2DP = new DecimalFormat("##.##");
+	}
 	
 	public static long twipToEMU(double twips) {		
 		return Math.round(635 * twips);				
 	}	
 
 	public static int inchToTwip(float inch  ) {
-		// 720 twip = 1 inch;
-		return Math.round(inch*720);		
+		// 1440 twip = 1 inch;
+		return Math.round(inch*1440);		
 	}
-	
-	public static float twipToInch(int twip) {		
-		return twip/720;		
+
+	public static float twipToInch(int twip) {
+		return twip/1440.00f;		
 	}
-	
+		
 	public static int mmToTwip(float mm  ) {		
 		float inch = mm*0.0394f;
 		return inchToTwip(inch);
 	}
+	
+	
+	/**
+	 * 1440 twip = 1 inch;Try to guess whether inches or mm looks nicer
+	 * @param left
+	 * @return
+	 */
+	public static String twipToBest(int leftL ) {
+		
+		float inch4f = 80*twipToInch(leftL);
+		float inch4fabit = inch4f + 0.49f;
+		int inch4 = Math.round(inch4f);
+		int inch4next = Math.round( inch4fabit);
+		float inches = twipToInch(leftL);
+		if (inch4==inch4next) {
+			log.debug(leftL + " twips -> " + inches + "inches");
+			// inches work 			
+			return format2DP.format(inches) + "in";
+		} else {
+			float mm = inches/0.0394f;
+			log.debug(leftL + " twips -> " + mm + "mm ("+ format2DP.format(inches) + "inches)");
+			return Math.round(mm) + "mm";
+		} 							
+	}
+	
+//	public static void main(String[] args) throws Exception {
+//		System.out.println(format2DP.format(twipToInch(2235)));
+//		System.out.println(twipToBest(2235) );
+//	}
 	
 }

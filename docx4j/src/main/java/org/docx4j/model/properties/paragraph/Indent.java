@@ -77,31 +77,11 @@ public class Indent extends AbstractParagraphProperty {
 			log.warn("Only left indentation is handled at present");
 			return CSS_NULL;
 		} else {
-			return "position: relative; " + composeCss(CSS_NAME, getAttributeValue(left) );
+			return "position: relative; " + composeCss(CSS_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 		} 
 		
 	}
 	
-	private String getAttributeValue(BigInteger left ) {
-		
-		// 720 twip = 1 inch;
-		// Try to guess whether inches or cm
-		// looks nicer
-		int leftL = left.intValue();
-		float inch4f = 4*leftL/720;
-		float inch4fabit = inch4f + 0.49f;
-		int inch4 = Math.round(inch4f);
-		int inch4next = Math.round( inch4fabit);
-		float inches = leftL/720;
-		if (inch4==inch4next) {
-			// inches work 
-			return  inches + "in";
-		} else {
-			float mm = inches/0.0394f;
-			return Math.round(mm) + "mm";
-		} 							
-	}
-
 
 	@Override
 	public void setXslFO(Element foElement) {
@@ -110,7 +90,7 @@ public class Indent extends AbstractParagraphProperty {
 		if (left==null) {
 			log.warn("Only left indentation is handled at present");
 		} else {
-			foElement.setAttribute(FO_NAME, getAttributeValue(left) );
+			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 		} 		
 	}
 
