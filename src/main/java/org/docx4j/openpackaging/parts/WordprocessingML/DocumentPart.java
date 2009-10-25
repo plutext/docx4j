@@ -104,6 +104,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 		} else if (relationshipType.equals(Namespaces.WEB_SETTINGS)) {
 			webSettingsPart = (WebSettingsPart)part;
 			return true;	
+		} else if (relationshipType.equals(Namespaces.SETTINGS)) {
+			documentSettingsPart = (DocumentSettingsPart)part;
+			return true;	
 		} else if (relationshipType.equals(Namespaces.COMMENTS)) {
 			commentsPart = (CommentsPart)part;
 			return true;	
