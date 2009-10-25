@@ -21,6 +21,7 @@ package org.docx4j.jaxb;
 
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 
 public class Context {
 	
@@ -34,6 +35,22 @@ public class Context {
 	public static JAXBContext jcCustomXmlProperties;
 	
 	static {
+
+		// Display diagnostic info about version of JAXB being used.
+    	Class c;
+    	try {
+    		c = Class.forName("com.sun.xml.bind.marshaller.NamespacePrefixMapper");
+    		System.out.println("JAXB: Using RI");
+    	} catch (ClassNotFoundException cnfe) {
+    		// JAXB Reference Implementation not present
+    		System.out.println("JAXB: RI not present.  Trying Java 6 implementation.");
+        	try {
+				c = Class.forName("com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper");
+	    		System.out.println("JAXB: Using Java 6 implementation.");
+			} catch (ClassNotFoundException e) {
+				System.out.println("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+			}
+    	}
 		
 		try {	
 			

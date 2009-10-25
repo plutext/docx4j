@@ -43,6 +43,7 @@ import org.apache.xmlgraphics.image.loader.impl.DefaultImageContext;
 import org.apache.xmlgraphics.image.loader.impl.DefaultImageSessionContext;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.Inline;
+import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -283,44 +284,15 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 		// Since the object will be added at the end of the document,
 		// it is safe to look for the page dimensions in the last sectPr 
+		// TODO .. if adding elsewhere, would need to use dimensions from appropriate sectionWrapper.
 		SectPr sectPr = wmlDocumentEl.getBody().getSectPr();
 		
-		double writableWidthTwips;
-		if (sectPr==null) {
-			
-			log.debug("PgSz and PgMar not defined in this doc's SectPr element");
-			writableWidthTwips = UnitsOfMeasurement.DEFAULT_PAGE_WIDTH_TWIPS - (UnitsOfMeasurement.DEFAULT_LEFT_MARGIN_TWIPS + UnitsOfMeasurement.DEFAULT_RIGHT_MARGIN_TWIPS); 
-				
-		} else {
-			
-			PgSz pgSz = sectPr.getPgSz();
-			PgMar pgMar = sectPr.getPgMar();
-			
-			double pageWidth;
-			double leftMargin;
-			double rightMargin;
-			
-			if ( pgSz == null ) {
-				pageWidth = UnitsOfMeasurement.DEFAULT_PAGE_WIDTH_TWIPS;
-			} else {
-				pageWidth = pgSz.getW().doubleValue();
-			}
-			if ( pgMar == null 
-					|| pgMar.getLeft()==null) {
-				leftMargin = UnitsOfMeasurement.DEFAULT_LEFT_MARGIN_TWIPS;
-			} else {
-				leftMargin = pgMar.getLeft().doubleValue();
-			}
-			if ( pgMar == null 
-					|| pgMar.getRight()==null) {
-				rightMargin = UnitsOfMeasurement.DEFAULT_RIGHT_MARGIN_TWIPS;
-			} else {
-				rightMargin = pgMar.getRight().doubleValue();
-			}
-
-			writableWidthTwips = pageWidth - (leftMargin + rightMargin );
+		PageDimensions page = new PageDimensions();
+		if (sectPr!=null && sectPr.getPgSz()!=null) {
+			page.setPageSize(sectPr.getPgSz());
 		}
-				
+		
+		double writableWidthTwips = page.getWritableWidthTwips(); 				
 		log.debug("writableWidthTwips: " + writableWidthTwips);
 		
 		  ImageSize size = imageInfo.getSize();

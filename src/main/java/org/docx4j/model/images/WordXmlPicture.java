@@ -148,6 +148,7 @@ public class WordXmlPicture {
 
             if (imgRelId!=null && !imgRelId.equals(""))
             {
+            	picture.setID(imgRelId);            	
             	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
             	
             	if (rel.getTargetMode() == null

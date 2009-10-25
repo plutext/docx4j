@@ -35,6 +35,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,7 +52,9 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapper;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 import org.dom4j.DocumentException;
@@ -158,7 +161,23 @@ public class XmlUtils {
 				TRANSFORMER_FACTORY_ORIGINAL);
 		
 	}
-	
+		
+	public static String JAXBElementDebug(javax.xml.bind.JAXBElement o)  {
+				
+		String prefix = null;
+		if (o.getName().getNamespaceURI()!=null) {
+			prefix = NamespacePrefixMapper.getPreferredPrefix(o.getName().getNamespaceURI() );
+		}
+		if (prefix!=null) {
+			return  prefix + ':' + o.getName().getLocalPart() 
+				+ " is a javax.xml.bind.JAXBElement; it has declared type " 
+				+ o.getDeclaredType().getName(); 
+		} else {
+			return  o.getName() + " is a javax.xml.bind.JAXBElement; it has declared type " 
+				+ o.getDeclaredType().getName(); 			
+		}
+		
+	}
 
 	/** Unmarshal a Dom4j element as JAXB object using  JAXBContext Context.jc */ 
 	@Deprecated
@@ -223,7 +242,11 @@ public class XmlUtils {
 		return o;
 	}
 
-	/** Unmarshal a String as an object in the package org.docx4j.jaxb.document */ 
+	/** Unmarshal a String as an object in the package org.docx4j.jaxb.document.
+	 *  Note: you should ensure you include a namespace declaration for w: and
+	 *  any other namespace in the xml string.
+	 *  Also, the object you are attempting to unmarshall to might need to
+	 *  have an @XmlRootElement annotation for things to work.  */ 
 	public static Object unmarshalString(String str) {		
 		return unmarshalString(str, Context.jc);
 	}
@@ -232,14 +255,14 @@ public class XmlUtils {
 		Object o = null;
 		try {				
 			
+			log.debug("Unmarshalling '" + str + "'");
+			
 			Unmarshaller u = jc.createUnmarshaller();
 						
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			o = u.unmarshal( new javax.xml.transform.stream.StreamSource(
 					new java.io.StringReader(str)) );
-
-			System.out.println("unmarshalled ");
 
 		} catch (Exception ex) {
 			log.error("Caught and ignored: \n" + ex);

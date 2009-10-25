@@ -40,7 +40,9 @@ import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.HeaderFooterPolicy;
+import org.docx4j.model.structure.DocumentModel;
+import org.docx4j.model.structure.HeaderFooterPolicy;
+import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -58,6 +60,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Document;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Styles;
 
 
@@ -103,17 +106,21 @@ public class WordprocessingMLPackage extends Package {
 	// (optional) Glossary document
 	protected GlossaryDocumentPart glossaryDoc;
 	
-	private HeaderFooterPolicy headerFooterPolicy;
-	public HeaderFooterPolicy getHeaderFooterPolicy() {
-		if (headerFooterPolicy==null) {
-			headerFooterPolicy = new HeaderFooterPolicy(this);
+	private DocumentModel documentModel;
+	public DocumentModel getDocumentModel() {
+		if (documentModel==null) {
+			documentModel = new DocumentModel(this);
 		}
-		return headerFooterPolicy;
-	}
-	public void setHeaderFooterPolicy(HeaderFooterPolicy headerFooterPolicy) {
-		this.headerFooterPolicy = headerFooterPolicy;
+		return documentModel;
 	}
 	
+	
+	private HeaderFooterPolicy headerFooterPolicy;	
+	@Deprecated	
+	public HeaderFooterPolicy getHeaderFooterPolicy() {
+		
+		return getDocumentModel().getSections().get(0).getHeaderFooterPolicy();
+	}
 	
 	/**
 	 * Constructor.  Also creates a new content type manager
@@ -354,6 +361,13 @@ public class WordprocessingMLPackage extends Package {
 		
 		org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
 		wmlDocumentEl.setBody(body);
+		
+		// Create a basic sectPr using our Page model
+		PageDimensions page = new PageDimensions();
+		SectPr sectPr = factory.createSectPr();
+		body.setSectPr(sectPr);
+		sectPr.setPgSz(page.createPgSize() );
+		sectPr.setPgMar(page.createPgMar());
 				
 		// Put the content in the part
 		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)wordDocumentPart).setJaxbElement(wmlDocumentEl);

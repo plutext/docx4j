@@ -146,6 +146,8 @@ public class Namespaces {
 	public final static String NS_WORD12 = 
 		"http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
+	public final static String W_NAMESPACE_DECLARATION = "xmlns:w=\"" + NS_WORD12 + "\""; 
+	
 	// This is dom4j specific
 	@Deprecated
 	public final static Namespace namespaceWord = new Namespace("w", NS_WORD12);
