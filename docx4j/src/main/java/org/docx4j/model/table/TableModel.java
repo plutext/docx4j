@@ -34,6 +34,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
+import org.docx4j.model.structure.PageDimensions;
 
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
@@ -218,7 +219,7 @@ public class TableModel extends Model {
 			
 			// Default to page width
 			TblWidth tblWidth = factory.createTblWidth();
-			tblWidth.setW(BigInteger.valueOf(UnitsOfMeasurement.DEFAULT_PAGE_WIDTH_TWIPS));
+			tblWidth.setW(BigInteger.valueOf(PageDimensions.DEFAULT_PAGE_WIDTH_TWIPS));
 			tblWidth.setType("dxa"); // twips
 			tblPr.setTblW(tblWidth);			
 		} 

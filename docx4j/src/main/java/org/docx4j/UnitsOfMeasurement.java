@@ -22,13 +22,6 @@ package org.docx4j;
 
 public class UnitsOfMeasurement {
 	
-
-	// Defaults - if values aren't defined in sectPr 
-	public static int DEFAULT_PAGE_WIDTH_TWIPS = 12240;  // Letter; A4 would be 11907  
-	public static int DEFAULT_LEFT_MARGIN_TWIPS = 1440;  // 1 inch
-	public static int DEFAULT_RIGHT_MARGIN_TWIPS = 1440;
-
-	
 	public static long twipToEMU(double twips) {		
 		return Math.round(635 * twips);				
 	}	

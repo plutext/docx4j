@@ -70,6 +70,11 @@ public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.Namespace
     	return NamespacePrefixMappings.getPreferredPrefixStatic(namespaceUri, suggestion, requirePrefix);    	
     }
        
+    public static String getPreferredPrefix(String namespaceUri) 
+    // Implement the interface
+    {    	
+    	return NamespacePrefixMappings.getPreferredPrefixStatic(namespaceUri, null, false);    	
+    }
     
     /**
      * Returns a list of namespace URIs that should be declared

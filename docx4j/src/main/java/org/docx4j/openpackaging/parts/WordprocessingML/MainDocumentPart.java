@@ -33,6 +33,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -308,10 +309,24 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				// Ignore these, eg w:bookmarkStart
 				
 				log.debug("not traversing into unhandled Node: " + ((org.w3c.dom.Node)o).getNodeName() );
+
+			} else if ( o  instanceof org.docx4j.wml.Tbl) {
+				// A table can be either this or a JAXBElement 
+				// An existing table we have unmarshalled will be 
+				// a JAXBElement; one we have just created
+				// via object factory will be a naked
+				// org.docx4j.wml.Tbl
+				inspectTable( (org.docx4j.wml.Tbl)o, fontsDiscovered, stylesInUse );
 				
 			} else if ( o instanceof javax.xml.bind.JAXBElement) {
 
-				log.debug( "Encountered " + ((JAXBElement) o).getDeclaredType().getName() );
+					if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
+						
+						org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();						
+						inspectTable(tbl, fontsDiscovered, stylesInUse );
+					} else if ( log.isDebugEnabled() ){
+						log.debug( XmlUtils.JAXBElementDebug((JAXBElement)o) );
+					}
 					
 //				if (((JAXBElement) o).getDeclaredType().getName().equals(
 //						"org.docx4j.wml.P")) {
@@ -342,6 +357,66 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 			} 
 		}
 	}
+	
+	private void inspectTable( org.docx4j.wml.Tbl tbl, Map fontsDiscovered, Map stylesInUse) {
+		
+		// The table could have a table style;
+		// Tables created in Word 2007 default to table style "TableGrid",
+		// which is based on "TableNormal".
+		if (tbl.getTblPr()!=null 
+				&& tbl.getTblPr().getTblStyle()!=null) {
+			log.debug("Adding table style: " + tbl.getTblPr().getTblStyle().getVal() );
+			stylesInUse.put(tbl.getTblPr().getTblStyle().getVal(),
+							tbl.getTblPr().getTblStyle().getVal() );
+		}
+		// There is no such thing as a tr or a tc style,
+		// so we don't need to look for them,
+		// but since a tc can contain w:p or nested table,
+		// we still need to recurse
+
+		// We already looked for a w:tblStyle;
+		 // here, we are looking for styles in the tc.
+		 for (Object o : tbl.getEGContentRowContent() ) {
+			 
+			 if (o instanceof org.docx4j.wml.Tr) {				 
+				 log.debug( "\n in w:tr .. ");
+				 org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr)o;				 
+				 for (Object o2 : tr.getEGContentCellContent() ) {					 
+						if ( o2 instanceof javax.xml.bind.JAXBElement) {
+							// Usual content for w:tr is w:tc
+							if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc") ) {
+								log.debug( "\n  in w:tc .. ");
+								org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
+								
+								// Look at the paragraphs in the tc
+								traverseMainDocumentRecursive( tc.getEGBlockLevelElts(), 
+										fontsDiscovered, stylesInUse);
+								
+							} else {
+								// Could be custom markup (custom XML or sdt)
+								log.warn("TODO - not w:tc - handle:  " + XmlUtils.JAXBElementDebug((JAXBElement)o2) );
+							}
+						} else if (o2 instanceof org.docx4j.wml.Tc) {
+							// Again, it could be this or wrapped in a JAXBElement!
+							traverseMainDocumentRecursive( ((org.docx4j.wml.Tc)o2).getEGBlockLevelElts(), 
+									fontsDiscovered, stylesInUse);							
+							
+						} else {
+							 // Could be custom markup (custom XML or sdt)
+							 log.warn("TODO - not w:tc - handle:  " + o2.getClass().getName() );
+						}					 
+				 }
+			 } else {
+				 // What?
+				 log.warn("TODO - handle:  " + o.getClass().getName() );
+			 }
+			 
+		 }
+		 
+		 
+		
+	}
+	
 	
     private void inspectRPr(Object rPrObj, Map fontsDiscovered, Map stylesInUse) {
     	

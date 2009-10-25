@@ -1,4 +1,4 @@
-package org.docx4j.model;
+package org.docx4j.model.structure;
 
 /*
  * Inspired/converted from org.apache.poi.xwpf.model.XWPFHeaderFooterPolicy,
@@ -28,6 +28,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.FooterReference;
@@ -51,22 +52,18 @@ public class HeaderFooterPolicy {
 	private HeaderPart defaultHeader;
 	private FooterPart defaultFooter;
 	
+	// TODO - consider same as previous funcitonality
+	
 	
 	/**
-	 * Figures out the policy for the given document,
+	 * Figures out the policy for the given section,
 	 *  and creates any header and footer objects
 	 *  as required.
 	 */
-	public HeaderFooterPolicy(WordprocessingMLPackage wordmlPackage) 
+	public HeaderFooterPolicy(SectPr sectPr, RelationshipsPart rels) 
 //		throws Exception
 		{
-		// Grab what headers and footers have been defined
-		// For now, we don't care about different sectPr
-		
-		Document doc = (Document)wordmlPackage.getMainDocumentPart().getJaxbElement();
-		
-		SectPr sectPr = doc.getBody().getSectPr();
-		
+		// Grab what headers and footers have been defined		
 		if (sectPr == null || sectPr.getEGHdrFtrReferences() == null) {
 			return;
 		}
@@ -75,7 +72,7 @@ public class HeaderFooterPolicy {
 			
 			String relId = rel.getId();
 			
-			Part part = wordmlPackage.getMainDocumentPart().getRelationshipsPart().getPart(relId);
+			Part part = rels.getPart(relId);
 			
 			if (rel instanceof HeaderReference  ) {
 				

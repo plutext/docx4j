@@ -29,6 +29,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -50,7 +51,8 @@ public class OpenMainDocumentAndTraverse {
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/jbtemplate.docx";
 		//String inputfilepath = "/home/dev/s.docx";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/math.docx";
+		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/math.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/table-spans.xml";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
@@ -124,9 +126,7 @@ public class OpenMainDocumentAndTraverse {
 
 			if ( o instanceof javax.xml.bind.JAXBElement) {
 			
-				System.out.println( o.getClass().getName() );
-				System.out.println( ((JAXBElement)o).getName() );
-				System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
+				System.out.println("\n"+ XmlUtils.JAXBElementDebug((JAXBElement)o) );
 					
 				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
 					org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();
@@ -150,10 +150,9 @@ public class OpenMainDocumentAndTraverse {
 	static void walkList(List children){
 		
 		for (Object o : children ) {					
-			System.out.println("  " + o.getClass().getName() );
 			if ( o instanceof javax.xml.bind.JAXBElement) {
-				System.out.println("      " +  ((JAXBElement)o).getName() );
-				System.out.println("      " +  ((JAXBElement)o).getDeclaredType().getName());
+				
+				System.out.println( "\n" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 				
 				// TODO - unmarshall directly to Text.
 				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
@@ -179,25 +178,25 @@ public class OpenMainDocumentAndTraverse {
 					System.out.println(" .. bookmarkEnd" );
 				}
 				
-			} else if (o instanceof org.w3c.dom.Node) {
-				System.out.println(" IGNORED " + ((org.w3c.dom.Node)o).getNodeName() );					
-			} else if ( o instanceof org.docx4j.wml.R) {
-				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
-				if (run.getRPr()!=null) {
-					System.out.println("      " +   "Properties...");
-					if (run.getRPr().getB()!=null) {
-						System.out.println("      " +   "B not null ");						
-						System.out.println("      " +   "--> " + run.getRPr().getB().isVal() );
-					} else {
-						System.out.println("      " +   "B null.");												
-					}
-				}
-				walkList(run.getRunContent());				
-				
 			} else {
-				
-				System.out.println(" IGNORED " + o.getClass().getName() );
-				
+				System.out.println("  " + o.getClass().getName() );
+				if ( o instanceof org.docx4j.wml.R) {
+					org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
+					if (run.getRPr()!=null) {
+						System.out.println("      " +   "Properties...");
+						if (run.getRPr().getB()!=null) {
+							System.out.println("      " +   "B not null ");						
+							System.out.println("      " +   "--> " + run.getRPr().getB().isVal() );
+						} else {
+							System.out.println("      " +   "B null.");												
+						}
+					}
+					walkList(run.getRunContent());									
+				} else if (o instanceof org.w3c.dom.Node) {
+						System.out.println(" IGNORED " + ((org.w3c.dom.Node)o).getNodeName() );					
+				} else {					
+					System.out.println(" IGNORED " + o.getClass().getName() );					
+				}
 			}
 //			else if ( o instanceof org.docx4j.jaxb.document.Text) {
 //				org.docx4j.jaxb.document.Text  t = (org.docx4j.jaxb.document.Text)o;
@@ -224,14 +223,15 @@ public class OpenMainDocumentAndTraverse {
 			 
 			 if (o instanceof org.docx4j.wml.Tr) {
 				 
+				 System.out.println( "\n in w:tr .. ");
 				 org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr)o;
 				 
 				 for (Object o2 : tr.getEGContentCellContent() ) {
 					 
-						System.out.println("  " + o2.getClass().getName() );
 						if ( o2 instanceof javax.xml.bind.JAXBElement) {
 							
 							if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc") ) {
+								System.out.println( "\n  in w:tc .. ");
 								org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
 								
 								// Look at the paragraphs in the tc
@@ -239,8 +239,7 @@ public class OpenMainDocumentAndTraverse {
 								
 							} else {
 								// What is it, if it isn't a Tc?
-								System.out.println("      " +  ((JAXBElement)o).getName() );
-								System.out.println("      " +  ((JAXBElement)o).getDeclaredType().getName());
+								System.out.println( "\n  NOT Tc: " + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 							}
 						} else {
 							System.out.println("  " + o.getClass().getName() );							

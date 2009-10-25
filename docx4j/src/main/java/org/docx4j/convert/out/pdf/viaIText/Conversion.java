@@ -14,7 +14,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
-import org.docx4j.model.HeaderFooterPolicy;
+import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;

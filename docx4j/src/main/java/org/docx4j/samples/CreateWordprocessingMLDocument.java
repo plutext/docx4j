@@ -23,9 +23,17 @@ package org.docx4j.samples;
 
 import java.io.File;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.model.table.TblFactory;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.wml.Tbl;
 
 /**
  * Creates a WordprocessingML document from scratch. 
@@ -36,6 +44,8 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 public class CreateWordprocessingMLDocument {
 
 	public static void main(String[] args) throws Exception {
+		
+		boolean save = false;
 		
 		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
@@ -86,13 +96,40 @@ public class CreateWordprocessingMLDocument {
 	    wordMLPackage.getMainDocumentPart().addObject(
 	    			org.docx4j.XmlUtils.unmarshalString(str) );
 	    
-		
-		System.out.println( ".. done!");
+	    // Let's add a table
+	    int writableWidthTwips = wordMLPackage.getDocumentModel().getSections().get(0).getPageDimensions().getWritableWidthTwips();
+	    int cols = 3;
+	    int cellWidthTwips = new Double( 
+	    							Math.floor( (writableWidthTwips/cols ))
+	    								).intValue();
+	    
+	    Tbl tbl = TblFactory.createTable(3, 3, cellWidthTwips);
+	    wordMLPackage.getMainDocumentPart().addObject(tbl);
+	    
 		
 		//injectDocPropsCustomPart(wordMLPackage);
 		
-		// Now save it 
-		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/bolds.docx") );
+		// Now save it
+		if (save) {
+			System.out.println("Saved.");
+			wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/bolds.docx") );
+		} else {
+		   	// Create a org.docx4j.wml.Package object
+			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
+			org.docx4j.xmlPackage.Package pkg = worker.get();
+	    	
+	    	// Now marshall it
+			JAXBContext jc = Context.jcXmlPackage;
+			Marshaller marshaller=jc.createMarshaller();
+			
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper());			
+			System.out.println( "\n\n OUTPUT " );
+			System.out.println( "====== \n\n " );	
+			marshaller.marshal(pkg, System.out);				
+			
+		}
 		
 		System.out.println("Done.");
 				
