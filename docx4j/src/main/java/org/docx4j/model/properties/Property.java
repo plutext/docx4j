@@ -70,7 +70,7 @@ public abstract class Property {
 	public final static String CSS_COLON = ":"; 
 	public final static String CSS_SPACE = " "; 
 	public final static String CSS_COMMA = ";"; 
-	protected String composeCss(String name, String value) {
+	public final static String composeCss(String name, String value) {
 		return name + CSS_COLON + CSS_SPACE + value + CSS_COMMA;
 		
 	}
