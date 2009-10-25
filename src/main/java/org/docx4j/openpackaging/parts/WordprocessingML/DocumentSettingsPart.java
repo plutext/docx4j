@@ -20,6 +20,10 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
+import javax.xml.bind.JAXBElement;
+
+import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
@@ -28,9 +32,12 @@ import org.docx4j.wml.CTSettings;
 
 
 
-public final class DocumentSettingsPart extends JaxbXmlPart<CTSettings> { 
+public final class DocumentSettingsPart extends JaxbXmlPart<Object> { 
 	
-
+	private final static Logger log = Logger.getLogger(DocumentSettingsPart.class);
+	
+	// This unmarshalls as a JAXBElement; so we override getJaxbElement()
+	
 	public DocumentSettingsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();
@@ -50,6 +57,24 @@ public final class DocumentSettingsPart extends JaxbXmlPart<CTSettings> {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.SETTINGS);
 				
+	}
+	
+	@Override
+	public Object getJaxbElement() {	
+		
+		if (jaxbElement instanceof JAXBElement) {
+			if (((JAXBElement)jaxbElement).getName().getLocalPart().equals("settings")) {
+				return (CTSettings)((JAXBElement)jaxbElement).getValue();				
+			} else {
+				log.error("Unexpected " + XmlUtils.JAXBElementDebug((JAXBElement)jaxbElement) );				
+				return jaxbElement;
+			}
+		} else if (jaxbElement instanceof CTSettings){
+			return jaxbElement;			
+		} else {
+			log.error( "Unexpected" + jaxbElement.getClass().getName() );
+			return jaxbElement;
+		}
 	}
 	
 }
