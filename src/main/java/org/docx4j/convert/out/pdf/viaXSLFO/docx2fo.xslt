@@ -509,7 +509,7 @@
 	  			  		
   </xsl:template>
   
-<xsl:template match="w:tblPr"/>  
+<xsl:template match="w:tblPr|w:trPr"/>  
 <xsl:template match="w:tblGrid"/>  
 <xsl:template match="w:tr|w:tc">
 	<xsl:copy>

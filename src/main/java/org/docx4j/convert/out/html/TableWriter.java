@@ -71,7 +71,7 @@ import javax.xml.transform.TransformerException;
  * shading
  * =======
  * 
- * Not considered yet.
+ * Basic implementation 20091027
  * 
  * -----------
  * 

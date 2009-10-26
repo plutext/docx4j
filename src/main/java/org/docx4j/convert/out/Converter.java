@@ -61,7 +61,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  *  
  */
 public class Converter {
-  private final static Logger logger = Logger.getLogger(Converter.class);
+  private final static Logger log = Logger.getLogger(Converter.class);
 
   private static Converter instance;
 
@@ -103,6 +103,9 @@ public class Converter {
   public void start(WordprocessingMLPackage wmlPackage) { 
 //  public void start(WordprocessingMLPackage wmlPackage, 
 //      File inputFile, File outputDir) {
+	  if (wmlPackage==null) {
+		  log.error("wmlPackage was null!");
+	  }
     this.wmlPackage = wmlPackage;
 //    this.inputFile = inputFile;
 //    this.outputDir = outputDir;
@@ -146,11 +149,11 @@ public class Converter {
 		Converter inst = Converter.getInstance();
 		Class c = inst.modelClasses.get(node.getNodeName());
 		if (c == null) {
-			logger.error("No model registered for " + node.getNodeName());
+			log.error("No model registered for " + node.getNodeName());
 			throw new IllegalArgumentException("No model registered for "
 					+ node.getNodeName());
 		} else {
-			logger.debug("Using model " + c.getName() + " for node "
+			log.debug("Using model " + c.getName() + " for node "
 					+ node.getNodeName());
 		}
 		try {
@@ -163,9 +166,9 @@ public class Converter {
 
 				// We don't have a converter for writing to an output format
 				// Either this is a problem ..
-				logger.warn("No writer registered for " + node.getNodeName());
+				log.warn("No writer registered for " + node.getNodeName());
 				// .. or the intent is to import to docx
-				logger.info("Generating wml from model.");
+				log.info("Generating wml from model.");
 				Object o = model.toJAXB();
 				org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(o);
 				DocumentFragment docfrag = doc.createDocumentFragment();
@@ -177,7 +180,7 @@ public class Converter {
 				return converter.toNode(model);
 			}
 		} catch (Exception e) {
-			logger.error("Cannot convert " + node, e);
+			log.error("Cannot convert " + node, e);
 			return null;
 		}
 	}

@@ -249,9 +249,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	      	  // Resulting SAX events (the generated FO) must be piped through to FOP
 	      	  Result result = new SAXResult(fop.getDefaultHandler());
 	      	  
-	  		Converter c = new Converter();
-			c.getInstance().registerModelConverter("w:tbl", new TableWriter() );
-			c.start(wordMLPackage);
+//	  		Converter c = new Converter();
+	      	Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+	      	Converter.getInstance().start(wordMLPackage);
 	      	  
 	    	  
 	  		if (log.isDebugEnabled()) {

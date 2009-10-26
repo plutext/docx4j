@@ -92,9 +92,6 @@ import org.w3c.dom.NodeList;
 public class TableModel extends Model {
 	private final static Logger log = Logger.getLogger(TableModel.class);
 
-	/**
-	 * @param wordMLPackage the wordMLPackage to set
-	 */
 	public TableModel() {
 		resetIndexes();
 		cells = new Vector<List<Cell>>();
