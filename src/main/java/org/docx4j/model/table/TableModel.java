@@ -116,19 +116,13 @@ public class TableModel extends Model {
 		return styleId;
 	}
 	
-//	protected Style tableStyle;
-//	/**
-//	 * @param tableStyle the tableStyle to set
-//	 */
-//	public void setTableStyle(Style tableStyle) {
-//		this.tableStyle = tableStyle;
-//	}
-//	/**
-//	 * @return the table's effective Style
-//	 */
-//	public Style getTableStyle() {
-//		return tableStyle;
-//	}
+	protected Style effectiveTableStyle;
+	/**
+	 * @return the table's effective Style
+	 */
+	public Style getEffectiveTableStyle() {
+		return effectiveTableStyle;
+	}
 
 	/**
 	 * Table properties are represented using the
@@ -267,7 +261,7 @@ public class TableModel extends Model {
 				throw new TransformerException("Hmmm", e);
 			} 
 			
-		Style effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
 		CTTblPrBase tblPr = effectiveTableStyle.getTblPr();
 		if (tblPr!=null && tblPr.getTblCellSpacing()!=null) {
 			borderConflictResolutionRequired = false;							

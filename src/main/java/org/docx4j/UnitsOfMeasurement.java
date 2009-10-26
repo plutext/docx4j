@@ -83,6 +83,21 @@ public class UnitsOfMeasurement {
 		
 	}
 	
+	public static String rgbTripleToHex(float red, float green, float blue) {
+		return getHex(red) + getHex(green) + getHex(blue);		
+	}
+	
+	private static String getHex(float f) {
+		
+		int i = Math.round(f);
+		
+		if (i<=16) {
+			// Pad so we have 2 digits
+			return "0" + Integer.toHexString( i );
+		} else {
+			return Integer.toHexString( i );
+		}
+	}
 	
 //	public static void main(String[] args) throws Exception {
 //		System.out.println(format2DP.format(twipToInch(2235)));

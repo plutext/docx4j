@@ -42,13 +42,15 @@ public class CreateHtml {
 
 	    	boolean save = true;	    	
 	    	boolean useHtmlExporterNG = true;
-	    	    	
+
+			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-features.xml";
+	    	
 //			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
 //			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
 			 //String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 //			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";
-			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table_borders.xml";
+//			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table_borders.xml";
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;
@@ -71,6 +73,7 @@ public class CreateHtml {
 	    	
 			AbstractHtmlExporter exporter;
 			if (useHtmlExporterNG) {
+				// note the *2* here
 				exporter = new HtmlExporterNG2(); 			
 			} else {
 				exporter = new HtmlExporter();
