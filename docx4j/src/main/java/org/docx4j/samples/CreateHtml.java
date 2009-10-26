@@ -30,6 +30,7 @@ import javax.xml.bind.Unmarshaller;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporterNG;
+import org.docx4j.convert.out.html.HtmlExporterNG2;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -45,8 +46,9 @@ public class CreateHtml {
 //			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/numbering-multilevel.docx";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/test3.docx";
 //			 String inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-//			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
-			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";
+			 //String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
+//			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";
+			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table_borders.xml";
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;
@@ -69,7 +71,7 @@ public class CreateHtml {
 	    	
 			AbstractHtmlExporter exporter;
 			if (useHtmlExporterNG) {
-				exporter = new HtmlExporterNG(); 			
+				exporter = new HtmlExporterNG2(); 			
 			} else {
 				exporter = new HtmlExporter();
 			}

@@ -41,6 +41,10 @@ import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.table.BorderBottom;
+import org.docx4j.model.properties.table.BorderLeft;
+import org.docx4j.model.properties.table.BorderRight;
+import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
@@ -52,6 +56,7 @@ import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.UnderlineEnumeration;
@@ -204,6 +209,30 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
         	}
         	result.append( "}\n" );        	
     	}
+    	
+    	// td default - just from TableGrid for now
+    	// TODO .. get these right on a per table basis
+    	if (styleTree.getTableStylesTree().get("TableGrid")!=null) {
+    		Style tg = styleTree.getTableStylesTree().get("TableGrid").getData().getStyle();
+    		TblBorders tblBorders = tg.getTblPr().getTblBorders();
+    		result.append("/* TMP FIXME in HtmlExporterNG2! */ \n");
+    		result.append("td { ");
+			if (tblBorders.getInsideH()!=null) {
+				BorderTop bt = new BorderTop(tblBorders.getTop() );
+				result.append(bt.getCssProperty());
+				BorderBottom bb = new BorderBottom(tblBorders.getBottom() );
+				result.append(bb.getCssProperty());				
+			}
+			if (tblBorders.getInsideV()!=null) { 
+				BorderRight br = new BorderRight(tblBorders.getRight() );
+				result.append(br.getCssProperty());
+				BorderLeft bl = new BorderLeft(tblBorders.getLeft() );
+				result.append(bl.getCssProperty());
+			}
+			// Ensure empty cells have a sensible height
+			result.append("height: 5mm;");
+    		result.append("}\n");
+    	}	
     	
 		// Second iteration - paragraph level pPr *and rPr*
 		result.append("\n /* PARAGRAPH STYLES */ \n");    	

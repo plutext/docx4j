@@ -173,6 +173,7 @@ public class Converter {
 				return docfrag;
 
 			} else {
+				converter.setWordMLPackage(inst.getWmlPackage()); // TODO - not threadsafe!
 				return converter.toNode(model);
 			}
 		} catch (Exception e) {

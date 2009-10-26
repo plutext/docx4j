@@ -8,6 +8,10 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
 import org.docx4j.model.properties.Property;
+import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.styles.StyleTree;
+import org.docx4j.model.styles.Tree;
+import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.wml.Style;
@@ -63,7 +67,6 @@ import javax.xml.transform.TransformerException;
  * 
  * So we map to the 2 models as appropriate.
  * 
- * TODO: set the actual borders!
  * 
  * shading
  * =======
@@ -97,33 +100,35 @@ public class TableWriter extends ModelConverter {
     Element tbl = doc.createElement("table");
     docfrag.appendChild(tbl);
     
-    StringBuffer styleVal = new StringBuffer();
-    // table-layout
-    if (table.isTableLayoutFixed()) {
- 		styleVal.append(Property.composeCss(TABLE_LAYOUT_MODE, "fixed"));
+	// Set @class
+    if (table.getStyleId()==null) {
+    	log.debug("table has no w:tblStyle?");
     } else {
-    	styleVal.append(Property.composeCss(TABLE_LAYOUT_MODE, "auto"));
+		StyleTree styleTree = wordMLPackage.getMainDocumentPart().getStyleTree();	
+		Tree<AugmentedStyle> tTree = styleTree.getTableStylesTree();		
+		org.docx4j.model.styles.Node<AugmentedStyle> asn = tTree.get(table.getStyleId());
+		tbl.setAttribute("class", 
+				StyleTree.getHtmlClassAttributeValue(tTree, asn)			
+		);
     }
     
-    // position (tblPr/tblInd)
-    int indent = 0;
-    if (table.getTableStyle().getTblPr()!=null
-    		&& table.getTableStyle().getTblPr().getTblInd()!=null) {
-    	indent = table.getTableStyle().getTblPr().getTblInd().getW().intValue();
-    } else if (table.getTableStyle()!=null  
-    			&& table.getTableStyle().getTblPr().getTblInd()!=null
-    			&& table.getTableStyle().getTblPr().getTblInd().getW() !=null) {
-    	indent = table.getTableStyle().getTblPr().getTblInd().getW().intValue();    		
-    }
-	styleVal.append(Property.composeCss(TABLE_INDENT, UnitsOfMeasurement.twipToBest(indent)));
+    StringBuffer styleVal = new StringBuffer();
+	List<Property> properties = PropertyFactory.createProperties(table.getTblPr());    	
+	for( Property p :  properties ) {
+		// This handles:
+		// - position (tblPr/tblInd)
+		// - table-layout
+		styleVal.append(p.getCssProperty());
+	}    
 
 	// border model
 	if (table.isBorderConflictResolutionRequired() ) {
 		styleVal.append(Property.composeCss(TABLE_BORDER_MODEL, "collapse"));		
 	} else {
-		styleVal.append(Property.composeCss(TABLE_BORDER_MODEL, "separate"));				
+		styleVal.append(Property.composeCss(TABLE_BORDER_MODEL, "separate")); // this is the default in CSS				
 	}
-	// now the table level border defaults
+	
+	// now the table level cell border defaults
     //tbl.setAttribute("border", "1" );
 	
     

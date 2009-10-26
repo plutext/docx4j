@@ -89,9 +89,9 @@ public class Indent extends AbstractTableProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 
-		BigInteger left = ((Ind)this.getObject()).getLeft();		
+		BigInteger left = ((TblWidth)this.getObject()).getW();		
 		if (left==null) {
-			log.warn("Only left indentation is handled at present");
+			log.warn("FIXME");
 		} else {
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 		} 		
