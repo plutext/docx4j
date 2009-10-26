@@ -90,7 +90,6 @@ import org.w3c.dom.Text;
  * @author jason
  *
  */
-@Deprecated
 public class HtmlExporterNG extends  AbstractHtmlExporter {
 	
 	
@@ -141,6 +140,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	}
 	
 	
+	@Deprecated
 	public void output(javax.xml.transform.Result result) throws Docx4JException {
 		
 		if (wmlPackage==null) {
@@ -173,12 +173,14 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
+	@Deprecated	
     public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result,
     		String imageDirPath) throws Exception {
     	
     	html(wmlPackage, result, true, imageDirPath);
     }
 
+	@Deprecated
     public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, boolean fontFamilyStack,
     		String imageDirPath) throws Exception {
 
@@ -200,6 +202,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
+	@Deprecated	
     public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, 
     		HtmlSettings htmlSettings) throws Exception {
     			

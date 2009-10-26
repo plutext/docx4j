@@ -27,6 +27,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblPr;
+import org.docx4j.wml.TcPrInner;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -61,6 +62,14 @@ public class BorderTop extends AbstractBorder {
 			tblPr.setTblBorders(tblBorders);
 		}
 		tblPr.getTblBorders().setTop( (CTBorder)this.getObject() );
+	}
+	
+	public void set(TcPrInner tcPr) {
+		if (tcPr.getTcBorders()==null) {
+			TcPrInner.TcBorders tcBorders = Context.getWmlObjectFactory().createTcPrInnerTcBorders();
+			tcPr.setTcBorders(tcBorders);
+		}
+		tcPr.getTcBorders().setTop( (CTBorder)this.getObject() );
 	}
 	
 }

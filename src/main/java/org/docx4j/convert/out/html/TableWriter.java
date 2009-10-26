@@ -154,6 +154,16 @@ public class TableWriter extends ModelConverter {
 					int col = cell.getColumn();
 					Element cellNode = doc.createElement("td");
 					row.appendChild(cellNode);
+					
+					// style
+					if (cell.getTcPr()!=null ) {
+						StringBuffer inlineStyle =  new StringBuffer();
+						HtmlExporterNG.createCss(cell.getTcPr(), inlineStyle);				
+						if (!inlineStyle.toString().equals("") ) {
+							cellNode.setAttribute("style", inlineStyle.toString() );
+						}
+					}
+					
 					if (cell.getExtraCols() > 0) {
 						cellNode.setAttribute("colspan", Integer.toString(cell
 								.getExtraCols() + 1));

@@ -188,7 +188,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     		// TcPr - includes includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
     		if (s.getTcPr()==null) {
     		} else {
-    			log.debug("Applying tcPr.. TODO!");
+    			log.debug("Applying tcPr.. ");
             	createCss( s.getTcPr(), result);
     		}
     		    		

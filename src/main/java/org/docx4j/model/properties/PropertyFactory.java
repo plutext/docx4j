@@ -49,6 +49,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblPr;
 import org.docx4j.wml.TcPr;
+import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
 import org.w3c.dom.css.CSSValue;
 
@@ -119,7 +120,24 @@ public class PropertyFactory {
 	public static List<Property> createProperties(TcPr tcPr) {
 		
 		List<Property> properties = new ArrayList<Property>();
-		log.warn("TODO - implement!");
+
+		if (tcPr.getTcBorders()!=null) {
+			TcPrInner.TcBorders tcBorders = tcPr.getTcBorders();
+			if (tcBorders.getTop()!=null) 
+				properties.add(new BorderTop(tcBorders.getTop()) );				
+			if (tcBorders.getBottom()!=null) 
+				properties.add(new BorderBottom(tcBorders.getBottom()) );				
+			if (tcBorders.getLeft()!=null) 
+				properties.add(new BorderLeft(tcBorders.getLeft()) );				
+			if (tcBorders.getRight()!=null) 
+				properties.add(new BorderRight(tcBorders.getRight()) );	
+			// TODO
+//			if (tblBorders.getInsideH()!=null) 
+//				properties.add(new BorderRight(tblBorders.getRight()) );				
+//			if (tblBorders.getInsideV()!=null) 
+//				properties.add(new BorderRight(tblBorders.getRight()) );				
+		}
+		
 		return properties;		
 	}
 
