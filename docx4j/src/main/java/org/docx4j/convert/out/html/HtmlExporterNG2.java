@@ -152,8 +152,60 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	StringBuffer result = new StringBuffer();
     	
     	StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
-    	    	
-		// First iteration - paragraph level pPr *and rPr*
+
+		// First iteration - table styles
+		result.append("\n /* TABLE STYLES */ \n");    	
+		Tree<AugmentedStyle> tableTree = styleTree.getTableStylesTree();		
+    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : tableTree.toList() ) {
+    		Style s = n.getData().getStyle();
+
+    		result.append( "."+ s.getStyleId()  + " {display:table;" );
+    		
+    		// TblPr
+    		if (s.getTblPr()==null) {
+    		} else {
+    			log.debug("Applying tblPr..");
+            	createCss(s.getTblPr(), result);
+            	
+    		}
+    		
+    		// TblStylePr - STTblStyleOverrideType stuff
+    		if (s.getTblStylePr()==null) {
+    		} else {
+    			log.debug("Applying tblStylePr.. TODO!");
+    			// Its a list, created automatically
+            	createCss(s.getTblStylePr(), result);
+    		}
+    		
+    		
+    		// TrPr - eg jc, trHeight, wAfter, tblCellSpacing
+    		if (s.getTrPr()==null) {
+    		} else {
+    			log.debug("Applying trPr.. TODO!");
+            	createCss( s.getTrPr(), result);
+    		}
+    		
+    		// TcPr - includes includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
+    		if (s.getTcPr()==null) {
+    		} else {
+    			log.debug("Applying tcPr.. TODO!");
+            	createCss( s.getTcPr(), result);
+    		}
+    		    		
+        	if (s.getPPr()==null) {
+        		log.debug("null pPr for style " + s.getStyleId());
+        	} else {
+        		createCss( s.getPPr(), result );
+        	}
+        	if (s.getRPr()==null) {
+        		log.debug("null rPr for style " + s.getStyleId());
+        	} else {
+            	createCss(wmlPackage, s.getRPr(), result);
+        	}
+        	result.append( "}\n" );        	
+    	}
+    	
+		// Second iteration - paragraph level pPr *and rPr*
 		result.append("\n /* PARAGRAPH STYLES */ \n");    	
 		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
     	for (org.docx4j.model.styles.Node<AugmentedStyle> n : pTree.toList() ) {
@@ -173,7 +225,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
         	result.append( "}\n" );        	
     	}
 		    	
-	    // Second iteration, character styles
+	    // Third iteration, character styles
 		result.append("\n /* CHARACTER STYLES */ ");
 		//result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ \n ");
 		
@@ -188,8 +240,14 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
             	createCss(wmlPackage, s.getRPr(), result);
         	}
         	result.append( "}\n" );        	
-    	}		
-	    return result.toString();
+    	}	
+    	
+    	if (log.isDebugEnabled()) {
+    		return result.toString();
+    	} else {
+    		String debug = result.toString();
+    		return debug;
+    	}
     }
     
     public static DocumentFragment createBlockForPPr( 

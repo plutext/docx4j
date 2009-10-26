@@ -74,6 +74,16 @@ public class UnitsOfMeasurement {
 		} 							
 	}
 	
+	public static String eighthsToMM(int eighths ) {
+		
+		// 72 points per inch
+		float inches = eighths/(8*72.00f);
+		float mm = inches/0.0394f;
+		return format2DP.format(mm) + "mm";
+		
+	}
+	
+	
 //	public static void main(String[] args) throws Exception {
 //		System.out.println(format2DP.format(twipToInch(2235)));
 //		System.out.println(twipToBest(2235) );

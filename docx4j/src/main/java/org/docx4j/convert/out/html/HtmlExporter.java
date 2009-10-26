@@ -43,6 +43,7 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
+@Deprecated
 public class HtmlExporter extends  AbstractHtmlExporter {
 	
 	

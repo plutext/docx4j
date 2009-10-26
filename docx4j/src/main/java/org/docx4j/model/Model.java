@@ -22,10 +22,16 @@ package org.docx4j.model;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.convert.out.Converter;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public abstract class Model {
+	
+	protected WordprocessingMLPackage wordMLPackage;
+	public void setWordMLPackage(WordprocessingMLPackage wordMLPackage) {
+		this.wordMLPackage = wordMLPackage;
+	}
 	
 	/**
 	 * Build the model from a DOM node.

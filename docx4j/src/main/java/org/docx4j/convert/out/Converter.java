@@ -155,6 +155,7 @@ public class Converter {
 		}
 		try {
 			Model model = (Model) c.newInstance();
+			model.setWordMLPackage(inst.getWmlPackage());
 			model.build(node, children);
 
 			ModelConverter converter = inst.converters.get(node.getNodeName());

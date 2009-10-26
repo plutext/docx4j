@@ -79,7 +79,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 	
 	
 	/** The content tree (ie JAXB representation of the Part) */
-	public E jaxbElement = null;
+	protected E jaxbElement = null;
 
 	public E getJaxbElement() {
 		return jaxbElement;

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
@@ -35,9 +36,20 @@ import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.Italics;
 import org.docx4j.model.properties.run.Strike;
 import org.docx4j.model.properties.run.Underline;
+import org.docx4j.model.properties.table.BorderBottom;
+import org.docx4j.model.properties.table.BorderLeft;
+import org.docx4j.model.properties.table.BorderRight;
+import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.CTTblCellMar;
+import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.TblBorders;
+import org.docx4j.wml.TblPr;
+import org.docx4j.wml.TcPr;
+import org.docx4j.wml.TrPr;
 import org.w3c.dom.css.CSSValue;
 
 public class PropertyFactory {
@@ -51,6 +63,65 @@ public class PropertyFactory {
 	
 	protected static Logger log = Logger.getLogger(PropertyFactory.class);
 	
+	public static List<Property> createProperties(CTTblPrBase  tblPr) {
+		
+		List<Property> properties = new ArrayList<Property>();
+		
+		if (tblPr.getTblInd()!=null ) 
+			properties.add(new org.docx4j.model.properties.table.Indent(tblPr.getTblInd()) );
+		
+		if (tblPr.getTblBorders()!=null) {
+			TblBorders tblBorders = tblPr.getTblBorders();
+			if (tblBorders.getTop()!=null) 
+				properties.add(new BorderTop(tblBorders.getTop()) );				
+			if (tblBorders.getBottom()!=null) 
+				properties.add(new BorderBottom(tblBorders.getBottom()) );				
+			if (tblBorders.getLeft()!=null) 
+				properties.add(new BorderLeft(tblBorders.getLeft()) );				
+			if (tblBorders.getRight()!=null) 
+				properties.add(new BorderRight(tblBorders.getRight()) );	
+			// TODO
+//			if (tblBorders.getInsideH()!=null) 
+//				properties.add(new BorderRight(tblBorders.getRight()) );				
+//			if (tblBorders.getInsideV()!=null) 
+//				properties.add(new BorderRight(tblBorders.getRight()) );				
+		}
+		
+//		if (tblPr.getTblCellMar()!=null) {
+//			CTTblCellMar cellMar = tblPr.getTblCellMar();
+//			if (cellMar.getTop()!=null) {
+//			}
+//			if (cellMar.getBottom()!=null) {
+//			}
+//			if (cellMar.getLeft()!=null) {
+//			}
+//			if (cellMar.getRight()!=null) {
+//			}
+//		}
+		
+		return properties;		
+	}
+
+	public static List<Property> createProperties(List<CTTblStylePr> tblStylePrList) {
+		
+		List<Property> properties = new ArrayList<Property>();
+		log.warn("TODO - implement!");
+		return properties;		
+	}
+
+	public static List<Property> createProperties(TrPr trPr) {
+		
+		List<Property> properties = new ArrayList<Property>();
+		log.warn("TODO - implement!");
+		return properties;		
+	}
+
+	public static List<Property> createProperties(TcPr tcPr) {
+		
+		List<Property> properties = new ArrayList<Property>();
+		log.warn("TODO - implement!");
+		return properties;		
+	}
 
 	public static List<Property> createProperties(WordprocessingMLPackage wmlPackage, RPr rPr) {
 		
@@ -217,7 +288,8 @@ public class PropertyFactory {
 //			dest.setWordWrap(pPr.getWordWrap());
 		
 		return properties;		
-	}	
+	}
+	
 	
 	public static Property createPropertyFromCssName(String name, CSSValue value) {
 		
