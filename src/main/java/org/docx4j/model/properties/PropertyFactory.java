@@ -19,6 +19,7 @@
  */
 package org.docx4j.model.properties;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +87,28 @@ public class PropertyFactory {
 //				properties.add(new BorderRight(tblBorders.getRight()) );				
 //			if (tblBorders.getInsideV()!=null) 
 //				properties.add(new BorderRight(tblBorders.getRight()) );				
+		}
+		
+//		if (tblPr.getTblCellSpacing()==null) {
+//			// If borderConflictResolutionRequired is required, we need
+//			// to set this explicitly, because in CSS, 'separate' is
+//			// the default.  The problem is that we need to avoid
+//			// overruling an inherited value (ie where TblCellSpacing
+//			// is set).
+//			properties.add(new AdHocProperty("border-collapse", "collapse") );
+//		} else {
+//			properties.add(new AdHocProperty("border-collapse", "separate") ); // default 
+//		}
+		
+		if (tblPr.getTblW()!=null ){
+    		// @w:w
+    		if (tblPr.getTblW().getW()!=null 
+    				&& tblPr.getTblW().getW() != BigInteger.ZERO) {
+    			properties.add(new AdHocProperty("table-layout", "fixed") );
+    		} else if (tblPr.getTblW().getType()!=null
+    				&& tblPr.getTblW().getType().equals("auto") ) {
+    			properties.add(new AdHocProperty("table-layout", "auto") );    			
+    		} // otherwise the default 'auto' is implied
 		}
 		
 //		if (tblPr.getTblCellMar()!=null) {

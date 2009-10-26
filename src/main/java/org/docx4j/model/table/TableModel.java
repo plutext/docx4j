@@ -108,32 +108,40 @@ public class TableModel extends Model {
 	private int row;
 	private int col;
 	
-	protected Style tableStyle;
+	protected String styleId; 
 	/**
-	 * @param tableStyle the tableStyle to set
+	 * @return the table's style, if any
 	 */
-	public void setTableStyle(Style tableStyle) {
-		this.tableStyle = tableStyle;
+	public String getStyleId() {
+		return styleId;
 	}
-	/**
-	 * @return the tableStyle
-	 */
-	public Style getTableStyle() {
-		return tableStyle;
-	}
-
+	
+//	protected Style tableStyle;
 //	/**
-//	 * Table properties are represented using the
-//	 * docx model. 
+//	 * @param tableStyle the tableStyle to set
 //	 */
-//	protected TblPr tblPr;
-//
-//	/**
-//	 * @return the w:tblPr
-//	 */
-//	public TblPr getTblPr() {
-//		return tblPr;
+//	public void setTableStyle(Style tableStyle) {
+//		this.tableStyle = tableStyle;
 //	}
+//	/**
+//	 * @return the table's effective Style
+//	 */
+//	public Style getTableStyle() {
+//		return tableStyle;
+//	}
+
+	/**
+	 * Table properties are represented using the
+	 * docx model. 
+	 */
+	protected TblPr tblPr;
+
+	/**
+	 * @return the w:tblPr
+	 */
+	public TblPr getTblPr() {
+		return tblPr;
+	}
 	
 	protected TblGrid tblGrid;
 	/**
@@ -147,18 +155,29 @@ public class TableModel extends Model {
 	// TODO - we will eventually need a representation of row properties
 	// We could either store these in a list, or
 	// keep a reference to the w:tbl itself.
+
+	// We don't need this in our table model,
+	// at least for HTML. (PropertyFactory takes care of it)
 	
-	boolean tableLayoutFixed = false; // default to auto
-	/**
-	 * @return isTableLayoutFixed
-	 */
-	public boolean isTableLayoutFixed() {
-		return tableLayoutFixed;
-	}
+//	boolean tableLayoutFixed = false; // default to auto
+//	/**
+//	 * @return isTableLayoutFixed
+//	 */
+//	public boolean isTableLayoutFixed() {
+//		return tableLayoutFixed;
+//	}
 	
 	
 	boolean borderConflictResolutionRequired = true;
 	/**
+	 * If borderConflictResolutionRequired is required, we need
+	 * to set this explicitly, because in CSS, 'separate' is
+	 * the default.  We need to avoid incorrectly
+	 * overruling an inherited value (ie where TblCellSpacing
+	 * is set), so we do borderConflictResolutionRequired here,
+	 * as an explicit \@style value, rather than that in 
+	 * conjunction with \@class.		
+	 *
 	 * @return  borderConflictResolutionRequired
 	 */
 	public boolean isBorderConflictResolutionRequired() {
@@ -231,7 +250,15 @@ public class TableModel extends Model {
 					+ node.getNodeValue(), e);
 		}
 		
+		if (tbl.getTblPr()!=null
+				&& tbl.getTblPr().getTblStyle()!=null) {
+			styleId = tbl.getTblPr().getTblStyle().getVal();			
+		}
+		
+		
 		this.tblGrid = tbl.getTblGrid();
+		
+		this.tblPr = tbl.getTblPr();
 		
 		PropertyResolver pr;
 			try {
@@ -239,38 +266,39 @@ public class TableModel extends Model {
 			} catch (Docx4JException e) {
 				throw new TransformerException("Hmmm", e);
 			} 
-		this.tableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
-		CTTblPrBase tblPr = tableStyle.getTblPr();
-	    if (tblPr!=null
-	    		&& tblPr.getTblW()!=null) {
-	    	if (tblPr.getTblW().getType()!=null 
-	    			&& (tblPr.getTblW().getType().equals("auto")
-	    					|| tblPr.getTblW().getType().equals("nil") )) {
-	    		// @w:type
-	    					// nil, per Word 2007 implementation note
-	    		tableLayoutFixed = false;
-	    	} else if (tblPr.getTblW().getW()!=null ){
-	    		// @w:w
-	    		if (tblPr.getTblW().getW() == BigInteger.ZERO) {
-	    			// Word 2007 implementation note
-	    			tableLayoutFixed = false;
-	    		} else {
-	    			tableLayoutFixed = true;
-	    		}
-	    	} else {
-	    		// no attributes!!
-	    		tableLayoutFixed = false;
-	    	}
-	    } else {
-	    	// element omitted, so type is auto (2.4.61)
-	    	tableLayoutFixed = false;
-	    }
-		
-		
-		
+			
+		Style effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		CTTblPrBase tblPr = effectiveTableStyle.getTblPr();
 		if (tblPr!=null && tblPr.getTblCellSpacing()!=null) {
 			borderConflictResolutionRequired = false;							
 		}
+				
+//	    if (tblPr!=null
+//	    		&& tblPr.getTblW()!=null) {
+//	    	if (tblPr.getTblW().getType()!=null 
+//	    			&& (tblPr.getTblW().getType().equals("auto")
+//	    					|| tblPr.getTblW().getType().equals("nil") )) {
+//	    		// @w:type
+//	    					// nil, per Word 2007 implementation note
+//	    		tableLayoutFixed = false;
+//	    	} else if (tblPr.getTblW().getW()!=null ){
+//	    		// @w:w
+//	    		if (tblPr.getTblW().getW() == BigInteger.ZERO) {
+//	    			// Word 2007 implementation note
+//	    			tableLayoutFixed = false;
+//	    		} else {
+//	    			tableLayoutFixed = true;
+//	    		}
+//	    	} else {
+//	    		// no attributes!!
+//	    		tableLayoutFixed = false;
+//	    	}
+//	    } else {
+//	    	// element omitted, so type is auto (2.4.61)
+//	    	tableLayoutFixed = false;
+//	    }
+		
+		
 		
 		NodeList cellContents = children.item(0).getChildNodes(); // the w:tr
 		List<Object> rows = tbl.getEGContentRowContent();

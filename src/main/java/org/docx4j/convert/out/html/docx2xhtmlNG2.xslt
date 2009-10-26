@@ -180,19 +180,30 @@
 
 
 		<xsl:variable name="childResults">
-			<!--  Numbering; consider further what CSS to use,
-			      and whether this should be done in createBlockForPPr extension -->
-			<span> <!--  TODO span should be inside extension, so we don't get it if
-			             there is no number.  But this simple way of numbering
-			             should be formatted using better css? -->								
-			  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.getNumberXmlNode( $wmlPackage, 
-			  			$pStyleVal, $numId, $levelId)" />					
-			</span>
-			<xsl:apply-templates/>
+			<xsl:choose>
+				<xsl:when test="ancestor::w:tbl and count(child::node())=0">
+					<!-- A row that has no content will be displayed by browsers
+					     (Firefox at least) with a microscopic row height.
+					     
+					     Rather than put dummy content here - an nbsp or something -
+					     i've set a height in the global td style. This could be
+					     improved, by only setting it on tr's which need it.  
+					
+						span>STUFF</span-->
+				</xsl:when>
+				<xsl:otherwise>
+					<!--  Numbering; consider further what CSS to use,
+					      and whether this should be done in createBlockForPPr extension -->
+					<span> <!--  TODO span should be inside extension, so we don't get it if
+					             there is no number.  But this simple way of numbering
+					             should be formatted using better css? -->								
+					  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.getNumberXmlNode( $wmlPackage, 
+					  			$pStyleVal, $numId, $levelId)" />					
+					</span>
+					<xsl:apply-templates/>				
+				</xsl:otherwise>
+			</xsl:choose>
 		</xsl:variable>
-
-
-
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  	
 		
