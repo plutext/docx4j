@@ -27,6 +27,14 @@ import org.docx4j.wml.Styles;
 public class StyleTree {
 	
 	private static Logger log = Logger.getLogger(StyleTree.class);
+
+	/**
+	 * Tree of table styles
+	 */
+	private Tree<AugmentedStyle> tableTree = new Tree<AugmentedStyle>();
+	public Tree<AugmentedStyle> getTableStylesTree() {
+		return tableTree;
+	}
 	
 	/**
 	 * Tree of paragraph styles
@@ -52,6 +60,24 @@ public class StyleTree {
 	 * @param allStyles
 	 */
 	public StyleTree(List<String> stylesInUse, Map<String, Style> allStyles) {
+		
+		// Set up Table style tree 
+        for (String styleId : stylesInUse ) {
+        	if (tableTree.get(styleId)==null) {
+        		
+            	Style style = allStyles.get(styleId);
+                if (style == null ) {
+                	log.error("Couldn't find style: " + styleId);
+                	continue;
+                } 	        		
+        		// Is it a table style?
+        		if (style.getType().equals("table")) {                
+	            	// Need to create a node for this
+	        		this.addNode(styleId, allStyles, tableTree);
+        		}
+        	}
+        }
+		
 
 		// Set up Paragraph style tree 
         // but first, add Normal.  (Doesn't matter if its already there)

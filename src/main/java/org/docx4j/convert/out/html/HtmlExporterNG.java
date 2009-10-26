@@ -44,13 +44,17 @@ import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Tr;
+import org.docx4j.wml.TrPr;
 import org.docx4j.wml.UnderlineEnumeration;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -80,9 +84,13 @@ import org.w3c.dom.Text;
  *    7000 lines, and is largely undocumented and difficult
  *    to maintain)
  * 
+ * But it doesn't handle table styles, though it could
+ * easily enough.  It is superseded by HtmlExporterNG2. 
+ * 
  * @author jason
  *
  */
+@Deprecated
 public class HtmlExporterNG extends  AbstractHtmlExporter {
 	
 	
@@ -511,6 +519,55 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	    }
 	    return result.toString();
     }
+
+    protected static void createCss(CTTblPrBase  tblPr, StringBuffer result) {
+    	
+		if (tblPr==null) {
+			return;
+		}
+    	
+    	List<Property> properties = PropertyFactory.createProperties(tblPr);    	
+    	for( Property p :  properties ) {
+    		result.append(p.getCssProperty());
+    	}    
+    }
+    protected static void createCss(List<CTTblStylePr> tblStylePrList, StringBuffer result) {
+    	// STTblStyleOverrideType
+    	
+		if (tblStylePrList==null) {
+			return;
+		}
+    	
+    	List<Property> properties = PropertyFactory.createProperties(tblStylePrList);    	
+    	for( Property p :  properties ) {
+    		result.append(p.getCssProperty());
+    	}    
+    }
+    protected static void createCss(TrPr trPr, StringBuffer result) {
+    	// includes jc, trHeight, wAfter, tblCellSpacing
+    	
+		if (trPr==null) {
+			return;
+		}
+    	
+    	List<Property> properties = PropertyFactory.createProperties(trPr);    	
+    	for( Property p :  properties ) {
+    		result.append(p.getCssProperty());
+    	}    
+    }
+    protected static void createCss(TcPr tcPr, StringBuffer result) {
+    	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
+    	
+		if (tcPr==null) {
+			return;
+		}
+    	
+    	List<Property> properties = PropertyFactory.createProperties(tcPr);    	
+    	for( Property p :  properties ) {
+    		result.append(p.getCssProperty());
+    	}    
+    }
+    
     
     protected static void createCss(PPr pPr, StringBuffer result) {
     	
@@ -518,12 +575,10 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 			return;
 		}
     	
-    	List<Property> properties = PropertyFactory.createProperties(pPr);
-    	
+    	List<Property> properties = PropertyFactory.createProperties(pPr);    	
     	for( Property p :  properties ) {
     		result.append(p.getCssProperty());
-    	}
-    
+    	}    
     }
     
     
@@ -534,8 +589,6 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     	for( Property p :  properties ) {
     		result.append(p.getCssProperty());
     	}
-    	
-    	
     }
 
 }

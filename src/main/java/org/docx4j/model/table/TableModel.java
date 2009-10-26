@@ -34,10 +34,16 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
+import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.properties.Property;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
+import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
+import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblGrid;
 import org.docx4j.wml.TblGridCol;
@@ -75,31 +81,88 @@ import org.w3c.dom.NodeList;
  * neighbors until a real cell is found.
  * </ul>
  * 
+ * This model captures:
+ * - whether the table layout is fixed or auto (Word usually does auto)
+ * - whether conflict resolution is required on cell borders (Word usually 
+ *   does conflict resolution)
+ * 
  *  @author Adam Schmideg
  * 
  */
 public class TableModel extends Model {
-	private final static Logger logger = Logger.getLogger(TableModel.class);
+	private final static Logger log = Logger.getLogger(TableModel.class);
 
+	/**
+	 * @param wordMLPackage the wordMLPackage to set
+	 */
+	public TableModel() {
+		resetIndexes();
+		cells = new Vector<List<Cell>>();
+	}
+	
 	/**
 	 * A list of rows
 	 */
 	protected List<List<Cell>> cells;
-
+	
 	private int row;
 	private int col;
-
+	
+	protected Style tableStyle;
 	/**
-	 * Table properties are represented using the
-	 * docx model. 
+	 * @param tableStyle the tableStyle to set
 	 */
-	protected TblPr tblPr;
+	public void setTableStyle(Style tableStyle) {
+		this.tableStyle = tableStyle;
+	}
+	/**
+	 * @return the tableStyle
+	 */
+	public Style getTableStyle() {
+		return tableStyle;
+	}
+
+//	/**
+//	 * Table properties are represented using the
+//	 * docx model. 
+//	 */
+//	protected TblPr tblPr;
+//
+//	/**
+//	 * @return the w:tblPr
+//	 */
+//	public TblPr getTblPr() {
+//		return tblPr;
+//	}
 	
 	protected TblGrid tblGrid;
+	/**
+	 * @return the w:tblGrid
+	 */
+	public TblGrid getTblGrid() {
+		return tblGrid;
+	}
 	
-	public TableModel() {
-		resetIndexes();
-		cells = new Vector<List<Cell>>();
+
+	// TODO - we will eventually need a representation of row properties
+	// We could either store these in a list, or
+	// keep a reference to the w:tbl itself.
+	
+	boolean tableLayoutFixed = false; // default to auto
+	/**
+	 * @return isTableLayoutFixed
+	 */
+	public boolean isTableLayoutFixed() {
+		return tableLayoutFixed;
+	}
+	
+	
+	boolean borderConflictResolutionRequired = true;
+	/**
+	 * @return  borderConflictResolutionRequired
+	 */
+	public boolean isBorderConflictResolutionRequired() {
+		return borderConflictResolutionRequired;
 	}
 
 	/**
@@ -155,7 +218,8 @@ public class TableModel extends Model {
 	}
 
 	/**
-	 * Build a table representation from a <var>tbl</var> instance
+	 * Build a table representation from a <var>tbl</var> instance.
+	 * Remember to set wordMLPackage before using this method!
 	 */
 	public void build(Node node, NodeList children) throws TransformerException {
 
@@ -167,8 +231,46 @@ public class TableModel extends Model {
 					+ node.getNodeValue(), e);
 		}
 		
-		this.tblPr = tbl.getTblPr();
 		this.tblGrid = tbl.getTblGrid();
+		
+		PropertyResolver pr;
+			try {
+				pr = new PropertyResolver(wordMLPackage);
+			} catch (Docx4JException e) {
+				throw new TransformerException("Hmmm", e);
+			} 
+		this.tableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		CTTblPrBase tblPr = tableStyle.getTblPr();
+	    if (tblPr!=null
+	    		&& tblPr.getTblW()!=null) {
+	    	if (tblPr.getTblW().getType()!=null 
+	    			&& (tblPr.getTblW().getType().equals("auto")
+	    					|| tblPr.getTblW().getType().equals("nil") )) {
+	    		// @w:type
+	    					// nil, per Word 2007 implementation note
+	    		tableLayoutFixed = false;
+	    	} else if (tblPr.getTblW().getW()!=null ){
+	    		// @w:w
+	    		if (tblPr.getTblW().getW() == BigInteger.ZERO) {
+	    			// Word 2007 implementation note
+	    			tableLayoutFixed = false;
+	    		} else {
+	    			tableLayoutFixed = true;
+	    		}
+	    	} else {
+	    		// no attributes!!
+	    		tableLayoutFixed = false;
+	    	}
+	    } else {
+	    	// element omitted, so type is auto (2.4.61)
+	    	tableLayoutFixed = false;
+	    }
+		
+		
+		
+		if (tblPr!=null && tblPr.getTblCellSpacing()!=null) {
+			borderConflictResolutionRequired = false;							
+		}
 		
 		NodeList cellContents = children.item(0).getChildNodes(); // the w:tr
 		List<Object> rows = tbl.getEGContentRowContent();
@@ -177,6 +279,10 @@ public class TableModel extends Model {
 		for (Object o : rows) {
 			startRow();
 			Tr tr = (Tr) o;
+			if (borderConflictResolutionRequired && tr.getTblPrEx()!=null
+					&& tr.getTblPrEx().getTblCellSpacing()!=null) {
+				borderConflictResolutionRequired = false;				
+			}
 			List<Object> cells = tr.getEGContentCellContent();
 			int c = 0;
 			for (Object o2 : cells) {
@@ -195,7 +301,7 @@ public class TableModel extends Model {
 
 				} else {
 
-					logger.warn("Encountered unexpected: "
+					log.warn("Encountered unexpected: "
 							+ o2.getClass().getName());
 				}
 			}
@@ -213,8 +319,9 @@ public class TableModel extends Model {
 		Tbl tbl = factory.createTbl();
 		
 		// <w:tblPr>
+		TblPr tblPr = null;
 		if (tblPr==null) {
-			logger.warn("tblPr is null");
+			log.warn("tblPr is null");
 			tblPr = factory.createTblPr();
 			
 			// Default to page width
@@ -229,7 +336,7 @@ public class TableModel extends Model {
 		// This specifies the number of columns,
 		// and also their width
 		if (tblGrid==null) {
-			logger.warn("tblGrid is null");
+			log.warn("tblGrid is null");
 			tblGrid = factory.createTblGrid();
 			// Default to equal width
 			int width = Math.round( tbl.getTblPr().getTblW().getW().floatValue()/getColCount() );
@@ -277,8 +384,8 @@ public class TableModel extends Model {
 							P p = factory.createP();
 							tc.getEGBlockLevelElts().add(p);
 						} else {
-							logger.error("Encountered phantom dummy cell at (" + i + "," + j + ") " );
-							logger.debug(debugStr());
+							log.error("Encountered phantom dummy cell at (" + i + "," + j + ") " );
+							log.debug(debugStr());
 						}
 						
 					} else { // a real cell
@@ -300,7 +407,7 @@ public class TableModel extends Model {
 						}
 						
 						if (cell.colspan>1 && cell.rowspan>1) {
-							logger.warn("Both rowspan & colspan set; that will be interesting..");
+							log.warn("Both rowspan & colspan set; that will be interesting..");
 						}
 												
 						tr.getEGContentCellContent().add(tc);
@@ -357,5 +464,8 @@ public class TableModel extends Model {
 		}
 		return buf.toString();
 	}
+	
+	
+
 
 }

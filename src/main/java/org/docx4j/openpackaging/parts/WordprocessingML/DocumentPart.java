@@ -46,26 +46,19 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 	 *  
 	 */ 
 	
-	protected CommentsPart commentsPart; //done
+	protected CommentsPart commentsPart; 	
+	protected DocumentSettingsPart documentSettingsPart;	
+	protected EndnotesPart endNotesPart; 	
+	protected FontTablePart fontTablePart; 
+	protected ThemePart themePart;  
+	protected FootnotesPart footnotesPart; 
+	protected NumberingDefinitionsPart numberingDefinitionsPart; 	
+	protected StyleDefinitionsPart styleDefinitionsPart; 	
+	protected WebSettingsPart webSettingsPart;
 	
-	protected DocumentSettingsPart documentSettingsPart;
-	
-	protected EndnotesPart endNotesPart; //done
-	
-	protected FontTablePart fontTablePart; // done (ie setup below and in SchemaType_
-	protected ThemePart themePart; // done 
-	
-	
-	protected FootnotesPart footnotesPart; //done
-	
-	//protected List headerParts;
-	//protected List footerParts;
-	
-	protected NumberingDefinitionsPart numberingDefinitionsPart; //done
-	
-	protected StyleDefinitionsPart styleDefinitionsPart; //done
-	
-	protected WebSettingsPart webSettingsPart; //done
+	// To access headerParts and footerParts, instead
+	// use the DocumentModel.
+
 
 	public boolean setPartShortcut(Part part) {
 		
