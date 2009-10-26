@@ -27,10 +27,11 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblPr;
+import org.docx4j.wml.TcPrInner;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
-public class AbstractBorder extends AbstractTableProperty {
+public abstract class AbstractBorder extends AbstractTableProperty {
 	
 	public String CSS_NAME_BASE;  
 	public String CSS_NAME__STYLE; 
@@ -119,13 +120,6 @@ public class AbstractBorder extends AbstractTableProperty {
 		
 	}
 
-	@Override
-	public void set(TblPr tblPr) {
-		if (tblPr.getTblBorders()==null) {
-			TblBorders tblBorders = Context.getWmlObjectFactory().createTblBorders();
-			tblPr.setTblBorders(tblBorders);
-		}
-		tblPr.getTblBorders().setLeft( (CTBorder)this.getObject() );
-	}
+	public abstract void set(TcPrInner tcPr);
 	
 }

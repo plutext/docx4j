@@ -23,6 +23,7 @@ package org.docx4j.model.table;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
 import org.w3c.dom.Node;
 
 /**
@@ -68,6 +69,11 @@ public class Cell {
 	 * below */
 	protected boolean dummy = false;
 	protected Node content = null;
+	
+	TcPr tcPr;
+	public TcPr getTcPr() {
+		return tcPr;
+	}
 
 	/**
 	 * Create a dummy cell without content
@@ -83,6 +89,8 @@ public class Cell {
 		this(table, row, col);
 		dummy = false;
 		this.content = content;
+		
+		tcPr = tc.getTcPr();
 
 		logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
 
