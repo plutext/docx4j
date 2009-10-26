@@ -452,6 +452,11 @@ public class PropertyResolver {
 				}
 			}
 		}
+		
+		if (thisLevel.getTblCellSpacing()!=null ) {
+			result.setTblCellSpacing(
+				XmlUtils.deepCopy(thisLevel.getTblCellSpacing()) );
+		}
 	}
 	
 	
@@ -461,13 +466,10 @@ public class PropertyResolver {
 		// TODO
 	}
 	private void applyTrPr(TrPr thisLevel, TrPr result) { 		
-		 // includes jc, trHeight, wAfter, tblCellSpacing
 		
-		// TODO		
 	}
 	private void applyTcPr(TcPr thisLevel, TcPr result) { 
 	    // includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc 
-
 		// TODO		
 	}
 	

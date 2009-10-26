@@ -19,6 +19,7 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.RPr;
@@ -46,25 +47,12 @@ public class FontColor extends AbstractRunProperty {
 		float fBlue = cssPrimitiveValue.getRGBColorValue().getBlue().getFloatValue(ignored); 
 		
 		Color color = Context.getWmlObjectFactory().createColor();
-		color.setVal( getHex(fRed) + getHex(fGreen) + getHex(fBlue) );
+		color.setVal( UnitsOfMeasurement.rgbTripleToHex(fRed, fGreen, fBlue)  );
 		
 		this.setObject(color);
 
 	}
 	
-	private String getHex(float f) {
-		
-		int i = Math.round(f);
-		
-		if (i<=16) {
-			// Pad so we have 2 digits
-			return "0" + Integer.toHexString( i );
-		} else {
-			return Integer.toHexString( i );
-		}
-		
-		
-	}
 	
 	@Override
 	public String getCssProperty() {

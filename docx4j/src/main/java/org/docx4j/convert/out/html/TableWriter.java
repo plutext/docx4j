@@ -119,7 +119,14 @@ public class TableWriter extends ModelConverter {
 		// - position (tblPr/tblInd)
 		// - table-layout
 		styleVal.append(p.getCssProperty());
-	}    
+	}  
+	
+	// vAlign fix: match Word's default of top
+	if (table.getEffectiveTableStyle().getTcPr()==null
+			|| table.getEffectiveTableStyle().getTcPr().getVAlign()==null) {
+		styleVal.append(Property.composeCss(org.docx4j.model.properties.table.tc.TextAlignmentVertical.CSS_NAME, 
+				"top"));
+	}
 
 	// border model
 	if (table.isBorderConflictResolutionRequired() ) {
@@ -128,8 +135,9 @@ public class TableWriter extends ModelConverter {
 		styleVal.append(Property.composeCss(TABLE_BORDER_MODEL, "separate")); // this is the default in CSS				
 	}
 	
-	// now the table level cell border defaults
-    //tbl.setAttribute("border", "1" );
+	// Table level cell border defaults
+    // Could do something like tbl.setAttribute("rules", "all" );
+	// but instead, these are handled by CSS for td in the stylesheet.
 	
     
     tbl.setAttribute("style", styleVal.toString() );
@@ -153,6 +161,14 @@ public class TableWriter extends ModelConverter {
     for (List<Cell> rows : table.getCells()) {
 			Element row = doc.createElement("tr");
 			tbl.appendChild(row);
+			
+			// vAlign fix: match Word's default of top
+			if (table.getEffectiveTableStyle().getTcPr()==null
+					|| table.getEffectiveTableStyle().getTcPr().getVAlign()==null) {
+				row.setAttribute("style",(Property.composeCss(org.docx4j.model.properties.table.tc.TextAlignmentVertical.CSS_NAME, 
+						"top")));
+			}
+			
 			for (Cell cell : rows) {
 				// process cell
 				if (!cell.isDummy()) {

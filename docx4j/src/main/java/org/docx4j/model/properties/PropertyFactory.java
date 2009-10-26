@@ -41,7 +41,9 @@ import org.docx4j.model.properties.table.BorderBottom;
 import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
+import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
@@ -154,11 +156,12 @@ public class PropertyFactory {
 				properties.add(new BorderLeft(tcBorders.getLeft()) );				
 			if (tcBorders.getRight()!=null) 
 				properties.add(new BorderRight(tcBorders.getRight()) );	
-			// TODO
-//			if (tblBorders.getInsideH()!=null) 
-//				properties.add(new BorderRight(tblBorders.getRight()) );				
-//			if (tblBorders.getInsideV()!=null) 
-//				properties.add(new BorderRight(tblBorders.getRight()) );				
+		}
+		if (tcPr.getVAlign()!=null) {
+			properties.add(new org.docx4j.model.properties.table.tc.TextAlignmentVertical(tcPr.getVAlign() ) );
+		}
+		if (tcPr.getShd()!=null) {
+			properties.add(new Shading(tcPr.getShd())); 
 		}
 		
 		return properties;		
