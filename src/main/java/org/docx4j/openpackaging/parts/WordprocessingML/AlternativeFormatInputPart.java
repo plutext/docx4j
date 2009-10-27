@@ -29,7 +29,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
 
-public final class AlternativeFormatInputPart extends XmlPart {
+public final class AlternativeFormatInputPart extends BinaryPart {
 	
 	public AlternativeFormatInputPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -42,10 +42,5 @@ public final class AlternativeFormatInputPart extends XmlPart {
 		
 	}
 
-	@Override
-	public org.w3c.dom.Document getDocument() throws Docx4JException {
-		// Used when saving to JCR
-		return doc;
-	}
 	
 }
