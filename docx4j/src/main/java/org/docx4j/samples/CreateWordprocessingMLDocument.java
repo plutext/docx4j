@@ -31,8 +31,13 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.table.TblFactory;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.Tbl;
 
 /**
@@ -45,7 +50,7 @@ public class CreateWordprocessingMLDocument {
 
 	public static void main(String[] args) throws Exception {
 		
-		boolean save = false;
+		boolean save = true;
 		
 		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
@@ -107,12 +112,26 @@ public class CreateWordprocessingMLDocument {
 	    wordMLPackage.getMainDocumentPart().addObject(tbl);
 	    
 		
+	    // Add an altChunk
+	    // .. the part
+	    String html = "<html><head><title>Import me</title></head><body><p>Hello World!</p></body></html>";
+	    AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(new PartName("/hw.html") ); 
+	    afiPart.setBinaryData(html.getBytes());
+	    afiPart.setContentType(new ContentType("text/html"));
+	    Relationship altChunkRel = wordMLPackage.getMainDocumentPart().addTargetPart(afiPart);
+	    // .. the bit in document body
+	    CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
+	    ac.setId(altChunkRel.getId() );
+	    wordMLPackage.getMainDocumentPart().addObject(ac);
+	    // .. content type
+	    wordMLPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
+	    
 		//injectDocPropsCustomPart(wordMLPackage);
 		
 		// Now save it
 		if (save) {
 			System.out.println("Saved.");
-			wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/bolds.docx") );
+			wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/ac.docx") );
 		} else {
 		   	// Create a org.docx4j.wml.Package object
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
