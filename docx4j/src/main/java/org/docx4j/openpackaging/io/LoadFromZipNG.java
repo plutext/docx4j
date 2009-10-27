@@ -43,11 +43,13 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
+import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -430,6 +432,11 @@ public class LoadFromZipNG extends Load {
 		String relationshipType = r.getType();		
 			
 		Part part = getRawPart(partByteArrays, ctm, resolvedPartUri);
+		if (part instanceof BinaryPart
+				|| part instanceof DefaultXmlPart) {
+			// The constructors of other parts should take care of this...
+			part.setRelationshipType(relationshipType);
+		}
 		rp.loadPart(part);
 
 		// The source Part (or Package) might have a convenience
@@ -573,7 +580,7 @@ public class LoadFromZipNG extends Load {
 				}
 			
 			} catch (PartUnrecognisedException e) {
-
+				log.warn("PartUnrecognisedException shouldn't happen anymore!");
 				// Try to get it as a binary part
 				part = getBinaryPart(partByteArrays, ctm, resolvedPartUri);
 				((BinaryPart)part).setBinaryData(is);
@@ -606,6 +613,11 @@ public class LoadFromZipNG extends Load {
 			//in = zf.getInputStream( zf.getEntry(resolvedPartUri ) );
 			in = partByteArrays.get(resolvedPartUri).getInputStream();
 			part = new BinaryPart( new PartName("/" + resolvedPartUri));
+			
+			// Set content type
+			part.setContentType(
+					new ContentType(
+							ctm.getContentType(new PartName("/" + resolvedPartUri)) ) );
 			
 			((BinaryPart)part).setBinaryData(in);
 			log.info("Stored as BinaryData" );
