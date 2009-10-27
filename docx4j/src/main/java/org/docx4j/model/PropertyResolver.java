@@ -889,6 +889,7 @@ public class PropertyResolver {
     	
     	for( Property p :  properties ) {
 			if (p!=null) {
+				log.debug("applying pPr " + p.getClass().getName() );
 				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
 			}
     	}

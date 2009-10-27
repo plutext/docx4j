@@ -83,7 +83,7 @@ public class TableWriter extends ModelConverter {
 	if (table.getEffectiveTableStyle().getTcPr()==null
 			|| table.getEffectiveTableStyle().getTcPr().getVAlign()==null) {
 		foTable.setAttribute(org.docx4j.model.properties.table.tc.TextAlignmentVertical.FO_NAME, 
-				"top");
+				"before");
 	}
 
 	// border model
