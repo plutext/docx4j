@@ -88,6 +88,7 @@ public abstract class Base {
 	}
 
 	public void setContentType(ContentType contentType) {
+		log.debug("\nSet contentType " + contentType + " on part " + this.getPartName().getName() +"\n\n");
 		this.contentType = contentType;
 	}
 	
@@ -164,9 +165,11 @@ public abstract class Base {
 	 */
 	public Relationship addTargetPart(Part targetpart) throws InvalidFormatException {
 		
-		if ( this.getPackage()==null ) {
-						
+		if ( this.getPackage()==null ) {						
 			throw new InvalidFormatException("Package not set");
+		}
+		if ( this instanceof RelationshipsPart ) {			
+			throw new InvalidFormatException("You should add your part to the target part, not the target part's relationships part.");
 		}
 
 		// Create RelationshipsPart for this part if necessary
@@ -177,13 +180,13 @@ public abstract class Base {
 			this.setRelationships(rp);
 			
 			// Make sure content manager knows how to handle .rels
-			getPackage().getContentTypeManager().addDefaultContentType("rels", org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
-			
-			
+			getPackage().getContentTypeManager().addDefaultContentType("rels", 
+					org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
 		}
 		
 		// Now add the targetpart to the relationships
-		Relationship rel = this.getRelationshipsPart().addPart(targetpart, true, getPackage().getContentTypeManager());
+		Relationship rel = this.getRelationshipsPart().addPart(targetpart, true, 
+				getPackage().getContentTypeManager());
 		
 		// Finally, set part shortcut if there is one to set
 		boolean shortcutSet = setPartShortcut(targetpart, targetpart.getRelationshipType());

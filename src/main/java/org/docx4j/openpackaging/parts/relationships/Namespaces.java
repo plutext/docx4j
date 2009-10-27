@@ -157,4 +157,6 @@ public class Namespaces {
 	
 	public final static String PKG_XML = "http://schemas.microsoft.com/office/2006/xmlPackage";
 	
+	public final static String EMBEDDED_PKG = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package";
+	
 }

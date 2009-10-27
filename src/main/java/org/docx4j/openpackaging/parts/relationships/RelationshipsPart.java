@@ -673,6 +673,12 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		return null;
 	}
 
+	/**
+	 * Get the first rel with specified relationship type
+	 * (see Namespaces for pre-defined constants)
+	 * @param type
+	 * @return
+	 */
 	public Relationship getRelationshipByType(String type) {
 		
 		for ( Relationship r : jaxbElement.getRelationship()  ) {

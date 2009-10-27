@@ -331,9 +331,9 @@ public class ContentTypeManager  {
 					+ "' of content type '" + contentType + "'");
 			return CreateDefaultPartObject(partName );
 		} else {
-			log.error("No subclass found for " + partName);
-			throw new PartUnrecognisedException("No subclass found for " + partName + " (content type '" + contentType + "')");		
-
+			log.error("No subclass found for " + partName + "; defaulting to binary");
+			//throw new PartUnrecognisedException("No subclass found for " + partName + " (content type '" + contentType + "')");		
+			return new BinaryPart( new PartName(partName));
 		}
 
 	}

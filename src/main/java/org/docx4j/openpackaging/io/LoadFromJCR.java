@@ -53,6 +53,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -520,6 +521,11 @@ public class LoadFromJCR extends Load {
 		String relationshipType = r.getType();		
 		
 		Part part = getRawPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);
+		if (part instanceof BinaryPart
+				|| part instanceof DefaultXmlPart) {
+			// The constructors of other parts should take care of this...
+			part.setRelationshipType(relationshipType);
+		}		
 		rp.loadPart(part);
 		
 		
