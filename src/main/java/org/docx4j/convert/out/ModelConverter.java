@@ -22,6 +22,7 @@ package org.docx4j.convert.out;
 import javax.xml.transform.TransformerException;
 
 import org.docx4j.model.Model;
+import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Node;
 
@@ -48,6 +49,6 @@ public abstract class ModelConverter {
 		return mainConverter;
 	}
 
-	public abstract Node toNode(Model m) throws TransformerException;
+	public abstract Node toNode(Model m, TransformState state) throws TransformerException;
 
 }

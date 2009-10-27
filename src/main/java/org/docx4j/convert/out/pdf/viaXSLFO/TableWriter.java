@@ -7,6 +7,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.model.Model;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.table.BorderBottom;
@@ -36,7 +37,7 @@ public class TableWriter extends ModelConverter {
   
   public final static String TABLE_BORDER_MODEL = "border-collapse";
 
-  public Node toNode(Model tableModel) throws TransformerException {
+  public Node toNode(Model tableModel, TransformState state) throws TransformerException {
     TableModel table = (TableModel)tableModel;
     logger.debug("Table asXML:\n" + table.debugStr());
     
@@ -145,8 +146,6 @@ public class TableWriter extends ModelConverter {
 					// style
 					//cellNode.setAttribute("border-style", "dashed");
 					
-					// td default - just from TableGrid for now
-					// TODO .. get these right on a per table basis	
 					if (tblBorders.getInsideH()!=null) {
 						( new BorderTop(   tblBorders.getTop()    )).setXslFO(cellNode);
 						( new BorderBottom(tblBorders.getBottom() )).setXslFO(cellNode);

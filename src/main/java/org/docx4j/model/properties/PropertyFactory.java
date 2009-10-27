@@ -149,7 +149,12 @@ public class PropertyFactory {
 	public static List<Property> createProperties(TcPr tcPr) {
 		
 		List<Property> properties = new ArrayList<Property>();
-
+		createProperties(properties, tcPr);
+		return properties;		
+	}
+	
+	public static void createProperties(List<Property> properties, TcPr tcPr) {
+		
 		if (tcPr.getTcBorders()!=null) {
 			TcPrInner.TcBorders tcBorders = tcPr.getTcBorders();
 			if (tcBorders.getTop()!=null) 
@@ -168,7 +173,6 @@ public class PropertyFactory {
 			properties.add(new Shading(tcPr.getShd())); 
 		}
 		
-		return properties;		
 	}
 
 	public static List<Property> createProperties(WordprocessingMLPackage wmlPackage, RPr rPr) {

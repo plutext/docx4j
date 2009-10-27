@@ -7,14 +7,23 @@ import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
+import org.docx4j.model.TransformState;
+import org.docx4j.model.properties.AdHocProperty;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.table.BorderBottom;
+import org.docx4j.model.properties.table.BorderLeft;
+import org.docx4j.model.properties.table.BorderRight;
+import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
+import org.docx4j.model.table.TableModel.TableModelTransformState;
+import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblGridCol;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -90,8 +99,14 @@ public class TableWriter extends ModelConverter {
   public final static String TABLE_BORDER_MODEL = "border-collapse";
   public final static String TABLE_INDENT = "margin-left"; 
 
-  public Node toNode(Model tableModel) throws TransformerException {
+  public static String getId(int idx) {
+	  return "docx4j_tbl_" + idx;
+  }
+  public Node toNode(Model tableModel, TransformState transformState) throws TransformerException {
     TableModel table = (TableModel)tableModel;
+    
+    TableModelTransformState state = (TableModelTransformState)transformState; 
+    
     log.debug("Table asXML:\n" + table.debugStr());
     
     org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument();   
@@ -112,6 +127,8 @@ public class TableWriter extends ModelConverter {
 		);
     }
     
+    tbl.setAttribute("id", getId(state.getIdx()) );
+    
     StringBuffer styleVal = new StringBuffer();
 	List<Property> properties = PropertyFactory.createProperties(table.getTblPr());    	
 	for( Property p :  properties ) {
@@ -120,13 +137,29 @@ public class TableWriter extends ModelConverter {
 		// - table-layout
 		styleVal.append(p.getCssProperty());
 	}  
-	
-	// vAlign fix: match Word's default of top
-	if (table.getEffectiveTableStyle().getTcPr()==null
-			|| table.getEffectiveTableStyle().getTcPr().getVAlign()==null) {
-		styleVal.append(Property.composeCss(org.docx4j.model.properties.table.tc.TextAlignmentVertical.CSS_NAME, 
-				"top"));
+	// Borders, shading - remember there is both
+	// 1. getTblPr().getTblBorders(), and
+	// 2. getTcPr().getTcBorders() [in a style or on a tc] 
+	// Here, we are only concerned with the table's outer borders.
+	// The cell borders are handled below.
+	if (table.getTblPr().getTblBorders()!=null) {
+		// That, not table.getEffectiveTableStyle(),
+		// since those will be applied via the @class styles
+		properties = PropertyFactory.createProperties(table.getTblPr() );
+		for( Property p :  properties ) {
+			if (p!=null) {
+				styleVal.append(p.getCssProperty());
+			}
+		}
 	}
+	
+	
+//	// vAlign fix: match Word's default of top
+//	if (table.getEffectiveTableStyle().getTcPr()==null
+//			|| table.getEffectiveTableStyle().getTcPr().getVAlign()==null) {
+//		styleVal.append(Property.composeCss(org.docx4j.model.properties.table.tc.TextAlignmentVertical.CSS_NAME, 
+//				"top"));
+//	}
 
 	// border model
 	if (table.isBorderConflictResolutionRequired() ) {
@@ -158,9 +191,12 @@ public class TableWriter extends ModelConverter {
     	colgroup.setAttribute("span",  String.valueOf(cols));
     }
     
+    Element tgroup = doc.createElement("tgroup");
+    tbl.appendChild(tgroup);
+    
     for (List<Cell> rows : table.getCells()) {
 			Element row = doc.createElement("tr");
-			tbl.appendChild(row);
+			tgroup.appendChild(row);
 			
 			// vAlign fix: match Word's default of top
 			if (table.getEffectiveTableStyle().getTcPr()==null
@@ -206,6 +242,9 @@ public class TableWriter extends ModelConverter {
 				}
 			}
 		}
+    // ready for next table
+    state.incrementIdx();
+    
     return docfrag;
   }
 }
