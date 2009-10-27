@@ -40,6 +40,7 @@ import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.UnderlineEnumeration;
 import org.w3c.dom.Document;
@@ -419,6 +420,20 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	}
 		
 	}
+	
+    protected static void createFoAttributes(TcPr tcPr, Element foBlockElement){
+    	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
+    	
+		if (tcPr==null) {
+			return;
+		}
+    	
+    	List<Property> properties = PropertyFactory.createProperties(tcPr);    	
+    	for( Property p :  properties ) {
+			p.setXslFO(foBlockElement);
+    	}    
+    }
+	
 
     /**
      * On a block representing a run, we just put run properties

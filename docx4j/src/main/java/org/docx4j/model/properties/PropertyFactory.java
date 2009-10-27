@@ -106,10 +106,11 @@ public class PropertyFactory {
     		// @w:w
     		if (tblPr.getTblW().getW()!=null 
     				&& tblPr.getTblW().getW() != BigInteger.ZERO) {
-    			properties.add(new AdHocProperty("table-layout", "fixed") );
+    			properties.add(new AdHocProperty("table-layout", "fixed", "table-layout", "fixed") );
     		} else if (tblPr.getTblW().getType()!=null
     				&& tblPr.getTblW().getType().equals("auto") ) {
-    			properties.add(new AdHocProperty("table-layout", "auto") );    			
+    			properties.add(new AdHocProperty("table-layout", "auto", "table-layout", "auto") );  
+    				// FOP doesn't support auto, but it degrades gracefully
     		} // otherwise the default 'auto' is implied
 		}
 		

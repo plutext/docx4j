@@ -31,7 +31,7 @@ import org.w3c.dom.css.CSSValue;
 public class TextAlignmentVertical extends AbstractTcProperty {
 	
 	public final static String CSS_NAME = "vertical-align"; 
-	public final static String FO_NAME  = "vertical-align";  
+	public final static String FO_NAME  = "display-align";  
 	
 	
 	public TextAlignmentVertical(CTVerticalJc textAlignment) {
@@ -78,10 +78,12 @@ public class TextAlignmentVertical extends AbstractTcProperty {
 	public void setXslFO(Element foElement) {
 
 		STVerticalJc val = ((CTVerticalJc)this.getObject()).getVal();
-		if (val == STVerticalJc.TOP || val == STVerticalJc.BOTTOM ) {						
-			foElement.setAttribute(FO_NAME, val.value());
+		if (val == STVerticalJc.TOP ) {						
+			foElement.setAttribute(FO_NAME, "before");
 		} else if (val == STVerticalJc.CENTER) {
-			foElement.setAttribute(FO_NAME, "middle");
+			foElement.setAttribute(FO_NAME, "center");
+		} else if (val == STVerticalJc.BOTTOM) {
+			foElement.setAttribute(FO_NAME, "after");
 		} else  {
 			log.warn("How to handle vertical alignment of " + val.value());
 		} 		
