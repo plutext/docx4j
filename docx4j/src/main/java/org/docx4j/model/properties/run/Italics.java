@@ -28,7 +28,7 @@ import org.w3c.dom.css.CSSValue;
 public class Italics extends AbstractRunProperty {
 
 	public final static String CSS_NAME = "font-style"; 
-	public final static String FO_NAME  = "font-italics"; 
+	public final static String FO_NAME  = "font-style"; 
 	
 	public Italics(BooleanDefaultTrue val) {
 		this.setObject(val);
