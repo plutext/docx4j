@@ -238,15 +238,17 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		
 		htmlSettings.setWmlPackage(wmlPackage);
 		
-		// Allow arbitrary objects to be passed to the converters
-		// HashMap is the most general representation; an alternative
-		// would be an Object designed for this purpose (in which 
-		// each field could be documented).  
+		// Allow arbitrary objects to be passed to the converters.
+		// The objects are assumed to be specific to a particular converter (eg table),
+		// so assume there will be one object implementing TransformState per converter.   
 		HashMap<String, TransformState> modelStates  = new HashMap<String, TransformState>();
 		htmlSettings.getSettings().put("modelStates", modelStates );
 		
 		//Converter c = new Converter();
 		Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+		
+		// By convention, the transform state object is stored by reference to the 
+		// type of element to which its model applies
 		modelStates.put("w:tbl", new TableModelTransformState() );
 		
 		Converter.getInstance().start(wmlPackage);

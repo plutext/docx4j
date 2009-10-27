@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +30,10 @@ import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Ftr;
@@ -250,8 +253,19 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	      	  // Resulting SAX events (the generated FO) must be piped through to FOP
 	      	  Result result = new SAXResult(fop.getDefaultHandler());
 	      	  
+	  		// Allow arbitrary objects to be passed to the converters.
+	  		// The objects are assumed to be specific to a particular converter (eg table),
+	  		// so assume there will be one object implementing TransformState per converter.   
+	  		HashMap<String, TransformState> modelStates  = new HashMap<String, TransformState>();
+	  		settings.put("modelStates", modelStates );	      	  
+	      	  
 //	  		Converter c = new Converter();
 	      	Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+	      	
+			// By convention, the transform state object is stored by reference to the 
+			// type of element to which its model applies
+			modelStates.put("w:tbl", new TableModelTransformState() );
+	      	
 	      	Converter.getInstance().start(wordMLPackage);
 	      	  
 	    	  

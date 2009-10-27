@@ -59,6 +59,7 @@
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
+<xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
 <xsl:param name="imageDirPath"/>
    
 <!-- Used in extension function for mapping fonts --> 		
@@ -505,7 +506,7 @@
 		<xsl:variable name="tblNode" select="." />  			
 
 		<!--  Create the XSL FO table in Java -->
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults)"/>	  		
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults, $modelStates)"/>	  		
 	  			  		
   </xsl:template>
   
