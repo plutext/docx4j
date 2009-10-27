@@ -23,6 +23,7 @@ package org.docx4j.convert.out;
 import java.util.*;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
 import org.w3c.dom.DocumentFragment;
@@ -40,7 +41,7 @@ public class OasisTableWriter extends ModelConverter {
 	
   private final static Logger logger = Logger.getLogger(OasisTableWriter.class);
 
-  public Node toNode(Model tableModel) throws TransformerException {
+  public Node toNode(Model tableModel, TransformState state) throws TransformerException {
     TableModel table = (TableModel)tableModel;
     logger.debug("Table asXML:\n" + table.debugStr());
     

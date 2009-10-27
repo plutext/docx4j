@@ -22,6 +22,7 @@ package org.docx4j.convert.out;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.log4j.Logger;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -29,6 +30,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -144,7 +146,8 @@ public class Converter {
 //	  return toNode(node, null);
 //  }
   
-  public static Node toNode(Node node, NodeList children) {
+  public static Node toNode(Node node, NodeList children, 
+		  Map<String, TransformState> modelStates) {
 
 		Converter inst = Converter.getInstance();
 		Class c = inst.modelClasses.get(node.getNodeName());
@@ -177,7 +180,7 @@ public class Converter {
 
 			} else {
 				converter.setWordMLPackage(inst.getWmlPackage()); // TODO - not threadsafe!
-				return converter.toNode(model);
+				return converter.toNode(model, modelStates.get(node.getNodeName()) );
 			}
 		} catch (Exception e) {
 			log.error("Cannot convert " + node, e);

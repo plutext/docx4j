@@ -25,6 +25,7 @@
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
+<xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
 <xsl:param name="imageDirPath"/>
    
 <!-- Used in extension function for mapping fonts --> 		
@@ -108,6 +109,10 @@
 						<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForStyles( 
 		  											$wmlPackage)"/>
 
+						/* TABLE CELL STYLES */
+						<xsl:variable name="tables" select="./w:body//w:tbl" />  
+						<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForTableCells( 
+		  											$wmlPackage, $tables)"/>
 
           </xsl:comment>
         </style>
@@ -371,7 +376,7 @@
   -->
   
 		<!--  Create the HTML table in Java --> 
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults)"/>
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults, $modelStates)"/>
 	  			  		
   </xsl:template>
 

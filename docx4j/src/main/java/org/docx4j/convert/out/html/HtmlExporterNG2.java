@@ -3,6 +3,7 @@ package org.docx4j.convert.out.html;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,6 +20,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.vfs.CacheStrategy;
@@ -39,6 +42,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.properties.AdHocProperty;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.table.BorderBottom;
@@ -54,6 +58,7 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
@@ -207,33 +212,9 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
         	} else {
             	createCss(wmlPackage, s.getRPr(), result);
         	}
-        	result.append( "}\n" );        	
+        	result.append( "}\n" );         	
     	}
-    	
-    	// td default - just from TableGrid for now
-    	// TODO .. get these right on a per table basis
-    	if (styleTree.getTableStylesTree().get("TableGrid")!=null) {
-    		Style tg = styleTree.getTableStylesTree().get("TableGrid").getData().getStyle();
-    		TblBorders tblBorders = tg.getTblPr().getTblBorders();
-    		result.append("/* TMP FIXME in HtmlExporterNG2! */ \n");
-    		result.append("td { ");
-			if (tblBorders.getInsideH()!=null) {
-				BorderTop bt = new BorderTop(tblBorders.getTop() );
-				result.append(bt.getCssProperty());
-				BorderBottom bb = new BorderBottom(tblBorders.getBottom() );
-				result.append(bb.getCssProperty());				
-			}
-			if (tblBorders.getInsideV()!=null) { 
-				BorderRight br = new BorderRight(tblBorders.getRight() );
-				result.append(br.getCssProperty());
-				BorderLeft bl = new BorderLeft(tblBorders.getLeft() );
-				result.append(bl.getCssProperty());
-			}
-			// Ensure empty cells have a sensible height
-			result.append("height: 5mm;");
-    		result.append("}\n");
-    	}	
-    	
+		
 		// Second iteration - paragraph level pPr *and rPr*
 		result.append("\n /* PARAGRAPH STYLES */ \n");    	
 		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
@@ -279,6 +260,106 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	}
     }
     
+    
+    public static String getCssForTableCells(WordprocessingMLPackage wmlPackage, 
+    		NodeIterator tables) {
+    	
+    	// The only way we seem to be able to make rules which
+    	// apply to all the cells in a particular table
+    	
+    	System.out.println("TABLES");
+    	Tbl tbl;
+
+		PropertyResolver pr;
+		try {
+			pr = new PropertyResolver(wmlPackage);
+		} catch (Docx4JException e) {
+	    	log.error("docx4j error", e);
+	    	return e.getMessage();
+		} 
+		
+    	StringBuffer result = new StringBuffer();		
+    	
+		//DTMNodeProxy n = (DTMNodeProxy)tables.nextNode();
+    	Element n = (Element)tables.nextNode();
+    	int idx = 0;
+		do {	
+			if (n.getNodeName().equals("w:tbl" )) {
+				// n.getLocalName() -> tbl
+				// n.getNodeName() -> w:tbl
+
+    			Object jaxb;
+				try {
+					Unmarshaller u = Context.jc.createUnmarshaller();			
+					u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+					jaxb = u.unmarshal(n);
+    				tbl =  (Tbl)jaxb;
+    				
+    				
+    				Style s = pr.getEffectiveTableStyle(tbl.getTblPr() );
+    				
+    				result.append("#" + TableWriter.getId(idx) + " td { ");
+    	        	List<Property> properties =  new ArrayList<Property>();
+    	        	if (s.getTblPr()!=null
+    	        			&& s.getTblPr().getTblBorders()!=null ) {
+    		    		TblBorders tblBorders = s.getTblPr().getTblBorders();
+    		    		if (tblBorders.getInsideH()!=null) {
+    		    			if (tblBorders.getInsideH().getVal()==STBorder.NONE
+    		    					|| tblBorders.getInsideH().getVal()==STBorder.NIL
+    		    					|| tblBorders.getInsideH().getSz()==BigInteger.ZERO ) {
+    		    				properties.add( new AdHocProperty("border-top-style", "none", null, null));
+    		    				properties.add( new AdHocProperty("border-top-width", "0mm", null, null));
+    		    				properties.add( new AdHocProperty("border-bottom-style", "none", null, null));
+    		    				properties.add( new AdHocProperty("border-bottom-width", "0mm", null, null));
+    		    			} else {
+    		    				properties.add( new BorderTop(tblBorders.getTop() ));
+    		    				properties.add( new BorderBottom(tblBorders.getBottom() ));
+    		    			}
+    		    		}
+    		    		if (tblBorders.getInsideV()!=null) { 
+    		    			if (tblBorders.getInsideV().getVal()==STBorder.NONE
+    		    					|| tblBorders.getInsideV().getVal()==STBorder.NIL
+    		    					|| tblBorders.getInsideV().getSz()==BigInteger.ZERO ) {
+    		    				properties.add( new AdHocProperty("border-left-style", "none", null, null));
+    		    				properties.add( new AdHocProperty("border-left-width", "0mm", null, null));
+    		    				properties.add( new AdHocProperty("border-right-style", "none", null, null));
+    		    				properties.add( new AdHocProperty("border-right-width", "0mm", null, null));
+    		    			} else {
+    		    				properties.add( new BorderRight(tblBorders.getRight() ));
+    		    				properties.add( new BorderLeft(tblBorders.getLeft() ));
+    		    			}
+    		    		}
+    	        	}
+    	        	if (s.getTcPr()!=null ) {
+    	        		PropertyFactory.createProperties(properties, s.getTcPr() );
+    	        	}
+    				// Ensure empty cells have a sensible height
+    	        	properties.add(new AdHocProperty("height", "5mm", null, null));
+    	        	
+    	    		for( Property p :  properties ) {
+    	    			if (p!=null) {
+    	    				result.append(p.getCssProperty());
+    	    			}
+    	    		}
+    	    		result.append("}\n");
+    				
+				} catch (JAXBException e1) {
+    		    	log.error("JAXB error", e1);
+    			} catch (ClassCastException e) {
+    		    	log.error("Couldn't cast to Tbl!");
+    			}        	        			
+				
+			} else {
+				log.warn("Expected table but encountered: " + n.getNodeName() );
+			}
+			// next 
+			idx++;
+			n = (Element)tables.nextNode();
+			
+		} while ( n !=null ); 
+    	
+		return result.toString();
+    }
     public static DocumentFragment createBlockForPPr( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,

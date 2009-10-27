@@ -35,6 +35,7 @@ import org.docx4j.convert.out.Converter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -484,7 +485,38 @@ public class TableModel extends Model {
 		return buf.toString();
 	}
 	
-	
+	public static class TableModelTransformState implements TransformState {
+		
+		// The last table number, in document order,
+		// which we have processed. 
+		// The idea is to be able to write an id (unique within the document) to each
+		// table.
+		
+		int idx = 0;
+
+		/**
+		 * @return the idx
+		 */
+		public int getIdx() {
+			return idx;
+		}
+
+		/**
+		 * @param idx the idx to set
+		 */
+		public void incrementIdx() {
+			idx++;
+		}
+		
+//		/**
+//		 * @param idx the idx to set
+//		 */
+//		public void setIdx(int idx) {
+//			this.idx = idx;
+//		}
+		
+		
+	}
 
 
 }
