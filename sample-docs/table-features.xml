@@ -580,6 +580,74 @@
                     <w:p/>
                     <w:p>
                         <w:r>
+                            <w:t>No borders at all.</w:t>
+                        </w:r>
+                    </w:p>
+					<w:tbl>
+                        <w:tblPr>
+                            <w:tblStyle w:val="TableGrid"/>
+                            <w:tblW w:w="0" w:type="auto"/>
+                            <w:tblBorders>
+                                <w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+                                <w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+                                <w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+                                <w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+                                <w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+                                <w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+                            </w:tblBorders>
+                            <w:tblLook w:val="04A0"/>
+                        </w:tblPr>
+                        <w:tblGrid>
+                            <w:gridCol w:w="4788"/>
+                            <w:gridCol w:w="4788"/>
+                        </w:tblGrid>
+                        <w:tr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="4788" w:type="dxa"/>
+                                </w:tcPr>
+                                <w:p>
+                                    <w:r>
+                                        <w:t>R1c1</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="4788" w:type="dxa"/>
+                                </w:tcPr>
+                                <w:p>
+                                    <w:r>
+                                        <w:t>R1c2</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                        <w:tr>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="4788" w:type="dxa"/>
+                                </w:tcPr>
+                                <w:p>
+                                    <w:r>
+                                        <w:t>R2c1</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                            <w:tc>
+                                <w:tcPr>
+                                    <w:tcW w:w="4788" w:type="dxa"/>
+                                </w:tcPr>
+                                <w:p>
+                                    <w:r>
+                                        <w:t>R2c2</w:t>
+                                    </w:r>
+                                </w:p>
+                            </w:tc>
+                        </w:tr>
+                    </w:tbl>
+                    <w:p>
+                        <w:r>
                             <w:lastRenderedPageBreak/>
                             <w:t>Centre cell ? no borders.  This sets border on adjacent cells.</w:t>
                         </w:r>
