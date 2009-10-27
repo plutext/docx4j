@@ -29,6 +29,8 @@ import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
 import org.docx4j.model.properties.paragraph.PageBreakBefore;
+import org.docx4j.model.properties.paragraph.SpaceAfter;
+import org.docx4j.model.properties.paragraph.SpaceBefore;
 import org.docx4j.model.properties.paragraph.TextAlignmentVertical;
 import org.docx4j.model.properties.run.Bold;
 import org.docx4j.model.properties.run.Font;
@@ -54,6 +56,7 @@ import org.docx4j.wml.TblPr;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
+import org.docx4j.wml.PPrBase.Spacing;
 import org.w3c.dom.css.CSSValue;
 
 public class PropertyFactory {
@@ -309,8 +312,22 @@ public class PropertyFactory {
 //			dest.setShd(pPr.getShd());
 //		if (pPr.getSnapToGrid() != null)
 //			dest.setSnapToGrid(pPr.getSnapToGrid());
-//		if (pPr.getSpacing() != null)
-//			dest.setSpacing(pPr.getSpacing());
+		if (pPr.getSpacing() != null) {
+			Spacing spacing = pPr.getSpacing();
+			if (spacing.getBefore()!=null) {
+				properties.add(new SpaceBefore(spacing.getBefore()));
+			}
+			if (spacing.getAfter()!=null) {
+				properties.add(new SpaceAfter(spacing.getAfter()));				
+			}
+			// Others not implemented:
+			// "beforeLines" 
+			// beforeAutospacing" 
+			// afterLines" 
+			// afterAutospacing" 
+			// line" 
+			// lineRule" 
+		}
 //		if (pPr.getSuppressAutoHyphens() != null)
 //			dest.setSuppressAutoHyphens(pPr.getSuppressAutoHyphens());
 //		if (pPr.getSuppressLineNumbers() != null)
