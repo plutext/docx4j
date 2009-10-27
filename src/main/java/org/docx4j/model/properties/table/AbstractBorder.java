@@ -110,13 +110,39 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 		
-		// TODO
+		CTBorder border = (CTBorder)getObject();
+		
+		if (border.getVal()!=null) {
+			STBorder stBorder = border.getVal();
+			
+			System.out.println(stBorder);
+			
+			if (stBorder.equals(STBorder.NIL)
+					|| stBorder == STBorder.NONE) {
+				foElement.setAttribute(CSS_NAME__STYLE, "none");
+			} else if (stBorder==STBorder.SINGLE) {
+				// can use == or .equals
+				foElement.setAttribute(CSS_NAME__STYLE, "solid");				
+			} else if (stBorder == STBorder.DOUBLE
+					|| stBorder == STBorder.DOTTED
+					|| stBorder == STBorder.DASHED
+					|| stBorder == STBorder.OUTSET
+					|| stBorder == STBorder.INSET) {
+				foElement.setAttribute(CSS_NAME__STYLE, stBorder.value() );				
+			} else {
+				// fallback
+				log.warn("Falling back to solid");
+				foElement.setAttribute(CSS_NAME__STYLE, "solid");
+			}
+		} 
 
-//		if (((BooleanDefaultTrue)this.getObject()).isVal() ) {
-//			foElement.setAttribute(FO_NAME, "bold" );
-//		} else {
-//			foElement.setAttribute(FO_NAME, "normal" );
-//		}
+		if (border.getSz()!=null) {
+			 // eights of a point
+			foElement.setAttribute(CSS_NAME__WIDTH, 
+					UnitsOfMeasurement.eighthsToMM(
+							border.getSz().intValue() ) );
+		} 
+
 		
 	}
 

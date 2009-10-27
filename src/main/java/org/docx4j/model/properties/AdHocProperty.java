@@ -21,9 +21,6 @@ package org.docx4j.model.properties;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
-import org.w3c.dom.css.CSSPrimitiveValue;
-import org.w3c.dom.css.CSSValue;
-import org.w3c.dom.css.CSSValueList;
 
 public class AdHocProperty extends Property {
 	
@@ -31,10 +28,20 @@ public class AdHocProperty extends Property {
 	
 	private String cssName;
 	private String cssValue;
+
+	private String foName;
+	private String foValue;
 	
-	public AdHocProperty(String cssName, String cssValue) {
+//	public AdHocProperty(String cssName, String cssValue) {
+//		this.cssName  = cssName;
+//		this.cssValue = cssValue;
+//	}
+
+	public AdHocProperty(String cssName, String cssValue, String foName, String foValue) {
 		this.cssName  = cssName;
 		this.cssValue = cssValue;
+		this.foName = foName;
+		this.foValue = foValue;
 	}
 	
 	public String getCssProperty() {
@@ -42,7 +49,9 @@ public class AdHocProperty extends Property {
 	}
 	
 	public void setXslFO(Element foElement) {
-		// Not implemented		
+		if (foName!=null && foValue!=null) {
+			foElement.setAttribute(foName, foValue);
+		}
 	} 
 	
 

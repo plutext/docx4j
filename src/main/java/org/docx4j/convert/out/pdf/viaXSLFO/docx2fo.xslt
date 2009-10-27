@@ -519,5 +519,8 @@
 </xsl:template>  
 <xsl:template match="w:tcPr"/>
   
+<xsl:template match="w:sectPr">
+	<xsl:comment>sectPr ignored</xsl:comment>
+</xsl:template>
   
 </xsl:stylesheet>
