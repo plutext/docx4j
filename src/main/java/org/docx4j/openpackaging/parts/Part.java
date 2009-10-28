@@ -21,11 +21,14 @@
 
 package org.docx4j.openpackaging.parts;
 
+import java.net.URI;
+
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 
 import org.dom4j.Document;
 
@@ -56,17 +59,36 @@ public abstract class Part extends Base {
 	
 	protected Package pack;
 	
+	private Relationship sourceRelationship;
+	/**
+	 * @return the sourceRelationship
+	 */
+	public Relationship getSourceRelationship() {
+		return sourceRelationship;
+	}
+	/**
+	 * @param sourceRelationship the sourceRelationship to set
+	 */
+	public void setSourceRelationship(Relationship sourceRelationship) {
+		this.sourceRelationship = sourceRelationship;
+	}
 	
 	/** The Namespace of this Part.  
 	 *  Used when adding the Part to a relationship Part.
 	 *  TODO: set this when the Part is constructed.
 	 */
 	private String relationshipType;
-
 	public String getRelationshipType() {
-		return relationshipType;
+		if (relationshipType == null ) {
+			// 20091029, since we now have sourceRelationship,
+			// there is little point in also have relationshipType,
+			// except for a part which isn't yet connected to
+			// a package via a relationship.
+			return this.sourceRelationship.getType();
+		} else {
+			return relationshipType;
+		}
 	}
-
 	public void setRelationshipType(String relationshipType) {
 		this.relationshipType = relationshipType;
 	}
@@ -170,8 +192,44 @@ public abstract class Part extends Base {
 	public void setVersion(long version) {
 		this.version = version;
 	}
-	public long getVersion() {
+	public long getVersion() {		
 		return version;
 	}
+	
+	
+	/**
+	 * Rename this part.  Useful when merging documents, if you need to 
+	 * take action to avoid name collisions.
+	 * 
+	 * @param newName
+	 */
+	public void setPartName(PartName newName) {
+		
+		log.info("Renaming part " + this.getPartName().getName() + " to " + newName.getName() );
+		
+		// Remove this part
+		this.getPackage().getParts().remove(this.getPartName() );
+		
+		// Update the source relationship
+		// Work out new target
+		URI tobeRelativized = newName.getURI();
+		URI relativizeAgainst = this.getOwningRelationshipPart().getSourceURI();
+		log.debug("Relativising target " + tobeRelativized 
+				+ " against source " + relativizeAgainst);
+		String result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized).toString(); 
+		if (relativizeAgainst.getPath().equals("/")
+				&& result.startsWith("/")) {
+			result = result.substring(1);
+		}
+		log.debug("Result " + result); 		
+		sourceRelationship.setTarget(result);
+
+		// Set the new part name
+		this.partName = newName;
+		
+		// Add this part back to the parts collection
+		this.getPackage().getParts().put(this);
+	}
+
 
 }

@@ -255,7 +255,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @param part
 	 *            The part to add.
 	 */
-	public void loadPart(Part part) {
+	public void loadPart(Part part, Relationship sourceRelationship) {
 
 		if (part == null) {
 			log.error("Failed trying to load null part." );			
@@ -266,6 +266,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		log.info("Loading part " + partName.getName() );
 		
 		part.setOwningRelationshipPart(this);
+		part.setSourceRelationship(sourceRelationship);
 
 		// All (non-relationship) parts are stored in a collection
 		// in the package, even though conceptually this loadPart
@@ -344,7 +345,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 */
 	public Relationship addPart(Part part, boolean overwriteExistingTarget, ContentTypeManager ctm) {
 		
-		loadPart(part);
 		
 		// Now add a new relationship
 
@@ -379,6 +379,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		rel.setTarget(result.toString() );
 		//rel.setTargetMode( TargetMode.INTERNAL );
 		rel.setType( part.getRelationshipType() );
+
+		loadPart(part, rel);
 		
 		if (overwriteExistingTarget) {
 			// Is more than one rel with the same target 
@@ -399,7 +401,10 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			// In fact, it only removes the rel, it leaves the
 			// part in the Parts hashmap, but that's ok
 			// since the docx is constructed by walking the
-			// rels tree.
+			// rels tree. And loadPart above will overwrite
+			// any existing part which has the same name.
+			
+			
 			Relationship relToBeRemoved = null;
 			for (Relationship relic : jaxbElement.getRelationship() ) {
 				
@@ -698,31 +703,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public int size() {
 		return jaxbElement.getRelationship().size();
 	}
-
-	/**
-	 * Get this collection's iterator.
-	 */
-//	public Iterator<Relationship> iterator() {
-//		return relationshipsByID.values().iterator();
-//	}
-
-	/**
-	 * Get an iterator of a collection with all relationship with the specified
-	 * type.
-	 * 
-	 * @param typeFilter
-	 *            Type filter.
-	 * @return An iterator to a collection containing all relationships with the
-	 *         specified type contain in this collection.
-	 */
-//	public Iterator<Relationship> iterator(String typeFilter) {
-//		ArrayList<Relationship> retArr = new ArrayList<Relationship>();
-//		for (Relationship rel : relationshipsByID.values()) {
-//			if (rel.getRelationshipType().equals(typeFilter))
-//				retArr.add(rel);
-//		}
-//		return retArr.iterator();
-//	}
 
 	
     /**

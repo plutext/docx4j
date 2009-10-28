@@ -437,7 +437,7 @@ public class LoadFromZipNG extends Load {
 			// The constructors of other parts should take care of this...
 			part.setRelationshipType(relationshipType);
 		}
-		rp.loadPart(part);
+		rp.loadPart(part, r);
 
 		// The source Part (or Package) might have a convenience
 		// method for this
