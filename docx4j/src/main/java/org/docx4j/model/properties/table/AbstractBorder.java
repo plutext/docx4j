@@ -23,6 +23,7 @@ import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.Color;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.TblBorders;
@@ -36,8 +37,10 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 	public String CSS_NAME_BASE;  
 	public String CSS_NAME__STYLE; 
 	public String CSS_NAME__WIDTH; 
+	public String CSS_NAME__COLOR;
 	
-	public final static String FO_NAME  = "TODO"; 
+	// FO names are the same as the CSS ones.
+	//public final static String FO_NAME  = "TODO"; 
 	
 	
 	public AbstractBorder(CTBorder val, String css_name) {
@@ -49,6 +52,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		CSS_NAME_BASE = css_name;
 		CSS_NAME__STYLE = CSS_NAME_BASE + "-style";
 		CSS_NAME__WIDTH = CSS_NAME_BASE + "-width";
+		CSS_NAME__COLOR = CSS_NAME_BASE + "-color";
 	}
 	
 	public AbstractBorder(CSSValue value, String css_name) {	
@@ -97,15 +101,34 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 
 		String sz = "";
 		if (border.getSz()!=null) {
-			 // eights of a point
-			sz = composeCss(CSS_NAME__WIDTH, 
-					UnitsOfMeasurement.eighthsToMM(
-							border.getSz().intValue() ) );
+			float mm = eighthsToMM(border.getSz().intValue()); // eights of a point
+			if (mm<0.262) {
+				// At 96dpi, that's 1 pixel. Anything less WebKit won't display
+				sz = composeCss(CSS_NAME__WIDTH, "1px" );
+			} else {
+				sz = composeCss(CSS_NAME__WIDTH,
+						UnitsOfMeasurement.format2DP.format(mm) + "mm" );
+			}
 		} 
 		
-		return val + sz; 
+		String color = "";
+		// IE8 needs color to be specified.  Other browsers don't care.
+		if (border.getColor()!=null) {
+//			if (border.getColor().equals("000000")) {
+//				return composeCss(CSS_NAME__COLOR, "#" + border.getColor() );
+//			}
+			color = composeCss(CSS_NAME__COLOR, "#" + border.getColor() );			
+		}
+		
+		return val + sz + color; 
 	}
 
+	public float eighthsToMM(int eighths ) {		
+		// 72 points per inch
+		float inches = eighths/(8*72.00f);
+		return inches/0.0394f;
+	}
+		
 
 	@Override
 	public void setXslFO(Element foElement) {
@@ -138,11 +161,14 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 
 		if (border.getSz()!=null) {
 			 // eights of a point
+			float mm = eighthsToMM(border.getSz().intValue()); // eights of a point
 			foElement.setAttribute(CSS_NAME__WIDTH, 
-					UnitsOfMeasurement.eighthsToMM(
-							border.getSz().intValue() ) );
+					UnitsOfMeasurement.format2DP.format(mm) + "mm" );
 		} 
 
+		if (border.getColor()!=null) {
+			foElement.setAttribute(CSS_NAME__COLOR, "#" + border.getColor() );			
+		}
 		
 	}
 

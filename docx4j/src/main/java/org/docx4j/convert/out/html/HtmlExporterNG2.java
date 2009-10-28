@@ -270,13 +270,6 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	System.out.println("TABLES");
     	Tbl tbl;
 
-		PropertyResolver pr;
-		try {
-			pr = new PropertyResolver(wmlPackage);
-		} catch (Docx4JException e) {
-	    	log.error("docx4j error", e);
-	    	return e.getMessage();
-		} 
 		
     	StringBuffer result = new StringBuffer();		
     	
@@ -295,53 +288,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 					jaxb = u.unmarshal(n);
     				tbl =  (Tbl)jaxb;
     				
-    				
-    				Style s = pr.getEffectiveTableStyle(tbl.getTblPr() );
-    				
-    				result.append("#" + TableWriter.getId(idx) + " td { ");
-    	        	List<Property> properties =  new ArrayList<Property>();
-    	        	if (s.getTblPr()!=null
-    	        			&& s.getTblPr().getTblBorders()!=null ) {
-    		    		TblBorders tblBorders = s.getTblPr().getTblBorders();
-    		    		if (tblBorders.getInsideH()!=null) {
-    		    			if (tblBorders.getInsideH().getVal()==STBorder.NONE
-    		    					|| tblBorders.getInsideH().getVal()==STBorder.NIL
-    		    					|| tblBorders.getInsideH().getSz()==BigInteger.ZERO ) {
-    		    				properties.add( new AdHocProperty("border-top-style", "none", null, null));
-    		    				properties.add( new AdHocProperty("border-top-width", "0mm", null, null));
-    		    				properties.add( new AdHocProperty("border-bottom-style", "none", null, null));
-    		    				properties.add( new AdHocProperty("border-bottom-width", "0mm", null, null));
-    		    			} else {
-    		    				properties.add( new BorderTop(tblBorders.getTop() ));
-    		    				properties.add( new BorderBottom(tblBorders.getBottom() ));
-    		    			}
-    		    		}
-    		    		if (tblBorders.getInsideV()!=null) { 
-    		    			if (tblBorders.getInsideV().getVal()==STBorder.NONE
-    		    					|| tblBorders.getInsideV().getVal()==STBorder.NIL
-    		    					|| tblBorders.getInsideV().getSz()==BigInteger.ZERO ) {
-    		    				properties.add( new AdHocProperty("border-left-style", "none", null, null));
-    		    				properties.add( new AdHocProperty("border-left-width", "0mm", null, null));
-    		    				properties.add( new AdHocProperty("border-right-style", "none", null, null));
-    		    				properties.add( new AdHocProperty("border-right-width", "0mm", null, null));
-    		    			} else {
-    		    				properties.add( new BorderRight(tblBorders.getRight() ));
-    		    				properties.add( new BorderLeft(tblBorders.getLeft() ));
-    		    			}
-    		    		}
-    	        	}
-    	        	if (s.getTcPr()!=null ) {
-    	        		PropertyFactory.createProperties(properties, s.getTcPr() );
-    	        	}
-    				// Ensure empty cells have a sensible height
-    	        	properties.add(new AdHocProperty("height", "5mm", null, null));
-    	        	
-    	    		for( Property p :  properties ) {
-    	    			if (p!=null) {
-    	    				result.append(p.getCssProperty());
-    	    			}
-    	    		}
-    	    		result.append("}\n");
+    				result.append(getCssForTableCells(wmlPackage, tbl,  idx) );
     				
 				} catch (JAXBException e1) {
     		    	log.error("JAXB error", e1);
@@ -360,12 +307,81 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	
 		return result.toString();
     }
+    
+    
+    public static String getCssForTableCells(WordprocessingMLPackage wmlPackage, 
+    		Tbl tbl, int idx) {
+    	
+    	StringBuffer result = new StringBuffer();		
+		PropertyResolver pr;
+		try {
+			pr = new PropertyResolver(wmlPackage);
+		} catch (Docx4JException e) {
+	    	log.error("docx4j error", e);
+	    	return e.getMessage();
+		} 
+		Style s = pr.getEffectiveTableStyle(tbl.getTblPr() );
+		
+		result.append("#" + TableWriter.getId(idx) + " td { ");
+    	List<Property> properties =  new ArrayList<Property>();
+    	if (s.getTblPr()!=null
+    			&& s.getTblPr().getTblBorders()!=null ) {
+    		TblBorders tblBorders = s.getTblPr().getTblBorders();
+    		if (tblBorders.getInsideH()!=null) {
+    			if (tblBorders.getInsideH().getVal()==STBorder.NONE
+    					|| tblBorders.getInsideH().getVal()==STBorder.NIL
+    					|| tblBorders.getInsideH().getSz()==BigInteger.ZERO ) {
+    				properties.add( new AdHocProperty("border-top-style", "none", null, null));
+    				properties.add( new AdHocProperty("border-top-width", "0mm", null, null));
+    				properties.add( new AdHocProperty("border-bottom-style", "none", null, null));
+    				properties.add( new AdHocProperty("border-bottom-width", "0mm", null, null));
+    			} else {
+    				properties.add( new BorderTop(tblBorders.getTop() ));
+    				properties.add( new BorderBottom(tblBorders.getBottom() ));
+    			}
+    		}
+    		if (tblBorders.getInsideV()!=null) { 
+    			if (tblBorders.getInsideV().getVal()==STBorder.NONE
+    					|| tblBorders.getInsideV().getVal()==STBorder.NIL
+    					|| tblBorders.getInsideV().getSz()==BigInteger.ZERO ) {
+    				properties.add( new AdHocProperty("border-left-style", "none", null, null));
+    				properties.add( new AdHocProperty("border-left-width", "0mm", null, null));
+    				properties.add( new AdHocProperty("border-right-style", "none", null, null));
+    				properties.add( new AdHocProperty("border-right-width", "0mm", null, null));
+    			} else {
+    				properties.add( new BorderRight(tblBorders.getRight() ));
+    				properties.add( new BorderLeft(tblBorders.getLeft() ));
+    			}
+    		}
+    	}
+    	if (s.getTcPr()!=null ) {
+    		PropertyFactory.createProperties(properties, s.getTcPr() );
+    	}
+		// Ensure empty cells have a sensible height
+    	// TODO - this is no good with IE8, which doesn't treat this 
+    	// as a minimum; it won't resize if there is more :-(
+    	properties.add(new AdHocProperty("height", "5mm", null, null));
+    	
+    	
+		for( Property p :  properties ) {
+			if (p!=null) {
+				result.append(p.getCssProperty());
+			}
+		}
+		result.append("}\n");
+		return result.toString();
+    	
+    	
+    }
+    
+    
     public static DocumentFragment createBlockForPPr( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults ) {
     	
-    	StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
+
+		StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	

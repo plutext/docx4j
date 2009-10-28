@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 public class UnitsOfMeasurement {
 	private final static Logger log = Logger.getLogger(UnitsOfMeasurement.class);
 	
-	private final static DecimalFormat format2DP;
+	public final static DecimalFormat format2DP;
 	static {
 		format2DP = new DecimalFormat("##.##");
 	}
@@ -72,15 +72,6 @@ public class UnitsOfMeasurement {
 			log.debug(leftL + " twips -> " + mm + "mm ("+ format2DP.format(inches) + "inches)");
 			return Math.round(mm) + "mm";
 		} 							
-	}
-	
-	public static String eighthsToMM(int eighths ) {
-		
-		// 72 points per inch
-		float inches = eighths/(8*72.00f);
-		float mm = inches/0.0394f;
-		return format2DP.format(mm) + "mm";
-		
 	}
 	
 	public static String rgbTripleToHex(float red, float green, float blue) {
