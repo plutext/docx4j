@@ -308,7 +308,7 @@ public class FlatOpcXmlImporter  {
 		String relationshipType = r.getType();		
 			
 		Part part = getRawPart(ctm, resolvedPartUri);
-		rp.loadPart(part);
+		rp.loadPart(part, r);
 
 		// The source Part (or Package) might have a convenience
 		// method for this
