@@ -114,9 +114,9 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		String color = "";
 		// IE8 needs color to be specified.  Other browsers don't care.
 		if (border.getColor()!=null) {
-//			if (border.getColor().equals("000000")) {
-//				return composeCss(CSS_NAME__COLOR, "#" + border.getColor() );
-//			}
+			if (border.getColor().equals("auto")) {
+				return composeCss(CSS_NAME__COLOR, "#000000"  );
+			}
 			color = composeCss(CSS_NAME__COLOR, "#" + border.getColor() );			
 		}
 		
