@@ -23,6 +23,7 @@ package org.docx4j.model.structure;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.Document;
@@ -50,6 +51,8 @@ import org.docx4j.wml.SectPr;
  */
 public class DocumentModel {
 	
+	protected static Logger log = Logger.getLogger(DocumentModel.class);		
+	
 	private List<SectionWrapper> sections = new ArrayList<SectionWrapper>(); 
 	
 	// Consider whether this class should store a reference to the
@@ -65,10 +68,24 @@ public class DocumentModel {
 	public DocumentModel(WordprocessingMLPackage wordMLPackage) {
 		
 		RelationshipsPart rels = wordMLPackage.getMainDocumentPart().getRelationshipsPart();
-		
-		// For now, we only capture the document level one
-		
+				
 		Document doc = (Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
+		
+		for (Object o : doc.getBody().getEGBlockLevelElts() ) {
+			if (o instanceof org.docx4j.wml.P) {
+				if (((org.docx4j.wml.P)o).getPPr() != null ) {
+					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
+					if (ppr.getSectPr()!=null) {
+						sections.add(
+								new SectionWrapper(
+										ppr.getSectPr(), rels) );
+						log.debug( "registered sectpr");						
+					}
+				}
+			}
+		}
+		
+		
 		SectPr sectPr = doc.getBody().getSectPr();	
 		// There might not be a sectPr, but we still add a SectionWrapper to
 		// represent the body.

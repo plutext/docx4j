@@ -123,6 +123,9 @@ public class OpenMainDocumentAndTraverse {
 //		DocumentSettingsPart dsp = (DocumentSettingsPart)documentPart.getRelationshipsPart().getPart(r);
 //		System.out.println(dsp.getJaxbElement().getClass().getName() );
 		
+		// Look at our document model
+		System.out.println("Registered " + wordMLPackage.getDocumentModel().getSections().size() + " sections");
+		
 				
 		// Save it
 		
