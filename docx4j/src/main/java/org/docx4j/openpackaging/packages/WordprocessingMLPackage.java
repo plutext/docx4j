@@ -118,8 +118,12 @@ public class WordprocessingMLPackage extends Package {
 	private HeaderFooterPolicy headerFooterPolicy;	
 	@Deprecated	
 	public HeaderFooterPolicy getHeaderFooterPolicy() {
-		
-		return getDocumentModel().getSections().get(0).getHeaderFooterPolicy();
+		int last = getDocumentModel().getSections().size();
+		if (last>0) {
+			return getDocumentModel().getSections().get(last).getHeaderFooterPolicy();
+		} else {
+			return null;
+		}
 	}
 	
 	/**
