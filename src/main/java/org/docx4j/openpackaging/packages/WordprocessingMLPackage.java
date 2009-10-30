@@ -120,7 +120,7 @@ public class WordprocessingMLPackage extends Package {
 	public HeaderFooterPolicy getHeaderFooterPolicy() {
 		int last = getDocumentModel().getSections().size();
 		if (last>0) {
-			return getDocumentModel().getSections().get(last).getHeaderFooterPolicy();
+			return getDocumentModel().getSections().get(last-1).getHeaderFooterPolicy();
 		} else {
 			return null;
 		}
