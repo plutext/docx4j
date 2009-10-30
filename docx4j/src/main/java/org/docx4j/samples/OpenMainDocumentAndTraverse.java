@@ -34,7 +34,10 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 
 
@@ -50,9 +53,10 @@ public class OpenMainDocumentAndTraverse {
 		//String inputfilepath = "/tmp/Default TOC with 3 levels.docx";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/jbtemplate.docx";
 		//String inputfilepath = "/home/dev/s.docx";
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/math.docx";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/table-spans.xml";
+		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/table-spans.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/dqkit-sectpr.xml";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
@@ -111,6 +115,14 @@ public class OpenMainDocumentAndTraverse {
 			
 			//walkJAXBElements(comments.getComment());		
 		}
+		
+//		// Get the document settings
+//		System.out.println(documentPart.getDocumentSettingsPart().getJaxbElement().getClass().getName() );
+//		
+//		Relationship r = documentPart.getRelationshipsPart().getRelationshipByType(Namespaces.SETTINGS);
+//		DocumentSettingsPart dsp = (DocumentSettingsPart)documentPart.getRelationshipsPart().getPart(r);
+//		System.out.println(dsp.getJaxbElement().getClass().getName() );
+		
 				
 		// Save it
 		
@@ -135,12 +147,18 @@ public class OpenMainDocumentAndTraverse {
 			} else if (o instanceof org.docx4j.wml.P) {
 				System.out.println( "Paragraph object: ");
 				
-				if (((org.docx4j.wml.P)o).getPPr() != null
-						&& ((org.docx4j.wml.P)o).getPPr().getRPr() != null
-						&& ((org.docx4j.wml.P)o).getPPr().getRPr().getB() !=null) {
-					System.out.println( "For a ParaRPr bold!");
+				if (((org.docx4j.wml.P)o).getPPr() != null ) {
+					
+					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
+					if (ppr.getSectPr()!=null) {
+						System.out.println( "paragraph contains sectpr");						
+					}
+					
+					if ( ppr.getRPr() != null
+						&& ppr.getRPr().getB() !=null ) {
+						System.out.println( "For a ParaRPr bold!");
+					}
 				}
-				
 				
 				walkList( ((org.docx4j.wml.P)o).getParagraphContent());
 			}
