@@ -167,7 +167,11 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		} 
 
 		if (border.getColor()!=null) {
-			foElement.setAttribute(CSS_NAME__COLOR, "#" + border.getColor() );			
+			if (border.getColor().equals("auto")) {
+				foElement.setAttribute(CSS_NAME__COLOR, "#000000"  );
+			} else {
+				foElement.setAttribute(CSS_NAME__COLOR, "#" + border.getColor() );
+			}
 		}
 		
 	}
