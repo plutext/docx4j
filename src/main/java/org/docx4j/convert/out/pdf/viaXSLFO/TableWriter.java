@@ -98,7 +98,7 @@ public class TableWriter extends ModelConverter {
     int cols = table.getColCount();
     int tWidth = 0;
     if (table.getTblGrid()!=null) {
-    	int i = 0;
+    	int i = 1; // number from 1, or get FOUserAgent: Invalid property value encountered in column-number="1": org.apache.fop.fo.expr.PropertyException: fo:table-column overlaps in column 1. 
     	for( TblGridCol gridCol : table.getTblGrid().getGridCol() ) {   
 	        String s = String.valueOf(i);
 	        Element foTableColumn = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
@@ -109,14 +109,14 @@ public class TableWriter extends ModelConverter {
 	        int width = gridCol.getW().intValue();	 
 	        tWidth += width;
 	        
-	        foTableColumn.setAttribute("width", UnitsOfMeasurement.twipToBest(width) );
+	        foTableColumn.setAttribute("column-width", UnitsOfMeasurement.twipToBest(width) );
 	        //foTableColumn.setAttribute("colname", table.getColName(i));
 	        i++;
     	}
 		foTable.setAttribute("width", UnitsOfMeasurement.twipToBest(tWidth) );		
     	
       } else {
-    	    for (int i = 0; i < cols; i++) {
+    	    for (int i = 1; i <= cols; i++) {
     	        String s = String.valueOf(i);
     	        Element foTableColumn = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
     	        		"fo:table-column");
@@ -125,9 +125,15 @@ public class TableWriter extends ModelConverter {
     	    }    	  
       }
 	    
-	Node foTableBody = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
-	"fo:table-body");			
+	Element foTableBody = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
+	"fo:table-body");	
 	foTable.appendChild(foTableBody);
+	// table's start indent is inherited by tc (in fop at least)
+	// so reset here, so a sane value is inherited.
+	// TODO: find and use cell margin (or whatever) setting
+	foTableBody.setAttribute("start-indent", "3mm" );		
+	
+	
     
     for (List<Cell> rows : table.getCells()) {
 			// Element row = doc.createElement("tr");
