@@ -128,10 +128,12 @@ public class TableWriter extends ModelConverter {
 	Element foTableBody = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
 	"fo:table-body");	
 	foTable.appendChild(foTableBody);
-	// table's start indent is inherited by tc (in fop at least)
+	// table's start indent is inherited by tc 
+	// see http://wiki.apache.org/xmlgraphics-fop/IndentInheritance
 	// so reset here, so a sane value is inherited.
 	// TODO: find and use cell margin (or whatever) setting
 	foTableBody.setAttribute("start-indent", "3mm" );		
+	foTableBody.setAttribute("end-indent", "3mm" );		
 	
 	
     
