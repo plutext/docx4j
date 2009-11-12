@@ -110,6 +110,8 @@ import org.docx4j.wml.DocDefaults;
 	 docx4all does not use this; its org.docx4all.swing.text.StyleSheet
 	 uses MutableAttributeSet's resolve function to climb the style hierarchy.
 	   
+	 This is most relevant to XSLFO, which unlike CSS, doesn't have a concept of 
+	 style. HTML NG2 uses CSS inheritance, and so doesn't need it.
 
  * @author jharrop
  *
@@ -186,19 +188,19 @@ public class PropertyResolver {
 			// (these are present in docs created from Word, and
 			//  in our default styles, so maybe the user created it using 
 			//  some 3rd party program?)
-			docDefaults = (DocDefaults)XmlUtils.unmarshalString(docDefaultsString);
+			docDefaults = (DocDefaults)XmlUtils.unmarshalString(StyleDefinitionsPart.docDefaultsString);
 		} 
 		
 		// Setup documentDefaultPPr
 		if (docDefaults.getPPrDefault()==null) {
-			documentDefaultPPr = (PPr)XmlUtils.unmarshalString(pPrDefaultsString);
+			documentDefaultPPr = (PPr)XmlUtils.unmarshalString(StyleDefinitionsPart.pPrDefaultsString);
 		} else {
 			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
 		}
 
 		// Setup documentDefaultRPr
 		if (docDefaults.getRPrDefault()==null) {
-			documentDefaultRPr = (RPr)XmlUtils.unmarshalString(rPrDefaultsString);
+			documentDefaultRPr = (RPr)XmlUtils.unmarshalString(StyleDefinitionsPart.rPrDefaultsString);
 		} else {
 			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
 		}
@@ -1145,26 +1147,6 @@ public class PropertyResolver {
 			}						
 		} 
 	}
-	final static String wNamespaceDec = " xmlns:w=\"" + Namespaces.NS_WORD12 + "\""; 
-
-	final static String rPrDefaultsString = "<w:rPr" + wNamespaceDec + ">"
-		// Word 2007 still uses Times New Roman if there is no theme part, and we'd like to replicate that 
-        // + "<w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\" />"
-        + "<w:sz w:val=\"22\" />"
-        + "<w:szCs w:val=\"22\" />"
-        + "<w:lang w:val=\"en-US\" w:eastAsia=\"en-US\" w:bidi=\"ar-SA\" />"
-      + "</w:rPr>";
-	final static String pPrDefaultsString = "<w:pPr" + wNamespaceDec + ">"
-	        + "<w:ind w:left=\"86\" w:right=\"86\" />"
-	      + "</w:pPr>";
-	final static String docDefaultsString = "<w:docDefaults" + wNamespaceDec + ">"
-	    + "<w:rPrDefault>"
-	    + 	rPrDefaultsString
-	    + "</w:rPrDefault>"
-	    + "<w:pPrDefault>"
-	    + 	pPrDefaultsString
-	    + "</w:pPrDefault>"
-	  + "</w:docDefaults>";
 	
 	
     public boolean activateStyle( String styleId  ) {
