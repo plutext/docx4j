@@ -27,12 +27,18 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.DocDefaults;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.RPr;
+import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.Style.BasedOn;
 
 
 public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
@@ -151,7 +157,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 				//is = getResource("styles.xml");
 				
 				// Works in Eclipse - not absence of leading '/'
-				is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/styles.xml");
+				is = org.docx4j.utils.ResourceUtils.getResource(
+						"org/docx4j/openpackaging/parts/WordprocessingML/styles.xml");
 				
 					// styles.xml defines a small subset of common styles
 					// (it is a much smaller set of styles than KnownStyles.xml)
@@ -171,7 +178,8 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     	
 		java.io.InputStream is = null;
 		try {
-			is = org.docx4j.utils.ResourceUtils.getResource("org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml");						
+			is = org.docx4j.utils.ResourceUtils.getResource(
+					"org/docx4j/openpackaging/parts/WordprocessingML/KnownStyles.xml");						
 			
 			JAXBContext jc = Context.jc;
 			Unmarshaller u = jc.createUnmarshaller();			
@@ -200,6 +208,109 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 		return knownStyles;
 	}
     
+	/*
+	 * Manufacture styles from the following, so they can be used as the 
+	 * roots of our style trees.
+	 * 
+	 * 	<w:docDefaults>
+			<w:rPrDefault>
+				<w:rPr>
+					<w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi" />
+					<w:sz w:val="22" />
+					<w:szCs w:val="22" />
+					<w:lang w:val="en-US" w:eastAsia="en-US" w:bidi="ar-SA" />
+				</w:rPr>
+			</w:rPrDefault>
+			<w:pPrDefault>
+				<w:pPr>
+					<w:spacing w:after="200" w:line="276" w:lineRule="auto" />
+				</w:pPr>
+			</w:pPrDefault>
+		</w:docDefaults>
+
+	 */
+    protected void createVirtualStylesForDocDefaults() {
+    	
+    	Style pDefault = Context.getWmlObjectFactory().createStyle();
+    	
+    	String ROOT_NAME = "DocDefaults";
+    	
+    	pDefault.setStyleId(ROOT_NAME);
+    	pDefault.setType("paragraph");
+    			
+		// Initialise docDefaults		
+		DocDefaults docDefaults = this.jaxbElement.getDocDefaults(); 		
+		
+		if (docDefaults==null) {
+			// The only way this can happen is if the 
+			// styles definition part is missing the docDefaults element
+			// (these are present in docs created from Word, and
+			//  in our default styles, so maybe the user created it using 
+			//  some 3rd party program?)
+			docDefaults = (DocDefaults)XmlUtils.unmarshalString(docDefaultsString);
+		} 
+		
+		// Setup documentDefaultPPr
+		PPr documentDefaultPPr;
+		if (docDefaults.getPPrDefault()==null) {			
+			documentDefaultPPr = (PPr)XmlUtils.unmarshalString(pPrDefaultsString);
+		} else {
+			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
+		}
+
+		// Setup documentDefaultRPr
+		RPr documentDefaultRPr;
+		if (docDefaults.getRPrDefault()==null) {
+			documentDefaultRPr = (RPr)XmlUtils.unmarshalString(rPrDefaultsString);
+		} else {
+			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
+		}
+    	
+		pDefault.setPPr(documentDefaultPPr);
+		pDefault.setRPr(documentDefaultRPr);
+		
+		// Now point Normal at this
+		Style normal = getStyleById("Normal");		
+		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
+		based.setVal(ROOT_NAME);		
+		normal.setBasedOn(based);
+		
+		// Finally, add it to styles
+		this.jaxbElement.getStyle().add(pDefault);
+    	
+    }
+    
+    private Style getStyleById(String id) {
+    	
+		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+			if( s.getStyleId().equals(id) ) {
+				return s;
+			}
+		}
+    	return null;
+    }
+    
+    
+	final static String wNamespaceDec = " xmlns:w=\"" + Namespaces.NS_WORD12 + "\""; 
+
+	public final static String rPrDefaultsString = "<w:rPr" + wNamespaceDec + ">"
+		// Word 2007 still uses Times New Roman if there is no theme part, and we'd like to replicate that 
+        // + "<w:rFonts w:asciiTheme=\"minorHAnsi\" w:eastAsiaTheme=\"minorHAnsi\" w:hAnsiTheme=\"minorHAnsi\" w:cstheme=\"minorBidi\" />"
+        + "<w:sz w:val=\"22\" />"
+        + "<w:szCs w:val=\"22\" />"
+        + "<w:lang w:val=\"en-US\" w:eastAsia=\"en-US\" w:bidi=\"ar-SA\" />"
+      + "</w:rPr>";
+	public final static String pPrDefaultsString = "<w:pPr" + wNamespaceDec + ">"
+	        + "<w:spacing w:after=\"200\" w:line=\"276\" w:lineRule=\"auto\" />"
+	      + "</w:pPr>";
+	public final static String docDefaultsString = "<w:docDefaults" + wNamespaceDec + ">"
+	    + "<w:rPrDefault>"
+	    + 	rPrDefaultsString
+	    + "</w:rPrDefault>"
+	    + "<w:pPrDefault>"
+	    + 	pPrDefaultsString
+	    + "</w:pPrDefault>"
+	  + "</w:docDefaults>";
     
     
 //	public static void main(String[] args) throws Exception {

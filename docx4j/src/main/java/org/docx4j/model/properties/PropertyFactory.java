@@ -28,6 +28,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
+import org.docx4j.model.properties.paragraph.LineSpacing;
 import org.docx4j.model.properties.paragraph.PageBreakBefore;
 import org.docx4j.model.properties.paragraph.SpaceAfter;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
@@ -323,6 +324,9 @@ public class PropertyFactory {
 			}
 			if (spacing.getAfter()!=null) {
 				properties.add(new SpaceAfter(spacing.getAfter()));				
+			}
+			if (spacing.getLine()!=null) {
+				properties.add(new LineSpacing(spacing.getLine()));								
 			}
 			// Others not implemented:
 			// "beforeLines" 

@@ -106,7 +106,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 //	    	}
 //	    	if (!stylesInUse.contains("DefaultParagraphFont") ) {
 //	    		stylesInUse.add("DefaultParagraphFont");
-//	    	}		    
+//	    	}	
+		    
+		    getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
 	    	
 			Map<String, Style> allStyles = new HashMap<String, Style>();
 			Styles styles = getStyleDefinitionsPart().getJaxbElement();		
