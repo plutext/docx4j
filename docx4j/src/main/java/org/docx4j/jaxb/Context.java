@@ -23,6 +23,8 @@ package org.docx4j.jaxb;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
+import org.apache.log4j.Logger;
+
 public class Context {
 	
 	public static JAXBContext jc;
@@ -33,6 +35,8 @@ public class Context {
 	public static JAXBContext jcXmlPackage;
 	public static JAXBContext jcRelationships;
 	public static JAXBContext jcCustomXmlProperties;
+	
+	private static Logger log = Logger.getLogger(Context.class);
 	
 	static {
 
@@ -58,6 +62,7 @@ public class Context {
 			// so explicitly specify our class loader.
 			Context tmp = new Context();
 			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
+			//log.info("\n\nClassloader: " + classLoader.toString() );			
 			
 			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math",classLoader );
 			jcThemePart = JAXBContext.newInstance("org.docx4j.dml",classLoader );

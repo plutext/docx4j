@@ -25,7 +25,7 @@ import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.ValidationEventLocator;
 
 import org.apache.log4j.Logger;
-import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
+
 
 public class JaxbValidationEventHandler implements 
 ValidationEventHandler{
