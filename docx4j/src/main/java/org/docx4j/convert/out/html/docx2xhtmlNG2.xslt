@@ -245,10 +245,14 @@
 		
   </xsl:template>
 
-  <xsl:template match="w:t">
-  	<xsl:value-of select="."/>
+  <xsl:template match="w:t[@xml:space='preserve']">
+  	<span style="white-space:pre-wrap;"><xsl:value-of select="."/></span>
+  	<!--  Good for FF3, and WebKit; not honoured by IE7 though.  Yawn. -->
   </xsl:template>  	
 
+  <xsl:template match="w:t">  	
+  	<xsl:value-of select="."/>
+  </xsl:template>  	
   
   <xsl:template match="w:sdt">
   	<xsl:apply-templates select="w:sdtContent/*"/>
