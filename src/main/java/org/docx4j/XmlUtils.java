@@ -74,6 +74,7 @@ public class XmlUtils {
 	private static Logger log = Logger.getLogger(XmlUtils.class);	
 		
 	/** Make a dom4j element into something JAXB can unmarshall */
+	@Deprecated
 	private static java.io.InputStream getInputStreamFromDom4jEl(Element el) {
 		
 		// Write it to an output stream
@@ -242,32 +243,39 @@ public class XmlUtils {
 		return o;
 	}
 
+	/** Unmarshal an InputStream as an object in the package org.docx4j.jaxb.document.
+	 *  Note: you should ensure you include a namespace declaration for w: and
+	 *  any other namespace in the xml string.
+	 *  Also, the object you are attempting to unmarshall to might need to
+	 *  have an @XmlRootElement annotation for things to work.  */ 
+	public static Object unmarshal(InputStream is) throws JAXBException {	
+		return unmarshal(is, Context.jc);
+	}
+
+	public static Object unmarshal(InputStream is, JAXBContext jc) throws JAXBException {
+		Object o = null;
+		Unmarshaller u = jc.createUnmarshaller();						
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+		o = u.unmarshal( is );
+		return o;
+	}
+	
+	
 	/** Unmarshal a String as an object in the package org.docx4j.jaxb.document.
 	 *  Note: you should ensure you include a namespace declaration for w: and
 	 *  any other namespace in the xml string.
 	 *  Also, the object you are attempting to unmarshall to might need to
 	 *  have an @XmlRootElement annotation for things to work.  */ 
-	public static Object unmarshalString(String str) {		
+	public static Object unmarshalString(String str) throws JAXBException {		
 		return unmarshalString(str, Context.jc);
 	}
 
-	public static Object unmarshalString(String str, JAXBContext jc) {
-		Object o = null;
-		try {				
-			
-			log.debug("Unmarshalling '" + str + "'");
-			
-			Unmarshaller u = jc.createUnmarshaller();
-						
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			o = u.unmarshal( new javax.xml.transform.stream.StreamSource(
-					new java.io.StringReader(str)) );
-
-		} catch (Exception ex) {
-			log.error("Caught and ignored: \n" + ex);
-		}		
-		return o;
+	public static Object unmarshalString(String str, JAXBContext jc) throws JAXBException {
+		log.debug("Unmarshalling '" + str + "'");			
+		Unmarshaller u = jc.createUnmarshaller();						
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+		return u.unmarshal( new javax.xml.transform.stream.StreamSource(
+				new java.io.StringReader(str)) );
 	}
 
 	public static Object unmarshal(Node n) throws JAXBException {
@@ -651,12 +659,13 @@ public class XmlUtils {
 		 * @param mappings
 		 * @return
 		 */
-    public static Object unmarshallFromTemplate(String wmlTemplateString, java.util.HashMap<String, String> mappings) {
+    public static Object unmarshallFromTemplate(String wmlTemplateString, 
+    		java.util.HashMap<String, String> mappings) throws JAXBException {
         return unmarshallFromTemplate(wmlTemplateString, mappings, Context.jc);
      }
 
     public static Object unmarshallFromTemplate(String wmlTemplateString, 
-    		java.util.HashMap<String, String> mappings, JAXBContext jc) {
+    		java.util.HashMap<String, String> mappings, JAXBContext jc) throws JAXBException {
         String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
         log.debug("Results of substitution: " + wmlString);
         return unmarshalString(wmlString, jc);

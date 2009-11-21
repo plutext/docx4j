@@ -333,7 +333,6 @@ public class PropertyFactory {
 			// beforeAutospacing" 
 			// afterLines" 
 			// afterAutospacing" 
-			// line" 
 			// lineRule" 
 		}
 //		if (pPr.getSuppressAutoHyphens() != null)

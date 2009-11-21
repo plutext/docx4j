@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Stack;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlElementRef;
 
 import org.apache.log4j.Logger;
@@ -180,31 +181,49 @@ public class PropertyResolver {
 		initialiseLiveStyles();		
 		
 		// Initialise docDefaults		
-		docDefaults = styles.getDocDefaults(); 		
-		
-		if (docDefaults==null) {
-			// The only way this can happen is if the 
+		docDefaults = styles.getDocDefaults();
+
+		if (docDefaults == null) {
+			// The only way this can happen is if the
 			// styles definition part is missing the docDefaults element
 			// (these are present in docs created from Word, and
-			//  in our default styles, so maybe the user created it using 
-			//  some 3rd party program?)
-			docDefaults = (DocDefaults)XmlUtils.unmarshalString(StyleDefinitionsPart.docDefaultsString);
-		} 
-		
+			// in our default styles, so maybe the user created it using
+			// some 3rd party program?)
+			try {
+				docDefaults = (DocDefaults) XmlUtils
+						.unmarshalString(StyleDefinitionsPart.docDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ StyleDefinitionsPart.docDefaultsString, e);
+			}
+		}
+
 		// Setup documentDefaultPPr
-		if (docDefaults.getPPrDefault()==null) {
-			documentDefaultPPr = (PPr)XmlUtils.unmarshalString(StyleDefinitionsPart.pPrDefaultsString);
+		if (docDefaults.getPPrDefault() == null) {
+			try {
+				documentDefaultPPr = (PPr) XmlUtils
+						.unmarshalString(StyleDefinitionsPart.pPrDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ StyleDefinitionsPart.pPrDefaultsString, e);
+			}
 		} else {
 			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
 		}
 
 		// Setup documentDefaultRPr
-		if (docDefaults.getRPrDefault()==null) {
-			documentDefaultRPr = (RPr)XmlUtils.unmarshalString(StyleDefinitionsPart.rPrDefaultsString);
+		if (docDefaults.getRPrDefault() == null) {
+			try {
+				documentDefaultRPr = (RPr) XmlUtils
+						.unmarshalString(StyleDefinitionsPart.rPrDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ StyleDefinitionsPart.rPrDefaultsString, e);
+			}
 		} else {
 			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
 		}
-		
+
 		addNormalToResolvedStylePPrComponent();
 		addDefaultParagraphFontToResolvedStyleRPrComponent();
 	}

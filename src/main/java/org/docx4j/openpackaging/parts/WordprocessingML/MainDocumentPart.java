@@ -108,7 +108,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 //	    		stylesInUse.add("DefaultParagraphFont");
 //	    	}	
 		    
-		    getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
+		    try {
+				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
+			} catch (Docx4JException e) {
+				// Shouldn't happen, so catch here
+				log.error(e);
+			}
 	    	
 			Map<String, Style> allStyles = new HashMap<String, Style>();
 			Styles styles = getStyleDefinitionsPart().getJaxbElement();		
@@ -621,7 +626,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	 * @param simpleText
 	 * @return
 	 */
-	public org.docx4j.wml.P addParagraph(String pXml) {
+	public org.docx4j.wml.P addParagraph(String pXml) throws JAXBException {
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();

@@ -28,6 +28,7 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
@@ -51,8 +52,10 @@ public class CreatePdf {
 	    	
 	    	String inputfilepath = null;
 	    	
+			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-features.xml";
+	    	
 //			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";	    	
+//			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";				 
 //			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";	    	
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
@@ -108,14 +111,18 @@ public class CreatePdf {
 			
 			/* Choose which of the three methods you want to use...
 			 * 
-			 * .. viaHTML uses docX2HTML.xslt and xhtmlrenderer, 
+			 * .. viaHTML uses the old docX2HTML.xslt and xhtmlrenderer, 
 			 *    and supports numbering, images,
 			 *    and tables, but is pretty hard to understand
 			 *    
+			 *    It is a trivial change to instead use 
+			 *    HTMLExporterNG, but that should produce
+			 *    the same output as viaXSLFO, so we don't
+			 *    do that. 
+			 *    
 			 * .. viaXSLFO uses docx2fo.xslt and FOP.  It is
-			 *    rudimentary right now, but does support
-			 *    headers/footers, images and fairly basic tables
-			 *    (but supporting merged cells)
+			 *    coming along, with support for
+			 *    headers/footers, images and tables
 			 *    
 			 * .. viaItext - for developers who don't like xslt
 			 *    at all! Or want to use iText's features..
@@ -181,7 +188,7 @@ public class CreatePdf {
 	    	
 	    }
 	    
-	    static void addObject(MainDocumentPart wordDocumentPart, String template, String fontName ) {
+	    static void addObject(MainDocumentPart wordDocumentPart, String template, String fontName ) throws JAXBException {
 	    	
 		    HashMap substitution = new HashMap();
 		    substitution.put("fontname", fontName);

@@ -29,6 +29,7 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
@@ -229,7 +230,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 		</w:docDefaults>
 
 	 */
-    protected void createVirtualStylesForDocDefaults() {
+    protected void createVirtualStylesForDocDefaults() throws Docx4JException {
     	
     	Style pDefault = Context.getWmlObjectFactory().createStyle();
     	
@@ -241,27 +242,47 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 		// Initialise docDefaults		
 		DocDefaults docDefaults = this.jaxbElement.getDocDefaults(); 		
 		
-		if (docDefaults==null) {
-			// The only way this can happen is if the 
+		if (docDefaults == null) {
+			// The only way this can happen is if the
 			// styles definition part is missing the docDefaults element
 			// (these are present in docs created from Word, and
-			//  in our default styles, so maybe the user created it using 
-			//  some 3rd party program?)
-			docDefaults = (DocDefaults)XmlUtils.unmarshalString(docDefaultsString);
-		} 
-		
+			// in our default styles, so maybe the user created it using
+			// some 3rd party program?)
+			try {
+
+				docDefaults = (DocDefaults) XmlUtils
+						.unmarshalString(docDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ docDefaultsString, e);
+			}
+		}
+
 		// Setup documentDefaultPPr
 		PPr documentDefaultPPr;
-		if (docDefaults.getPPrDefault()==null) {			
-			documentDefaultPPr = (PPr)XmlUtils.unmarshalString(pPrDefaultsString);
+		if (docDefaults.getPPrDefault() == null) {
+			try {
+				documentDefaultPPr = (PPr) XmlUtils
+						.unmarshalString(pPrDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ pPrDefaultsString, e);
+			}
+
 		} else {
 			documentDefaultPPr = docDefaults.getPPrDefault().getPPr();
 		}
 
 		// Setup documentDefaultRPr
 		RPr documentDefaultRPr;
-		if (docDefaults.getRPrDefault()==null) {
-			documentDefaultRPr = (RPr)XmlUtils.unmarshalString(rPrDefaultsString);
+		if (docDefaults.getRPrDefault() == null) {
+			try {
+				documentDefaultRPr = (RPr) XmlUtils
+						.unmarshalString(rPrDefaultsString);
+			} catch (JAXBException e) {
+				throw new Docx4JException("Problem unmarshalling "
+						+ rPrDefaultsString, e);
+			}
 		} else {
 			documentDefaultRPr = docDefaults.getRPrDefault().getRPr();
 		}
