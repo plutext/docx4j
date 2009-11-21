@@ -146,7 +146,7 @@ public class BufferUtil {
     }
     
 	public static byte[] getBytesFromInputStream(InputStream is)
-			throws Exception {
+			throws IOException {
 
 		BufferedInputStream bufIn = new BufferedInputStream(is);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();

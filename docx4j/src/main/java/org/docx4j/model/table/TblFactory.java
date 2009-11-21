@@ -22,6 +22,8 @@ package org.docx4j.model.table;
 
 import java.math.BigInteger;
 
+import javax.xml.bind.JAXBException;
+
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -56,7 +58,13 @@ public class TblFactory {
 			+ 	"<w:tblW w:w=\"0\" w:type=\"auto\"/>"
 			+   "<w:tblLook w:val=\"04A0\"/>"
 			+ "</w:tblPr>";
-		TblPr tblPr = (TblPr)XmlUtils.unmarshalString(strTblPr);
+		TblPr tblPr = null;
+		try {
+			tblPr = (TblPr)XmlUtils.unmarshalString(strTblPr);
+		} catch (JAXBException e) {
+			// Shouldn't happen 
+			e.printStackTrace();
+		}
 		tbl.setTblPr(tblPr);
 		
 		// <w:tblGrid><w:gridCol w:w="4788"/>		
