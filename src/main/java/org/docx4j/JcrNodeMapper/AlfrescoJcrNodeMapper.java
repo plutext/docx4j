@@ -26,6 +26,8 @@ import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
 
 import org.apache.log4j.Logger;
+import org.docx4j.utils.BufferUtil;
+import java.io.IOException;
 
 public class AlfrescoJcrNodeMapper implements NodeMapper {
 
@@ -69,26 +71,52 @@ public class AlfrescoJcrNodeMapper implements NodeMapper {
 	
 	
 	
-	public  Property getJcrData(Node contentNode) 
- throws PathNotFoundException, RepositoryException {
-		
-		log.info("getting {http://www.alfresco.org/model/content/1.0}content"); 
+	public Property getJcrData(Node contentNode) throws PathNotFoundException,
+			RepositoryException {
+
+		log.info("getting {http://www.alfresco.org/model/content/1.0}content");
 		// Jackrabbit's jcr:data = Alfresco's cm:content
-		
-/*		
-		return contentNode.getProperty("{http://www.alfresco.org/model/content/1.0}content");
-  results in:
-		17.01.2008 22:42:15 *INFO * NodeImpl: Asked for property:{http://www.alfresco.org/model/content/1.0}content (NodeImpl.java, line 484)
-			org.alfresco.service.namespace.InvalidQNameException: A QName must consist of a local name
-			        at org.alfresco.service.namespace.QName.createQName(QName.java:88)
-			        at org.alfresco.service.namespace.QName.createQName(QName.java:125)
-			        at org.alfresco.jcr.item.JCRPath$SimpleElement.<init>(JCRPath.java:118)
-			        at org.alfresco.jcr.item.JCRPath.<init>(JCRPath.java:70)
- */
-		
+
+		/*
+		 * return
+		 * contentNode.getProperty("{http://www.alfresco.org/model/content/1.0}content");
+		 * results in: 17.01.2008 22:42:15 *INFO * NodeImpl: Asked for
+		 * property:{http://www.alfresco.org/model/content/1.0}content
+		 * (NodeImpl.java, line 484)
+		 * org.alfresco.service.namespace.InvalidQNameException: A QName must
+		 * consist of a local name at
+		 * org.alfresco.service.namespace.QName.createQName(QName.java:88) at
+		 * org.alfresco.service.namespace.QName.createQName(QName.java:125) at
+		 * org.alfresco.jcr.item.JCRPath$SimpleElement.<init>(JCRPath.java:118)
+		 * at org.alfresco.jcr.item.JCRPath.<init>(JCRPath.java:70)
+		 */
+
 		return contentNode.getProperty("cm:content");
+
+	}
+
+	public byte[] getJcrDataAsBytes(Node contentNode) 
+	 throws PathNotFoundException, RepositoryException, IOException {
+		
+		Property jcrData = getJcrData(contentNode);
+		return BufferUtil.getBytesFromInputStream(
+				jcrData.getStream() );
+	}
+
+	public String getJcrDataAsString(Node contentNode) 
+	 throws PathNotFoundException, RepositoryException, IOException {
+		
+		// With Alfresco, you can't just use .getString()!
+		// See ALFCOM-3049
+		// Hence this long winded approach..
+		
+		Property jcrData = getJcrData(contentNode);
+		byte[] bytes = BufferUtil.getBytesFromInputStream(
+				jcrData.getStream() );
+		return new String(bytes, "UTF-8"); // TODO: use encoding specified on the content object?
 		
 	}
+	
 	
 	
 	public void setJcrDataProperty(Node cmContentNode, java.io.InputStream is) throws Exception {

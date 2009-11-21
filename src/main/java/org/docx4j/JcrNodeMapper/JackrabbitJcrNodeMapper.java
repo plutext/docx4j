@@ -19,11 +19,15 @@
  */
 package org.docx4j.JcrNodeMapper;
 
+import java.io.IOException;
+
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
+
+import org.docx4j.utils.BufferUtil;
 
 public class JackrabbitJcrNodeMapper implements NodeMapper {
 	
@@ -53,6 +57,21 @@ public class JackrabbitJcrNodeMapper implements NodeMapper {
 			return contentNode.getProperty("jcr:data");
 			
 		}
+	
+	public byte[] getJcrDataAsBytes(Node contentNode) 
+	 throws PathNotFoundException, RepositoryException, IOException {
+		
+		Property jcrData = getJcrData(contentNode);
+		return BufferUtil.getBytesFromInputStream(
+				jcrData.getStream() );
+	}
+
+	public String getJcrDataAsString(Node contentNode) 
+	 throws PathNotFoundException, RepositoryException, IOException {
+				
+		return getJcrData(contentNode).getString();		
+	}
+	
 
 	public void setJcrDataProperty(Node cmContentNode, java.io.InputStream is) throws Exception {
 		// Alfresco has property named cm:content, not jcr:data

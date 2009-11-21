@@ -25,6 +25,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.version.Version;
+import java.io.IOException;
 
 
 public interface NodeMapper {
@@ -38,7 +39,13 @@ public interface NodeMapper {
 	
 	public abstract Property getJcrData(Node contentNode) 
 	 throws PathNotFoundException, RepositoryException;
-	
+
+	public abstract byte[] getJcrDataAsBytes(Node contentNode) 
+	 throws PathNotFoundException, RepositoryException, IOException;
+
+	public abstract String getJcrDataAsString(Node contentNode) 
+	 throws PathNotFoundException, RepositoryException, IOException;
+
 	public void setJcrDataProperty(Node cmContentNode, java.io.InputStream is) 
 	throws Exception;
 	
