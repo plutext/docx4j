@@ -29,6 +29,7 @@ import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
 import org.docx4j.model.properties.paragraph.LineSpacing;
+import org.docx4j.model.properties.paragraph.NumberingProperty;
 import org.docx4j.model.properties.paragraph.PageBreakBefore;
 import org.docx4j.model.properties.paragraph.SpaceAfter;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
@@ -40,6 +41,7 @@ import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.Italics;
 import org.docx4j.model.properties.run.Strike;
 import org.docx4j.model.properties.run.Underline;
+import org.docx4j.model.properties.run.VerticalAlignment;
 import org.docx4j.model.properties.table.BorderBottom;
 import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
@@ -254,8 +256,8 @@ public class PropertyFactory {
 			properties.add(new Underline(rPr.getU() ) );
 //		if (rPr.getVanish() != null)
 //			dest.setVanish(rPr.getVanish());
-//		if (rPr.getVertAlign() != null)
-//			dest.setVertAlign(rPr.getVertAlign());
+		if (rPr.getVertAlign() != null)
+			properties.add(new VerticalAlignment(rPr.getVertAlign()) );
 //		if (rPr.getW() != null)
 //			dest.setW(rPr.getW());
 //		if (rPr.getWebHidden() != null)
@@ -297,8 +299,8 @@ public class PropertyFactory {
 //			dest.setKinsoku(pPr.getKinsoku());
 //		if (pPr.getMirrorIndents() != null)
 //			dest.setMirrorIndents(pPr.getMirrorIndents());
-//		if (pPr.getNumPr() != null)
-//			dest.setNumPr(pPr.getNumPr());
+		if (pPr.getNumPr() != null)
+			properties.add(new NumberingProperty(pPr.getNumPr()));
 //		if (pPr.getOutlineLvl() != null)
 //			dest.setOutlineLvl(pPr.getOutlineLvl());
 //		if (pPr.getOverflowPunct() != null)

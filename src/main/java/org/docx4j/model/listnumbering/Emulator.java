@@ -141,7 +141,7 @@ public class Emulator {
     	// (ie does this style have a list associated with it?)
     	if (numId == null 
     			|| numId.equals("")) {
-    		
+    		log.debug("no explicit numId; looking in styles");
     		
     		org.docx4j.wml.Style style = null;
     		if (pStyleVal!=null && !pStyleVal.equals("") ) {    		
@@ -176,7 +176,7 @@ public class Emulator {
 	    		
 	    		numId = numPr.getNumId().getVal().toString();
 	    		log.info("numId=" + numId + " (from style)" );
-	        	System.out.println("numId=" + numId + " (from style)" );
+	        	//System.out.println("numId=" + numId + " (from style)" );
 	    		
 	    		if (levelId == null 
 	    				|| levelId.equals("") ) {
@@ -191,6 +191,8 @@ public class Emulator {
 	    			}
 	    		}
 	    	}
+    	} else {
+    		log.info("Using numId: " + numId);
     	}
     	
 		if (levelId != null && !levelId.equals("")) {
@@ -235,6 +237,8 @@ public class Emulator {
 					log.error("Couldn't find level " + levelId + " in list " + numId);					
 				}
 			}
+		} else {
+			log.warn("No level id?!");
 		}
 		return triple;
 

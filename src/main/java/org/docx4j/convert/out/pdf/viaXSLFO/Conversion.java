@@ -31,6 +31,7 @@ import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
@@ -46,6 +47,7 @@ import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.UnderlineEnumeration;
+import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -338,6 +340,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
         try {
         	
+        	PPr pPrDirect = null;
+        	
         	// Get the pPr node as a JAXB object,
         	// so we can read it using our standard
         	// methods.  Its a bit sad that we 
@@ -361,7 +365,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         			Unmarshaller u = Context.jc.createUnmarshaller();			
         			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
         			Object jaxb = u.unmarshal(n);
-    				PPr pPrDirect =  (PPr)jaxb;
+    				pPrDirect =  (PPr)jaxb;
     				pPr = propertyResolver.getEffectivePPr(pPrDirect);   
     				log.warn("getting rPr for paragraph style");    				
     				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
@@ -375,9 +379,67 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			Document document = factory.newDocumentBuilder().newDocument();
 			
 			//log.info("Document: " + document.getClass().getName() );
+			
+			Node foBlockElement;
+			if (pPr.getNumPr()!=null ) {
+				
+				// Its a list item.  At present we make a new list-block for
+				// each list-item. This is not great; DocumentModel will ultimately
+				// allow us to use fo:list-block properly.
+				
+				Node foListBlock = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-block");
+				document.appendChild(foListBlock);
 
-			Node foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");			
-			document.appendChild(foBlockElement);
+				Element foListItem = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item");
+				foListBlock.appendChild(foListItem);				
+				
+				Element foListItemLabel = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item-label");
+				foListItem.appendChild(foListItemLabel);
+				
+				Element foListItemLabelBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
+				foListItemLabel.appendChild(foListItemLabelBody);
+				
+	        	ResultTriple triple;
+	        	if (pPrDirect!=null && pPrDirect.getNumPr()!=null) {
+	        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
+	        			wmlPackage, pStyleVal, 
+	        			pPrDirect.getNumPr().getNumId().getVal().toString(), 
+	        			pPrDirect.getNumPr().getIlvl().getVal().toString() ); 
+	        	} else {
+	        		// Get the effective values; since we already know this,
+	        		// save the effort of doing this again in Emulator
+	        		Ilvl ilvl = pPr.getNumPr().getIlvl();
+	        		String ilvlString = ilvl == null ? "0" : ilvl.getVal().toString();
+	        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
+		        			wmlPackage, pStyleVal, 
+		        			pPr.getNumPr().getNumId().getVal().toString(), 
+		        			ilvlString ); 
+		        			
+	        	}
+				
+				if (triple==null) {
+	        		log.info("computed number ResultTriple was null");
+					foListItemLabelBody.setTextContent("?");
+	        	} else if (triple.getNumString()==null) {
+		    		log.error("computed NumString was null!");
+					foListItemLabelBody.setTextContent("?");
+		    	} else {
+					Text number = document.createTextNode( triple.getNumString() );
+					foListItemLabelBody.appendChild(number);		    		
+		    	}
+				
+				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item-body");
+				foListItem.appendChild(foListItemBody);	
+				
+				foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
+				foListItemBody.appendChild(foBlockElement);
+				
+			} else {
+
+				foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
+				document.appendChild(foBlockElement);
+			}
+			
 							
 			if (log.isDebugEnabled() && pPr!=null) {				
 				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
@@ -393,20 +455,29 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			// to the child nodes
 			Node n = childResults.nextNode();
 			
-//				log.info("Node we are importing: " + n.getClass().getName() );
-//				foBlockElement.appendChild(
-//						document.importNode(n, true) );
-			/*
-			 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
-			 * which causes
-			 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
-			 * 
-			 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
-			 * 
-			 * So instead of importNode, use 
-			 */
-			XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );
+			// Handle empty case - want the block to be preserved!
+			if (n.getChildNodes().getLength()==0) {
+				
+				((Element)foBlockElement).setAttribute( "white-space-treatment", "preserve");
+				foBlockElement.setTextContent(" ");
+				
+			} else {
 			
+	//				log.info("Node we are importing: " + n.getClass().getName() );
+	//				foBlockElement.appendChild(
+	//						document.importNode(n, true) );
+				/*
+				 * Node we'd like to import is of type org.apache.xml.dtm.ref.DTMNodeProxy
+				 * which causes
+				 * org.w3c.dom.DOMException: NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation.
+				 * 
+				 * See http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+				 * 
+				 * So instead of importNode, use 
+				 */
+				XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );
+				
+			}
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
