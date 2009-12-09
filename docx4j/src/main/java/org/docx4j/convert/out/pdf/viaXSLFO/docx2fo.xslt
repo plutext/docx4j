@@ -46,17 +46,20 @@
 	 Because of this, this stylesheet is of 
 	 limited use to other projects :-( 
 
-     ======================================= -->
+     ======================================= 
+     
+     TODO:  w:hyperlink, cross references.
+     
+     -->
         
         <!--  Note definition of xmlns:r is different 
               from the definition in an _rels file
               (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
 
-<!-- 
-  <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
-   -->
-<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
+<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" />
+<!--  indent="no" gives a better result for things like subscripts, because it stops
+      the user-agent from replacing a carriage return in the XSL FO with a space in the output. -->
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
@@ -68,6 +71,12 @@
 	
 <xsl:param name="docxWikiMenu"/>		
 <xsl:param name="docID"/>
+
+<xsl:template name="pretty-print-block">
+  <xsl:text>
+  
+  </xsl:text>
+</xsl:template>
 
 <!--  Not used, if we just pass in document.xml -->
 <xsl:template match="/pkg:package">
@@ -346,6 +355,7 @@
 
 					<xsl:apply-templates select="w:body/*" />
 
+				  	<xsl:call-template name="pretty-print-block"/>
 
 				</fo:flow><!-- closes the flow element-->
 			</fo:page-sequence><!-- closes the page-sequence -->
@@ -368,6 +378,8 @@
        the attributes of the block define
        font-family and size, line-heigth etc. -->
   <xsl:template match="w:p">
+  
+    	<xsl:call-template name="pretty-print-block"/>
   
  			<!--  Invoke an extension function, so we can use
  			      docx4j to populate the fo:block -->
@@ -499,6 +511,8 @@
  -->
   <xsl:template match="w:tbl">
 
+  	<xsl:call-template name="pretty-print-block"/>
+
 		<xsl:variable name="childResults">
 			<xsl:apply-templates /> <!--  select="*[not(name()='w:tblPr' or name()='w:tblGrid')]" /-->
 		</xsl:variable>
@@ -519,9 +533,37 @@
 	</xsl:copy>
 </xsl:template>  
 <xsl:template match="w:tcPr"/>
+
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++  other stuff  +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
   
 <xsl:template match="w:sectPr">
 	<xsl:comment>sectPr ignored</xsl:comment>
 </xsl:template>
-  
+
+
+	<xsl:template match="w:proofErr" />
+
+	<xsl:template match="w:softHyphen">
+		<xsl:text>&#xAD;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="w:noBreakHyphen">
+		<xsl:text disable-output-escaping="yes">&amp;#8209;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="w:br">
+		<xsl:choose>
+			<xsl:when test="@w:type = 'page'">
+				<fo:block break-before="page" />
+			</xsl:when>
+			<xsl:otherwise>
+				<fo:block />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+
+
 </xsl:stylesheet>

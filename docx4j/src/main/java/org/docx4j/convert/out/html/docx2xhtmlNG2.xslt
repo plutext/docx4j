@@ -22,7 +22,9 @@
 <!-- 
   <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
    -->
-<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
+<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" />
+<!--  indent="no" gives a better result for things like subscripts, because it stops
+      the user-agent from replacing a carriage return in the HTML with a space in the output. -->
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
@@ -154,6 +156,8 @@
 
 		<xsl:apply-templates select="w:body|w:cfChunk"/>
 
+  	<xsl:call-template name="pretty-print-block"/>
+
       </body>
     </html>
   </xsl:template>
@@ -166,6 +170,11 @@
     <xsl:apply-templates select="*"/>
   </xsl:template>
 
+<xsl:template name="pretty-print-block">
+  <xsl:text>
+  
+  </xsl:text>
+</xsl:template>
   
   <!--  the extension functions fetch these
         for processing -->
@@ -174,6 +183,8 @@
   </xsl:template>
   
   <xsl:template match="w:p">
+  
+  	<xsl:call-template name="pretty-print-block"/>
   
  			<!--  Invoke an extension function, so we can use
  			      docx4j to populate the fo:block -->
@@ -366,6 +377,7 @@
 
  -->
   <xsl:template match="w:tbl">
+	  	<xsl:call-template name="pretty-print-block"/>
 
 		<xsl:variable name="tblNode" select="." />  			
 
@@ -405,5 +417,31 @@
       		 
   </xsl:template>
    
+	<xsl:template match="w:proofErr" />
+
+	<xsl:template match="w:softHyphen">
+		<xsl:text>&#xAD;</xsl:text>
+	</xsl:template>
+
+	<xsl:template match="w:noBreakHyphen">
+		<xsl:text disable-output-escaping="yes">&amp;#8209;</xsl:text>
+	</xsl:template>
+   
+  <xsl:template match="w:br">
+    <br>
+      <xsl:attribute name="clear">
+        <xsl:choose>
+          <xsl:when test="@w:clear">
+            <xsl:value-of select="@w:clear"/>
+          </xsl:when>
+          <xsl:otherwise>all</xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <xsl:if test="@w:type = 'page'">
+        <xsl:attribute name="style">page-break-before:always</xsl:attribute>
+      </xsl:if>
+    </br>
+  </xsl:template>
+
    
 </xsl:stylesheet>
