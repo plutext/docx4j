@@ -577,10 +577,14 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 				if ( rPr.getRStyle()!=null) {
 					String rStyleVal = rPr.getRStyle().getVal();
 					Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-					org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);						
-					((Element)span).setAttribute("class", 
-							StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-					);				
+					org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
+					if (asn==null) {
+						log.warn("No style node for: " + rStyleVal);
+					} else {
+						((Element)span).setAttribute("class", 
+								StyleTree.getHtmlClassAttributeValue(cTree, asn)			
+						);		
+					}
 				}
 				
 				// Does our rPr contain anything else?

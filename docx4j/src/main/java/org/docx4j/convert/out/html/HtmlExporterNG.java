@@ -1,75 +1,46 @@
 package org.docx4j.convert.out.html;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.vfs.CacheStrategy;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileSystemManager;
-import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Converter;
-import org.docx4j.convert.out.Output;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.fonts.Mapper;
-import org.docx4j.fonts.BestMatchingMapper;
+import org.docx4j.convert.out.html.SymbolWriter;
 import org.docx4j.fonts.IdentityPlusMapper;
-import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
-import org.docx4j.model.listnumbering.Emulator;
-import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.Tbl;
-import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
-import org.docx4j.wml.Tr;
 import org.docx4j.wml.TrPr;
-import org.docx4j.wml.UnderlineEnumeration;
-import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-
-import org.w3c.dom.traversal.NodeIterator;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.w3c.dom.traversal.NodeIterator;
 
 /**
  * Export a docx package to HTML.
@@ -143,7 +114,6 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	}
 	
 	
-	@Deprecated
 	public void output(javax.xml.transform.Result result) throws Docx4JException {
 		
 		if (wmlPackage==null) {
@@ -246,10 +216,12 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		
 		//Converter c = new Converter();
 		Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+      	Converter.getInstance().registerModelConverter("w:sym", new SymbolWriter() );
 		
 		// By convention, the transform state object is stored by reference to the 
 		// type of element to which its model applies
 		modelStates.put("w:tbl", new TableModelTransformState() );
+		modelStates.put("w:sym", new SymbolModelTransformState() );
 		
 		Converter.getInstance().start(wmlPackage);
 		

@@ -270,66 +270,9 @@
   </xsl:template>
 
 
-  <xsl:template match="w:br[@w:type = 'page']">
-  	<!--  TODO -->
-  </xsl:template>
   
   <xsl:template match="w:lastRenderedPageBreak" />
   
-<!-- 
-  
-		<w:hyperlink r:id="rId4" w:history="true">
-			<w:r>
-				<w:rPr>
-				    <w:rStyle w:val="Hyperlink"/>
-				</w:rPr>
-				<w:t>hyperlink</w:t>
-			</w:r>
-		</w:hyperlink>
--->  
-  <xsl:template match="w:hyperlink">
-    <a style="text-decoration:none;">
-	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
-      
-	<xsl:variable name="hTemp" 
-		select="java:org.docx4j.convert.out.html.HtmlExporter.resolveHref(
-		             $wmlPackage, $relId )" />
-		                   
-      <xsl:variable name="href">
-          <xsl:value-of select="$hTemp"/>
-        <xsl:choose>
-          <xsl:when test="@w:anchor">
-            #<xsl:value-of select="@w:anchor"/>
-          </xsl:when>
-          <xsl:when test="@w:bookmark">
-            #<xsl:value-of select="@w:bookmark"/>
-          </xsl:when>
-          <xsl:when test="@w:arbLocation">
-            # <xsl:value-of select="@w:arbLocation"/>
-          </xsl:when>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:if test="not(href='')">
-        <xsl:attribute name="href">
-          <xsl:value-of select="$href"/>
-        </xsl:attribute>
-      </xsl:if>
-      
-<!-- 
-      <xsl:for-each select="@w:tgtFrame">
-        <xsl:attribute name="target">
-          <xsl:value-of select="."/>
-        </xsl:attribute>
-      </xsl:for-each>
-      <xsl:for-each select="@w:tooltip">
-        <xsl:attribute name="title">
-          <xsl:value-of select="."/>
-        </xsl:attribute>
-      </xsl:for-each>
- -->
- 		<xsl:apply-templates />      
-    </a>
-  </xsl:template>
   
   <!--  TODO - ignored for now -->
   <xsl:template match="w:sectPr"/>
@@ -353,6 +296,26 @@
   			$pictureData, $picSize, $picLink, $linkDataNode)" />
     
   </xsl:template>
+  
+    <!--  E1.0 images  -->
+	<xsl:template match="w:pict">
+	
+		<xsl:choose>
+			<xsl:when test="./v:shape/v:imagedata">
+	
+			  	<xsl:variable name="shape" select="./v:shape"/>
+			  	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
+			  	
+			  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createHtmlImgE10( $wmlPackage, string($imageDirPath),
+			  			$shape, $imageData)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
+			</xsl:otherwise>
+		</xsl:choose>  			
+	
+	</xsl:template>
+  
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++ table support +++++++++++++++++++++++ -->
@@ -407,16 +370,10 @@
 <xsl:template match="w:tcPr"/>
 <xsl:template match="w:trPr"/>
 
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++  other stuff  +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
-   
-  <xsl:template match="*">
-		      <div
-		        color="red">
-        NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>
-      		</div> 
-      		 
-  </xsl:template>
-   
 	<xsl:template match="w:proofErr" />
 
 	<xsl:template match="w:softHyphen">
@@ -426,7 +383,7 @@
 	<xsl:template match="w:noBreakHyphen">
 		<xsl:text disable-output-escaping="yes">&amp;#8209;</xsl:text>
 	</xsl:template>
-   
+
   <xsl:template match="w:br">
     <br>
       <xsl:attribute name="clear">
@@ -442,6 +399,133 @@
       </xsl:if>
     </br>
   </xsl:template>
+  
+  <xsl:template match="w:cr">
+	<br clear="all" />
+</xsl:template>
+  
+<!--  <w:sym w:font="Wingdings" w:char="F04A"/> -->
+<xsl:template match="w:sym">
 
+	<xsl:variable name="childResults">
+		<xsl:apply-templates /> 
+	</xsl:variable>
+
+	<xsl:variable name="symNode" select="." />  			
+
+     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($symNode, 
+			$childResults, $modelStates)" />
+  		  			
+</xsl:template>
+  
+  <xsl:template name="OutputTlcChar"> <!--  From MS stylesheet -->
+    <xsl:param name="count" select="0"/>
+    <xsl:param name="tlc" select="' '"/>
+    <xsl:value-of select="$tlc"/>
+    <xsl:if test="$count > 1">
+      <xsl:call-template name="OutputTlcChar">
+        <xsl:with-param name="count" select="$count - 1"/>
+        <xsl:with-param name="tlc" select="$tlc"/>
+      </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+<!-- 
+
+<w:p>
+	<w:pPr><w:tabs><w:tab w:val="left" w:pos="4320"/></w:tabs></w:pPr>
+	<w:r><w:t xml:space="preserve">Will tab.. </w:t></w:r><w:r>
+	<w:tab/>
+	<w:t>3 inches</w:t></w:r>
+</w:p>
+
+ -->
+<xsl:template match="w:tab"> 
+	<!--  Use this simple-minded approach from MS stylesheet,
+	      until our document model can do better.   -->
+    <xsl:call-template name="OutputTlcChar">
+      <xsl:with-param name="tlc">
+        <xsl:text disable-output-escaping="yes">&#160;</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="count" select="3"/>
+    </xsl:call-template>
+  </xsl:template>
+
+<xsl:template match="w:smartTag">
+    <xsl:apply-templates />
+</xsl:template>
+
+<!-- 
+  
+		<w:hyperlink r:id="rId4" w:history="true">
+			<w:r>
+				<w:rPr>
+				    <w:rStyle w:val="Hyperlink"/>
+				</w:rPr>
+				<w:t>hyperlink</w:t>
+			</w:r>
+		</w:hyperlink>
+-->  
+  <xsl:template match="w:hyperlink">
+    <a>
+	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
+      
+	<xsl:variable name="hTemp" 
+		select="java:org.docx4j.convert.out.html.HtmlExporter.resolveHref(
+		             $wmlPackage, $relId )" />
+		                   
+      <xsl:variable name="href">
+          <xsl:value-of select="$hTemp"/>
+        <xsl:choose>
+          <xsl:when test="@w:anchor">
+            #<xsl:value-of select="@w:anchor"/>
+          </xsl:when>
+          <xsl:when test="@w:bookmark">
+            #<xsl:value-of select="@w:bookmark"/>
+          </xsl:when>
+          <xsl:when test="@w:arbLocation">
+            # <xsl:value-of select="@w:arbLocation"/>
+          </xsl:when>
+        </xsl:choose>
+      </xsl:variable>
+      <xsl:if test="not(href='')">
+        <xsl:attribute name="href">
+          <xsl:value-of select="$href"/>
+        </xsl:attribute>
+      </xsl:if>
+      
+<!-- 
+      <xsl:for-each select="@w:tgtFrame">
+        <xsl:attribute name="target">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:for-each>
+      <xsl:for-each select="@w:tooltip">
+        <xsl:attribute name="title">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:for-each>
+ -->
+ 		<xsl:apply-templates />      
+    </a>
+  </xsl:template>
+   
+  <xsl:template match="w:bookmarkStart">
+    <a name="{@w:name}"/>
+  </xsl:template>
+   
+<xsl:template match="w:bookmarkEnd" />
+
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+  <xsl:template match="*">
+		      <div
+		        color="red">
+        NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>
+      		</div> 
+      		 
+  </xsl:template>
    
 </xsl:stylesheet>

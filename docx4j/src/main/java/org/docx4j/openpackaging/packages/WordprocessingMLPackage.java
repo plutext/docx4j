@@ -120,8 +120,11 @@ public class WordprocessingMLPackage extends Package {
 	public HeaderFooterPolicy getHeaderFooterPolicy() {
 		int last = getDocumentModel().getSections().size();
 		if (last>0) {
+			// Should always be the case, since we add one,
+			// even if the document contains no sectPr
 			return getDocumentModel().getSections().get(last-1).getHeaderFooterPolicy();
 		} else {
+			log.error("Unexpected - zero sections?!");
 			return null;
 		}
 	}

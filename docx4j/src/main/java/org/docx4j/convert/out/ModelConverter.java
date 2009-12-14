@@ -26,11 +26,25 @@ import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Node;
 
+/**
+ * Note that ModelConverter (aka Writers) must be 
+ * registered with eg viaXSLFO.Conversion;
+ * (further, the models themselves must be 
+ *  put in the modelClasses hashmap in
+ *  convert.out.Converter.java, either directly,
+ *  or by using Converter.getInstance().registerModelConverter)
+ */
 public abstract class ModelConverter {
 
 	protected WordprocessingMLPackage wordMLPackage;
 	public void setWordMLPackage(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
+	}
+	/**
+	 * @return the wordMLPackage
+	 */
+	public WordprocessingMLPackage getWordMLPackage() {
+		return wordMLPackage;
 	}
 
 	public void start() {
@@ -50,5 +64,6 @@ public abstract class ModelConverter {
 	}
 
 	public abstract Node toNode(Model m, TransformState state) throws TransformerException;
+
 
 }

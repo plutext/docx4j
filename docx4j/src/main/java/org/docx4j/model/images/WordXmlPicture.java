@@ -3,6 +3,8 @@ package org.docx4j.model.images;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
+import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -16,14 +18,23 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
+import org.apache.xmlgraphics.image.loader.ImageInfo;
 import org.docx4j.convert.out.ConvertUtils;
+import org.docx4j.model.structure.DocumentModel;
+import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.CxCy;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.SectPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
+import org.w3c.dom.css.CSSPrimitiveValue;
+import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.traversal.NodeIterator;
 
 /**
@@ -47,19 +58,26 @@ public class WordXmlPicture {
     Node imageElement = null;
     Node linkElement = null;
 
-    /* Extension function to create an HTML <img> element
+    /** Extension function to create an HTML <img> element
      * from "E2.0 images" 
      *      //w:drawing/wp:inline
      *     |//w:drawing/wp:anchor
-     */    
+     * @param wmlPackage
+     * @param imageDirPath
+     * @param pictureData
+     * @param picSize
+     * @param picLink
+     * @param linkData
+     * @return
+     */
     public static DocumentFragment createHtmlImgE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator pictureData, NodeIterator picSize,
     		NodeIterator picLink, NodeIterator linkData) {
 
-    	WordXmlPicture picture = createWordXmlPicture( wmlPackage,
+    	WordXmlPicture picture = createWordXmlPictureFromE20( wmlPackage,
         		 imageDirPath, pictureData,  picSize,
-        		 picLink,  linkData);
+        		 picLink,  linkData, true);
     	
         Document d = picture.createHtmlImageElement();
 
@@ -69,19 +87,26 @@ public class WordXmlPicture {
 		return docfrag;
     }
 
-    /* Extension function to create an XSL FO <fo:external-graphic> element
+    /** Extension function to create an XSL FO <fo:external-graphic> element
      * from "E2.0 images" 
      *      //w:drawing/wp:inline
      *     |//w:drawing/wp:anchor
-     */    
+     * @param wmlPackage
+     * @param imageDirPath
+     * @param pictureData
+     * @param picSize
+     * @param picLink
+     * @param linkData
+     * @return
+     */
     public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator pictureData, NodeIterator picSize,
     		NodeIterator picLink, NodeIterator linkData) {
 
-    	WordXmlPicture picture = createWordXmlPicture( wmlPackage,
+    	WordXmlPicture picture = createWordXmlPictureFromE20( wmlPackage,
         		 imageDirPath, pictureData,  picSize,
-        		 picLink,  linkData);
+        		 picLink,  linkData, false);
     	
         Document d = picture.createXslFoImageElement();
 
@@ -100,17 +125,17 @@ public class WordXmlPicture {
      * @param linkData
      * @return
      */
-    public static WordXmlPicture createWordXmlPicture(WordprocessingMLPackage wmlPackage,
+    private static WordXmlPicture createWordXmlPictureFromE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator pictureData, NodeIterator picSize,
-    		NodeIterator picLink, NodeIterator linkData) {
+    		NodeIterator picLink, NodeIterator linkData, boolean targetIsHtml) {
     	
     	    	
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
     	// which implements org.w3c.dom.traversal.NodeIterator
     	    	
     	WordXmlPicture picture = new WordXmlPicture();
-    	picture.readStandardAttributes( pictureData.nextNode() );
+    	picture.readStandardAttributes( pictureData.nextNode(), targetIsHtml );
     	
     	Node picSizeNode = picSize.nextNode();
     	if ( picSizeNode!=null ) {
@@ -154,102 +179,22 @@ public class WordXmlPicture {
             	if (rel.getTargetMode() == null
 						|| rel.getTargetMode().equals("Internal")) {
 
-					// Get the part
-					Part part = wmlPackage.getMainDocumentPart()
+            		BinaryPartAbstractImage part = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
 							.getRelationshipsPart().getPart(rel);
-					try {
-
-						if (imageDirPath.equals("")) {
-
-							// <img
-							// src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub/
-							//
-							// which is nice, except it doesn't work in IE7,
-							// and is limited to 32KB in IE8!
-
-							java.nio.ByteBuffer bb = ((BinaryPart) part)
-									.getBuffer();
-							bb.clear();
-							byte[] bytes = new byte[bb.capacity()];
-							bb.get(bytes, 0, bytes.length);
-							
-							byte[] encoded = Base64.encodeBase64(bytes, true);
-
-							picture
-									.setSrc("data:" + part.getContentType()
-											+ ";base64,"
-											+ (new String(encoded, "UTF-8")));
-
-						} else {
-							// Need to save the image
-
-							// To create directory:
-							FileObject folder = getFileSystemManager()
-									.resolveFile(imageDirPath);
-							if (!folder.exists()) {
-								folder.createFolder();
-							}
-
-							// Construct a file name from the part name
-							String partname = part.getPartName().toString();
-							String filename = partname.substring(partname
-									.lastIndexOf("/") + 1);
-							log.debug("image file name: " + filename);
-
-							FileObject fo = folder.resolveFile(filename);
-							if (fo.exists()) {
-
-								log.warn("Overwriting (!) existing file!");
-
-							} else {
-								fo.createFile();
-							}
-							// System.out.println("URL: " +
-							// fo.getURL().toExternalForm() );
-							// System.out.println("String: " + fo.toString() );
-
-							// Save the file
-							OutputStream out = fo.getContent()
-									.getOutputStream();
-							// instance of org.apache.commons.vfs.provider.DefaultFileContent$FileContentOutputStream
-							// which extends MonitorOutputStream
-						    // which in turn extends BufferedOutputStream
-						    // which in turn extends FilterOutputStream.
-							
-							try {
-								java.nio.ByteBuffer bb = ((BinaryPart) part)
-										.getBuffer();
-								bb.clear();
-								byte[] bytes = new byte[bb.capacity()];
-								bb.get(bytes, 0, bytes.length);
-
-								out.write(bytes);
-								
-								// Set the attribute
-								String src = fixImgSrcURL(fo);
-								picture.setSrc(src);
-								log.info("Wrote @src='" + src);
-								
-							} finally {
-								try {
-									fo.close();
-									// That Closes this file, and its content.
-									// Closing the content in turn
-									// closes any open stream.
-									// out.flush() is unnecessary, since 
-									// FilterOutputStream's close() does do flush() first.
-								} catch (IOException ioe) {
-									ioe.printStackTrace();
-								}
-							}
-
-
-						}
-
-					} catch (Exception e) {
-						e.printStackTrace();
-						log.error(e);
-					}
+					
+					String uri = handlePart(imageDirPath, picture, part);
+					// Scale it?  Shouldn't be necessary, since Word should
+					// be providing the height/width
+//					try {
+//						ImageInfo imageInfo = BinaryPartAbstractImage.getImageInfo(uri);
+//						
+//						List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
+//						PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
+//						
+//						picture.ensureFitsPage(imageInfo, page );
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
 
 				} else { // External
 					picture.setSrc(rel.getTarget());
@@ -265,6 +210,115 @@ public class WordXmlPicture {
 		}
 
 		return picture;
+	}
+
+	/**
+	 * @param imageDirPath
+	 * @param picture
+	 * @param part
+	 * @return uri for the image we've saved, or null
+	 */
+	private static String handlePart(String imageDirPath, WordXmlPicture picture,
+			Part part) {
+		try {
+
+			if (imageDirPath.equals("")) {
+				
+				// TODO: this isn't going to work for XSL FO!
+				// So for XSL FO, you always need an imageDirPath! 
+
+				// <img
+				// src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub/
+				//
+				// which is nice, except it doesn't work in IE7,
+				// and is limited to 32KB in IE8!
+
+				java.nio.ByteBuffer bb = ((BinaryPart) part)
+						.getBuffer();
+				bb.clear();
+				byte[] bytes = new byte[bb.capacity()];
+				bb.get(bytes, 0, bytes.length);
+				
+				byte[] encoded = Base64.encodeBase64(bytes, true);
+
+				picture
+						.setSrc("data:" + part.getContentType()
+								+ ";base64,"
+								+ (new String(encoded, "UTF-8")));
+				
+				return null;
+
+			} else {
+				// Need to save the image
+
+				// To create directory:
+				FileObject folder = getFileSystemManager()
+						.resolveFile(imageDirPath);
+				if (!folder.exists()) {
+					folder.createFolder();
+				}
+
+				// Construct a file name from the part name
+				String partname = part.getPartName().toString();
+				String filename = partname.substring(partname
+						.lastIndexOf("/") + 1);
+				log.debug("image file name: " + filename);
+
+				FileObject fo = folder.resolveFile(filename);
+				if (fo.exists()) {
+
+					log.warn("Overwriting (!) existing file!");
+
+				} else {
+					fo.createFile();
+				}
+				// System.out.println("URL: " +
+				// fo.getURL().toExternalForm() );
+				// System.out.println("String: " + fo.toString() );
+
+				// Save the file
+				OutputStream out = fo.getContent()
+						.getOutputStream();
+				// instance of org.apache.commons.vfs.provider.DefaultFileContent$FileContentOutputStream
+				// which extends MonitorOutputStream
+			    // which in turn extends BufferedOutputStream
+			    // which in turn extends FilterOutputStream.
+				
+				String src;
+				try {
+					java.nio.ByteBuffer bb = ((BinaryPart) part)
+							.getBuffer();
+					bb.clear();
+					byte[] bytes = new byte[bb.capacity()];
+					bb.get(bytes, 0, bytes.length);
+
+					out.write(bytes);
+					
+					// Set the attribute
+					src = fixImgSrcURL(fo);
+					picture.setSrc(src);
+					log.info("Wrote @src='" + src);
+					return src;
+				} finally {
+					try {
+						fo.close();
+						// That Closes this file, and its content.
+						// Closing the content in turn
+						// closes any open stream.
+						// out.flush() is unnecessary, since 
+						// FilterOutputStream's close() does do flush() first.
+					} catch (IOException ioe) {
+						ioe.printStackTrace();
+					}					
+				}
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error(e);
+		}
+		return null;
 	}
 
 	private static FileSystemManager fileSystemManager;
@@ -346,15 +400,95 @@ public class WordXmlPicture {
     	return itemUrl;        
     }
     
-    /* Extension function to create an <img> element
+    /** Extension function to create an <img> element
      * from "E1.0 images"
      *  
      *      //w:pict
+     * @param wmlPackage
+     * @param imageDirPath
+     * @param shape
+     * @param imageData
+     * @return
      */
-    public static DocumentFragment createImgE10(WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createHtmlImgE10(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator shape, NodeIterator imageData) {
+    	
 
+    	WordXmlPicture picture = createWordXmlPictureFromE10( wmlPackage,
+        		 imageDirPath,
+        		 shape,  imageData, true);
+    	
+    	if (picture==null) {
+    		
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            Document d;
+			try {
+				d = factory.newDocumentBuilder().newDocument();
+	    		return d.createDocumentFragment();
+			} catch (ParserConfigurationException e) {
+				log.error(e);
+				return null;
+			}  
+			
+    	} else {
+    	
+	        Document d = picture.createHtmlImageElement();
+	
+			DocumentFragment docfrag = d.createDocumentFragment();
+			docfrag.appendChild(d.getDocumentElement());
+	
+			return docfrag;
+    	}        
+    }
+
+    /** Extension function to create an <img> element
+     * from "E1.0 images"
+     *  
+     *      //w:pict
+     * @param wmlPackage
+     * @param imageDirPath
+     * @param shape
+     * @param imageData
+     * @return
+     */
+    public static DocumentFragment createXslFoImgE10(WordprocessingMLPackage wmlPackage,
+    		String imageDirPath,
+    		NodeIterator shape, NodeIterator imageData) {
+    	
+
+    	WordXmlPicture picture = createWordXmlPictureFromE10( wmlPackage,
+        		 imageDirPath,
+        		 shape,  imageData, false);
+    	
+    	if (picture==null) {
+    		
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            Document d;
+			try {
+				d = factory.newDocumentBuilder().newDocument();
+	    		return d.createDocumentFragment();
+			} catch (ParserConfigurationException e) {
+				log.error(e);
+				return null;
+			}  
+			
+    	} else {
+    	
+	        Document d = picture.createXslFoImageElement();
+	
+			DocumentFragment docfrag = d.createDocumentFragment();
+			docfrag.appendChild(d.getDocumentElement());
+	
+			return docfrag;
+    	}
+    }
+    
+    
+    private static WordXmlPicture createWordXmlPictureFromE10(WordprocessingMLPackage wmlPackage,
+    		String imageDirPath,
+    		NodeIterator shape, NodeIterator imageData, boolean targetIsHtml) {
+    	
     	// Sanity check; though XSLT should check these nodes are non null
     	// before invoking this extension function.
     	Node shapeNode = null;
@@ -368,54 +502,74 @@ public class WordXmlPicture {
     	if (shapeNode==null
     			|| imageDataNode ==null ) {
     		log.error("w:pict contains something other than an image?");
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            Document d;
-			try {
-				d = factory.newDocumentBuilder().newDocument();
-	    		return d.createDocumentFragment();
-			} catch (ParserConfigurationException e) {
-				log.error(e);
-				return null;
-			}    		
+    		return null;
     	}
     	// OK
     	
     	WordXmlPicture picture = new WordXmlPicture();
-    	picture.readStandardAttributes( shapeNode );    	
+    	picture.readStandardAttributes( shapeNode, targetIsHtml );    	
 
-        String imgRelId = ConvertUtils.getAttributeValueNS(imageDataNode, "http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"); 
+        String imgRelId = ConvertUtils.getAttributeValueNS(imageDataNode, 
+        		"http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"); 
 
         if (imgRelId!=null && !imgRelId.equals(""))
         {
         	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
         	
+            // if the relationship isn't found, produce a warning
+            //if (String.IsNullOrEmpty(picture.Src))
+            //{
+            //    this.embeddedPicturesDropped++;
+            //}
+        	
         	if (rel.getTargetMode() == null
         			|| rel.getTargetMode().equals("Internal") ) {
         		
-        		picture.setSrc("TODO - save object " + rel.getTarget() );
+        		BinaryPartAbstractImage part = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
+					.getRelationshipsPart().getPart(rel);
+				String uri = handlePart(imageDirPath, picture, part);
+				
+				// Scale it?  Shouldn't be necessary, since Word should
+				// be providing the height/width
+//				try {
+//					ImageInfo imageInfo = BinaryPartAbstractImage.getImageInfo(uri);
+//					
+//					List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
+//					PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
+//					
+//					picture.ensureFitsPage(imageInfo, page );
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+				
         		
         	} else {
                 picture.setSrc( rel.getTarget() );            	
         	}
 
         }
-
-            // if the relationship isn't found, produce a warning
-            //if (String.IsNullOrEmpty(picture.Src))
-            //{
-            //    this.embeddedPicturesDropped++;
-            //}
-    	
-        Document d = picture.createHtmlImageElement();
-
-		DocumentFragment docfrag = d.createDocumentFragment();
-		docfrag.appendChild(d.getDocumentElement());
-
-		return docfrag;
         
-    }
+        return picture;
+    }  
     
     
+//    /**
+//     * If the docx does not explicitly size the
+//     * image, check that it will fit on the page 
+//     */
+//    private void ensureFitsPage(ImageInfo imageInfo, PageDimensions page) {
+//
+//    	
+//    	CxCy cxcy = BinaryPartAbstractImage.CxCy.scale(imageInfo, page);    
+//    	
+//    	if (cxcy.isScaled() ) {
+//    		log.info("Scaled to fit page width");
+//    		this.setWidth( Math.round(cxcy.getCx()/extentToPixelConversionFactor) );
+//    		this.setHeight( Math.round(cxcy.getCy()/extentToPixelConversionFactor) );    
+//    		// That gives pixels, which is ok for HTML, but for XSL FO, we want pt or mm etc
+//    	}
+//    	
+//    }
 	
 	void setAttribute(String name, String value) {
 		
@@ -508,7 +662,7 @@ public class WordXmlPicture {
         
     }
 
-	public Document createXslFoImageElement()
+	private Document createXslFoImageElement()
     {
 
         try {
@@ -542,12 +696,12 @@ public class WordXmlPicture {
 //
             if (widthSet)
             {
-                setAttribute("content-width",  Integer.toString(width));
+                setAttribute("content-width",  Integer.toString(width)+units);
             }
 
             if (heightSet)
             {
-                setAttribute("content-height", Integer.toString(height));
+                setAttribute("content-height", Integer.toString(height)+units);
             }
 //
 //            if (hlinkRef !=null && !hlinkRef.equals(""))
@@ -582,15 +736,62 @@ public class WordXmlPicture {
         
     }
 	
+	String units = "";
+	
     /// <id guid="233b126d-66d0-476e-bcd1-ce30bdc3e65b" />
     /// <owner alias="ROrleth" />
-    public void readStandardAttributes(Node fromNode)
+    public void readStandardAttributes(Node fromNode, boolean targetIsHtml)
     {
         this.id = ConvertUtils.getAttributeValue(fromNode, "id");
         this.pType = ConvertUtils.getAttributeValue(fromNode, "type");
         this.alt = ConvertUtils.getAttributeValue(fromNode, "alt");
         this.style = ConvertUtils.getAttributeValue(fromNode, "style");
+
+        // E10: <v:shape style="width:428.25pt;height:321pt"
+        // hmm, don't want a whole CSS parser just for this..
+        // But if we did, it would be something like
+		// CSSStyleDeclaration cssStyleDeclaration = = cssOMParser.parseStyleDeclaration(
+		//			new org.w3c.css.sac.InputSource(new StringReader(styleVal)) );
+
+            if (style.lastIndexOf("width")>=0) {
+            	setWidth( getStyleVal("width",targetIsHtml));
+            }
+            if (style.lastIndexOf("height")>=0) {
+            	setHeight( getStyleVal("height",targetIsHtml));
+            }
     }
+    
+    private int getStyleVal(String name, boolean targetIsHtml) {
+    	
+    	// Assumptions: 1, the named attribute is present
+    	//if (style.lastIndexOf(name)<0) return 0;
+    	
+    	// Assumptions: 2, the dimension is given in pt 
+    	
+        // E10: <v:shape style="width:428.25pt;height:321pt"
+    	log.debug(style);
+
+    	int beginIndex = style.indexOf(name) + name.length()+1; // +1 for the ':'
+    	int endIndex = style.indexOf("pt", beginIndex);
+    	
+    	String val = style.substring(beginIndex, endIndex);
+    	
+    	
+    	float f = Float.parseFloat(val);
+    	
+    	// 72 points per inch
+    	// so, assuming 72 pdi, there is 1 point per pixel
+    	// so no further conversion is necessary
+    	// All we need to do is set the units for XSL FO
+    	if (!targetIsHtml) {
+    		units="pt";	
+    	}
+    	
+    	return Math.round(f);
+    	
+    	
+    }
+    
 
     /// <id guid="048da999-6fbe-41b9-9639-de0e084f3da3" />
     /// <owner alias="ROrleth" />
