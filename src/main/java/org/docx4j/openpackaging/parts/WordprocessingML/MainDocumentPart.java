@@ -327,13 +327,22 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				
 			} else if ( o instanceof javax.xml.bind.JAXBElement) {
 
-					if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
+				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
+					
+					org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();						
+					inspectTable(tbl, fontsDiscovered, stylesInUse );
+					
+				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P$Hyperlink") ) {
 						
-						org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();						
-						inspectTable(tbl, fontsDiscovered, stylesInUse );
-					} else if ( log.isDebugEnabled() ){
-						log.debug( XmlUtils.JAXBElementDebug((JAXBElement)o) );
-					}
+					org.docx4j.wml.P.Hyperlink hyperlink = (org.docx4j.wml.P.Hyperlink)((JAXBElement)o).getValue();							
+					traverseMainDocumentRecursive(hyperlink.getParagraphContent(),
+							fontsDiscovered, stylesInUse);
+						
+				} else if ( log.isDebugEnabled() ){
+					log.debug( XmlUtils.JAXBElementDebug((JAXBElement)o) );
+				}
+					
+					
 					
 //				if (((JAXBElement) o).getDeclaredType().getName().equals(
 //						"org.docx4j.wml.P")) {
