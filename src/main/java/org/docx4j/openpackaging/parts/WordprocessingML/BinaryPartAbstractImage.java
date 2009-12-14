@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
@@ -44,6 +45,7 @@ import org.apache.xmlgraphics.image.loader.impl.DefaultImageSessionContext;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.Inline;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -278,52 +280,89 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2) throws Exception {
 				
-		WordprocessingMLPackage wordMLPackage = ((WordprocessingMLPackage)this.getPackage()); 
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
+		WordprocessingMLPackage wmlPackage = ((WordprocessingMLPackage)this.getPackage());
 		
-		// Since the object will be added at the end of the document,
-		// it is safe to look for the page dimensions in the last sectPr 
-		// TODO .. if adding elsewhere, would need to use dimensions from appropriate sectionWrapper.
-		SectPr sectPr = wmlDocumentEl.getBody().getSectPr();
+		List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
+		PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
 		
-		PageDimensions page = new PageDimensions();
-		if (sectPr!=null && sectPr.getPgSz()!=null) {
-			page.setPageSize(sectPr.getPgSz());
-		}
-		
-		double writableWidthTwips = page.getWritableWidthTwips(); 				
-		log.debug("writableWidthTwips: " + writableWidthTwips);
-		
-		  ImageSize size = imageInfo.getSize();
-		  
-		  Dimension2D dPt = size.getDimensionPt();
-		double imageWidthTwips = dPt.getWidth() * 20;
-		log.debug("imageWidthTwips: " + imageWidthTwips);
-		
-		long cx;
-		long cy;
-		if (imageWidthTwips>writableWidthTwips) {
-			
-			log.debug("Scaling image to fit page width");
-			
-			cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
-			cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips/imageWidthTwips);
-			
-		} else {
-
-			log.debug("Scaling image - not necessary");
-			
-			cx = UnitsOfMeasurement.twipToEMU(imageWidthTwips);
-			cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
-			
-		}
-		
-		log.debug("cx=" + cx + "; cy=" + cy);
-		
+		CxCy cxcy = CxCy.scale(imageInfo, page);
  
 		return createImageInline( filenameHint,  altText, 
-				 id1,  id2,  cx,  cy);		
+				 id1,  id2,  cxcy.getCx(),  cxcy.getCy() );		
+	}
+	
+	public static class CxCy {
+		
+		long cx;
+		/**
+		 * @return the resulting cx
+		 */
+		public long getCx() {
+			return cx;
+		}
+
+		long cy;
+		/**
+		 * @return the resulting cy
+		 */
+		public long getCy() {
+			return cy;
+		}
+		boolean scaled;
+		/**
+		 * @return whether it was necessary to scale
+		 * the image to fit the page width
+		 */
+		public boolean isScaled() {
+			return scaled;
+		}
+		
+		CxCy(long cx, long cy, boolean scaled) {
+			
+			this.cx = cx;
+			this.cy = cy;
+			this.scaled = scaled;
+			
+		}
+		
+		public static CxCy scale(ImageInfo imageInfo, PageDimensions page) {
+			
+			double writableWidthTwips = page.getWritableWidthTwips(); 				
+			log.debug("writableWidthTwips: " + writableWidthTwips);
+			
+			  ImageSize size = imageInfo.getSize();
+			  
+			  Dimension2D dPt = size.getDimensionPt();
+			double imageWidthTwips = dPt.getWidth() * 20;
+			log.debug("imageWidthTwips: " + imageWidthTwips);
+			
+			long cx;
+			long cy;
+			boolean scaled = false;
+			if (imageWidthTwips>writableWidthTwips) {
+				
+				log.debug("Scaling image to fit page width");
+				scaled = true;
+				
+				cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
+				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips/imageWidthTwips);
+				
+			} else {
+
+				log.debug("Scaling image - not necessary");
+				
+				cx = UnitsOfMeasurement.twipToEMU(imageWidthTwips);
+				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
+				
+			}
+			
+			log.debug("cx=" + cx + "; cy=" + cy);
+			
+			return new CxCy(cx, cy, scaled);
+			
+			
+		}
+		
 	}
 	
 	
