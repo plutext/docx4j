@@ -85,18 +85,22 @@ public class Font extends AbstractRunProperty {
 			font=Mapper.FONT_FALLBACK;
 		}
 		
-		
-		PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(font);
-		if (pf!=null) {
-			log.debug("Font '" + font + "' maps to " + pf.getName() );
-			return pf.getName();
-		} else {
-			log.warn("Font '" + font + "' is not mapped to a physical font. " );			
-			return null;
-		}
+		return getPhysicalFont(wmlPackage, font);
 		
 	}
 
+	public static String getPhysicalFont(WordprocessingMLPackage wmlPackage, String fontName) {
+
+		PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(fontName);
+		if (pf!=null) {
+			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
+			return pf.getName();
+		} else {
+			log.warn("Font '" + fontName + "' is not mapped to a physical font. " );			
+			return null;
+		}		
+	}	
+	
 	@Override
 	public void setXslFO(Element foElement) {
 
@@ -107,10 +111,12 @@ public class Font extends AbstractRunProperty {
 		} 
 		
 	}
+		
 
 	@Override
 	public void set(RPr rPr) {
 		rPr.setRFonts((RFonts)this.getObject());
 	}
+	
 	
 }

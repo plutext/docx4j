@@ -30,6 +30,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
+import org.docx4j.model.SymbolModel;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -84,6 +85,7 @@ public class Converter {
   public Converter() {
     modelClasses = new HashMap<String, Class>();
     modelClasses.put("w:tbl", TableModel.class);
+    modelClasses.put("w:sym", SymbolModel.class);
 //    modelClasses.put("w:p", ParagraphModel.class);
 //    modelClasses.put("w:t", TextModel.class);
 //    modelClasses.put("wp:inline", ImageModel.class);

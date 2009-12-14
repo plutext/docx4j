@@ -40,7 +40,11 @@ public class NumberingProperty extends AbstractParagraphProperty {
 
 	@Override
 	public String getCssProperty() {
-		throw new RuntimeException("Not implemented");
+		
+		// Currently, numbering in HTML NG2 is handled via an extension function
+		// directly from the XSLT. 
+		return "";
+		//throw new RuntimeException("Not implemented");
 		
 	}
 

@@ -449,20 +449,7 @@
   	<xsl:apply-templates select="sdtContent"/>
   </xsl:template>
 
-  <xsl:template match="*">
-		      <fo:block font-size="12pt"
-		        color="red"
-                font-family="sans-serif"
-                line-height="15pt"
-                space-after.optimum="3pt"
-                text-align="justify">
-        NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>
-      </fo:block>  
-  </xsl:template>
 
-  <xsl:template match="w:br[@w:type = 'page']">
-  	<fo:block break-before="page"/>
-  </xsl:template>
   
   <xsl:template match="w:lastRenderedPageBreak" />
 
@@ -485,7 +472,26 @@
   			$pictureData, $picSize, $picLink, $linkDataNode)" />
     
   </xsl:template>
+  
 
+<xsl:template match="w:pict">
+
+	<xsl:choose>
+		<xsl:when test="./v:shape/v:imagedata">
+
+		  	<xsl:variable name="shape" select="./v:shape"/>
+		  	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
+		  	
+		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE10( $wmlPackage, string($imageDirPath),
+		  			$shape, $imageData)" />
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
+		</xsl:otherwise>
+	</xsl:choose>  			
+
+</xsl:template>
+  
   
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++ table support +++++++++++++++++++++++ -->
@@ -560,10 +566,138 @@
 				<fo:block break-before="page" />
 			</xsl:when>
 			<xsl:otherwise>
-				<fo:block />
+				<fo:block white-space-treatment="preserve"> </fo:block>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
 
+<xsl:template match="w:cr">
+	<fo:block white-space-treatment="preserve"> </fo:block>
+</xsl:template>
+
+<!--  <w:sym w:font="Wingdings" w:char="F04A"/> -->
+<xsl:template match="w:sym">
+
+	<xsl:variable name="childResults">
+		<xsl:apply-templates /> 
+	</xsl:variable>
+
+	<xsl:variable name="symNode" select="." />  			
+
+     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($symNode, 
+			$childResults, $modelStates)" />
+  		  			
+</xsl:template>
+
+
+
+  <xsl:template name="OutputTlcChar"> <!--  From MS stylesheet -->
+    <xsl:param name="count" select="0"/>
+    <xsl:param name="tlc" select="' '"/>
+    <xsl:value-of select="$tlc"/>
+    <xsl:if test="$count > 1">
+      <xsl:call-template name="OutputTlcChar">
+        <xsl:with-param name="count" select="$count - 1"/>
+        <xsl:with-param name="tlc" select="$tlc"/>
+      </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+<!-- 
+
+<w:p>
+	<w:pPr><w:tabs><w:tab w:val="left" w:pos="4320"/></w:tabs></w:pPr>
+	<w:r><w:t xml:space="preserve">Will tab.. </w:t></w:r><w:r>
+	<w:tab/>
+	<w:t>3 inches</w:t></w:r>
+</w:p>
+
+ -->
+<xsl:template match="w:tab"> 
+	<!--  Use this simple-minded approach from MS stylesheet,
+	      until our document model can do better.   -->
+    <xsl:call-template name="OutputTlcChar">
+      <xsl:with-param name="tlc">
+        <xsl:text disable-output-escaping="yes">&#160;</xsl:text>
+      </xsl:with-param>
+      <xsl:with-param name="count" select="3"/>
+    </xsl:call-template>
+</xsl:template>
+
+
+<xsl:template match="w:smartTag">
+    <xsl:apply-templates />
+</xsl:template>
+
+<!-- 
+  
+		<w:hyperlink r:id="rId4" w:history="true">
+			<w:r>
+				<w:rPr>
+				    <w:rStyle w:val="Hyperlink"/>
+				</w:rPr>
+				<w:t>hyperlink</w:t>
+			</w:r>
+		</w:hyperlink>
+-->  
+  <xsl:template match="w:hyperlink">
+    <fo:basic-link color="blue" text-decoration="underline" >
+	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
+      
+	<xsl:variable name="hTemp" 
+		select="java:org.docx4j.convert.out.html.HtmlExporter.resolveHref(
+		             $wmlPackage, $relId )" />
+		                   
+      <xsl:variable name="href">
+          <xsl:value-of select="$hTemp"/>
+        <xsl:choose>
+          <xsl:when test="@w:anchor"><xsl:value-of select="@w:anchor"/></xsl:when>
+          <xsl:when test="@w:bookmark"><xsl:value-of select="@w:bookmark"/></xsl:when>
+          <xsl:when test="@w:arbLocation"><xsl:value-of select="@w:arbLocation"/></xsl:when>
+        </xsl:choose>
+      </xsl:variable>
+      
+        <xsl:choose>
+          <xsl:when test="@w:bookmark">
+            <xsl:attribute name="internal-destination"><xsl:value-of select="$href"/></xsl:attribute>
+          </xsl:when>
+		<!--  TODO: id for anchor, heading etc? Re headers, I think Word may just insert a bookmark -->
+          <xsl:when test="@w:arbLocation">
+            <xsl:attribute name="internal-destination"><xsl:value-of select="$href"/></xsl:attribute>
+          </xsl:when>
+          <xsl:when test="@w:anchor">
+            <xsl:attribute name="internal-destination"><xsl:value-of select="$href"/></xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+          	<!--  TODO file? -->
+	        <xsl:attribute name="external-destination">url(<xsl:value-of select="$href"/>)</xsl:attribute>          
+          </xsl:otherwise>
+        </xsl:choose>
+      
+ 		<xsl:apply-templates />      
+    </fo:basic-link>
+  </xsl:template>
+
+<!-- <w:bookmarkStart w:id="0" w:name="mybm"/>  -->
+<xsl:template match="w:bookmarkStart" >
+	<fo:inline id="{@w:name}"/>
+</xsl:template>
+
+<xsl:template match="w:bookmarkEnd" />
+
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+  <xsl:template match="*">
+		      <fo:block font-size="12pt"
+		        color="red"
+                font-family="sans-serif"
+                line-height="15pt"
+                space-after.optimum="3pt"
+                text-align="justify">
+        NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>
+      </fo:block>  
+  </xsl:template>
 
 </xsl:stylesheet>

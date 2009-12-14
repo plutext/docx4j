@@ -31,6 +31,7 @@ import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -263,10 +264,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	      	  
 //	  		Converter c = new Converter();
 	      	Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+	      	Converter.getInstance().registerModelConverter("w:sym", new SymbolWriter() );
 	      	
 			// By convention, the transform state object is stored by reference to the 
 			// type of element to which its model applies
 			modelStates.put("w:tbl", new TableModelTransformState() );
+			modelStates.put("w:sym", new SymbolModelTransformState() );
 	      	
 	      	Converter.getInstance().start(wordMLPackage);
 	      	  
@@ -631,6 +634,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	}
 		
 	}
-    
+	
 }
     
