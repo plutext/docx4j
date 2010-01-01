@@ -27,6 +27,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +49,7 @@ import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ExternalTarget;
@@ -72,6 +74,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// these will differ depending on the nature of the data.
 		// Common binary parts should extend this class to 
 		// provide that information.
+	
+		this.getOwningRelationshipPart();
 		
 	}
 	
@@ -109,14 +113,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public void setImageInfo(ImageInfo imageInfo) {
 		this.imageInfo = imageInfo;
 	}
-
 	
 	// TODO, instead of Part.getOwningRelationshipPart(),
 	// it would be better to have getOwningRelationship(),
 	// and if required, to get OwningRelationshipPart from that
-	
-	// This is a temp workaround
-	
+	// This is a temp workaround	
 	Relationship rel;
 		
 	static int density = 150;	
@@ -158,6 +159,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 	}
 	
+	
 	/**
 	 * Create an image part from the provided byte array, attach it to the source part
 	 * (eg the main document part, a header part etc), and return it.
@@ -184,61 +186,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		fos.close();
 		log.debug("created tmp file: " +  tmpImageFile.getAbsolutePath() );
 				
-		// ImageInfo can also tell us what sort of image it is	
+		ImageInfo info = ensureFormatIsSupported(tmpImageFile.getAbsolutePath(), tmpImageFile, bytes);
 		
-		ImageInfo info = null;
-		boolean imagePreloaderFound = true;
-		try {
-			info = getImageInfo(tmpImageFile.getAbsolutePath() );
-			
-			// Debug ... note that these figures 
-			// aren't necessarily accurate for EPS
-			displayImageInfo(info);
-		} catch (org.apache.xmlgraphics.image.loader.ImageException e) {
-			
-			// Assume: The file format is not supported. No ImagePreloader found for /tmp/img55623.img
-			// There is no preloader for eg PDFs.
-			// (To use an image natively, we do need a preloader)
-			imagePreloaderFound = false;
-			log.warn(e.getMessage() );
-		}
-		
-		if ( imagePreloaderFound &&
-				(info.getMimeType().equals(ContentTypes.IMAGE_TIFF)
-				|| info.getMimeType().equals(ContentTypes.IMAGE_EMF) 
-				|| info.getMimeType().equals(ContentTypes.IMAGE_WMF) 
-				|| info.getMimeType().equals(ContentTypes.IMAGE_PNG) 
-				|| info.getMimeType().equals(ContentTypes.IMAGE_JPEG) 
-				|| info.getMimeType().equals(ContentTypes.IMAGE_GIF) )  ) {
-				// TODO: add other supported formats
-			
-			// If its a format Word supports natively, 
-			// do nothing here
-			log.debug(".. supported natively by Word");		
-			
-			
-		} else {
-			
-			// otherwise (eg if its an EPS or PDF), try to convert it
-			// (TODO: detect failure)
-
-			log.debug(".. attempting to convert to PNG");		
-			
-			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);			
-			fos = new FileOutputStream(tmpImageFile); //reuse
-						
-			convertToPNG(bais, fos, density);
-			fos.close();
-			
-			// We need to refresh image info 
-			imageManager.getCache().clearCache();
-			info = getImageInfo(tmpImageFile.getAbsolutePath() );
-			
-			// Debug ...
-			displayImageInfo(info);
-		}
-		
-		// In either case, tmpImageFile now contains an image 
+		// In the absence of an exception, tmpImageFile now contains an image 
 		// Word will accept
 		
 		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
@@ -246,7 +196,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				generateName() );
 		log.debug("created part " + imagePart.getClass().getName() +
 				" with name " + imagePart.getPartName().toString() );		
-		
 		
 		FileInputStream fis = new FileInputStream(tmpImageFile); //reuse		
 		imagePart.setBinaryData( fis );
@@ -260,14 +209,139 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 		return imagePart;
 		
+	}
+
+	/**
+	 * @param bytes
+	 * @param imageFile
+	 * @return
+	 * @throws Exception
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
+	private static ImageInfo ensureFormatIsSupported(String uri, File imageFile, byte[] bytes) throws Docx4JException {
+		
+		FileOutputStream fos;
+		// ImageInfo can also tell us what sort of image it is	
+		
+		ImageInfo info = null;
+		boolean imagePreloaderFound = true;
+		try {
+			try {
+				info = getImageInfo(uri);
+				
+				// Debug ... note that these figures 
+				// aren't necessarily accurate for EPS
+				displayImageInfo(info);
+			} catch (org.apache.xmlgraphics.image.loader.ImageException e) {
+				
+				// Assume: The file format is not supported. No ImagePreloader found for /tmp/img55623.img
+				// There is no preloader for eg PDFs.
+				// (To use an image natively, we do need a preloader)
+				imagePreloaderFound = false;
+				log.warn(e.getMessage() );
 			}
+			
+			if ( imagePreloaderFound &&
+					(info.getMimeType().equals(ContentTypes.IMAGE_TIFF)
+					|| info.getMimeType().equals(ContentTypes.IMAGE_EMF) 
+					|| info.getMimeType().equals(ContentTypes.IMAGE_WMF) 
+					|| info.getMimeType().equals(ContentTypes.IMAGE_PNG) 
+					|| info.getMimeType().equals(ContentTypes.IMAGE_JPEG) 
+					|| info.getMimeType().equals(ContentTypes.IMAGE_GIF) )  ) {
+					// TODO: add other supported formats
+				
+				// If its a format Word supports natively, 
+				// do nothing here
+				log.debug(".. supported natively by Word");					
+				
+			} else if ( imageFile!=null && bytes!=null ) {
+				
+				// otherwise (eg if its an EPS or PDF), try to convert it
+				// (TODO: detect failure)
+
+				log.debug(".. attempting to convert to PNG");		
+				
+				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);			
+				fos = new FileOutputStream(imageFile); //reuse
+							
+				convertToPNG(bais, fos, density);
+				fos.close();
+				
+				// We need to refresh image info 
+				imageManager.getCache().clearCache();
+				info = getImageInfo(imageFile.getAbsolutePath() );
+				
+				// Debug ...
+				displayImageInfo(info);
+			} else {
+				throw new Docx4JException("Unsupported linked image type.");
+			}
+		} catch (Exception e) {
+			throw new Docx4JException("Error checking image format", e);
+		} 
+		return info;
+	}
 	
 
 	/**
+	 * Create a linked image part, and attach it as a rel of the main document part
+	 * @param wordMLPackage
+	 * @param fileurl
+	 * @return
+	 * @throws Exception
+	 */
+	public static BinaryPartAbstractImage createLinkedImagePart(WordprocessingMLPackage wordMLPackage, 
+			String fileurl) throws Exception {
+		
+		return createLinkedImagePart(wordMLPackage,
+				wordMLPackage.getMainDocumentPart(), fileurl);
+	}
+	
+	/**
+	 * Create a linked image part, and attach it as a rel of the specified source part
+	 * (eg a header part)
+	 * 
+	 * @param wordMLPackage
+	 * @param sourcePart
+	 * @param fileurl
+	 * @return
+	 * @throws Exception
+	 */
+	public static BinaryPartAbstractImage createLinkedImagePart(WordprocessingMLPackage wordMLPackage, 
+			Part sourcePart, String fileurl) throws Exception {
+		
+		ImageInfo info = ensureFormatIsSupported(fileurl, null,null);
+
+		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
+		BinaryPartAbstractImage imagePart = (BinaryPartAbstractImage) ctm.newPartForContentType(info.getMimeType(), 
+				generateName());
+		log.debug("created part " + imagePart.getClass().getName()
+				+ " with name " + imagePart.getPartName().toString());
+
+		imagePart.rel = sourcePart.addTargetPart(imagePart);
+		imagePart.rel.setTargetMode("External");
+
+		wordMLPackage.getExternalResources().put(imagePart.getExternalTarget(), imagePart);			
+		
+		if (!fileurl.startsWith("file:///") && new File(fileurl).isFile()) {
+			imagePart.rel.setTarget("file:///" + fileurl);
+		} else {
+			imagePart.rel.setTarget(fileurl);
+		}
+
+		imagePart.setImageInfo(info);
+		return imagePart;
+	}	
+
+	
+	/**
 	 * Create a <wp:inline> element suitable for this image,
-	 * which can be embedded in w:p/w:r/w:drawing.
+	 * which can be _embedded_ in w:p/w:r/w:drawing.
 	 * If the image is wider than the page, it will be scaled
-	 * automatically.
+	 * automatically. To avoid the deprecated warning, use the
+	 * same method, but with an additional argument of false appended.  
 	 * @param filenameHint Any text, for example the original filename
 	 * @param altText  Like HTML's alt text
 	 * @param id1   An id unique in the document
@@ -277,8 +351,32 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * any of the attributes these go in (except @ desc) aren't present!
 	 * @throws Exception
 	 */
+	@Deprecated
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2) throws Exception {
+		
+		return createImageInline( filenameHint,  altText, 
+				 id1,  id2, false);
+
+	}
+	
+	/**
+	 * Create a <wp:inline> element suitable for this image,
+	 * which can be linked or embedded in w:p/w:r/w:drawing.
+	 * If the image is wider than the page, it will be scaled
+	 * automatically.
+	 * @param filenameHint Any text, for example the original filename
+	 * @param altText  Like HTML's alt text
+	 * @param id1   An id unique in the document
+	 * @param id2   Another id unique in the document
+	 * @param link  true if this is to be linked not embedded
+	 * None of these things seem to be exposed in Word 2007's
+	 * user interface, but Word won't open the document if 
+	 * any of the attributes these go in (except @ desc) aren't present!
+	 * @throws Exception
+	 */
+	public Inline createImageInline(String filenameHint, String altText, 
+			int id1, int id2, boolean link) throws Exception {
 				
 		WordprocessingMLPackage wmlPackage = ((WordprocessingMLPackage)this.getPackage());
 		
@@ -288,87 +386,14 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		CxCy cxcy = CxCy.scale(imageInfo, page);
  
 		return createImageInline( filenameHint,  altText, 
-				 id1,  id2,  cxcy.getCx(),  cxcy.getCy() );		
-	}
-	
-	public static class CxCy {
-		
-		long cx;
-		/**
-		 * @return the resulting cx
-		 */
-		public long getCx() {
-			return cx;
-		}
-
-		long cy;
-		/**
-		 * @return the resulting cy
-		 */
-		public long getCy() {
-			return cy;
-		}
-		boolean scaled;
-		/**
-		 * @return whether it was necessary to scale
-		 * the image to fit the page width
-		 */
-		public boolean isScaled() {
-			return scaled;
-		}
-		
-		CxCy(long cx, long cy, boolean scaled) {
-			
-			this.cx = cx;
-			this.cy = cy;
-			this.scaled = scaled;
-			
-		}
-		
-		public static CxCy scale(ImageInfo imageInfo, PageDimensions page) {
-			
-			double writableWidthTwips = page.getWritableWidthTwips(); 				
-			log.debug("writableWidthTwips: " + writableWidthTwips);
-			
-			  ImageSize size = imageInfo.getSize();
-			  
-			  Dimension2D dPt = size.getDimensionPt();
-			double imageWidthTwips = dPt.getWidth() * 20;
-			log.debug("imageWidthTwips: " + imageWidthTwips);
-			
-			long cx;
-			long cy;
-			boolean scaled = false;
-			if (imageWidthTwips>writableWidthTwips) {
-				
-				log.debug("Scaling image to fit page width");
-				scaled = true;
-				
-				cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
-				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips/imageWidthTwips);
-				
-			} else {
-
-				log.debug("Scaling image - not necessary");
-				
-				cx = UnitsOfMeasurement.twipToEMU(imageWidthTwips);
-				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
-				
-			}
-			
-			log.debug("cx=" + cx + "; cy=" + cy);
-			
-			return new CxCy(cx, cy, scaled);
-			
-			
-		}
-		
+				 id1,  id2,  cxcy.getCx(),  cxcy.getCy(), link );		
 	}
 	
 	
 	/**
 	 * Create a <wp:inline> element suitable for this image,
-	 * which can be embedded in w:p/w:r/w:drawing.
+	 * which can be _embedded_ in w:p/w:r/w:drawing. To avoid the deprecated warning, use the
+	 * same method, but with an additional argument of false appended.
 	 * @param filenameHint Any text, for example the original filename
 	 * @param altText  Like HTML's alt text
 	 * @param id1   An id unique in the document
@@ -379,8 +404,31 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * any of the attributes these go in (except @ desc) aren't present!
 	 * @throws Exception
 	 */
+	@Deprecated
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2, long cx) throws Exception {
+		
+		return createImageInline( filenameHint,  altText, 
+				 id1,  id2, cx, false);
+
+	}
+	
+	/**
+	 * Create a <wp:inline> element suitable for this image,
+	 * which can be _embedded_ in w:p/w:r/w:drawing.
+	 * @param filenameHint Any text, for example the original filename
+	 * @param altText  Like HTML's alt text
+	 * @param id1   An id unique in the document
+	 * @param id2   Another id unique in the document
+	 * @param cx    Image width in twip
+	 * @param link  true if this is to be linked not embedded
+	 * None of these things seem to be exposed in Word 2007's
+	 * user interface, but Word won't open the document if 
+	 * any of the attributes these go in (except @ desc) aren't present!
+	 * @throws Exception
+	 */
+	public Inline createImageInline(String filenameHint, String altText, 
+			int id1, int id2, long cx, boolean link) throws Exception {
 		
 		ImageSize size = imageInfo.getSize();
 
@@ -399,12 +447,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 		log.debug("cx=" + cx + "; cy=" + cy);
 
-		return createImageInline(filenameHint, altText, id1, id2, cx, cy);		
+		return createImageInline(filenameHint, altText, id1, id2, cx, cy, link);		
 	}
 
 	/**
 	 * Create a <wp:inline> element suitable for this image, which can be
-	 * embedded in w:p/w:r/w:drawing, specifying height and width.  Note
+	 * linked or embedded in w:p/w:r/w:drawing, specifying height and width.  Note
 	 * that you'd ordinarily use one of the methods which don't require
 	 * you to specify height (cy). 
 	 * 
@@ -421,16 +469,24 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 *            present!
 	 * @param cx    Image width in twip
 	 * @param cy    Image height in twip
+	 * @param link  true if this is to be linked not embedded
 	 * @throws Exception
 	 */
 	public Inline createImageInline(String filenameHint, String altText, 
-			int id1, int id2, long cx, long cy) throws Exception {
+			int id1, int id2, long cx, long cy, boolean link) throws Exception {
 		
 		if (filenameHint==null) {
 			filenameHint = "";
 		}
 		if (altText==null) {
 			altText = "";
+		}
+		
+		String type;
+		if (link) {
+			type = "r:link";
+		} else {
+			type = "r:embed";
 		}
 		
         String ml =
@@ -441,7 +497,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         "<wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>" +  //l=\"19050\"
         "<wp:docPr id=\"${id1}\" name=\"${filenameHint}\" descr=\"${altText}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">" +
         "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">" +
-        "<pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"${id2}\" name=\"${filenameHint}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>" +
+        "<pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"${id2}\" name=\"${filenameHint}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill>" +
+        "<a:blip " + type +"=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>" +
         "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"${cx}\" cy=\"${cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic>" +
         "</wp:inline>"; // +
 //        "</w:drawing>" +
@@ -584,6 +641,79 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		return null;
 	}
 	
+	public static class CxCy {
+		
+		long cx;
+		/**
+		 * @return the resulting cx
+		 */
+		public long getCx() {
+			return cx;
+		}
+
+		long cy;
+		/**
+		 * @return the resulting cy
+		 */
+		public long getCy() {
+			return cy;
+		}
+		boolean scaled;
+		/**
+		 * @return whether it was necessary to scale
+		 * the image to fit the page width
+		 */
+		public boolean isScaled() {
+			return scaled;
+		}
+		
+		CxCy(long cx, long cy, boolean scaled) {
+			
+			this.cx = cx;
+			this.cy = cy;
+			this.scaled = scaled;
+			
+		}
+		
+		public static CxCy scale(ImageInfo imageInfo, PageDimensions page) {
+			
+			double writableWidthTwips = page.getWritableWidthTwips(); 				
+			log.debug("writableWidthTwips: " + writableWidthTwips);
+			
+			  ImageSize size = imageInfo.getSize();
+			  
+			  Dimension2D dPt = size.getDimensionPt();
+			double imageWidthTwips = dPt.getWidth() * 20;
+			log.debug("imageWidthTwips: " + imageWidthTwips);
+			
+			long cx;
+			long cy;
+			boolean scaled = false;
+			if (imageWidthTwips>writableWidthTwips) {
+				
+				log.debug("Scaling image to fit page width");
+				scaled = true;
+				
+				cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
+				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips/imageWidthTwips);
+				
+			} else {
+
+				log.debug("Scaling image - not necessary");
+				
+				cx = UnitsOfMeasurement.twipToEMU(imageWidthTwips);
+				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20);			
+				
+			}
+			
+			log.debug("cx=" + cx + "; cy=" + cy);
+			
+			return new CxCy(cx, cy, scaled);
+			
+			
+		}
+		
+	}
 
 	/**
 	 * Convert image formats which are not supported by Word (eg EPS, PDF),
