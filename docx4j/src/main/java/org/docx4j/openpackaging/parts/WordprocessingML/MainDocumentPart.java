@@ -306,7 +306,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 					inspectRPr(run.getRPr(), fontsDiscovered, stylesInUse);
 				}
 
-				// don't need to traverse run.getRunContent()
+				// need to traverse run.getRunContent() for w:sym only
+				traverseMainDocumentRecursive(run.getRunContent(),
+						fontsDiscovered, stylesInUse);
 				
 			} else if (o instanceof org.w3c.dom.Node) {
 				
@@ -327,7 +329,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				
 			} else if ( o instanceof javax.xml.bind.JAXBElement) {
 
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
+				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
+					
+					// Ignore
+					
+				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
 					
 					org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();						
 					inspectTable(tbl, fontsDiscovered, stylesInUse );
@@ -337,7 +343,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 					org.docx4j.wml.P.Hyperlink hyperlink = (org.docx4j.wml.P.Hyperlink)((JAXBElement)o).getValue();							
 					traverseMainDocumentRecursive(hyperlink.getParagraphContent(),
 							fontsDiscovered, stylesInUse);
-						
+				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.R$Sym") ) {
+
+					org.docx4j.wml.R.Sym sym = (org.docx4j.wml.R.Sym)((JAXBElement)o).getValue(); 
+					fontsDiscovered.put(sym.getFont(), sym.getFont());
+
 				} else if ( log.isDebugEnabled() ){
 					log.debug( XmlUtils.JAXBElementDebug((JAXBElement)o) );
 				}
