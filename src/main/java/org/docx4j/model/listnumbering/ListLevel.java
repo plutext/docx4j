@@ -98,8 +98,7 @@ import org.docx4j.wml.Numbering;
 import org.docx4j.wml.PPrBase.NumPr;
 
 public class ListLevel {
-	
-	
+		
 	protected static Logger log = Logger.getLogger(ListLevel.class);
 	
 	private Lvl jaxbAbstractLvl;
@@ -112,268 +111,276 @@ public class ListLevel {
 		return jaxbOverrideLvl;
 	}
 	
-        public ListLevel(Lvl levelNode)
+    public ListLevel(Lvl levelNode)
+    {
+    	this.jaxbAbstractLvl = levelNode;
+    	
+        this.id = levelNode.getIlvl().toString(); 
+
+        Lvl.Start startValueNode = levelNode.getStart();
+        if (startValueNode != null)
         {
-        	this.jaxbAbstractLvl = levelNode;
-        	
-            this.id = levelNode.getIlvl().toString(); 
-
-            Lvl.Start startValueNode = levelNode.getStart();
-            if (startValueNode != null)
-            {
-            	this.startValue = startValueNode.getVal().subtract(BigInteger.ONE);
-            		// Start value is one less than the user set it to,
-            		// since whenever we fetch the number, we first increment it.
-                this.counter = this.startValue;
-            }
-
-            Lvl.LvlText levelTextNode = levelNode.getLvlText();
-            if (levelTextNode != null)
-            {
-                this.levelText = levelTextNode.getVal(); 
-            }
-
-            org.docx4j.wml.RFonts fontNode = null;
-            if (levelNode.getRPr() != null) {
-                //XmlNode fontNode = levelNode.SelectSingleNode(".//w:rFonts", nsm);
-            	fontNode = levelNode.getRPr().getRFonts();
-            }
-            if (fontNode != null)
-            {
-                this.font = fontNode.getHAnsi(); //getAttributeValue(fontNode, "w:hAnsi");
-            }
-
-            //XmlNode enumTypeNode = levelNode.SelectSingleNode("w:numFmt", nsm);
-            
-            NumFmt enumTypeNode = levelNode.getNumFmt();
-            if (enumTypeNode != null)
-            {
-            	this.numFmt =  enumTypeNode.getVal(); 
-
-                // w:numFmt="bullet" indicates a bulleted list
-            	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
-            	
-                // this.isBullet = String.Compare(type, "bullet", StringComparison.OrdinalIgnoreCase) == 0;
-            }
-
+        	this.startValue = startValueNode.getVal().subtract(BigInteger.ONE);
+        		// Start value is one less than the user set it to,
+        		// since whenever we fetch the number, we first increment it.
+            this.counter = this.startValue;
         }
 
-        /// <summary>
-        /// copy constructor
-        /// </summary>
-        /// <param name="masterCopy"></param>
-        public ListLevel(ListLevel masterCopy)
+        Lvl.LvlText levelTextNode = levelNode.getLvlText();
+        if (levelTextNode != null)
         {
-        	this.jaxbAbstractLvl = masterCopy.jaxbAbstractLvl;
-        	
-            this.id = masterCopy.id;
-            this.levelText = masterCopy.levelText;
-            this.startValue = masterCopy.startValue;
-            this.counter = this.startValue;
-            this.font = masterCopy.font;
-            this.isBullet = masterCopy.isBullet;
-            this.numFmt = masterCopy.numFmt;
+            this.levelText = levelTextNode.getVal(); 
         }
 
-        /// <summary>
-        /// Get overridden values
-        /// </summary>
-        /// <param name="levelNode"></param>
-        /// <param name="nsm"></param>
-        public void SetOverrides(Lvl levelNode)
-        {
-        	this.jaxbOverrideLvl = levelNode;
-        	
-            Lvl.Start startValueNode = levelNode.getStart();
-            if (startValueNode != null)
-            {
-            	this.startValue = startValueNode.getVal(); 
-            }
-            this.counter = this.startValue;
-
-            Lvl.LvlText levelTextNode = levelNode.getLvlText();
-            if (levelTextNode != null)
-            {
-                this.levelText = levelTextNode.getVal(); 
-            }
-
+        org.docx4j.wml.RFonts fontNode = null;
+        if (levelNode.getRPr() != null) {
             //XmlNode fontNode = levelNode.SelectSingleNode(".//w:rFonts", nsm);
-            org.docx4j.wml.RFonts fontNode = levelNode.getRPr().getRFonts();
-            if (fontNode != null)
-            {
-                this.font = fontNode.getHAnsi(); 
-            }
-
-            //XmlNode enumTypeNode = levelNode.SelectSingleNode("w:numFmt", nsm);            
-            NumFmt enumTypeNode = levelNode.getNumFmt();
-            if (enumTypeNode != null)
-            {
-            	this.numFmt =  enumTypeNode.getVal(); 
-
-                // w:numFmt="bullet" indicates a bulleted list
-            	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
-            }
+        	fontNode = levelNode.getRPr().getRFonts();
         }
+        if (fontNode != null)
+        {
+            this.font = fontNode.getHAnsi(); //getAttributeValue(fontNode, "w:hAnsi");
+        }
+
+        //XmlNode enumTypeNode = levelNode.SelectSingleNode("w:numFmt", nsm);
         
-        
-
-        private String id;
-
-        /// <summary>
-        /// returns the ID of the level
-        /// </summary>
-        public String getID()
+        NumFmt enumTypeNode = levelNode.getNumFmt();
+        if (enumTypeNode != null)
         {
-                return this.id;
-        }
+        	this.numFmt =  enumTypeNode.getVal(); 
 
-        private BigInteger startValue = BigInteger.ZERO;
-
-        /// <summary>
-        /// start value of that level
-        /// </summary>
-        public BigInteger getStartValue()
-        {
-                return this.startValue;
-        }
-
-        private BigInteger counter;
-
-        /// <summary>
-        /// returns the current count of list items of that level
-        /// </summary>
-        public BigInteger getCurrentValueRaw()
-        {        	
-                return this.counter;
-        }
-
-        /**
-         * The current number, formatted using numFmt.
-         */
-        public String getCurrentValueFormatted()
-        {
-        	/*
-        	 * If you look at the OpenXML spec or
-        	 * STNumberFormat.java, you'll see there are some 60 number formats.
-        	 * 
-        	 * Of these, we currently aim to support:
-        	 * 
-			 *     decimal
-			 *     upperRoman
-			 *     lowerRoman
-			 *     upperLetter
-			 *     lowerLetter
-			 *     bullet
-			 *     none
-			 *     
-			 * What about?
-			 *     
-			 *     ordinal
-			 *     cardinalText
-			 *     ordinalText
-        	 * 
-        	 */
+            // w:numFmt="bullet" indicates a bulleted list
+        	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
         	
-        	if (numFmt.equals( NumberFormat.DECIMAL ) ) {
-        		return this.counter.toString();
-        	}
-        	
-        	if (numFmt.equals( NumberFormat.NONE ) ) {
-        		return "";        		
-        	}
+            // this.isBullet = String.Compare(type, "bullet", StringComparison.OrdinalIgnoreCase) == 0;
+        }
 
-        	if (numFmt.equals( NumberFormat.BULLET ) ) {
-        		
-        		// TODO - revisit how this is handled.
-        		// The code elsewhere for handling bullets
-        		// overlaps with this numFmt stuff.
-        		return "*";        		
-        	}
-        	        	
-        	int current = this.counter.intValue();
-        	
-        	if (numFmt.equals( NumberFormat.UPPER_ROMAN ) ) {        		
-        		NumberFormatRomanUpper converter = new NumberFormatRomanUpper(); 
-        		return converter.format(current);
-        	}
-        	if (numFmt.equals( NumberFormat.LOWER_ROMAN ) ) {        		
-        		NumberFormatRomanLower converter = new NumberFormatRomanLower(); 
-        		return converter.format(current);
-        	}
-        	if (numFmt.equals( NumberFormat.LOWER_LETTER ) ) {        		
-        		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
-        		return converter.format(current);
-        	}
-        	if (numFmt.equals( NumberFormat.UPPER_LETTER ) ) {        		
-        		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
-        		return converter.format(current).toUpperCase();
-        	}        	
-        	
-        	log.error("Unhandled numFmt: " + numFmt.name() );
-            return this.counter.toString();
+    }
+
+    /** copy constructor
+     * 
+     * @param masterCopy
+     */
+    public ListLevel(ListLevel masterCopy)
+    {
+    	this.jaxbAbstractLvl = masterCopy.jaxbAbstractLvl;
+    	
+        this.id = masterCopy.id;
+        this.levelText = masterCopy.levelText;
+        this.startValue = masterCopy.startValue;
+        this.counter = this.startValue;
+        this.font = masterCopy.font;
+        this.isBullet = masterCopy.isBullet;
+        this.numFmt = masterCopy.numFmt;
+    }
+
+    /**
+     * Get overridden values
+     * @param levelNode
+     */
+    public void SetOverrides(Lvl levelNode)
+    {
+    	this.jaxbOverrideLvl = levelNode;
+    	
+        Lvl.Start startValueNode = levelNode.getStart();
+        if (startValueNode != null)
+        {
+        	this.startValue = startValueNode.getVal(); 
+        }
+        this.counter = this.startValue;
+
+        Lvl.LvlText levelTextNode = levelNode.getLvlText();
+        if (levelTextNode != null)
+        {
+            this.levelText = levelTextNode.getVal(); 
+        }
+
+        //XmlNode fontNode = levelNode.SelectSingleNode(".//w:rFonts", nsm);
+        org.docx4j.wml.RFonts fontNode =null;
+        if (levelNode.getRPr() != null) {
+        	fontNode = levelNode.getRPr().getRFonts();
         }
         
+        if (fontNode != null)
+        {
+            this.font = fontNode.getHAnsi(); 
+        }
+
+        //XmlNode enumTypeNode = levelNode.SelectSingleNode("w:numFmt", nsm);            
+        NumFmt enumTypeNode = levelNode.getNumFmt();
+        if (enumTypeNode != null)
+        {
+        	this.numFmt =  enumTypeNode.getVal(); 
+
+            // w:numFmt="bullet" indicates a bulleted list
+        	this.isBullet = numFmt.equals( NumberFormat.BULLET ); 
+        }
+    }
+    
+    
+
+    private String id;
+
+    /**
+     * returns the ID of the level
+     * @return
+     */
+    public String getID()
+    {
+            return this.id;
+    }
+
+    private BigInteger startValue = BigInteger.ZERO;
+
+    /**
+     * start value of that level
+     * @return
+     */
+    public BigInteger getStartValue()
+    {
+            return this.startValue;
+    }
+
+    private BigInteger counter;
+
+    /**
+     * returns the current count of list items of that level
+     * @return
+     */
+    public BigInteger getCurrentValueRaw()
+    {        	
+            return this.counter;
+    }
+
+    /**
+     * The current number, formatted using numFmt.
+     */
+    public String getCurrentValueFormatted()
+    {
+    	/*
+    	 * If you look at the OpenXML spec or
+    	 * STNumberFormat.java, you'll see there are some 60 number formats.
+    	 * 
+    	 * Of these, we currently aim to support:
+    	 * 
+		 *     decimal
+		 *     upperRoman
+		 *     lowerRoman
+		 *     upperLetter
+		 *     lowerLetter
+		 *     bullet
+		 *     none
+		 *     
+		 * What about?
+		 *     
+		 *     ordinal
+		 *     cardinalText
+		 *     ordinalText
+    	 * 
+    	 */
+    	
+    	if (numFmt.equals( NumberFormat.DECIMAL ) ) {
+    		return this.counter.toString();
+    	}
+    	
+    	if (numFmt.equals( NumberFormat.NONE ) ) {
+    		return "";        		
+    	}
+
+    	if (numFmt.equals( NumberFormat.BULLET ) ) {
+    		
+    		// TODO - revisit how this is handled.
+    		// The code elsewhere for handling bullets
+    		// overlaps with this numFmt stuff.
+    		return "*";        		
+    	}
+    	        	
+    	int current = this.counter.intValue();
+    	
+    	if (numFmt.equals( NumberFormat.UPPER_ROMAN ) ) {        		
+    		NumberFormatRomanUpper converter = new NumberFormatRomanUpper(); 
+    		return converter.format(current);
+    	}
+    	if (numFmt.equals( NumberFormat.LOWER_ROMAN ) ) {        		
+    		NumberFormatRomanLower converter = new NumberFormatRomanLower(); 
+    		return converter.format(current);
+    	}
+    	if (numFmt.equals( NumberFormat.LOWER_LETTER ) ) {        		
+    		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
+    		return converter.format(current);
+    	}
+    	if (numFmt.equals( NumberFormat.UPPER_LETTER ) ) {        		
+    		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
+    		return converter.format(current).toUpperCase();
+    	}        	
+    	
+    	log.error("Unhandled numFmt: " + numFmt.name() );
+        return this.counter.toString();
+    }
+    
+    
+    /**
+     * increments the current count of list items of that level 
+     */
+    public void IncrementCounter()
+    {
+        this.counter = this.counter.add(BigInteger.ONE); 
         
-        /// <summary>
-        /// increments the current count of list items of that level
-        /// </summary>
-        public void IncrementCounter()
-        {
-            this.counter = this.counter.add(BigInteger.ONE); 
-            
-            log.debug("counter now: " + this.counter.toString() );
-            
-        }
-
-        /// <summary>
-        /// resets the counter to the start value
-        /// </summary>
-        /// <id guid="823b5a3c-7501-4746-8dc4-7b098de5947a" />
-        /// <owner alias="ROrleth" />
-        public void ResetCounter()
-        {
-            this.counter = this.startValue;
-        }
-
-        private String levelText;
-
-        /// <summary>
-        /// returns the indicated lvlText value
-        /// </summary>
-        public String getLevelText()
-        {
-                return this.levelText;
-        }
-
-        private String font;
-
-        /// <summary>
-        /// returns the font name
-        /// </summary>
-        public String getFont()
-        {
-                return this.font;
-        }
+        log.debug("counter now: " + this.counter.toString() );
         
-        private NumberFormat numFmt; // TODO: alter schema 
-        // w:numFmt = RTF's \levelnfcN
+    }
+
+    /**
+     * resets the counter to the start value
+     */
+    public void ResetCounter()
+    {
+        this.counter = this.startValue;
+    }
+
+    private String levelText;
+
+    /**
+     * returns the indicated lvlText value
+     * @return
+     */
+    public String getLevelText()
+    {
+            return this.levelText;
+    }
+
+    private String font;
+
+    /**
+     * returns the font name
+     * @return
+     */
+    public String getFont()
+    {
+            return this.font;
+    }
+    
+    private NumberFormat numFmt; // TODO: alter schema 
+    // w:numFmt = RTF's \levelnfcN
 
 //		private void setNumFmt(STNumberFormat numFmt) {
 //			this.numFmt = numFmt;
 //		}
-		private NumberFormat getNumFmt() {
-			return numFmt;
-		}
+	private NumberFormat getNumFmt() {
+		return numFmt;
+	}
 
-        private boolean isBullet;
+    private boolean isBullet;
 
-        /// <summary>
-        /// returns whether the enumeration type is a bulleted list or not
-        /// </summary>
-        public boolean IsBullet()
-        {
-                return this.isBullet;
-        }
-
+    /**
+     * returns whether the enumeration type is a bulleted list or not
+     * 
+     * @return
+     */
+    public boolean IsBullet()
+    {
+            return this.isBullet;
     }
+
+}
 
