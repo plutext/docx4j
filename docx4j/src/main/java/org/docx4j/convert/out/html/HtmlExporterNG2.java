@@ -275,8 +275,12 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	
 		//DTMNodeProxy n = (DTMNodeProxy)tables.nextNode();
     	Element n = (Element)tables.nextNode();
+		if (n==null) {
+			// No tables in this document
+			return "";
+		}    	
     	int idx = 0;
-		do {	
+		do {
 			if (n.getNodeName().equals("w:tbl" )) {
 				// n.getLocalName() -> tbl
 				// n.getNodeName() -> w:tbl
