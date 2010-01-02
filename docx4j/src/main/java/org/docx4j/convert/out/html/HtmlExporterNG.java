@@ -190,18 +190,8 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 			// ..Ensure that the font names in the XHTML have been mapped to these matches
 			//     possibly via an extension function in the XSLT
 		}
-
 		
-
-		if (htmlSettings.getFontMapper()==null) {
-			
-			if (wmlPackage.getFontMapper()==null) {
-				log.debug("Creating new Substituter.");
-//				wmlPackage.setFontSubstituter(new SubstituterImplPanose());
-				wmlPackage.setFontMapper(new IdentityPlusMapper());
-			} else {
-				log.debug("Using existing Substituter.");
-			}
+		if (htmlSettings.getFontMapper()==null) {			
 			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
 			log.debug("FontMapper set.. ");
 		}

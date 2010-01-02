@@ -369,9 +369,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 					org.docx4j.wml.P.Hyperlink hyperlink = (org.docx4j.wml.P.Hyperlink)((JAXBElement)o).getValue();							
 					traverseMainDocumentRecursive(hyperlink.getParagraphContent(),
 							fontsDiscovered, stylesInUse);
-				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.R$Sym") ) {
+				} else if ( fontsDiscovered !=null && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.R$Sym") ) {
 
-					org.docx4j.wml.R.Sym sym = (org.docx4j.wml.R.Sym)((JAXBElement)o).getValue(); 
+					org.docx4j.wml.R.Sym sym = (org.docx4j.wml.R.Sym)((JAXBElement)o).getValue();
 					fontsDiscovered.put(sym.getFont(), sym.getFont());
 
 				} else if ( log.isDebugEnabled() ){

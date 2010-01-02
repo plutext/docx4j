@@ -100,6 +100,11 @@ public abstract class Part extends Base {
 	 * (since Package has one as well). 
 	 */
 	private RelationshipsPart owningRelationshipPart;
+	
+	// TODO, instead of Part.getOwningRelationshipPart(),
+	// it would be better to have getOwningRelationship(),
+	// and if required, to get OwningRelationshipPart from that
+
 		
 	public RelationshipsPart getOwningRelationshipPart() {
 		return owningRelationshipPart;
