@@ -49,7 +49,7 @@
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
 
-        <pathelement location="${m2Repository}/docx4j/fop-patched/0.95.756436/fop-patched-0.95.756436.jar"/>
+        <pathelement location="${m2Repository}/docx4j/fop-patched/0.95.756437/fop-patched-0.95.756437.jar"/>
         <pathelement location="${m2Repository}/org/apache/commons/commons-vfs-patched/1.9.1/commons-vfs-patched-1.9.1.jar"/>
     </path>
     <path id="docx4j.classpath">
