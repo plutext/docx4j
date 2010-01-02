@@ -350,6 +350,16 @@ public class WordprocessingMLPackage extends Package {
 	}
 
 	private Mapper fontMapper;
+	
+	
+	private String defaultFont;
+	public String getDefaultFont() {
+		
+		if (defaultFont!=null) {
+			defaultFont = mainDoc.getPropertyResolver().getDefaultFont();			
+		}
+		return defaultFont;		
+	}
     	
 
 	public static WordprocessingMLPackage createPackage() throws InvalidFormatException {
