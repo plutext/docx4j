@@ -27,6 +27,7 @@ import java.util.HashMap;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.listnumbering.Emulator;
@@ -137,7 +138,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
     
     /**
      * For the given list numId, restart the numbering on the specified
-     * level at value val.  This is done by creating a new list.
+     * level at value val.  This is done by creating a new list (ie <w:num>)
+     * which uses the existing w:abstractNum.
      * @param numId
      * @param ilvl
      * @param val
@@ -161,8 +163,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
     	// Generate the new <w:num
     	long newNumId = instanceListDefinitions.size() + 1;
     	
-		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-			// TODO - have a static wmlFactory defined in Base? 
+		org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 		
 		Num newNum = factory.createNumberingNum();
 		newNum.setNumId( BigInteger.valueOf(newNumId) );

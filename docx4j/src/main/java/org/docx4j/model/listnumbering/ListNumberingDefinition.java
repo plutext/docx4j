@@ -83,19 +83,14 @@
  */
 package org.docx4j.model.listnumbering;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Lvl;
-import org.docx4j.wml.NumFmt;
-import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.Numbering;
-import org.docx4j.wml.PPrBase.NumPr;
 
 public class ListNumberingDefinition {
 	
@@ -112,173 +107,173 @@ public class ListNumberingDefinition {
 	
 	protected static Logger log = Logger.getLogger(ListNumberingDefinition.class);
 	
-        /// <summary>
-        /// constructor
-        /// </summary>
-        /// <param name="numNode"></param>
-        /// <param name="nsm"></param>
-        /// <param name="abstractListDefinitions"></param>
-        public ListNumberingDefinition(Numbering.Num numNode, 
-        		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions)
+    /// <summary>
+    /// constructor
+    /// </summary>
+    /// <param name="numNode"></param>
+    /// <param name="nsm"></param>
+    /// <param name="abstractListDefinitions"></param>
+    public ListNumberingDefinition(Numbering.Num numNode, 
+    		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions)
+    {
+    	this.numNode = numNode;
+    	
+        this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
+
+        //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
+        Numbering.Num.AbstractNumId abstractNumNode = numNode.getAbstractNumId();
+        if (abstractNumNode != null)
         {
-        	this.numNode = numNode;
-        	
-            this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
+            this.abstractListDefinition = abstractListDefinitions.get(abstractNumNode.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
 
-            //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
-            Numbering.Num.AbstractNumId abstractNumNode = numNode.getAbstractNumId();
-            if (abstractNumNode != null)
+            this.levels = new HashMap<String, ListLevel>(this.abstractListDefinition.getLevelCount() );
+
+            // initialize the levels to the same as the template ("abstract") list level
+    		Iterator listLevelIterator = this.abstractListDefinition.getListLevels().entrySet().iterator();
+    	    while (listLevelIterator.hasNext()) {
+    	        Map.Entry pairs = (Map.Entry)listLevelIterator.next();
+    	        this.levels.put( (String)pairs.getKey(), new ListLevel( (ListLevel)pairs.getValue() ) );        	        
+    	    }
+
+            // propagate the level overrides into the current list number level definition
+            // XmlNodeList levelOverrideNodes = numNode.SelectNodes("./w:lvlOverride", nsm);
+
+            List<Numbering.Num.LvlOverride> levelOverrideNodes = numNode.getLvlOverride(); 
+            if (levelOverrideNodes != null)
             {
-                this.abstractListDefinition = abstractListDefinitions.get(abstractNumNode.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
-
-                this.levels = new HashMap<String, ListLevel>(this.abstractListDefinition.getLevelCount() );
-
-                // initialize the levels to the same as the template ("abstract") list level
-        		Iterator listLevelIterator = this.abstractListDefinition.getListLevels().entrySet().iterator();
-        	    while (listLevelIterator.hasNext()) {
-        	        Map.Entry pairs = (Map.Entry)listLevelIterator.next();
-        	        this.levels.put( (String)pairs.getKey(), new ListLevel( (ListLevel)pairs.getValue() ) );        	        
-        	    }
-
-                // propagate the level overrides into the current list number level definition
-                // XmlNodeList levelOverrideNodes = numNode.SelectNodes("./w:lvlOverride", nsm);
-
-                List<Numbering.Num.LvlOverride> levelOverrideNodes = numNode.getLvlOverride(); 
-                if (levelOverrideNodes != null)
+                for (Numbering.Num.LvlOverride overrideNode : levelOverrideNodes)
                 {
-                    for (Numbering.Num.LvlOverride overrideNode : levelOverrideNodes)
+                    //XmlNode node = overrideNode.SelectSingleNode("./w:lvl", nsm);
+                	Lvl node = overrideNode.getLvl();
+                    if (node != null)
                     {
-                        //XmlNode node = overrideNode.SelectSingleNode("./w:lvl", nsm);
-                    	Lvl node = overrideNode.getLvl();
-                        if (node != null)
-                        {
-                            String overrideLevelId = node.getIlvl().toString(); //getAttributeValue(node, "w:ilvl");
+                        String overrideLevelId = node.getIlvl().toString(); //getAttributeValue(node, "w:ilvl");
 
-                            if (overrideLevelId!=null && !overrideLevelId.equals("") )
-                            {
-                                this.levels.get(overrideLevelId).SetOverrides(node);
-                            }
+                        if (overrideLevelId!=null && !overrideLevelId.equals("") )
+                        {
+                            this.levels.get(overrideLevelId).SetOverrides(node);
                         }
                     }
                 }
             }
         }
-
-        private AbstractListNumberingDefinition abstractListDefinition;
-        private HashMap<String, ListLevel> levels;
-    	public ListLevel getLevel(String ilvl) {
-    		return levels.get(ilvl);
-    	}
-        
-
-        /// <summary>
-        /// increment the occurrence count of the specified level, reset the occurrence count of derived levels
-        /// </summary>
-        /// <param name="level"></param>
-        public void IncrementCounter(String level)
-        {
-        	log.debug("Increment level " + level);
-            this.levels.get(level).IncrementCounter();
-
-            // Now set all lower levels back to 1.
-            
-            // here's a bit where the decision to use Strings as level IDs was bad 
-            // - I need to loop through the derived levels and reset their counters
-            //UInt32 levelNumber = System.Convert.ToUInt32(level, CultureInfo.InvariantCulture) + 1;
-            int levelNumber = Integer.parseInt(level)+1;
-            String levelString =  Integer.toString(levelNumber);
-
-            while (this.levels.containsKey(levelString))
-            {
-            	log.debug("Reset level " + levelNumber);
-                this.levels.get(levelString).ResetCounter();
-                levelNumber++;
-                levelString = Integer.toString(levelNumber);
-            }
-        }
-
-        private String listNumberId;
-
-        /// <summary>
-        /// numId of this list numbering schema
-        /// </summary>
-        public String getListNumberId() 
-            {
-                return this.listNumberId;
-            }
-
-        /// <summary>
-        /// returns a String containing the current state of the counters, up to the indicated level
-        /// </summary>
-        /// <param name="level"></param>
-        /// <returns></returns>
-        public String GetCurrentNumberString(String level)
-        {
-            String formatString = this.levels.get(level).getLevelText();
-            log.debug("levelText: " + formatString );
-            StringBuilder result = new StringBuilder();
-            String temp = ""; //String.Empty;
-
-            for (int i = 0; i < formatString.length(); i++)
-            {
-                //temp = formatString.SubString(i, 1);
-            	// C# pos i, length 1            	
-            	temp = formatString.substring(i, i+1);
-                if (temp.equals("%") )
-                {
-                    if (i < formatString.length() - 1)
-                    {
-                        String formatStringLevel = formatString.substring(i + 1, i+2);
-                        // as it turns out, in the format String, the level is 1-based
-                        int levelId =  Integer.parseInt(formatStringLevel) - 1;
-                        result.append(this.levels.get( Integer.toString(levelId) ).getCurrentValueFormatted() );
-                        i++;
-                    }
-                }
-                else
-                {
-                    result.append(temp);
-                }
-            }
-
-            return result.toString();
-        }
-
-        /// <summary>
-        /// retrieve the font name that was specified for the list String
-        /// </summary>
-        /// <param name="level"></param>
-        /// <returns></returns>
-        public String GetFont(String level)
-        {
-            return this.levels.get(level).getFont();
-        }
-
-        /// <summary>
-        /// retrieve whether the level was a bullet list type
-        /// </summary>
-        /// <param name="level"></param>
-        /// <returns></returns>
-        public boolean IsBullet(String level)
-        {
-            return this.levels.get(level).IsBullet();
-        }
-
-        /// <summary>
-        /// returns whether the specific level ID exists - in testing we've seen some referential integrity issues due to Word bugs
-        /// </summary>
-        /// <param name="level">
-        /// </param>
-        /// <returns>
-        /// </returns>
-        /// <id guid="b94c13b8-7273-4f6a-927b-178d685fbe0f" />
-        /// <owner alias="ROrleth" />
-        public boolean LevelExists(String level)
-        {
-            return this.levels.containsKey(level);
-        }
-
     }
+
+    private AbstractListNumberingDefinition abstractListDefinition;
+    private HashMap<String, ListLevel> levels;
+	public ListLevel getLevel(String ilvl) {
+		return levels.get(ilvl);
+	}
+    
+
+    /// <summary>
+    /// increment the occurrence count of the specified level, reset the occurrence count of derived levels
+    /// </summary>
+    /// <param name="level"></param>
+    public void IncrementCounter(String level)
+    {
+    	log.debug("Increment level " + level);
+        this.levels.get(level).IncrementCounter();
+
+        // Now set all lower levels back to 1.
+        
+        // here's a bit where the decision to use Strings as level IDs was bad 
+        // - I need to loop through the derived levels and reset their counters
+        //UInt32 levelNumber = System.Convert.ToUInt32(level, CultureInfo.InvariantCulture) + 1;
+        int levelNumber = Integer.parseInt(level)+1;
+        String levelString =  Integer.toString(levelNumber);
+
+        while (this.levels.containsKey(levelString))
+        {
+        	log.debug("Reset level " + levelNumber);
+            this.levels.get(levelString).ResetCounter();
+            levelNumber++;
+            levelString = Integer.toString(levelNumber);
+        }
+    }
+
+    private String listNumberId;
+
+    /// <summary>
+    /// numId of this list numbering schema
+    /// </summary>
+    public String getListNumberId() 
+        {
+            return this.listNumberId;
+        }
+
+    /// <summary>
+    /// returns a String containing the current state of the counters, up to the indicated level
+    /// </summary>
+    /// <param name="level"></param>
+    /// <returns></returns>
+    public String GetCurrentNumberString(String level)
+    {
+        String formatString = this.levels.get(level).getLevelText();
+        log.debug("levelText: " + formatString );
+        StringBuilder result = new StringBuilder();
+        String temp = ""; //String.Empty;
+
+        for (int i = 0; i < formatString.length(); i++)
+        {
+            //temp = formatString.SubString(i, 1);
+        	// C# pos i, length 1            	
+        	temp = formatString.substring(i, i+1);
+            if (temp.equals("%") )
+            {
+                if (i < formatString.length() - 1)
+                {
+                    String formatStringLevel = formatString.substring(i + 1, i+2);
+                    // as it turns out, in the format String, the level is 1-based
+                    int levelId =  Integer.parseInt(formatStringLevel) - 1;
+                    result.append(this.levels.get( Integer.toString(levelId) ).getCurrentValueFormatted() );
+                    i++;
+                }
+            }
+            else
+            {
+                result.append(temp);
+            }
+        }
+
+        return result.toString();
+    }
+
+    /// <summary>
+    /// retrieve the font name that was specified for the list String
+    /// </summary>
+    /// <param name="level"></param>
+    /// <returns></returns>
+    public String GetFont(String level)
+    {
+        return this.levels.get(level).getFont();
+    }
+
+    /// <summary>
+    /// retrieve whether the level was a bullet list type
+    /// </summary>
+    /// <param name="level"></param>
+    /// <returns></returns>
+    public boolean IsBullet(String level)
+    {
+        return this.levels.get(level).IsBullet();
+    }
+
+    /// <summary>
+    /// returns whether the specific level ID exists - in testing we've seen some referential integrity issues due to Word bugs
+    /// </summary>
+    /// <param name="level">
+    /// </param>
+    /// <returns>
+    /// </returns>
+    /// <id guid="b94c13b8-7273-4f6a-927b-178d685fbe0f" />
+    /// <owner alias="ROrleth" />
+    public boolean LevelExists(String level)
+    {
+        return this.levels.containsKey(level);
+    }
+
+}
 
 //    static String getAttributeValue(XmlNode node, String name)
 //    {

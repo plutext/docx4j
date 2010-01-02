@@ -225,7 +225,8 @@ public class Emulator {
 					}
 
 					if (numberingPart.getInstanceListDefinitions().get(numId).IsBullet(levelId)) {
-						triple.isBullet = true;
+						//triple.isBullet = true;
+						triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 					}
 				} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 					
@@ -257,10 +258,16 @@ public class Emulator {
 			return numFont;
 		}
     	
-    	boolean isBullet = false;
-		public boolean isBullet() {
-			return isBullet;
+//    	boolean isBullet = false;
+//		public boolean isBullet() {
+//			return isBullet;
+//		}
+		
+		String bullet = null;
+		public String getBullet() {
+			return bullet;
 		}
+		
     }
 
 }

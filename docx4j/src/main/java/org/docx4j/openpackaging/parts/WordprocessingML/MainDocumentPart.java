@@ -35,6 +35,7 @@ import javax.xml.bind.Unmarshaller;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -42,6 +43,8 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.Lvl;
+import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.dom4j.Document;
@@ -223,13 +226,35 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	        log.debug("Inspecting style: " + styleName );
             org.docx4j.wml.Style existingStyle = (org.docx4j.wml.Style)stylesDefined.get(styleName);
             if (existingStyle!=null) {
-            	String fontName = getPropertyResolver().getFontnameFromStyle(stylesDefined, this.getThemePart(), existingStyle); 
-            	log.debug(styleName + " uses font " + fontName);
-            	fontsDiscovered.put(fontName, fontName);
+            	String fontName = getPropertyResolver().getFontnameFromStyle(stylesDefined, this.getThemePart(), existingStyle);
+            	if (fontName!=null) {
+	            	log.debug(styleName + " uses font " + fontName);
+	            	fontsDiscovered.put(fontName, fontName);
+            	}
             } else {
             	log.error("Couldn't find used style " + styleName + "in styles part!");
             }
 	    }
+	    
+	    // Fonts can also be used in the numbering part
+	    // For now, treat any font mentioned in that part as in use.
+	    // Ideally, we'd only register fonts used in numbering levels
+	    // that were actually used in the document
+    	if (getNumberingDefinitionsPart()!=null) {
+    		Numbering numbering = getNumberingDefinitionsPart().getJaxbElement();
+            for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() ) {
+            	for (Lvl lvl : abstractNumNode.getLvl() ) {
+            		if (lvl.getRPr()!=null
+            				&& lvl.getRPr().getRFonts()!=null ) {
+            			String fontName = lvl.getRPr().getRFonts().getAscii();            			
+            			if (fontName!=null) {
+            				fontsDiscovered.put(fontName, fontName);	
+            				log.debug("Registered " + fontName + " for abstract list " + abstractNumNode.getAbstractNumId() + " lvl " + lvl.getIlvl() );
+            			}
+            		}
+            	}
+            }    		
+    	}	    
 		    	
 		return fontsDiscovered;
     }
