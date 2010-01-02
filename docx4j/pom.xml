@@ -153,7 +153,7 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.13</version>
+			<version>1.2.15</version>
 		</dependency>
 		<dependency>
 			<!--  required for our diffx -->
@@ -310,13 +310,18 @@
 		<dependency>
 			<groupId>docx4j</groupId>
 			<artifactId>fop-patched</artifactId>
-			<version>0.95.756436</version>
+			<version>0.95.756437</version>
 		</dependency>
 			<!--  its really 95.756434, but i had to re-build it to remove
 			      Class-Path from the MANIFEST.MF, which was 
 			      being used by Java Web Start to try to fetch certain
 			      jars. So the number is incremented (0.95.756435).
-			      And then, Panose.java moved to original foray package (0.95.756436) -->
+			      And then, Panose.java moved to original foray package (0.95.756436) 
+			      
+			      0.95.756437 has fop r891181 of 20091216 applied, which adds support for
+			      symbol character maps (eg Wingdings) to TTFFile
+			        
+			      -->
 
 
 <!-- 
