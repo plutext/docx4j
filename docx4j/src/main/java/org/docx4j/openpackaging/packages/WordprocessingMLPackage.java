@@ -355,8 +355,9 @@ public class WordprocessingMLPackage extends Package {
 	private String defaultFont;
 	public String getDefaultFont() {
 		
-		if (defaultFont!=null) {
-			defaultFont = mainDoc.getPropertyResolver().getDefaultFont();			
+		if (defaultFont==null) {
+			defaultFont = mainDoc.getPropertyResolver().getDefaultFont();
+			log.debug("Identified default font: " + defaultFont);
 		}
 		return defaultFont;		
 	}
