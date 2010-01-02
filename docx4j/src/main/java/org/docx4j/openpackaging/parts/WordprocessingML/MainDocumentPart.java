@@ -210,9 +210,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 
 	// Add default font
 		//String defaultFont = PropertyResolver.getDefaultFont(this.getStyleDefinitionsPart(), this.getThemePart());
-		String defaultFont = getPropertyResolver().getDefaultFont();
-		log.debug("fontsDiscovered.put:" + defaultFont);
-		fontsDiscovered.put( defaultFont, defaultFont  );
+//		String defaultFont = getPropertyResolver().getDefaultFont();
+//		log.debug("fontsDiscovered.put:" + defaultFont);
+//		fontsDiscovered.put( defaultFont, defaultFont  );
+		fontsDiscovered.put( ((WordprocessingMLPackage)pack).getDefaultFont(), ((WordprocessingMLPackage)pack).getDefaultFont() );
 		
 	// Add fonts used in the styles we discovered
 		Iterator it = stylesInUse.entrySet().iterator();

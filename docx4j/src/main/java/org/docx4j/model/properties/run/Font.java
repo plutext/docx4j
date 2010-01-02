@@ -66,23 +66,9 @@ public class Font extends AbstractRunProperty {
 		RFonts rFonts = (RFonts)this.getObject();
 		
 		String font = rFonts.getAscii();		
-		if (font==null) {
-			// TODO - actually what Word does in this case
-			// is inherit the default document font eg Calibri
-			// (which is what it shows in its user interface)
-			font = rFonts.getCs();
-		}
 		
 		if (font==null) {
-			log.error("Font was null in: " + XmlUtils.marshaltoString(object, true, true));
-			
-			/* TODO - handle
-			 *  <w:rFonts w:cstheme="minorBidi"     w:eastAsiaTheme="minorHAnsi" 
-			 *            w:hAnsiTheme="minorHAnsi" w:asciiTheme="minorHAnsi" />
-			 */
-			
-			log.error("Font was null in RFonts; falling back to " + Mapper.FONT_FALLBACK );
-			font=Mapper.FONT_FALLBACK;
+			font=wmlPackage.getDefaultFont();
 		}
 		
 		return getPhysicalFont(wmlPackage, font);
