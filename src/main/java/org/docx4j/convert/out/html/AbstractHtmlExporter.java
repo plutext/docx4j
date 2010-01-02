@@ -32,6 +32,8 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.images.WordXmlPicture;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
+import org.docx4j.model.properties.Property;
+import org.docx4j.model.properties.run.Font;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
@@ -43,6 +45,7 @@ import org.w3c.dom.Comment;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
@@ -186,25 +189,34 @@ public abstract class AbstractHtmlExporter implements Output {
     			return docfrag;
         	}
 
-	    	if (triple.getNumString()==null) {
+			Element spanElement = document.createElement("span");
+			
+    		// Set the font
+    		if (triple.getNumFont()!=null) {
+    			String font = Font.getPhysicalFont(wmlPackage, triple.getNumFont() );
+    			if (font!=null) {
+    				spanElement.setAttribute("style",     				
+    								Property.composeCss(Font.CSS_NAME, font ) );
+    			}
+    		}
+
+    		if (triple.getBullet()!=null ) {
+    			spanElement.setTextContent(triple.getBullet() );    						
+    		} else if (triple.getNumString()==null) {
 	    		log.error("computed NumString was null!");
-    			Node spanElement = document.createElement("span");
+    			spanElement.setTextContent("?");    						
     			
     			// It would be nice to include a comment in the
     			// output HTML, but Sun's Xalan copy-of ignores it.
     			
 //        		Comment c = document.createComment("computed number triple.getNumString() was null");
 //        		spanElement.appendChild(c);
-        		    			
-    			document.appendChild(spanElement);
-    			docfrag.appendChild(document.getDocumentElement());
-    			return docfrag;
+	    	} else {
+				Text number = document.createTextNode( triple.getNumString() );
+				spanElement.appendChild(number);				    		
 	    	}
 			
-			Node spanElement = document.createElement("span");			
 			document.appendChild(spanElement);
-			Text number = document.createTextNode( triple.getNumString() );
-			spanElement.appendChild(number);			
 			docfrag.appendChild(document.getDocumentElement());
 
 			return docfrag;
