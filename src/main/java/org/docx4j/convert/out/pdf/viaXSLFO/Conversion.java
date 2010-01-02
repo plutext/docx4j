@@ -35,6 +35,7 @@ import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -105,7 +106,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		    Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
 		    if(pairs.getKey()==null) {
 		    	log.info("Skipped null key");
-		    	pairs = (Map.Entry)fontMappingsIterator.next();
+//		    	pairs = (Map.Entry)fontMappingsIterator.next();
+		    	continue;
 		    }
 		    
 		    String fontName = (String)pairs.getKey();		    
@@ -416,20 +418,32 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
 		        			wmlPackage, pStyleVal, 
 		        			pPr.getNumPr().getNumId().getVal().toString(), 
-		        			ilvlString ); 
-		        			
+		        			ilvlString ); 		        			
 	        	}
 				
 				if (triple==null) {
 	        		log.info("computed number ResultTriple was null");
 					foListItemLabelBody.setTextContent("?");
-	        	} else if (triple.getNumString()==null) {
-		    		log.error("computed NumString was null!");
-					foListItemLabelBody.setTextContent("?");
-		    	} else {
-					Text number = document.createTextNode( triple.getNumString() );
-					foListItemLabelBody.appendChild(number);		    		
-		    	}
+	        	} else {
+	        		
+	        		// Set the font
+	        		if (triple.getNumFont()!=null) {
+	        			String font = Font.getPhysicalFont(wmlPackage, triple.getNumFont() );
+	        			if (font!=null) {
+	        				foListItemLabelBody.setAttribute(Font.FO_NAME, font );
+	        			}
+	        		}
+	        		
+	        		if (triple.getBullet()!=null ) {
+		        		foListItemLabelBody.setTextContent(triple.getBullet() );
+		        	} else if (triple.getNumString()==null) {
+			    		log.error("computed NumString was null!");
+						foListItemLabelBody.setTextContent("?");
+			    	} else {
+						Text number = document.createTextNode( triple.getNumString() );
+						foListItemLabelBody.appendChild(number);		    		
+			    	}
+	        	}
 				
 				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item-body");
 				foListItem.appendChild(foListItemBody);	
