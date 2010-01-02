@@ -113,7 +113,8 @@ public class IdentityPlusMapper extends Mapper {
 	        
 	        if(pairs.getKey()==null) {
 	        	log.info("Skipped null key");
-	        	pairs = (Map.Entry)documentFontMapIterator.next();
+	        	continue;
+//	        	pairs = (Map.Entry)documentFontMapIterator.next();
 	        }
 	        
 	        String documentFontname = (String)pairs.getKey();

@@ -311,6 +311,7 @@ public class WordprocessingMLPackage extends Package {
  */
 
     public void setFontMapper(Mapper fm) throws Exception {
+    	log.debug("setFontMapper invoked");
     	if (fm == null) {
     		throw new IllegalArgumentException("Font Substituter cannot be null.");
     	}
@@ -345,6 +346,13 @@ public class WordprocessingMLPackage extends Package {
     public Mapper getFontMapper() {
     	if (fontMapper==null) {
     		fontMapper = new IdentityPlusMapper();
+    		// This invokes populateFontMappings
+    		try {
+				setFontMapper(fontMapper);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     	}
 		return fontMapper;
 	}

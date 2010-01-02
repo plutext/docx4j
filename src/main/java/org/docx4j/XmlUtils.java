@@ -770,6 +770,11 @@ public class XmlUtils {
 
         	case Node.DOCUMENT_NODE: // type 9
         
+//        		log.debug("DOCUMENT:" + w3CDomNodeToString(sourceNode) );
+//        		if (sourceNode.getChildNodes().getLength()==0) {
+//        			log.debug("..no children!");
+//        		}
+        		
                 // recurse on each child
                 NodeList nodes = sourceNode.getChildNodes();
                 if (nodes != null) {
