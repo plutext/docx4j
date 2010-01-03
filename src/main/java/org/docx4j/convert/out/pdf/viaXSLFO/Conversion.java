@@ -35,6 +35,7 @@ import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -385,23 +386,34 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			
 			//log.info("Document: " + document.getClass().getName() );
 			
-			Node foBlockElement;
+			boolean inlist = false;
+			
+			Element foBlockElement;
 			if (pPr.getNumPr()!=null ) {
+				
+				inlist = true;
 				
 				// Its a list item.  At present we make a new list-block for
 				// each list-item. This is not great; DocumentModel will ultimately
 				// allow us to use fo:list-block properly.
-				
-				Node foListBlock = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-block");
-				document.appendChild(foListBlock);
 
-				Element foListItem = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item");
-				foListBlock.appendChild(foListItem);				
+				Element foListBlock = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:list-block");
+				document.appendChild(foListBlock);
+								
+				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
 				
-				Element foListItemLabel = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item-label");
+				Element foListItem = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:list-item");
+				foListBlock.appendChild(foListItem);				
+
+				
+				Element foListItemLabel = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:list-item-label");
 				foListItem.appendChild(foListItemLabel);
 				
-				Element foListItemLabelBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
+				Element foListItemLabelBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:block");
 				foListItemLabel.appendChild(foListItemLabelBody);
 				
 	        	ResultTriple triple;
@@ -426,6 +438,14 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					foListItemLabelBody.setTextContent("?");
 	        	} else {
 	        		
+	        		// Indent (in combination with provisional-distance-between-starts
+	        		// above
+	        		if (triple.getIndent()!=null) {
+	        			Indent indent = new Indent(triple.getIndent());
+	    				//foListBlock.setAttribute(Indent.FO_NAME, "2in");
+	    				indent.setXslFO(foListBlock);
+	        		}
+	        		
 	        		// Set the font
 	        		if (triple.getNumFont()!=null) {
 	        			String font = Font.getPhysicalFont(wmlPackage, triple.getNumFont() );
@@ -445,10 +465,14 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			    	}
 	        	}
 				
-				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:list-item-body");
+				Element foListItemBody = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:list-item-body");
 				foListItem.appendChild(foListItemBody);	
+
+				foListItemBody.setAttribute(Indent.FO_NAME, "body-start()");
 				
-				foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block");
+				foBlockElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+						"fo:block");
 				foListItemBody.appendChild(foBlockElement);
 				
 			} else {
@@ -460,9 +484,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 							
 			if (log.isDebugEnabled() && pPr!=null) {				
 				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
-			}				
-		       
-			createFoAttributes(pPr, ((Element)foBlockElement) );
+			}
+			
+			createFoAttributes(pPr, ((Element)foBlockElement), inlist );
+			
 			if (rPr!=null) {											
 				createFoAttributes(wmlPackage, rPr, ((Element)foBlockElement) );
 	        }
@@ -511,13 +536,21 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     }
 
-	public static void createFoAttributes(PPr pPr, Element foBlockElement){
+	public static void createFoAttributes(PPr pPr, Element foBlockElement, boolean inList){
 		
     	List<Property> properties = PropertyFactory.createProperties(pPr);
     	
     	for( Property p :  properties ) {
 			if (p!=null) {
-				p.setXslFO(foBlockElement);
+				if (inList && !(p instanceof Indent) ) { 
+					// Don't set start-indent in 
+					// fo:list-item-body/fo:block.
+					// This has to be handled above using something like 
+					//  <fo:list-block provisional-distance-between-starts="0.5in" start-indent="2in">
+					p.setXslFO(foBlockElement);
+				} else if (!inList) {
+					p.setXslFO(foBlockElement);
+				}
 			}
     	}
 		

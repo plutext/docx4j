@@ -208,14 +208,10 @@
 						span>STUFF</span-->
 				</xsl:when>
 				<xsl:otherwise>
-					<!--  Numbering; consider further what CSS to use,
-					      and whether this should be done in createBlockForPPr extension -->
-					<span> <!--  TODO span should be inside extension, so we don't get it if
-					             there is no number.  But this simple way of numbering
-					             should be formatted using better css? -->								
+					<!--  At present, this doesn't use HTML OL|UL and LI;
+					      we'll do that when we have a document model to work from -->								
 					  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.getNumberXmlNode( $wmlPackage, 
 					  			$pStyleVal, $numId, $levelId)" />					
-					</span>
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
 			</xsl:choose>
