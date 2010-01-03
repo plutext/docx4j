@@ -503,6 +503,11 @@ public class XmlUtils {
 	 * @return
 	 */
 	public static <T> T deepCopy(T value, JAXBContext jc) {
+		
+		if (value==null) {
+			throw new IllegalArgumentException("Can't clone a null argument");
+		}
+		
 		try {
 			JAXBElement<?> elem;
 			Class<?> valueClass;

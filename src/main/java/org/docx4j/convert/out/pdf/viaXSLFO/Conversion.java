@@ -372,13 +372,20 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
         			Object jaxb = u.unmarshal(n);
     				pPrDirect =  (PPr)jaxb;
-    				pPr = propertyResolver.getEffectivePPr(pPrDirect);   
+    				pPr = propertyResolver.getEffectivePPr(pPrDirect);  
+    				if (pPr==null) {
+    					log.warn("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
+    				}
     				log.warn("getting rPr for paragraph style");    				
     				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
     					// rPr in pPr direct formatting only applies to paragraph mark, 
     					// so pass null here       				
         		}
         	}        	
+
+			if (log.isDebugEnabled() && pPr!=null) {				
+				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
+			}
         	
             // Create a DOM builder and parse the fragment			
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
@@ -389,7 +396,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			boolean inlist = false;
 			
 			Element foBlockElement;
-			if (pPr.getNumPr()!=null ) {
+			if (pPr!=null && pPr.getNumPr()!=null ) {
 				
 				inlist = true;
 				
@@ -482,11 +489,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			}
 			
 							
-			if (log.isDebugEnabled() && pPr!=null) {				
-				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
+			if (pPr!=null) {
+				createFoAttributes(pPr, ((Element)foBlockElement), inlist );
 			}
-			
-			createFoAttributes(pPr, ((Element)foBlockElement), inlist );
 			
 			if (rPr!=null) {											
 				createFoAttributes(wmlPackage, rPr, ((Element)foBlockElement) );

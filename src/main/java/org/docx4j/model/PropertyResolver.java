@@ -583,8 +583,13 @@ public class PropertyResolver {
 				
 		//	Finally, we apply direct formatting (paragraph or run properties not from 
 		//	styles).		
-		if (hasDirectPPrFormatting(expressPPr) ) {			
-			effectivePPr = (PPr)XmlUtils.deepCopy(resolvedPPr);			
+		if (hasDirectPPrFormatting(expressPPr) ) {
+			if (resolvedPPr==null) {
+				log.warn("resolvedPPr was null. Look into this?");
+				effectivePPr = Context.getWmlObjectFactory().createPPr();
+			} else {
+				effectivePPr = (PPr)XmlUtils.deepCopy(resolvedPPr);
+			}
 			applyPPr(expressPPr, effectivePPr);
 			return effectivePPr;
 		} else {
