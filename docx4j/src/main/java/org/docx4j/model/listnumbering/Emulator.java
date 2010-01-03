@@ -96,6 +96,8 @@ import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.Numbering;
+import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.NumPr;
 
 public class Emulator {
@@ -228,6 +230,12 @@ public class Emulator {
 						//triple.isBullet = true;
 						triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
 					}
+					
+					PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
+					if (ppr!=null) {
+						triple.ind = ppr.getInd();
+					}
+					
 				} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
 					
 					log.error("Couldn't find list " + numId);
@@ -268,6 +276,10 @@ public class Emulator {
 			return bullet;
 		}
 		
+		Ind ind = null;
+		public Ind getIndent() {
+			return ind;
+		}
     }
 
 }
