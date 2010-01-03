@@ -22,6 +22,7 @@ package org.docx4j.samples;
 
 
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -50,13 +51,8 @@ public class OpenMainDocumentAndTraverse {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = "/tmp/Default TOC with 3 levels.docx";
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/jbtemplate.docx";
-		//String inputfilepath = "/home/dev/s.docx";
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
 		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/math.docx";
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/table-spans.xml";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/dqkit-sectpr.xml";
+    	String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fo-200912.xml";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
@@ -133,6 +129,7 @@ public class OpenMainDocumentAndTraverse {
 			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 			saver.save(outputfilepath);
 		}
+				
 	}
 	
 	static void walkJAXBElements(List <Object> bodyChildren){
@@ -305,5 +302,5 @@ public class OpenMainDocumentAndTraverse {
 		}
 		
 	}
-
+	
 }
