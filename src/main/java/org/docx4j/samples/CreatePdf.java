@@ -52,17 +52,10 @@ public class CreatePdf {
 	    	
 	    	String inputfilepath = null;
 	    	
-			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-features.xml";
+			 //inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-features.xml";
 	    	
-//			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/docx4all-CurrentDocxFeatures.docx";
-//			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-spans.xml";				 
-//			 inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
 //			 inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";	    	
-//			 inputfilepath = System.getProperty("user.dir") + "/tmp/Slovenian.docx";
-//			 inputfilepath = "/home/dev/workspace/docx4all/sample-docs/Header.docx";
 //			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
-//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\Slovenian.docx";
-//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\Downloads\\AUMS-easy.docx";
 //			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\font-bolditalic.docx";
 
 			WordprocessingMLPackage wordMLPackage;
