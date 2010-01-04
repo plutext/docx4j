@@ -512,6 +512,22 @@
    
 <xsl:template match="w:bookmarkEnd" />
 
+  <xsl:template match="w:ins">
+  	<span style="color:blue; text-decoration:underline">
+  		<xsl:apply-templates/>
+  	</span>
+  </xsl:template>  	
+
+  <xsl:template match="w:del">
+  		<xsl:apply-templates/>
+  </xsl:template>  	
+
+  <xsl:template match="w:delText">
+  	<span style="color:red; text-decoration:line-through">
+  		<xsl:apply-templates/>
+  	</span>
+  </xsl:template>  	
+
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
