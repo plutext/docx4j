@@ -48,16 +48,10 @@ public class CreatePdf {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-	    	boolean save = false;
+	    	boolean save = true;
 	    	
-	    	String inputfilepath = null;
+	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
 	    	
-			 //inputfilepath = "/home/dev/workspace/docx4j/sample-docs/table-features.xml";
-	    	
-//			 inputfilepath = System.getProperty("user.dir") + "/tmp/AUMS.docx";	    	
-//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\workspace\\docx4j-2009\\sample-docs\\Word2007-fonts.docx";
-//			 inputfilepath = "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\font-bolditalic.docx";
-
 			WordprocessingMLPackage wordMLPackage;
 			if (inputfilepath==null) {
 				

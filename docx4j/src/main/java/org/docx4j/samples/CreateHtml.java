@@ -39,12 +39,11 @@ public class CreateHtml {
 	    
 	    public static void main(String[] args) 
 	            throws Exception {
-
+	    	
 	    	boolean save = true;	    	
 	    	boolean useHtmlExporterNG = true;
 
-			 String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/simple.xml";
-	    	//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/StyleResolution.xml";
+	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
 	    	
 			System.out.println(inputfilepath);
 			WordprocessingMLPackage wordMLPackage;
