@@ -33,6 +33,7 @@ import org.docx4j.model.images.WordXmlPicture;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
+import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.run.Font;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -191,17 +192,26 @@ public abstract class AbstractHtmlExporter implements Output {
 
 			Element spanElement = document.createElement("span");
 			
+			String styleVal = "";
+			
+    		if (triple.getIndent()!=null) {
+    			Indent indent = new Indent(triple.getIndent());
+				styleVal = indent.getCssProperty();
+    		}
+			
     		// Set the font
     		if (triple.getNumFont()!=null) {
     			String font = Font.getPhysicalFont(wmlPackage, triple.getNumFont() );
     			if (font!=null) {
-    				spanElement.setAttribute("style",     				
-    								Property.composeCss(Font.CSS_NAME, font ) );
+    				styleVal += Property.composeCss(Font.CSS_NAME, font );
     			}
     		}
 
+    		if (!styleVal.equals("") ) {
+				spanElement.setAttribute("style", styleVal);
+    		}
     		if (triple.getBullet()!=null ) {
-    			spanElement.setTextContent(triple.getBullet() );    						
+    			spanElement.setTextContent(triple.getBullet() + " " );    						
     		} else if (triple.getNumString()==null) {
 	    		log.error("computed NumString was null!");
     			spanElement.setTextContent("?");    						
@@ -212,7 +222,7 @@ public abstract class AbstractHtmlExporter implements Output {
 //        		Comment c = document.createComment("computed number triple.getNumString() was null");
 //        		spanElement.appendChild(c);
 	    	} else {
-				Text number = document.createTextNode( triple.getNumString() );
+				Text number = document.createTextNode( triple.getNumString() + " " );
 				spanElement.appendChild(number);				    		
 	    	}
 			
