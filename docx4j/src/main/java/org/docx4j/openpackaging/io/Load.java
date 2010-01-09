@@ -27,29 +27,20 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.Session;
-
 import org.apache.commons.vfs.FileContent;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.VFS;
 import org.apache.log4j.Logger;
-import org.docx4j.JcrNodeMapper.NodeMapper;
-import org.docx4j.document.wordprocessingml.Constants;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
-import org.docx4j.openpackaging.parts.Dom4jXmlPart;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -59,7 +50,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.relationships.Relationships;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
@@ -189,10 +179,6 @@ public class Load {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
-				} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
-					
-					((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).setDocument( is );
-
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );

@@ -189,25 +189,6 @@ public class FlatOpcXmlImporter  {
 		return rp;
 	}
 
-	public org.dom4j.Element convertW3CtoDom4J( org.w3c.dom.Element element) throws Exception {
-		
-			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
-				.newInstance();
-		dbf.setNamespaceAware(true);
-		org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
-
-		doc.appendChild(  doc.importNode(element, true) );
-
-		// Convert w3c document to dom4j document
-		org.dom4j.io.DOMReader xmlReader = new org.dom4j.io.DOMReader();
-
-		org.dom4j.Document doc2 = xmlReader.read(doc);
-
-		return doc2.getRootElement();
-		
-	}	
-		
-	
 	/* recursively 
 	(i) create new Parts for each thing listed
 	in the relationships
@@ -435,10 +416,6 @@ public class FlatOpcXmlImporter  {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );
 					
-				} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
-					
-					((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).setDocument( convertW3CtoDom4J(el).getDocument() );
-
 //				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart) {
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					

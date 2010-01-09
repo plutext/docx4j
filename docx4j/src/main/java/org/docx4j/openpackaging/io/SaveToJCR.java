@@ -295,11 +295,7 @@ public class SaveToJCR {
 		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
 
 			w3cDoc = ((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().getDocument();
-			
-		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
-
-			w3cDoc = ((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).getW3cDocument();
-						
+									
 		} else {
 			// Shouldn't happen, since ContentTypeManagerImpl should
 			// return an instance of one of the above, or throw an
