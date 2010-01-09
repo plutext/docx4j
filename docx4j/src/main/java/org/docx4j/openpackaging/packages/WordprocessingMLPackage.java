@@ -23,12 +23,14 @@ package org.docx4j.openpackaging.packages;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -40,6 +42,7 @@ import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.structure.DocumentModel;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
@@ -196,7 +199,29 @@ public class WordprocessingMLPackage extends Package {
 	 *            The docx file 
 	 */	
 	public void save(java.io.File docxFile) throws Docx4JException {
-		
+
+		if (docxFile.getName().endsWith(".xml")) {
+			
+		   	// Create a org.docx4j.wml.Package object
+			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(this);
+			org.docx4j.xmlPackage.Package pkg = worker.get();
+	    	
+	    	// Now marshall it
+			JAXBContext jc = Context.jcXmlPackage;
+			try {
+				Marshaller marshaller=jc.createMarshaller();
+				
+				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+				NamespacePrefixMapperUtils.setProperty(marshaller, 
+						NamespacePrefixMapperUtils.getPrefixMapper());			
+				
+				marshaller.marshal(pkg, new FileOutputStream(docxFile));
+			} catch (Exception e) {
+				throw new Docx4JException("Error saving Flat OPC XML", e);
+			}	
+			return;
+		}
+			
 		SaveToZipFile saver = new SaveToZipFile(this); 
 		saver.save(docxFile);
 	}
@@ -378,14 +403,13 @@ public class WordprocessingMLPackage extends Package {
 		WordprocessingMLPackage wmlPack = new WordprocessingMLPackage();
 
 		// Create main document part
-		Part wordDocumentPart = new org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart();		
+		MainDocumentPart wordDocumentPart = new MainDocumentPart();		
 		
 		// Create main document part content
-		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-		
-		org.docx4j.wml.Body  body = factory.createBody();
-		
+		org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
+		org.docx4j.wml.Body  body = factory.createBody();		
 		org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
+		
 		wmlDocumentEl.setBody(body);
 		
 		// Create a basic sectPr using our Page model
@@ -396,7 +420,7 @@ public class WordprocessingMLPackage extends Package {
 		sectPr.setPgMar(page.createPgMar());
 				
 		// Put the content in the part
-		((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)wordDocumentPart).setJaxbElement(wmlDocumentEl);
+		wordDocumentPart.setJaxbElement(wmlDocumentEl);
 						
 		// Add the main document part to the package relationships
 		// (creating it if necessary)

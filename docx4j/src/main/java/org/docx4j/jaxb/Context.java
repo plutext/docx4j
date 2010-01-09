@@ -35,6 +35,7 @@ public class Context {
 	public static JAXBContext jcXmlPackage;
 	public static JAXBContext jcRelationships;
 	public static JAXBContext jcCustomXmlProperties;
+	public static JAXBContext jcContentTypes;
 	
 	private static Logger log = Logger.getLogger(Context.class);
 	
@@ -72,6 +73,7 @@ public class Context {
 			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader );
 			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
 			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader );
+			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader );
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();

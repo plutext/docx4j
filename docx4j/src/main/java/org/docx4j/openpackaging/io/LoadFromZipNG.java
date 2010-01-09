@@ -58,9 +58,6 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 
 
 /**
@@ -186,16 +183,14 @@ public class LoadFromZipNG extends Load {
 		// 2. Create a new Package
 		//		Eventually, you'll also be able to create an Excel package etc
 		//		but only the WordML package exists at present
-		
-		Document ctmDocument = null;
+
 		try {
-			ctmDocument = deprecatedGetDocumentFromZippedPart(partByteArrays, "[Content_Types].xml");
-		} catch (Exception e) {
-			// Shouldn't happen
-			throw new Docx4JException("Couldn't get [Content_Types].xml", e);
+			InputStream is = getInputStreamFromZippedPart( partByteArrays,  "[Content_Types].xml");		
+			ctm.parseContentTypesFile(is);
+		} catch (IOException e) {
+			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
 		}
-		debugPrint(ctmDocument);
-		ctm.parseContentTypesFile(ctmDocument);		
+				
 		Package p = ctm.createPackage();
 		
 		// 3. Get [Content_Types].xml
@@ -289,7 +284,7 @@ public class LoadFromZipNG extends Load {
 	private static InputStream getInputStreamFromZippedPart(HashMap<String, ByteArray> partByteArrays,
 			String partName) 
 	//private static InputStream getInputStreamFromZippedPart(ZipFile zf, String partName) 
-		throws DocumentException, IOException {
+		throws IOException {
 		
 		InputStream in = null;
 		//in = zf.getInputStream( zf.getEntry(partName ) );
@@ -297,37 +292,7 @@ public class LoadFromZipNG extends Load {
 		return in;		
 	}
 	
-	
-	private static Document deprecatedGetDocumentFromZippedPart(HashMap<String, ByteArray> partByteArrays, 
-			String partName)
-	//private static Document deprecatedGetDocumentFromZippedPart(ZipFile zf, String partName) 
-		throws DocumentException, IOException {
 		
-		InputStream in = null;
-//		in = zf.getInputStream( zf.getEntry(partName ) );
-		in = partByteArrays.get(partName).getInputStream();
-		SAXReader xmlReader = new SAXReader();
-		Document contents = null;
-		try {
-			contents = xmlReader.read(in);
-		} catch (DocumentException e) {
-			// Will land here for binary files eg gif file
-			// These do get handled ..
-			log.error("DocumentException on " + partName + " . Check this is binary content."); 
-			//e.printStackTrace() ;
-			throw e;
-		} finally {
-			if (in != null) {
-				try {
-					in.close();
-				} catch (IOException exc) {
-					exc.printStackTrace();
-				}
-			}
-		}
-		return contents;		
-	}
-	
 	/* recursively 
 	(i) create new Parts for each thing listed
 	in the relationships
@@ -631,42 +596,7 @@ public class LoadFromZipNG extends Load {
 		}
 		return part;
 	}	
-	
-	private void dumpZipFileContents(ZipFile zf) {
-		Enumeration entries = zf.entries();
-		// Enumerate through the Zip entries until we find the one named
-		// '[Content_Types].xml'.
-		while (entries.hasMoreElements()) {
-			ZipEntry entry = (ZipEntry) entries.nextElement();
-			log.info( "\n\n" + entry.getName() + "\n" );
-			InputStream in = null;
-			try {			
-				in = zf.getInputStream(entry);
-			} catch (IOException e) {
-				e.printStackTrace() ;
-			}				
-			SAXReader xmlReader = new SAXReader();
-			Document xmlDoc = null;
-			try {
-				xmlDoc = xmlReader.read(in);
-			} catch (DocumentException e) {
-				// Will land here for binary files eg gif file
-				e.printStackTrace() ;
-			} finally {
-				if (in != null) {
-					try {
-						in.close();
-					} catch (IOException exc) {
-						exc.printStackTrace();
-					}
-				}
-			}
-			debugPrint(xmlDoc);
-			
-		}
 		
-	}
-	
 	class ByteArray {
 		
 		byte[] bytes;

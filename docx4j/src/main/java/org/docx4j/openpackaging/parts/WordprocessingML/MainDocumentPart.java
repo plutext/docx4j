@@ -47,9 +47,6 @@ import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
-import org.dom4j.Document;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 
 
 /**
@@ -511,15 +508,6 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
     	
 }
 
-	private void debugPrint( Document coreDoc) {
-		try {
-			OutputFormat format = OutputFormat.createPrettyPrint();
-		    XMLWriter writer = new XMLWriter( System.out, format );
-		    writer.write( coreDoc );
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}	    
-	}
 
 	/**
 	 * Create a paragraph containing the string simpleText, styled 
@@ -626,8 +614,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	 */
 	public void addObject(Object o) {
 		
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
-		Body body =  wmlDocumentEl.getBody();
+		Body body =  this.jaxbElement.getBody();
 		body.getEGBlockLevelElts().add(o);
 		
 		// If this object contains paragraphs, make sure any style used

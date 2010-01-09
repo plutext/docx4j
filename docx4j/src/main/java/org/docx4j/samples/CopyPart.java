@@ -21,44 +21,19 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
-import javax.jcr.Node;
-import javax.jcr.Session;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import org.docx4j.JcrNodeMapper.NodeMapper;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.dml.Inline;
-import org.docx4j.docProps.extended.Properties;
 import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.Load;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-
-import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.contenttype.ContentType;
-import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
+import org.docx4j.relationships.Relationship;
 
 /**
  * Import foreign parts 

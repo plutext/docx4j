@@ -47,15 +47,14 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.contenttype.CTOverride;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.contenttype.ObjectFactory;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 
 /**
  * Import foreign parts 
@@ -72,16 +71,8 @@ public class ImportForeignPart {
 		
 		// Need to know how what type of part to map to		
 		InputStream in = new FileInputStream("/home/dev/workspace/docx4j/foregin_parts/[Content_Types].xml");
-		SAXReader xmlReader = new SAXReader();
-		Document ctmDocument = null;
-		try {
-			ctmDocument = xmlReader.read(in);
-		} catch (DocumentException e) {
-			e.printStackTrace();
-			throw e;
-		}
 		ContentTypeManager externalCtm = new ContentTypeManager();
-		externalCtm.parseContentTypesFile(ctmDocument);
+		externalCtm.parseContentTypesFile(in);
 		
 		// Example of a part which become a rel of the word document
 		in = new FileInputStream("/home/dev/workspace/docx4j/foreign_parts/word/settings.xml");
@@ -111,7 +102,12 @@ public class ImportForeignPart {
 		attachmentPoint.addTargetPart(foreignPart);
 		// Add content type
 		ContentTypeManager packageCtm = wordMLPackage.getContentTypeManager();
-		packageCtm.addOverrideContentType(foreignPart.getPartName().getURI(), foreignPart.getContentType());
+		ObjectFactory ctFactory = new ObjectFactory();
+		CTOverride overrideCT = ctFactory.createCTOverride();
+		overrideCT.setPartName(foreignPart.getPartName().getName() );
+		overrideCT.setContentType(foreignPart.getContentType());
+		
+		packageCtm.addOverrideContentType(foreignPart.getPartName().getURI(), overrideCT );
 		
 		System.out.println("Attached foreign part: " + resolvedPartUri);
 		

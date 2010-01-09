@@ -62,11 +62,6 @@ import org.docx4j.relationships.Relationship;
 
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
-
 import org.merlin.io.DOMSerializerEngine;
 import org.merlin.io.OutputEngineInputStream;
 
@@ -140,11 +135,14 @@ public class SaveToJCR {
 
 			// 3. Get [Content_Types].xml
 			ContentTypeManager ctm = p.getContentTypeManager();
-			org.w3c.dom.Document w3cDoc = null;
-			// convert dom4j node to real W3C dom node
-			w3cDoc = new org.dom4j.io.DOMWriter()
-					.write(ctm.getDocument());
-			saveRawXmlPart(jcrSession, baseNode, "[Content_Types].xml", w3cDoc );
+			javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			org.w3c.dom.Document w3cDoc = dbf.newDocumentBuilder().newDocument();
+			
+			ctm.marshal( w3cDoc );
+			
+			saveRawXmlPart(jcrSession, baseNode, "[Content_Types].xml", w3cDoc);
+			
 	        
 			// 4. Start with _rels/.rels
 
@@ -765,17 +763,6 @@ public class SaveToJCR {
         return sb.toString();
     }
     
-  
- 	
-	protected void debugPrint( Document coreDoc) {
-		try {
-			OutputFormat format = OutputFormat.createPrettyPrint();
-		    XMLWriter writer = new XMLWriter( System.out, format );
-		    writer.write( coreDoc );
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}	    
-	}
 		
 //	// Testing - Jackrabbit only
 //	public static void main(String[] args) throws Exception {

@@ -25,13 +25,9 @@ package org.docx4j.openpackaging.io;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
@@ -43,14 +39,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
-
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
 
 
 /**
@@ -106,9 +95,11 @@ public class SaveToZipFile {
 			ZipOutputStream out = new ZipOutputStream(realOS);
 			
 			
-			// 3. Get [Content_Types].xml
+			// 3. Save [Content_Types].xml
 			ContentTypeManager ctm = p.getContentTypeManager();
-			deprecatedSaveRawXmlPart(out, "[Content_Types].xml", ctm.getDocument() );
+	        out.putNextEntry(new ZipEntry("[Content_Types].xml"));
+	        ctm.marshal(out);
+	        out.closeEntry();
 	        
 			// 4. Start with _rels/.rels
 
@@ -227,26 +218,6 @@ public class SaveToZipFile {
 		
 	}
 	
-	protected void deprecatedSaveRawXmlPart(ZipOutputStream out, String partName, Document xml) throws Docx4JException  {
-
-		try {
-	        // Add ZIP entry to output stream.
-	        out.putNextEntry(new ZipEntry(partName));
-	        
-	        
-			OutputFormat format = OutputFormat.createPrettyPrint();
-			format.setEncoding("UTF-8");			
-		    XMLWriter writer = new XMLWriter( out, format );
-		    writer.write( xml );
-	        // Complete the entry
-	        out.closeEntry();
-			log.info( "PUT SUCCESS: " + partName);		
-		} catch (Exception e ) {
-			e.printStackTrace();
-			throw new Docx4JException("Failed to put " + partName, e);
-		}		
-		
-	}
 	
 	/* recursively 
 		(i) get each Part listed in the relationships
@@ -400,47 +371,6 @@ public class SaveToZipFile {
 		
 	}
 	
-	
-	
-	
-	private void dumpZipFileContents(ZipFile zf) {
-		Enumeration entries = zf.entries();
-		// Enumerate through the Zip entries until we find the one named
-		// '[Content_Types].xml'.
-		while (entries.hasMoreElements()) {
-			ZipEntry entry = (ZipEntry) entries.nextElement();
-			log.info( "\n\n" + entry.getName() + "\n" );
-			InputStream in = null;
-			try {			
-				in = zf.getInputStream(entry);
-			} catch (IOException e) {
-				e.printStackTrace() ;
-			}				
-			SAXReader xmlReader = new SAXReader();
-			Document xmlDoc = null;
-			try {
-				xmlDoc = xmlReader.read(in);
-			} catch (DocumentException e) {
-				// Will land here for binary files eg gif file
-				e.printStackTrace() ;
-			}
-			debugPrint(xmlDoc);
-			
-		}
-		
-	}
-	
-	
-	private void debugPrint( Document coreDoc) {
-		try {
-			OutputFormat format = OutputFormat.createPrettyPrint();
-		    XMLWriter writer = new XMLWriter( System.out, format );
-		    writer.write( coreDoc );
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}	    
-	}
-		
 	
 	
 }

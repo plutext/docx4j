@@ -30,8 +30,6 @@ import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
-import org.dom4j.Document;
-
 import org.apache.log4j.Logger;
 
 
@@ -136,18 +134,6 @@ public abstract class Part extends Base {
 	}
 	
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param partName
-	 *            The part name, relative to the parent Package root.
-	 * @throws InvalidFormatException
-	 *             If the specified URI is not valid.
-	 */
-	public Part(PartName partName, Document document)
-			throws InvalidFormatException {
-		this.partName = partName;
-	}
 	
 	/**
 	 * Constructor.

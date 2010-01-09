@@ -57,11 +57,6 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.io.DOMWriter;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -73,28 +68,6 @@ public class XmlUtils {
 	
 	private static Logger log = Logger.getLogger(XmlUtils.class);	
 		
-	/** Make a dom4j element into something JAXB can unmarshall */
-	@Deprecated
-	private static java.io.InputStream getInputStreamFromDom4jEl(Element el) {
-		
-		// Write it to an output stream
-		java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-    	OutputFormat format = OutputFormat.createPrettyPrint();
-	    try {
-		    XMLWriter xmlWriter = new XMLWriter( out, format );
-		    xmlWriter.write(el);
-		    xmlWriter.flush();
-	    } catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}   	    
-		
-	    byte[] bytes = out.toByteArray();
-	    
-		// Now return an input stream
-	    return new java.io.ByteArrayInputStream(bytes);
-		
-	}
 	
 	public static String TRANSFORMER_FACTORY_ORIGINAL;
 	public static String TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS;
@@ -180,68 +153,7 @@ public class XmlUtils {
 		
 	}
 
-	/** Unmarshal a Dom4j element as JAXB object using  JAXBContext Context.jc */ 
-	@Deprecated
-	public static Object unmarshalDom4jDoc(org.dom4j.Document doc) {
-				
-		JAXBContext jc = Context.jc;
-			
-		Object o = null;
-		try {				
-		    org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
-			org.w3c.dom.Document w3cDoc = writer.write(doc);
-
-//			JAXBContext jc = JAXBContext
-//					.newInstance("org.docx4j.jaxb.document");
-			Unmarshaller u = jc.createUnmarshaller();
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			o = u.unmarshal( w3cDoc );
-
-			System.out.println("unmarshalled ");
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}		
-		return o;
-	}
 	
-	/** Unmarshal a Dom4j element as an object in the package org.docx4j.jaxb.document.
-	 * 
-	 *  Since most of our types don't have an XmlRootElement, here we use
-	 *  the version of the unmarshal method that takes the 'expectedType' argument.
-	 *  See https://jaxb.dev.java.net/guide/_XmlRootElement_and_unmarshalling.html  
-	 *  
-	 *  */ 
-	@Deprecated
-	public static  <T> JAXBElement<T> unmarshalDom4jEl(Element el, Class<T> declaredType) {
-		
-		JAXBElement<T> o = null;
-		//Object o = null;
-		try {	
-
-			JAXBContext jc = Context.jc;
-
-			Unmarshaller u = jc.createUnmarshaller();
-						
-			//u.setSchema(null);
-			//u.setValidating( false );
-			
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-//			// Convert dom4j el to W3C
-//			org.dom4j.io.DOMWriter writer = new org.dom4j.io.DOMWriter();
-//			org.w3c.dom.Document w3cDoc = writer.write(el);  // Only takes Document objects :(
-						
-			o = u.unmarshal(new StreamSource(org.docx4j.XmlUtils.getInputStreamFromDom4jEl(el)), declaredType);
-
-			System.out.println("unmarshalled ");
-
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}		
-		return o;
-	}
 
 	/** Unmarshal an InputStream as an object in the package org.docx4j.jaxb.document.
 	 *  Note: you should ensure you include a namespace declaration for w: and
@@ -286,46 +198,6 @@ public class XmlUtils {
 		return u.unmarshal( n );
 	}
 	
-	/** Marshal to a Dom4j document */ 
-	@Deprecated
-	public static org.dom4j.Document marshaltoDom4jDocument(Object o) {
-		// TODO - refactor this.
-		try {
-			JAXBContext jc = Context.jc;
-
-			Marshaller marshaller=jc.createMarshaller();
-			
-			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
-			NamespacePrefixMapperUtils.setProperty(marshaller, 
-					NamespacePrefixMapperUtils.getPrefixMapper());			
-			marshaller.marshal(o, doc);
-			
-			// Now convert the W3C document to a dom4j document
-			org.dom4j.io.DOMReader xmlReader = new org.dom4j.io.DOMReader();
-			
-			/*  Should be able to do ..
-			 * 
-			 *  dom4j has DocumentResult that extends Result, so you can do:
-
-				DocumentResult dr = new DocumentResult();
-				marshaller.marshal( object, dr );
-				o = dr.getDocument();
-
-			 * 
-			 * 
-			 */
-		    return xmlReader.read(doc);
-		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;				
-	}
 
 	/** Marshal to a String */ 
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
