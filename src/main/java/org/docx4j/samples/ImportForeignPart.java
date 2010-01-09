@@ -102,12 +102,7 @@ public class ImportForeignPart {
 		attachmentPoint.addTargetPart(foreignPart);
 		// Add content type
 		ContentTypeManager packageCtm = wordMLPackage.getContentTypeManager();
-		ObjectFactory ctFactory = new ObjectFactory();
-		CTOverride overrideCT = ctFactory.createCTOverride();
-		overrideCT.setPartName(foreignPart.getPartName().getName() );
-		overrideCT.setContentType(foreignPart.getContentType());
-		
-		packageCtm.addOverrideContentType(foreignPart.getPartName().getURI(), overrideCT );
+		packageCtm.addOverrideContentType(foreignPart.getPartName().getURI(), foreignPart.getContentType());
 		
 		System.out.println("Attached foreign part: " + resolvedPartUri);
 		
