@@ -182,13 +182,8 @@ public abstract class Base {
 			this.setRelationships(rp);
 			
 			// Make sure content manager knows how to handle .rels
-			ObjectFactory factory = new ObjectFactory();
-			CTDefault relsCT = factory.createCTDefault();
-			relsCT.setExtension("rels");
-			relsCT.setContentType(org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
-			
 			getPackage().getContentTypeManager().addDefaultContentType("rels", 
-					relsCT);
+					org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
 		}
 		
 		// Now add the targetpart to the relationships

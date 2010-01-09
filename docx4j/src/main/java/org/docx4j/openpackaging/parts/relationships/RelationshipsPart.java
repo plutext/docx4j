@@ -429,35 +429,14 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		addRelationship(rel );
 		
 		// Add an override to ContentTypeManager
-		ObjectFactory ctFactory = new ObjectFactory();
-		
 		if ( part.getContentType().equals( ContentTypes.IMAGE_JPEG) ) {
-			
-			CTDefault defaultCT = ctFactory.createCTDefault();
-			defaultCT.setExtension("jpeg");
-			defaultCT.setContentType(ContentTypes.IMAGE_JPEG);
-			ctm.addDefaultContentType("jpeg",defaultCT );
-			
+			ctm.addDefaultContentType("jpeg",ContentTypes.IMAGE_JPEG );
 		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_GIF ) ) {
-			
-			CTDefault defaultCT = ctFactory.createCTDefault();
-			defaultCT.setExtension("gif");
-			defaultCT.setContentType(ContentTypes.EXTENSION_GIF);
-			ctm.addDefaultContentType("gif", defaultCT);
-			
+			ctm.addDefaultContentType("gif", ContentTypes.EXTENSION_GIF);
 		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_PNG ) ) {
-			
-			CTDefault defaultCT = ctFactory.createCTDefault();
-			defaultCT.setExtension("png");
-			defaultCT.setContentType(ContentTypes.IMAGE_PNG);
-			ctm.addDefaultContentType("png", defaultCT);
-			
+			ctm.addDefaultContentType("png", ContentTypes.IMAGE_PNG);
 		} else {
-			CTOverride overrideCT = ctFactory.createCTOverride();
-			overrideCT.setPartName(part.getPartName().getName() );
-			overrideCT.setContentType(part.getContentType());
-			
-			ctm.addOverrideContentType(part.getPartName().getURI(), overrideCT );
+			ctm.addOverrideContentType(part.getPartName().getURI(), part.getContentType());
 		}
 		
 		return rel;

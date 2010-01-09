@@ -128,11 +128,7 @@ public class CreateWordprocessingMLDocument {
 	    wordMLPackage.getMainDocumentPart().addObject(ac);
 
 	    // .. content type
-		ObjectFactory ctFactory = new ObjectFactory();
-		CTDefault defaultCT = ctFactory.createCTDefault();
-		defaultCT.setExtension("html");
-		defaultCT.setContentType("text/html");
-	    wordMLPackage.getContentTypeManager().addDefaultContentType("html", defaultCT);
+	    wordMLPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
 	    
 		//injectDocPropsCustomPart(wordMLPackage);
 		
