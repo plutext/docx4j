@@ -13,7 +13,6 @@
         <pathelement location="${m2Repository}/junit/junit/4.4/junit-4.4.jar"/>    	
         <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
-        <pathelement location="${m2Repository}/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar"/>
         <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.03/xml-apis-1.3.03.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
