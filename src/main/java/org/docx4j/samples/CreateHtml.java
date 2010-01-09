@@ -46,23 +46,9 @@ public class CreateHtml {
 	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
 	    	
 			System.out.println(inputfilepath);
-			WordprocessingMLPackage wordMLPackage;
-			if (inputfilepath.endsWith(".xml")) {
-				
-				JAXBContext jc = Context.jcXmlPackage;
-				Unmarshaller u = jc.createUnmarshaller();
-				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-						new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
-
-				org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
-
-				wordMLPackage = (WordprocessingMLPackage)xmlPackage.get(); 
 			
-			} else {
-				wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-			}
+			// Load .docx or Flat OPC .xml
+			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 	    	
 			AbstractHtmlExporter exporter;
 			if (useHtmlExporterNG) {
