@@ -223,18 +223,7 @@ public class FlatOpcXmlCreator implements Output {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 		        
-			
-		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
-
-			try {
-				w3cDoc = ((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).getW3cDocument();
-		        dataResult.setAny( w3cDoc.getDocumentElement() );		        
-				log.info( "PUT SUCCESS: " + partName);		
-			} catch (Exception e ) {
-				e.printStackTrace();
-				throw new Docx4JException("Failed to put " + partName, e);
-			}		
-						
+									
 		} else {
 			// Shouldn't happen, since ContentTypeManagerImpl should
 			// return an instance of one of the above, or throw an

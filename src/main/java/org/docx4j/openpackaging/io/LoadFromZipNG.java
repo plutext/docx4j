@@ -555,10 +555,6 @@ public class LoadFromZipNG extends Load {
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
-				} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
-					
-					((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).setDocument( is );
-
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
