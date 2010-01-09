@@ -34,4 +34,13 @@ public class InvalidFormatException extends Docx4JException{
 	public InvalidFormatException(String message){
 		super(message);
 	}
+	
+	public InvalidFormatException(String msg, Exception e) {
+		super(msg, e);
+	}
+
+	public InvalidFormatException(String msg, Throwable t) {
+		super(msg, t);
+	}
+	
 }

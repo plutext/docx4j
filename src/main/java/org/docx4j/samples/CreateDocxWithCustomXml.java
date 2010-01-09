@@ -23,7 +23,8 @@ package org.docx4j.samples;
 
 import java.io.File;
 
-import org.docx4j.model.datastorage.Dom4jCustomXmlDataStorage;
+import org.docx4j.model.datastorage.CustomXmlDataStorage;
+import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -31,9 +32,6 @@ import org.docx4j.openpackaging.parts.Parts;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
 
 /**
  * Creates a docx containing a CustomXml part.
@@ -72,7 +70,7 @@ public class CreateDocxWithCustomXml {
 				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart(parts);
 				// Defaults to /customXml/item1.xml
 			
-			Dom4jCustomXmlDataStorage data = new Dom4jCustomXmlDataStorage();
+			CustomXmlDataStorage data = new CustomXmlDataStorageImpl();
 			data.setDocument(createCustomXmlDocument());
 			
 			customXmlDataStoragePart.setData(data);
@@ -89,14 +87,11 @@ public class CreateDocxWithCustomXml {
 		
 	}
 	
-	public static Document createCustomXmlDocument() {
+	public static org.w3c.dom.Document createCustomXmlDocument() {
 		
-		Document document = DocumentHelper.createDocument();
-		Element root = document.addElement("root");
+		// TODO: implement
 		
-		Element myChild = root.addElement("myChild").addAttribute("att1", "att1Val").addAttribute("att2", "att2Val").addText("some text");
-		
-		return document;
+		return null;
 		
 	}
 	

@@ -33,7 +33,10 @@ import org.docx4j.model.table.TblFactory;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.contenttype.CTDefault;
 import org.docx4j.openpackaging.contenttype.ContentType;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.contenttype.ObjectFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.relationships.Relationship;
@@ -123,15 +126,20 @@ public class CreateWordprocessingMLDocument {
 	    CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
 	    ac.setId(altChunkRel.getId() );
 	    wordMLPackage.getMainDocumentPart().addObject(ac);
+
 	    // .. content type
-	    wordMLPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
+		ObjectFactory ctFactory = new ObjectFactory();
+		CTDefault defaultCT = ctFactory.createCTDefault();
+		defaultCT.setExtension("html");
+		defaultCT.setContentType("text/html");
+	    wordMLPackage.getContentTypeManager().addDefaultContentType("html", defaultCT);
 	    
 		//injectDocPropsCustomPart(wordMLPackage);
 		
 		// Now save it
 		if (save) {
 			System.out.println("Saved.");
-			wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/ac.docx") );
+			wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/ad.docx") );
 		} else {
 		   	// Create a org.docx4j.wml.Package object
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);

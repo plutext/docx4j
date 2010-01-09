@@ -59,20 +59,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
 import org.apache.log4j.Logger;
+import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.*;
 import org.docx4j.openpackaging.parts.WordprocessingML.*;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.Namespace;
-import org.dom4j.QName;
-import org.dom4j.io.SAXReader;
 
 
 /**
@@ -114,64 +114,43 @@ public class ContentTypeManager  {
 	/**
 	 * Default content type tree. <Extension, ContentType>
 	 */
-	private TreeMap<String, String> defaultContentType;
+	private TreeMap<String, CTDefault> defaultContentType;
 
 	/**
 	 * Override content type tree.
 	 */
-	private TreeMap<URI, String> overrideContentType;
-
-	/**
-	 * Constructor. Parses the content of the specified input stream.
-	 * 
-	 * @param archive
-	 *            If different of <i>null</i> then the content types part is
-	 *            retrieve and parse.
-	 * @throws InvalidFormatException
-	 *             If the content types part content is not valid.
-	 */
-	public ContentTypeManager(Document contentTypes) throws InvalidFormatException {
-		init();
-		if (contentTypes != null) {
-			try {
-				parseContentTypesFile(contentTypes);
-			} catch (InvalidFormatException e) {
-				throw new InvalidFormatException(
-						"Can't read content types part !");
-			}
-		} else {
-			log.warn("Passed null content types ?!");
-		}
-	}
+	private TreeMap<URI, CTOverride> overrideContentType;
+	
+	private static ObjectFactory ctFactory = new ObjectFactory();
 
 	public ContentTypeManager()  {
 		init();
 	}
 	
 	private void init() {
-		defaultContentType = new TreeMap<String, String>();
-		overrideContentType = new TreeMap<URI, String>();
+		defaultContentType = new TreeMap<String, CTDefault>();
+		overrideContentType = new TreeMap<URI, CTOverride>();
 	}
 
-	/**
-	 * Build association extention-> content type (will be stored in
-	 * [Content_Types].xml) for example ContentType="image/png" Extension="png"
-	 * 
-	 * @param partUri
-	 *            the uri that will be stored
-	 * @return <b>false</b> if an error occured.
-	 */
-	public void addContentType(PartName partName, String contentType) {
-		boolean defaultCTExists = false;
-		String extension = partName.getExtension();
-		if ((extension.length() == 0)
-				|| (this.defaultContentType.containsKey(extension) 
-						&& !(defaultCTExists = this.defaultContentType.containsValue(contentType)))) {
-			this.addOverrideContentType(partName.getURI(), contentType);
-		} else if (!defaultCTExists) {
-			this.addDefaultContentType(extension, contentType);
-		}
-	}
+//	/**
+//	 * Build association extention-> content type (will be stored in
+//	 * [Content_Types].xml) for example ContentType="image/png" Extension="png"
+//	 * 
+//	 * @param partUri
+//	 *            the uri that will be stored
+//	 * @return <b>false</b> if an error occured.
+//	 */
+//	public void addContentType(PartName partName, String contentType) {
+//		boolean defaultCTExists = false;
+//		String extension = partName.getExtension();
+//		if ((extension.length() == 0)
+//				|| (this.defaultContentType.containsKey(extension) 
+//						&& !(defaultCTExists = this.defaultContentType.containsValue(contentType)))) {
+//			this.addOverrideContentType(partName.getURI(), contentType);
+//		} else if (!defaultCTExists) {
+//			this.addDefaultContentType(extension, contentType);
+//		}
+//	}
 
 	/**
 	 * Add an override content type for a specific part.
@@ -181,9 +160,19 @@ public class ContentTypeManager  {
 	 * @param contentType
 	 *            Content type of the part.
 	 */
-	public void addOverrideContentType(URI partUri, String contentType) {
+	public void addOverrideContentType(URI partUri, CTOverride contentType) {
 		log.info("Registered " + partUri.toString() );
 		overrideContentType.put(partUri, contentType);
+	}
+	
+	public void addOverrideContentType(URI partUri, String contentType) {
+
+		CTOverride overrideCT = ctFactory.createCTOverride();
+		overrideCT.setPartName( partUri.toASCIIString() );
+		overrideCT.setContentType(contentType );
+		
+		overrideContentType.put(partUri, overrideCT);
+		
 	}
 
 //	public String getOverrideContentType(URI partUri) {
@@ -204,7 +193,7 @@ public class ContentTypeManager  {
 			Map.Entry e = (Map.Entry)i.next();
 			if (e != null) {
 				log.debug("Inspecting " + e.getValue());
-				if ( ((String)e.getValue()).equals(contentType) ) {
+				if ( ((CTOverride)e.getValue()).getContentType().equals(contentType) ) {
 					log.debug("Matched!");
 					return (URI)e.getKey(); 
 				}
@@ -221,8 +210,9 @@ public class ContentTypeManager  {
 		Part p;
 
 		// look for an override
-		String contentType = (String)overrideContentType.get(new URI(partName));
-		if (contentType!=null ) {
+		CTOverride overrideCT = (CTOverride) overrideContentType.get(new URI(partName));
+		if (overrideCT!=null ) {
+			String contentType = overrideCT.getContentType(); 
 			log.debug("Found content type '" + contentType + "' for " + partName);
 			 p = newPartForContentType(contentType, partName);
 			 p.setContentType( new ContentType(contentType) );
@@ -232,8 +222,9 @@ public class ContentTypeManager  {
 		// if there is no override, get use the file extension
 		String ext = partName.substring(partName.indexOf(".") + 1);
 		log.info("Looking at extension '" + ext);
-		contentType = (String)defaultContentType.get(ext);
-		if (contentType!=null ) {
+		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
+		if (defaultCT!=null ) {
+			String contentType = defaultCT.getContentType();
 			log.info("Found content type '" + contentType + "' for "
 							+ partName);
 			p = newPartForContentType(contentType, partName);
@@ -441,10 +432,21 @@ public class ContentTypeManager  {
 	 * @param contentType
 	 *            The content type associated with the specified extension.
 	 */
-	public void addDefaultContentType(String extension, String contentType) {
+	public void addDefaultContentType(String extension, CTDefault contentType) {
 		log.debug("Registered " + extension );
 		defaultContentType.put(extension, contentType);
 	}
+	
+	public void addDefaultContentType(String extension, String contentType) {
+		
+		CTDefault defaultCT = ctFactory.createCTDefault();
+		defaultCT.setExtension("extension");
+		defaultCT.setContentType(contentType);
+		
+		log.debug("Registered " + extension );
+		defaultContentType.put(extension, defaultCT);
+	}
+	
 
 	/**
 	 * Delete a content type based on the specified part name. If the specified
@@ -505,11 +507,11 @@ public class ContentTypeManager  {
 
 		if ((this.overrideContentType != null)
 				&& this.overrideContentType.containsKey(partName.getURI()))
-			return this.overrideContentType.get(partName.getURI());
+			return this.overrideContentType.get(partName.getURI()).getContentType();
 
 		String extension = partName.getExtension();
 		if (this.defaultContentType.containsKey(extension))
-			return this.defaultContentType.get(extension);
+			return this.defaultContentType.get(extension).getContentType();
 
 		return null;
 	}
@@ -532,113 +534,110 @@ public class ContentTypeManager  {
 			this.overrideContentType.clear();
 	}
 
-	/**
-	 * Parse the content types part.
-	 * 
-	 * @throws InvalidFormatException
-	 *             Throws if the content type doesn't exist or the XML format is
-	 *             invalid.
-	 */
-	public void parseContentTypesFile(Document xmlContentTypeDoc)
-			throws InvalidFormatException {
-		//log.info("parseContentTypesFile");
+	
+	public void parseContentTypesFile(InputStream contentTypes) 
+		throws InvalidFormatException {
+		
+		CTTypes types;
+		
 		try {
+		    		    
+			Unmarshaller u = Context.jcContentTypes.createUnmarshaller();
+			
+			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			// Default content types
-			List defaultTypes = xmlContentTypeDoc.getRootElement().elements(
-					DEFAULT_TAG_NAME);
-			Iterator elementIteratorDefault = defaultTypes.iterator();
-			while (elementIteratorDefault.hasNext()) {
-				Element element = (Element) elementIteratorDefault.next();
-				String extension = element.attribute(EXTENSION_ATTRIBUTE_NAME)
-						.getValue();
-				//log.info("found " + DEFAULT_TAG_NAME + extension);
-				String contentType = element.attribute(
-						CONTENT_TYPE_ATTRIBUTE_NAME).getValue();
-				addDefaultContentType(extension, contentType);
-			}
+			log.debug("unmarshalling " + this.getClass().getName() );		
+			
+			Object res = u.unmarshal( contentTypes );
+			types = (CTTypes)((JAXBElement)res).getValue();				
+			log.debug( types.getClass().getName() + " unmarshalled" );									
 
-			// Overriden content types
-			List overrideTypes = xmlContentTypeDoc.getRootElement().elements(
-					OVERRIDE_TAG_NAME);
-			Iterator elementIteratorOverride = overrideTypes.iterator();
-			while (elementIteratorOverride.hasNext()) {
-				Element element = (Element) elementIteratorOverride.next();
-				URI uri = new URI(element.attribute(PART_NAME_ATTRIBUTE_NAME)
-						.getValue());
-				String contentType = element.attribute(
-						CONTENT_TYPE_ATTRIBUTE_NAME).getValue();
-				addOverrideContentType(uri, contentType);
+			CTDefault defaultCT;
+			CTOverride overrideCT;
+			for(Object o : types.getDefaultOrOverride() ) {
+				
+				if (o instanceof CTDefault) {
+					defaultCT = (CTDefault)o;
+					addDefaultContentType( defaultCT.getExtension(), defaultCT  );
+				}
+				
+				if (o instanceof CTOverride) {
+					overrideCT = (CTOverride)o;
+					URI uri = new URI(overrideCT.getPartName() );
+					addOverrideContentType(uri, overrideCT );
+				}
 			}
-		} catch (URISyntaxException urie) {
-			throw new InvalidFormatException(urie.getMessage());
+			
+		} catch (Exception e ) {
+			log.error(e);
+			throw new InvalidFormatException("Bad [Content_Types].xml", e);
 		}
+		
+		
 	}
 
-	/**
-	 * Generates the XML for the contents type part.
-	 * 
-	 * @param outStream
-	 *            The output stream use to save the XML content of the content
-	 *            types part.
-	 * @return <b>true</b> if the operation success, else <b>false</b>.
-	 */
-	public Document getDocument() {
-		Document xmlOutDoc = DocumentHelper.createDocument();
+	private CTTypes buildTypes() {
+		
+		// Build the JAXB object
+		ObjectFactory factory = new ObjectFactory();
+		CTTypes types = factory.createCTTypes();
 
-		// Building namespace
-		Namespace dfNs = Namespace.get("", TYPES_NAMESPACE_URI);
-		Element typesElem = xmlOutDoc
-				.addElement(new QName(TYPES_TAG_NAME, dfNs));
-
-		// Adding default types
-		for (Entry<String, String> entry : defaultContentType.entrySet()) {
-			appendDefaultType(typesElem, entry);
+		for (Entry<String, CTDefault> entry : defaultContentType.entrySet()) {
+			types.getDefaultOrOverride().add(entry.getValue());
 		}
 
-		// Adding specific types if any exist
 		if (overrideContentType != null) {
-			for (Entry<URI, String> entry : overrideContentType.entrySet()) {
-				appendSpecificTypes(typesElem, entry);
+			for (Entry<URI, CTOverride> entry : overrideContentType.entrySet()) {
+				types.getDefaultOrOverride().add(entry.getValue());
 			}
+		}	
+		return types;
+	}
+	
+    public void marshal(org.w3c.dom.Node node) throws JAXBException {
+		
+		try {
+			Marshaller marshaller = Context.jcContentTypes.createMarshaller();
+			
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper() );
+			
+			log.debug("marshalling " + this.getClass().getName() + " ..." );									
+			
+			marshaller.marshal(buildTypes(), node);
+			
+			log.info("content types marshalled \n\n" );									
+
+		} catch (JAXBException e) {
+			//e.printStackTrace();
+			log.error(e);
+			throw e;
 		}
-		xmlOutDoc.normalize();
+    }
+    
+    public void marshal(java.io.OutputStream os) throws JAXBException {
+		
+		try {
+			Marshaller marshaller = Context.jcContentTypes.createMarshaller();
+			
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper() );
+			
+			log.debug("marshalling " + this.getClass().getName() + " ..." );									
+			
+			marshaller.marshal(buildTypes(), os);
+			
+			log.info("content types marshalled \n\n" );									
 
-		return xmlOutDoc;
+		} catch (JAXBException e) {
+			//e.printStackTrace();
+			log.error(e);
+			throw e;
+		}
 	}
 
-	/**
-	 * Use to append specific type XML elements, use by the save() method.
-	 * 
-	 * @param root
-	 *            XML parent element use to append this override type element.
-	 * @param entry
-	 *            The values to append.
-	 * @see #save(ZipOutputStream)
-	 */
-	private void appendSpecificTypes(Element root, Entry<URI, String> entry) {
-		root.addElement(OVERRIDE_TAG_NAME).addAttribute(
-				PART_NAME_ATTRIBUTE_NAME, ((URI) entry.getKey()).getPath())
-				.addAttribute(CONTENT_TYPE_ATTRIBUTE_NAME,
-						(String) entry.getValue());
-	}
-
-	/**
-	 * Use to append default types XML elements, use by the save() metid.
-	 * 
-	 * @param root
-	 *            XML parent element use to append this default type element.
-	 * @param entry
-	 *            The values to append.
-	 * @see #save(ZipOutputStream)
-	 */
-	private void appendDefaultType(Element root, Entry<String, String> entry) {
-		root.addElement(DEFAULT_TAG_NAME).addAttribute(
-				EXTENSION_ATTRIBUTE_NAME, (String) entry.getKey())
-				.addAttribute(CONTENT_TYPE_ATTRIBUTE_NAME,
-						(String) entry.getValue());
-
-	}
+	
 
 	/* Return a package of the appropriate type.  Used when loading an existing
 	 * Package, with an already populated [Content_Types].xml.  When 

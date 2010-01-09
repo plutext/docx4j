@@ -61,8 +61,11 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
+import org.docx4j.openpackaging.contenttype.CTDefault;
+import org.docx4j.openpackaging.contenttype.CTOverride;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.contenttype.ObjectFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.ExternalTarget;
@@ -426,20 +429,35 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		addRelationship(rel );
 		
 		// Add an override to ContentTypeManager
+		ObjectFactory ctFactory = new ObjectFactory();
+		
 		if ( part.getContentType().equals( ContentTypes.IMAGE_JPEG) ) {
 			
-			ctm.addDefaultContentType("jpeg", ContentTypes.IMAGE_JPEG);
+			CTDefault defaultCT = ctFactory.createCTDefault();
+			defaultCT.setExtension("jpeg");
+			defaultCT.setContentType(ContentTypes.IMAGE_JPEG);
+			ctm.addDefaultContentType("jpeg",defaultCT );
 			
 		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_GIF ) ) {
 			
-			ctm.addDefaultContentType("gif", ContentTypes.EXTENSION_GIF);
+			CTDefault defaultCT = ctFactory.createCTDefault();
+			defaultCT.setExtension("gif");
+			defaultCT.setContentType(ContentTypes.EXTENSION_GIF);
+			ctm.addDefaultContentType("gif", defaultCT);
 			
 		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_PNG ) ) {
 			
-			ctm.addDefaultContentType("png", ContentTypes.IMAGE_PNG);
+			CTDefault defaultCT = ctFactory.createCTDefault();
+			defaultCT.setExtension("png");
+			defaultCT.setContentType(ContentTypes.IMAGE_PNG);
+			ctm.addDefaultContentType("png", defaultCT);
 			
 		} else {
-			ctm.addOverrideContentType(part.getPartName().getURI(), part.getContentType());
+			CTOverride overrideCT = ctFactory.createCTOverride();
+			overrideCT.setPartName(part.getPartName().getName() );
+			overrideCT.setContentType(part.getContentType());
+			
+			ctm.addOverrideContentType(part.getPartName().getURI(), overrideCT );
 		}
 		
 		return rel;

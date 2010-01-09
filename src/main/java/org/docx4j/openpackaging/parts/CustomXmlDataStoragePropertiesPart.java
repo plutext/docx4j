@@ -23,11 +23,7 @@ package org.docx4j.openpackaging.parts;
 
 import org.docx4j.customXmlProperties.DatastoreItem;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import org.dom4j.Document;
-
 
 
 public final class CustomXmlDataStoragePropertiesPart extends JaxbXmlPart {

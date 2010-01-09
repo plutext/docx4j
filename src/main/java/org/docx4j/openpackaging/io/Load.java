@@ -50,9 +50,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
-import org.dom4j.Document;
-import org.dom4j.io.OutputFormat;
-import org.dom4j.io.XMLWriter;
 
 
 public class Load {
@@ -106,18 +103,6 @@ public class Load {
 		}
 	}
 	
-	protected static void debugPrint( Document coreDoc) {
-		try {
-			OutputFormat format = OutputFormat.createPrettyPrint();
-			
-			StringWriter sWriter = new StringWriter();			 					
-		    XMLWriter xmlWriter = new XMLWriter( sWriter, format );
-		    xmlWriter.write( coreDoc );
-		    log.warn(sWriter.toString() );			
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}	    
-	}
 	
 	/**
 	 * Get a Part (except a relationships part), but not its relationships part

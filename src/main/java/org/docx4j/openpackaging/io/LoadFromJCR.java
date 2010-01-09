@@ -25,33 +25,22 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.util.HashMap;
-import java.util.Iterator;
-
 import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.Property;
-import javax.jcr.Repository;
-import javax.jcr.Session;
-import javax.jcr.SimpleCredentials;
-import javax.jcr.ValueFormatException;
-
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-
-import javax.xml.bind.JAXBContext;
-
-//import org.apache.jackrabbit.core.TransientRepository;
+import javax.jcr.Session;
 
 import org.apache.log4j.Logger;
-
 import org.docx4j.JcrNodeMapper.NodeMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
+import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.Base;
+import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -59,17 +48,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
-
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-
-// Aim to remove dependency on any XML API from 
-// this package.
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 
 
 /**
@@ -241,22 +220,10 @@ public class LoadFromJCR extends Load {
 			Node contentTypesPartNode = getPartNode(jcrSession, nodeMapper,
 					docxContentNode, "[Content_Types].xml");
 
-			// Document ctmDocument =
-			// deprecatedGetDocumentFromJCRPart(jcrSession, nodeMapper,
-			// contentTypesPartNode);
-			InputStream in = getInputStreamFromJCRPart(nodeMapper,
+			InputStream is = getInputStreamFromJCRPart(nodeMapper,
 					contentTypesPartNode);
-			SAXReader xmlReader = new SAXReader();
-			Document ctmDocument = null;
-			try {
-				ctmDocument = xmlReader.read(in);
-				debugPrint(ctmDocument);
-			} catch (DocumentException e) {
-				e.printStackTrace();
-				throw e;
-			}
-
-			ctm.parseContentTypesFile(ctmDocument);
+			
+			ctm.parseContentTypesFile(is);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -366,7 +333,7 @@ public class LoadFromJCR extends Load {
 	// Newer, preferred form
 	public static InputStream getInputStreamFromJCRPart(NodeMapper nodeMapper, 
 			Node contentNode) 
-		throws DocumentException, RepositoryException, PathNotFoundException {
+		throws RepositoryException, PathNotFoundException {
 	
 		try {		
 			
@@ -382,7 +349,7 @@ public class LoadFromJCR extends Load {
 	
 	public static Node getPartNode(Session jcrSession,
 			NodeMapper nodeMapper, Node docxNode, String partName) 
-		throws DocumentException, RepositoryException, PathNotFoundException {
+		throws RepositoryException, PathNotFoundException {
 		
 		long startTime = 0;
 		try {

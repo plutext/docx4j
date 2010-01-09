@@ -20,8 +20,6 @@
 
 package org.docx4j.openpackaging.parts.relationships;
 
-import org.dom4j.Namespace;
-
 public class Namespaces {
 
 //	public static final String MARKUP_COMPATIBILITY = "http://schemas.openxmlformats.org/markup-compatibility/2006";	
@@ -147,11 +145,7 @@ public class Namespaces {
 		"http://schemas.openxmlformats.org/wordprocessingml/2006/main";
 
 	public final static String W_NAMESPACE_DECLARATION = "xmlns:w=\"" + NS_WORD12 + "\""; 
-	
-	// This is dom4j specific
-	@Deprecated
-	public final static Namespace namespaceWord = new Namespace("w", NS_WORD12);
-	
+		
 	public final static String HYPERLINK  = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 	
