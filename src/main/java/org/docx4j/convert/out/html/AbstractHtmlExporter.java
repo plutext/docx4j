@@ -77,11 +77,7 @@ public abstract class AbstractHtmlExporter implements Output {
 	// End interface
 	
 	/** Create an html version of the document, using CSS font family
-	 *  stacks.  This is appropriate if the HTML is intended for
-	 *  viewing in a web browser, rather than an intermediate step
-	 *  on the way to generating PDF output. The Microsoft Conditional
-	 *  Comments (supportMisalignedColumns, supportAnnotations,
-	 *  and mso) which are defined in the XSLT are not inserted.
+	 *  stacks.  
 	 * 
 	 * @param result
 	 *            The javax.xml.transform.Result object to transform into 

@@ -43,6 +43,8 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.CTEndnotes;
+import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Style;
@@ -99,6 +101,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		        Map.Entry pairs = (Map.Entry)it.next();
 		        String styleId = (String)pairs.getKey();
 		        stylesInUse.add(styleId);
+				log.debug("style in use: " + styleId );
 		    }
 		    
 //	    	if (!stylesInUse.contains("Normal") ) {
@@ -270,14 +273,28 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getEGBlockLevelElts();
-		
+		List <Object> bodyChildren = body.getEGBlockLevelElts();		
 		traverseMainDocumentRecursive(bodyChildren, null, stylesInUse);
+
+		// Styles in headers, footers?
+		//  TODO
+		
+		// Styles in endnotes, footnotes?
+		if (this.getEndNotesPart()!=null) {
+			log.debug("Looking at endnotes");
+			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement().getValue();
+			traverseMainDocumentRecursive(endnotes.getEndnote(), null, stylesInUse);			
+		}
+		if (this.getFootnotesPart()!=null) {
+			log.debug("Looking at footnotes");
+			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement().getValue();
+			traverseMainDocumentRecursive(footnotes.getFootnote(), null, stylesInUse);			
+		}
 		
 		return stylesInUse;
 	}
     
-	private void traverseMainDocumentRecursive(List <Object> children, Map fontsDiscovered, Map<String, String> stylesInUse){
+	private void traverseMainDocumentRecursive(List children, Map fontsDiscovered, Map<String, String> stylesInUse){
 		
 		for (Object o : children ) {
 						
@@ -349,6 +366,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				// via object factory will be a naked
 				// org.docx4j.wml.Tbl
 				inspectTable( (org.docx4j.wml.Tbl)o, fontsDiscovered, stylesInUse );
+
+			} else if ( o  instanceof org.docx4j.wml.CTFtnEdn) {
+				
+				org.docx4j.wml.CTFtnEdn ftnEdn = (org.docx4j.wml.CTFtnEdn)o;
+				traverseMainDocumentRecursive(ftnEdn.getEGBlockLevelElts(),
+						fontsDiscovered, stylesInUse);				
 				
 			} else if ( o instanceof javax.xml.bind.JAXBElement) {
 

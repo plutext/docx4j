@@ -18,6 +18,8 @@ import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.html.SymbolWriter;
+import org.docx4j.convert.out.html.HtmlExporterNG2.EndnoteState;
+import org.docx4j.convert.out.html.HtmlExporterNG2.FootnoteState;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -212,6 +214,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 		// type of element to which its model applies
 		modelStates.put("w:tbl", new TableModelTransformState() );
 		modelStates.put("w:sym", new SymbolModelTransformState() );
+
+		modelStates.put("footnoteNumber", new FootnoteState() );
+		modelStates.put("endnoteNumber", new EndnoteState() );
 		
 		Converter.getInstance().start(wmlPackage);
 		

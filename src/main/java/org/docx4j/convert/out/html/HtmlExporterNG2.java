@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.AdHocProperty;
@@ -124,6 +126,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 		log.info(message);
 	}
 
+	
 	/**
 	 * org/docx4j/convert/out/html/docx2xhtmlNG2.xslt will be used by default
 	 * to transform the docx to html.
@@ -621,6 +624,36 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	
     }
     
+    public static int getNextFootnoteNumber(HashMap<String, TransformState> modelStates) {
+    	
+    	FootnoteState fs = (FootnoteState)modelStates.get("footnoteNumber");
+    	return fs.getNextFootnoteNumber();
+    }
     
+    public static class FootnoteState implements TransformState {
+    
+	    int footnoteNumber=0;
+	    public int getNextFootnoteNumber() {
+	    	footnoteNumber++;
+	    	return footnoteNumber;
+	    	
+	    }
+    }
 
+    public static int getNextEndnoteNumber(HashMap<String, TransformState> modelStates) {
+    	
+    	EndnoteState fs = (EndnoteState)modelStates.get("endnoteNumber");
+    	return fs.getNextEndnoteNumber();
+    }
+    
+    public static class EndnoteState implements TransformState {
+    
+	    int endnoteNumber=0;
+	    public int getNextEndnoteNumber() {
+	    	endnoteNumber++;
+	    	return endnoteNumber;
+	    	
+	    }
+    }
+    
 }
