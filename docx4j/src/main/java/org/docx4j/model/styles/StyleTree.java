@@ -93,6 +93,7 @@ public class StyleTree {
         		// Is it a paragraph style?
         		if (style.getType().equals("paragraph")) {                
 	            	// Need to create a node for this
+        			log.debug("Adding '" +  styleId + "' to paragraph tree" );
 	        		this.addNode(styleId, allStyles, pTree);
         		}
         	}
@@ -237,7 +238,10 @@ public class StyleTree {
 	
 	public static String getHtmlClassAttributeValue(Tree<AugmentedStyle> tree,
 			Node<AugmentedStyle> n) {
-
+    	if (n==null) {
+    		log.error("Null node passed");
+    		return null;
+    	}
         List<Node<AugmentedStyle>> classVals =  tree.climb(n);
     	StringBuffer sb = new StringBuffer();
         for (Node<AugmentedStyle> valNode : classVals) {

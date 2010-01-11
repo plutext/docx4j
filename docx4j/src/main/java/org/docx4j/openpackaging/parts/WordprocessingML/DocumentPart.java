@@ -27,12 +27,16 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 //import javax.xml.bind.JAXBContext;
 //import java.net.URI;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.Hdr;
+import org.w3c.dom.Node;
 
 
 
@@ -145,7 +149,35 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 	public EndnotesPart getEndNotesPart() {
 		return endNotesPart;
 	}
+	public static Node getEndnotes(WordprocessingMLPackage wmlPackage) {
+		return XmlUtils.marshaltoW3CDomDocument(
+				wmlPackage.getMainDocumentPart().getEndNotesPart().getJaxbElement());		
+	}
+	
+	public static boolean hasEndnotesPart(WordprocessingMLPackage wmlPackage) {
+		if (wmlPackage.getMainDocumentPart().getEndNotesPart()==null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
+	public FootnotesPart getFootnotesPart() {
+		return footnotesPart;
+	}
+
+	public static Node getFootnotes(WordprocessingMLPackage wmlPackage) {		
+		return XmlUtils.marshaltoW3CDomDocument(
+				wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement());		
+	}
+	
+	public static boolean hasFootnotesPart(WordprocessingMLPackage wmlPackage) {
+		if (wmlPackage.getMainDocumentPart().getFootnotesPart()==null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	public FontTablePart getFontTablePart() {
 		return fontTablePart;
@@ -155,13 +187,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 //	public List getFooterParts() {
 //		return footerPart;
 //	}
-
-
-	public FootnotesPart getFootnotesPart() {
-		return footnotesPart;
-	}
-
-
+	
 //	public List getHeaderParts() {
 //		return headerPart;
 //	}

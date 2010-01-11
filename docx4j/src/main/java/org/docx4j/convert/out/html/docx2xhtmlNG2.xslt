@@ -45,6 +45,8 @@
  -->		
 <xsl:param name="docID"/>
 
+<!--  Input to this transform is the Main Document Part. -->
+
 
 <xsl:template match="/w:document">
 
@@ -157,6 +159,23 @@
 		<xsl:apply-templates select="w:body|w:cfChunk"/>
 
   	<xsl:call-template name="pretty-print-block"/>
+  	
+  		<!--  Footnotes and endnotes -->
+		<xsl:if
+			test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasFootnotesPart($wmlPackage)">
+			<div class="footnotes">
+				<xsl:apply-templates
+					select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getFootnotes($wmlPackage)" />
+			</div>
+		</xsl:if>
+  		
+		<xsl:if
+			test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
+			<div class="endnotes">
+				<xsl:apply-templates
+					select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
+			</div>
+		</xsl:if>
 
       </body>
     </html>
@@ -527,12 +546,44 @@
   		<xsl:apply-templates/>
   	</span>
   </xsl:template>  	
+  
+  <xsl:template match="w:footnoteReference">  
+    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getNextFootnoteNumber($modelStates)"/></xsl:variable>
+  	<span style="vertical-align: top; font-size: xx-small">
+  		<!--  Bidirectional --><a name="fs{$fn}"><a href="#fn{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
+  </xsl:template>
+  <xsl:template match="w:endnoteReference ">  
+    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getNextEndnoteNumber($modelStates)"/></xsl:variable>
+  	<span style="vertical-align: top; font-size: xx-small">
+  		<!--  Bidirectional --><a name="es{$fn}"><a href="#en{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
+  </xsl:template>
+
+  <!--  The number in the note itself -->
+  <xsl:template match="w:footnoteRef">
+    <xsl:variable name="fn"><xsl:value-of select="count(../../../preceding-sibling::*)-1"/></xsl:variable>
+  	<span style="vertical-align: top; font-size: xx-small"><a name="fn{$fn}"><a href="#fs{$fn}"><xsl:value-of select="$fn"/></a></a></span>      
+  </xsl:template>  
+  <xsl:template match="w:endnoteRef">
+    <xsl:variable name="fn"><xsl:value-of select="count(../../../preceding-sibling::*)-1"/></xsl:variable>
+  	<span style="vertical-align: top; font-size: xx-small"><a name="en{$fn}"><a href="#es{$fn}"><xsl:value-of select="$fn"/></a></a></span>      
+  </xsl:template>  
+
+  <xsl:template match="w:footnotes | w:endnotes">
+  		<xsl:apply-templates/>  
+  </xsl:template>
+  
+  <xsl:template match="w:footnote[@w:id='0'] | w:endnote[@w:id='0']"/>
+  
+  <xsl:template match="w:footnote[@w:id!='0'] | w:endnote[@w:id!='0']">
+  	<xsl:apply-templates/>  
+  </xsl:template>
+  
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
-  <xsl:template match="*">
+  <xsl:template match="*[ancestor::w:body]" priority="-1"> <!--  ignore eg page number field in footer -->
 		      <div
 		        color="red">
         NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>

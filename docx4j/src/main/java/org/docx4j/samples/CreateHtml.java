@@ -43,7 +43,8 @@ public class CreateHtml {
 	    	boolean save = true;	    	
 	    	boolean useHtmlExporterNG = true;
 
-	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
+//	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
+	    	String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
 	    	
 			System.out.println(inputfilepath);
 			
