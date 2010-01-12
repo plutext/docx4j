@@ -363,6 +363,40 @@ public class XmlUtils {
 		}
 		return null;
 	}
+
+	/** Marshal to a W3C document, for object
+	 *  missing an @XmlRootElement annotation.  */
+	public static org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc,
+			String uri, String local, Class declaredType) {
+		// TODO - refactor this.
+		try {
+
+			Marshaller marshaller = jc.createMarshaller();
+
+			javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
+					.newInstance();
+			dbf.setNamespaceAware(true);
+			org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper());			
+
+			// See http://weblogs.java.net/blog/kohsuke/archive/2006/03/why_does_jaxb_p.html
+			marshaller.marshal( 
+					new JAXBElement(new QName(uri,local), declaredType, o ),
+					doc);
+
+			return doc;
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	
 	/** Clone this JAXB object, using default JAXBContext. */ 
 	public static <T> T deepCopy(T value) {		
