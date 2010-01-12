@@ -50,7 +50,9 @@ public class CreatePdf {
 
 	    	boolean save = false;
 	    	
-	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
+//	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+	    	String inputfilepath = System.getProperty("user.dir") 
+	    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
 	    	
 			WordprocessingMLPackage wordMLPackage;
 			if (inputfilepath==null) {
@@ -113,6 +115,8 @@ public class CreatePdf {
 //				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
 			
 			if (save) {
+				((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
+						new java.io.File(inputfilepath + ".fo"));
 				OutputStream os = new java.io.FileOutputStream(inputfilepath + ".pdf");			
 				c.output(os);
 				System.out.println("Saved " + inputfilepath + ".pdf");
