@@ -365,6 +365,19 @@
 
 				  	<xsl:call-template name="pretty-print-block"/>
 
+					<xsl:if
+						test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
+						
+				        <fo:block space-before="44pt" font-weight="bold" font-size="14pt">
+				          <xsl:text>Endnotes</xsl:text>
+				        </fo:block>
+						
+						<xsl:apply-templates
+								select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
+					</xsl:if>
+
+				  	<xsl:call-template name="pretty-print-block"/>
+
 				</fo:flow><!-- closes the flow element-->
 			</fo:page-sequence><!-- closes the page-sequence -->
 
@@ -729,6 +742,32 @@
   
   <!--  The number in the note itself -->
   <xsl:template match="w:footnoteRef" />
+  
+
+
+  <xsl:template match="w:endnoteReference ">  
+    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getNextEndnoteNumber($modelStates)"/></xsl:variable>
+    <fo:inline baseline-shift="super"
+	               font-size="smaller"><xsl:value-of select="$fn"/></fo:inline>
+  </xsl:template>
+
+  <!--  The number in the note itself -->
+  <xsl:template match="w:endnoteRef">
+    <xsl:variable name="fn"><xsl:value-of select="count(../../../preceding-sibling::*)-1"/></xsl:variable>
+	<fo:inline baseline-shift="super" font-size="smaller"><xsl:value-of select="$fn"/></fo:inline>
+  </xsl:template>  
+
+  <xsl:template match="w:endnotes">
+  		<xsl:apply-templates/>  
+  </xsl:template>
+  
+  <xsl:template match="w:endnote[@w:id='0']"/>
+  
+  <xsl:template match="w:endnote[@w:id!='0']">
+  	<xsl:apply-templates/>  
+  </xsl:template>
+    
+  <xsl:template match="w:continuationSeparator" />
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
