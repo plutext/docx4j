@@ -169,12 +169,12 @@
 							<xsl:if
 								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeader($wmlPackage)">
 								<fo:region-before
-									region-name="xsl-region-before-oddpage" extent="10mm" />
+									region-name="xsl-region-before-default" extent="10mm" />
 							</xsl:if>
 							<xsl:if
 								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddFooter($wmlPackage)">
 								<fo:region-after
-									region-name="xsl-region-after-oddpage" extent="10mm" />
+									region-name="xsl-region-after-default" extent="10mm" />
 							</xsl:if>
 						</fo:simple-page-master>
 					</xsl:if>
@@ -216,6 +216,29 @@
 								<fo:conditional-page-master-reference
 									master-reference="firstpage" page-position="first" />
 							</xsl:if>
+							
+							<xsl:choose>
+								<xsl:when test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeaderOrFooter($wmlPackage)">
+									<fo:conditional-page-master-reference
+										master-reference="evenpage" odd-or-even="even" />
+									<fo:conditional-page-master-reference
+										master-reference="oddpage" odd-or-even="odd" />
+								</xsl:when>
+								<xsl:when test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeaderOrFooter($wmlPackage)">
+									<fo:conditional-page-master-reference
+										master-reference="default" />	
+								</xsl:when>
+								<xsl:otherwise>
+									<fo:conditional-page-master-reference
+										master-reference="simple" />																
+								</xsl:otherwise>
+							</xsl:choose>
+<!-- 
+							<xsl:if
+								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
+								<fo:conditional-page-master-reference
+									master-reference="default" />
+							</xsl:if>
 							<xsl:if
 								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeaderOrFooter($wmlPackage)">
 								<fo:conditional-page-master-reference
@@ -226,13 +249,7 @@
 								<fo:conditional-page-master-reference
 									master-reference="evenpage" odd-or-even="even" />
 							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
-								<fo:conditional-page-master-reference
-									master-reference="default" />
-							</xsl:if>
-							<fo:conditional-page-master-reference
-								master-reference="simple" />
+ -->							
 					</fo:repeatable-page-master-alternatives>
 				</fo:page-sequence-master>
 			</fo:layout-master-set>
@@ -245,89 +262,78 @@
 				page-sequence-->
 			<fo:page-sequence master-reference="twoside">
 
+				<!--  First Page Header -->
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeader($wmlPackage)">
+					<fo:static-content
+						flow-name="xsl-region-before-firstpage">
 
-				<xsl:choose>
-					<!--  First Page -->
-					<xsl:when
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeaderOrFooter($wmlPackage)">
-						<!--  First Page Header -->
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeader($wmlPackage)">
-							<fo:static-content
-								flow-name="xsl-region-before-firstpage">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getFirstHeader($wmlPackage)" />
 
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getFirstHeader($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>
 
-							</fo:static-content>
-						</xsl:if>
+				<!--  First Page Footer -->
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstFooter($wmlPackage)">
 
-						<!--  First Page Footer -->
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstFooter($wmlPackage)">
-
-							<fo:static-content
-								flow-name="xsl-region-after-firstpage">
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getFirstFooter($wmlPackage)" />
-							</fo:static-content>
-						</xsl:if>
-					</xsl:when>
-					<xsl:when
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenOrOddHeaderOrFooter($wmlPackage)">
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeader($wmlPackage)">
-							<fo:static-content
-								flow-name="xsl-region-before-evenpage">
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenHeader($wmlPackage)" />
-							</fo:static-content>
-						</xsl:if>
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenFooter($wmlPackage)">
-							<fo:static-content
-								flow-name="xsl-region-after-evenpage">
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenFooter($wmlPackage)" />
-							</fo:static-content>
-						</xsl:if>
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeader($wmlPackage)">
-							<fo:static-content
-								flow-name="xsl-region-before-oddpage">
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddHeader($wmlPackage)" />
-							</fo:static-content>
-						</xsl:if>
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddFooter($wmlPackage)">
-							<fo:static-content
-								flow-name="xsl-region-after-oddpage">
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddFooter($wmlPackage)" />
-							</fo:static-content>
-						</xsl:if>
-					</xsl:when>
-					<xsl:when
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeaderOrFooter($wmlPackage)">
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
-							<fo:static-content
-								flow-name="xsl-region-before-default">
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage)" />
-							</fo:static-content>
-						</xsl:if>
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
-							<fo:static-content
-								flow-name="xsl-region-after-default">
-								<xsl:apply-templates
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage)" />
-							</fo:static-content>
-						</xsl:if>
-					</xsl:when>
-				</xsl:choose>
+					<fo:static-content
+						flow-name="xsl-region-after-firstpage">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getFirstFooter($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeader($wmlPackage)">
+					<fo:static-content
+						flow-name="xsl-region-before-evenpage">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenHeader($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenFooter($wmlPackage)">
+					<fo:static-content
+						flow-name="xsl-region-after-evenpage">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenFooter($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>
+<!-- 				
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeader($wmlPackage)">
+					<fo:static-content
+						flow-name="xsl-region-before-default">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddHeader($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>				
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddFooter($wmlPackage)">
+					<fo:static-content
+						flow-name="xsl-region-after-default">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddFooter($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>
+ -->				
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
+					<fo:static-content
+						flow-name="xsl-region-before-default">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>
+				<xsl:if
+					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
+					<fo:static-content
+						flow-name="xsl-region-after-default">
+						<xsl:apply-templates
+							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage)" />
+					</fo:static-content>
+				</xsl:if>
 
 				<!-- start fo:flow
 					each flow is targeted

@@ -41,7 +41,6 @@
                     <w:sectPr>
                         <w:headerReference r:id="rId6" w:type="even"/>
                         <w:headerReference r:id="rId7" w:type="default"/>
-                        <w:headerReference r:id="rId8" w:type="first"/>
                         <w:pgSz w:h="15840" w:w="12240"/>
                         <w:pgMar w:bottom="1440" w:footer="708" w:gutter="0" w:header="708" w:left="1440" w:right="1440" w:top="1440"/>
                         <w:cols w:space="708"/>
@@ -54,25 +53,10 @@
     <pkg:part pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:name="/word/_rels/document.xml.rels">
         <pkg:xmlData>
             <rel:Relationships xmlns:rel="http://schemas.openxmlformats.org/package/2006/relationships">
-                <rel:Relationship xmlns="" Id="rId8" Target="header3.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"/>
                 <rel:Relationship xmlns="" Id="rId7" Target="header2.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"/>
                 <rel:Relationship xmlns="" Id="rId1" Target="styles.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"/>
                 <rel:Relationship xmlns="" Id="rId6" Target="header1.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"/>
             </rel:Relationships>
-        </pkg:xmlData>
-    </pkg:part>
-    <pkg:part pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml" pkg:name="/word/header3.xml">
-        <pkg:xmlData>
-            <w:hdr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:ns8="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
-                <w:p>
-                    <w:pPr>
-                        <w:pStyle w:val="Header"/>
-                    </w:pPr>
-                    <w:r>
-                        <w:t>First page header</w:t>
-                    </w:r>
-                </w:p>
-            </w:hdr>
         </pkg:xmlData>
     </pkg:part>
     <pkg:part pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml" pkg:name="/word/header2.xml">
