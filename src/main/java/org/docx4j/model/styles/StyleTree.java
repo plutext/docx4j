@@ -56,8 +56,8 @@ public class StyleTree {
 	/**
 	 * Build a StyleTree for stylesInUse. 
 	 * 
-	 * @param stylesInUse
-	 * @param allStyles
+	 * @param stylesInUse styles actually in use in the main document part, headers/footers, footnotes/endnotes 
+	 * @param allStyles styles defined in the style definitions part
 	 */
 	public StyleTree(List<String> stylesInUse, Map<String, Style> allStyles) {
 		
@@ -157,6 +157,7 @@ public class StyleTree {
         	String basedOnStyleName = style.getBasedOn().getVal();   
         	log.debug("..based on " + basedOnStyleName);        	
         	if (tree.get(basedOnStyleName)==null) {
+//            	log.debug("..can disregard that null, but it shouldn't happen again for this style");        	
         		Node<AugmentedStyle> parent = addNode(basedOnStyleName, allStyles, tree);
         		parent.addChild(n);
         	} else {

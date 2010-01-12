@@ -39,13 +39,13 @@ public class Tree<T> {
      */
     public Node<T> get(String name) {
     	
-    	if (log.isDebugEnabled()) {
-    		Node<T> result = (Node<T>)nodes.get(name);
-    		if (result==null) {
-    			log.warn("Null result for " + name);
-    		} 
-    		return result;
-    	}
+//    	if (log.isDebugEnabled()) {
+//    		Node<T> result = (Node<T>)nodes.get(name);
+//    		if (result==null) {
+//    			log.warn("Null result for " + name);
+//    		} 
+//    		return result;
+//    	}
     	return (Node<T>)nodes.get(name);
     	
     }
