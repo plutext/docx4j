@@ -334,6 +334,18 @@
 							select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage)" />
 					</fo:static-content>
 				</xsl:if>
+				
+				<xsl:if
+					test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasFootnotesPart($wmlPackage)">
+					<fo:static-content flow-name="xsl-footnote-separator">
+					    <fo:block>
+					      <fo:leader leader-pattern="rule"
+					                 leader-length="100%"
+					                 rule-style="solid"
+					                 rule-thickness="0.5pt"/>
+					    </fo:block>
+					  </fo:static-content>				
+						</xsl:if>
 
 				<!-- start fo:flow
 					each flow is targeted
@@ -680,6 +692,43 @@
 </xsl:template>
 
 <xsl:template match="w:bookmarkEnd" />
+
+
+  <xsl:template match="w:footnoteReference">
+
+	<xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getNextFootnoteNumber($modelStates)"/></xsl:variable>
+	<xsl:variable name="id"><xsl:value-of select="string(@w:id)"/></xsl:variable>
+	  
+	<fo:footnote>
+	
+	    <fo:inline baseline-shift="super"
+	               font-size="smaller"><xsl:value-of select="$fn"/></fo:inline>
+	               
+	    <fo:footnote-body>
+	      <fo:list-block provisional-label-separation="0pt"
+	                     provisional-distance-between-starts="18pt"
+	                     space-after.optimum="6pt">
+	        <fo:list-item>
+	          <fo:list-item-label end-indent="label-end()">
+	            <fo:block><xsl:value-of select="$fn"/></fo:block>
+	          </fo:list-item-label>
+	          <fo:list-item-body start-indent="body-start()">
+	            <fo:block><xsl:apply-templates
+					select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getFootnote($wmlPackage, $id)" /></fo:block>
+	          </fo:list-item-body>
+	        </fo:list-item>
+	      </fo:list-block>
+	    </fo:footnote-body>
+	  </fo:footnote>
+	    
+  </xsl:template>
+  
+  <xsl:template match="w:footnote">
+  	<xsl:apply-templates/>  
+  </xsl:template>
+  
+  <!--  The number in the note itself -->
+  <xsl:template match="w:footnoteRef" />
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
