@@ -2,6 +2,7 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -61,6 +62,7 @@ import org.w3c.dom.traversal.NodeIterator;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
+import org.apache.commons.io.FileUtils;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
@@ -89,6 +91,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		} catch (TransformerConfigurationException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static File saveFO;
+	public void setSaveFO(File save) {
+		saveFO = save;
 	}
 	
 
@@ -277,7 +284,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	      	Converter.getInstance().start(wordMLPackage);
 	      	  
 	    	  
-	  		if (log.isDebugEnabled()) {
+	  		if (saveFO!=null || log.isDebugEnabled()) {
 
 	  			ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
 	  			Result intermediateResult =  new StreamResult( intermediate );
@@ -286,6 +293,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	  			
 	  			String fo = intermediate.toString("UTF-8");
 	  			log.debug(fo);
+	  			
+	  			if (saveFO!=null) {
+	  				FileUtils.writeStringToFile(saveFO, fo);	
+	  				log.info("Saved " + saveFO.getPath() );
+	  			}
 	  			
 	  			Source src = new StreamSource(new StringReader(fo));
 		    	
