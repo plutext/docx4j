@@ -112,9 +112,8 @@
 					See http://www.dpawson.co.uk/xsl/sect3/headers.html				
 				-->
 
-				<xsl:choose>
 					<!--  First Page -->
-					<xsl:when
+					<xsl:if
 						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeaderOrFooter($wmlPackage)">
 						<fo:simple-page-master master-name="firstpage"
 							page-height="297mm" page-width="210mm" margin-top="10mm"
@@ -139,8 +138,8 @@
 							</xsl:if>
 
 						</fo:simple-page-master>
-					</xsl:when>
-					<xsl:when
+					</xsl:if>
+					<xsl:if
 						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenOrOddHeaderOrFooter($wmlPackage)">
 						<!-- layout for the even page -->
 						<fo:simple-page-master master-name="evenpage"
@@ -178,8 +177,8 @@
 									region-name="xsl-region-after-oddpage" extent="10mm" />
 							</xsl:if>
 						</fo:simple-page-master>
-					</xsl:when>
-					<xsl:when
+					</xsl:if>
+					<xsl:if
 						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeaderOrFooter($wmlPackage)">
 						<fo:simple-page-master master-name="default"
 							page-height="297mm" page-width="210mm" margin-top="10mm"
@@ -198,51 +197,42 @@
 									region-name="xsl-region-after-default" extent="10mm" />
 							</xsl:if>
 						</fo:simple-page-master>
-					</xsl:when>
-					<xsl:otherwise>
+					</xsl:if>
 
-						<fo:simple-page-master master-name="simple"
-							page-height="29.7cm" page-width="21cm" margin-top="1cm"
-							margin-bottom="2cm" margin-left="2.5cm" margin-right="2.5cm">
-							<fo:region-body margin-top="3cm" />
-							<fo:region-before extent="3cm" />
-							<fo:region-after extent="1.5cm" />
-						</fo:simple-page-master>
+					<fo:simple-page-master master-name="simple"
+						page-height="29.7cm" page-width="21cm" margin-top="1cm"
+						margin-bottom="2cm" margin-left="2.5cm" margin-right="2.5cm">
+						<fo:region-body margin-top="3cm" />
+						<fo:region-before extent="3cm" />
+						<fo:region-after extent="1.5cm" />
+					</fo:simple-page-master>
 
-
-
-					</xsl:otherwise>
-				</xsl:choose>
 
 				<fo:page-sequence-master master-name="twoside">
 
 					<fo:repeatable-page-master-alternatives>
-						<xsl:choose>
-							<xsl:when
+							<xsl:if
 								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeaderOrFooter($wmlPackage)">
 								<fo:conditional-page-master-reference
 									master-reference="firstpage" page-position="first" />
-							</xsl:when>
-							<xsl:when
+							</xsl:if>
+							<xsl:if
 								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeaderOrFooter($wmlPackage)">
 								<fo:conditional-page-master-reference
 									master-reference="oddpage" odd-or-even="odd" />
-							</xsl:when>
-							<xsl:when
+							</xsl:if>
+							<xsl:if
 								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeaderOrFooter($wmlPackage)">
 								<fo:conditional-page-master-reference
 									master-reference="evenpage" odd-or-even="even" />
-							</xsl:when>
-							<xsl:when
+							</xsl:if>
+							<xsl:if
 								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
 								<fo:conditional-page-master-reference
 									master-reference="default" />
-							</xsl:when>
-							<xsl:otherwise>
-								<fo:conditional-page-master-reference
-									master-reference="simple" />
-							</xsl:otherwise>
-						</xsl:choose>
+							</xsl:if>
+							<fo:conditional-page-master-reference
+								master-reference="simple" />
 					</fo:repeatable-page-master-alternatives>
 				</fo:page-sequence-master>
 			</fo:layout-master-set>
