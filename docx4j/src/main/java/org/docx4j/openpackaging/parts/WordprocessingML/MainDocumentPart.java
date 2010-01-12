@@ -40,11 +40,16 @@ import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
+import org.docx4j.wml.Ftr;
+import org.docx4j.wml.Hdr;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Style;
@@ -94,14 +99,17 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	public StyleTree getStyleTree() {
 		
 		if (styleTree==null) {
+			
+			log.info("Preparing StyleTree");
 
+			// Styles actually in use in the document
 			List<String> stylesInUse = new ArrayList<String>();
 			Iterator it = getStylesInUse().entrySet().iterator();
 		    while (it.hasNext()) {
 		        Map.Entry pairs = (Map.Entry)it.next();
 		        String styleId = (String)pairs.getKey();
 		        stylesInUse.add(styleId);
-				log.debug("style in use: " + styleId );
+				//log.debug("style in use: " + styleId );
 		    }
 		    
 //	    	if (!stylesInUse.contains("Normal") ) {
@@ -118,11 +126,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				log.error(e);
 			}
 	    	
+			// Styles defined in StyleDefinitionsPart
 			Map<String, Style> allStyles = new HashMap<String, Style>();
 			Styles styles = getStyleDefinitionsPart().getJaxbElement();		
 			for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
 				allStyles.put(s.getStyleId(), s);	
-				log.debug("live style: " + s.getStyleId() );
+				//log.debug("live style: " + s.getStyleId() );
 			}
 			styleTree = new StyleTree(stylesInUse, allStyles);
 				
@@ -277,7 +286,23 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		traverseMainDocumentRecursive(bodyChildren, null, stylesInUse);
 
 		// Styles in headers, footers?
-		//  TODO
+		RelationshipsPart rp = this.getRelationshipsPart();
+		if (rp!=null) {
+			for ( Relationship r : rp.getRelationships().getRelationship() ) {
+				Part part = rp.getPart(r);
+				if ( part instanceof FooterPart ) {
+					
+					Ftr ftr = ((FooterPart)part).getJaxbElement();
+					traverseMainDocumentRecursive(ftr.getEGBlockLevelElts(), null, stylesInUse);
+					
+				} else if (part instanceof HeaderPart) {
+					
+					Hdr hdr = ((HeaderPart)part).getJaxbElement();
+					traverseMainDocumentRecursive(hdr.getEGBlockLevelElts(), null, stylesInUse);
+				
+				}
+			}
+		}
 		
 		// Styles in endnotes, footnotes?
 		if (this.getEndNotesPart()!=null) {
