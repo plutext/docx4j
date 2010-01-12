@@ -36,6 +36,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.Hdr;
@@ -158,10 +159,26 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 				wmlPackage.getMainDocumentPart().getEndNotesPart().getJaxbElement());		
 	}
 	
+	/**
+	 * Does this package contain an endnotes part, with real endnotes
+	 * in it?
+	 * @param wmlPackage
+	 * @return
+	 */
 	public static boolean hasEndnotesPart(WordprocessingMLPackage wmlPackage) {
 		if (wmlPackage.getMainDocumentPart().getEndNotesPart()==null) {
 			return false;
 		} else {
+			// Word seems to add an endnotes part when it adds a footnotes part,
+			// so existence of part is not determinative
+			CTEndnotes endnotes = wmlPackage.getMainDocumentPart().getEndNotesPart().getJaxbElement().getValue();
+			
+			if (endnotes.getEndnote().size()<3) {
+				// id's 0 & 1 are:
+				// <w:endnote w:type="separator" w:id="0">
+				// <w:endnote w:type="continuationSeparator" w:id="1">
+				return false;
+			}
 			return true;
 		}
 	}
