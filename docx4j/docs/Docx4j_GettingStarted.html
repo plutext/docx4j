@@ -1,4 +1,4 @@
-<html xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><head><style><!--
+<?xml version="1.0" encoding="utf-8"?><html xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><head><style><!--
 
 						/*paged media */ 
 						div.header {display: none }
@@ -32,14 +32,15 @@
 .TableGrid {display:table;position: relative; margin-left: 0in;border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;space-after: 0in;line-height: 100%;}
 
  /* PARAGRAPH STYLES */ 
-.DocDefaults {display:block;space-after: 4mm;line-height: 115%;font-family: Calibri;font-size: 11.0pt;}
+.DocDefaults {display:block;space-after: 4mm;line-height: 115%;font-size: 11.0pt;}
 .Normal {display:block;}
-.NormalWeb {display:block;space-before: 0.07in;space-after: 0.07in;line-height: 100%;font-family: Times New Roman;font-size: 12.0pt;}
-.Command {display:block;position: relative; margin-left: 0.5in;font-family: Consolas;font-size: 10.0pt;}
-.Heading1 {display:block;page-break-after: avoid;space-before: 0.33in;space-after: 4mm;font-weight: bold;color: #365F91;font-family: Calibri;font-size: 18.0pt;}
-.Title {display:block;space-after: 0.21in;line-height: 100%;color: #17365D;font-family: Calibri;font-size: 26.0pt;}
+.NormalWeb {display:block;space-before: 0.07in;space-after: 0.07in;line-height: 100%;font-size: 12.0pt;}
+.Command {display:block;position: relative; margin-left: 0.5in;font-size: 10.0pt;}
+.Heading1 {display:block;page-break-after: avoid;space-before: 0.33in;space-after: 4mm;font-weight: bold;color: #365F91;font-size: 18.0pt;}
+.Title {display:block;space-after: 0.21in;line-height: 100%;color: #17365D;font-size: 26.0pt;}
+.FootnoteText {display:block;space-after: 0in;line-height: 100%;font-size: 10.0pt;}
 .ListParagraph {display:block;position: relative; margin-left: 0.5in;}
-.Heading2 {display:block;space-before: 0.07in;space-after: 0.07in;line-height: 100%;font-weight: bold;font-style: italic;font-family: Calibri;font-size: 14.0pt;}
+.Heading2 {display:block;space-before: 0.07in;space-after: 0.07in;line-height: 100%;font-weight: bold;font-style: italic;font-size: 14.0pt;}
 .h3 {display:block;font-style: normal;font-size: 11.0pt;text-decoration: none;}
 
  /* CHARACTER STYLES */ .DefaultParagraphFont {display:inline;}
@@ -57,15 +58,11 @@
 
 						/* TABLE CELL STYLES */
 						#docx4j_tbl_0 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
---></style></head><body><div class="footer">
-  
-  
-  
-  </div>
-  
+--></style></head><body>
+
   <p class="Title Normal DocDefaults ">Docx4j – Getting Started</p>
   
-  <p class="Normal DocDefaults ">The latest version of this document can always be found in <a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/docs">docx4j svn in /docs</a> (in <a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/docs/Docx4j_GettingStarted.xml">Flat OPC XML format for Word 2007</a>, <a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/docs/Docx4j_GettingStarted.html">HTML</a>, and <a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/docs/Docx4j_GettingStarted.pdf">PDF</a>).</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">The latest version of this document can always be found in </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/"><span class="Hyperlink DefaultParagraphFont ">docx4j svn in /docs</span></a><span style="white-space:pre-wrap;"> (in Flat OPC XML format for Word 2007, </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/Docx4j_GettingStarted.html"><span class="Hyperlink DefaultParagraphFont ">HTML</span></a><span style="white-space:pre-wrap;">, and </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/Docx4j_GettingStarted.pdf"><span class="Hyperlink DefaultParagraphFont ">PDF</span></a>).</p>
   
   <p class="Heading1 Normal DocDefaults ">What is docx4j?</p>
   
@@ -76,6 +73,8 @@
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Docx4j relies heavily on JAXB, the JCP standard for Java – XML binding.  </span></p>
   
   <p class="Normal DocDefaults ">The library is designed to round trip docx files with 100% fidelity, and supports all 2007 WordML.  Support for new Word 2010 features will be added soon.</p>
+  
+  <p class="Normal DocDefaults ">The docx4j project is sponsored by Plutext (<a href="http://www.plutext.com"><span class="Hyperlink DefaultParagraphFont ">www.plutext.com</span></a>).</p>
   
   <p class="Heading1 Normal DocDefaults ">Is docx4j for you?</p>
   
@@ -91,27 +90,27 @@
   
   <p class="Heading1 Normal DocDefaults ">What sorts of things can you do with docx4j?</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS)</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Create new docx</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Create new docx</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Programmatically manipulate the docx document (of course)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Programmatically manipulate the docx document (of course)</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Template substitution; CustomXML binding</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Template substitution; CustomXML binding</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Import a binary doc (uses Apache POI's HWPF)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Import a binary doc (uses Apache POI's HWPF)</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Produce/consume Word 2007's xmlPackage (pkg) format</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Produce/consume Word 2007's xmlPackage (pkg) format</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Save docx to filesystem as a docx (ie zipped), or to JCR (unzipped)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Save docx to filesystem as a docx (ie zipped), or to JCR (unzipped)</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Apply transforms, including common filters</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Apply transforms, including common filters</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Export as HTML or PDF</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Export as HTML or PDF</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Diff/compare documents, paragraphs or sdt (content controls)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Diff/compare documents, paragraphs or sdt (content controls)</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Font support (font substitution, and use of any fonts embedded in the document)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Font support (font substitution, and use of any fonts embedded in the document)</p>
   
   <p class="Heading1 Normal DocDefaults ">What Word documents does it support?</p>
   
@@ -137,7 +136,7 @@
   
   <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">You need to be using Java 1.5+.</span></p>
   
-  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">This is because of JAXB.  If you must use  1.4, retrotranslator can</span><span class="apple-converted-space DefaultParagraphFont "><span style="white-space:pre-wrap;"> </span></span><a href="http://forums.java.net/jive/message.jspa?messageID=212494"><span class="icon DefaultParagraphFont ">reportedly make</span></a><span class="apple-style-span DefaultParagraphFont "><span style="white-space:pre-wrap;"> it work.</span></span></p>
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">This is because of JAXB</span><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fs1"><a href="#fn1">1</a></a></span></span><span class="apple-style-span DefaultParagraphFont ">.  If you must use  1.4, retrotranslator can</span><span class="apple-converted-space DefaultParagraphFont "><span style="white-space:pre-wrap;"> </span></span><a href="http://forums.java.net/jive/message.jspa?messageID=212494"><span class="icon DefaultParagraphFont ">reportedly make</span></a><span class="apple-style-span DefaultParagraphFont "><span style="white-space:pre-wrap;"> it work.</span></span></p>
   
   <p class="Heading1 Normal DocDefaults ">A word about Jaxb</p>
   
@@ -145,9 +144,9 @@
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">JAXB is included in Sun’s Java 6 distributions, but not 1.5.  So if you are using the 1.5 JDK, you will need JAXB 2.1.x on your class path.  </span></p>
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Bits of docx4j, such as </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span class="Hyperlink DefaultParagraphFont ">org.docx4j.wml</span></a><span style="white-space:pre-wrap;"> and </span><span class="apple-converted-space DefaultParagraphFont " style="font-family: Calibri;"> </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/dml"><span class="Hyperlink DefaultParagraphFont ">org.docx4j.dml</span></a><span style="white-space:pre-wrap;"> were generated using JAXB’s XJC. We modified the wml.xsd schema in particular, so that the key resulting classes are a bit more human friendly (ie don't all start with CT_ and ST_). </span></p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Bits of docx4j, such as </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span class="Hyperlink DefaultParagraphFont ">org.docx4j.wml</span></a><span style="white-space:pre-wrap;"> and </span><span class="apple-converted-space DefaultParagraphFont "> </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/dml"><span class="Hyperlink DefaultParagraphFont ">org.docx4j.dml</span></a><span style="white-space:pre-wrap;"> were generated using JAXB’s XJC. We modified the wml.xsd schema in particular, so that the key resulting classes are a bit more human friendly (ie don't all start with CT_ and ST_). </span></p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Log4j</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Log4j</span></p>
   
   <p class="Normal DocDefaults "><span class="underline DefaultParagraphFont "><span style="white-space:pre-wrap;">Docx4j uses log4j for logging.  To enable logging, you need a log4.properties or log4j.xml on your class path.  See for example </span></span><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/resources/log4j.xml"><span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/resources/log4j.xml</span></a></p>
   
@@ -159,7 +158,7 @@
   
   <p class="Normal DocDefaults ">To obtain a copy of the current source code:</p>
   
-  <p class="NormalWeb Normal DocDefaults ">   <span style="font-family: Consolas;font-size: 10.0pt;">svn co</span><span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j"><span class="icon DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j</span></a><span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span><span style="font-family: Consolas;font-size: 10.0pt;">docx4j</span></p>
+  <p class="NormalWeb Normal DocDefaults ">   <span style="font-size: 10.0pt;">svn co</span><span class="apple-converted-space DefaultParagraphFont " style="font-size: 10.0pt;"> </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j"><span class="icon DefaultParagraphFont " style="font-size: 10.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j</span></a><span class="apple-converted-space DefaultParagraphFont " style="font-size: 10.0pt;"> </span><span style="font-size: 10.0pt;">docx4j</span></p>
   
   <p class="Normal DocDefaults ">Alternatively, you can browse it online, at:</p>
   
@@ -173,7 +172,7 @@
   
   <p class="Normal DocDefaults ">Create a directory called workspace, and cd into it.</p>
   
-  <p class="NormalWeb Normal DocDefaults ">   <span style="font-family: Consolas;font-size: 10.0pt;">svn co</span><span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j"><span class="icon DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j</span></a><span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span><span style="font-family: Consolas;font-size: 10.0pt;">docx4j</span></p>
+  <p class="NormalWeb Normal DocDefaults ">   <span style="font-size: 10.0pt;">svn co</span><span class="apple-converted-space DefaultParagraphFont " style="font-size: 10.0pt;"> </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j"><span class="icon DefaultParagraphFont " style="font-size: 10.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j</span></a><span class="apple-converted-space DefaultParagraphFont " style="font-size: 10.0pt;"> </span><span style="font-size: 10.0pt;">docx4j</span></p>
   
   <p class="Normal DocDefaults ">open pom.xml, find the line which reads</p>
   
@@ -183,7 +182,7 @@
   
   <p class="Command NormalWeb Normal DocDefaults "><span style="white-space:pre-wrap;">mvn install </span></p>
   
-  <p class="NormalWeb Normal DocDefaults " style="position: relative; margin-left: 0.5in;"><span style="font-family: Consolas;font-size: 10.0pt;">ant dist</span></p>
+  <p class="NormalWeb Normal DocDefaults " style="position: relative; margin-left: 0.5in;"><span style="font-size: 10.0pt;">ant dist</span></p>
   
   <p class="Normal DocDefaults ">That ant command will create the docx4j.jar and place it and all its dependencies in the dist dir.</p>
   
@@ -191,57 +190,57 @@
   
   <p class="h3 Heading2 Normal DocDefaults ">Prerequisites</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Eclipse installed</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Eclipse installed</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Install an Eclipse subversion plugin eg<span class="apple-converted-space DefaultParagraphFont "> </span><a href="http://subclipse.tigris.org/update_1.2.x"><span class="icon DefaultParagraphFont ">http://subclipse.tigris.org/update_1.2.x</span></a></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Install an Eclipse subversion plugin eg<span class="apple-converted-space DefaultParagraphFont "> </span><a href="http://subclipse.tigris.org/update_1.2.x"><span class="icon DefaultParagraphFont ">http://subclipse.tigris.org/update_1.2.x</span></a></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Install<span class="apple-converted-space DefaultParagraphFont "> </span><a href="http://dev.plutext.org/trac/docx4j/trac/umbrella/wiki/MavenEclipse"><span class="Hyperlink DefaultParagraphFont " style="font-family: Calibri;">Maven and the Eclipse plugin</span></a></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Install<span class="apple-converted-space DefaultParagraphFont "> </span><a href="http://dev.plutext.org/trac/docx4j/trac/umbrella/wiki/MavenEclipse"><span class="Hyperlink DefaultParagraphFont ">Maven and the Eclipse plugin</span></a></p>
   
   <p class="Normal DocDefaults ">And, as discussed above:</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Java 1.5 or 6</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Java 1.5 or 6</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">JAXB: </span><span style="font-weight: bold;">both</span><span style="white-space:pre-wrap;"> the JAXB implementation included in Java 6, </span><span style="font-weight: bold;">and</span><span style="white-space:pre-wrap;"> the 2.x reference implementation. (This is the price of supporting either at runtime)</span></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span><span style="white-space:pre-wrap;">JAXB: </span><span style="font-weight: bold;">both</span><span style="white-space:pre-wrap;"> the JAXB implementation included in Java 6, </span><span style="font-weight: bold;">and</span><span style="white-space:pre-wrap;"> the 2.x reference implementation. (This is the price of supporting either at runtime)</span></p>
   
   <p class="h3 Heading2 Normal DocDefaults ">Instructions</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>File &gt; New "Project .." &gt; SVN &gt; Checkout Projects from SVN</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>File &gt; New "Project .." &gt; SVN &gt; Checkout Projects from SVN</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Create a new repository location; Url is<span class="apple-converted-space DefaultParagraphFont "> </span><a href="http://dev.plutext.org/svn/docx4j"><span class="icon DefaultParagraphFont ">http://dev.plutext.org/svn/docx4j</span></a></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Create a new repository location; Url is<span class="apple-converted-space DefaultParagraphFont "> </span><a href="http://dev.plutext.org/svn/docx4j"><span class="icon DefaultParagraphFont ">http://dev.plutext.org/svn/docx4j</span></a></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Click folder "trunk", and select docx4j; click next</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Click folder "trunk", and select docx4j; click next</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>You want to check it out as a project configured using the New Project Wizard</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>You want to check it out as a project configured using the New Project Wizard</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Then select Java &gt; Java Project; click Next</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Then select Java &gt; Java Project; click Next</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Choose a project name (eg docx4j) then click Next</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Choose a project name (eg docx4j) then click Next</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Click Finish (we'll define the Java build settings in a later step)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Click Finish (we'll define the Java build settings in a later step)</p>
   
   <p class="Normal DocDefaults ">After a couple of other dialog boxes, you should have the new project in your workspace.</p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Now, we need to configure the </span><span style="font-weight: bold;">class path</span><span style="white-space:pre-wrap;"> etc within Eclipse so that it can build.</span></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Build Path &gt; Configure Build Path &gt; Java Build Path &gt; Source tab</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Build Path &gt; Configure Build Path &gt; Java Build Path &gt; Source tab</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Click on src, then press the remove button</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Click on src, then press the remove button</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Then click "add folder" and navigate through to src/main/java and tick 'java'</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Then click "add folder" and navigate through to src/main/java and tick 'java'</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Then add src/diffx as well</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Then add src/diffx as well</p>
   
   <p class="Normal DocDefaults ">The Maven bit:</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">Make sure you have Maven and its plugin installed - see Prerequisites above. </span></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span><span style="white-space:pre-wrap;">Make sure you have Maven and its plugin installed - see Prerequisites above. </span></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Run mvn install in the docx4j dir from a command prompt (just in case)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Run mvn install in the docx4j dir from a command prompt (just in case)</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Right click on project &gt; Maven 2 &gt; Enable</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Right click on project &gt; Maven 2 &gt; Enable</p>
   
-  <p class="Normal DocDefaults ">The project should now be working in Eclipse without errors<span style="white-space:pre-wrap;">. </span></p>
+  <p class="Normal DocDefaults ">The project should now be working in Eclipse without errors<span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fs2"><a href="#fn2">2</a></a></span></span><span style="white-space:pre-wrap;">. </span></p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Open an existing docx document</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Open an existing docx document</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/packages/WordprocessingMLPackage.java">org.docx4j.openpackaging.packages.<span style="font-weight: bold;">WordprocessingMLPackage</span></a> represents a docx document.</p>
   
@@ -253,7 +252,7 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">You can then get the main document part (word/document.xml):</p>
   
-  <p class="Command NormalWeb Normal DocDefaults "><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/parts/WordprocessingML/MainDocumentPart.java"><span style="font-family: Calibri;">MainDocumentPart</span></a> documentPart = wordMLPackage.getMainDocumentPart();</p>
+  <p class="Command NormalWeb Normal DocDefaults "><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/parts/WordprocessingML/MainDocumentPart.java"><span>MainDocumentPart</span></a> documentPart = wordMLPackage.getMainDocumentPart();</p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">After that, you can manipulate its contents. </span></p>
   
@@ -265,115 +264,115 @@
   
   <p class="Normal DocDefaults ">An introduction to WordML is beyond the scope of this document.  You can find a very readable introduction in 1<span style="vertical-align: top;font-size: xx-small;">st</span><span style="white-space:pre-wrap;"> edition Part 3 (Primer) at </span><a href="http://www.ecma-international.org/publications/standards/Ecma-376.htm"><span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/publications/standards/Ecma-376.htm</span></a>.</p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;"><span style="white-space:pre-wrap;">Jaxb: marshalling and unmarshalling </span></span></p>
+  <p class="Heading1 Normal DocDefaults "><span><span style="white-space:pre-wrap;">Jaxb: marshalling and unmarshalling </span></span></p>
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Docx4j contains a class representing each part.  For example, there is a </span><span style="font-family: Consolas;">MainDocumentPart</span><span style="white-space:pre-wrap;"> class.  XML parts inherit from </span><span style="font-family: Consolas;">JaxbXmlPart</span><span style="white-space:pre-wrap;">, which contains a member called </span><span style="font-weight: bold;font-family: Consolas;">jaxbElement</span>.  When you want to work with the contents of a part, you work with its jaxbElement.</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Docx4j contains a class representing each part.  For example, there is a </span><span>MainDocumentPart</span><span style="white-space:pre-wrap;"> class.  XML parts inherit from </span><span>JaxbXmlPart</span><span style="white-space:pre-wrap;">, which contains a member called </span><span style="font-weight: bold;">jaxbElement</span>.  When you want to work with the contents of a part, you work with its jaxbElement.</p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">When you open a docx document using docx4j, docx4j automatically </span><span style="font-weight: bold;font-style: italic;">unmarshals</span><span style="white-space:pre-wrap;"> the contents of each XML part to a strongly-type Java object tree (the jaxbElement).</span></p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Similarly, if/when you tell docx4j to save these Java objects as a docx, docx4j automatically </span><span style="font-weight: bold;font-style: italic;">marshals</span><span style="white-space:pre-wrap;"> the jaxbElement in each Part.</span></p>
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Sometimes you will want to marshal or unmarshal things yourself.  The class </span><span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.jaxb.Context</span><span style="white-space:pre-wrap;"> defines all the JAXBContexts used in docx4j: </span></p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Sometimes you will want to marshal or unmarshal things yourself.  The class </span><span style="font-weight: bold;color: #000000;font-size: 9.0pt;">org.docx4j.jaxb.Context</span><span style="white-space:pre-wrap;"> defines all the JAXBContexts used in docx4j: </span></p>
   
   <table class="TableGrid TableNormal " id="docx4j_tbl_0" style="position: relative; margin-left: 0.76in;table-layout: fixed;border-collapse: collapse;"><colgroup><col style="width: 2in;"/><col style="width: 2.94in;"/></colgroup><tgroup><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="font-family: Consolas;font-size: 9.0pt;">jc</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="font-size: 9.0pt;">jc</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml</span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;"><br clear="all"/>org.docx4j.dml</span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;"><br clear="all"/>org.docx4j.vml</span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;"><br clear="all"/>org.docx4j.vml.officedrawing</span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;"><br clear="all"/>org.docx4j.math</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.wml</span><span style="color: #2A00FF;font-size: 9.0pt;"><br clear="all"/>org.docx4j.dml</span><span style="color: #2A00FF;font-size: 9.0pt;"><br clear="all"/>org.docx4j.vml</span><span style="color: #2A00FF;font-size: 9.0pt;"><br clear="all"/>org.docx4j.vml.officedrawing</span><span style="color: #2A00FF;font-size: 9.0pt;"><br clear="all"/>org.docx4j.math</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcThemePart</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcThemePart</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.dml</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.dml</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcDocPropsCore</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcDocPropsCore</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.core</span></p>
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.docProps.core</span></p>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.core.dc.elements</span></p>
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.docProps.core.dc.elements</span></p>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.core.dc.terms</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.docProps.core.dc.terms</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcDocPropsCustom</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcDocPropsCustom</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.custom</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.docProps.custom</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcDocPropsExtended</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcDocPropsExtended</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.extended</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.docProps.extended</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcXmlPackage</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcXmlPackage</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.xmlPackage</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.xmlPackage</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcRelationships</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcRelationships</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.relationships</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.relationships</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcCustomXmlProperties</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcCustomXmlProperties</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.customXmlProperties</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.customXmlProperties</span></p></td></tr><tr style="vertical-align: top;"><td style="vertical-align: middle;">
   
-  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcContentTypes</span></p></td><td>
+  <p class="Normal DocDefaults "><span style="color: #000000;font-size: 9.0pt;">jcContentTypes</span></p></td><td>
   
-  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.openpackaging.contenttype</span></p></td></tr></tgroup></table>
+  <p class="Normal DocDefaults "><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.openpackaging.contenttype</span></p></td></tr></tgroup></table>
   
   <p class="Normal DocDefaults "/>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Architecture</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Architecture</span></p>
   
   <p class="Normal DocDefaults ">Docx4j has 3 layers:</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">1. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging</span><br clear="all"/><br clear="all"/>OpenPackaging handles things at the Open Packaging Conventions level:  unzipping a docx into a set of objects inheriting from Part;  allowing parts to be added/deleted; saving the docx<br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">This layer is based originally on OpenXML4J (which is also used by Apache POI). </span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are generally subclasses of </span><span style="color: #000000;">org</span>.docx4j.<span style="color: #000000;">openpackaging</span>.parts.JaxbXmlPart<br clear="all"/><br clear="all"/>A JaxbXmlPart has a content tree:<br clear="all"/><br clear="all"/><span style="font-family: Consolas;font-size: 9.0pt;">   public Object getJaxbElement() {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   return jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   public void setJaxbElement(Object jaxbElement) {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   this.jaxbElement = jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">1. </span><span style="font-weight: bold;">org.docx4j.openpackaging</span><br clear="all"/><br clear="all"/>OpenPackaging handles things at the Open Packaging Conventions level:  unzipping a docx into a set of objects inheriting from Part;  allowing parts to be added/deleted; saving the docx<br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">This layer is based originally on OpenXML4J (which is also used by Apache POI). </span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are generally subclasses of </span><span style="color: #000000;">org</span>.docx4j.<span style="color: #000000;">openpackaging</span>.parts.JaxbXmlPart<br clear="all"/><br clear="all"/>A JaxbXmlPart has a content tree:<br clear="all"/><br clear="all"/><span style="font-size: 9.0pt;">   public Object getJaxbElement() {</span><span style="font-size: 9.0pt;"><br clear="all"/></span><span style="font-size: 9.0pt;">   </span><span style="font-size: 9.0pt;">   return jaxbElement;</span><span style="font-size: 9.0pt;"><br clear="all"/></span><span style="font-size: 9.0pt;">   }</span><span style="font-size: 9.0pt;"><br clear="all"/></span><span style="font-size: 9.0pt;"><br clear="all"/></span><span style="font-size: 9.0pt;">   public void setJaxbElement(Object jaxbElement) {</span><span style="font-size: 9.0pt;"><br clear="all"/></span><span style="font-size: 9.0pt;">   </span><span style="font-size: 9.0pt;">   this.jaxbElement = jaxbElement;</span><span style="font-size: 9.0pt;"><br clear="all"/></span><span style="font-size: 9.0pt;">   }</span><span style="font-size: 9.0pt;"><br clear="all"/></span></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">2. </span><span style="white-space:pre-wrap;">The </span><span style="font-weight: bold;color: #000000;">jaxb</span><span style="font-weight: bold;"><span style="white-space:pre-wrap;"> content tree</span></span><span style="white-space:pre-wrap;"> is the second level of the three layered model.</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Most parts (including MainDocumentPart, styles, headers/footers, comments, </span><span style="color: #000000;">endnotes</span><span style="white-space:pre-wrap;">/footnotes) use </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.wml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span><span style="white-space:pre-wrap;">(WordprocessingML); </span><span style="color: #000000;">wml</span><span style="white-space:pre-wrap;"> references </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.dml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span>(DrawingML) as necessary.<br clear="all"/><br clear="all"/>These classes were generated from the Open XML schemas<br clear="all"/><br clear="all"/></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">2. </span><span style="white-space:pre-wrap;">The </span><span style="font-weight: bold;color: #000000;">jaxb</span><span style="font-weight: bold;"><span style="white-space:pre-wrap;"> content tree</span></span><span style="white-space:pre-wrap;"> is the second level of the three layered model.</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Most parts (including MainDocumentPart, styles, headers/footers, comments, </span><span style="color: #000000;">endnotes</span><span style="white-space:pre-wrap;">/footnotes) use </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;">org.docx4j.wml</span></a><span style="font-weight: bold;"><span style="white-space:pre-wrap;"> </span></span><span style="white-space:pre-wrap;">(WordprocessingML); </span><span style="color: #000000;">wml</span><span style="white-space:pre-wrap;"> references </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;">org.docx4j.dml</span></a><span style="font-weight: bold;"><span style="white-space:pre-wrap;"> </span></span>(DrawingML) as necessary.<br clear="all"/><br clear="all"/>These classes were generated from the Open XML schemas<br clear="all"/><br clear="all"/></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">3. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.model</span><span style="font-weight: bold;font-family: Consolas;"><br clear="all"/></span><span style="font-weight: bold;font-family: Consolas;"><br clear="all"/></span><span style="white-space:pre-wrap;">This package builds on the lower two layers to provide extra functionality, and is being progressively further developed.    </span></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">3. </span><span style="font-weight: bold;">org.docx4j.model</span><span style="font-weight: bold;"><br clear="all"/></span><span style="font-weight: bold;"><br clear="all"/></span><span style="white-space:pre-wrap;">This package builds on the lower two layers to provide extra functionality, and is being progressively further developed.    </span></p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Samples</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Samples</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">The package org.docx4j.samples contains examples of how to do things with docx4j.  These include:</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>AddImage</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>AddImage</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CompareDocuments</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CompareDocuments</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>ConvertEmbeddedImageToLinked</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>ConvertEmbeddedImageToLinked</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CopyPart</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CopyPart</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CreateDocxWithCustomXml</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CreateDocxWithCustomXml</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CreateHtml</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CreateHtml</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CreatePdf</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CreatePdf</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CreateWordprocessingMLDocument</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CreateWordprocessingMLDocument</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CreateXmlCss</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CreateXmlCss</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CustomXmlBinding</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>CustomXmlBinding</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>DisplayMainDocumentPartXml</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>DisplayMainDocumentPartXml</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>DocProps</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>DocProps</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>ExportInPackageFormat</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>ExportInPackageFormat</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Filter</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>Filter</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>HyperlinkTest</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>HyperlinkTest</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>ImportForeignPart</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>ImportForeignPart</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>ImportFromPackageFormat</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>ImportFromPackageFormat</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>NumberingRestart</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>NumberingRestart</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>OpenAndSaveRoundTripTest</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>OpenAndSaveRoundTripTest</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>OpenMainDocumentAndTraverse</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>OpenMainDocumentAndTraverse</p>
   
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>UnmarshallFromTemplate</p>
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;"> </span>UnmarshallFromTemplate</p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">If you installed the source code, you’ll have this package already.</p>
   
@@ -381,127 +380,127 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples"><span class="Hyperlink DefaultParagraphFont " style="font-size: 10.0pt;">http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples</span></a></p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Traversing a docx</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Traversing a docx</span></p>
   
   <p class="Normal DocDefaults "><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples/OpenMainDocumentAndTraverse.java"><span style="color: #0000FF;text-decoration: none;">OpenMainDocumentAndTraverse.java</span></a><span style="white-space:pre-wrap;"> in the samples directory shows you how to traverse the JAXB representation of a docx.</span></p>
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">One annoying thing about JAXB, is that an object – say a table – could be represented as </span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Tbl</span><span style="white-space:pre-wrap;"> (as you would expect).  Or it might be wrapped in a </span><span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 9.0pt;">javax.xml.bind.JAXBElement</span>, in which case to get the real table, you have to do something like:</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">One annoying thing about JAXB, is that an object – say a table – could be represented as </span><span style="color: #2A00FF;font-size: 9.0pt;">org.docx4j.wml.Tbl</span><span style="white-space:pre-wrap;"> (as you would expect).  Or it might be wrapped in a </span><span style="font-weight: bold;color: #000000;font-size: 9.0pt;">javax.xml.bind.JAXBElement</span>, in which case to get the real table, you have to do something like:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">     </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">if </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">( ((JAXBElement)o).getDeclaredType().getName().equals(</span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">"org.docx4j.wml.Tbl"</span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">) ) </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">     </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">if </span></span><span style="color: #000000;font-size: 9.0pt;">( ((JAXBElement)o).getDeclaredType().getName().equals(</span><span style="color: #2A00FF;font-size: 9.0pt;">"org.docx4j.wml.Tbl"</span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">) ) </span></span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">          </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">          </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();</span></p>
   
   <p class="Normal DocDefaults "/>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Creating a new docx</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Creating a new docx</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0.07in;line-height: 100%;">To create a new docx:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create the package</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create the package</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Save it</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Save it</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="font-family: Consolas;font-size: 9.0pt;">wordMLPackage.save(new java.io.File("helloworld.docx") );</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="font-size: 9.0pt;">wordMLPackage.save(new java.io.File("helloworld.docx") );</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">That’s it.  </span></p>
   
-  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">createPackage() </span></span>is a convenience method, which does:</p>
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">createPackage() </span></span>is a convenience method, which does:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create the package</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create the package</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">WordprocessingMLPackage wordMLPackage = new WordprocessingMLPackage();</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create the main document part (word/document.xml)</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="font-family: Consolas;font-size: 9.0pt;">MainDocumentPart wordDocumentPart = new MainDocumentPart();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">WordprocessingMLPackage wordMLPackage = new WordprocessingMLPackage();</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create main document part content</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create the main document part (word/document.xml)</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">ObjectFactory factory = Context.getWmlObjectFactory();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="font-size: 9.0pt;">MainDocumentPart wordDocumentPart = new MainDocumentPart();</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Body body = factory .createBody();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Document wmlDocumentEl = factory .createDocument();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create main document part content</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wmlDocumentEl.setBody(body);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">ObjectFactory factory = Context.getWmlObjectFactory();</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.Body body = factory .createBody();</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Put the content in the part</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.Document wmlDocumentEl = factory .createDocument();</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wordDocumentPart.setJaxbElement(wmlDocumentEl);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">wmlDocumentEl.setBody(body);</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">            </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Add the main document part to the package relationships</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Put the content in the part</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// (creating it if necessary)</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">wordDocumentPart.setJaxbElement(wmlDocumentEl);</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wmlPack.addTargetPart(wordDocumentPart);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">            </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Add the main document part to the package relationships</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// (creating it if necessary)</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">wmlPack.addTargetPart(wordDocumentPart);</span></p>
   
   <p class="Heading1 Normal DocDefaults ">Adding a paragraph of text</p>
   
-  <p class="Normal DocDefaults "><span style="font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">MainDocumentPart </span></span>contains a method:</p>
+  <p class="Normal DocDefaults "><span style="font-size: 9.0pt;"><span style="white-space:pre-wrap;">MainDocumentPart </span></span>contains a method:</p>
   
-  <p class="Normal DocDefaults "><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">public </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P addStyledParagraphOfText(String styleId, String text)</span></p>
+  <p class="Normal DocDefaults "><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">public </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.P addStyledParagraphOfText(String styleId, String text)</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">You can use that method to add a paragraph using the specified style.</p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">The XML we are looking to create will be something like:</p>
   
-  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;"><span style="white-space:pre-wrap;">w:p </span></span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;"> </span><span class="xmlmarkupattributename DefaultParagraphFont " style="color: #FF0000;font-family: Consolas;font-size: 8.5pt;">xmlns:w</span><span class="xmlmarkupattributevalue DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">="http://schemas.openxmlformats.org/wordprocessingml/2006/main"</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">        </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">Hello world</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:p</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span></p>
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;"><span style="white-space:pre-wrap;">w:p </span></span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;"> </span><span class="xmlmarkupattributename DefaultParagraphFont " style="color: #FF0000;font-size: 8.5pt;">xmlns:w</span><span class="xmlmarkupattributevalue DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">="http://schemas.openxmlformats.org/wordprocessingml/2006/main"</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">        </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">Hello world</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:p</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span></p>
   
-  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">addStyledParagraphOfText </span></span>builds the object structure “the JAXB way”, and adds it to the document.</p>
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">addStyledParagraphOfText </span></span>builds the object structure “the JAXB way”, and adds it to the document.</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">ObjectFactory factory = Context.getWmlObjectFactory();</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create the paragraph</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P  para = factory.createP();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">ObjectFactory factory = Context.getWmlObjectFactory();</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create the text element</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create the paragraph</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Text  t = factory.createText();</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">t.setValue(simpleText);</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create the run</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.R  run = factory.createR();</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">run.getRunContent().add(t);    </span></span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">para.getParagraphContent().add(run);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.P  para = factory.createP();</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Now add our paragraph to the document body</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create the text element</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">Body body = this.jaxbElement.getBody();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.Text  t = factory.createText();</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">Body.getEGBlockLevelElts().add(para)</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">t.setValue(simpleText);</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create the run</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.R  run = factory.createR();</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">run.getRunContent().add(t);    </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">para.getParagraphContent().add(run);</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Now add our paragraph to the document body</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">Body body = this.jaxbElement.getBody();</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">Body.getEGBlockLevelElts().add(para)</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Alternatively, you can create the paragraph by marshalling XML:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Assuming String xml contains the XML above</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Assuming String xml contains the XML above</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">For this to work, you need to ensure that all namespaces are declared properly in the string.</p>
   
@@ -509,75 +508,75 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">What if you wanted to add a new styles part? Here's how:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Create a styles part</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Create a styles part</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">StyleDefinitionsPart stylesPart = </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">StyleDefinitionsPart();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">StyleDefinitionsPart stylesPart = </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-size: 9.0pt;">StyleDefinitionsPart();</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Populate it with default styles</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Populate it with default styles</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">stylesPart.unmarshalDefaultStyles();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">stylesPart.unmarshalDefaultStyles();</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Add the styles part to the main document part relationships</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Add the styles part to the main document part relationships</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wordDocumentPart.addTargetPart(stylesPart);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">wordDocumentPart.addTargetPart(stylesPart);</span></p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">docx to (X)HTML</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>docx to (X)HTML</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">docx4j uses XSLT to transform a docx to XHTML:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">AbstractHtmlExporter exporter = </span></span><span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">HtmlExporterNG2();</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">AbstractHtmlExporter exporter = </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-size: 9.0pt;">HtmlExporterNG2();</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">        </span></span><span style="color: #3F7F5F;font-family: Courier New;font-size: 9.0pt;">// note the *2* there</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Write to StreamResult (in this case, an output stream)</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">OutputStream os = </span></span><span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">java.io.FileOutputStream(inputfilepath + </span></span><span style="color: #2A00FF;font-family: Courier New;font-size: 9.0pt;">".html"</span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">);</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">javax.xml.transform.stream.StreamResult result </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><br clear="all"/></span><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">           </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">= </span></span><span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">javax.xml.transform.stream.StreamResult(os);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">        </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// note the *2* there</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">exporter.html(wordMLPackage, result, </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Write to StreamResult (in this case, an output stream)</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">             </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">inputfilepath + </span></span><span style="color: #2A00FF;font-family: Courier New;font-size: 9.0pt;">"_files"</span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">OutputStream os = </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">java.io.FileOutputStream(inputfilepath + </span></span><span style="color: #2A00FF;font-size: 9.0pt;">".html"</span><span style="color: #000000;font-size: 9.0pt;">);</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">javax.xml.transform.stream.StreamResult result </span></span><span style="color: #000000;font-size: 9.0pt;"><br clear="all"/></span><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">           </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">= </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-size: 9.0pt;">javax.xml.transform.stream.StreamResult(os);</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">exporter.html(wordMLPackage, result, </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">             </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">inputfilepath + </span></span><span style="color: #2A00FF;font-size: 9.0pt;">"_files"</span><span style="color: #000000;font-size: 9.0pt;">);</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">You will find the generated HTML is clean.</p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Docx4j uses Java XSLT extension functions to do the heavy lifting, so the XSLT itself is kept simple.</p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">docx to PDF</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>docx to PDF</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">docx4j produces XSL FO, which can in turn be used to create a PDF.</p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">At present, Apache FOP is integrated into docx4j for creating the PDF.</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Fonts identity mapping – best on Microsoft Windows</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Fonts identity mapping – best on Microsoft Windows</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wordMLPackage.setFontMapper(</span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">IdentityPlusMapper());</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Set up converter</span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">org.docx4j.convert.out.pdf.PdfConversion c </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">          </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">= </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;">wordMLPackage.setFontMapper(</span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-size: 9.0pt;">IdentityPlusMapper());</span></p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Write to output stream</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Set up converter</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">OutputStream os = </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">java.io.FileOutputStream(inputfilepath + </span></span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">".pdf"</span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">);      </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">org.docx4j.convert.out.pdf.PdfConversion c </span></span><span style="color: #3F7F5F;font-size: 9.0pt;"><br clear="all"/></span><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">          </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">= </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">c.output(os);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Tips and Tricks</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Write to output stream</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">OutputStream os = </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">new </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">java.io.FileOutputStream(inputfilepath + </span></span><span style="color: #2A00FF;font-size: 9.0pt;">".pdf"</span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">);      </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">      </span></span><span style="color: #000000;font-size: 9.0pt;">c.output(os);</span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span>Tips and Tricks</span></p>
   
   <p class="Heading2 Normal DocDefaults ">Work with the “Flat OPC XML Format”</p>
   
@@ -609,31 +608,31 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">For example, given:</p>
   
-  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;"><span style="white-space:pre-wrap;">w:p </span></span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;"> </span><span class="xmlmarkupattributename DefaultParagraphFont " style="color: #FF0000;font-family: Consolas;font-size: 8.5pt;">xmlns:w</span><span class="xmlmarkupattributevalue DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">="http://schemas.openxmlformats.org/wordprocessingml/2006/main"</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">        </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">Hello world</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-family: Consolas;font-size: 8.5pt;"><br clear="all"/></span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:p</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span></p>
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;"><span style="white-space:pre-wrap;">w:p </span></span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;"> </span><span class="xmlmarkupattributename DefaultParagraphFont " style="color: #FF0000;font-size: 8.5pt;">xmlns:w</span><span class="xmlmarkupattributevalue DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">="http://schemas.openxmlformats.org/wordprocessingml/2006/main"</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">        </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">Hello world</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:t</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-size: 8.5pt;">    </span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:r</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span><span style="color: #000000;font-size: 8.5pt;"><br clear="all"/></span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&lt;/</span><span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-size: 8.5pt;">w:p</span><span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-size: 8.5pt;">&gt;</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">you can simply:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">// Assuming String xml contains the XML above</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #3F7F5F;font-size: 9.0pt;">// Assuming String xml contains the XML above</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="color: #000000;font-size: 9.0pt;">org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);</span></p>
   
   <p class="Heading2 Normal DocDefaults ">Cloning</p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">To clone a JAXB object, use one of the following methods in XmlUtils:</p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">/** Clone this JAXB object, using default JAXBContext. */ </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="color: #3F5FBF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">/** Clone this JAXB object, using default JAXBContext. */ </span></span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">public static </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">&lt;T&gt; T deepCopy(T value) </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">public static </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">&lt;T&gt; T deepCopy(T value) </span></span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">/** Clone this JAXB object */</span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="color: #3F5FBF;font-size: 9.0pt;">/** Clone this JAXB object */</span></p>
   
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">public static </span></span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">&lt;T&gt; T deepCopy(T value, JAXBContext jc) </span></span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #FFFFFF;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="font-weight: bold;color: #7F0055;font-size: 9.0pt;"><span style="white-space:pre-wrap;">public static </span></span><span style="color: #000000;font-size: 9.0pt;"><span style="white-space:pre-wrap;">&lt;T&gt; T deepCopy(T value, JAXBContext jc) </span></span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"/>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Support Options</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Support Options</span></p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Free community support is available in the docx4j forum, at </span><a href="http://dev.plutext.org/forums/"><span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/forums/</span></a></p>
   
@@ -641,7 +640,7 @@
   
   <p class="Normal DocDefaults ">By purchasing services from Plutext, you support the continued development of docx4j.</p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Roadmap</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Roadmap</span></p>
   
   <p class="Normal DocDefaults "><span style="font-weight: bold;">Word 2010 support.</span><span style="white-space:pre-wrap;"> Support for the new XML elements/schemas introduced with Word 2010, and for the compatibility mechanism. This is the main justification for the 3.0 label.</span></p>
   
@@ -653,22 +652,36 @@
   
   <p class="Normal DocDefaults "><span style="font-weight: bold;">Layout model/intermediate format</span>: docx4j contains a DocumentModel, which could be further developed to support:</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Search/replace</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Search/replace</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Estimating page content</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>Estimating page content</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>XSLT, by enclosing sections, lists</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>XSLT, by enclosing sections, lists</p>
   
   <p class="Normal DocDefaults "><span style="font-weight: bold;">Inserting OLE objects</span>: so spreadsheets, PDFs etc can be embedded.</p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Colophon</span></p>
+  <p class="Heading1 Normal DocDefaults "><span>Colophon</span></p>
   
   <p class="Normal DocDefaults ">This document was written in Word 2007, using:</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">XML pretty printed using </span><a href="http://www.softlion.com/webTools/XmlPrettyPrint/default.aspx"><span style="color: #0000FF;text-decoration: none;">http://www.softlion.com/webTools/XmlPrettyPrint/default.aspx</span></a></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span><span style="white-space:pre-wrap;">XML pretty printed using </span><a href="http://www.softlion.com/webTools/XmlPrettyPrint/default.aspx"><span style="color: #0000FF;text-decoration: none;">http://www.softlion.com/webTools/XmlPrettyPrint/default.aspx</span></a></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">Java source code formatted using </span><a href="http://www.java2html.de"><span class="Hyperlink DefaultParagraphFont ">http://www.java2html.de</span></a></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span><span style="white-space:pre-wrap;">Java source code formatted using </span><a href="http://www.java2html.de"><span class="Hyperlink DefaultParagraphFont ">http://www.java2html.de</span></a></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span>Contacting Plutext</span></p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Unless you have paid for support, general “How do I” type questions should be posted directly to the </span><a href="http://dev.plutext.org/forums/"><span class="Hyperlink DefaultParagraphFont ">docx4j forum</span></a>.  Plutext may post to the forum any questions it receives by email which should have been directed to the forum.</p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Plutext can be contacted at either </span><a href="mailto:jason@plutext.org"><span class="Hyperlink DefaultParagraphFont ">jason@plutext.org</span></a><span style="white-space:pre-wrap;">, or </span><a href="mailto:jharrop@plutext.com"><span class="Hyperlink DefaultParagraphFont ">jharrop@plutext.com</span></a></p>
   
   <p class="Normal DocDefaults "/>
   
-  </body></html>
+  <div class="footnotes">
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn1"><a href="#fs1">1</a></a></span></span><span style="white-space:pre-wrap;"> </span><a href="../customXml/item1.xml"><span class="Hyperlink DefaultParagraphFont ">http://forums.java.net/jive/thread.jspa?threadID=411</span></a></p>
+  
+  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn2"><a href="#fs2">2</a></a></span></span><span style="white-space:pre-wrap;"> If you get the error 'Access restriction: The type</span><span class="apple-converted-space DefaultParagraphFont "> </span><span class="underline DefaultParagraphFont "><span style="white-space:pre-wrap;">is not accessible due to restriction on required library rt.jar' (perhaps using some combination of Eclipse 3.4 and/or JDK 6 update 10?), you need to go into the Build Path for the project, Libraries tab, select the JRE System Library, and add an access rule, "Accessible, **". </span></span></p></div><div class="endnotes">
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/></div></body></html>
