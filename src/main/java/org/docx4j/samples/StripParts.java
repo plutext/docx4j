@@ -113,6 +113,9 @@ public class StripParts {
 				
 				Part part = wordMLPackage.getParts().get(new PartName("/" + resolvedPartUri));
 				
+				// Or could just have done:
+				// Part p = rp.getPart(r);
+				
 				if (part==null) {
 					sb.append("Part " + resolvedPartUri + " not found! \n");
 				} else {					
