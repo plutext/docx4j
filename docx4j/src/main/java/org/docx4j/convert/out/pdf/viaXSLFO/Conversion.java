@@ -26,6 +26,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Converter;
+import org.docx4j.convert.out.html.HtmlExporterNG2.EndnoteState;
+import org.docx4j.convert.out.html.HtmlExporterNG2.FootnoteState;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
@@ -281,6 +283,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			modelStates.put("w:tbl", new TableModelTransformState() );
 			modelStates.put("w:sym", new SymbolModelTransformState() );
 	      	
+			modelStates.put("footnoteNumber", new FootnoteState() );
+			modelStates.put("endnoteNumber", new EndnoteState() );
+			
 	      	Converter.getInstance().start(wordMLPackage);
 	      	  
 	    	  

@@ -28,6 +28,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 //import java.net.URI;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -35,7 +36,10 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTFootnotes;
+import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.Hdr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 
@@ -179,6 +183,19 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 		}
 	}
 
+	public static Node getFootnote(WordprocessingMLPackage wmlPackage, String id) {	
+		
+		CTFootnotes footnotes = wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement().getValue();
+		int pos = Integer.parseInt(id);
+		
+		// No @XmlRootElement on CTFtnEdn, so .. 
+		CTFtnEdn ftn = footnotes.getFootnote().get(pos);
+		Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
+				Context.jc, Namespaces.NS_WORD12, "footnote",  CTFtnEdn.class );
+		log.debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
+		return d;
+	}
+	
 	public FontTablePart getFontTablePart() {
 		return fontTablePart;
 	}
