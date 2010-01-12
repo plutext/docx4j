@@ -126,12 +126,23 @@ public class PropertyResolver {
 	private RPr documentDefaultRPr;
 	
 	private StyleDefinitionsPart styleDefinitionsPart;
+	
+	
+	/**
+	 * All styles in the Style Definitions Part.
+	 */
 	private org.docx4j.wml.Styles styles;
+
+	/**
+	 * Map of all styles in the Style Definitions Part.
+	 * Note, you need to manually keep this up to date
+	 */
+	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
+	
+	
 	private ThemePart themePart;
 	private NumberingDefinitionsPart numberingDefinitionsPart;
 
-	// Note, you need to manually keep this up to date
-	private java.util.Map<String, org.docx4j.wml.Style>  liveStyles = null;
 
 	private java.util.Map<String, PPr>  resolvedStylePPrComponent = new HashMap<String, PPr>();
 
@@ -1101,11 +1112,12 @@ public class PropertyResolver {
 	
     private void initialiseLiveStyles() {
     	
+    	log.debug("initialiseLiveStyles()");
 		liveStyles = new java.util.HashMap<String, org.docx4j.wml.Style>();
 		
 		for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
 			liveStyles.put(s.getStyleId(), s);	
-			log.debug("live style: " + s.getStyleId() );
+//			log.debug("live style: " + s.getStyleId() );
 		}
     	
     }
