@@ -21,33 +21,11 @@
 package org.docx4j.samples;
 
 
-import java.io.FileInputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.URIHelper;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.Body;
 
 
 public class PartsList {
@@ -82,8 +60,7 @@ public class PartsList {
 	
 	public static void traverseRelationships(WordprocessingMLPackage wordMLPackage, 
 			RelationshipsPart rp, 
-			StringBuilder sb, String indent)
-	 throws Docx4JException {
+			StringBuilder sb, String indent) {
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
@@ -99,26 +76,15 @@ public class PartsList {
 				continue;				
 			}
 			
-			try {
-				String resolvedPartUri = URIHelper.resolvePartUri(rp.getSourceURI(), new URI(r.getTarget() ) ).toString();		
-				resolvedPartUri = resolvedPartUri.substring(1);	
-				
-				Part part = wordMLPackage.getParts().get(new PartName("/" + resolvedPartUri));
-				
-				if (part==null) {
-					sb.append("Part " + resolvedPartUri + " not found! \n");
-				} else {					
-					printInfo(part, sb, indent);
-					if (part.getRelationshipsPart()==null) {
-						sb.append(".. no rels" );						
-					} else {
-						traverseRelationships(wordMLPackage, part.getRelationshipsPart(), sb, indent + "    ");
-					}
-				}				
-					
-			} catch (Exception e) {
-				throw new Docx4JException("Failed to add parts from relationships", e);				
+			Part part = rp.getPart(r);
+			
+			printInfo(part, sb, indent);
+			if (part.getRelationshipsPart()==null) {
+				sb.append(".. no rels" );						
+			} else {
+				traverseRelationships(wordMLPackage, part.getRelationshipsPart(), sb, indent + "    ");
 			}
+					
 		}
 		
 		
