@@ -1,0 +1,3857 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/chart" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart" blockDefault="#all" xmlns:cdr="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing">
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="../shared/shared-relationshipReference.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-shapeProperties.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-text.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-stylesheet.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" schemaLocation="dml-chartDrawing.xsd" />
+  <xsd:complexType name="CT_Boolean">
+    <xsd:attribute name="val" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Boolean Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Double">
+    <xsd:attribute name="val" type="xsd:double" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Floating Point Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_UnsignedInt">
+    <xsd:attribute name="val" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Integer Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_RelId">
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Xstring">
+    <xsd:annotation>
+      <xsd:documentation>String With Encoded Characters</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Extension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" />
+    </xsd:sequence>
+    <xsd:attribute name="uri" type="xsd:token">
+      <xsd:annotation>
+        <xsd:documentation>Uniform Resource Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ExtensionList">
+    <xsd:sequence>
+      <xsd:element name="ext" type="CT_Extension" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Extension</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NumVal">
+    <xsd:sequence>
+      <xsd:element name="v" type="ST_Xstring" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Numeric Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="idx" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="formatCode" type="ST_Xstring" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Number Format</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NumData">
+    <xsd:sequence>
+      <xsd:element name="formatCode" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Format Code</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ptCount" type="CT_UnsignedInt" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Point Count</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pt" type="CT_NumVal" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Numeric Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NumRef">
+    <xsd:sequence>
+      <xsd:element name="f" type="xsd:string" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Formula</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="numCache" type="CT_NumData" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Number Cache</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NumDataSource">
+    <xsd:sequence>
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="numRef" type="CT_NumRef" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Number Reference</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="numLit" type="CT_NumData" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Number Literal</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StrVal">
+    <xsd:sequence>
+      <xsd:element name="v" type="ST_Xstring" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="idx" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StrData">
+    <xsd:sequence>
+      <xsd:element name="ptCount" type="CT_UnsignedInt" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="pt" type="CT_StrVal" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StrRef">
+    <xsd:sequence>
+      <xsd:element name="f" type="xsd:string" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Formula</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="strCache" type="CT_StrData" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>String Cache</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Tx">
+    <xsd:sequence>
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="strRef" type="CT_StrRef" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>String Reference</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="rich" type="a:CT_TextBody" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Rich Text</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TextLanguageID">
+    <xsd:annotation>
+      <xsd:documentation>Chart Language Tag</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TextLanguageID">
+    <xsd:attribute name="val" type="ST_TextLanguageID" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Language Code</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Lvl">
+    <xsd:sequence>
+      <xsd:element name="pt" type="CT_StrVal" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>String Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_MultiLvlStrData">
+    <xsd:sequence>
+      <xsd:element name="ptCount" type="CT_UnsignedInt" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="lvl" type="CT_Lvl" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Level</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_MultiLvlStrRef">
+    <xsd:sequence>
+      <xsd:element name="f" type="xsd:string" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Formula</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="multiLvlStrCache" type="CT_MultiLvlStrData" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Multi Level String Cache</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AxDataSource">
+    <xsd:sequence>
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="multiLvlStrRef" type="CT_MultiLvlStrRef" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Multi Level String Reference</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="numRef" type="CT_NumRef" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Number Reference</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="numLit" type="CT_NumData" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Number Literal</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="strRef" type="CT_StrRef" minOccurs="1" maxOccurs="1"></xsd:element>
+        <xsd:element name="strLit" type="CT_StrData" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>String Literal</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SerTx">
+    <xsd:sequence>
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="strRef" type="CT_StrRef" minOccurs="1" maxOccurs="1"></xsd:element>
+        <xsd:element name="v" type="ST_Xstring" minOccurs="1" maxOccurs="1"></xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_LayoutTarget">
+    <xsd:annotation>
+      <xsd:documentation>Layout Target</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="inner">
+        <xsd:annotation>
+          <xsd:documentation>Inner</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="outer">
+        <xsd:annotation>
+          <xsd:documentation>Outer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LayoutTarget">
+    <xsd:attribute name="val" type="ST_LayoutTarget" default="outer">
+      <xsd:annotation>
+        <xsd:documentation>Layout Target Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_LayoutMode">
+    <xsd:annotation>
+      <xsd:documentation>Layout Mode</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="edge">
+        <xsd:annotation>
+          <xsd:documentation>Edge</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="factor">
+        <xsd:annotation>
+          <xsd:documentation>Factor</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LayoutMode">
+    <xsd:attribute name="val" type="ST_LayoutMode" default="factor">
+      <xsd:annotation>
+        <xsd:documentation>Layout Mode Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ManualLayout">
+    <xsd:sequence>
+      <xsd:element name="layoutTarget" type="CT_LayoutTarget" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Layout Target</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="xMode" type="CT_LayoutMode" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Left Mode</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="yMode" type="CT_LayoutMode" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top Mode</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="wMode" type="CT_LayoutMode" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Width Mode</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hMode" type="CT_LayoutMode" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Height Mode</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="x" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="y" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="w" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="h" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Height</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Layout">
+    <xsd:sequence>
+      <xsd:element name="manualLayout" type="CT_ManualLayout" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Manual Layout</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Title">
+    <xsd:sequence>
+      <xsd:element name="tx" type="CT_Tx" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="layout" type="CT_Layout" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Layout</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="overlay" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Overlay</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_RotX">
+    <xsd:annotation>
+      <xsd:documentation>X Rotation</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:byte">
+      <xsd:minInclusive value="-90" />
+      <xsd:maxInclusive value="90" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_RotX">
+    <xsd:attribute name="val" type="ST_RotX" default="0">
+      <xsd:annotation>
+        <xsd:documentation>X Rotation Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_HPercent">
+    <xsd:annotation>
+      <xsd:documentation>Height Percent</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="5" />
+      <xsd:maxInclusive value="500" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_HPercent">
+    <xsd:attribute name="val" type="ST_HPercent" default="100">
+      <xsd:annotation>
+        <xsd:documentation>Height Percent Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_RotY">
+    <xsd:annotation>
+      <xsd:documentation>Y Rotation</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="360" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_RotY">
+    <xsd:attribute name="val" type="ST_RotY" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Y Rotation Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_DepthPercent">
+    <xsd:annotation>
+      <xsd:documentation>Depth Percent</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="20" />
+      <xsd:maxInclusive value="2000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_DepthPercent">
+    <xsd:attribute name="val" type="ST_DepthPercent" default="100">
+      <xsd:annotation>
+        <xsd:documentation>Depth Percent Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Perspective">
+    <xsd:annotation>
+      <xsd:documentation>Perspective</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedByte">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="240" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Perspective">
+    <xsd:attribute name="val" type="ST_Perspective" default="30">
+      <xsd:annotation>
+        <xsd:documentation>Perspective Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_View3D">
+    <xsd:sequence>
+      <xsd:element name="rotX" type="CT_RotX" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>X Rotation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hPercent" type="CT_HPercent" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Height Percent</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="rotY" type="CT_RotY" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Y Rotation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="depthPercent" type="CT_DepthPercent" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Depth Percent</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="rAngAx" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Right Angle Axes</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="perspective" type="CT_Perspective" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Perspective</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Surface">
+    <xsd:sequence>
+      <xsd:element name="thickness" type="CT_UnsignedInt" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Thickness</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="pictureOptions" type="CT_PictureOptions" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Picture Options</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DTable">
+    <xsd:sequence>
+      <xsd:element name="showHorzBorder" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Horizontal Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showVertBorder" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Vertical Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showOutline" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Outline Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showKeys" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Legend Keys</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_GapAmount">
+    <xsd:annotation>
+      <xsd:documentation>Gap Amount</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="500" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_GapAmount">
+    <xsd:attribute name="val" type="ST_GapAmount" default="150">
+      <xsd:annotation>
+        <xsd:documentation>Gap Size Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Overlap">
+    <xsd:annotation>
+      <xsd:documentation>Overlap</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:byte">
+      <xsd:minInclusive value="-100" />
+      <xsd:maxInclusive value="100" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Overlap">
+    <xsd:attribute name="val" type="ST_Overlap" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Overlap Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_BubbleScale">
+    <xsd:annotation>
+      <xsd:documentation>Bubble Scale</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedInt">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="300" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_BubbleScale">
+    <xsd:attribute name="val" type="ST_BubbleScale" default="100">
+      <xsd:annotation>
+        <xsd:documentation>Bubble Scale Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SizeRepresents">
+    <xsd:annotation>
+      <xsd:documentation>Size Represents</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="area">
+        <xsd:annotation>
+          <xsd:documentation>Bubble Size Represents Area</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="w">
+        <xsd:annotation>
+          <xsd:documentation>Bubble Size Represents Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SizeRepresents">
+    <xsd:attribute name="val" type="ST_SizeRepresents" default="area">
+      <xsd:annotation>
+        <xsd:documentation>Size Represents Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_FirstSliceAng">
+    <xsd:annotation>
+      <xsd:documentation>First Slice Angle</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="360" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_FirstSliceAng">
+    <xsd:attribute name="val" type="ST_FirstSliceAng" default="0">
+      <xsd:annotation>
+        <xsd:documentation>First Slice Angle Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_HoleSize">
+    <xsd:annotation>
+      <xsd:documentation>Hole Size</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedByte">
+      <xsd:minInclusive value="10" />
+      <xsd:maxInclusive value="90" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_HoleSize">
+    <xsd:attribute name="val" type="ST_HoleSize" default="10">
+      <xsd:annotation>
+        <xsd:documentation>Hole Size Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SplitType">
+    <xsd:annotation>
+      <xsd:documentation>Split Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="auto">
+        <xsd:annotation>
+          <xsd:documentation>Default Split</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cust">
+        <xsd:annotation>
+          <xsd:documentation>Custom Split</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="percent">
+        <xsd:annotation>
+          <xsd:documentation>Split by Percentage</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pos">
+        <xsd:annotation>
+          <xsd:documentation>Split by Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="val">
+        <xsd:annotation>
+          <xsd:documentation>Split by Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SplitType">
+    <xsd:attribute name="val" type="ST_SplitType" default="auto">
+      <xsd:annotation>
+        <xsd:documentation>Split Type Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustSplit">
+    <xsd:sequence>
+      <xsd:element name="secondPiePt" type="CT_UnsignedInt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Second Pie Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SecondPieSize">
+    <xsd:annotation>
+      <xsd:documentation>Second Pie Size</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="5" />
+      <xsd:maxInclusive value="200" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SecondPieSize">
+    <xsd:attribute name="val" type="ST_SecondPieSize" default="75">
+      <xsd:annotation>
+        <xsd:documentation>Second Pie Size Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NumFmt">
+    <xsd:attribute name="formatCode" type="ST_Xstring" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Number Format Code</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sourceLinked" type="xsd:boolean">
+      <xsd:annotation>
+        <xsd:documentation>Linked to Source</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_LblAlgn">
+    <xsd:annotation>
+      <xsd:documentation>Label Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LblAlgn">
+    <xsd:attribute name="val" type="ST_LblAlgn" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Label Alignment Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_DLblPos">
+    <xsd:annotation>
+      <xsd:documentation>Data Label Position</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="bestFit">
+        <xsd:annotation>
+          <xsd:documentation>Best Fit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="inBase">
+        <xsd:annotation>
+          <xsd:documentation>Inside Base</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="inEnd">
+        <xsd:annotation>
+          <xsd:documentation>Inside End</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="outEnd">
+        <xsd:annotation>
+          <xsd:documentation>Outside End</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_DLblPos">
+    <xsd:attribute name="val" type="ST_DLblPos" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Data Label Position Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_DLblShared">
+    <xsd:sequence>
+      <xsd:element name="numFmt" type="CT_NumFmt" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Number Format</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="dLblPos" type="CT_DLblPos" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Label Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showLegendKey" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Legend Key</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showVal" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showCatName" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Category Name</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showSerName" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Series Name</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showPercent" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Percent</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showBubbleSize" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Bubble Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="separator" type="xsd:string" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Separator</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:group name="Group_DLbl">
+    <xsd:sequence>
+      <xsd:element name="layout" type="CT_Layout" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Layout</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tx" type="CT_Tx" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:group ref="EG_DLblShared" minOccurs="1" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_DLbl">
+    <xsd:sequence>
+      <xsd:element name="idx" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Index</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice>
+        <xsd:element name="delete" type="CT_Boolean" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Delete</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:group ref="Group_DLbl" minOccurs="1" maxOccurs="1"></xsd:group>
+      </xsd:choice>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="Group_DLbls">
+    <xsd:sequence>
+      <xsd:group ref="EG_DLblShared" minOccurs="1" maxOccurs="1"></xsd:group>
+      <xsd:element name="showLeaderLines" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Leader Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="leaderLines" type="CT_ChartLines" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Leader Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_DLbls">
+    <xsd:sequence>
+      <xsd:element name="dLbl" type="CT_DLbl" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Label</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice>
+        <xsd:element name="delete" type="CT_Boolean" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Delete</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:group ref="Group_DLbls" minOccurs="1" maxOccurs="1"></xsd:group>
+      </xsd:choice>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_MarkerStyle">
+    <xsd:annotation>
+      <xsd:documentation>Marker Style</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="circle">
+        <xsd:annotation>
+          <xsd:documentation>Circle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dash">
+        <xsd:annotation>
+          <xsd:documentation>Dash</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diamond">
+        <xsd:annotation>
+          <xsd:documentation>Diamond</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dot">
+        <xsd:annotation>
+          <xsd:documentation>Dot</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="picture">
+        <xsd:annotation>
+          <xsd:documentation>Picture</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plus">
+        <xsd:annotation>
+          <xsd:documentation>Plus</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="square">
+        <xsd:annotation>
+          <xsd:documentation>Square</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="star">
+        <xsd:annotation>
+          <xsd:documentation>Star</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="triangle">
+        <xsd:annotation>
+          <xsd:documentation>Triangle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="x">
+        <xsd:annotation>
+          <xsd:documentation>X</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_MarkerStyle">
+    <xsd:attribute name="val" type="ST_MarkerStyle" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Marker Style Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_MarkerSize">
+    <xsd:annotation>
+      <xsd:documentation>Marker Size</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedByte">
+      <xsd:minInclusive value="2" />
+      <xsd:maxInclusive value="72" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_MarkerSize">
+    <xsd:attribute name="val" type="ST_MarkerSize" default="5">
+      <xsd:annotation>
+        <xsd:documentation>Marker Size Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Marker">
+    <xsd:sequence>
+      <xsd:element name="symbol" type="CT_MarkerStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Symbol</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="size" type="CT_MarkerSize" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DPt">
+    <xsd:sequence>
+      <xsd:element name="idx" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Index</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="invertIfNegative" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Invert if Negative</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="marker" type="CT_Marker" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bubble3D" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3D Bubble</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="explosion" type="CT_UnsignedInt" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Explosion</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="pictureOptions" type="CT_PictureOptions" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TrendlineType">
+    <xsd:annotation>
+      <xsd:documentation>Trendline Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="exp">
+        <xsd:annotation>
+          <xsd:documentation>Exponential</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="linear">
+        <xsd:annotation>
+          <xsd:documentation>Linear</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="log">
+        <xsd:annotation>
+          <xsd:documentation>Logarithmic</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="movingAvg">
+        <xsd:annotation>
+          <xsd:documentation>Moving Average</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="poly">
+        <xsd:annotation>
+          <xsd:documentation>Polynomial</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="power">
+        <xsd:annotation>
+          <xsd:documentation>Power</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TrendlineType">
+    <xsd:attribute name="val" type="ST_TrendlineType" default="linear">
+      <xsd:annotation>
+        <xsd:documentation>Trendline Type Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Order">
+    <xsd:annotation>
+      <xsd:documentation>Order</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedByte">
+      <xsd:minInclusive value="2" />
+      <xsd:maxInclusive value="6" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Order">
+    <xsd:attribute name="val" type="ST_Order" default="2">
+      <xsd:annotation>
+        <xsd:documentation>Order Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Period">
+    <xsd:annotation>
+      <xsd:documentation>Period</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedByte">
+      <xsd:minInclusive value="2" />
+      <xsd:maxInclusive value="255" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Period">
+    <xsd:attribute name="val" type="ST_Period" default="2">
+      <xsd:annotation>
+        <xsd:documentation>Period Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TrendlineLbl">
+    <xsd:sequence>
+      <xsd:element name="layout" type="CT_Layout" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Layout</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tx" type="CT_Tx" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="numFmt" type="CT_NumFmt" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Number Format</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Trendline">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Trendline Name</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="trendlineType" type="CT_TrendlineType" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Trendline Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="order" type="CT_Order" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Polynomial Trendline Order</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="period" type="CT_Period" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Period</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="forward" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Forward</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backward" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Backward</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="intercept" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Intercept</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dispRSqr" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Display R Squared Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dispEq" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Display Equation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="trendlineLbl" type="CT_TrendlineLbl" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Trendline Label</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_ErrDir">
+    <xsd:annotation>
+      <xsd:documentation>Error Bar Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="x">
+        <xsd:annotation>
+          <xsd:documentation>X</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="y">
+        <xsd:annotation>
+          <xsd:documentation>Y</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ErrDir">
+    <xsd:attribute name="val" type="ST_ErrDir" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Error Bar Direction Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_ErrBarType">
+    <xsd:annotation>
+      <xsd:documentation>Error Bar Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="both">
+        <xsd:annotation>
+          <xsd:documentation>Both</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="minus">
+        <xsd:annotation>
+          <xsd:documentation>Minus</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="plus">
+        <xsd:annotation>
+          <xsd:documentation>Plus</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ErrBarType">
+    <xsd:attribute name="val" type="ST_ErrBarType" default="both">
+      <xsd:annotation>
+        <xsd:documentation>Error Bar Type Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_ErrValType">
+    <xsd:annotation>
+      <xsd:documentation>Error Value Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="cust">
+        <xsd:annotation>
+          <xsd:documentation>Custom Error Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fixedVal">
+        <xsd:annotation>
+          <xsd:documentation>Fixed Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="percentage">
+        <xsd:annotation>
+          <xsd:documentation>Percentage</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stdDev">
+        <xsd:annotation>
+          <xsd:documentation>Standard Deviation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stdErr">
+        <xsd:annotation>
+          <xsd:documentation>Standard Error</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ErrValType">
+    <xsd:attribute name="val" type="ST_ErrValType" default="fixedVal">
+      <xsd:annotation>
+        <xsd:documentation>Error Bar Type Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ErrBars">
+    <xsd:sequence>
+      <xsd:element name="errDir" type="CT_ErrDir" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Error Bar Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="errBarType" type="CT_ErrBarType" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Error Bar Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="errValType" type="CT_ErrValType" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Error Bar Value Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="noEndCap" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>No End Cap</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="plus" type="CT_NumDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Plus</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="minus" type="CT_NumDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minus</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="val" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Error Bar Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_UpDownBar">
+    <xsd:sequence>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_UpDownBars">
+    <xsd:sequence>
+      <xsd:element name="gapWidth" type="CT_GapAmount" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gap Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="upBars" type="CT_UpDownBar" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Up Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="downBars" type="CT_UpDownBar" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Down Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_SerShared">
+    <xsd:sequence>
+      <xsd:element name="idx" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Index</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="order" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Order</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tx" type="CT_SerTx" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Series Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_LineSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="marker" type="CT_Marker" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dPt" type="CT_DPt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="trendline" type="CT_Trendline" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      <xsd:element name="errBars" type="CT_ErrBars" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Error Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cat" type="CT_AxDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Category Axis Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="val" type="CT_NumDataSource" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="smooth" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ScatterSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="marker" type="CT_Marker" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dPt" type="CT_DPt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="trendline" type="CT_Trendline" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      <xsd:element name="errBars" type="CT_ErrBars" minOccurs="0" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Error Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="xVal" type="CT_AxDataSource" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="yVal" type="CT_NumDataSource" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="smooth" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Smoothing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_RadarSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="marker" type="CT_Marker" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dPt" type="CT_DPt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cat" type="CT_AxDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Category Axis Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="val" type="CT_NumDataSource" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BarSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="invertIfNegative" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Invert if Negative</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pictureOptions" type="CT_PictureOptions" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="dPt" type="CT_DPt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="trendline" type="CT_Trendline" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Trendlines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="errBars" type="CT_ErrBars" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Error Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cat" type="CT_AxDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Category Axis Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="val" type="CT_NumDataSource" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="shape" type="CT_Shape" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AreaSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="pictureOptions" type="CT_PictureOptions" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="dPt" type="CT_DPt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="trendline" type="CT_Trendline" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      <xsd:element name="errBars" type="CT_ErrBars" minOccurs="0" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Error Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cat" type="CT_AxDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Category Axis Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="val" type="CT_NumDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Values</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PieSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="explosion" type="CT_UnsignedInt" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Explosion</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dPt" type="CT_DPt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cat" type="CT_AxDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Category Axis Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="val" type="CT_NumDataSource" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BubbleSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="invertIfNegative" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Invert if Negative</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dPt" type="CT_DPt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Data Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="trendline" type="CT_Trendline" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      <xsd:element name="errBars" type="CT_ErrBars" minOccurs="0" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Error Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="xVal" type="CT_AxDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>X Values</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="yVal" type="CT_NumDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Y Values</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bubbleSize" type="CT_NumDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bubble Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bubble3D" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3D Bubble</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SurfaceSer">
+    <xsd:sequence>
+      <xsd:group ref="EG_SerShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="cat" type="CT_AxDataSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Category Axis Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="val" type="CT_NumDataSource" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Grouping">
+    <xsd:annotation>
+      <xsd:documentation>Grouping</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="percentStacked">
+        <xsd:annotation>
+          <xsd:documentation>100% Stacked</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="standard">
+        <xsd:annotation>
+          <xsd:documentation>Standard</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stacked">
+        <xsd:annotation>
+          <xsd:documentation>Stacked</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Grouping">
+    <xsd:attribute name="val" type="ST_Grouping" default="standard">
+      <xsd:annotation>
+        <xsd:documentation>Grouping Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ChartLines">
+    <xsd:sequence>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_LineChartShared">
+    <xsd:sequence>
+      <xsd:element name="grouping" type="CT_Grouping" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Grouping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="varyColors" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="ser" type="CT_LineSer" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dropLines" type="CT_ChartLines" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Drop Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_LineChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_LineChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="hiLowLines" type="CT_ChartLines" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>High Low Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="upDownBars" type="CT_UpDownBars" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="marker" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="smooth" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Line3DChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_LineChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="gapDepth" type="CT_GapAmount" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gap Depth</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="3" maxOccurs="3">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StockChart">
+    <xsd:sequence>
+      <xsd:element name="ser" type="CT_LineSer" minOccurs="3" maxOccurs="4">
+        <xsd:annotation>
+          <xsd:documentation>Line Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dropLines" type="CT_ChartLines" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="hiLowLines" type="CT_ChartLines" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>High Low Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="upDownBars" type="CT_UpDownBars" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Up/Down Bars</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_ScatterStyle">
+    <xsd:annotation>
+      <xsd:documentation>Scatter Style</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="line">
+        <xsd:annotation>
+          <xsd:documentation>Line</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lineMarker">
+        <xsd:annotation>
+          <xsd:documentation>Line with Markers</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="marker">
+        <xsd:annotation>
+          <xsd:documentation>Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="smooth">
+        <xsd:annotation>
+          <xsd:documentation>Smooth</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="smoothMarker">
+        <xsd:annotation>
+          <xsd:documentation>Smooth with Markers</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ScatterStyle">
+    <xsd:attribute name="val" type="ST_ScatterStyle" default="marker">
+      <xsd:annotation>
+        <xsd:documentation>Scatter Style Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ScatterChart">
+    <xsd:sequence>
+      <xsd:element name="scatterStyle" type="CT_ScatterStyle" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Scatter Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="varyColors" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Vary Colors by Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ser" type="CT_ScatterSer" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Scatter Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_RadarStyle">
+    <xsd:annotation>
+      <xsd:documentation>Radar Style</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="standard">
+        <xsd:annotation>
+          <xsd:documentation>Standard</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="marker">
+        <xsd:annotation>
+          <xsd:documentation>Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="filled">
+        <xsd:annotation>
+          <xsd:documentation>Filled</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_RadarStyle">
+    <xsd:attribute name="val" type="ST_RadarStyle" default="standard">
+      <xsd:annotation>
+        <xsd:documentation>Radar Style Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_RadarChart">
+    <xsd:sequence>
+      <xsd:element name="radarStyle" type="CT_RadarStyle" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Radar Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="varyColors" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="ser" type="CT_RadarSer" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Radar Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_BarGrouping">
+    <xsd:annotation>
+      <xsd:documentation>Bar Grouping</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="percentStacked">
+        <xsd:annotation>
+          <xsd:documentation>100% Stacked</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="clustered">
+        <xsd:annotation>
+          <xsd:documentation>Clustered</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="standard">
+        <xsd:annotation>
+          <xsd:documentation>Standard</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stacked">
+        <xsd:annotation>
+          <xsd:documentation>Stacked</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_BarGrouping">
+    <xsd:attribute name="val" type="ST_BarGrouping" default="clustered">
+      <xsd:annotation>
+        <xsd:documentation>Bar Grouping Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_BarDir">
+    <xsd:annotation>
+      <xsd:documentation>Bar Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="bar">
+        <xsd:annotation>
+          <xsd:documentation>Bar</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="col">
+        <xsd:annotation>
+          <xsd:documentation>Column</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_BarDir">
+    <xsd:attribute name="val" type="ST_BarDir" default="col">
+      <xsd:annotation>
+        <xsd:documentation>Bar Direction Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Shape">
+    <xsd:annotation>
+      <xsd:documentation>Shape</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="cone">
+        <xsd:annotation>
+          <xsd:documentation>Cone</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="coneToMax">
+        <xsd:annotation>
+          <xsd:documentation>Cone to Max</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="box">
+        <xsd:annotation>
+          <xsd:documentation>Box</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cylinder">
+        <xsd:annotation>
+          <xsd:documentation>Cylinder</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyramid">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyramidToMax">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid to Maximum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Shape">
+    <xsd:attribute name="val" type="ST_Shape" default="box">
+      <xsd:annotation>
+        <xsd:documentation>Shape Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_BarChartShared">
+    <xsd:sequence>
+      <xsd:element name="barDir" type="CT_BarDir" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bar Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="grouping" type="CT_BarGrouping" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bar Grouping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="varyColors" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="ser" type="CT_BarSer" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Bar Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_BarChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_BarChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="gapWidth" type="CT_GapAmount" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gap Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="overlap" type="CT_Overlap" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Overlap</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="serLines" type="CT_ChartLines" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Series Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Bar3DChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_BarChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="gapWidth" type="CT_GapAmount" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gap Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="gapDepth" type="CT_GapAmount" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gap Depth</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="shape" type="CT_Shape" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="3">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_AreaChartShared">
+    <xsd:sequence>
+      <xsd:element name="grouping" type="CT_Grouping" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Grouping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="varyColors" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="ser" type="CT_AreaSer" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Area Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dropLines" type="CT_ChartLines" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Drop Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_AreaChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_AreaChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Area3DChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_AreaChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="gapDepth" type="CT_GapAmount" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gap Depth</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="3">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_PieChartShared">
+    <xsd:sequence>
+      <xsd:element name="varyColors" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="ser" type="CT_PieSer" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Pie Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_PieChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_PieChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="firstSliceAng" type="CT_FirstSliceAng" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>First Slice Angle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Pie3DChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_PieChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DoughnutChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_PieChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="firstSliceAng" type="CT_FirstSliceAng" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>First Slice Angle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="holeSize" type="CT_HoleSize" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Hole Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_OfPieType">
+    <xsd:annotation>
+      <xsd:documentation>Pie of Pie or Bar of Pie Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="pie">
+        <xsd:annotation>
+          <xsd:documentation>Pie</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bar">
+        <xsd:annotation>
+          <xsd:documentation>Bar</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_OfPieType">
+    <xsd:attribute name="val" type="ST_OfPieType" default="pie">
+      <xsd:annotation>
+        <xsd:documentation>Pie of Pie or Bar of Pie Type Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_OfPieChart">
+    <xsd:sequence>
+      <xsd:element name="ofPieType" type="CT_OfPieType" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Pie of Pie or Bar of Pie Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_PieChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="gapWidth" type="CT_GapAmount" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Gap Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="splitType" type="CT_SplitType" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Split Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="splitPos" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Split Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="custSplit" type="CT_CustSplit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Custom Split</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="secondPieSize" type="CT_SecondPieSize" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Second Pie Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="serLines" type="CT_ChartLines" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BubbleChart">
+    <xsd:sequence>
+      <xsd:element name="varyColors" type="CT_Boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="ser" type="CT_BubbleSer" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Bubble Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbls" type="CT_DLbls" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bubble3D" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3D Bubble</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bubbleScale" type="CT_BubbleScale" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bubble Scale</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showNegBubbles" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Negative Bubbles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sizeRepresents" type="CT_SizeRepresents" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Size Represents</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="2">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BandFmt">
+    <xsd:sequence>
+      <xsd:element name="idx" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1"></xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BandFmts">
+    <xsd:sequence>
+      <xsd:element name="bandFmt" type="CT_BandFmt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Band Format</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_SurfaceChartShared">
+    <xsd:sequence>
+      <xsd:element name="wireframe" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Wireframe</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ser" type="CT_SurfaceSer" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Surface Chart Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bandFmts" type="CT_BandFmts" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Band Formats</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_SurfaceChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_SurfaceChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="2" maxOccurs="3">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Surface3DChart">
+    <xsd:sequence>
+      <xsd:group ref="EG_SurfaceChartShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="3" maxOccurs="3">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_AxPos">
+    <xsd:annotation>
+      <xsd:documentation>Axis Position</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_AxPos">
+    <xsd:attribute name="val" type="ST_AxPos" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Axis Position Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Crosses">
+    <xsd:annotation>
+      <xsd:documentation>Crosses</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="autoZero">
+        <xsd:annotation>
+          <xsd:documentation>Axis Crosses at Zero</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="max">
+        <xsd:annotation>
+          <xsd:documentation>Maximum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="min">
+        <xsd:annotation>
+          <xsd:documentation>Minimum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Crosses">
+    <xsd:attribute name="val" type="ST_Crosses" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Crosses Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_CrossBetween">
+    <xsd:annotation>
+      <xsd:documentation>Cross Between</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="between">
+        <xsd:annotation>
+          <xsd:documentation>Between</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="midCat">
+        <xsd:annotation>
+          <xsd:documentation>Midpoint of Category</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_CrossBetween">
+    <xsd:attribute name="val" type="ST_CrossBetween" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Cross Between Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TickMark">
+    <xsd:annotation>
+      <xsd:documentation>Tick Mark</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="cross">
+        <xsd:annotation>
+          <xsd:documentation>Cross</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="in">
+        <xsd:annotation>
+          <xsd:documentation>Inside</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="out">
+        <xsd:annotation>
+          <xsd:documentation>Outside</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TickMark">
+    <xsd:attribute name="val" type="ST_TickMark" default="cross">
+      <xsd:annotation>
+        <xsd:documentation>Tick Mark Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TickLblPos">
+    <xsd:annotation>
+      <xsd:documentation>Tick Label Position</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="high">
+        <xsd:annotation>
+          <xsd:documentation>High</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="low">
+        <xsd:annotation>
+          <xsd:documentation>Low</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="nextTo">
+        <xsd:annotation>
+          <xsd:documentation>Next To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TickLblPos">
+    <xsd:attribute name="val" type="ST_TickLblPos" default="nextTo">
+      <xsd:annotation>
+        <xsd:documentation>Tick Label Position Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Skip">
+    <xsd:annotation>
+      <xsd:documentation>Skip</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="1" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Skip">
+    <xsd:attribute name="val" type="ST_Skip" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Tick Skip Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_TimeUnit">
+    <xsd:annotation>
+      <xsd:documentation>Time Unit</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="days">
+        <xsd:annotation>
+          <xsd:documentation>Days</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="months">
+        <xsd:annotation>
+          <xsd:documentation>Months</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="years">
+        <xsd:annotation>
+          <xsd:documentation>Years</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TimeUnit">
+    <xsd:attribute name="val" type="ST_TimeUnit" default="days">
+      <xsd:annotation>
+        <xsd:documentation>Time Unit Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_AxisUnit">
+    <xsd:annotation>
+      <xsd:documentation>Axis Unit</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:double">
+      <xsd:minExclusive value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_AxisUnit">
+    <xsd:attribute name="val" type="ST_AxisUnit" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Major Unit Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_BuiltInUnit">
+    <xsd:annotation>
+      <xsd:documentation>Built-In Unit</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="hundreds">
+        <xsd:annotation>
+          <xsd:documentation>Hundreds</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thousands">
+        <xsd:annotation>
+          <xsd:documentation>Thousands</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tenThousands">
+        <xsd:annotation>
+          <xsd:documentation>Ten Thousands</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hundredThousands">
+        <xsd:annotation>
+          <xsd:documentation>Hundred Thousands</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="millions">
+        <xsd:annotation>
+          <xsd:documentation>Millions</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tenMillions">
+        <xsd:annotation>
+          <xsd:documentation>Ten Millions</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hundredMillions">
+        <xsd:annotation>
+          <xsd:documentation>Hundred Millions</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="billions">
+        <xsd:annotation>
+          <xsd:documentation>Billions</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="trillions">
+        <xsd:annotation>
+          <xsd:documentation>Trillions</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_BuiltInUnit">
+    <xsd:attribute name="val" type="ST_BuiltInUnit" default="thousands">
+      <xsd:annotation>
+        <xsd:documentation>Built In Unit Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PictureFormat">
+    <xsd:annotation>
+      <xsd:documentation>Picture Format</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="stretch">
+        <xsd:annotation>
+          <xsd:documentation>Stretch</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stack">
+        <xsd:annotation>
+          <xsd:documentation>Stack</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stackScale">
+        <xsd:annotation>
+          <xsd:documentation>Stack and Scale</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PictureFormat">
+    <xsd:attribute name="val" type="ST_PictureFormat" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Picture Format Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PictureStackUnit">
+    <xsd:annotation>
+      <xsd:documentation>Picture Stack Unit</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:double">
+      <xsd:minExclusive value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PictureStackUnit">
+    <xsd:attribute name="val" type="ST_PictureStackUnit" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Picture Stack Unit</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PictureOptions">
+    <xsd:sequence>
+      <xsd:element name="applyToFront" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Apply To Front</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="applyToSides" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Apply To Sides</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="applyToEnd" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Apply to End</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pictureFormat" type="CT_PictureFormat" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Picture Format</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pictureStackUnit" type="CT_PictureStackUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Picture Stack Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DispUnitsLbl">
+    <xsd:sequence>
+      <xsd:element name="layout" type="CT_Layout" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Layout</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tx" type="CT_Tx" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DispUnits">
+    <xsd:sequence>
+      <xsd:choice>
+        <xsd:element name="custUnit" type="CT_Double" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Custom Display Unit</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="builtInUnit" type="CT_BuiltInUnit" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Built in Display Unit Value</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:element name="dispUnitsLbl" type="CT_DispUnitsLbl" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Display Units Label</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Orientation">
+    <xsd:annotation>
+      <xsd:documentation>Orientation</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="maxMin">
+        <xsd:annotation>
+          <xsd:documentation>Maximum to Minimum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="minMax">
+        <xsd:annotation>
+          <xsd:documentation>Minimum to Maximum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Orientation">
+    <xsd:attribute name="val" type="ST_Orientation" default="minMax">
+      <xsd:annotation>
+        <xsd:documentation>Orientation Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_LogBase">
+    <xsd:annotation>
+      <xsd:documentation>Logarithmic Base</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:double">
+      <xsd:minInclusive value="2" />
+      <xsd:maxInclusive value="1000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LogBase">
+    <xsd:attribute name="val" type="ST_LogBase" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Logarithmic Base Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Scaling">
+    <xsd:sequence>
+      <xsd:element name="logBase" type="CT_LogBase" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Logarithmic Base</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="orientation" type="CT_Orientation" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Axis Orientation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="max" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Maximum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="min" type="CT_Double" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minimum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_LblOffset">
+    <xsd:annotation>
+      <xsd:documentation>Label Offset</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedShort">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="1000" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LblOffset">
+    <xsd:attribute name="val" type="ST_LblOffset" default="100">
+      <xsd:annotation>
+        <xsd:documentation>Label Offset Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_AxShared">
+    <xsd:sequence>
+      <xsd:element name="axId" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="scaling" type="CT_Scaling" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Scaling</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="delete" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Delete</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="axPos" type="CT_AxPos" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Axis Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="majorGridlines" type="CT_ChartLines" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Major Gridlines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="minorGridlines" type="CT_ChartLines" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minor Gridlines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="title" type="CT_Title" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Title</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="numFmt" type="CT_NumFmt" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Number Format</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="majorTickMark" type="CT_TickMark" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Major Tick Mark</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="minorTickMark" type="CT_TickMark" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minor Tick Mark</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tickLblPos" type="CT_TickLblPos" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tick Label Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="crossAx" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Crossing Axis ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice minOccurs="0" maxOccurs="1">
+        <xsd:element name="crosses" type="CT_Crosses" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Crosses</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="crossesAt" type="CT_Double" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Crossing Value</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_CatAx">
+    <xsd:sequence>
+      <xsd:group ref="EG_AxShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="auto" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Automatic Category Axis</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lblAlgn" type="CT_LblAlgn" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Label Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lblOffset" type="CT_LblOffset" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Label Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tickLblSkip" type="CT_Skip" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="tickMarkSkip" type="CT_Skip" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tick Mark Skip</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="noMultiLvlLbl" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>No Multi-level Labels</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DateAx">
+    <xsd:sequence>
+      <xsd:group ref="EG_AxShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="auto" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Automatic Category Axis</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lblOffset" type="CT_LblOffset" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Label Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="baseTimeUnit" type="CT_TimeUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Base Time Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="majorUnit" type="CT_AxisUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Major Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="majorTimeUnit" type="CT_TimeUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Major Time Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="minorUnit" type="CT_AxisUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minor Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="minorTimeUnit" type="CT_TimeUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minor Time Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SerAx">
+    <xsd:sequence>
+      <xsd:group ref="EG_AxShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="tickLblSkip" type="CT_Skip" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Tick Label Skip</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tickMarkSkip" type="CT_Skip" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ValAx">
+    <xsd:sequence>
+      <xsd:group ref="EG_AxShared" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="crossBetween" type="CT_CrossBetween" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Cross Between</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="majorUnit" type="CT_AxisUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Major Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="minorUnit" type="CT_AxisUnit" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Minor Unit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dispUnits" type="CT_DispUnits" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Display Units</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PlotArea">
+    <xsd:sequence>
+      <xsd:element name="layout" type="CT_Layout" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Layout</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice minOccurs="1" maxOccurs="unbounded">
+        <xsd:element name="areaChart" type="CT_AreaChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Area Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="area3DChart" type="CT_Area3DChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>3D Area Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="lineChart" type="CT_LineChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Line Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="line3DChart" type="CT_Line3DChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>3D Line Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="stockChart" type="CT_StockChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Stock Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="radarChart" type="CT_RadarChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Radar Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="scatterChart" type="CT_ScatterChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Scatter Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="pieChart" type="CT_PieChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Pie Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="pie3DChart" type="CT_Pie3DChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>3D Pie Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="doughnutChart" type="CT_DoughnutChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Doughnut Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="barChart" type="CT_BarChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Bar Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="bar3DChart" type="CT_Bar3DChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>3D Bar Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="ofPieChart" type="CT_OfPieChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Pie of Pie or Bar of Pie Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="surfaceChart" type="CT_SurfaceChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Surface Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="surface3DChart" type="CT_Surface3DChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>3D Surface Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="bubbleChart" type="CT_BubbleChart" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Bubble Charts</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="valAx" type="CT_ValAx" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Value Axis</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="catAx" type="CT_CatAx" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Category Axis Data</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="dateAx" type="CT_DateAx" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Date Axis</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="serAx" type="CT_SerAx" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Series Axis</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:element name="dTable" type="CT_DTable" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Table</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PivotFmt">
+    <xsd:sequence>
+      <xsd:element name="idx" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Index</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="marker" type="CT_Marker" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Marker</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dLbl" type="CT_DLbl" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Label</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PivotFmts">
+    <xsd:sequence>
+      <xsd:element name="pivotFmt" type="CT_PivotFmt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Pivot Format</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_LegendPos">
+    <xsd:annotation>
+      <xsd:documentation>Legend Position</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tr">
+        <xsd:annotation>
+          <xsd:documentation>Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_LegendPos">
+    <xsd:attribute name="val" type="ST_LegendPos" default="r">
+      <xsd:annotation>
+        <xsd:documentation>Legend Position Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_LegendEntryData">
+    <xsd:sequence>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_LegendEntry">
+    <xsd:sequence>
+      <xsd:element name="idx" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Index</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice>
+        <xsd:element name="delete" type="CT_Boolean" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Delete</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:group ref="EG_LegendEntryData" minOccurs="1" maxOccurs="1"></xsd:group>
+      </xsd:choice>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Legend">
+    <xsd:sequence>
+      <xsd:element name="legendPos" type="CT_LegendPos" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Legend Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="legendEntry" type="CT_LegendEntry" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Legend Entry</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="layout" type="CT_Layout" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Layout</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="overlay" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Overlay</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_DispBlanksAs">
+    <xsd:annotation>
+      <xsd:documentation>Display Blanks As</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="span">
+        <xsd:annotation>
+          <xsd:documentation>Span</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gap">
+        <xsd:annotation>
+          <xsd:documentation>Gap</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="zero">
+        <xsd:annotation>
+          <xsd:documentation>Zero</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_DispBlanksAs">
+    <xsd:attribute name="val" type="ST_DispBlanksAs" default="zero">
+      <xsd:annotation>
+        <xsd:documentation>Display Blanks As Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Chart">
+    <xsd:sequence>
+      <xsd:element name="title" type="CT_Title" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="autoTitleDeleted" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Auto Title Is Deleted</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pivotFmts" type="CT_PivotFmts" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Pivot Formats</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="view3D" type="CT_View3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>View In 3D</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="floor" type="CT_Surface" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Floor</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sideWall" type="CT_Surface" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Side Wall</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="backWall" type="CT_Surface" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Back Wall</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="plotArea" type="CT_PlotArea" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Plot Area</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="legend" type="CT_Legend" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Legend</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="plotVisOnly" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Plot Visible Only</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dispBlanksAs" type="CT_DispBlanksAs" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Display Blanks As</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="showDLblsOverMax" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Data Labels over Maximum</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Style">
+    <xsd:annotation>
+      <xsd:documentation>Style</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedByte">
+      <xsd:minInclusive value="1" />
+      <xsd:maxInclusive value="48" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Style">
+    <xsd:attribute name="val" type="ST_Style" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Style Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PivotSource">
+    <xsd:sequence>
+      <xsd:element name="name" type="ST_Xstring" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Pivot Name</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fmtId" type="CT_UnsignedInt" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Format ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Protection">
+    <xsd:sequence>
+      <xsd:element name="chartObject" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Object</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="data" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Data Cannot Be Changed</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="formatting" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Formatting</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="selection" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Selection</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="userInterface" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>User Interface</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_HeaderFooter">
+    <xsd:sequence>
+      <xsd:element name="oddHeader" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Odd Header</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="oddFooter" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Odd Footer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="evenHeader" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Even Header</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="evenFooter" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Even Footer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="firstHeader" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>First Header</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="firstFooter" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>First Footer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="alignWithMargins" type="xsd:boolean" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Align With Margins</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="differentOddEven" type="xsd:boolean" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Different Odd Even</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="differentFirst" type="xsd:boolean" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Different First</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PageMargins">
+    <xsd:attribute name="l" type="xsd:double" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Left</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="r" type="xsd:double" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Right</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="t" type="xsd:double" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Top</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="b" type="xsd:double" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Bottom</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="header" type="xsd:double" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Header</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="footer" type="xsd:double" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Footer</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PageSetupOrientation">
+    <xsd:annotation>
+      <xsd:documentation>Printed Page Orientation</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="default">
+        <xsd:annotation>
+          <xsd:documentation>Default Page Orientation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="portrait">
+        <xsd:annotation>
+          <xsd:documentation>Portrait Page</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="landscape">
+        <xsd:annotation>
+          <xsd:documentation>Landscape Page</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ExternalData">
+    <xsd:sequence>
+      <xsd:element name="autoUpdate" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Update Automatically</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PageSetup">
+    <xsd:attribute name="paperSize" type="xsd:unsignedInt" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>Page Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="firstPageNumber" type="xsd:unsignedInt" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>First Page Number</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="orientation" type="ST_PageSetupOrientation" use="optional" default="default">
+      <xsd:annotation>
+        <xsd:documentation>Orientation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="blackAndWhite" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Black and White</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="draft" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Draft</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="useFirstPageNumber" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Use First Page Number</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="horizontalDpi" type="xsd:int" use="optional" default="600">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal DPI</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="verticalDpi" type="xsd:int" use="optional" default="600">
+      <xsd:annotation>
+        <xsd:documentation>Vertical DPI</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="copies" type="xsd:unsignedInt" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>Copies</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PrintSettings">
+    <xsd:sequence>
+      <xsd:element name="headerFooter" type="CT_HeaderFooter" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Header and Footer</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pageMargins" type="CT_PageMargins" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Page Margins</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pageSetup" type="CT_PageSetup" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Page Setup</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="legacyDrawingHF" type="CT_RelId" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Legacy Drawing for Headers and Footers</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ChartSpace">
+    <xsd:sequence>
+      <xsd:element name="date1904" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>1904 Date System</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lang" type="CT_TextLanguageID" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Editing Language</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="roundedCorners" type="CT_Boolean" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Rounded Corners</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="CT_Style" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="clrMapOvr" type="a:CT_ColorMapping" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Color Map Override</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="pivotSource" type="CT_PivotSource" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Pivot Source</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="protection" type="CT_Protection" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Protection</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="chart" type="CT_Chart" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="txPr" type="a:CT_TextBody" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="externalData" type="CT_ExternalData" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>External Data Relationship</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="printSettings" type="CT_PrintSettings" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Print Settings</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="userShapes" type="CT_RelId" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Reference to Chart Drawing Part</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Chart Extensibility</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="chartSpace" type="CT_ChartSpace">
+    <xsd:annotation>
+      <xsd:documentation>Chart Space</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="userShapes" type="cdr:CT_Drawing">
+    <xsd:annotation>
+      <xsd:documentation>User Shapes</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="chart" type="CT_RelId">
+    <xsd:annotation>
+      <xsd:documentation>Reference to Chart Part</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-documentProperties.xsd" />
+  <xsd:include schemaLocation="dml-graphicalObject.xsd" />
+  <xsd:include schemaLocation="dml-shapeProperties.xsd" />
+  <xsd:include schemaLocation="dml-shapeStyle.xsd" />
+  <xsd:include schemaLocation="dml-text.xsd" />
+  <xsd:complexType name="CT_GvmlUseShapeRectangle"></xsd:complexType>
+  <xsd:complexType name="CT_GvmlTextShape">
+    <xsd:sequence>
+      <xsd:element name="txBody" type="CT_TextBody" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Text Body</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice>
+        <xsd:element name="useSpRect" type="CT_GvmlUseShapeRectangle" minOccurs="1" maxOccurs="1">
+          <xsd:annotation>
+            <xsd:documentation>Use Shape Text Rectangle</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="xfrm" type="CT_Transform2D" minOccurs="1" maxOccurs="1"></xsd:element>
+      </xsd:choice>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlShapeNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="cNvSpPr" type="CT_NonVisualDrawingShapeProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Shape Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlShape">
+    <xsd:sequence>
+      <xsd:element name="nvSpPr" type="CT_GvmlShapeNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="CT_ShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Visual Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="txSp" type="CT_GvmlTextShape" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="CT_ShapeStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlConnectorNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cNvCxnSpPr" type="CT_NonVisualConnectorProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Connector Shape Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlConnector">
+    <xsd:sequence>
+      <xsd:element name="nvCxnSpPr" type="CT_GvmlConnectorNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Connection Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="CT_ShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Visual Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="CT_ShapeStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlPictureNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="cNvPicPr" type="CT_NonVisualPictureProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Picture Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlPicture">
+    <xsd:sequence>
+      <xsd:element name="nvPicPr" type="CT_GvmlPictureNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Picture</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="blipFill" type="CT_BlipFillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Picture Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="CT_ShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="CT_ShapeStyle" minOccurs="0" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlGraphicFrameNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="cNvGraphicFramePr" type="CT_NonVisualGraphicFrameProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Graphic Frame Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlGraphicalObjectFrame">
+    <xsd:sequence>
+      <xsd:element name="nvGraphicFramePr" type="CT_GvmlGraphicFrameNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Graphic Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="graphic" minOccurs="1" maxOccurs="1"></xsd:element>
+      <xsd:element name="xfrm" type="CT_Transform2D" minOccurs="1" maxOccurs="1"></xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlGroupShapeNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="cNvGrpSpPr" type="CT_NonVisualGroupDrawingShapeProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Group Shape Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GvmlGroupShape">
+    <xsd:sequence>
+      <xsd:element name="nvGrpSpPr" type="CT_GvmlGroupShapeNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Group Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="grpSpPr" type="CT_GroupShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Visual Group Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="txSp" type="CT_GvmlTextShape">
+          <xsd:annotation>
+            <xsd:documentation>Text shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="sp" type="CT_GvmlShape">
+          <xsd:annotation>
+            <xsd:documentation>Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="cxnSp" type="CT_GvmlConnector">
+          <xsd:annotation>
+            <xsd:documentation>Connection Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="pic" type="CT_GvmlPicture">
+          <xsd:annotation>
+            <xsd:documentation>Picture</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="graphicFrame" type="CT_GvmlGraphicalObjectFrame">
+          <xsd:annotation>
+            <xsd:documentation>Graphic Frame</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="grpSp" type="CT_GvmlGroupShape">
+          <xsd:annotation>
+            <xsd:documentation>Group shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

@@ -1,0 +1,410 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" elementFormDefault="qualified" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing">
+  <xsd:import schemaLocation="dml-shapeStyle.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-shapeProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-documentProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-graphicalObject.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-text.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:complexType name="CT_AnchorClientData">
+    <xsd:attribute name="fLocksWithSheet" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Locks With Sheet Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fPrintsWithSheet" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Prints With Sheet Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ShapeNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cNvSpPr" type="a:CT_NonVisualDrawingShapeProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Connection Non-Visual Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Shape">
+    <xsd:sequence>
+      <xsd:element name="nvSpPr" type="CT_ShapeNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="txBody" type="a:CT_TextBody" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Text Body</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="macro" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Reference to Custom Function</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="textlink" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Link</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fLocksText" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Lock Text Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fPublished" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Publish to Server Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ConnectorNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Connection Non-Visual Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cNvCxnSpPr" type="a:CT_NonVisualConnectorProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Connector Shape Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Connector">
+    <xsd:sequence>
+      <xsd:element name="nvCxnSpPr" type="CT_ConnectorNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Connection Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Connector Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="macro" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Reference to Custom Function</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fPublished" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Publish to Server Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PictureNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="cNvPicPr" type="a:CT_NonVisualPictureProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Picture Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Picture">
+    <xsd:sequence>
+      <xsd:element name="nvPicPr" type="CT_PictureNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Picture</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="blipFill" type="a:CT_BlipFillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Picture Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="macro" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Reference To Custom Function</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fPublished" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Publish to Server Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GraphicalObjectFrameNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Connection Non-Visual Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cNvGraphicFramePr" type="a:CT_NonVisualGraphicFrameProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Graphic Frame Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GraphicalObjectFrame">
+    <xsd:sequence>
+      <xsd:element name="nvGraphicFramePr" type="CT_GraphicalObjectFrameNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Graphic Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="xfrm" type="a:CT_Transform2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>2D Transform for Graphic Frames</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element ref="a:graphic" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="macro" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Reference To Custom Function</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fPublished" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Publish to Server Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GroupShapeNonVisual">
+    <xsd:sequence>
+      <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Connection Non-Visual Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cNvGrpSpPr" type="a:CT_NonVisualGroupDrawingShapeProps" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Group Shape Drawing Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_GroupShape">
+    <xsd:sequence>
+      <xsd:element name="nvGrpSpPr" type="CT_GroupShapeNonVisual" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Non-Visual Properties for a Group Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="grpSpPr" type="a:CT_GroupShapeProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Group Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="sp" type="CT_Shape">
+          <xsd:annotation>
+            <xsd:documentation>Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="grpSp" type="CT_GroupShape">
+          <xsd:annotation>
+            <xsd:documentation>Group Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="graphicFrame" type="CT_GraphicalObjectFrame" />
+        <xsd:element name="cxnSp" type="CT_Connector">
+          <xsd:annotation>
+            <xsd:documentation>Connection Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="pic" type="CT_Picture">
+          <xsd:annotation>
+            <xsd:documentation>Picture</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_ObjectChoices">
+    <xsd:sequence>
+      <xsd:choice minOccurs="1" maxOccurs="1">
+        <xsd:element name="sp" type="CT_Shape">
+          <xsd:annotation>
+            <xsd:documentation>Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="grpSp" type="CT_GroupShape">
+          <xsd:annotation>
+            <xsd:documentation>Group Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="graphicFrame" type="CT_GraphicalObjectFrame">
+          <xsd:annotation>
+            <xsd:documentation>Graphic Frame</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="cxnSp" type="CT_Connector">
+          <xsd:annotation>
+            <xsd:documentation>Connection Shape</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="pic" type="CT_Picture" />
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:simpleType name="ST_ColID">
+    <xsd:annotation>
+      <xsd:documentation>Column ID</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_RowID">
+    <xsd:annotation>
+      <xsd:documentation>Row ID</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="0" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Marker">
+    <xsd:sequence>
+      <xsd:element name="col" type="ST_ColID">
+        <xsd:annotation>
+          <xsd:documentation>Column)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="colOff" type="a:ST_Coordinate">
+        <xsd:annotation>
+          <xsd:documentation>Column Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="row" type="ST_RowID">
+        <xsd:annotation>
+          <xsd:documentation>Row</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="rowOff" type="a:ST_Coordinate">
+        <xsd:annotation>
+          <xsd:documentation>Row Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_EditAs">
+    <xsd:annotation>
+      <xsd:documentation>Resizing Behaviors</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="twoCell">
+        <xsd:annotation>
+          <xsd:documentation>Move and Resize With Anchor Cells</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="oneCell">
+        <xsd:annotation>
+          <xsd:documentation>Move With Cells but Do Not Resize</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="absolute">
+        <xsd:annotation>
+          <xsd:documentation>Do Not Move or Resize With Underlying Rows/Columns</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TwoCellAnchor">
+    <xsd:sequence>
+      <xsd:element name="from" type="CT_Marker">
+        <xsd:annotation>
+          <xsd:documentation>Starting Anchor Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="to" type="CT_Marker">
+        <xsd:annotation>
+          <xsd:documentation>Ending Anchor Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_ObjectChoices" />
+      <xsd:element name="clientData" type="CT_AnchorClientData" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Client Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="editAs" type="ST_EditAs" use="optional" default="twoCell">
+      <xsd:annotation>
+        <xsd:documentation>Positioning and Resizing Behaviors</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_OneCellAnchor">
+    <xsd:sequence>
+      <xsd:element name="from" type="CT_Marker" />
+      <xsd:element name="ext" type="a:CT_PositiveSize2D" />
+      <xsd:group ref="EG_ObjectChoices" />
+      <xsd:element name="clientData" type="CT_AnchorClientData" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AbsoluteAnchor">
+    <xsd:sequence>
+      <xsd:element name="pos" type="a:CT_Point2D">
+        <xsd:annotation>
+          <xsd:documentation>Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="ext" type="a:CT_PositiveSize2D">
+        <xsd:annotation>
+          <xsd:documentation>Shape Extent</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_ObjectChoices" />
+      <xsd:element name="clientData" type="CT_AnchorClientData" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_Anchor">
+    <xsd:choice>
+      <xsd:element name="twoCellAnchor" type="CT_TwoCellAnchor">
+        <xsd:annotation>
+          <xsd:documentation>Two Cell Anchor Shape Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="oneCellAnchor" type="CT_OneCellAnchor">
+        <xsd:annotation>
+          <xsd:documentation>One Cell Anchor Shape Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="absoluteAnchor" type="CT_AbsoluteAnchor">
+        <xsd:annotation>
+          <xsd:documentation>Absolute Anchor Shape Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_Drawing">
+    <xsd:sequence>
+      <xsd:group ref="EG_Anchor" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="wsDr" type="CT_Drawing">
+    <xsd:annotation>
+      <xsd:documentation>Worksheet Drawing</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

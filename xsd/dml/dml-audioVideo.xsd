@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="../shared/shared-relationshipReference.xsd" />
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:complexType name="CT_AudioFile">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute ref="r:link" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Linked Relationship ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_VideoFile">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute ref="r:link" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Linked Relationship ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_QuickTimeFile">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute ref="r:link" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Linked Relationship ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AudioCDTime">
+    <xsd:attribute name="track" type="xsd:unsignedByte" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Track</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="time" type="xsd:unsignedInt" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Time</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AudioCD">
+    <xsd:sequence>
+      <xsd:element name="st" type="CT_AudioCDTime" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Audio Start Time</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="end" type="CT_AudioCDTime" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Audio End Time</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="EG_Media">
+    <xsd:choice>
+      <xsd:element name="audioCd" type="CT_AudioCD">
+        <xsd:annotation>
+          <xsd:documentation>Audio from CD</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="wavAudioFile" type="CT_EmbeddedWAVAudioFile">
+        <xsd:annotation>
+          <xsd:documentation>Audio from WAV File</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="audioFile" type="CT_AudioFile">
+        <xsd:annotation>
+          <xsd:documentation>Audio from File</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="videoFile" type="CT_VideoFile">
+        <xsd:annotation>
+          <xsd:documentation>Video from File</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="quickTimeFile" type="CT_QuickTimeFile">
+        <xsd:annotation>
+          <xsd:documentation>QuickTime from File</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+</xsd:schema>

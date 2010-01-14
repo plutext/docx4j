@@ -1,0 +1,1859 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram" targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:include schemaLocation="dml-diagramLayoutVariables.xsd" />
+  <xsd:simpleType name="ST_AlgorithmType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Algorithm Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="composite">
+        <xsd:annotation>
+          <xsd:documentation>Composite</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="conn">
+        <xsd:annotation>
+          <xsd:documentation>Connector Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cycle">
+        <xsd:annotation>
+          <xsd:documentation>Cycle Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hierChild">
+        <xsd:annotation>
+          <xsd:documentation>Hierarchy Child Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hierRoot">
+        <xsd:annotation>
+          <xsd:documentation>Hierarchy Root Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyra">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lin">
+        <xsd:annotation>
+          <xsd:documentation>Linear Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sp">
+        <xsd:annotation>
+          <xsd:documentation>Space Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tx">
+        <xsd:annotation>
+          <xsd:documentation>Text Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="snake">
+        <xsd:annotation>
+          <xsd:documentation>Snake Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AxisType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Axis Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="self">
+        <xsd:annotation>
+          <xsd:documentation>Self</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ch">
+        <xsd:annotation>
+          <xsd:documentation>Child</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="des">
+        <xsd:annotation>
+          <xsd:documentation>Descendant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="desOrSelf">
+        <xsd:annotation>
+          <xsd:documentation>Descendant or Self</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="par">
+        <xsd:annotation>
+          <xsd:documentation>Parent</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ancst">
+        <xsd:annotation>
+          <xsd:documentation>Ancestor</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ancstOrSelf">
+        <xsd:annotation>
+          <xsd:documentation>Ancestor or Self</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="followSib">
+        <xsd:annotation>
+          <xsd:documentation>Follow Sibling</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="precedSib">
+        <xsd:annotation>
+          <xsd:documentation>Preceding Sibling</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="follow">
+        <xsd:annotation>
+          <xsd:documentation>Follow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="preced">
+        <xsd:annotation>
+          <xsd:documentation>Preceding</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="root">
+        <xsd:annotation>
+          <xsd:documentation>Root</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AxisTypes">
+    <xsd:annotation>
+      <xsd:documentation>Axis Type List</xsd:documentation>
+    </xsd:annotation>
+    <xsd:list itemType="ST_AxisType" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_BoolOperator" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Boolean Constraint</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="equ">
+        <xsd:annotation>
+          <xsd:documentation>Equal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gte">
+        <xsd:annotation>
+          <xsd:documentation>Greater Than or Equal to</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lte">
+        <xsd:annotation>
+          <xsd:documentation>Less Than or Equal to</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ChildOrderType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Child Order</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ConstraintType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Constraint Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>Unknown</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alignOff">
+        <xsd:annotation>
+          <xsd:documentation>Alignment Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="begMarg">
+        <xsd:annotation>
+          <xsd:documentation>Beginning Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bendDist">
+        <xsd:annotation>
+          <xsd:documentation>Bending Distance</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="begPad">
+        <xsd:annotation>
+          <xsd:documentation>Beginning Padding</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bMarg">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bOff">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctrX">
+        <xsd:annotation>
+          <xsd:documentation>Center Height</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctrXOff">
+        <xsd:annotation>
+          <xsd:documentation>Center X Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctrY">
+        <xsd:annotation>
+          <xsd:documentation>Center Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctrYOff">
+        <xsd:annotation>
+          <xsd:documentation>Center Y Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="connDist">
+        <xsd:annotation>
+          <xsd:documentation>Connection Distance</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diam">
+        <xsd:annotation>
+          <xsd:documentation>Diameter</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="endMarg">
+        <xsd:annotation>
+          <xsd:documentation>End Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="endPad">
+        <xsd:annotation>
+          <xsd:documentation>End Padding</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="h">
+        <xsd:annotation>
+          <xsd:documentation>Height</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hArH">
+        <xsd:annotation>
+          <xsd:documentation>Arrowhead Height</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hOff">
+        <xsd:annotation>
+          <xsd:documentation>Height Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lMarg">
+        <xsd:annotation>
+          <xsd:documentation>Left Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lOff">
+        <xsd:annotation>
+          <xsd:documentation>Left Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rMarg">
+        <xsd:annotation>
+          <xsd:documentation>Right Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rOff">
+        <xsd:annotation>
+          <xsd:documentation>Right Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="primFontSz">
+        <xsd:annotation>
+          <xsd:documentation>Primary Font Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyraAcctRatio">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Accent Ratio</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="secFontSz">
+        <xsd:annotation>
+          <xsd:documentation>Secondary Font Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sibSp">
+        <xsd:annotation>
+          <xsd:documentation>Sibling Spacing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="secSibSp">
+        <xsd:annotation>
+          <xsd:documentation>Secondary Sibling Spacing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sp">
+        <xsd:annotation>
+          <xsd:documentation>Spacing</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stemThick">
+        <xsd:annotation>
+          <xsd:documentation>Stem Thickness</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tMarg">
+        <xsd:annotation>
+          <xsd:documentation>Top Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tOff">
+        <xsd:annotation>
+          <xsd:documentation>Top Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userA">
+        <xsd:annotation>
+          <xsd:documentation>User Defined A</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userB">
+        <xsd:annotation>
+          <xsd:documentation>User Defined B</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userC">
+        <xsd:annotation>
+          <xsd:documentation>User Defined C</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userD">
+        <xsd:annotation>
+          <xsd:documentation>User Defined D</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userE">
+        <xsd:annotation>
+          <xsd:documentation>User Defined E</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userF">
+        <xsd:annotation>
+          <xsd:documentation>User Defined F</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userG">
+        <xsd:annotation>
+          <xsd:documentation>User Defined G</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userH">
+        <xsd:annotation>
+          <xsd:documentation>User Defined H</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userI">
+        <xsd:annotation>
+          <xsd:documentation>User Defined I</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userJ">
+        <xsd:annotation>
+          <xsd:documentation>User Defined J</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userK">
+        <xsd:annotation>
+          <xsd:documentation>User Defined K</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userL">
+        <xsd:annotation>
+          <xsd:documentation>User Defined L</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userM">
+        <xsd:annotation>
+          <xsd:documentation>User Defined M</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userN">
+        <xsd:annotation>
+          <xsd:documentation>User Defined N</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userO">
+        <xsd:annotation>
+          <xsd:documentation>User Defined O</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userP">
+        <xsd:annotation>
+          <xsd:documentation>User Defined P</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userQ">
+        <xsd:annotation>
+          <xsd:documentation>User Defined Q</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userR">
+        <xsd:annotation>
+          <xsd:documentation>User Defined R</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userS">
+        <xsd:annotation>
+          <xsd:documentation>User Defined S</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userT">
+        <xsd:annotation>
+          <xsd:documentation>User Defined T</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userU">
+        <xsd:annotation>
+          <xsd:documentation>User Defined U</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userV">
+        <xsd:annotation>
+          <xsd:documentation>User Defined V</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userW">
+        <xsd:annotation>
+          <xsd:documentation>User Defined W</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userX">
+        <xsd:annotation>
+          <xsd:documentation>User Defined X</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userY">
+        <xsd:annotation>
+          <xsd:documentation>User Defined Y</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="userZ">
+        <xsd:annotation>
+          <xsd:documentation>User Defined Z</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="w">
+        <xsd:annotation>
+          <xsd:documentation>Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wArH">
+        <xsd:annotation>
+          <xsd:documentation>Arrowhead Width</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wOff">
+        <xsd:annotation>
+          <xsd:documentation>Width Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ConstraintRelationship" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Constraint Relationship</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="self">
+        <xsd:annotation>
+          <xsd:documentation>Self</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ch">
+        <xsd:annotation>
+          <xsd:documentation>Child</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="des">
+        <xsd:annotation>
+          <xsd:documentation>Descendant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ElementType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Element Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="all">
+        <xsd:annotation>
+          <xsd:documentation>All</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="doc">
+        <xsd:annotation>
+          <xsd:documentation>Document</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="node">
+        <xsd:annotation>
+          <xsd:documentation>Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="norm">
+        <xsd:annotation>
+          <xsd:documentation>Normal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="nonNorm">
+        <xsd:annotation>
+          <xsd:documentation>Non Normal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="asst">
+        <xsd:annotation>
+          <xsd:documentation>Assistant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="nonAsst">
+        <xsd:annotation>
+          <xsd:documentation>Non Assistant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="parTrans">
+        <xsd:annotation>
+          <xsd:documentation>Parent Transition</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pres">
+        <xsd:annotation>
+          <xsd:documentation>Presentation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sibTrans">
+        <xsd:annotation>
+          <xsd:documentation>Sibling Transition</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ElementTypes">
+    <xsd:annotation>
+      <xsd:documentation>Element Type List</xsd:documentation>
+    </xsd:annotation>
+    <xsd:list itemType="ST_ElementType" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ParameterId" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Parameter Identifier</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="horzAlign">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="vertAlign">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chDir">
+        <xsd:annotation>
+          <xsd:documentation>Child Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chAlign">
+        <xsd:annotation>
+          <xsd:documentation>Child Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="secChAlign">
+        <xsd:annotation>
+          <xsd:documentation>Secondary Child Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="linDir">
+        <xsd:annotation>
+          <xsd:documentation>Linear Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="secLinDir">
+        <xsd:annotation>
+          <xsd:documentation>Secondary Linear Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stElem">
+        <xsd:annotation>
+          <xsd:documentation>Start Element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bendPt">
+        <xsd:annotation>
+          <xsd:documentation>Bend Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="connRout">
+        <xsd:annotation>
+          <xsd:documentation>Connection Route</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="begSty">
+        <xsd:annotation>
+          <xsd:documentation>Beginning Arrowhead Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="endSty">
+        <xsd:annotation>
+          <xsd:documentation>End Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dim">
+        <xsd:annotation>
+          <xsd:documentation>Connector Dimension</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rotPath">
+        <xsd:annotation>
+          <xsd:documentation>Rotation Path</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctrShpMap">
+        <xsd:annotation>
+          <xsd:documentation>Center Shape Mapping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="nodeHorzAlign">
+        <xsd:annotation>
+          <xsd:documentation>Node Horizontal Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="nodeVertAlign">
+        <xsd:annotation>
+          <xsd:documentation>Node Vertical Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fallback">
+        <xsd:annotation>
+          <xsd:documentation>Fallback Scale</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="txDir">
+        <xsd:annotation>
+          <xsd:documentation>Text Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyraAcctPos">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Accent Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyraAcctTxMar">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Accent Text Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="txBlDir">
+        <xsd:annotation>
+          <xsd:documentation>Text Block Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="txAnchorHorz">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="txAnchorVert">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="txAnchorHorzCh">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Horizontal With Children</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="txAnchorVertCh">
+        <xsd:annotation>
+          <xsd:documentation>Text Anchor Vertical With Children</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="parTxLTRAlign">
+        <xsd:annotation>
+          <xsd:documentation>Parent Text Left-to-Right Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="parTxRTLAlign">
+        <xsd:annotation>
+          <xsd:documentation>Parent Text Right-to-Left Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shpTxLTRAlignCh">
+        <xsd:annotation>
+          <xsd:documentation>Shape Text Left-to-Right Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="shpTxRTLAlignCh">
+        <xsd:annotation>
+          <xsd:documentation>Shape Text Right-to-Left Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="autoTxRot">
+        <xsd:annotation>
+          <xsd:documentation>Auto Text Rotation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="grDir">
+        <xsd:annotation>
+          <xsd:documentation>Grow Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="flowDir">
+        <xsd:annotation>
+          <xsd:documentation>Flow Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="contDir">
+        <xsd:annotation>
+          <xsd:documentation>Continue Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bkpt">
+        <xsd:annotation>
+          <xsd:documentation>Breakpoint</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="off">
+        <xsd:annotation>
+          <xsd:documentation>Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hierAlign">
+        <xsd:annotation>
+          <xsd:documentation>Hierarchy Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bkPtFixedVal">
+        <xsd:annotation>
+          <xsd:documentation>Breakpoint Fixed Value</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stBulletLvl">
+        <xsd:annotation>
+          <xsd:documentation>Start Bullets At Level</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stAng">
+        <xsd:annotation>
+          <xsd:documentation>Start Angle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="spanAng">
+        <xsd:annotation>
+          <xsd:documentation>Span Angle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ar">
+        <xsd:annotation>
+          <xsd:documentation>Aspect Ratio</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lnSpPar">
+        <xsd:annotation>
+          <xsd:documentation>Line Spacing Parent</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lnSpAfParP">
+        <xsd:annotation>
+          <xsd:documentation>Line Spacing After Parent Paragraph</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lnSpCh">
+        <xsd:annotation>
+          <xsd:documentation>Line Spacing Children</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lnSpAfChP">
+        <xsd:annotation>
+          <xsd:documentation>Line Spacing After Children Paragraph</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rtShortDist">
+        <xsd:annotation>
+          <xsd:documentation>Route Shortest Distance</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alignTx">
+        <xsd:annotation>
+          <xsd:documentation>Text Alignment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyraLvlNode">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Level Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyraAcctBkgdNode">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Accent Background Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pyraAcctTxNode">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Accent Text Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="srcNode">
+        <xsd:annotation>
+          <xsd:documentation>Source Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dstNode">
+        <xsd:annotation>
+          <xsd:documentation>Destination Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="begPts">
+        <xsd:annotation>
+          <xsd:documentation>Beginning Points</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="endPts">
+        <xsd:annotation>
+          <xsd:documentation>End Points</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Ints">
+    <xsd:annotation>
+      <xsd:documentation>Integer List</xsd:documentation>
+    </xsd:annotation>
+    <xsd:list itemType="xsd:int" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_UnsignedInts">
+    <xsd:annotation>
+      <xsd:documentation>Unsigned Integer List</xsd:documentation>
+    </xsd:annotation>
+    <xsd:list itemType="xsd:unsignedInt" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Booleans">
+    <xsd:annotation>
+      <xsd:documentation>Boolean List.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:list itemType="xsd:boolean" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FunctionType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Function Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="cnt">
+        <xsd:annotation>
+          <xsd:documentation>Count</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pos">
+        <xsd:annotation>
+          <xsd:documentation>Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="revPos">
+        <xsd:annotation>
+          <xsd:documentation>Reverse Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="posEven">
+        <xsd:annotation>
+          <xsd:documentation>Position Even</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="posOdd">
+        <xsd:annotation>
+          <xsd:documentation>Position Odd</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="var">
+        <xsd:annotation>
+          <xsd:documentation>Variable</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="depth">
+        <xsd:annotation>
+          <xsd:documentation>Depth</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="maxDepth">
+        <xsd:annotation>
+          <xsd:documentation>Max Depth</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FunctionOperator" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Function Operator</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="equ">
+        <xsd:annotation>
+          <xsd:documentation>Equal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="neq">
+        <xsd:annotation>
+          <xsd:documentation>Not Equal To</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gt">
+        <xsd:annotation>
+          <xsd:documentation>Greater Than</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lt">
+        <xsd:annotation>
+          <xsd:documentation>Less Than</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gte">
+        <xsd:annotation>
+          <xsd:documentation>Greater Than or Equal to</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lte">
+        <xsd:annotation>
+          <xsd:documentation>Less Than or Equal to</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_HorizontalAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Horizontal Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_VerticalAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Vertical Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mid">
+        <xsd:annotation>
+          <xsd:documentation>Middle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ChildDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Child Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="horz">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="vert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ChildAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Child Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_SecondaryChildAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Secondary Child Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_LinearDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Linear Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="fromL">
+        <xsd:annotation>
+          <xsd:documentation>From Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromR">
+        <xsd:annotation>
+          <xsd:documentation>From Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromT">
+        <xsd:annotation>
+          <xsd:documentation>From Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromB">
+        <xsd:annotation>
+          <xsd:documentation>From Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_SecondaryLinearDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Secondary Linear Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromL">
+        <xsd:annotation>
+          <xsd:documentation>From Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromR">
+        <xsd:annotation>
+          <xsd:documentation>From Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromT">
+        <xsd:annotation>
+          <xsd:documentation>From Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromB">
+        <xsd:annotation>
+          <xsd:documentation>From Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_StartingElement" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Starting Element</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="node">
+        <xsd:annotation>
+          <xsd:documentation>Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="trans">
+        <xsd:annotation>
+          <xsd:documentation>Transition</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_RotationPath" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Rotation Path</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="alongPath">
+        <xsd:annotation>
+          <xsd:documentation>Along Path</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_CenterShapeMapping" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Center Shape Mapping</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fNode">
+        <xsd:annotation>
+          <xsd:documentation>First Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_BendPoint" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Bend Point</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="beg">
+        <xsd:annotation>
+          <xsd:documentation>Beginning</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="def">
+        <xsd:annotation>
+          <xsd:documentation>Default</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="end">
+        <xsd:annotation>
+          <xsd:documentation>End</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ConnectorRouting" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Connector Routing</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="stra">
+        <xsd:annotation>
+          <xsd:documentation>Straight</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bend">
+        <xsd:annotation>
+          <xsd:documentation>Bending</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="curve">
+        <xsd:annotation>
+          <xsd:documentation>Curve</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="longCurve">
+        <xsd:annotation>
+          <xsd:documentation>Long Curve</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ArrowheadStyle" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Arrowhead Styles</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="auto">
+        <xsd:annotation>
+          <xsd:documentation>Auto</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="arr">
+        <xsd:annotation>
+          <xsd:documentation>Arrowhead Present</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="noArr">
+        <xsd:annotation>
+          <xsd:documentation>No Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ConnectorDimension" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Connector Dimension</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="1D">
+        <xsd:annotation>
+          <xsd:documentation>1 Dimension</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="2D">
+        <xsd:annotation>
+          <xsd:documentation>2 Dimensions</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cust">
+        <xsd:annotation>
+          <xsd:documentation>Custom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ConnectorPoint" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Connector Point</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="auto">
+        <xsd:annotation>
+          <xsd:documentation>Auto</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bCtr">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="midL">
+        <xsd:annotation>
+          <xsd:documentation>Middle Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="midR">
+        <xsd:annotation>
+          <xsd:documentation>Middle Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tCtr">
+        <xsd:annotation>
+          <xsd:documentation>Top Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bL">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bR">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tL">
+        <xsd:annotation>
+          <xsd:documentation>Top Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tR">
+        <xsd:annotation>
+          <xsd:documentation>Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="radial">
+        <xsd:annotation>
+          <xsd:documentation>Radial</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_NodeHorizontalAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Node Horizontal Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_NodeVerticalAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Node Vertical Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mid">
+        <xsd:annotation>
+          <xsd:documentation>Middle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FallbackDimension" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Fallback Dimension</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="1D">
+        <xsd:annotation>
+          <xsd:documentation>1 Dimension</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="2D">
+        <xsd:annotation>
+          <xsd:documentation>2 Dimensions</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Text Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="fromT">
+        <xsd:annotation>
+          <xsd:documentation>From Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fromB">
+        <xsd:annotation>
+          <xsd:documentation>From Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_PyramidAccentPosition" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Pyramid Accent Position</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="bef">
+        <xsd:annotation>
+          <xsd:documentation>Before</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="aft">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Accent After</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_PyramidAccentTextMargin" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Pyramid Accent Text Margin</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="step">
+        <xsd:annotation>
+          <xsd:documentation>Step</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stack">
+        <xsd:annotation>
+          <xsd:documentation>Stack</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextBlockDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Text Block Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="horz">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="vert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextAnchorHorizontal" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Text Anchor Horizontal</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextAnchorVertical" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Text Anchor Vertical</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="mid">
+        <xsd:annotation>
+          <xsd:documentation>Middle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="b">
+        <xsd:annotation>
+          <xsd:documentation>Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TextAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Text Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AutoTextRotation" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Auto Text Rotation</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="upr">
+        <xsd:annotation>
+          <xsd:documentation>Upright</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="grav">
+        <xsd:annotation>
+          <xsd:documentation>Gravity</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_GrowDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Grow Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="tL">
+        <xsd:annotation>
+          <xsd:documentation>Top Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tR">
+        <xsd:annotation>
+          <xsd:documentation>Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bL">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bR">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FlowDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Flow Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="row">
+        <xsd:annotation>
+          <xsd:documentation>Row</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="col">
+        <xsd:annotation>
+          <xsd:documentation>Column</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ContinueDirection" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Continue Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="revDir">
+        <xsd:annotation>
+          <xsd:documentation>Reverse Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sameDir">
+        <xsd:annotation>
+          <xsd:documentation>Same Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Breakpoint" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Breakpoint</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="endCnv">
+        <xsd:annotation>
+          <xsd:documentation>End of Canvas</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bal">
+        <xsd:annotation>
+          <xsd:documentation>Balanced</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="fixed">
+        <xsd:annotation>
+          <xsd:documentation>Fixed</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Offset" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Offset</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>Center</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="off">
+        <xsd:annotation>
+          <xsd:documentation>Offset</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_HierarchyAlignment" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Hierarchy Alignment</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="tL">
+        <xsd:annotation>
+          <xsd:documentation>Top Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tR">
+        <xsd:annotation>
+          <xsd:documentation>Top Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tCtrCh">
+        <xsd:annotation>
+          <xsd:documentation>Top Center Children</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tCtrDes">
+        <xsd:annotation>
+          <xsd:documentation>Top Center Descendants</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bL">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bR">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bCtrCh">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Center Child</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bCtrDes">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Center Descendant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lT">
+        <xsd:annotation>
+          <xsd:documentation>Left Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lB">
+        <xsd:annotation>
+          <xsd:documentation>Left Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lCtrCh">
+        <xsd:annotation>
+          <xsd:documentation>Left Center Child</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lCtrDes">
+        <xsd:annotation>
+          <xsd:documentation>Left Center Descendant</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rT">
+        <xsd:annotation>
+          <xsd:documentation>Right Top</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rB">
+        <xsd:annotation>
+          <xsd:documentation>Right Bottom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rCtrCh">
+        <xsd:annotation>
+          <xsd:documentation>Right Center Children</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rCtrDes">
+        <xsd:annotation>
+          <xsd:documentation>Right Center Descendants</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FunctionValue" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Function Value</xsd:documentation>
+    </xsd:annotation>
+    <xsd:union memberTypes="xsd:int xsd:boolean ST_Direction ST_HierBranchStyle ST_AnimOneStr ST_AnimLvlStr ST_ResizeHandlesStr" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_VariableType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Variable Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>Unknown</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="orgChart">
+        <xsd:annotation>
+          <xsd:documentation>Organizational Chart Algorithm</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chMax">
+        <xsd:annotation>
+          <xsd:documentation>Child Max</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="chPref">
+        <xsd:annotation>
+          <xsd:documentation>Child Preference</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bulEnabled">
+        <xsd:annotation>
+          <xsd:documentation>Bullets Enabled</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dir">
+        <xsd:annotation>
+          <xsd:documentation>Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hierBranch">
+        <xsd:annotation>
+          <xsd:documentation>Hierarchy Branch</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="animOne">
+        <xsd:annotation>
+          <xsd:documentation>Animate One</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="animLvl">
+        <xsd:annotation>
+          <xsd:documentation>Animation Level</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="resizeHandles">
+        <xsd:annotation>
+          <xsd:documentation>Resize Handles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FunctionArgument" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Function Argument</xsd:documentation>
+    </xsd:annotation>
+    <xsd:union memberTypes="ST_VariableType" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_OutputShapeType" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Output Shape Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>None</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="conn">
+        <xsd:annotation>
+          <xsd:documentation>Connection</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

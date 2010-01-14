@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-baseTypes.xsd" />
+  <xsd:simpleType name="ST_ChartBuildStep">
+    <xsd:annotation>
+      <xsd:documentation>Chart Animation Build Step</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="category">
+        <xsd:annotation>
+          <xsd:documentation>Category</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ptInCategory">
+        <xsd:annotation>
+          <xsd:documentation>Category Points</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="series">
+        <xsd:annotation>
+          <xsd:documentation>Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ptInSeries">
+        <xsd:annotation>
+          <xsd:documentation>Series Points</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="allPts">
+        <xsd:annotation>
+          <xsd:documentation>All Points</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gridLegend">
+        <xsd:annotation>
+          <xsd:documentation>Grid and Legend</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_DgmBuildStep">
+    <xsd:annotation>
+      <xsd:documentation>Diagram Animation Build Steps</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="sp">
+        <xsd:annotation>
+          <xsd:documentation>Shape</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bg">
+        <xsd:annotation>
+          <xsd:documentation>Background</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_AnimationDgmElement">
+    <xsd:attribute name="id" type="ST_Guid" use="optional" default="{00000000-0000-0000-0000-000000000000}">
+      <xsd:annotation>
+        <xsd:documentation>Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bldStep" type="ST_DgmBuildStep" use="optional" default="sp">
+      <xsd:annotation>
+        <xsd:documentation>Animation Build Step</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AnimationChartElement">
+    <xsd:attribute name="seriesIdx" type="xsd:int" use="optional" default="-1">
+      <xsd:annotation>
+        <xsd:documentation>Series Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="categoryIdx" type="xsd:int" use="optional" default="-1">
+      <xsd:annotation>
+        <xsd:documentation>Category Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bldStep" type="ST_ChartBuildStep" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Animation Build Step</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AnimationElementChoice">
+    <xsd:choice minOccurs="1" maxOccurs="1">
+      <xsd:element name="dgm" type="CT_AnimationDgmElement">
+        <xsd:annotation>
+          <xsd:documentation>Diagram to Animate</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="chart" type="CT_AnimationChartElement">
+        <xsd:annotation>
+          <xsd:documentation>Chart to Animate</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_AnimationBuildType">
+    <xsd:annotation>
+      <xsd:documentation>Animation Build Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="allAtOnce">
+        <xsd:annotation>
+          <xsd:documentation>Animate At Once</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AnimationDgmOnlyBuildType">
+    <xsd:annotation>
+      <xsd:documentation>Diagram only Animation Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="one">
+        <xsd:annotation>
+          <xsd:documentation>Elements One-by-One</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lvlOne">
+        <xsd:annotation>
+          <xsd:documentation>Level One-by-One</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lvlAtOnce">
+        <xsd:annotation>
+          <xsd:documentation>Each Level at Once</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AnimationDgmBuildType">
+    <xsd:annotation>
+      <xsd:documentation>Diagram Animation Build Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:union memberTypes="ST_AnimationBuildType ST_AnimationDgmOnlyBuildType" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_AnimationDgmBuildProperties">
+    <xsd:attribute name="bld" type="ST_AnimationDgmBuildType" use="optional" default="allAtOnce">
+      <xsd:annotation>
+        <xsd:documentation>Build</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rev" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Reverse Animation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_AnimationChartOnlyBuildType">
+    <xsd:annotation>
+      <xsd:documentation>Chart only Animation Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="series">
+        <xsd:annotation>
+          <xsd:documentation>Series</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="category">
+        <xsd:annotation>
+          <xsd:documentation>Catefory</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="seriesEl">
+        <xsd:annotation>
+          <xsd:documentation>Series Element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="categoryEl">
+        <xsd:annotation>
+          <xsd:documentation>Category Element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AnimationChartBuildType">
+    <xsd:annotation>
+      <xsd:documentation>Chart Animation Build Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:union memberTypes="ST_AnimationBuildType ST_AnimationChartOnlyBuildType" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_AnimationChartBuildProperties">
+    <xsd:attribute name="bld" type="ST_AnimationChartBuildType" use="optional" default="allAtOnce">
+      <xsd:annotation>
+        <xsd:documentation>Build</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="animBg" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Animate Background</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AnimationGraphicalObjectBuildProperties">
+    <xsd:choice>
+      <xsd:element name="bldDgm" type="CT_AnimationDgmBuildProperties">
+        <xsd:annotation>
+          <xsd:documentation>Build Diagram</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bldChart" type="CT_AnimationChartBuildProperties">
+        <xsd:annotation>
+          <xsd:documentation>Build Chart</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:complexType>
+</xsd:schema>

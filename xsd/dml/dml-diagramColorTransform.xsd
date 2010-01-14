@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:import schemaLocation="../shared/shared-relationshipReference.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" />
+  <xsd:import schemaLocation="dml-baseTypes.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:complexType name="CT_CTName">
+    <xsd:attribute name="lang" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Language</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="val" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Description Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CTDescription">
+    <xsd:attribute name="lang" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Language</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="val" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Description Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CTCategory">
+    <xsd:attribute name="type" type="xsd:anyURI" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Category Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="pri" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Priority</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CTCategories">
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="cat" type="CT_CTCategory" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Color Transform Category</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_ClrAppMethod">
+    <xsd:annotation>
+      <xsd:documentation>Color Application Method Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="span">
+        <xsd:annotation>
+          <xsd:documentation>Span</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cycle">
+        <xsd:annotation>
+          <xsd:documentation>Cycle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="repeat">
+        <xsd:annotation>
+          <xsd:documentation>Repeat</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_HueDir">
+    <xsd:annotation>
+      <xsd:documentation>Hue Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="cw">
+        <xsd:annotation>
+          <xsd:documentation>Clockwise Hue Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ccw">
+        <xsd:annotation>
+          <xsd:documentation>Counterclockwise Hue Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Colors">
+    <xsd:sequence>
+      <xsd:group ref="a:EG_ColorChoice" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="meth" type="ST_ClrAppMethod" use="optional" default="span">
+      <xsd:annotation>
+        <xsd:documentation>Color Application Method Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="hueDir" type="ST_HueDir" use="optional" default="cw">
+      <xsd:annotation>
+        <xsd:documentation>Hue Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CTStyleLabel">
+    <xsd:sequence>
+      <xsd:element name="fillClrLst" type="CT_Colors" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill Color List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="linClrLst" type="CT_Colors" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line Color List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="effectClrLst" type="CT_Colors" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect Color List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="txLinClrLst" type="CT_Colors" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Line Color List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="txFillClrLst" type="CT_Colors" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Fill Color List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="txEffectClrLst" type="CT_Colors" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Effect Color List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ColorTransform">
+    <xsd:sequence>
+      <xsd:element name="title" type="CT_CTName" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Title</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="desc" type="CT_CTDescription" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Description</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="catLst" type="CT_CTCategories" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Color Transform Category List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="styleLbl" type="CT_CTStyleLabel" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Style Label</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="uniqueId" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Unique ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minVer" type="xsd:string" use="optional" default="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Version</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="colorsDef" type="CT_ColorTransform">
+    <xsd:annotation>
+      <xsd:documentation>Color Transform Definitions</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_ColorTransformHeader">
+    <xsd:sequence>
+      <xsd:element name="title" type="CT_CTName" minOccurs="1" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Title</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="desc" type="CT_CTDescription" minOccurs="1" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Description</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="catLst" type="CT_CTCategories" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Color Transform Category List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="uniqueId" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Unique ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minVer" type="xsd:string" use="optional" default="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Version</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="resId" type="xsd:int" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Resource ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="colorsDefHdr" type="CT_ColorTransformHeader">
+    <xsd:annotation>
+      <xsd:documentation>Color Transform Header</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_ColorTransformHeaderLst">
+    <xsd:sequence>
+      <xsd:element name="colorsDefHdr" type="CT_ColorTransformHeader" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Color Transform Definition Header</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="colorsDefHdrLst" type="CT_ColorTransformHeaderLst">
+    <xsd:annotation>
+      <xsd:documentation>Color Transform Header List</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

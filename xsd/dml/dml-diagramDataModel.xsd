@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+  <xsd:import schemaLocation="../shared/shared-relationshipReference.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" />
+  <xsd:include schemaLocation="dml-diagramLayoutVariables.xsd" />
+  <xsd:include schemaLocation="dml-diagramElementPropertySet.xsd" />
+  <xsd:import schemaLocation="dml-graphicalObjectFormat.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-text.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:simpleType name="ST_PtType">
+    <xsd:annotation>
+      <xsd:documentation>Point Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="node">
+        <xsd:annotation>
+          <xsd:documentation>Node</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="asst">
+        <xsd:annotation>
+          <xsd:documentation>Assistant Element</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="doc">
+        <xsd:annotation>
+          <xsd:documentation>Document</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pres">
+        <xsd:annotation>
+          <xsd:documentation>Presentation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="parTrans">
+        <xsd:annotation>
+          <xsd:documentation>Parent Transition</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sibTrans">
+        <xsd:annotation>
+          <xsd:documentation>Sibling Transition</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Pt">
+    <xsd:sequence>
+      <xsd:element name="prSet" type="CT_ElemPropSet" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Property Set</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="t" type="a:CT_TextBody" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Body</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="modelId" type="ST_ModelId" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Model Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="type" type="ST_PtType" use="optional" default="node">
+      <xsd:annotation>
+        <xsd:documentation>Point Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cxnId" type="ST_ModelId" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Connection Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_PtList">
+    <xsd:sequence>
+      <xsd:element name="pt" type="CT_Pt" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Point</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_CxnType">
+    <xsd:annotation>
+      <xsd:documentation>Connection Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="parOf">
+        <xsd:annotation>
+          <xsd:documentation>Parent Of</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="presOf">
+        <xsd:annotation>
+          <xsd:documentation>Presentation Of</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="presParOf">
+        <xsd:annotation>
+          <xsd:documentation>Presentation Parent Of</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="unknownRelationship">
+        <xsd:annotation>
+          <xsd:documentation>Unknown Relationship</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_Cxn">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="modelId" type="ST_ModelId" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Model Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="type" type="ST_CxnType" use="optional" default="parOf">
+      <xsd:annotation>
+        <xsd:documentation>Point Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="srcId" type="ST_ModelId" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Source Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="destId" type="ST_ModelId" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Destination Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="srcOrd" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Source Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="destOrd" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Destination Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="parTransId" type="ST_ModelId" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Parent Transition Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="sibTransId" type="ST_ModelId" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Sibling Transition Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="presId" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Presentation Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CxnList">
+    <xsd:sequence>
+      <xsd:element name="cxn" type="CT_Cxn" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Connection</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_DataModel">
+    <xsd:sequence>
+      <xsd:element name="ptLst" type="CT_PtList">
+        <xsd:annotation>
+          <xsd:documentation>Point List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cxnLst" type="CT_CxnList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Connection List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bg" type="a:CT_BackgroundFormatting" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Background Formatting</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="whole" type="a:CT_WholeE2oFormatting" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Whole E2O Formatting</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="dataModel" type="CT_DataModel">
+    <xsd:annotation>
+      <xsd:documentation>Data Model</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>
