@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:include schemaLocation="pml-baseTypes.xsd" />
+  <xsd:complexType name="CT_SlideSyncProperties">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="serverSldId" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Server's Slide File ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="serverSldModifiedTime" type="xsd:dateTime" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Server's Slide File's modification date/time</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="clientInsertedTime" type="xsd:dateTime" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Client Slide Insertion date/time</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="sldSyncPr" type="CT_SlideSyncProperties">
+    <xsd:annotation>
+      <xsd:documentation>Slide Synchronization Properties</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>
