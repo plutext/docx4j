@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:complexType name="CT_StringTag">
+    <xsd:attribute name="name" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="val" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TagList">
+    <xsd:sequence>
+      <xsd:element name="tag" type="CT_StringTag" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Programmable Extensibility Tag</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="tagLst" type="CT_TagList">
+    <xsd:annotation>
+      <xsd:documentation>Programmable Tab List</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

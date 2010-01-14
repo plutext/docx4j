@@ -1,0 +1,697 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:include schemaLocation="pml-baseTypes.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-baseTypes.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-textCharacter.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-text.xsd" />
+  <xsd:simpleType name="ST_SlideId">
+    <xsd:annotation>
+      <xsd:documentation>Slide Identifier</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedInt">
+      <xsd:minInclusive value="256" />
+      <xsd:maxExclusive value="2147483648" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SlideIdListEntry">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="ST_SlideId" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Slide Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SlideIdList">
+    <xsd:sequence>
+      <xsd:element name="sldId" type="CT_SlideIdListEntry" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Slide ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SlideMasterId">
+    <xsd:annotation>
+      <xsd:documentation>Slide Master ID</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedInt">
+      <xsd:minInclusive value="2147483648" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SlideMasterIdListEntry">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="ST_SlideMasterId" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Slide Master Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SlideMasterIdList">
+    <xsd:sequence>
+      <xsd:element name="sldMasterId" type="CT_SlideMasterIdListEntry" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Slide Master ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NotesMasterIdListEntry">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_NotesMasterIdList">
+    <xsd:sequence>
+      <xsd:element name="notesMasterId" type="CT_NotesMasterIdListEntry" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Notes Master ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_HandoutMasterIdListEntry">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_HandoutMasterIdList">
+    <xsd:sequence>
+      <xsd:element name="handoutMasterId" type="CT_HandoutMasterIdListEntry" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Handout Master ID</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_EmbeddedFontDataId">
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_EmbeddedFontListEntry">
+    <xsd:sequence>
+      <xsd:element name="font" type="a:CT_TextFont" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Embedded Font Name</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="regular" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Regular Embedded Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bold" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bold Embedded Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="italic" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Italic Embedded Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="boldItalic" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bold Italic Embedded Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_EmbeddedFontList">
+    <xsd:sequence>
+      <xsd:element name="embeddedFont" type="CT_EmbeddedFontListEntry" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Embedded Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SmartTags">
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustomShow">
+    <xsd:sequence>
+      <xsd:element name="sldLst" type="CT_SlideRelationshipList" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Presentation Slides</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="ST_Name" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Custom Show Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="id" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Custom Show ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustomShowList">
+    <xsd:sequence>
+      <xsd:element name="custShow" type="CT_CustomShow" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Custom Show</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_PhotoAlbumLayout">
+    <xsd:annotation>
+      <xsd:documentation>Photo Album Layout Definition</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="fitToSlide">
+        <xsd:annotation>
+          <xsd:documentation>Fit Photos to Slide</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="1pic">
+        <xsd:annotation>
+          <xsd:documentation>1 Photo per Slide</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="2pic">
+        <xsd:annotation>
+          <xsd:documentation>2 Photos per Slide</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="4pic">
+        <xsd:annotation>
+          <xsd:documentation>4 Photos per Slide</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="1picTitle">
+        <xsd:annotation>
+          <xsd:documentation>1 Photo per Slide with Titles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="2picTitle">
+        <xsd:annotation>
+          <xsd:documentation>2 Photos per Slide with Titles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="4picTitle">
+        <xsd:annotation>
+          <xsd:documentation>4 Photos per Slide with Titles</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_PhotoAlbumFrameShape">
+    <xsd:annotation>
+      <xsd:documentation>Photo Album Shape for Photo Mask</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="frameStyle1">
+        <xsd:annotation>
+          <xsd:documentation>Rectangle Photo Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frameStyle2">
+        <xsd:annotation>
+          <xsd:documentation>Rounded Rectangle Photo Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frameStyle3">
+        <xsd:annotation>
+          <xsd:documentation>Simple White Photo Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frameStyle4">
+        <xsd:annotation>
+          <xsd:documentation>Simple Black Photo Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frameStyle5">
+        <xsd:annotation>
+          <xsd:documentation>Compound Black Photo Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frameStyle6">
+        <xsd:annotation>
+          <xsd:documentation>Center Shadow Photo Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frameStyle7">
+        <xsd:annotation>
+          <xsd:documentation>Soft Edge Photo Frame</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_PhotoAlbum">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="bw" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Black and White</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="showCaptions" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Show/Hide Captions</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="layout" type="ST_PhotoAlbumLayout" use="optional" default="fitToSlide">
+      <xsd:annotation>
+        <xsd:documentation>Photo Album Layout</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="frame" type="ST_PhotoAlbumFrameShape" use="optional" default="frameStyle1">
+      <xsd:annotation>
+        <xsd:documentation>Frame Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_SlideSizeCoordinate">
+    <xsd:annotation>
+      <xsd:documentation>Slide Size Coordinate</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="a:ST_PositiveCoordinate32">
+      <xsd:minInclusive value="914400" />
+      <xsd:maxInclusive value="51206400" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_SlideSizeType">
+    <xsd:annotation>
+      <xsd:documentation>Slide Size Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="screen4x3">
+        <xsd:annotation>
+          <xsd:documentation>Screen 4x3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="letter">
+        <xsd:annotation>
+          <xsd:documentation>Letter</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="A4">
+        <xsd:annotation>
+          <xsd:documentation>A4</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="35mm">
+        <xsd:annotation>
+          <xsd:documentation>35mm Film</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="overhead">
+        <xsd:annotation>
+          <xsd:documentation>Overhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="banner">
+        <xsd:annotation>
+          <xsd:documentation>Banner</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="custom">
+        <xsd:annotation>
+          <xsd:documentation>Custom</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ledger">
+        <xsd:annotation>
+          <xsd:documentation>Ledger</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="A3">
+        <xsd:annotation>
+          <xsd:documentation>A3</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="B4ISO">
+        <xsd:annotation>
+          <xsd:documentation>B4ISO</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="B5ISO">
+        <xsd:annotation>
+          <xsd:documentation>B5ISO</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="B4JIS">
+        <xsd:annotation>
+          <xsd:documentation>B4JIS</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="B5JIS">
+        <xsd:annotation>
+          <xsd:documentation>B5JIS</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hagakiCard">
+        <xsd:annotation>
+          <xsd:documentation>Hagaki Card</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="screen16x9">
+        <xsd:annotation>
+          <xsd:documentation>Screen 16x9</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="screen16x10">
+        <xsd:annotation>
+          <xsd:documentation>Screen 16x10</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_SlideSize">
+    <xsd:attribute name="cx" type="ST_SlideSizeCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Extent Length</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cy" type="ST_SlideSizeCoordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Extent Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="type" type="ST_SlideSizeType" use="optional" default="custom">
+      <xsd:annotation>
+        <xsd:documentation>Type of Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Kinsoku">
+    <xsd:attribute name="lang" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Language</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="invalStChars" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Invalid Kinsoku Start Characters</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="invalEndChars" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Invalid Kinsoku End Characters</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_BookmarkIdSeed">
+    <xsd:annotation>
+      <xsd:documentation>Bookmark ID Seed</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedInt">
+      <xsd:minInclusive value="1" />
+      <xsd:maxExclusive value="2147483648" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_CryptProv">
+    <xsd:annotation>
+      <xsd:documentation>Cryptographic Provider Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="rsaAES">
+        <xsd:annotation>
+          <xsd:documentation>RSA AES Encryption Scheme</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rsaFull">
+        <xsd:annotation>
+          <xsd:documentation>RSA Full Encryption Scheme</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="invalid">
+        <xsd:annotation>
+          <xsd:documentation>Invalid Encryption Scheme</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AlgClass">
+    <xsd:annotation>
+      <xsd:documentation>Cryptographic Algorithm Classes</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="hash">
+        <xsd:annotation>
+          <xsd:documentation>Hash Algorithm Class</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="invalid">
+        <xsd:annotation>
+          <xsd:documentation>Invalid Algorithm Class</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AlgType">
+    <xsd:annotation>
+      <xsd:documentation>Cryptographic Algorithm Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="typeAny">
+        <xsd:annotation>
+          <xsd:documentation>Any Algorithm Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="invalid">
+        <xsd:annotation>
+          <xsd:documentation>Invalid Algorithm Type</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ModifyVerifier">
+    <xsd:attribute name="cryptProviderType" type="ST_CryptProv" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Cryptographic Provider Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cryptAlgorithmClass" type="ST_AlgClass" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Cryptographic Algorithm Class</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cryptAlgorithmType" type="ST_AlgType" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Cryptographic Algorithm Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cryptAlgorithmSid" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Cryptographic Hashing Algorithm</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="spinCount" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Iterations to Run Hashing Algorithm</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="saltData" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Salt for Password Verifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="hashData" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Password Hash</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cryptProvider" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Cryptographic Provider</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algIdExt" type="xsd:unsignedInt" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Cryptographic Algorithm Extensibility</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="algIdExtSource" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Algorithm Extensibility Source</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cryptProviderTypeExt" type="xsd:unsignedInt" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Cryptographic Provider Type Extensibility</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cryptProviderTypeExtSource" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Provider Type Extensibility Source</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Presentation">
+    <xsd:sequence>
+      <xsd:element name="sldMasterIdLst" type="CT_SlideMasterIdList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Slide Master IDs</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="notesMasterIdLst" type="CT_NotesMasterIdList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Notes Master IDs</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="handoutMasterIdLst" type="CT_HandoutMasterIdList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Handout Master IDs</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sldIdLst" type="CT_SlideIdList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Slide IDs</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sldSz" type="CT_SlideSize" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Presentation Slide Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="notesSz" type="a:CT_PositiveSize2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Notes Slide Size</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="smartTags" type="CT_SmartTags" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Smart Tags</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="embeddedFontLst" type="CT_EmbeddedFontList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Embedded Font List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="custShowLst" type="CT_CustomShowList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Custom Shows</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="photoAlbum" type="CT_PhotoAlbum" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Photo Album Information</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="custDataLst" type="CT_CustomerDataList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>List of Customer Data Buckets</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="kinsoku" type="CT_Kinsoku" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Kinsoku Settings</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="defaultTextStyle" type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Presentation Default Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="modifyVerifier" type="CT_ModifyVerifier" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Modification Verifier</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Extension List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="serverZoom" type="a:ST_Percentage" use="optional" default="50000">
+      <xsd:annotation>
+        <xsd:documentation>Server Zoom</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="firstSlideNum" type="xsd:int" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>First Slide Number</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="showSpecialPlsOnTitleSld" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Show Header and Footer Placeholders on Titles</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rtl" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Right-To-Left Views</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="removePersonalInfoOnSave" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Remove Personal Information on Save</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="compatMode" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Compatibility Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="strictFirstAndLastChars" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Strict First and Last Characters</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="embedTrueTypeFonts" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Embed True Type Fonts</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="saveSubsetFonts" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Save Subset Fonts</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="autoCompressPictures" type="xsd:boolean" use="optional" default="true">
+      <xsd:annotation>
+        <xsd:documentation>Automatically Compress Pictures</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bookmarkIdSeed" type="ST_BookmarkIdSeed" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>Bookmark ID Seed</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="presentation" type="CT_Presentation">
+    <xsd:annotation>
+      <xsd:documentation>Presentation</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

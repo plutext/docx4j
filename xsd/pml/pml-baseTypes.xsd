@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd" />
+  <xsd:complexType name="CT_Empty"></xsd:complexType>
+  <xsd:simpleType name="ST_Name">
+    <xsd:annotation>
+      <xsd:documentation>Name string</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string"></xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Direction">
+    <xsd:annotation>
+      <xsd:documentation>Direction</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="horz">
+        <xsd:annotation>
+          <xsd:documentation>Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="vert">
+        <xsd:annotation>
+          <xsd:documentation>Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_Index">
+    <xsd:annotation>
+      <xsd:documentation>Index</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:unsignedInt" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_IndexRange">
+    <xsd:attribute name="st" type="ST_Index" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Start</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="end" type="ST_Index" use="required">
+      <xsd:annotation>
+        <xsd:documentation>End</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SlideRelationshipListEntry">
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SlideRelationshipList">
+    <xsd:sequence>
+      <xsd:element name="sld" type="CT_SlideRelationshipListEntry" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Presentation Slide</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustomShowId">
+    <xsd:attribute name="id" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Custom Show Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_SlideListChoice">
+    <xsd:choice>
+      <xsd:element name="sldAll" type="CT_Empty">
+        <xsd:annotation>
+          <xsd:documentation>All Slides</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sldRg" type="CT_IndexRange">
+        <xsd:annotation>
+          <xsd:documentation>Slide Range</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="custShow" type="CT_CustomShowId">
+        <xsd:annotation>
+          <xsd:documentation>Custom Show</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_CustomerData">
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TagsData">
+    <xsd:attribute ref="r:id" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Relationship ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CustomerDataList">
+    <xsd:sequence minOccurs="0" maxOccurs="1">
+      <xsd:element name="custData" type="CT_CustomerData" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Customer Data</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tags" type="CT_TagsData" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Customer Data Tags</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Extension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" />
+    </xsd:sequence>
+    <xsd:attribute name="uri" type="xsd:token">
+      <xsd:annotation>
+        <xsd:documentation>Uniform Resource Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_ExtensionList">
+    <xsd:sequence>
+      <xsd:element name="ext" type="CT_Extension" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Extension</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="CT_ExtensionList">
+    <xsd:sequence>
+      <xsd:group ref="EG_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ExtensionListModify">
+    <xsd:sequence>
+      <xsd:group ref="EG_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="mod" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Modify</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+</xsd:schema>

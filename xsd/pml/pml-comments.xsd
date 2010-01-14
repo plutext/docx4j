@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:include schemaLocation="pml-baseTypes.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-baseTypes.xsd" />
+  <xsd:complexType name="CT_CommentAuthor">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Comment Author ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="name" type="ST_Name" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Comment Author Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="initials" type="ST_Name" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Comment Author Initials</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lastIdx" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Index of Comment Author's last comment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="clrIdx" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Comment Author Color Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CommentAuthorList">
+    <xsd:sequence>
+      <xsd:element name="cmAuthor" type="CT_CommentAuthor" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Comment Author</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="cmAuthorLst" type="CT_CommentAuthorList">
+    <xsd:annotation>
+      <xsd:documentation>List of Comment Authors</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_Comment">
+    <xsd:sequence>
+      <xsd:element name="pos" type="a:CT_Point2D" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Comment Position</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="text" type="xsd:string" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Comment's Text Content</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="authorId" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Comment Author ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dt" type="xsd:dateTime" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Comment Date/Time</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="idx" type="ST_Index" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Comment Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_CommentList">
+    <xsd:sequence>
+      <xsd:element name="cm" type="CT_Comment" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Comment</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="cmLst" type="CT_CommentList">
+    <xsd:annotation>
+      <xsd:documentation>Comment List</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>
