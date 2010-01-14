@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:import schemaLocation="../shared/shared-relationshipReference.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" />
+  <xsd:import schemaLocation="dml-baseTypes.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-shapeGeometry.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-shapeLineProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-shapeMiscellaneous.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-shape3DStyles.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-shape3DScene.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-shapeStyle.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:import schemaLocation="dml-text.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:complexType name="CT_SDName">
+    <xsd:attribute name="lang" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Natural Language</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="val" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Description Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SDDescription">
+    <xsd:attribute name="lang" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Natural Language</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="val" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Description Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SDCategory">
+    <xsd:attribute name="type" type="xsd:anyURI" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Category Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="pri" type="xsd:unsignedInt" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Priority</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_SDCategories">
+    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="cat" type="CT_SDCategory" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Category</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextProps">
+    <xsd:sequence>
+      <xsd:group ref="a:EG_Text3D" minOccurs="0" maxOccurs="1"></xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StyleLabel">
+    <xsd:sequence>
+      <xsd:element name="scene3d" type="a:CT_Scene3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3-D Scene</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="sp3d" type="a:CT_Shape3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3-D Shape Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="txPr" type="CT_TextProps" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Style Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_StyleDefinition">
+    <xsd:sequence>
+      <xsd:element name="title" type="CT_SDName" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Title</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="desc" type="CT_SDDescription" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Style Label Description</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="catLst" type="CT_SDCategories" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Category List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="scene3d" type="a:CT_Scene3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>3-D Scene</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="styleLbl" type="CT_StyleLabel" minOccurs="1" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Style Label</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="uniqueId" type="xsd:string" use="optional" default="">
+      <xsd:annotation>
+        <xsd:documentation>Unique Style ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minVer" type="xsd:string" use="optional" default="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Version</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="styleDef" type="CT_StyleDefinition">
+    <xsd:annotation>
+      <xsd:documentation>Style Definition</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_StyleDefinitionHeader">
+    <xsd:sequence>
+      <xsd:element name="title" type="CT_SDName" minOccurs="1" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Title</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="desc" type="CT_SDDescription" minOccurs="1" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Style Label Description</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="catLst" type="CT_SDCategories" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Category List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="uniqueId" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Unique Style ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="minVer" type="xsd:string" use="optional" default="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+      <xsd:annotation>
+        <xsd:documentation>Minimum Version</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="resId" type="xsd:int" use="optional" default="0">
+      <xsd:annotation>
+        <xsd:documentation>Resource ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="styleDefHdr" type="CT_StyleDefinitionHeader">
+    <xsd:annotation>
+      <xsd:documentation>Style Definition Header</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_StyleDefinitionHeaderLst">
+    <xsd:sequence>
+      <xsd:element name="styleDefHdr" type="CT_StyleDefinitionHeader" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Style Definition Header</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="styleDefHdrLst" type="CT_StyleDefinitionHeaderLst">
+    <xsd:annotation>
+      <xsd:documentation>List of Style Definition Headers</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

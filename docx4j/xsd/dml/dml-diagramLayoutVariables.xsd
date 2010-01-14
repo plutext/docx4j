@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram" targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:simpleType name="ST_Direction" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Diagram Direction Definition</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="norm">
+        <xsd:annotation>
+          <xsd:documentation>Normal Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rev">
+        <xsd:annotation>
+          <xsd:documentation>Reversed Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_HierBranchStyle" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Hierarchy Branch Style Definition</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="l">
+        <xsd:annotation>
+          <xsd:documentation>Left</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="r">
+        <xsd:annotation>
+          <xsd:documentation>Right</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hang">
+        <xsd:annotation>
+          <xsd:documentation>Hanging</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="std">
+        <xsd:annotation>
+          <xsd:documentation>Standard</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="init">
+        <xsd:annotation>
+          <xsd:documentation>Initial</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AnimOneStr" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>One by One Animation Value Definition</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>Disable One-by-One</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="one">
+        <xsd:annotation>
+          <xsd:documentation>One By One</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="branch">
+        <xsd:annotation>
+          <xsd:documentation>By Branch One By One</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_AnimLvlStr" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Animation Level String Definition</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>Disable Level At Once</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="lvl">
+        <xsd:annotation>
+          <xsd:documentation>By Level Animation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="ctr">
+        <xsd:annotation>
+          <xsd:documentation>From Center Animation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_OrgChart">
+    <xsd:attribute name="val" type="xsd:boolean" default="false" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Show Organization Chart User Interface Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_NodeCount">
+    <xsd:annotation>
+      <xsd:documentation>Number of Nodes Definition</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="-1" />
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ChildMax">
+    <xsd:attribute name="val" type="ST_NodeCount" default="-1" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Maximum Children Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ChildPref">
+    <xsd:attribute name="val" type="ST_NodeCount" default="-1" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Preferred Number of CHildren Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_BulletEnabled">
+    <xsd:attribute name="val" type="xsd:boolean" default="false" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Show Insert Bullet Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Direction">
+    <xsd:attribute name="val" type="ST_Direction" default="norm" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Diagram Direction Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_HierBranchStyle">
+    <xsd:attribute name="val" type="ST_HierBranchStyle" default="std" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Organization Chart Branch Style Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AnimOne">
+    <xsd:attribute name="val" type="ST_AnimOneStr" default="one" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>One By One Animation Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_AnimLvl">
+    <xsd:attribute name="val" type="ST_AnimLvlStr" default="none" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Level Animation Value</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_ResizeHandlesStr" final="restriction">
+    <xsd:annotation>
+      <xsd:documentation>Resize Handle</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="exact">
+        <xsd:annotation>
+          <xsd:documentation>Exact</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="rel">
+        <xsd:annotation>
+          <xsd:documentation>Relative</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ResizeHandles">
+    <xsd:attribute name="val" type="ST_ResizeHandlesStr" default="rel" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Resize Style Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_LayoutVariablePropertySet">
+    <xsd:sequence>
+      <xsd:element name="orgChart" type="CT_OrgChart" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Organization Chart User Interface</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="chMax" type="CT_ChildMax" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Maximum Children</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="chPref" type="CT_ChildPref" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Preferred Number of Children</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bulletEnabled" type="CT_BulletEnabled" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Show Insert Bullet</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="dir" type="CT_Direction" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Diagram Direction</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="hierBranch" type="CT_HierBranchStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Organization Chart Branch Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="animOne" type="CT_AnimOne" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>One by One Animation String</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="animLvl" type="CT_AnimLvl" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Level Animation</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="resizeHandles" type="CT_ResizeHandles" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Resize Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

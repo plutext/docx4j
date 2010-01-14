@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns="http://schemas.openxmlformats.org/drawingml/2006/diagram">
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-baseTypes.xsd" />
+  <xsd:include schemaLocation="dml-diagramLayoutVariables.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-shapeStyle.xsd" />
+  <xsd:simpleType name="ST_ModelId">
+    <xsd:annotation>
+      <xsd:documentation>Model Identifier</xsd:documentation>
+    </xsd:annotation>
+    <xsd:union memberTypes="xsd:int a:ST_Guid" />
+  </xsd:simpleType>
+  <xsd:complexType name="CT_ElemPropSet">
+    <xsd:sequence>
+      <xsd:element name="presLayoutVars" type="CT_LayoutVariablePropertySet" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Presentation Layout Variables</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Shape Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="presAssocID" type="ST_ModelId" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Presentation Element Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="presName" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Presentation Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="presStyleLbl" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Presentation Style Label</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="presStyleIdx" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Presentation Style Index</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="presStyleCnt" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Presentation Style Count</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="loTypeId" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Current Diagram Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="loCatId" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Current Diagram Category</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="qsTypeId" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Current Style Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="qsCatId" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Current Style Category</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="csTypeId" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Color Transform Type Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="csCatId" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Color Transform Category</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="coherent3DOff" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Coherent 3D Behavior</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="phldrT" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Placeholder Text</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="phldr" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Placeholder</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custAng" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Custom Rotation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custFlipVert" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Custom Vertical Flip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custFlipHor" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Custom Horizontal Flip</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custSzX" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fixed Width Override</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custSzY" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fixed Height Override</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custScaleX" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Width Scale</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custScaleY" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Height Scale</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custT" type="xsd:boolean" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Changed</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custLinFactX" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Custom Factor Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custLinFactY" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Custom Factor Height</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custLinFactNeighborX" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Neighbor Offset Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custLinFactNeighborY" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Neighbor Offset Height</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custRadScaleRad" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Radius Scale</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="custRadScaleInc" type="xsd:int" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Include Angle Scale</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+</xsd:schema>

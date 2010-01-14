@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:import schemaLocation="dml-gvml.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  <xsd:element name="lockedCanvas" type="a:CT_GvmlGroupShape">
+    <xsd:annotation>
+      <xsd:documentation>Locked Canvas Container</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-text.xsd" />
+  <xsd:include schemaLocation="dml-tableStyle.xsd" />
+  <xsd:include schemaLocation="dml-shape3DLighting.xsd" />
+  <xsd:include schemaLocation="dml-shape3DStyles.xsd" />
+  <xsd:complexType name="CT_TableCellProperties">
+    <xsd:sequence>
+      <xsd:element name="lnL" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Left Border Line Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnR" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Right Border Line Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnT" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top Border Line Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnB" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Border Line Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnTlToBr" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top-Left to Bottom-Right Border Line Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lnBlToTr" type="CT_LineProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bottom-Left to Top-Right Border Line Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="cell3D" type="CT_Cell3D" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Cell 3-D</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_FillProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="marL" type="ST_Coordinate32" use="optional" default="91440">
+      <xsd:annotation>
+        <xsd:documentation>Left Margin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="marR" type="ST_Coordinate32" use="optional" default="91440">
+      <xsd:annotation>
+        <xsd:documentation>Right Margin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="marT" type="ST_Coordinate32" use="optional" default="45720">
+      <xsd:annotation>
+        <xsd:documentation>Top Margin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="marB" type="ST_Coordinate32" use="optional" default="45720">
+      <xsd:annotation>
+        <xsd:documentation>Bottom Margin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="vert" type="ST_TextVerticalType" use="optional" default="horz">
+      <xsd:annotation>
+        <xsd:documentation>Text Direction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="anchor" type="ST_TextAnchoringType" use="optional" default="t">
+      <xsd:annotation>
+        <xsd:documentation>Anchor</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="anchorCtr" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Anchor Center</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="horzOverflow" type="ST_TextHorzOverflowType" use="optional" default="clip">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Overflow</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableCol">
+    <xsd:sequence>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="w" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableGrid">
+    <xsd:sequence>
+      <xsd:element name="gridCol" type="CT_TableCol" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Table Grid Column</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableCell">
+    <xsd:sequence>
+      <xsd:element name="txBody" type="CT_TextBody" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Text Body</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tcPr" type="CT_TableCellProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Table Cell Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="rowSpan" type="xsd:int" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>Row Span</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="gridSpan" type="xsd:int" use="optional" default="1">
+      <xsd:annotation>
+        <xsd:documentation>Grid Span</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="hMerge" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Merge</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="vMerge" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Merge</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableRow">
+    <xsd:sequence>
+      <xsd:element name="tc" type="CT_TableCell" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Table Cell</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="h" type="ST_Coordinate" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Height</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableProperties">
+    <xsd:sequence>
+      <xsd:group ref="EG_FillProperties" minOccurs="0" maxOccurs="1"></xsd:group>
+      <xsd:group ref="EG_EffectProperties" minOccurs="0" maxOccurs="1" />
+      <xsd:choice minOccurs="0" maxOccurs="1">
+        <xsd:element name="tableStyle" type="CT_TableStyle">
+          <xsd:annotation>
+            <xsd:documentation>Table Style</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="tableStyleId" type="ST_Guid">
+          <xsd:annotation>
+            <xsd:documentation>Table Style ID</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Extension List</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="rtl" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Right-to-Left</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="firstRow" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>First Row</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="firstCol" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>First Column</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lastRow" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Last Row</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="lastCol" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Last Column</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bandRow" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Banded Rows</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bandCol" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Banded Columns</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Table">
+    <xsd:sequence>
+      <xsd:element name="tblPr" type="CT_TableProperties" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Table Properties</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tblGrid" type="CT_TableGrid" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Table Grid</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tr" type="CT_TableRow" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Table Row</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="tbl" type="CT_Table">
+    <xsd:annotation>
+      <xsd:documentation>Table</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>

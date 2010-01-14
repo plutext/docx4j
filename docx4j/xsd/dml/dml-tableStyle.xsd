@@ -1,0 +1,295 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
+  <xsd:include schemaLocation="dml-shapeEffects.xsd" />
+  <xsd:include schemaLocation="dml-shapeLineProperties.xsd" />
+  <xsd:include schemaLocation="dml-shapeStyle.xsd" />
+  <xsd:include schemaLocation="dml-stylesheet.xsd" />
+  <xsd:include schemaLocation="dml-textCharacter.xsd" />
+  <xsd:complexType name="CT_Cell3D">
+    <xsd:sequence>
+      <xsd:element name="bevel" type="CT_Bevel" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bevel</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lightRig" type="CT_LightRig" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Light Rig</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="prstMaterial" type="ST_PresetMaterialType" use="optional" default="plastic">
+      <xsd:annotation>
+        <xsd:documentation>Preset Material</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:group name="EG_ThemeableFillStyle">
+    <xsd:choice>
+      <xsd:element name="fill" type="CT_FillProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fillRef" type="CT_StyleMatrixReference" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Fill Reference</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:complexType name="CT_ThemeableLineStyle">
+    <xsd:choice>
+      <xsd:element name="ln" type="CT_LineProperties" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="lnRef" type="CT_StyleMatrixReference" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Line Reference</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:group name="EG_ThemeableEffectStyle">
+    <xsd:choice>
+      <xsd:element name="effect" type="CT_EffectProperties" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="effectRef" type="CT_StyleMatrixReference" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Effect Reference</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+  <xsd:group name="EG_ThemeableFontStyles">
+    <xsd:choice>
+      <xsd:element name="font" type="CT_FontCollection" minOccurs="1" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Font</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fontRef" type="CT_FontReference" minOccurs="1" maxOccurs="1" />
+    </xsd:choice>
+  </xsd:group>
+  <xsd:simpleType name="ST_OnOffStyleType">
+    <xsd:annotation>
+      <xsd:documentation>On/Off Style Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:enumeration value="on">
+        <xsd:annotation>
+          <xsd:documentation>On</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="off">
+        <xsd:annotation>
+          <xsd:documentation>Off</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="def">
+        <xsd:annotation>
+          <xsd:documentation>Default</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:complexType name="CT_TableStyleTextStyle">
+    <xsd:sequence>
+      <xsd:group ref="EG_ThemeableFontStyles" minOccurs="0" maxOccurs="1" />
+      <xsd:group ref="EG_ColorChoice" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="b" type="ST_OnOffStyleType" use="optional" default="def">
+      <xsd:annotation>
+        <xsd:documentation>Bold</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="i" type="ST_OnOffStyleType" use="optional" default="def">
+      <xsd:annotation>
+        <xsd:documentation>Italic</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableCellBorderStyle">
+    <xsd:sequence>
+      <xsd:element name="left" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Left Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="right" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Right Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="top" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="bottom" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Bottom Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="insideH" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Inside Horizontal Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="insideV" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Inside Vertical Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tl2br" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top Left to Bottom Right Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tr2bl" type="CT_ThemeableLineStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Top Right to Bottom Left Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableBackgroundStyle">
+    <xsd:sequence>
+      <xsd:group ref="EG_ThemeableFillStyle" minOccurs="0" maxOccurs="1" />
+      <xsd:group ref="EG_ThemeableEffectStyle" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableStyleCellStyle">
+    <xsd:sequence>
+      <xsd:element name="tcBdr" type="CT_TableCellBorderStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Table Cell Borders</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="EG_ThemeableFillStyle" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="cell3D" type="CT_Cell3D" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TablePartStyle">
+    <xsd:sequence>
+      <xsd:element name="tcTxStyle" type="CT_TableStyleTextStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Table Cell Text Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="tcStyle" type="CT_TableStyleCellStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Table Cell Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableStyle">
+    <xsd:sequence>
+      <xsd:element name="tblBg" type="CT_TableBackgroundStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Table Background</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="wholeTbl" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Whole Table</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="band1H" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Band 1 Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="band2H" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Band 2 Horizontal</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="band1V" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Band 1 Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="band2V" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Band 2 Vertical</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lastCol" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Last Column</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="firstCol" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>First Column</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="lastRow" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Last Row</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="seCell" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Southeast Cell</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="swCell" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Southwest Cell</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="firstRow" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>First Row</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="neCell" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Northeast Cell</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="nwCell" type="CT_TablePartStyle" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>Northwest Cell</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1"></xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="styleId" type="ST_Guid" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Style ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="styleName" type="xsd:string" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Name</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TableStyleList">
+    <xsd:sequence>
+      <xsd:element name="tblStyle" type="CT_TableStyle" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Table Style</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="def" type="ST_Guid" use="required">
+      <xsd:annotation>
+        <xsd:documentation>Default</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="tblStyleLst" type="CT_TableStyleList">
+    <xsd:annotation>
+      <xsd:documentation>Table Style List</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>
