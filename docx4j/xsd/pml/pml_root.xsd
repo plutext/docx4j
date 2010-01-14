@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main"
+	elementFormDefault="qualified"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+
+<!--  This xsd is a workaround for the fact that JAXB (and the Eclipse
+	  schema editor) don't let you import the same namespace more than
+	  once.
+	  
+	  This technique suggested by lukas, at http://alweb.homeip.net/dw0rm/dblog/?p=72
+	  
+	  Its a good approach, since it allows us to proceed with minimal
+	  alteration to the original XSD's.
+	  
+	  See also:
+	  
+	  http://issues.apache.org/jira/browse/XERCESJ-893  (bug fixed in Xerces 2.7.0)
+	  
+	  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4980862 (JAXB bug report) 
+	  
+	   -->	
+	   
+<!--
+	
+	The other XSDs in this dir were obtained from OfficeOpenXML-XMLSchema.zip
+	v1.0 final
+		 
+	http://www.ecma-international.org/publications/standards/Ecma-376.htm says
+	"Copy these file(s), free of charge"
+	
+WHICH VERSION?
+
+This is based on ECMA-376, first edition (as opposed to 2ed, which was not then available).	
+
+	
+USAGE INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+	
+	
+  To generate the classes (from the same directory)	
+			
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh pml_root.xsd -d ~/workspace/docx4j/xsd/pml -no-header -target 2.0
+	 	 
+  jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
+  
+	
+PRINCIPLES:
+	
+	1.  Don't inline (into its CT) an enumeration in an ST
+	
+	2.  Be careful with <element name= with no type= ..> 
+	    where that is used in several places, as these can
+	    turn into fields pointing at the an odd class.
+	    Better to make it <element ref=
+	
+	3.  Apart from this, russian doll is good.
+	
+	4.  Resolve ST_String, etc
+	
+	5.  Elements defined < @name= @type> (at least in a group)
+	    sometimes instantiated as the expected object, other times
+	    as a JAXBElement.  Using <xjc:simple> doesn't fix it.  
+	    The solution is to redefine as < @ref= ..> 
+		But I can't do this for <sdt>, since there are multiple
+	    local definitions of <sdt>.
+	 	
+	 6. Don't define locally elements which we may wish to
+	    unmarshall by themselves!
+	    
+	    
+	    
+	    The targetNamespace of the referenced schema, currently must be identical to that of the including schema
+	    To fix, change include to import
+	
+-->
+	   
+	   
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.pptx4j.pml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+
+<!-- 	<xsd:import
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+		schemaLocation="../shared/shared-relationshipReference.xsd" />
+				
+	<xsd:import
+		namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+		schemaLocation="../dml/dml-shapeMiscellaneous.xsd" />
+		
+	<xsd:import
+		namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+		schemaLocation="../dml/dml-audioVideo.xsd" />
+	<xsd:import
+		namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+		schemaLocation="../dml/dml-graphicalObjectAnimation.xsd" />
+	 -->	
+
+  <xsd:include schemaLocation="pml-animationInfo.xsd" />
+  <xsd:include schemaLocation="pml-baseTypes.xsd" />
+  <xsd:include schemaLocation="pml-comments.xsd" />
+  <xsd:include schemaLocation="pml-embedding.xsd" />
+  <xsd:include schemaLocation="pml-presentation.xsd" />
+  <xsd:include schemaLocation="pml-presentationProperties.xsd" />
+  <xsd:include schemaLocation="pml-slide.xsd" />
+  <xsd:include schemaLocation="pml-slideSynchronizationData.xsd" />
+  <xsd:include schemaLocation="pml-userDefinedTags.xsd" />
+  <xsd:include schemaLocation="pml-viewProperties.xsd" />
+		
+</xsd:schema>
