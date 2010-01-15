@@ -1,3 +1,23 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
 
 package org.docx4j.dml;
 
@@ -268,8 +288,7 @@ public enum STShapeType {
     TRAPEZOID("trapezoid"),
 
     /**
-     * Non-Isosceles Trapezoid
-     * 						Shape
+     * Non-Isosceles Trapezoid Shape
      * 
      */
     @XmlEnumValue("nonIsoscelesTrapezoid")
@@ -360,96 +379,84 @@ public enum STShapeType {
     STAR_10("star10"),
 
     /**
-     * Twelve Pointed Star
-     * 						Shape
+     * Twelve Pointed Star Shape
      * 
      */
     @XmlEnumValue("star12")
     STAR_12("star12"),
 
     /**
-     * Sixteen Pointed Star
-     * 						Shape
+     * Sixteen Pointed Star Shape
      * 
      */
     @XmlEnumValue("star16")
     STAR_16("star16"),
 
     /**
-     * Twenty Four Pointed Star
-     * 						Shape
+     * Twenty Four Pointed Star Shape
      * 
      */
     @XmlEnumValue("star24")
     STAR_24("star24"),
 
     /**
-     * Thirty Two Pointed Star
-     * 						Shape
+     * Thirty Two Pointed Star Shape
      * 
      */
     @XmlEnumValue("star32")
     STAR_32("star32"),
 
     /**
-     * Round Corner Rectangle
-     * 						Shape
+     * Round Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("roundRect")
     ROUND_RECT("roundRect"),
 
     /**
-     * One Round Corner Rectangle
-     * 						Shape
+     * One Round Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("round1Rect")
     ROUND_1_RECT("round1Rect"),
 
     /**
-     * Two Same-side Round Corner Rectangle
-     * 						Shape
+     * Two Same-side Round Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("round2SameRect")
     ROUND_2_SAME_RECT("round2SameRect"),
 
     /**
-     * Two Diagonal Round Corner Rectangle
-     * 						Shape
+     * Two Diagonal Round Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("round2DiagRect")
     ROUND_2_DIAG_RECT("round2DiagRect"),
 
     /**
-     * One Snip One Round Corner Rectangle
-     * 						Shape
+     * One Snip One Round Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("snipRoundRect")
     SNIP_ROUND_RECT("snipRoundRect"),
 
     /**
-     * One Snip Corner Rectangle
-     * 						Shape
+     * One Snip Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("snip1Rect")
     SNIP_1_RECT("snip1Rect"),
 
     /**
-     * Two Same-side Snip Corner Rectangle
-     * 						Shape
+     * Two Same-side Snip Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("snip2SameRect")
     SNIP_2_SAME_RECT("snip2SameRect"),
 
     /**
-     * Two Diagonal Snip Corner Rectangle
-     * 						Shape
+     * Two Diagonal Snip Corner Rectangle Shape
      * 
      */
     @XmlEnumValue("snip2DiagRect")
@@ -554,16 +561,14 @@ public enum STShapeType {
     DOWN_ARROW("downArrow"),
 
     /**
-     * Striped Right Arrow
-     * 						Shape
+     * Striped Right Arrow Shape
      * 
      */
     @XmlEnumValue("stripedRightArrow")
     STRIPED_RIGHT_ARROW("stripedRightArrow"),
 
     /**
-     * Notched Right Arrow
-     * 						Shape
+     * Notched Right Arrow Shape
      * 
      */
     @XmlEnumValue("notchedRightArrow")
@@ -619,8 +624,7 @@ public enum STShapeType {
     LEFT_ARROW_CALLOUT("leftArrowCallout"),
 
     /**
-     * Callout Right Arrow
-     * 						Shape
+     * Callout Right Arrow Shape
      * 
      */
     @XmlEnumValue("rightArrowCallout")
@@ -641,24 +645,21 @@ public enum STShapeType {
     DOWN_ARROW_CALLOUT("downArrowCallout"),
 
     /**
-     * Callout Left Right Arrow
-     * 						Shape
+     * Callout Left Right Arrow Shape
      * 
      */
     @XmlEnumValue("leftRightArrowCallout")
     LEFT_RIGHT_ARROW_CALLOUT("leftRightArrowCallout"),
 
     /**
-     * Callout Up Down Arrow
-     * 						Shape
+     * Callout Up Down Arrow Shape
      * 
      */
     @XmlEnumValue("upDownArrowCallout")
     UP_DOWN_ARROW_CALLOUT("upDownArrowCallout"),
 
     /**
-     * Callout Quad-Arrow
-     * 						Shape
+     * Callout Quad-Arrow Shape
      * 
      */
     @XmlEnumValue("quadArrowCallout")
@@ -686,16 +687,14 @@ public enum STShapeType {
     CIRCULAR_ARROW("circularArrow"),
 
     /**
-     * Left Circular Arrow
-     * 						Shape
+     * Left Circular Arrow Shape
      * 
      */
     @XmlEnumValue("leftCircularArrow")
     LEFT_CIRCULAR_ARROW("leftCircularArrow"),
 
     /**
-     * Left Right Circular Arrow
-     * 						Shape
+     * Left Right Circular Arrow Shape
      * 
      */
     @XmlEnumValue("leftRightCircularArrow")
@@ -898,8 +897,7 @@ public enum STShapeType {
     BRACE_PAIR("bracePair"),
 
     /**
-     * Straight Connector 1
-     * 						Shape
+     * Straight Connector 1 Shape
      * 
      */
     @XmlEnumValue("straightConnector1")
@@ -1004,72 +1002,63 @@ public enum STShapeType {
     ACCENT_CALLOUT_3("accentCallout3"),
 
     /**
-     * Callout 1 with Border
-     * 						Shape
+     * Callout 1 with Border Shape
      * 
      */
     @XmlEnumValue("borderCallout1")
     BORDER_CALLOUT_1("borderCallout1"),
 
     /**
-     * Callout 2 with Border
-     * 						Shape
+     * Callout 2 with Border Shape
      * 
      */
     @XmlEnumValue("borderCallout2")
     BORDER_CALLOUT_2("borderCallout2"),
 
     /**
-     * Callout 3 with Border
-     * 						Shape
+     * Callout 3 with Border Shape
      * 
      */
     @XmlEnumValue("borderCallout3")
     BORDER_CALLOUT_3("borderCallout3"),
 
     /**
-     * Callout 1 with Border and Accent
-     * 						Shape
+     * Callout 1 with Border and Accent Shape
      * 
      */
     @XmlEnumValue("accentBorderCallout1")
     ACCENT_BORDER_CALLOUT_1("accentBorderCallout1"),
 
     /**
-     * Callout 2 with Border and Accent
-     * 						Shape
+     * Callout 2 with Border and Accent Shape
      * 
      */
     @XmlEnumValue("accentBorderCallout2")
     ACCENT_BORDER_CALLOUT_2("accentBorderCallout2"),
 
     /**
-     * Callout 3 with Border and Accent
-     * 						Shape
+     * Callout 3 with Border and Accent Shape
      * 
      */
     @XmlEnumValue("accentBorderCallout3")
     ACCENT_BORDER_CALLOUT_3("accentBorderCallout3"),
 
     /**
-     * Callout Wedge Rectangle
-     * 						Shape
+     * Callout Wedge Rectangle Shape
      * 
      */
     @XmlEnumValue("wedgeRectCallout")
     WEDGE_RECT_CALLOUT("wedgeRectCallout"),
 
     /**
-     * Callout Wedge Round Rectangle
-     * 						Shape
+     * Callout Wedge Round Rectangle Shape
      * 
      */
     @XmlEnumValue("wedgeRoundRectCallout")
     WEDGE_ROUND_RECT_CALLOUT("wedgeRoundRectCallout"),
 
     /**
-     * Callout Wedge Ellipse
-     * 						Shape
+     * Callout Wedge Ellipse Shape
      * 
      */
     @XmlEnumValue("wedgeEllipseCallout")
@@ -1181,16 +1170,14 @@ public enum STShapeType {
     FLOW_CHART_INPUT_OUTPUT("flowChartInputOutput"),
 
     /**
-     * Predefined Process Flow
-     * 						Shape
+     * Predefined Process Flow Shape
      * 
      */
     @XmlEnumValue("flowChartPredefinedProcess")
     FLOW_CHART_PREDEFINED_PROCESS("flowChartPredefinedProcess"),
 
     /**
-     * Internal Storage Flow
-     * 						Shape
+     * Internal Storage Flow Shape
      * 
      */
     @XmlEnumValue("flowChartInternalStorage")
@@ -1204,8 +1191,7 @@ public enum STShapeType {
     FLOW_CHART_DOCUMENT("flowChartDocument"),
 
     /**
-     * Multi-Document Flow
-     * 						Shape
+     * Multi-Document Flow Shape
      * 
      */
     @XmlEnumValue("flowChartMultidocument")
@@ -1233,8 +1219,7 @@ public enum STShapeType {
     FLOW_CHART_MANUAL_INPUT("flowChartManualInput"),
 
     /**
-     * Manual Operation Flow
-     * 						Shape
+     * Manual Operation Flow Shape
      * 
      */
     @XmlEnumValue("flowChartManualOperation")
@@ -1262,8 +1247,7 @@ public enum STShapeType {
     FLOW_CHART_PUNCHED_TAPE("flowChartPunchedTape"),
 
     /**
-     * Summing Junction Flow
-     * 						Shape
+     * Summing Junction Flow Shape
      * 
      */
     @XmlEnumValue("flowChartSummingJunction")
@@ -1305,16 +1289,14 @@ public enum STShapeType {
     FLOW_CHART_MERGE("flowChartMerge"),
 
     /**
-     * Offline Storage Flow
-     * 						Shape
+     * Offline Storage Flow Shape
      * 
      */
     @XmlEnumValue("flowChartOfflineStorage")
     FLOW_CHART_OFFLINE_STORAGE("flowChartOfflineStorage"),
 
     /**
-     * Online Storage Flow
-     * 						Shape
+     * Online Storage Flow Shape
      * 
      */
     @XmlEnumValue("flowChartOnlineStorage")
@@ -1356,16 +1338,14 @@ public enum STShapeType {
     FLOW_CHART_DELAY("flowChartDelay"),
 
     /**
-     * Alternate Process Flow
-     * 						Shape
+     * Alternate Process Flow Shape
      * 
      */
     @XmlEnumValue("flowChartAlternateProcess")
     FLOW_CHART_ALTERNATE_PROCESS("flowChartAlternateProcess"),
 
     /**
-     * Off-Page Connector Flow
-     * 						Shape
+     * Off-Page Connector Flow Shape
      * 
      */
     @XmlEnumValue("flowChartOffpageConnector")
@@ -1393,24 +1373,21 @@ public enum STShapeType {
     ACTION_BUTTON_HELP("actionButtonHelp"),
 
     /**
-     * Information Button
-     * 						Shape
+     * Information Button Shape
      * 
      */
     @XmlEnumValue("actionButtonInformation")
     ACTION_BUTTON_INFORMATION("actionButtonInformation"),
 
     /**
-     * Forward or Next Button
-     * 						Shape
+     * Forward or Next Button Shape
      * 
      */
     @XmlEnumValue("actionButtonForwardNext")
     ACTION_BUTTON_FORWARD_NEXT("actionButtonForwardNext"),
 
     /**
-     * Back or Previous Button
-     * 						Shape
+     * Back or Previous Button Shape
      * 
      */
     @XmlEnumValue("actionButtonBackPrevious")

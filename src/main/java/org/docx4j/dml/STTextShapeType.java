@@ -1,3 +1,23 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
 
 package org.docx4j.dml;
 
@@ -94,8 +114,7 @@ public enum STTextShapeType {
     TEXT_TRIANGLE("textTriangle"),
 
     /**
-     * Inverted Triangle Text
-     * 						Shape
+     * Inverted Triangle Text Shape
      * 
      */
     @XmlEnumValue("textTriangleInverted")
@@ -109,8 +128,7 @@ public enum STTextShapeType {
     TEXT_CHEVRON("textChevron"),
 
     /**
-     * Inverted Chevron Text
-     * 						Shape
+     * Inverted Chevron Text Shape
      * 
      */
     @XmlEnumValue("textChevronInverted")
@@ -159,16 +177,14 @@ public enum STTextShapeType {
     TEXT_BUTTON("textButton"),
 
     /**
-     * Upward Pour Arch Text
-     * 						Shape
+     * Upward Pour Arch Text Shape
      * 
      */
     @XmlEnumValue("textArchUpPour")
     TEXT_ARCH_UP_POUR("textArchUpPour"),
 
     /**
-     * Downward Pour Arch Text
-     * 						Shape
+     * Downward Pour Arch Text Shape
      * 
      */
     @XmlEnumValue("textArchDownPour")
@@ -196,8 +212,7 @@ public enum STTextShapeType {
     TEXT_CURVE_UP("textCurveUp"),
 
     /**
-     * Downward Curve Text
-     * 						Shape
+     * Downward Curve Text Shape
      * 
      */
     @XmlEnumValue("textCurveDown")
@@ -260,16 +275,14 @@ public enum STTextShapeType {
     TEXT_DEFLATE("textDeflate"),
 
     /**
-     * Bottom Inflate Text
-     * 						Shape
+     * Bottom Inflate Text Shape
      * 
      */
     @XmlEnumValue("textInflateBottom")
     TEXT_INFLATE_BOTTOM("textInflateBottom"),
 
     /**
-     * Bottom Deflate Text
-     * 						Shape
+     * Bottom Deflate Text Shape
      * 
      */
     @XmlEnumValue("textDeflateBottom")
@@ -290,16 +303,14 @@ public enum STTextShapeType {
     TEXT_DEFLATE_TOP("textDeflateTop"),
 
     /**
-     * Deflate-Inflate Text
-     * 						Shape
+     * Deflate-Inflate Text Shape
      * 
      */
     @XmlEnumValue("textDeflateInflate")
     TEXT_DEFLATE_INFLATE("textDeflateInflate"),
 
     /**
-     * Deflate-Inflate-Deflate Text
-     * 						Shape
+     * Deflate-Inflate-Deflate Text Shape
      * 
      */
     @XmlEnumValue("textDeflateInflateDeflate")
@@ -341,24 +352,21 @@ public enum STTextShapeType {
     TEXT_SLANT_UP("textSlantUp"),
 
     /**
-     * Downward Slant Text
-     * 						Shape
+     * Downward Slant Text Shape
      * 
      */
     @XmlEnumValue("textSlantDown")
     TEXT_SLANT_DOWN("textSlantDown"),
 
     /**
-     * Upward Cascade Text
-     * 						Shape
+     * Upward Cascade Text Shape
      * 
      */
     @XmlEnumValue("textCascadeUp")
     TEXT_CASCADE_UP("textCascadeUp"),
 
     /**
-     * Downward Cascade Text
-     * 						Shape
+     * Downward Cascade Text Shape
      * 
      */
     @XmlEnumValue("textCascadeDown")

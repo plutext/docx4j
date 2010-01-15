@@ -1,3 +1,23 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
 
 package org.docx4j.dml;
 
@@ -172,8 +192,7 @@ public enum STPresetColorVal {
     ALICE_BLUE("aliceBlue"),
 
     /**
-     * Antique White Preset
-     * 						Color
+     * Antique White Preset Color
      * 
      */
     @XmlEnumValue("antiqueWhite")
@@ -222,8 +241,7 @@ public enum STPresetColorVal {
     BLACK("black"),
 
     /**
-     * Blanched Almond Preset
-     * 						Color
+     * Blanched Almond Preset Color
      * 
      */
     @XmlEnumValue("blanchedAlmond")
@@ -286,8 +304,7 @@ public enum STPresetColorVal {
     CORAL("coral"),
 
     /**
-     * Cornflower Blue Preset
-     * 						Color
+     * Cornflower Blue Preset Color
      * 
      */
     @XmlEnumValue("cornflowerBlue")
@@ -329,8 +346,7 @@ public enum STPresetColorVal {
     DK_CYAN("dkCyan"),
 
     /**
-     * Dark Goldenrod Preset
-     * 						Color
+     * Dark Goldenrod Preset Color
      * 
      */
     @XmlEnumValue("dkGoldenrod")
@@ -358,16 +374,14 @@ public enum STPresetColorVal {
     DK_KHAKI("dkKhaki"),
 
     /**
-     * Dark Magenta Preset
-     * 						Color
+     * Dark Magenta Preset Color
      * 
      */
     @XmlEnumValue("dkMagenta")
     DK_MAGENTA("dkMagenta"),
 
     /**
-     * Dark Olive Green Preset
-     * 						Color
+     * Dark Olive Green Preset Color
      * 
      */
     @XmlEnumValue("dkOliveGreen")
@@ -402,32 +416,28 @@ public enum STPresetColorVal {
     DK_SALMON("dkSalmon"),
 
     /**
-     * Dark Sea Green Preset
-     * 						Color
+     * Dark Sea Green Preset Color
      * 
      */
     @XmlEnumValue("dkSeaGreen")
     DK_SEA_GREEN("dkSeaGreen"),
 
     /**
-     * Dark Slate Blue Preset
-     * 						Color
+     * Dark Slate Blue Preset Color
      * 
      */
     @XmlEnumValue("dkSlateBlue")
     DK_SLATE_BLUE("dkSlateBlue"),
 
     /**
-     * Dark Slate Gray Preset
-     * 						Color
+     * Dark Slate Gray Preset Color
      * 
      */
     @XmlEnumValue("dkSlateGray")
     DK_SLATE_GRAY("dkSlateGray"),
 
     /**
-     * Dark Turquoise Preset
-     * 						Color
+     * Dark Turquoise Preset Color
      * 
      */
     @XmlEnumValue("dkTurquoise")
@@ -448,8 +458,7 @@ public enum STPresetColorVal {
     DEEP_PINK("deepPink"),
 
     /**
-     * Deep Sky Blue Preset
-     * 						Color
+     * Deep Sky Blue Preset Color
      * 
      */
     @XmlEnumValue("deepSkyBlue")
@@ -477,16 +486,14 @@ public enum STPresetColorVal {
     FIREBRICK("firebrick"),
 
     /**
-     * Floral White Preset
-     * 						Color
+     * Floral White Preset Color
      * 
      */
     @XmlEnumValue("floralWhite")
     FLORAL_WHITE("floralWhite"),
 
     /**
-     * Forest Green Preset
-     * 						Color
+     * Forest Green Preset Color
      * 
      */
     @XmlEnumValue("forestGreen")
@@ -542,8 +549,7 @@ public enum STPresetColorVal {
     GREEN("green"),
 
     /**
-     * Green Yellow Preset
-     * 						Color
+     * Green Yellow Preset Color
      * 
      */
     @XmlEnumValue("greenYellow")
@@ -599,8 +605,7 @@ public enum STPresetColorVal {
     LAVENDER("lavender"),
 
     /**
-     * Lavender Blush Preset
-     * 						Color
+     * Lavender Blush Preset Color
      * 
      */
     @XmlEnumValue("lavenderBlush")
@@ -614,8 +619,7 @@ public enum STPresetColorVal {
     LAWN_GREEN("lawnGreen"),
 
     /**
-     * Lemon Chiffon Preset
-     * 						Color
+     * Lemon Chiffon Preset Color
      * 
      */
     @XmlEnumValue("lemonChiffon")
@@ -643,8 +647,7 @@ public enum STPresetColorVal {
     LT_CYAN("ltCyan"),
 
     /**
-     * Light Goldenrod Yellow Preset
-     * 						Color
+     * Light Goldenrod Yellow Preset Color
      * 
      */
     @XmlEnumValue("ltGoldenrodYellow")
@@ -672,48 +675,42 @@ public enum STPresetColorVal {
     LT_PINK("ltPink"),
 
     /**
-     * Light Salmon Preset
-     * 						Color
+     * Light Salmon Preset Color
      * 
      */
     @XmlEnumValue("ltSalmon")
     LT_SALMON("ltSalmon"),
 
     /**
-     * Light Sea Green Preset
-     * 						Color
+     * Light Sea Green Preset Color
      * 
      */
     @XmlEnumValue("ltSeaGreen")
     LT_SEA_GREEN("ltSeaGreen"),
 
     /**
-     * Light Sky Blue Preset
-     * 						Color
+     * Light Sky Blue Preset Color
      * 
      */
     @XmlEnumValue("ltSkyBlue")
     LT_SKY_BLUE("ltSkyBlue"),
 
     /**
-     * Light Slate Gray Preset
-     * 						Color
+     * Light Slate Gray Preset Color
      * 
      */
     @XmlEnumValue("ltSlateGray")
     LT_SLATE_GRAY("ltSlateGray"),
 
     /**
-     * Light Steel Blue Preset
-     * 						Color
+     * Light Steel Blue Preset Color
      * 
      */
     @XmlEnumValue("ltSteelBlue")
     LT_STEEL_BLUE("ltSteelBlue"),
 
     /**
-     * Light Yellow Preset
-     * 						Color
+     * Light Yellow Preset Color
      * 
      */
     @XmlEnumValue("ltYellow")
@@ -755,8 +752,7 @@ public enum STPresetColorVal {
     MAROON("maroon"),
 
     /**
-     * Medium Aquamarine Preset
-     * 						Color
+     * Medium Aquamarine Preset Color
      * 
      */
     @XmlEnumValue("medAquamarine")
@@ -770,64 +766,56 @@ public enum STPresetColorVal {
     MED_BLUE("medBlue"),
 
     /**
-     * Medium Orchid Preset
-     * 						Color
+     * Medium Orchid Preset Color
      * 
      */
     @XmlEnumValue("medOrchid")
     MED_ORCHID("medOrchid"),
 
     /**
-     * Medium Purple Preset
-     * 						Color
+     * Medium Purple Preset Color
      * 
      */
     @XmlEnumValue("medPurple")
     MED_PURPLE("medPurple"),
 
     /**
-     * Medium Sea Green Preset
-     * 						Color
+     * Medium Sea Green Preset Color
      * 
      */
     @XmlEnumValue("medSeaGreen")
     MED_SEA_GREEN("medSeaGreen"),
 
     /**
-     * Medium Slate Blue Preset
-     * 						Color
+     * Medium Slate Blue Preset Color
      * 
      */
     @XmlEnumValue("medSlateBlue")
     MED_SLATE_BLUE("medSlateBlue"),
 
     /**
-     * Medium Spring Green Preset
-     * 						Color
+     * Medium Spring Green Preset Color
      * 
      */
     @XmlEnumValue("medSpringGreen")
     MED_SPRING_GREEN("medSpringGreen"),
 
     /**
-     * Medium Turquoise Preset
-     * 						Color
+     * Medium Turquoise Preset Color
      * 
      */
     @XmlEnumValue("medTurquoise")
     MED_TURQUOISE("medTurquoise"),
 
     /**
-     * Medium Violet Red Preset
-     * 						Color
+     * Medium Violet Red Preset Color
      * 
      */
     @XmlEnumValue("medVioletRed")
     MED_VIOLET_RED("medVioletRed"),
 
     /**
-     * Midnight Blue Preset
-     * 						Color
+     * Midnight Blue Preset Color
      * 
      */
     @XmlEnumValue("midnightBlue")
@@ -855,8 +843,7 @@ public enum STPresetColorVal {
     MOCCASIN("moccasin"),
 
     /**
-     * Navajo White Preset
-     * 						Color
+     * Navajo White Preset Color
      * 
      */
     @XmlEnumValue("navajoWhite")
@@ -912,8 +899,7 @@ public enum STPresetColorVal {
     ORCHID("orchid"),
 
     /**
-     * Pale Goldenrod Preset
-     * 						Color
+     * Pale Goldenrod Preset Color
      * 
      */
     @XmlEnumValue("paleGoldenrod")
@@ -927,16 +913,14 @@ public enum STPresetColorVal {
     PALE_GREEN("paleGreen"),
 
     /**
-     * Pale Turquoise Preset
-     * 						Color
+     * Pale Turquoise Preset Color
      * 
      */
     @XmlEnumValue("paleTurquoise")
     PALE_TURQUOISE("paleTurquoise"),
 
     /**
-     * Pale Violet Red Preset
-     * 						Color
+     * Pale Violet Red Preset Color
      * 
      */
     @XmlEnumValue("paleVioletRed")
@@ -1013,8 +997,7 @@ public enum STPresetColorVal {
     ROYAL_BLUE("royalBlue"),
 
     /**
-     * Saddle Brown Preset
-     * 						Color
+     * Saddle Brown Preset Color
      * 
      */
     @XmlEnumValue("saddleBrown")
@@ -1091,8 +1074,7 @@ public enum STPresetColorVal {
     SNOW("snow"),
 
     /**
-     * Spring Green Preset
-     * 						Color
+     * Spring Green Preset Color
      * 
      */
     @XmlEnumValue("springGreen")
@@ -1176,8 +1158,7 @@ public enum STPresetColorVal {
     YELLOW("yellow"),
 
     /**
-     * Yellow Green Preset
-     * 						Color
+     * Yellow Green Preset Color
      * 
      */
     @XmlEnumValue("yellowGreen")

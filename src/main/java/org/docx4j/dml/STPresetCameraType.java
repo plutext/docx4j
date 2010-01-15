@@ -1,3 +1,23 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
 
 package org.docx4j.dml;
 
@@ -129,8 +149,7 @@ public enum STPresetCameraType {
     LEGACY_OBLIQUE_RIGHT("legacyObliqueRight"),
 
     /**
-     * Legacy Oblique Bottom
-     * 						Left
+     * Legacy Oblique Bottom Left
      * 
      */
     @XmlEnumValue("legacyObliqueBottomLeft")
@@ -144,16 +163,14 @@ public enum STPresetCameraType {
     LEGACY_OBLIQUE_BOTTOM("legacyObliqueBottom"),
 
     /**
-     * Legacy Oblique Bottom
-     * 						Right
+     * Legacy Oblique Bottom Right
      * 
      */
     @XmlEnumValue("legacyObliqueBottomRight")
     LEGACY_OBLIQUE_BOTTOM_RIGHT("legacyObliqueBottomRight"),
 
     /**
-     * Legacy Perspective Top
-     * 						Left
+     * Legacy Perspective Top Left
      * 
      */
     @XmlEnumValue("legacyPerspectiveTopLeft")
@@ -167,8 +184,7 @@ public enum STPresetCameraType {
     LEGACY_PERSPECTIVE_TOP("legacyPerspectiveTop"),
 
     /**
-     * Legacy Perspective Top
-     * 						Right
+     * Legacy Perspective Top Right
      * 
      */
     @XmlEnumValue("legacyPerspectiveTopRight")
@@ -182,40 +198,35 @@ public enum STPresetCameraType {
     LEGACY_PERSPECTIVE_LEFT("legacyPerspectiveLeft"),
 
     /**
-     * Legacy Perspective
-     * 						Front
+     * Legacy Perspective Front
      * 
      */
     @XmlEnumValue("legacyPerspectiveFront")
     LEGACY_PERSPECTIVE_FRONT("legacyPerspectiveFront"),
 
     /**
-     * Legacy Perspective
-     * 						Right
+     * Legacy Perspective Right
      * 
      */
     @XmlEnumValue("legacyPerspectiveRight")
     LEGACY_PERSPECTIVE_RIGHT("legacyPerspectiveRight"),
 
     /**
-     * Legacy Perspective Bottom
-     * 						Left
+     * Legacy Perspective Bottom Left
      * 
      */
     @XmlEnumValue("legacyPerspectiveBottomLeft")
     LEGACY_PERSPECTIVE_BOTTOM_LEFT("legacyPerspectiveBottomLeft"),
 
     /**
-     * Legacy Perspective
-     * 						Bottom
+     * Legacy Perspective Bottom
      * 
      */
     @XmlEnumValue("legacyPerspectiveBottom")
     LEGACY_PERSPECTIVE_BOTTOM("legacyPerspectiveBottom"),
 
     /**
-     * Legacy Perspective Bottom
-     * 						Right
+     * Legacy Perspective Bottom Right
      * 
      */
     @XmlEnumValue("legacyPerspectiveBottomRight")
@@ -292,8 +303,7 @@ public enum STPresetCameraType {
     ISOMETRIC_OFF_AXIS_1_LEFT("isometricOffAxis1Left"),
 
     /**
-     * Isometric Off Axis 1
-     * 						Right
+     * Isometric Off Axis 1 Right
      * 
      */
     @XmlEnumValue("isometricOffAxis1Right")
@@ -314,8 +324,7 @@ public enum STPresetCameraType {
     ISOMETRIC_OFF_AXIS_2_LEFT("isometricOffAxis2Left"),
 
     /**
-     * Isometric Off Axis 2
-     * 						Right
+     * Isometric Off Axis 2 Right
      * 
      */
     @XmlEnumValue("isometricOffAxis2Right")
@@ -336,16 +345,14 @@ public enum STPresetCameraType {
     ISOMETRIC_OFF_AXIS_3_LEFT("isometricOffAxis3Left"),
 
     /**
-     * Isometric Off Axis 3
-     * 						Right
+     * Isometric Off Axis 3 Right
      * 
      */
     @XmlEnumValue("isometricOffAxis3Right")
     ISOMETRIC_OFF_AXIS_3_RIGHT("isometricOffAxis3Right"),
 
     /**
-     * Isometric Off Axis 3
-     * 						Bottom
+     * Isometric Off Axis 3 Bottom
      * 
      */
     @XmlEnumValue("isometricOffAxis3Bottom")
@@ -359,16 +366,14 @@ public enum STPresetCameraType {
     ISOMETRIC_OFF_AXIS_4_LEFT("isometricOffAxis4Left"),
 
     /**
-     * Isometric Off Axis 4
-     * 						Right
+     * Isometric Off Axis 4 Right
      * 
      */
     @XmlEnumValue("isometricOffAxis4Right")
     ISOMETRIC_OFF_AXIS_4_RIGHT("isometricOffAxis4Right"),
 
     /**
-     * Isometric Off Axis 4
-     * 						Bottom
+     * Isometric Off Axis 4 Bottom
      * 
      */
     @XmlEnumValue("isometricOffAxis4Bottom")
@@ -466,64 +471,56 @@ public enum STPresetCameraType {
     PERSPECTIVE_BELOW("perspectiveBelow"),
 
     /**
-     * Perspective Above Left
-     * 						Facing
+     * Perspective Above Left Facing
      * 
      */
     @XmlEnumValue("perspectiveAboveLeftFacing")
     PERSPECTIVE_ABOVE_LEFT_FACING("perspectiveAboveLeftFacing"),
 
     /**
-     * Perspective Above Right
-     * 						Facing
+     * Perspective Above Right Facing
      * 
      */
     @XmlEnumValue("perspectiveAboveRightFacing")
     PERSPECTIVE_ABOVE_RIGHT_FACING("perspectiveAboveRightFacing"),
 
     /**
-     * Perspective Contrasting Left
-     * 						Facing
+     * Perspective Contrasting Left Facing
      * 
      */
     @XmlEnumValue("perspectiveContrastingLeftFacing")
     PERSPECTIVE_CONTRASTING_LEFT_FACING("perspectiveContrastingLeftFacing"),
 
     /**
-     * Perspective Contrasting Right
-     * 						Facing
+     * Perspective Contrasting Right Facing
      * 
      */
     @XmlEnumValue("perspectiveContrastingRightFacing")
     PERSPECTIVE_CONTRASTING_RIGHT_FACING("perspectiveContrastingRightFacing"),
 
     /**
-     * Perspective Heroic Left
-     * 						Facing
+     * Perspective Heroic Left Facing
      * 
      */
     @XmlEnumValue("perspectiveHeroicLeftFacing")
     PERSPECTIVE_HEROIC_LEFT_FACING("perspectiveHeroicLeftFacing"),
 
     /**
-     * Perspective Heroic Right
-     * 						Facing
+     * Perspective Heroic Right Facing
      * 
      */
     @XmlEnumValue("perspectiveHeroicRightFacing")
     PERSPECTIVE_HEROIC_RIGHT_FACING("perspectiveHeroicRightFacing"),
 
     /**
-     * Perspective Heroic Extreme Left
-     * 						Facing
+     * Perspective Heroic Extreme Left Facing
      * 
      */
     @XmlEnumValue("perspectiveHeroicExtremeLeftFacing")
     PERSPECTIVE_HEROIC_EXTREME_LEFT_FACING("perspectiveHeroicExtremeLeftFacing"),
 
     /**
-     * Perspective Heroic Extreme Right
-     * 						Facing
+     * Perspective Heroic Extreme Right Facing
      * 
      */
     @XmlEnumValue("perspectiveHeroicExtremeRightFacing")
@@ -537,8 +534,7 @@ public enum STPresetCameraType {
     PERSPECTIVE_RELAXED("perspectiveRelaxed"),
 
     /**
-     * Perspective Relaxed
-     * 						Moderately
+     * Perspective Relaxed Moderately
      * 
      */
     @XmlEnumValue("perspectiveRelaxedModerately")
