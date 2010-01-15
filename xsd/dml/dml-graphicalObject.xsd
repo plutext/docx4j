@@ -1,27 +1,56 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
-  <xsd:complexType name="CT_GraphicalObjectData">
-    <xsd:sequence>
-      <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="strict"></xsd:any>
-    </xsd:sequence>
-    <xsd:attribute name="uri" type="xsd:token">
-      <xsd:annotation>
-        <xsd:documentation>Uniform Resource Identifier</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-  </xsd:complexType>
-  <xsd:complexType name="CT_GraphicalObject">
-    <xsd:sequence>
-      <xsd:element name="graphicData" type="CT_GraphicalObjectData">
-        <xsd:annotation>
-          <xsd:documentation>Graphic Object Data</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-    </xsd:sequence>
-  </xsd:complexType>
-  <xsd:element name="graphic" type="CT_GraphicalObject">
-    <xsd:annotation>
-      <xsd:documentation>Graphic Object</xsd:documentation>
-    </xsd:annotation>
-  </xsd:element>
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+	elementFormDefault="qualified"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<xsd:complexType name="CT_GraphicalObjectData">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="graphicData"/>
+			</xsd:appinfo>
+		</xsd:annotation>		
+		<xsd:sequence>
+			<xsd:any minOccurs="0" maxOccurs="unbounded"
+				processContents="strict">
+			</xsd:any>
+			<!-- 
+			At one point, replaced this with 			
+				<xsd:element ref="pic:pic" minOccurs="0" />
+			 -->		
+		</xsd:sequence>
+		<xsd:attribute name="uri" type="xsd:token">
+			<xsd:annotation>
+				<xsd:documentation>
+					Uniform Resource Identifier
+				</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_GraphicalObject">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="graphic"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
+	
+		<xsd:sequence>
+			<xsd:element name="graphicData"
+				type="CT_GraphicalObjectData">
+				<xsd:annotation>
+					<xsd:documentation>
+						Graphic Object Data
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="graphic" type="CT_GraphicalObject">
+		<xsd:annotation>
+			<xsd:documentation>Graphic Object</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
 </xsd:schema>

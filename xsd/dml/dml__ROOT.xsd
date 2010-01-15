@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+	elementFormDefault="qualified"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!--   
+	
+		This file ought to generate all dml, except dml-spreadsheetDrawing.xsd
+		 
+	
+	sh ~/jaxb-ri-20071219/bin/xjc.sh dml__ROOT.xsd -d  ~/workspace/docx4j/src/main/java -no-header -target 2.0 
+	
+	
+	sh ~/jaxb-ri-20071219/bin/xjc.sh dml__ROOT.xsd -d ~/workspace/docx4j/xsd/pml -no-header -target 2.0
+	
+	
+	cd to the directory containing the new sources
+	
+	Then add the copyright notice:
+	
+	 sed -s -i -f script *.java
+	
+	where script is
+	
+	# sed script to insert "header.txt" above the first line
+	1{h; r header.txt
+	  D; }
+	2{x; G; }
+	#- - -end of sed script- - - 
+	
+	and header.txt contains the copyright notice.	
+	
+	
+	  -->
+	
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.dml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+  
+  	<xsd:include schemaLocation="dml-baseStylesheet.xsd" />
+	<xsd:include schemaLocation="dml-baseTypes.xsd" />
+	   
+	<xsd:include schemaLocation="dml-audioVideo.xsd" />
+	
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/chart"
+		schemaLocation="dml-chart.xsd" /><!--  Where is dml-chart used? -->
+		<!-- imports dml-chartDrawing.xsd -->
+		
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/compatibility"
+		schemaLocation="dml-compatibility.xsd" /> <!--  where used? -->		
+
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" schemaLocation="dml-diagramDefinition.xsd" />  <!--  where used? -->
+	
+<!-- These are all referenced ..
+		
+	<xsd:include schemaLocation="dml-diagramDataModel.xsd" />
+	<xsd:include schemaLocation="dml-diagramElementPropertySet.xsd" />
+	<xsd:include schemaLocation="dml-diagramLayoutVariables.xsd" />
+	<xsd:include schemaLocation="dml-diagramTypes.xsd" />
+	<xsd:include schemaLocation="dml-documentProperties.xsd" />
+	 -->
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"  schemaLocation="dml-diagramColorTransform.xsd" />  <!--  where used? -->
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"  schemaLocation="dml-diagramStyleDefinition.xsd" /> <!--  where used? -->
+	 
+	<xsd:include schemaLocation="dml-graphicalObjectAnimation.xsd" />
+	<xsd:include schemaLocation="dml-graphicalObjectFormat.xsd" />
+	<xsd:include schemaLocation="dml-graphicalObject.xsd" />
+	<xsd:include schemaLocation="dml-gvml.xsd" />
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" schemaLocation="dml-lockedCanvas.xsd" />
+	
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/picture" schemaLocation="dml-picture.xsd" />
+	
+	<xsd:include schemaLocation="dml-shape3DCamera.xsd" />
+	<xsd:include schemaLocation="dml-shape3DLighting.xsd" />
+	<xsd:include schemaLocation="dml-shape3DScenePlane.xsd" />
+	<xsd:include schemaLocation="dml-shape3DScene.xsd" />
+	<xsd:include schemaLocation="dml-shape3DStyles.xsd" />
+	<xsd:include schemaLocation="dml-shapeEffects.xsd" />
+	<xsd:include schemaLocation="dml-shapeGeometry.xsd" />
+	<xsd:include schemaLocation="dml-shapeLineProperties.xsd" />
+	<xsd:include schemaLocation="dml-shapeMiscellaneous.xsd" />
+	<xsd:include schemaLocation="dml-shapeProperties.xsd" />
+	<xsd:include schemaLocation="dml-shapeStyle.xsd" />
+	<!--  docx4j doesn't do spreadsheets
+	  <xsd:include schemaLocation="dml-spreadsheetDrawing.xsd" />
+	   -->
+	<xsd:include schemaLocation="dml-styleDefaults.xsd" />
+	<xsd:include schemaLocation="dml-stylesheet.xsd" />
+	<xsd:include schemaLocation="dml-tableStyle.xsd" />
+	<xsd:include schemaLocation="dml-table.xsd" />
+	<xsd:include schemaLocation="dml-textBullet.xsd" />
+	<xsd:include schemaLocation="dml-textCharacter.xsd" />
+	<xsd:include schemaLocation="dml-textParagraph.xsd" />
+	<xsd:include schemaLocation="dml-textRun.xsd" />
+	<xsd:include schemaLocation="dml-text.xsd" />
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" schemaLocation="dml-wordprocessingDrawing.xsd" />
+		
+		
+		
+</xsd:schema>
