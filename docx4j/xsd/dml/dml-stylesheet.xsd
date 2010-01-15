@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/main" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/main">
   <xsd:include schemaLocation="dml-baseStylesheet.xsd" />
   <xsd:include schemaLocation="dml-styleDefaults.xsd" />
@@ -99,36 +99,6 @@
       </xsd:element>
     </xsd:sequence>
   </xsd:complexType>
-  <xsd:complexType name="CT_OfficeStyleSheet">
-    <xsd:sequence>
-      <xsd:element name="themeElements" type="CT_BaseStyles" minOccurs="1" maxOccurs="1">
-        <xsd:annotation>
-          <xsd:documentation>Theme Elements</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-      <xsd:element name="objectDefaults" type="CT_ObjectStyleDefaults" minOccurs="0" maxOccurs="1">
-        <xsd:annotation>
-          <xsd:documentation>Object Defaults</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-      <xsd:element name="extraClrSchemeLst" type="CT_ColorSchemeList" minOccurs="0" maxOccurs="1">
-        <xsd:annotation>
-          <xsd:documentation>Extra Color Scheme List</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-      <xsd:element name="custClrLst" type="CT_CustomColorList" minOccurs="0" maxOccurs="1">
-        <xsd:annotation>
-          <xsd:documentation>Custom Color List</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
-      <xsd:element name="extLst" type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
-    </xsd:sequence>
-    <xsd:attribute name="name" type="xsd:string" use="optional" default="">
-      <xsd:annotation>
-        <xsd:documentation>Name</xsd:documentation>
-      </xsd:annotation>
-    </xsd:attribute>
-  </xsd:complexType>
   <xsd:complexType name="CT_BaseStylesOverride">
     <xsd:sequence>
       <xsd:element name="clrScheme" type="CT_ColorScheme" minOccurs="0" maxOccurs="1">
@@ -136,7 +106,40 @@
           <xsd:documentation>Color Scheme</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="fontScheme" type="CT_FontScheme" minOccurs="0" maxOccurs="1" />
+			<xsd:element name="fontScheme" minOccurs="0"
+				maxOccurs="1">
+<!--type="CT_FontScheme"-->
+				<xsd:complexType><!-- name="CT_FontScheme" in dml-baseStylesheet-->
+					<xsd:sequence>
+						<xsd:element name="majorFont"
+							type="CT_FontCollection" minOccurs="1" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Major Font
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="minorFont"
+							type="CT_FontCollection" minOccurs="1" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Minor fonts
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="extLst"
+							type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1">
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attribute name="name" type="xsd:string"
+						use="required">
+						<xsd:annotation>
+							<xsd:documentation>Name</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
+
+			</xsd:element>
       <xsd:element name="fmtScheme" type="CT_StyleMatrix" minOccurs="0" maxOccurs="1" />
     </xsd:sequence>
   </xsd:complexType>
@@ -150,10 +153,55 @@
       </xsd:element>
     </xsd:sequence>
   </xsd:complexType>
-  <xsd:element name="theme" type="CT_OfficeStyleSheet">
-    <xsd:annotation>
-      <xsd:documentation>Theme</xsd:documentation>
-    </xsd:annotation>
+  <xsd:element name="theme"><!-- type="CT_OfficeStyleSheet"-->
+  	<xsd:annotation>
+  		<xsd:documentation>Theme</xsd:documentation>
+  	</xsd:annotation>
+  	<xsd:complexType><!-- name="CT_OfficeStyleSheet"-->
+  		<xsd:sequence>
+  			<xsd:element name="themeElements" type="CT_BaseStyles"
+  				minOccurs="1" maxOccurs="1">
+  				<xsd:annotation>
+  					<xsd:documentation>
+  						Theme Elements
+  					</xsd:documentation>
+  				</xsd:annotation>
+  			</xsd:element>
+  			<xsd:element name="objectDefaults"
+  				type="CT_ObjectStyleDefaults" minOccurs="0" maxOccurs="1">
+  				<xsd:annotation>
+  					<xsd:documentation>
+  						Object Defaults
+  					</xsd:documentation>
+  				</xsd:annotation>
+  			</xsd:element>
+  			<xsd:element name="extraClrSchemeLst"
+  				type="CT_ColorSchemeList" minOccurs="0" maxOccurs="1">
+  				<xsd:annotation>
+  					<xsd:documentation>
+  						Extra Color Scheme List
+  					</xsd:documentation>
+  				</xsd:annotation>
+  			</xsd:element>
+  			<xsd:element name="custClrLst" type="CT_CustomColorList"
+  				minOccurs="0" maxOccurs="1">
+  				<xsd:annotation>
+  					<xsd:documentation>
+  						Custom Color List
+  					</xsd:documentation>
+  				</xsd:annotation>
+  			</xsd:element>
+  			<xsd:element name="extLst"
+  				type="CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
+  		</xsd:sequence>
+  		<xsd:attribute name="name" type="xsd:string" use="optional"
+  			default="">
+  			<xsd:annotation>
+  				<xsd:documentation>Name</xsd:documentation>
+  			</xsd:annotation>
+  		</xsd:attribute>
+  	</xsd:complexType>
+
   </xsd:element>
   <xsd:element name="themeOverride" type="CT_BaseStylesOverride">
     <xsd:annotation>
