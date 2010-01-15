@@ -107,7 +107,7 @@ public class CTNumericRule {
      */
     public double getVal() {
         if (val == null) {
-            return NaND;
+            return Double.NaN;
         } else {
             return val;
         }
@@ -135,7 +135,7 @@ public class CTNumericRule {
      */
     public double getFact() {
         if (fact == null) {
-            return NaND;
+            return Double.NaN;
         } else {
             return fact;
         }
@@ -163,7 +163,7 @@ public class CTNumericRule {
      */
     public double getMax() {
         if (max == null) {
-            return NaND;
+            return Double.NaN;
         } else {
             return max;
         }
