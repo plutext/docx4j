@@ -1,3 +1,23 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
 
 package org.docx4j.dml;
 
@@ -32,56 +52,49 @@ public enum STTextAlignType {
 
 
     /**
-     * Text Alignment Enum ( Left
-     * 						)
+     * Text Alignment Enum ( Left )
      * 
      */
     @XmlEnumValue("l")
     L("l"),
 
     /**
-     * Text Alignment Enum ( Center
-     * 						)
+     * Text Alignment Enum ( Center )
      * 
      */
     @XmlEnumValue("ctr")
     CTR("ctr"),
 
     /**
-     * Text Alignment Enum ( Right
-     * 						)
+     * Text Alignment Enum ( Right )
      * 
      */
     @XmlEnumValue("r")
     R("r"),
 
     /**
-     * Text Alignment Enum ( Justified
-     * 						)
+     * Text Alignment Enum ( Justified )
      * 
      */
     @XmlEnumValue("just")
     JUST("just"),
 
     /**
-     * Text Alignment Enum ( Justified Low
-     * 						)
+     * Text Alignment Enum ( Justified Low )
      * 
      */
     @XmlEnumValue("justLow")
     JUST_LOW("justLow"),
 
     /**
-     * Text Alignment Enum ( Distributed
-     * 						)
+     * Text Alignment Enum ( Distributed )
      * 
      */
     @XmlEnumValue("dist")
     DIST("dist"),
 
     /**
-     * Text Alignment Enum ( Thai Distributed
-     * 						)
+     * Text Alignment Enum ( Thai Distributed )
      * 
      */
     @XmlEnumValue("thaiDist")

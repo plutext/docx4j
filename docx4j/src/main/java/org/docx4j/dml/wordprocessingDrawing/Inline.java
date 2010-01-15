@@ -1,13 +1,35 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
 
-package org.docx4j.dml;
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
 
-import javax.xml.bind.Unmarshaller;
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
+
+package org.docx4j.dml.wordprocessingDrawing;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.jvnet.jaxb2_commons.ppp.Child;
+import org.docx4j.dml.CTNonVisualDrawingProps;
+import org.docx4j.dml.CTNonVisualGraphicFrameProperties;
+import org.docx4j.dml.CTPositiveSize2D;
+import org.docx4j.dml.Graphic;
 
 
 /**
@@ -26,6 +48,10 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="cNvGraphicFramePr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGraphicFrameProperties" minOccurs="0"/>
  *         &lt;element ref="{http://schemas.openxmlformats.org/drawingml/2006/main}graphic"/>
  *       &lt;/sequence>
+ *       &lt;attribute name="distT" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
+ *       &lt;attribute name="distB" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
+ *       &lt;attribute name="distL" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
+ *       &lt;attribute name="distR" type="{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}ST_WrapDistance" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -34,15 +60,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Inline", namespace = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing", propOrder = {
+@XmlType(name = "CT_Inline", propOrder = {
     "extent",
     "effectExtent",
     "docPr",
     "cNvGraphicFramePr",
     "graphic"
 })
-public class Inline implements Child
-{
+public class Inline {
 
     @XmlElement(required = true)
     protected CTPositiveSize2D extent;
@@ -52,8 +77,14 @@ public class Inline implements Child
     protected CTNonVisualGraphicFrameProperties cNvGraphicFramePr;
     @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", required = true)
     protected Graphic graphic;
-    @XmlTransient
-    private Object parent;
+    @XmlAttribute
+    protected Long distT;
+    @XmlAttribute
+    protected Long distB;
+    @XmlAttribute
+    protected Long distL;
+    @XmlAttribute
+    protected Long distR;
 
     /**
      * Gets the value of the extent property.
@@ -176,29 +207,99 @@ public class Inline implements Child
     }
 
     /**
-     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * Gets the value of the distT property.
      * 
      * @return
-     *     The parent object.
+     *     possible object is
+     *     {@link Long }
+     *     
      */
-    public Object getParent() {
-        return this.parent;
-    }
-
-    public void setParent(Object parent) {
-        this.parent = parent;
+    public Long getDistT() {
+        return distT;
     }
 
     /**
-     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * Sets the value of the distT property.
      * 
-     * @param parent
-     *     The parent object in the object tree.
-     * @param unmarshaller
-     *     The unmarshaller that generated the instance.
+     * @param value
+     *     allowed object is
+     *     {@link Long }
+     *     
      */
-    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
-        setParent(parent);
+    public void setDistT(Long value) {
+        this.distT = value;
+    }
+
+    /**
+     * Gets the value of the distB property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Long }
+     *     
+     */
+    public Long getDistB() {
+        return distB;
+    }
+
+    /**
+     * Sets the value of the distB property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Long }
+     *     
+     */
+    public void setDistB(Long value) {
+        this.distB = value;
+    }
+
+    /**
+     * Gets the value of the distL property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Long }
+     *     
+     */
+    public Long getDistL() {
+        return distL;
+    }
+
+    /**
+     * Sets the value of the distL property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Long }
+     *     
+     */
+    public void setDistL(Long value) {
+        this.distL = value;
+    }
+
+    /**
+     * Gets the value of the distR property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Long }
+     *     
+     */
+    public Long getDistR() {
+        return distR;
+    }
+
+    /**
+     * Sets the value of the distR property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Long }
+     *     
+     */
+    public void setDistR(Long value) {
+        this.distR = value;
     }
 
 }

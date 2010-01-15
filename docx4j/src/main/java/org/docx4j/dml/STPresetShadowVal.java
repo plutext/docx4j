@@ -1,3 +1,23 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
 
 package org.docx4j.dml;
 
@@ -59,16 +79,14 @@ public enum STPresetShadowVal {
     SHDW_2("shdw2"),
 
     /**
-     * Back Left Perspective
-     * 						Shadow
+     * Back Left Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw3")
     SHDW_3("shdw3"),
 
     /**
-     * Back Right Perspective
-     * 						Shadow
+     * Back Right Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw4")
@@ -89,80 +107,70 @@ public enum STPresetShadowVal {
     SHDW_6("shdw6"),
 
     /**
-     * Front Left Perspective
-     * 						Shadow
+     * Front Left Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw7")
     SHDW_7("shdw7"),
 
     /**
-     * Front Right Perspective
-     * 						Shadow
+     * Front Right Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw8")
     SHDW_8("shdw8"),
 
     /**
-     * Top Left Small Drop
-     * 						Shadow
+     * Top Left Small Drop Shadow
      * 
      */
     @XmlEnumValue("shdw9")
     SHDW_9("shdw9"),
 
     /**
-     * Top Left Large Drop
-     * 						Shadow
+     * Top Left Large Drop Shadow
      * 
      */
     @XmlEnumValue("shdw10")
     SHDW_10("shdw10"),
 
     /**
-     * Back Left Long Perspective
-     * 						Shadow
+     * Back Left Long Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw11")
     SHDW_11("shdw11"),
 
     /**
-     * Back Right Long Perspective
-     * 						Shadow
+     * Back Right Long Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw12")
     SHDW_12("shdw12"),
 
     /**
-     * Top Left Double Drop
-     * 						Shadow
+     * Top Left Double Drop Shadow
      * 
      */
     @XmlEnumValue("shdw13")
     SHDW_13("shdw13"),
 
     /**
-     * Bottom Right Small Drop
-     * 						Shadow
+     * Bottom Right Small Drop Shadow
      * 
      */
     @XmlEnumValue("shdw14")
     SHDW_14("shdw14"),
 
     /**
-     * Front Left Long Perspective
-     * 						Shadow
+     * Front Left Long Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw15")
     SHDW_15("shdw15"),
 
     /**
-     * Front Right LongPerspective
-     * 						Shadow
+     * Front Right LongPerspective Shadow
      * 
      */
     @XmlEnumValue("shdw16")
@@ -183,8 +191,7 @@ public enum STPresetShadowVal {
     SHDW_18("shdw18"),
 
     /**
-     * Back Center Perspective
-     * 						Shadow
+     * Back Center Perspective Shadow
      * 
      */
     @XmlEnumValue("shdw19")
