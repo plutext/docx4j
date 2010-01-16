@@ -51,8 +51,11 @@ public class CreatePdf {
 	    	boolean save = false;
 	    	
 //	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
-	    	String inputfilepath = System.getProperty("user.dir") 
-	    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
+//	    	String inputfilepath = System.getProperty("user.dir") 
+//	    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
+	    	String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+//	    	String inputfilepath = System.getProperty("user.dir") 
+//    		+ "/sample-docs/test-docs/endnotes.xml";	    	
 	    	
 			WordprocessingMLPackage wordMLPackage;
 			if (inputfilepath==null) {

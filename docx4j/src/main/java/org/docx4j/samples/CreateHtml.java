@@ -45,6 +45,10 @@ public class CreateHtml {
 
 //	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
 	    	String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+//	    	String inputfilepath = System.getProperty("user.dir") 
+//    		+ "/sample-docs/test-docs/endnotes.xml";	    	
+//	    	String inputfilepath = System.getProperty("user.dir") 
+//    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
 	    	
 			System.out.println(inputfilepath);
 			

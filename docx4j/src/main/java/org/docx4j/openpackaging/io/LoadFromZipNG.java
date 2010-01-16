@@ -86,6 +86,13 @@ public class LoadFromZipNG extends Load {
 	 // HashMap containing the names of all the zip entries,
 	// so we can tell whether there are any orphans
 	public HashMap unusedZipEntries = new HashMap();
+
+	
+	/**
+	 * This HashMap is intended to prevent loops.
+	 */
+	public HashMap<String, String> handled = new HashMap<String, String>();
+	
 	
 	public LoadFromZipNG() {
 		this(new ContentTypeManager() );
@@ -394,6 +401,8 @@ public class LoadFromZipNG extends Load {
 			return;
 		}
 		
+		if (handled.get(resolvedPartUri)!=null) return;
+		
 		String relationshipType = r.getType();		
 			
 		Part part = getRawPart(partByteArrays, ctm, resolvedPartUri);
@@ -403,6 +412,7 @@ public class LoadFromZipNG extends Load {
 			part.setRelationshipType(relationshipType);
 		}
 		rp.loadPart(part, r);
+		handled.put(resolvedPartUri, resolvedPartUri);
 
 		// The source Part (or Package) might have a convenience
 		// method for this

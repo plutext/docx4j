@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="wordml.css"?>
+<html xmlns="http://www.w3.org/1999/xhtml"       
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+      xsi:schemaLocation="http://www.w3.org/1999/xhtml http://dev.plutext.org/trac/docx4j/export/766/trunk/docx4j/xsd/xhtml-wordml.xsd">
+    <head>
+        <title>An example using defaults</title>
+
+    </head>
+    <body>
+        <p contentEditable="true">This is content in the XHTML namespace</p>
+    </body>
+
+<w:document >
+
+	<w:body>
+
+
+<w:p contentEditable="true"><w:r> <w:t>This paragraph has no explicit style.</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:ind w:left="720"/></w:pPr><w:r><w:t>No explicit style, with direct paragraph formatting: indent.</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:jc w:val="right"/><w:rPr><w:b/></w:rPr></w:pPr><w:r><w:t>No explicit style, with direct paragraph formatting: align right.</w:t></w:r></w:p>
+
+<w:p> <w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>This paragraph has Normal style.</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:ind w:left="720"/></w:pPr><w:r><w:t>No explicit style, with direct paragraph formatting: indent.</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:jc w:val="right"/><w:rPr><w:b/></w:rPr></w:pPr><w:r><w:t>No explicit style, with direct paragraph formatting: align right.</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Heading 1</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:pStyle w:val="Heading1Plus"/></w:pPr><w:r><w:t>Heading 1 Plus (larger, aligned right)</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:pStyle w:val="Heading1PlusPlus"/></w:pPr><w:r><w:t>Heading 1 Plus Plus (smaller, aligned left, plus numbering)</w:t></w:r></w:p>
+
+<w:p><w:pPr><w:pStyle w:val="Heading1PlusPlus"/><w:jc w:val="center"/></w:pPr><w:r><w:t>Heading 1 Plus Plus (smaller, aligned left, plus numbering) direct formatting centres it</w:t></w:r></w:p>
+
+<w:p><w:r><w:t xml:space="preserve">Now, some run formatting.  </w:t></w:r><w:r><w:rPr><w:rStyle w:val="Strong"/></w:rPr><w:t>This is Strong</w:t></w:r><w:r><w:t xml:space="preserve">, no more. </w:t></w:r><w:r><w:rPr><w:rStyle w:val="MyStrong"/></w:rPr><w:t>My strong</w:t></w:r><w:r><w:t xml:space="preserve">. And </w:t></w:r><w:r><w:rPr><w:color w:val="FF0000"/><w:u w:val="single"/></w:rPr><w:t xml:space="preserve">now, </w:t></w:r><w:r><w:rPr><w:rStyle w:val="MyStrong"/><w:color w:val="FF0000"/><w:u w:val="single"/></w:rPr><w:t>My strong with direct formatting (red and underline).</w:t></w:r><w:r><w:t xml:space="preserve">  </w:t></w:r></w:p>
+
+<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/><w:cols w:space="708"/><w:docGrid w:linePitch="360"/></w:sectPr>
+
+</w:body>
+	
+
+</w:document>
+
+</html>
+

@@ -23,6 +23,8 @@ package org.docx4j.dml;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
@@ -31,6 +33,9 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.docx4j.XmlUtils;
+import org.docx4j.dml.picture.Pic;
 
 
 /**
@@ -95,6 +100,19 @@ public class GraphicData {
         return this.any;
     }
 
+    public org.docx4j.dml.picture.Pic getPic() {
+
+		for (Object o : getAny() ) {
+
+			if (o instanceof JAXBElement
+					&& ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.dml.picture.Pic") ) {
+				
+					return (Pic)((JAXBElement)o).getValue();
+			}
+		}
+    	return null;    	
+    }
+    
     /**
      * Gets the value of the uri property.
      * 

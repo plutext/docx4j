@@ -521,56 +521,56 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_PresentationProperties">
-		<xsd:sequence>
-			<xsd:element name="htmlPubPr"
-				type="CT_HtmlPublishProperties" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						HTML Publishing Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="webPr" type="CT_WebProperties"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Web Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="prnPr" type="CT_PrintProperties"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Printing Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="showPr" type="CT_ShowProperties"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Presentation-wide Show Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="clrMru" type="a:CT_ColorMRU"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Color MRU</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="extLst" type="CT_ExtensionList"
-				minOccurs="0" maxOccurs="1" />
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="presentationPr"
-		type="CT_PresentationProperties">
+	<xsd:element name="presentationPr">
+		<!-- type="CT_PresentationProperties"-->
 		<xsd:annotation>
 			<xsd:documentation>
 				Presentation-wide Properties
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="htmlPubPr"
+					type="CT_HtmlPublishProperties" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							HTML Publishing Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="webPr" type="CT_WebProperties"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Web Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="prnPr" type="CT_PrintProperties"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Printing Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="showPr" type="CT_ShowProperties"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Presentation-wide Show Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="clrMru" type="a:CT_ColorMRU"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>Color MRU</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="extLst" type="CT_ExtensionList"
+					minOccurs="0" maxOccurs="1" />
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>

@@ -11,6 +11,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
@@ -382,7 +383,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		org.docx4j.wml.Drawing drawing = (org.docx4j.wml.Drawing) o;
 		List<Object> list = drawing.getAnchorOrInline();
 		if (list.size() != 1
-			|| !(list.get(0) instanceof org.docx4j.dml.Inline)) {
+			|| !(list.get(0) instanceof Inline)) {
 			//There should not be an Anchor in 'list'
 			//because it is not being supported and 
 			//RunML.initChildren() prevents it from
@@ -391,7 +392,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			throw new IllegalArgumentException("Unsupported Docx Object = " + o);			
 		}
 		
-		org.docx4j.dml.Inline inline = (org.docx4j.dml.Inline) list.get(0);
+		Inline inline = (Inline) list.get(0);
 //		if (inline.getExtent() != null) {
 //			int cx = Long.valueOf(inline.getExtent().getCx()).intValue();
 //			cx = StyleSheet.emuToPixels(cx);

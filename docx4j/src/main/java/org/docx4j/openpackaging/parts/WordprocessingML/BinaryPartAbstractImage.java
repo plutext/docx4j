@@ -44,7 +44,8 @@ import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.apache.xmlgraphics.image.loader.impl.DefaultImageContext;
 import org.apache.xmlgraphics.image.loader.impl.DefaultImageSessionContext;
 import org.docx4j.UnitsOfMeasurement;
-import org.docx4j.dml.Inline;
+import org.docx4j.dml.picture.Pic;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -608,7 +609,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			return null;
 		}
 		
-		org.docx4j.dml.Pic pic = graphic.getGraphicData().getPic();
+		Pic pic = graphic.getGraphicData().getPic();
 		String rId = pic.getBlipFill().getBlip().getEmbed();
 		if (rId.equals("")) {
 			rId = pic.getBlipFill().getBlip().getLink();

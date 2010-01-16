@@ -160,35 +160,7 @@ public class WordprocessingMLPackage extends Package {
 	 */	
 	public static WordprocessingMLPackage load(java.io.File docxFile) throws Docx4JException {
 		
-		if (docxFile.getName().endsWith(".xml")) {
-			
-			org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage;
-			try {
-				Unmarshaller u = Context.jcXmlPackage.createUnmarshaller();
-				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-						new javax.xml.transform.stream.StreamSource(new FileInputStream(docxFile.getAbsolutePath())))).getValue(); 
-
-				xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl);
-			} catch (Exception e) {
-				log.error(e);
-				throw new Docx4JException("Couldn't load xml from " + docxFile.getAbsolutePath(), e);
-			} 
-			return (WordprocessingMLPackage)xmlPackage.get(); 
-		}
-		
-//		LoadFromZipFile loader = new LoadFromZipFile();
-		LoadFromZipNG loader = new LoadFromZipNG();
-//		return (WordprocessingMLPackage)loader.get(docxFile);		
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(docxFile);
-		} catch (FileNotFoundException e) {
-			log.error(e);
-			throw new Docx4JException("Couldn't load docx from " + docxFile.getAbsolutePath(), e);
-		}
-		return (WordprocessingMLPackage)loader.get(fis);
+		return (WordprocessingMLPackage)Package.load(docxFile);
 	}
 
 	/**

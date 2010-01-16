@@ -127,6 +127,42 @@ public class Namespaces {
 	public final static String OLE_OBJECT = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject"; 
 	
+	// Target="ppt/presentation.xml"
+	public final static String PRESENTATIONML_MAIN = 	
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"; 
+		
+	// Target="slides/slide1.xml"
+	public final static String PRESENTATIONML_SLIDE = 
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide";
+		
+	// Target="slideMasters/slideMaster1.xml"
+	public final static String PRESENTATIONML_SLIDE_MASTER = 
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster";
+		
+	// Target="../slideLayouts/slideLayout1.xml"
+	public final static String PRESENTATIONML_SLIDE_LAYOUT = 	
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout";
+		
+	// Target="tableStyles.xml"
+	public final static String PRESENTATIONML_TABLE_STYLES = 
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/tableStyles";
+		
+	// Target="presProps.xml"
+	public final static String PRESENTATIONML_PRES_PROPS = 
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/presProps";
+		
+	// Target="viewProps.xml"
+	public final static String PRESENTATIONML_VIEW_PROPS = 
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/viewProps";
+		
+	// Target="../tags/tag66.xml"
+	public final static String PRESENTATIONML_TAGS = 
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/tags";
+	
+	// Target="docProps/thumbnail.jpeg"
+	public final static String METADATA_THUMBNAIL = 
+	"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"; 
+	
 	
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 

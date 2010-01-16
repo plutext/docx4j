@@ -24,7 +24,7 @@ package org.docx4j.samples;
 import java.io.File;
 import java.io.IOException;
 
-import org.docx4j.dml.Inline;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;

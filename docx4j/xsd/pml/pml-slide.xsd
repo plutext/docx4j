@@ -694,50 +694,51 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Slide">
-		<xsd:sequence minOccurs="1" maxOccurs="1">
-			<xsd:element name="cSld" type="CT_CommonSlideData"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Common slide data for slides
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:group ref="EG_ChildSlide" minOccurs="0" maxOccurs="1" />
-			<xsd:element name="transition" type="CT_SlideTransition"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Transition
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="timing" type="CT_SlideTiming"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Timing Information for a Slide
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="extLst" type="CT_ExtensionListModify"
-				minOccurs="0" maxOccurs="1" />
-		</xsd:sequence>
-		<xsd:attributeGroup ref="AG_ChildSlide" />
-		<xsd:attribute name="show" type="xsd:boolean" use="optional"
-			default="true">
-			<xsd:annotation>
-				<xsd:documentation>
-					Show Slide in Slide Show
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<xsd:element name="sld" type="CT_Slide">
+	<xsd:element name="sld"><!-- type="CT_Slide"  -->
 		<xsd:annotation>
 			<xsd:documentation>Presentation Slide</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="cSld" type="CT_CommonSlideData"
+					minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Common slide data for slides
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:group ref="EG_ChildSlide" minOccurs="0"
+					maxOccurs="1" />
+				<xsd:element name="transition" type="CT_SlideTransition"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Transition
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="timing" type="CT_SlideTiming"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Timing Information for a Slide
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="extLst" type="CT_ExtensionListModify"
+					minOccurs="0" maxOccurs="1" />
+			</xsd:sequence>
+			<xsd:attributeGroup ref="AG_ChildSlide" />
+			<xsd:attribute name="show" type="xsd:boolean" use="optional"
+				default="true">
+				<xsd:annotation>
+					<xsd:documentation>
+						Show Slide in Slide Show
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
 	</xsd:element>
 	<xsd:simpleType name="ST_SlideLayoutType">
 		<xsd:annotation>
@@ -993,76 +994,79 @@
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
-	<xsd:complexType name="CT_SlideLayout">
-		<xsd:sequence minOccurs="1" maxOccurs="1">
-			<xsd:element name="cSld" type="CT_CommonSlideData"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Common slide data for slide layouts
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:group ref="EG_ChildSlide" minOccurs="0" maxOccurs="1" />
-			<xsd:element name="transition" type="CT_SlideTransition"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Transition for a Slide Layout
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="timing" type="CT_SlideTiming"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Timing Information for a Slide Layout
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="hf" type="CT_HeaderFooter" minOccurs="0"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Header/Footer information for a slide layout
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="extLst" type="CT_ExtensionListModify"
-				minOccurs="0" maxOccurs="1" />
-		</xsd:sequence>
-		<xsd:attributeGroup ref="AG_ChildSlide" />
-		<xsd:attribute name="matchingName" type="xsd:string"
-			use="optional" default="">
-			<xsd:annotation>
-				<xsd:documentation>Matching Name</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="type" type="ST_SlideLayoutType"
-			use="optional" default="cust">
-			<xsd:annotation>
-				<xsd:documentation>Slide Layout Type</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="preserve" type="xsd:boolean" use="optional"
-			default="false">
-			<xsd:annotation>
-				<xsd:documentation>
-					Preserve Slide Layout
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="userDrawn" type="xsd:boolean"
-			use="optional" default="false">
-			<xsd:annotation>
-				<xsd:documentation>Is User Drawn</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<xsd:element name="sldLayout" type="CT_SlideLayout">
+	<xsd:element name="sldLayout"><!-- type="CT_SlideLayout"  -->
 		<xsd:annotation>
 			<xsd:documentation>Slide Layout</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="cSld" type="CT_CommonSlideData"
+					minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Common slide data for slide layouts
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:group ref="EG_ChildSlide" minOccurs="0"
+					maxOccurs="1" />
+				<xsd:element name="transition" type="CT_SlideTransition"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Transition for a Slide Layout
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="timing" type="CT_SlideTiming"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Timing Information for a Slide Layout
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="hf" type="CT_HeaderFooter"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Header/Footer information for a slide layout
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="extLst" type="CT_ExtensionListModify"
+					minOccurs="0" maxOccurs="1" />
+			</xsd:sequence>
+			<xsd:attributeGroup ref="AG_ChildSlide" />
+			<xsd:attribute name="matchingName" type="xsd:string"
+				use="optional" default="">
+				<xsd:annotation>
+					<xsd:documentation>Matching Name</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="type" type="ST_SlideLayoutType"
+				use="optional" default="cust">
+				<xsd:annotation>
+					<xsd:documentation>
+						Slide Layout Type
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="preserve" type="xsd:boolean"
+				use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Preserve Slide Layout
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="userDrawn" type="xsd:boolean"
+				use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation>Is User Drawn</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="CT_SlideMasterTextStyles">
 		<xsd:sequence>
@@ -1135,74 +1139,74 @@
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_SlideMaster">
-		<xsd:sequence minOccurs="1" maxOccurs="1">
-			<xsd:element name="cSld" type="CT_CommonSlideData"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Common slide data for slide masters
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:group ref="EG_TopLevelSlide" minOccurs="1"
-				maxOccurs="1" />
-			<xsd:element name="sldLayoutIdLst"
-				type="CT_SlideLayoutIdList" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						List of Slide Layouts
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="transition" type="CT_SlideTransition"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Transition for a Slide Master
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="timing" type="CT_SlideTiming"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Timing Information for Slide Masters
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="hf" type="CT_HeaderFooter" minOccurs="0"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Header/Footer information for a slide master
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="txStyles" type="CT_SlideMasterTextStyles"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Master Text Styles
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="extLst" type="CT_ExtensionListModify"
-				minOccurs="0" maxOccurs="1" />
-		</xsd:sequence>
-		<xsd:attribute name="preserve" type="xsd:boolean" use="optional"
-			default="false">
-			<xsd:annotation>
-				<xsd:documentation>
-					Preserve Slide Master
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<xsd:element name="sldMaster" type="CT_SlideMaster">
+	<xsd:element name="sldMaster"><!-- type="CT_SlideMaster"  -->
 		<xsd:annotation>
 			<xsd:documentation>Slide Master</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="1" maxOccurs="1">
+				<xsd:element name="cSld" type="CT_CommonSlideData"
+					minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Common slide data for slide masters
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:group ref="EG_TopLevelSlide" minOccurs="1"
+					maxOccurs="1" />
+				<xsd:element name="sldLayoutIdLst"
+					type="CT_SlideLayoutIdList" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							List of Slide Layouts
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="transition" type="CT_SlideTransition"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Transition for a Slide Master
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="timing" type="CT_SlideTiming"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Timing Information for Slide Masters
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="hf" type="CT_HeaderFooter"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Header/Footer information for a slide master
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="txStyles"
+					type="CT_SlideMasterTextStyles" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Master Text Styles
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="extLst" type="CT_ExtensionListModify"
+					minOccurs="0" maxOccurs="1" />
+			</xsd:sequence>
+			<xsd:attribute name="preserve" type="xsd:boolean"
+				use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Preserve Slide Master
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
 	</xsd:element>
 	<xsd:complexType name="CT_HandoutMaster">
 		<xsd:sequence>

@@ -70,8 +70,10 @@ import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.*;
+import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.*;
 
 
@@ -321,7 +323,10 @@ public class ContentTypeManager  {
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");
 			return CreateDefaultPartObject(partName );
+		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
+			return JaxbPmlPart.newPartForContentType(contentType, partName);
 		} else {
+			
 			log.error("No subclass found for " + partName + "; defaulting to binary");
 			//throw new PartUnrecognisedException("No subclass found for " + partName + " (content type '" + contentType + "')");		
 			return new BinaryPart( new PartName(partName));
@@ -667,11 +672,17 @@ public class ContentTypeManager  {
 			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
 			return p;
+		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null) {
+			log.info("Detected PresentationMLPackage package ");
+			p = new PresentationMLPackage(this);
+			return p;
+			
 		} else {
-			log.warn("No part in [Content_Types].xml for content type"
-					+ ContentTypes.WORDPROCESSINGML_DOCUMENT);
-			// TODO - what content type in this case?
-			return new Package(this);
+			throw new InvalidFormatException("Unexpected package (docx4j supports docx/docxm and pptx only");
+//			log.warn("No part in [Content_Types].xml for content type"
+//					+ ContentTypes.WORDPROCESSINGML_DOCUMENT);
+//			// TODO - what content type in this case?
+//			return new Package(this);
 		}
 	}
 

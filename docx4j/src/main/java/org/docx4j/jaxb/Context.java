@@ -36,6 +36,7 @@ public class Context {
 	public static JAXBContext jcRelationships;
 	public static JAXBContext jcCustomXmlProperties;
 	public static JAXBContext jcContentTypes;
+	public static JAXBContext jcPML;
 	
 	private static Logger log = Logger.getLogger(Context.class);
 	
@@ -65,7 +66,7 @@ public class Context {
 			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
 			//log.info("\n\nClassloader: " + classLoader.toString() );			
 			
-			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math",classLoader );
+			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math",classLoader );
 			jcThemePart = JAXBContext.newInstance("org.docx4j.dml",classLoader );
 			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader );
 			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader );
@@ -74,6 +75,7 @@ public class Context {
 			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
 			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader );
 			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader );
+			jcPML = JAXBContext.newInstance("org.pptx4j.pml:org.docx4j.dml:org.docx4j.dml.picture",classLoader );
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -735,213 +735,219 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Presentation">
-		<xsd:sequence>
-			<xsd:element name="sldMasterIdLst"
-				type="CT_SlideMasterIdList" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						List of Slide Master IDs
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="notesMasterIdLst"
-				type="CT_NotesMasterIdList" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						List of Notes Master IDs
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="handoutMasterIdLst"
-				type="CT_HandoutMasterIdList" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						List of Handout Master IDs
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="sldIdLst" type="CT_SlideIdList"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						List of Slide IDs
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="sldSz" type="CT_SlideSize" minOccurs="0"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Presentation Slide Size
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="notesSz" type="a:CT_PositiveSize2D"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Notes Slide Size
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="smartTags" type="CT_SmartTags"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Smart Tags</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="embeddedFontLst"
-				type="CT_EmbeddedFontList" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Embedded Font List
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="custShowLst" type="CT_CustomShowList"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						List of Custom Shows
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="photoAlbum" type="CT_PhotoAlbum"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Photo Album Information
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="custDataLst" type="CT_CustomerDataList"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						List of Customer Data Buckets
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="kinsoku" type="CT_Kinsoku"
-				minOccurs="0">
-				<xsd:annotation>
-					<xsd:documentation>
-						Kinsoku Settings
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="defaultTextStyle"
-				type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Presentation Default Text Style
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="modifyVerifier" type="CT_ModifyVerifier"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Modification Verifier
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="extLst" type="CT_ExtensionList"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Extension List
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-		<xsd:attribute name="serverZoom" type="a:ST_Percentage"
-			use="optional" default="50000">
-			<xsd:annotation>
-				<xsd:documentation>Server Zoom</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="firstSlideNum" type="xsd:int"
-			use="optional" default="1">
-			<xsd:annotation>
-				<xsd:documentation>
-					First Slide Number
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="showSpecialPlsOnTitleSld"
-			type="xsd:boolean" use="optional" default="true">
-			<xsd:annotation>
-				<xsd:documentation>
-					Show Header and Footer Placeholders on Titles
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="rtl" type="xsd:boolean" use="optional"
-			default="false">
-			<xsd:annotation>
-				<xsd:documentation>
-					Right-To-Left Views
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="removePersonalInfoOnSave"
-			type="xsd:boolean" use="optional" default="false">
-			<xsd:annotation>
-				<xsd:documentation>
-					Remove Personal Information on Save
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="compatMode" type="xsd:boolean"
-			use="optional" default="false">
-			<xsd:annotation>
-				<xsd:documentation>
-					Compatibility Mode
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="strictFirstAndLastChars" type="xsd:boolean"
-			use="optional" default="true">
-			<xsd:annotation>
-				<xsd:documentation>
-					Strict First and Last Characters
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="embedTrueTypeFonts" type="xsd:boolean"
-			use="optional" default="false">
-			<xsd:annotation>
-				<xsd:documentation>
-					Embed True Type Fonts
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="saveSubsetFonts" type="xsd:boolean"
-			use="optional" default="false">
-			<xsd:annotation>
-				<xsd:documentation>Save Subset Fonts</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="autoCompressPictures" type="xsd:boolean"
-			use="optional" default="true">
-			<xsd:annotation>
-				<xsd:documentation>
-					Automatically Compress Pictures
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="bookmarkIdSeed" type="ST_BookmarkIdSeed"
-			use="optional" default="1">
-			<xsd:annotation>
-				<xsd:documentation>Bookmark ID Seed</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<xsd:element name="presentation" type="CT_Presentation">
+	<xsd:element name="presentation"><!--  type="CT_Presentation"-->
 		<xsd:annotation>
 			<xsd:documentation>Presentation</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="sldMasterIdLst"
+					type="CT_SlideMasterIdList" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							List of Slide Master IDs
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="notesMasterIdLst"
+					type="CT_NotesMasterIdList" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							List of Notes Master IDs
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="handoutMasterIdLst"
+					type="CT_HandoutMasterIdList" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							List of Handout Master IDs
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="sldIdLst" type="CT_SlideIdList"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							List of Slide IDs
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="sldSz" type="CT_SlideSize"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Presentation Slide Size
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="notesSz" type="a:CT_PositiveSize2D"
+					minOccurs="1" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Notes Slide Size
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="smartTags" type="CT_SmartTags"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Smart Tags
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="embeddedFontLst"
+					type="CT_EmbeddedFontList" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Embedded Font List
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="custShowLst" type="CT_CustomShowList"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							List of Custom Shows
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="photoAlbum" type="CT_PhotoAlbum"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Photo Album Information
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="custDataLst"
+					type="CT_CustomerDataList" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							List of Customer Data Buckets
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="kinsoku" type="CT_Kinsoku"
+					minOccurs="0">
+					<xsd:annotation>
+						<xsd:documentation>
+							Kinsoku Settings
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="defaultTextStyle"
+					type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Presentation Default Text Style
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="modifyVerifier"
+					type="CT_ModifyVerifier" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Modification Verifier
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="extLst" type="CT_ExtensionList"
+					minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Extension List
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="serverZoom" type="a:ST_Percentage"
+				use="optional" default="50000">
+				<xsd:annotation>
+					<xsd:documentation>Server Zoom</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="firstSlideNum" type="xsd:int"
+				use="optional" default="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						First Slide Number
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="showSpecialPlsOnTitleSld"
+				type="xsd:boolean" use="optional" default="true">
+				<xsd:annotation>
+					<xsd:documentation>
+						Show Header and Footer Placeholders on Titles
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="rtl" type="xsd:boolean" use="optional"
+				default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Right-To-Left Views
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="removePersonalInfoOnSave"
+				type="xsd:boolean" use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Remove Personal Information on Save
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="compatMode" type="xsd:boolean"
+				use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Compatibility Mode
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="strictFirstAndLastChars"
+				type="xsd:boolean" use="optional" default="true">
+				<xsd:annotation>
+					<xsd:documentation>
+						Strict First and Last Characters
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="embedTrueTypeFonts" type="xsd:boolean"
+				use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Embed True Type Fonts
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="saveSubsetFonts" type="xsd:boolean"
+				use="optional" default="false">
+				<xsd:annotation>
+					<xsd:documentation>
+						Save Subset Fonts
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="autoCompressPictures"
+				type="xsd:boolean" use="optional" default="true">
+				<xsd:annotation>
+					<xsd:documentation>
+						Automatically Compress Pictures
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="bookmarkIdSeed"
+				type="ST_BookmarkIdSeed" use="optional" default="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						Bookmark ID Seed
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>
