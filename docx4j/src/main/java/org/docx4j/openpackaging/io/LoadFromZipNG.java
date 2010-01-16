@@ -88,12 +88,6 @@ public class LoadFromZipNG extends Load {
 	public HashMap unusedZipEntries = new HashMap();
 
 	
-	/**
-	 * This HashMap is intended to prevent loops.
-	 */
-	public HashMap<String, String> handled = new HashMap<String, String>();
-	
-	
 	public LoadFromZipNG() {
 		this(new ContentTypeManager() );
 	}
@@ -233,12 +227,14 @@ public class LoadFromZipNG extends Load {
 		
 		
 		// 6. Check unusedZipEntries is empty
-		 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
-		 while(myVeryOwnIterator.hasNext()) {
-		     String key = (String)myVeryOwnIterator.next();
-		     log.info( key + "  " + unusedZipEntries.get(key));
-		 }
-		 
+		if (log.isDebugEnabled()) {
+			 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
+			 while(myVeryOwnIterator.hasNext()) {
+			     String key = (String)myVeryOwnIterator.next();
+			     log.info( key + "  " + unusedZipEntries.get(key));
+			 }
+		}
+		
 		registerCustomXmlDataStorageParts(p);
 		 
 		 return p;
