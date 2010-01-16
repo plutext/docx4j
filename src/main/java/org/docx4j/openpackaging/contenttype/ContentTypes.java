@@ -105,6 +105,7 @@ public class ContentTypes {
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 	public final static String WORDPROCESSINGML_DOCUMENT_MACROENABLED = "application/vnd.ms-word.document.macroEnabled.main+xml";
 
+	
 	// PartName="/word/comments.xml"
 	public final static String WORDPROCESSINGML_COMMENTS = "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml";
 
@@ -136,7 +137,38 @@ public class ContentTypes {
 	public final static String WORDPROCESSINGML_WEBSETTINGS =
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml";
 
-	
+
+    // /ppt/presentation.xml
+	public final static String PRESENTATIONML_MAIN = 
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";
+
+	// /ppt/slides/slide1.xml"
+	public final static String PRESENTATIONML_SLIDE = 
+		"application/vnd.openxmlformats-officedocument.presentationml.slide+xml";
+
+	// /ppt/slideMasters/slideMaster1.xml
+	public final static String PRESENTATIONML_SLIDE_MASTER = 
+		"application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml";
+
+	// /ppt/slideLayouts/slideLayout11.xml
+	public final static String PRESENTATIONML_SLIDE_LAYOUT = 
+		"application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml";
+
+	// /ppt/tableStyles.xml
+	public final static String PRESENTATIONML_TABLE_STYLES = 
+		"application/vnd.openxmlformats-officedocument.presentationml.tableStyles+xml";
+
+	// /ppt/presProps.xml
+	public final static String PRESENTATIONML_PRES_PROPS = 
+		"application/vnd.openxmlformats-officedocument.presentationml.presProps+xml";
+
+	// /ppt/viewProps.xml
+	public final static String PRESENTATIONML_VIEW_PROPS = 
+		"application/vnd.openxmlformats-officedocument.presentationml.viewProps+xml";
+
+	// /ppt/tags/tag19.xml
+	public final static String PRESENTATIONML_TAGS = 
+		"application/vnd.openxmlformats-officedocument.presentationml.tags+xml";
 	  
 	  
 	/*

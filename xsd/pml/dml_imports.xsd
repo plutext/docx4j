@@ -26,9 +26,9 @@
 	  
 	   -->	
 	   
-<!--   <xsd:annotation>
-    <xsd:documentation xml:lang="en">
-    </xsd:documentation>
+	<xsd:annotation>
+	    <xsd:documentation xml:lang="en">
+	    </xsd:documentation>
 		<xsd:appinfo>
 			<xsd:appinfo>
 				<jaxb:globalBindings>
@@ -39,10 +39,8 @@
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
   </xsd:annotation>
-	  -->  
 
-	<xsd:include schemaLocation="../dml/dml-docproperties.xsd" />
-	<!-- was ../dml/dml-documentProperties.xsd; should use that -->
+	<xsd:include schemaLocation="../dml/dml-documentProperties.xsd" />
 		
 	<xsd:include schemaLocation="../dml/dml-text.xsd" />
 
@@ -50,8 +48,7 @@
 
 	<xsd:include schemaLocation="../dml/dml-audioVideo.xsd" />
 
-	<xsd:include schemaLocation="../dml/dml-graphicalobject.xsd" />
-	<!-- was dml-graphicalObject.xsd; should use that -->
+	<xsd:include schemaLocation="../dml/dml-graphicalObject.xsd" />
 
 	<xsd:include schemaLocation="../dml/dml-graphicalObjectAnimation.xsd" />
 	

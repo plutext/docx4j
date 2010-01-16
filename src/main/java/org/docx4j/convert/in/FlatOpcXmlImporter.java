@@ -50,6 +50,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.io.Load;
 import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -89,11 +90,11 @@ public class FlatOpcXmlImporter  {
 	private static Logger log = Logger.getLogger(FlatOpcXmlImporter.class);
 
 	
-	public FlatOpcXmlImporter(org.docx4j.xmlPackage.Package xmlPackage) {
+	public FlatOpcXmlImporter(org.docx4j.xmlPackage.Package flatOpcXml) {
 				
 		parts = new HashMap<String, org.docx4j.xmlPackage.Part>();
 		
-		for(org.docx4j.xmlPackage.Part p : xmlPackage.getPart() ) {
+		for(org.docx4j.xmlPackage.Part p : flatOpcXml.getPart() ) {
 			
 			parts.put(p.getName(), p);
 			
@@ -106,7 +107,7 @@ public class FlatOpcXmlImporter  {
 	
 	private ContentTypeManager ctm;
 	
-	private Package wmlPackageResult; 
+	private Package packageResult; 
 		
 	public Package get() throws Docx4JException {
 		
@@ -124,9 +125,23 @@ public class FlatOpcXmlImporter  {
 		//  <Override PartName="/word/document.xml"     
 		//			ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
 		
-		
-		wmlPackageResult = new  WordprocessingMLPackage(ctm);
-		
+		// Create the right type of package
+		// TODO:
+		// Get package rels:
+		// <pkg:part pkg:name="/_rels/.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="512">
+		// .. and find rel of Type officeDocument
+		// .. <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+		// and follow that to its target,
+		// and see what content type is set on that.
+		// But the following (well known locations) will do for now.
+		if (parts.get("/word/document.xml")!=null) {
+			packageResult = new  WordprocessingMLPackage(ctm);
+		} else if (parts.get("/ppt/presentation.xml")!=null) {
+			packageResult = new  PresentationMLPackage(ctm);
+		} else {
+			throw new Docx4JException("Unrecognised package");
+		}
+		log.info("Creating " + packageResult.getClass().getName() );
 		
 		// 4. Start with _rels/.rels
 
@@ -138,8 +153,8 @@ public class FlatOpcXmlImporter  {
 		
 		String partName = "/_rels/.rels"; // note leading '/'
 		
-		RelationshipsPart rp = getRelationshipsPartFromXmlPackage(wmlPackageResult, partName);		
-		wmlPackageResult.setRelationships(rp);
+		RelationshipsPart rp = getRelationshipsPartFromXmlPackage(packageResult, partName);		
+		packageResult.setRelationships(rp);
 		//rp.setPackageRelationshipPart(true);		
 		
 		
@@ -151,11 +166,11 @@ public class FlatOpcXmlImporter  {
 //		in the relationships
 //		(ii) add the new Part to the package
 //		(iii) cross the PartName off unusedZipEntries
-		addPartsFromRelationships(wmlPackageResult, rp );
+		addPartsFromRelationships(packageResult, rp );
 		
-		Load.registerCustomXmlDataStorageParts(wmlPackageResult);
+		Load.registerCustomXmlDataStorageParts(packageResult);
 		 
-		 return wmlPackageResult;
+		 return packageResult;
 		
 	}
 	

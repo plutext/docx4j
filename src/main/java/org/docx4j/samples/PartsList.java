@@ -21,9 +21,14 @@
 package org.docx4j.samples;
 
 
+import java.util.HashMap;
+
+import javax.xml.bind.JAXBElement;
+
 import org.apache.log4j.Logger;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
@@ -38,12 +43,13 @@ public class PartsList {
 	public static void main(String[] args) throws Exception {
 		
 
-		String inputfilepath = System.getProperty("user.dir") 
-				+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
+//		String inputfilepath = System.getProperty("user.dir") 
+//				+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx.pptx";
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
+		org.docx4j.openpackaging.packages.Package wordMLPackage = org.docx4j.openpackaging.packages.Package.load(new java.io.File(inputfilepath));		
 		
 		// List the parts by walking the rels tree
 		RelationshipsPart rp = wordMLPackage.getRelationshipsPart();
@@ -55,12 +61,27 @@ public class PartsList {
 	}
 	
 	public static void  printInfo(Part p, StringBuilder sb, String indent) {
-		sb.append("\n" + indent + p.getPartName() + " [" + p.getClass().getName() + "] " );				
+		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " );		
+		if (p instanceof JaxbXmlPart) {
+			Object o = ((JaxbXmlPart)p).getJaxbElement();
+			if (o instanceof javax.xml.bind.JAXBElement) {
+				sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
+			} else {
+				sb.append(" containing JaxbElement:"  + o.getClass().getName() );
+			}
+		}
 	}
 	
-	public static void traverseRelationships(WordprocessingMLPackage wordMLPackage, 
+	/**
+	 * This HashMap is intended to prevent loops.
+	 */
+	public static HashMap<Part, Part> handled = new HashMap<Part, Part>();
+	
+	public static void traverseRelationships(org.docx4j.openpackaging.packages.Package wordMLPackage, 
 			RelationshipsPart rp, 
 			StringBuilder sb, String indent) {
+		
+		// TODO: order by rel id
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
@@ -78,9 +99,15 @@ public class PartsList {
 			
 			Part part = rp.getPart(r);
 			
+			
 			printInfo(part, sb, indent);
+			if (handled.get(part)!=null) {
+				sb.append(" [additional reference] ");
+				continue;
+			}
+			handled.put(part, part);
 			if (part.getRelationshipsPart()==null) {
-				sb.append(".. no rels" );						
+				// sb.append(".. no rels" );						
 			} else {
 				traverseRelationships(wordMLPackage, part.getRelationshipsPart(), sb, indent + "    ");
 			}

@@ -30,6 +30,9 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.dml.picture.Pic;
+import org.docx4j.dml.wordprocessingDrawing.Anchor;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -210,18 +213,18 @@ public class ConvertEmbeddedImageToLinked {
 	
 		System.out.println(" describeDrawing " );
 		
-		if ( d.getAnchorOrInline().get(0) instanceof org.docx4j.dml.Anchor ) {
+		if ( d.getAnchorOrInline().get(0) instanceof Anchor ) {
 			
 			System.out.println(" ENCOUNTERED w:drawing/wp:anchor " );
 			// That's all for now...
 			
-		} else if ( d.getAnchorOrInline().get(0) instanceof org.docx4j.dml.Inline ) {
+		} else if ( d.getAnchorOrInline().get(0) instanceof Inline ) {
 			
 			// Extract w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip/@r:embed
 			
-			org.docx4j.dml.Inline inline = (org.docx4j.dml.Inline )d.getAnchorOrInline().get(0);
+			Inline inline = (Inline )d.getAnchorOrInline().get(0);
 			
-			org.docx4j.dml.Pic pic = inline.getGraphic().getGraphicData().getPic();
+			Pic pic = inline.getGraphic().getGraphicData().getPic();
 						
 			System.out.println( "*** image relationship: " +  pic.getBlipFill().getBlip().getEmbed() );
 			

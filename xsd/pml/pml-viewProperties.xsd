@@ -370,83 +370,85 @@
 				minOccurs="0" maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_ViewProperties">
-		<xsd:sequence minOccurs="0" maxOccurs="1">
-			<xsd:element name="normalViewPr"
-				type="CT_NormalViewProperties" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Normal View Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="slideViewPr"
-				type="CT_SlideViewProperties" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide View Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="outlineViewPr"
-				type="CT_OutlineViewProperties" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Outline View Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="notesTextViewPr"
-				type="CT_NotesTextViewProperties" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Notes Text View Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="sorterViewPr"
-				type="CT_SlideSorterViewProperties" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Sorter View Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="notesViewPr"
-				type="CT_NotesViewProperties" minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Notes View Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="gridSpacing" type="a:CT_PositiveSize2D"
-				minOccurs="0" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Grid Spacing</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="extLst" type="CT_ExtensionList"
-				minOccurs="0" maxOccurs="1" />
-		</xsd:sequence>
-		<xsd:attribute name="lastView" type="ST_ViewType" use="optional"
-			default="sldView">
-			<xsd:annotation>
-				<xsd:documentation>Last View</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="showComments" type="xsd:boolean"
-			use="optional" default="true">
-			<xsd:annotation>
-				<xsd:documentation>Show Comments</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<xsd:element name="viewPr" type="CT_ViewProperties">
+	<xsd:element name="viewPr"><!-- type="CT_ViewProperties"  -->
 		<xsd:annotation>
 			<xsd:documentation>
 				Presentation-wide View Properties
 			</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence minOccurs="0" maxOccurs="1">
+				<xsd:element name="normalViewPr"
+					type="CT_NormalViewProperties" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Normal View Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="slideViewPr"
+					type="CT_SlideViewProperties" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide View Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="outlineViewPr"
+					type="CT_OutlineViewProperties" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Outline View Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="notesTextViewPr"
+					type="CT_NotesTextViewProperties" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Notes Text View Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="sorterViewPr"
+					type="CT_SlideSorterViewProperties" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Slide Sorter View Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="notesViewPr"
+					type="CT_NotesViewProperties" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Notes View Properties
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="gridSpacing"
+					type="a:CT_PositiveSize2D" minOccurs="0" maxOccurs="1">
+					<xsd:annotation>
+						<xsd:documentation>
+							Grid Spacing
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="extLst" type="CT_ExtensionList"
+					minOccurs="0" maxOccurs="1" />
+			</xsd:sequence>
+			<xsd:attribute name="lastView" type="ST_ViewType"
+				use="optional" default="sldView">
+				<xsd:annotation>
+					<xsd:documentation>Last View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+			<xsd:attribute name="showComments" type="xsd:boolean"
+				use="optional" default="true">
+				<xsd:annotation>
+					<xsd:documentation>Show Comments</xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>

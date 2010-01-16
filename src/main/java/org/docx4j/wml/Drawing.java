@@ -31,8 +31,8 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.docx4j.dml.Anchor;
-import org.docx4j.dml.Inline;
+import org.docx4j.dml.wordprocessingDrawing.Anchor;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 

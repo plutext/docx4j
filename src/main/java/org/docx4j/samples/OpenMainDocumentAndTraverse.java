@@ -31,6 +31,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.picture.Pic;
+import org.docx4j.dml.wordprocessingDrawing.Anchor;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -40,6 +43,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
+import org.w3c.dom.Element;
 
 
 public class OpenMainDocumentAndTraverse {
@@ -51,8 +55,8 @@ public class OpenMainDocumentAndTraverse {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/math.docx";
-    	String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fo-200912.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Images.docx";
+//    	String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fo-200912.xml";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
@@ -260,20 +264,22 @@ public class OpenMainDocumentAndTraverse {
 	
 		System.out.println(" describeDrawing " );
 		
-		if ( d.getAnchorOrInline().get(0) instanceof org.docx4j.dml.Anchor ) {
+		if ( d.getAnchorOrInline().get(0) instanceof Anchor ) {
 			
 			System.out.println(" ENCOUNTERED w:drawing/wp:anchor " );
 			// That's all for now...
 			
-		} else if ( d.getAnchorOrInline().get(0) instanceof org.docx4j.dml.Inline ) {
+		} else if ( d.getAnchorOrInline().get(0) instanceof Inline ) {
 			
 			// Extract w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip/@r:embed
 			
-			org.docx4j.dml.Inline inline = (org.docx4j.dml.Inline )d.getAnchorOrInline().get(0);
+			Inline inline = (Inline )d.getAnchorOrInline().get(0);
 			
-			org.docx4j.dml.Pic pic = inline.getGraphic().getGraphicData().getPic();
-						
-			System.out.println( "image relationship: " +  pic.getBlipFill().getBlip().getEmbed() );
+			Pic pic = inline.getGraphic().getGraphicData().getPic();
+				
+			if (pic!=null) {
+				System.out.println( "image relationship: " +  pic.getBlipFill().getBlip().getEmbed() );
+			}
 			
 			
 		} else {

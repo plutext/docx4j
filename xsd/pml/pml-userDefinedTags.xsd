@@ -20,21 +20,21 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_TagList">
-		<xsd:sequence>
-			<xsd:element name="tag" type="CT_StringTag" minOccurs="0"
-				maxOccurs="unbounded">
-				<xsd:annotation>
-					<xsd:documentation>
-						Programmable Extensibility Tag
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:element name="tagLst" type="CT_TagList">
+	<xsd:element name="tagLst"><!--  type="CT_TagList"  -->
 		<xsd:annotation>
 			<xsd:documentation>Programmable Tab List</xsd:documentation>
 		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="tag" type="CT_StringTag"
+					minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>
+							Programmable Extensibility Tag
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
 	</xsd:element>
 </xsd:schema>
