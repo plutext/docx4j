@@ -168,12 +168,13 @@ public class LoadFromZipFile extends Load {
 		
 		
 		// 6. Check unusedZipEntries is empty
-		 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
-		 while(myVeryOwnIterator.hasNext()) {
-		     String key = (String)myVeryOwnIterator.next();
-		     log.info( key + "  " + unusedZipEntries.get(key));
-		 }
-		 
+		if (log.isDebugEnabled()) {		
+			 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
+			 while(myVeryOwnIterator.hasNext()) {
+			     String key = (String)myVeryOwnIterator.next();
+			     log.info( key + "  " + unusedZipEntries.get(key));
+			 }
+		}		 
 		 try {
 			 zf.close();
 		 } catch (IOException exc) {
@@ -339,6 +340,8 @@ public class LoadFromZipFile extends Load {
 			return;
 		}
 		
+		if (handled.get(resolvedPartUri)!=null) return;
+		
 		String relationshipType = r.getType();		
 			
 		Part part = getRawPart(zf, ctm, resolvedPartUri);
@@ -348,6 +351,8 @@ public class LoadFromZipFile extends Load {
 			part.setRelationshipType(relationshipType);
 		}		
 		rp.loadPart(part, r);
+		handled.put(resolvedPartUri, resolvedPartUri);
+		
 
 		// The source Part (or Package) might have a convenience
 		// method for this

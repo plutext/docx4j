@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -60,6 +61,10 @@ public class SaveToZipFile {
 	// The package to save
 	public Package p;
 	
+	/**
+	 * This HashMap is intended to prevent loops.
+	 */
+	private HashMap<String, String> handled = new HashMap<String, String>();
 
 	/* Save a Package as a Zip file in the file system */
 	public boolean save(String filepath) throws Docx4JException  {
@@ -269,8 +274,6 @@ public class SaveToZipFile {
 				
 //				Document contents = getDocumentFromZippedPart( zf,  target);
 				
-				// TODO - if this is already in our hashmap, skip
-				// to the next				
 				if (!false) {
 					log.info("Getting part /" + resolvedPartUri );
 					
@@ -308,6 +311,11 @@ public class SaveToZipFile {
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 		
+		if (handled.get(resolvedPartUri)!=null) {
+			log.debug(".. duplicate save avoided .." );
+			return;
+		}
+				
 		if (part instanceof BinaryPart ) {
 			log.info(".. saving binary stuff" );
 			saveRawBinaryPart( out, part );
@@ -316,6 +324,7 @@ public class SaveToZipFile {
 			log.info(".. saving " );					
 			saveRawXmlPart( out, part );
 		}
+		handled.put(resolvedPartUri, resolvedPartUri);
 		
 		// recurse via this parts relationships, if it has any
 		if (part.getRelationshipsPart()!= null ) {

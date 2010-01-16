@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.net.URI;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.jcr.Node;
@@ -109,7 +110,12 @@ public class SaveToJCR {
 	
 	// The package to save
 	public Package p;
-			
+
+	/**
+	 * This HashMap is intended to prevent loops.
+	 */
+	private HashMap<String, String> handled = new HashMap<String, String>();
+	
 	public Session jcrSession;
 	
 	public static NodeMapper nodeMapper = null;
@@ -569,9 +575,6 @@ public class SaveToJCR {
 //				target = (new java.net.URI(target)).normalize().toString();
 //				log.info("Normalised, it is " + target );
 				
-				
-				// TODO - if this is already in our hashmap, skip
-				// to the next				
 				if (!false) {
 					log.info("Getting part /" + resolvedPartUri );
 					Part part = p.getParts().get(new PartName("/" + resolvedPartUri));
@@ -603,6 +606,12 @@ public class SaveToJCR {
 		
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
+		
+		if (handled.get(resolvedPartUri)!=null) {
+			log.debug(".. duplicate save avoided .." );
+			return;
+		}
+		
 		if (part instanceof BinaryPart) {
 			log.info(".. saving binary stuff" );
 			saveRawBinaryPart( baseNode, part );
@@ -611,6 +620,7 @@ public class SaveToJCR {
 			log.info(".. saving " );
 			saveRawXmlPart( baseNode, part );
 		}
+		handled.put(resolvedPartUri, resolvedPartUri);
 		
 		// recurse via this parts relationships, if it has any
 		if (part.getRelationshipsPart()!= null ) {

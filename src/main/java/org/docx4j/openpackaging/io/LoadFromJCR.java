@@ -485,6 +485,8 @@ public class LoadFromJCR extends Load {
 			return;
 		}
 		
+		if (handled.get(resolvedPartUri)!=null) return;
+		
 		String relationshipType = r.getType();		
 		
 		Part part = getRawPart(jcrSession, nodeMapper, docxNode, ctm, resolvedPartUri);
@@ -494,7 +496,7 @@ public class LoadFromJCR extends Load {
 			part.setRelationshipType(relationshipType);
 		}		
 		rp.loadPart(part, r);
-		
+		handled.put(resolvedPartUri, resolvedPartUri);		
 		
 		// The source Part (or Package) might have a convenience
 		// method for this

@@ -70,6 +70,11 @@ public class Load {
 	}
 	
 	/**
+	 * This HashMap is intended to prevent loops.
+	 */
+	protected HashMap<String, String> handled = new HashMap<String, String>();
+	
+	/**
 	 * TODO.  I'd prefer this not to be static, but it needs to be,
 	 * given that getRawPart is.  Maybe its not such a big deal,
 	 * because its reasonable to assume that most people using docx4j
