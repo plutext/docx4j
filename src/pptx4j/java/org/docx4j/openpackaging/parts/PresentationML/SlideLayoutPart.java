@@ -20,9 +20,16 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import javax.xml.bind.JAXBException;
+
+import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.pptx4j.pml.CTCommonSlideData;
+import org.pptx4j.pml.ObjectFactory;
+import org.pptx4j.pml.Sld;
 import org.pptx4j.pml.SldLayout;
 
 
@@ -48,5 +55,18 @@ public final class SlideLayoutPart extends JaxbPmlPart<SldLayout> {
 		setRelationshipType(Namespaces.PRESENTATIONML_SLIDE_LAYOUT);
 		
 	}
+	
+	public static SldLayout createSldLayout() throws JAXBException {
+
+		ObjectFactory factory = Context.getpmlObjectFactory(); 
+		SldLayout sldLayout = factory.createSldLayout();
+		
+		CTCommonSlideData cSld = (CTCommonSlideData)XmlUtils.unmarshalString(COMMON_SLIDE_DATA, Context.jcPML);
+		cSld.setName("Title Slide");
+		
+		sldLayout.setCSld( cSld );
+		return sldLayout;		
+	}
+	
 
 }

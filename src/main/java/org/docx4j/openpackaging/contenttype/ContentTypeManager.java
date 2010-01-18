@@ -445,7 +445,7 @@ public class ContentTypeManager  {
 	public void addDefaultContentType(String extension, String contentType) {
 		
 		CTDefault defaultCT = ctFactory.createCTDefault();
-		defaultCT.setExtension("extension");
+		defaultCT.setExtension(extension);
 		defaultCT.setContentType(contentType);
 		
 		log.debug("Registered " + extension );

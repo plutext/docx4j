@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.xml.bind.JAXBContext;
@@ -87,6 +88,11 @@ public class FlatOpcXmlCreator implements Output {
 		
 	// The package to save
 	public Package packageIn;
+	
+	/**
+	 * This HashMap is intended to prevent loops.
+	 */
+	private HashMap<String, String> handled = new HashMap<String, String>();
 	
 	private static org.docx4j.xmlPackage.ObjectFactory factory;
 	
@@ -327,6 +333,11 @@ public class FlatOpcXmlCreator implements Output {
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 		
+		if (handled.get(resolvedPartUri)!=null) {
+			log.debug(".. duplicate save avoided .." );
+			return;
+		}
+		
 		if (part instanceof BinaryPart ) {
 			log.info(".. saving binary stuff" );
 			saveRawBinaryPart( part );
@@ -335,6 +346,7 @@ public class FlatOpcXmlCreator implements Output {
 			log.info(".. saving " );					
 			saveRawXmlPart( part );
 		}
+		handled.put(resolvedPartUri, resolvedPartUri);		
 		
 		// recurse via this parts relationships, if it has any
 		if (part.getRelationshipsPart()!= null ) {

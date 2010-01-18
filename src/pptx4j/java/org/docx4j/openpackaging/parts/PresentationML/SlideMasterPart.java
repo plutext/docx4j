@@ -20,9 +20,22 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.util.Random;
+
+import javax.xml.bind.JAXBException;
+
+import org.docx4j.XmlUtils;
+import org.docx4j.dml.CTColorMapping;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.relationships.Relationship;
+import org.pptx4j.pml.CTCommonSlideData;
+import org.pptx4j.pml.CTSlideLayoutIdList;
+import org.pptx4j.pml.CTSlideLayoutIdListEntry;
+import org.pptx4j.pml.ObjectFactory;
+import org.pptx4j.pml.Sld;
 import org.pptx4j.pml.SldMaster;
 
 
@@ -48,5 +61,39 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		setRelationshipType(Namespaces.PRESENTATIONML_SLIDE_MASTER);
 		
 	}
+	
+	
+	
+	public static SldMaster createSldMaster() throws JAXBException {
+
+		ObjectFactory factory = Context.getpmlObjectFactory(); 
+		SldMaster sldMaster = factory.createSldMaster();
+		sldMaster.setCSld( 
+				(CTCommonSlideData)XmlUtils.unmarshalString(COMMON_SLIDE_DATA, Context.jcPML) );
+		sldMaster.setClrMap(
+				(CTColorMapping)XmlUtils.unmarshalString(COLOR_MAPPING, Context.jcPML, CTColorMapping.class ) );
+		
+		CTSlideLayoutIdList slideLayoutIdList = factory.createCTSlideLayoutIdList();
+		sldMaster.setSldLayoutIdLst(slideLayoutIdList);
+		
+		return sldMaster;		
+	}
+		
+	public CTSlideLayoutIdListEntry addSlideLayoutIdListEntry(SlideLayoutPart slideLayoutPart) 
+		throws InvalidFormatException {
+		
+		Relationship rel = this.addTargetPart(slideLayoutPart);
+		
+		CTSlideLayoutIdListEntry entry = Context.getpmlObjectFactory().createCTSlideLayoutIdListEntry();
+		
+		entry.setId( new Long(this.getSlideLayoutOrMasterId()) );
+		entry.setRid(rel.getId());
+		
+		this.jaxbElement.getSldLayoutIdLst().getSldLayoutId().add(entry);
+		
+		return entry;
+	}
+	
+	
 
 }

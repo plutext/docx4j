@@ -91,6 +91,10 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals(Namespaces.PKG_XML)) {
     		return "pkg";
     	}
+
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/presentationml/2006/main")) {
+    		return "p";
+    	}
     	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/custom-properties")) {
     		return "prop";

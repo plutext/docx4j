@@ -21,16 +21,34 @@
 package org.docx4j.openpackaging.packages;
 
 
+import java.io.IOException;
+
+import javax.xml.bind.JAXBException;
+
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
+import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
+import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
+import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
+import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.SectPr;
+import org.pptx4j.pml.CTCommonSlideData;
+import org.pptx4j.pml.CTShape;
 
 
 
@@ -97,16 +115,117 @@ public class PresentationMLPackage  extends Package {
 		}
 	}
 	
+
+	
+	/**
+	 * Create an empty presentation.
+	 * 
+	 * @return
+	 * @throws InvalidFormatException
+	 */
+	public static PresentationMLPackage createPackage() throws InvalidFormatException {
+		
+		
+		// Create a package
+		PresentationMLPackage pmlPack = new PresentationMLPackage();
+
+		// Presentation part
+		MainPresentationPart pp;
+		try {
+			
+			pp = new MainPresentationPart();
+			pp.setJaxbElement(MainPresentationPart.createJaxbPresentationElement() );
+			pmlPack.addTargetPart(pp);		
+			
+			// Slide part
+			SlidePart slidePart = new SlidePart();
+			pp.addSlideIdListEntry(slidePart);
+
+			slidePart.setJaxbElement( SlidePart.createSld() );
+			
+			// Slide layout part
+			SlideLayoutPart layoutPart = new SlideLayoutPart(); 
+			layoutPart.setJaxbElement( SlideLayoutPart.createSldLayout() );
+			
+			slidePart.addTargetPart(layoutPart);
+			
+			// Slide Master part
+			SlideMasterPart masterPart = new SlideMasterPart();
+			pp.addSlideMasterIdListEntry(masterPart);
+
+			masterPart.setJaxbElement(masterPart.createSldMaster() );
+			masterPart.addSlideLayoutIdListEntry(layoutPart);
+			
+			layoutPart.addTargetPart(masterPart);
+			
+			// Theme part
+			ThemePart themePart = new ThemePart(new PartName("/ppt/theme/theme1.xml"));
+			java.io.InputStream is = org.docx4j.utils.ResourceUtils.getResource(
+						"org/docx4j/openpackaging/parts/PresentationML/theme.xml");
+			themePart.unmarshal(is);
+			
+			// .. add it in 2 places ..
+			masterPart.addTargetPart(themePart);
+			pp.addTargetPart(themePart);
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new InvalidFormatException("Couldn't create package", e);
+		}
+		
+		
+
+		// Return the new package
+		return pmlPack;
+		
+	}
+	
+	private static String SAMPLE_SHAPE = 			
+		"<p:sp   xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\">"
+		+ "<p:nvSpPr>"
+		+ "<p:cNvPr id=\"4\" name=\"Title 3\" />"
+		+ "<p:cNvSpPr>"
+			+ "<a:spLocks noGrp=\"1\" />"
+		+ "</p:cNvSpPr>"
+		+ "<p:nvPr>"
+			+ "<p:ph type=\"title\" />"
+		+ "</p:nvPr>"
+	+ "</p:nvSpPr>"
+	+ "<p:spPr />"
+	+ "<p:txBody>"
+		+ "<a:bodyPr />"
+		+ "<a:lstStyle />"
+		+ "<a:p>"
+			+ "<a:r>"
+				+ "<a:rPr lang=\"en-US\" smtClean=\"0\" />"
+				+ "<a:t>Hello World</a:t>"
+			+ "</a:r>"
+			+ "<a:endParaRPr lang=\"en-US\" />"
+		+ "</a:p>"
+	+ "</p:txBody>"
++ "</p:sp>";
+
 	
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx.pptx";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-basic-features.pptx";
+//		
+//		PresentationMLPackage presentationMLPackage = 
+//			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
+//		
+//		System.out.println("\n\n saving .. \n\n");
 		
-		PresentationMLPackage presentationMLPackage = 
-			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
+		PresentationMLPackage presentationMLPackage = PresentationMLPackage.createPackage(); 
 		
-		System.out.println("\n\n saving .. \n\n");
-		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-out.pptx";
+		// Get the first slide
+		// TODO - add convenience methods
+		SlidePart slidePart = (SlidePart)presentationMLPackage.getParts().getParts().get(new PartName("/ppt/slides/slide1.xml"));
+		
+		CTShape sample = ((CTShape)XmlUtils.unmarshalString(SAMPLE_SHAPE, Context.jcPML) );
+		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(sample);
+		
+		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-test.pptx";
 		presentationMLPackage.save(new java.io.File(outputfilepath));
 
 		System.out.println("\n\n done .. \n\n");

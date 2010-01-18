@@ -93,6 +93,15 @@ public class Context {
 		
 	}
 	
+	public static org.pptx4j.pml.ObjectFactory pmlObjectFactory;
+	public static org.pptx4j.pml.ObjectFactory getpmlObjectFactory() {
+		
+		if (pmlObjectFactory==null) {
+			pmlObjectFactory = new org.pptx4j.pml.ObjectFactory();
+		}
+		return pmlObjectFactory;
+		
+	}
 	
 		
 }

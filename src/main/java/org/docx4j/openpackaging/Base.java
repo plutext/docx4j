@@ -168,7 +168,7 @@ public abstract class Base {
 	public Relationship addTargetPart(Part targetpart) throws InvalidFormatException {
 		
 		if ( this.getPackage()==null ) {						
-			throw new InvalidFormatException("Package not set");
+			throw new InvalidFormatException("Package not set; if you are adding part2 to part1, make sure part1 is added first.");
 		}
 		if ( this instanceof RelationshipsPart ) {			
 			throw new InvalidFormatException("You should add your part to the target part, not the target part's relationships part.");
