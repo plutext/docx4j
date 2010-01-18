@@ -44,10 +44,6 @@
                             <a:latin typeface="Calibri"/>
                             <a:ea typeface=""/>
                             <a:cs typeface=""/>
-                            <a:font script="Jpan" typeface="?? ?????"/>
-                            <a:font script="Hang" typeface="?? ??"/>
-                            <a:font script="Hans" typeface="??"/>
-                            <a:font script="Hant" typeface="????"/>
                             <a:font script="Arab" typeface="Times New Roman"/>
                             <a:font script="Hebr" typeface="Times New Roman"/>
                             <a:font script="Thai" typeface="Angsana New"/>
@@ -78,10 +74,6 @@
                             <a:latin typeface="Calibri"/>
                             <a:ea typeface=""/>
                             <a:cs typeface=""/>
-                            <a:font script="Jpan" typeface="?? ?????"/>
-                            <a:font script="Hang" typeface="?? ??"/>
-                            <a:font script="Hans" typeface="??"/>
-                            <a:font script="Hant" typeface="????"/>
                             <a:font script="Arab" typeface="Arial"/>
                             <a:font script="Hebr" typeface="Arial"/>
                             <a:font script="Thai" typeface="Cordia New"/>
