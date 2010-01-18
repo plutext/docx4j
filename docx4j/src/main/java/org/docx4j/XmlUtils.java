@@ -181,6 +181,19 @@ public class XmlUtils {
 	public static Object unmarshalString(String str) throws JAXBException {		
 		return unmarshalString(str, Context.jc);
 	}
+	
+	public static Object unmarshalString(String str, JAXBContext jc, Class declaredType) throws JAXBException {		
+		Unmarshaller u = jc.createUnmarshaller();						
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+		Object o = u.unmarshal( new javax.xml.transform.stream.StreamSource(new java.io.StringReader(str)),
+				declaredType);
+		if (o instanceof JAXBElement) {
+			return ((JAXBElement)o).getValue();
+		} else {
+			return o;
+		}
+	}
+	
 
 	public static Object unmarshalString(String str, JAXBContext jc) throws JAXBException {
 		log.debug("Unmarshalling '" + str + "'");			

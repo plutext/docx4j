@@ -54,6 +54,7 @@ import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
@@ -106,6 +107,11 @@ public class FlatOpcXmlImporter  {
 	
 	
 	private ContentTypeManager ctm;
+
+	/**
+	 * This HashMap is intended to prevent loops.
+	 */
+	protected HashMap<String, String> handled = new HashMap<String, String>();
 	
 	private Package packageResult; 
 		
@@ -301,10 +307,14 @@ public class FlatOpcXmlImporter  {
 			return;
 		}
 		
+		if (handled.get(resolvedPartUri)!=null) return;
+		
 		String relationshipType = r.getType();		
 			
 		Part part = getRawPart(ctm, resolvedPartUri);
 		rp.loadPart(part, r);
+		handled.put(resolvedPartUri, resolvedPartUri);
+		
 
 		// The source Part (or Package) might have a convenience
 		// method for this
@@ -423,6 +433,13 @@ public class FlatOpcXmlImporter  {
 
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );					
+					
+				} else if (part instanceof JaxbPmlPart) {
+
+					// Presentation type part
+					
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcPML);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
