@@ -27,7 +27,7 @@ import org.docx4j.openpackaging.contenttype.CTDefault;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ObjectFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -39,7 +39,7 @@ public abstract class Base {
 
 	protected static Logger log = Logger.getLogger(Base.class);
 
-	public abstract Package getPackage(); 	
+	public abstract OpcPackage getPackage(); 	
 
 	
 	/**

@@ -163,7 +163,20 @@ public class Namespaces {
 	public final static String METADATA_THUMBNAIL = 
 	"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail"; 
 	
+	// "../notesSlides/notesSlide1.xml"/>
+	public final static String PRESENTATIONML_NOTES_SLIDE =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide"; 
+    		
+    // "notesMasters/notesMaster1.xml"/>
+	public final static String PRESENTATIONML_NOTES_MASTER =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster"; 
+    
+    // handoutMasters/handoutMaster1.xml"/>
+	public final static String PRESENTATIONML_HANDOUT_MASTER =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/handoutMaster"; 
 	
+
+            
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 
 //	public final static String NS_OFFICE_12 = "http://schemas.microsoft.com/office/2004/7/core";

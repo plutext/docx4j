@@ -76,7 +76,7 @@ import org.docx4j.wml.Styles;
  * @author jharrop
  *
  */
-public class WordprocessingMLPackage extends Package {
+public class WordprocessingMLPackage extends OpcPackage {
 	
 	// What is a Word document these days?
 	//
@@ -160,7 +160,7 @@ public class WordprocessingMLPackage extends Package {
 	 */	
 	public static WordprocessingMLPackage load(java.io.File docxFile) throws Docx4JException {
 		
-		return (WordprocessingMLPackage)Package.load(docxFile);
+		return (WordprocessingMLPackage)OpcPackage.load(docxFile);
 	}
 
 	/**

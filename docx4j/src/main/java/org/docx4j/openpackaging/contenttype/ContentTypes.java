@@ -170,6 +170,20 @@ public class ContentTypes {
 	public final static String PRESENTATIONML_TAGS = 
 		"application/vnd.openxmlformats-officedocument.presentationml.tags+xml";
 	  
+	// "/ppt/notesSlides/notesSlide1.xml"
+	// p:notes
+	public final static String PRESENTATIONML_NOTES_SLIDE =
+		"application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml"; 
+    		
+    // "/ppt/notesMasters/notesMaster1.xml"
+	// p:notesMaster
+	public final static String PRESENTATIONML_NOTES_MASTER =
+		"application/vnd.openxmlformats-officedocument.presentationml.notesMaster+xml"; 
+    
+    // /ppt/handoutMasters/handoutMaster1.xml"
+	// p:handoutMaster
+	public final static String PRESENTATIONML_HANDOUT_MASTER =
+		"application/vnd.openxmlformats-officedocument.presentationml.handoutMaster+xml"; 
 	  
 	/*
 	 * Open Packaging Convention (Annex F : Standard Namespaces and Content

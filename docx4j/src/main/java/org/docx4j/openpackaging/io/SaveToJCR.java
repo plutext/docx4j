@@ -51,7 +51,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -98,7 +98,7 @@ public class SaveToJCR {
 	private static Logger log = Logger.getLogger(SaveToJCR.class);		
 
 	
-	public SaveToJCR(Package p, NodeMapper nodeMapper, Session jcrSession) {
+	public SaveToJCR(OpcPackage p, NodeMapper nodeMapper, Session jcrSession) {
 		
 		this.p = p;
 		this.jcrSession = jcrSession;
@@ -109,7 +109,7 @@ public class SaveToJCR {
 	public static final String CM_NAMESPACE = "cm:";
 	
 	// The package to save
-	public Package p;
+	public OpcPackage p;
 
 	/**
 	 * This HashMap is intended to prevent loops.

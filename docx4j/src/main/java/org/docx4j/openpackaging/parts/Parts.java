@@ -52,7 +52,7 @@ package org.docx4j.openpackaging.parts;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 
 /**
  * A collection of all the parts in the package

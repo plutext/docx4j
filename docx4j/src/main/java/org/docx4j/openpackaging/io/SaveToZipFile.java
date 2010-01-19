@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -52,14 +52,14 @@ public class SaveToZipFile {
 	
 	private static Logger log = Logger.getLogger(SaveToZipFile.class);				
 	
-	public SaveToZipFile(Package p) {
+	public SaveToZipFile(OpcPackage p) {
 		
 		this.p = p;
 		
 	}
 		
 	// The package to save
-	public Package p;
+	public OpcPackage p;
 	
 	/**
 	 * This HashMap is intended to prevent loops.

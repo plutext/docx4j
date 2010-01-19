@@ -103,6 +103,12 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 			return new ViewPropertiesPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_TAGS)) {
 			return new TagsPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_HANDOUT_MASTER)) {
+			return new HandoutMasterPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_NOTES_MASTER)) {
+			return new NotesMasterPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.PRESENTATIONML_NOTES_SLIDE)) {
+			return new NotesSlidePart(new PartName(partName));
 		} else {
 			throw new PartUnrecognisedException("No subclass found for " 
 					+ partName + " (content type '" + contentType + "')");					

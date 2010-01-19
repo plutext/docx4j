@@ -26,7 +26,7 @@ import java.net.URI;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
@@ -55,7 +55,7 @@ public abstract class Part extends Base {
 	protected static Logger log = Logger.getLogger(Part.class);
 
 	
-	protected Package pack;
+	protected OpcPackage pack;
 	
 	private Relationship sourceRelationship;
 	/**
@@ -153,7 +153,7 @@ public abstract class Part extends Base {
 	}
 		
 	
-	public Package getPackage() {
+	public OpcPackage getPackage() {
 		if (pack==null) {
 			log.error("Package field null for this Part " + this.getClass().getName() );
 		}
@@ -163,7 +163,7 @@ public abstract class Part extends Base {
 	// TODO - this is not always set ...
 	// think through whether, and if so 
 	// where and how it should be set
-	public void setPackage( Package pack) {
+	public void setPackage( OpcPackage pack) {
 		log.debug("setPackage called for " + this.getClass().getName() );
 		this.pack = pack;
 	}

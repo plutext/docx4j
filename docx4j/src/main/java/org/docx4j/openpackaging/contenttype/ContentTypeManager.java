@@ -69,7 +69,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.*;
@@ -647,7 +647,7 @@ public class ContentTypeManager  {
 	/* Return a package of the appropriate type.  Used when loading an existing
 	 * Package, with an already populated [Content_Types].xml.  When 
 	 * creating a new Package, start with the new WordprocessingMLPackage constructor. */
-	public Package createPackage() throws InvalidFormatException {
+	public OpcPackage createPackage() throws InvalidFormatException {
 		
 		/*
 		 * How do we know what type of Package this is?
@@ -665,7 +665,7 @@ public class ContentTypeManager  {
 		 * 
 		 */
 // debugPrint(ctmDocument);
-		Package p;
+		OpcPackage p;
 		
 		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
 				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null) {

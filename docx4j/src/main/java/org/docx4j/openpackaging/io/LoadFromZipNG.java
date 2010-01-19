@@ -48,7 +48,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -97,7 +97,7 @@ public class LoadFromZipNG extends Load {
 	}
 	
 	
-	public Package get(String filepath) throws Docx4JException {
+	public OpcPackage get(String filepath) throws Docx4JException {
 		return get(new File(filepath));
 	}
 	
@@ -119,7 +119,7 @@ public class LoadFromZipNG extends Load {
 		return baos.toByteArray();
 	} 			
 	
-	public Package get(File f) throws Docx4JException {
+	public OpcPackage get(File f) throws Docx4JException {
 		log.info("Filepath = " + f.getPath() );
 		
 		ZipFile zf = null;
@@ -156,7 +156,7 @@ public class LoadFromZipNG extends Load {
 		return process();
 	}
 
-	public Package get(InputStream is) throws Docx4JException {
+	public OpcPackage get(InputStream is) throws Docx4JException {
 
        try {
             ZipInputStream zis = new ZipInputStream(is);
@@ -179,7 +179,7 @@ public class LoadFromZipNG extends Load {
 		return process();
 	}
 	
-	private Package process() throws Docx4JException {
+	private OpcPackage process() throws Docx4JException {
 
 		// 2. Create a new Package
 		//		Eventually, you'll also be able to create an Excel package etc
@@ -192,7 +192,7 @@ public class LoadFromZipNG extends Load {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
 		}
 				
-		Package p = ctm.createPackage();
+		OpcPackage p = ctm.createPackage();
 		
 		// 3. Get [Content_Types].xml
 //		Once we've got this, then we can look up the content type for
@@ -307,7 +307,7 @@ public class LoadFromZipNG extends Load {
 			Base source, RelationshipsPart rp)
 		throws Docx4JException {
 		
-		Package pkg = source.getPackage();				
+		OpcPackage pkg = source.getPackage();				
 		
 //		for (Iterator it = rp.iterator(); it.hasNext(); ) {
 //			Relationship r = (Relationship)it.next();
@@ -355,7 +355,7 @@ public class LoadFromZipNG extends Load {
 	 * @throws InvalidFormatException
 	 */
 	//private void getPart(ZipFile zf, Package pkg, RelationshipsPart rp, Relationship r)
-	private void getPart(HashMap<String, ByteArray> partByteArrays, Package pkg, RelationshipsPart rp, Relationship r)
+	private void getPart(HashMap<String, ByteArray> partByteArrays, OpcPackage pkg, RelationshipsPart rp, Relationship r)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;
