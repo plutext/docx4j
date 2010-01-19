@@ -152,7 +152,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	public static void applyBindings(DocumentPart documentPart) throws Docx4JException {
 		
 		// Get the package from documentPart
-		org.docx4j.openpackaging.packages.Package pkg 
+		org.docx4j.openpackaging.packages.OpcPackage pkg 
 			= documentPart.getPackage();		
 			// Binding is a concept which applies more broadly
 			// than just Word documents.

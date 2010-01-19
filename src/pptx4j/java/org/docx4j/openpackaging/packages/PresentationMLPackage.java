@@ -21,14 +21,7 @@
 package org.docx4j.openpackaging.packages;
 
 
-import java.io.IOException;
-
-import javax.xml.bind.JAXBException;
-
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
-import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -44,11 +37,7 @@ import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.wml.SectPr;
-import org.pptx4j.pml.CTCommonSlideData;
-import org.pptx4j.pml.CTShape;
 
 
 
@@ -56,7 +45,7 @@ import org.pptx4j.pml.CTShape;
  * @author jharrop
  *
  */
-public class PresentationMLPackage  extends Package {
+public class PresentationMLPackage  extends OpcPackage {
 	
 	protected static Logger log = Logger.getLogger(PresentationMLPackage.class);
 		
@@ -90,7 +79,7 @@ public class PresentationMLPackage  extends Package {
 	 */	
 	public static PresentationMLPackage load(java.io.File docxFile) throws Docx4JException {
 		
-		return (PresentationMLPackage)Package.load(docxFile);
+		return (PresentationMLPackage)OpcPackage.load(docxFile);
 	}
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
@@ -209,24 +198,13 @@ public class PresentationMLPackage  extends Package {
 	
 	public static void main(String[] args) throws Exception {
 
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-basic-features.pptx";
-//		
-//		PresentationMLPackage presentationMLPackage = 
-//			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
-//		
-//		System.out.println("\n\n saving .. \n\n");
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-otherparts.xml";
 		
-		PresentationMLPackage presentationMLPackage = PresentationMLPackage.createPackage(); 
+		PresentationMLPackage presentationMLPackage = 
+			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
 		
-		// Get the first slide
-		// TODO - add convenience methods
-		SlidePart slidePart = (SlidePart)presentationMLPackage.getParts().getParts().get(new PartName("/ppt/slides/slide1.xml"));
+		System.out.println("\n\n saving .. \n\n");
 		
-		CTShape sample = ((CTShape)XmlUtils.unmarshalString(SAMPLE_SHAPE, Context.jcPML) );
-		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(sample);
-		
-		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-test.pptx";
-		presentationMLPackage.save(new java.io.File(outputfilepath));
 
 		System.out.println("\n\n done .. \n\n");
 		

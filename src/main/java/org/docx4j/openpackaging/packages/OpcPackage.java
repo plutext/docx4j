@@ -57,9 +57,9 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
  * 
  * @author Jason Harrop
  */
-public class Package extends Base {
+public class OpcPackage extends Base {
 
-	private static Logger log = Logger.getLogger(Package.class);
+	private static Logger log = Logger.getLogger(OpcPackage.class);
 
 	/**
 	 * Package parts collection.  This is a collection of _all_
@@ -107,7 +107,7 @@ public class Package extends Base {
 	 * Constructor.  Also creates a new content type manager
 	 * 
 	 */
-	public Package() {
+	public OpcPackage() {
 		try {
 			partName = new PartName("/", false);
 			
@@ -124,7 +124,7 @@ public class Package extends Base {
 	 * @param contentTypeManager
 	 *            The content type manager to use 
 	 */
-	public Package(ContentTypeManager contentTypeManager) {
+	public OpcPackage(ContentTypeManager contentTypeManager) {
 		try {
 			partName = new PartName("/", false);
 			
@@ -135,7 +135,7 @@ public class Package extends Base {
 		}
 	}
 	
-	public Package getPackage() {
+	public OpcPackage getPackage() {
 		return this;
 	}
 		
@@ -155,7 +155,7 @@ public class Package extends Base {
 	 * @param docxFile
 	 *            The docx file 
 	 */	
-	public static Package load(java.io.File docxFile) throws Docx4JException {
+	public static OpcPackage load(java.io.File docxFile) throws Docx4JException {
 		
 		if (docxFile.getName().endsWith(".xml")) {
 			

@@ -41,7 +41,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -108,7 +108,7 @@ public class LoadFromJCR extends Load {
 	}
 
 	
-	public Package get(Session jcrSession, String nodePath) throws Docx4JException {
+	public OpcPackage get(Session jcrSession, String nodePath) throws Docx4JException {
         try {
             Node root = jcrSession.getRootNode();
             Node docxNode = root.getNode(nodePath);
@@ -119,9 +119,9 @@ public class LoadFromJCR extends Load {
 	    }
 	}
 	
-	public Package get(Session jcrSession, Node docxNode ) throws Docx4JException  {
+	public OpcPackage get(Session jcrSession, Node docxNode ) throws Docx4JException  {
 		
-		Package p = null;
+		OpcPackage p = null;
 		
 		// 1. The idea is to walk the tree of relationships, getting
 //		everything we need from JCR. 
@@ -414,7 +414,7 @@ public class LoadFromJCR extends Load {
 	public void addPartsFromRelationships(Session jcrSession, 
 			Node docxNode, Base source, RelationshipsPart rp) throws Docx4JException {
 		
-		Package pkg = source.getPackage();		
+		OpcPackage pkg = source.getPackage();		
 				
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
@@ -446,7 +446,7 @@ public class LoadFromJCR extends Load {
 	 * @throws InvalidFormatException
 	 */
 	public void getPart(Session jcrSession, Node docxNode, 
-			Package pkg, RelationshipsPart rp, Relationship r)	
+			OpcPackage pkg, RelationshipsPart rp, Relationship r)	
 			throws Docx4JException, RepositoryException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;

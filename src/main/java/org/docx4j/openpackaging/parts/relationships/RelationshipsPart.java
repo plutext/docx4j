@@ -67,7 +67,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.contenttype.ObjectFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -211,7 +211,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * if its source is the Package. 
 	 */	 
 	public boolean isPackageRelationshipPart() {
-		return (sourceP instanceof Package);
+		return (sourceP instanceof OpcPackage);
 	}
 
 

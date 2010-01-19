@@ -28,7 +28,7 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.VFS;
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 
 
 /**
@@ -45,7 +45,7 @@ public class SaveToVFSZipFile {
 	
 	private SaveToZipFile _saveToZipFile;
 	
-	public SaveToVFSZipFile(Package p) {
+	public SaveToVFSZipFile(OpcPackage p) {
 		_saveToZipFile = new SaveToZipFile(p);
 	}
 		

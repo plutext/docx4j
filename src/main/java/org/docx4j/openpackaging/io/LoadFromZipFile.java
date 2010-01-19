@@ -42,7 +42,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -89,11 +89,11 @@ public class LoadFromZipFile extends Load {
 	}
 	
 	
-	public Package get(String filepath) throws Docx4JException {
+	public OpcPackage get(String filepath) throws Docx4JException {
 		return get(new File(filepath));
 	}
 	
-	public Package get(File f) throws Docx4JException {
+	public OpcPackage get(File f) throws Docx4JException {
 		log.info("Filepath = " + f.getPath() );
 		
 		ZipFile zf = null;
@@ -133,7 +133,7 @@ public class LoadFromZipFile extends Load {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
 		}
 		
-		Package p = ctm.createPackage();
+		OpcPackage p = ctm.createPackage();
 		
 		// 3. Get [Content_Types].xml
 //		Once we've got this, then we can look up the content type for
@@ -249,7 +249,7 @@ public class LoadFromZipFile extends Load {
 	private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp)
 		throws Docx4JException {
 		
-		Package pkg = source.getPackage();				
+		OpcPackage pkg = source.getPackage();				
 		
 //		for (Iterator it = rp.iterator(); it.hasNext(); ) {
 //			Relationship r = (Relationship)it.next();
@@ -298,7 +298,7 @@ public class LoadFromZipFile extends Load {
 	 */
 //	private void getPart(ZipFile zf, Base source, 
 //			Package pkg, String resolvedPartUri, String relationshipType)
-	private void getPart(ZipFile zf, Package pkg, RelationshipsPart rp, Relationship r)
+	private void getPart(ZipFile zf, OpcPackage pkg, RelationshipsPart rp, Relationship r)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;

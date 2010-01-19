@@ -39,7 +39,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
@@ -251,7 +251,7 @@ public class Load {
 	 * 
 	 * @param p
 	 */
-	public static void registerCustomXmlDataStorageParts(Package pkg) {
+	public static void registerCustomXmlDataStorageParts(OpcPackage pkg) {
 		
 		HashMap<PartName, Part> parts = pkg.getParts().getParts();
 		

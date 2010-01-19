@@ -40,7 +40,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -79,7 +79,7 @@ public class FlatOpcXmlCreator implements Output {
 	
 	private static Logger log = Logger.getLogger(FlatOpcXmlCreator.class);				
 	
-	public FlatOpcXmlCreator(Package p) {
+	public FlatOpcXmlCreator(OpcPackage p) {
 		
 		this.packageIn = p;
 		
@@ -87,7 +87,7 @@ public class FlatOpcXmlCreator implements Output {
 	}
 		
 	// The package to save
-	public Package packageIn;
+	public OpcPackage packageIn;
 	
 	/**
 	 * This HashMap is intended to prevent loops.

@@ -33,7 +33,7 @@ import org.apache.commons.vfs.provider.local.LocalFile;
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.Package;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.utils.VFSUtils;
 
 
@@ -73,8 +73,8 @@ public class LoadFromVFSZipFile extends Load {
 		_loadFromZipFile.loadExternalTargets(loadExternalTargets);
 	}
 	
-	public Package get(String filepath) throws Docx4JException {
-		Package thePackage = null;
+	public OpcPackage get(String filepath) throws Docx4JException {
+		OpcPackage thePackage = null;
 		try {
 			FileObject fo = VFS.getManager().resolveFile(filepath);
 			thePackage = getPackageFromFileObject(fo);
@@ -85,8 +85,8 @@ public class LoadFromVFSZipFile extends Load {
 		return thePackage;
 	}
 	
-	public Package getPackageFromFileObject(FileObject fo) throws Docx4JException {
-		Package thePackage = null;
+	public OpcPackage getPackageFromFileObject(FileObject fo) throws Docx4JException {
+		OpcPackage thePackage = null;
 		
 		if (!(fo instanceof LocalFile)) {
 			//Non-Local file such as webdav file.
@@ -133,8 +133,8 @@ public class LoadFromVFSZipFile extends Load {
 		return thePackage;
 	}
 	
-	public Package getPackageFromLocalFile(LocalFile fo) throws Docx4JException {
-		Package thePackage = null;
+	public OpcPackage getPackageFromLocalFile(LocalFile fo) throws Docx4JException {
+		OpcPackage thePackage = null;
 		
 		String localPath = VFSUtils.getLocalFilePath(fo);
 		if (localPath == null) {
