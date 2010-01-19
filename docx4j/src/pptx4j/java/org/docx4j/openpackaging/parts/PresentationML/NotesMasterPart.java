@@ -23,11 +23,11 @@ package org.docx4j.openpackaging.parts.PresentationML;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.pptx4j.pml.CTNotesMaster;
+import org.pptx4j.pml.NotesMaster;
 
 
 
-public final class NotesMasterPart extends JaxbPmlPart<CTNotesMaster> {
+public final class NotesMasterPart extends JaxbPmlPart<NotesMaster> {
 	
 	public NotesMasterPart(PartName partName) throws InvalidFormatException {
 		super(partName);

@@ -30,12 +30,6 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
-import org.pptx4j.pml.CTSlideIdList;
-import org.pptx4j.pml.CTSlideIdListEntry;
-import org.pptx4j.pml.CTSlideLayoutIdListEntry;
-import org.pptx4j.pml.CTSlideMasterIdList;
-import org.pptx4j.pml.CTSlideMasterIdListEntry;
-import org.pptx4j.pml.CTSlideSize;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Presentation;
 import org.pptx4j.pml.SldMaster;
@@ -78,25 +72,25 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		Presentation presentation = factory.createPresentation();
 
 		// Create empty lists
-		CTSlideMasterIdList masterIds = factory.createCTSlideMasterIdList();
-		CTSlideIdList slideIds = factory.createCTSlideIdList();		
+		Presentation.SldMasterIdLst masterIds = factory.createPresentationSldMasterIdLst();
+		Presentation.SldIdLst slideIds = factory.createPresentationSldIdLst();		
 		presentation.setSldMasterIdLst(masterIds);
 		presentation.setSldIdLst(slideIds);
 		
 		presentation.setNotesSz( 
 				(CTPositiveSize2D)XmlUtils.unmarshalString(DEFAULT_NOTES_SIZE, Context.jcPML, CTPositiveSize2D.class) );
 		presentation.setSldSz(
-				(CTSlideSize)XmlUtils.unmarshalString(DEFAULT_SLIDE_SIZE, Context.jcPML, CTSlideSize.class));
+				(Presentation.SldSz)XmlUtils.unmarshalString(DEFAULT_SLIDE_SIZE, Context.jcPML, Presentation.SldSz.class));
 		
 		return presentation;
 	}
 
-	public CTSlideIdListEntry addSlideIdListEntry(SlidePart slidePart) 
+	public Presentation.SldIdLst.SldId addSlideIdListEntry(SlidePart slidePart) 
 		throws InvalidFormatException {	
 
 		Relationship rel = this.addTargetPart(slidePart);
 		
-		CTSlideIdListEntry entry = Context.getpmlObjectFactory().createCTSlideIdListEntry();
+		Presentation.SldIdLst.SldId entry = Context.getpmlObjectFactory().createPresentationSldIdLstSldId();
 		
 		entry.setId( this.getSlideId() );
 		entry.setRid(rel.getId());
@@ -107,12 +101,12 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		
 	}
 	
-	public CTSlideMasterIdListEntry addSlideMasterIdListEntry(SlideMasterPart slideMasterPart) 
+	public Presentation.SldMasterIdLst.SldMasterId addSlideMasterIdListEntry(SlideMasterPart slideMasterPart) 
 		throws InvalidFormatException {	
 
 		Relationship rel = this.addTargetPart(slideMasterPart);
 		
-		CTSlideMasterIdListEntry entry = Context.getpmlObjectFactory().createCTSlideMasterIdListEntry();
+		Presentation.SldMasterIdLst.SldMasterId entry = Context.getpmlObjectFactory().createPresentationSldMasterIdLstSldMasterId();
 		
 		entry.setId( new Long(this.getSlideLayoutOrMasterId()) );
 		entry.setRid(rel.getId());

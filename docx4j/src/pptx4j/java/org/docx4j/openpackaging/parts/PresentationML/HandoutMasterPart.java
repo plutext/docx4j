@@ -23,11 +23,11 @@ package org.docx4j.openpackaging.parts.PresentationML;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.pptx4j.pml.CTHandoutMaster;
+import org.pptx4j.pml.HandoutMaster;
 
 
 
-public final class HandoutMasterPart extends JaxbPmlPart<CTHandoutMaster> {
+public final class HandoutMasterPart extends JaxbPmlPart<HandoutMaster> {
 	
 	public HandoutMasterPart(PartName partName) throws InvalidFormatException {
 		super(partName);
