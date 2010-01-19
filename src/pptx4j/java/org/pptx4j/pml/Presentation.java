@@ -21,12 +21,16 @@
 
 package org.pptx4j.pml;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.dml.CTTextListStyle;
 
@@ -41,11 +45,65 @@ import org.docx4j.dml.CTTextListStyle;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="sldMasterIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SlideMasterIdList" minOccurs="0"/>
+ *         &lt;element name="sldMasterIdLst" minOccurs="0">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="sldMasterId" maxOccurs="unbounded" minOccurs="0">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;sequence>
+ *                             &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
+ *                           &lt;/sequence>
+ *                           &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" />
+ *                           &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
  *         &lt;element name="notesMasterIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_NotesMasterIdList" minOccurs="0"/>
  *         &lt;element name="handoutMasterIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HandoutMasterIdList" minOccurs="0"/>
- *         &lt;element name="sldIdLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SlideIdList" minOccurs="0"/>
- *         &lt;element name="sldSz" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SlideSize" minOccurs="0"/>
+ *         &lt;element name="sldIdLst" minOccurs="0">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="sldId" maxOccurs="unbounded" minOccurs="0">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;sequence>
+ *                             &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
+ *                           &lt;/sequence>
+ *                           &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" />
+ *                           &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
+ *         &lt;element name="sldSz" minOccurs="0">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;attribute name="cx" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
+ *                 &lt;attribute name="cy" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
+ *                 &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeType" default="custom" />
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
  *         &lt;element name="notesSz" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_PositiveSize2D"/>
  *         &lt;element name="smartTags" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_SmartTags" minOccurs="0"/>
  *         &lt;element name="embeddedFontLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_EmbeddedFontList" minOccurs="0"/>
@@ -96,11 +154,11 @@ import org.docx4j.dml.CTTextListStyle;
 @XmlRootElement(name = "presentation")
 public class Presentation {
 
-    protected CTSlideMasterIdList sldMasterIdLst;
+    protected Presentation.SldMasterIdLst sldMasterIdLst;
     protected CTNotesMasterIdList notesMasterIdLst;
     protected CTHandoutMasterIdList handoutMasterIdLst;
-    protected CTSlideIdList sldIdLst;
-    protected CTSlideSize sldSz;
+    protected Presentation.SldIdLst sldIdLst;
+    protected Presentation.SldSz sldSz;
     @XmlElement(required = true)
     protected CTPositiveSize2D notesSz;
     protected CTSmartTags smartTags;
@@ -140,10 +198,10 @@ public class Presentation {
      * 
      * @return
      *     possible object is
-     *     {@link CTSlideMasterIdList }
+     *     {@link Presentation.SldMasterIdLst }
      *     
      */
-    public CTSlideMasterIdList getSldMasterIdLst() {
+    public Presentation.SldMasterIdLst getSldMasterIdLst() {
         return sldMasterIdLst;
     }
 
@@ -152,10 +210,10 @@ public class Presentation {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTSlideMasterIdList }
+     *     {@link Presentation.SldMasterIdLst }
      *     
      */
-    public void setSldMasterIdLst(CTSlideMasterIdList value) {
+    public void setSldMasterIdLst(Presentation.SldMasterIdLst value) {
         this.sldMasterIdLst = value;
     }
 
@@ -212,10 +270,10 @@ public class Presentation {
      * 
      * @return
      *     possible object is
-     *     {@link CTSlideIdList }
+     *     {@link Presentation.SldIdLst }
      *     
      */
-    public CTSlideIdList getSldIdLst() {
+    public Presentation.SldIdLst getSldIdLst() {
         return sldIdLst;
     }
 
@@ -224,10 +282,10 @@ public class Presentation {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTSlideIdList }
+     *     {@link Presentation.SldIdLst }
      *     
      */
-    public void setSldIdLst(CTSlideIdList value) {
+    public void setSldIdLst(Presentation.SldIdLst value) {
         this.sldIdLst = value;
     }
 
@@ -236,10 +294,10 @@ public class Presentation {
      * 
      * @return
      *     possible object is
-     *     {@link CTSlideSize }
+     *     {@link Presentation.SldSz }
      *     
      */
-    public CTSlideSize getSldSz() {
+    public Presentation.SldSz getSldSz() {
         return sldSz;
     }
 
@@ -248,10 +306,10 @@ public class Presentation {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTSlideSize }
+     *     {@link Presentation.SldSz }
      *     
      */
-    public void setSldSz(CTSlideSize value) {
+    public void setSldSz(Presentation.SldSz value) {
         this.sldSz = value;
     }
 
@@ -801,6 +859,454 @@ public class Presentation {
      */
     public void setBookmarkIdSeed(Long value) {
         this.bookmarkIdSeed = value;
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;element name="sldId" maxOccurs="unbounded" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;sequence>
+     *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
+     *                 &lt;/sequence>
+     *                 &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" />
+     *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *       &lt;/sequence>
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "sldId"
+    })
+    public static class SldIdLst {
+
+        protected List<Presentation.SldIdLst.SldId> sldId;
+
+        /**
+         * Gets the value of the sldId property.
+         * 
+         * <p>
+         * This accessor method returns a reference to the live list,
+         * not a snapshot. Therefore any modification you make to the
+         * returned list will be present inside the JAXB object.
+         * This is why there is not a <CODE>set</CODE> method for the sldId property.
+         * 
+         * <p>
+         * For example, to add a new item, do as follows:
+         * <pre>
+         *    getSldId().add(newItem);
+         * </pre>
+         * 
+         * 
+         * <p>
+         * Objects of the following type(s) are allowed in the list
+         * {@link Presentation.SldIdLst.SldId }
+         * 
+         * 
+         */
+        public List<Presentation.SldIdLst.SldId> getSldId() {
+            if (sldId == null) {
+                sldId = new ArrayList<Presentation.SldIdLst.SldId>();
+            }
+            return this.sldId;
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;sequence>
+         *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
+         *       &lt;/sequence>
+         *       &lt;attribute name="id" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideId" />
+         *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "", propOrder = {
+            "extLst"
+        })
+        public static class SldId {
+
+            protected CTExtensionList extLst;
+            @XmlAttribute(required = true)
+            protected long id;
+            @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
+            protected String rid;
+
+            /**
+             * Gets the value of the extLst property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link CTExtensionList }
+             *     
+             */
+            public CTExtensionList getExtLst() {
+                return extLst;
+            }
+
+            /**
+             * Sets the value of the extLst property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link CTExtensionList }
+             *     
+             */
+            public void setExtLst(CTExtensionList value) {
+                this.extLst = value;
+            }
+
+            /**
+             * Gets the value of the id property.
+             * 
+             */
+            public long getId() {
+                return id;
+            }
+
+            /**
+             * Sets the value of the id property.
+             * 
+             */
+            public void setId(long value) {
+                this.id = value;
+            }
+
+            /**
+             * 
+             * 												Relationship Identifier
+             * 											
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getRid() {
+                return rid;
+            }
+
+            /**
+             * Sets the value of the rid property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setRid(String value) {
+                this.rid = value;
+            }
+
+        }
+
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;element name="sldMasterId" maxOccurs="unbounded" minOccurs="0">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;sequence>
+     *                   &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
+     *                 &lt;/sequence>
+     *                 &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" />
+     *                 &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *       &lt;/sequence>
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "sldMasterId"
+    })
+    public static class SldMasterIdLst {
+
+        protected List<Presentation.SldMasterIdLst.SldMasterId> sldMasterId;
+
+        /**
+         * Gets the value of the sldMasterId property.
+         * 
+         * <p>
+         * This accessor method returns a reference to the live list,
+         * not a snapshot. Therefore any modification you make to the
+         * returned list will be present inside the JAXB object.
+         * This is why there is not a <CODE>set</CODE> method for the sldMasterId property.
+         * 
+         * <p>
+         * For example, to add a new item, do as follows:
+         * <pre>
+         *    getSldMasterId().add(newItem);
+         * </pre>
+         * 
+         * 
+         * <p>
+         * Objects of the following type(s) are allowed in the list
+         * {@link Presentation.SldMasterIdLst.SldMasterId }
+         * 
+         * 
+         */
+        public List<Presentation.SldMasterIdLst.SldMasterId> getSldMasterId() {
+            if (sldMasterId == null) {
+                sldMasterId = new ArrayList<Presentation.SldMasterIdLst.SldMasterId>();
+            }
+            return this.sldMasterId;
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;sequence>
+         *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
+         *       &lt;/sequence>
+         *       &lt;attribute name="id" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideMasterId" />
+         *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "", propOrder = {
+            "extLst"
+        })
+        public static class SldMasterId {
+
+            protected CTExtensionList extLst;
+            @XmlAttribute
+            protected Long id;
+            @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
+            protected String rid;
+
+            /**
+             * Gets the value of the extLst property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link CTExtensionList }
+             *     
+             */
+            public CTExtensionList getExtLst() {
+                return extLst;
+            }
+
+            /**
+             * Sets the value of the extLst property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link CTExtensionList }
+             *     
+             */
+            public void setExtLst(CTExtensionList value) {
+                this.extLst = value;
+            }
+
+            /**
+             * Gets the value of the id property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Long }
+             *     
+             */
+            public Long getId() {
+                return id;
+            }
+
+            /**
+             * Sets the value of the id property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Long }
+             *     
+             */
+            public void setId(Long value) {
+                this.id = value;
+            }
+
+            /**
+             * 
+             * 								Relationship Identifier
+             * 							
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getRid() {
+                return rid;
+            }
+
+            /**
+             * Sets the value of the rid property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setRid(String value) {
+                this.rid = value;
+            }
+
+        }
+
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;attribute name="cx" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
+     *       &lt;attribute name="cy" use="required" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeCoordinate" />
+     *       &lt;attribute name="type" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_SlideSizeType" default="custom" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class SldSz {
+
+        @XmlAttribute(required = true)
+        protected int cx;
+        @XmlAttribute(required = true)
+        protected int cy;
+        @XmlAttribute
+        @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+        protected String type;
+
+        /**
+         * Gets the value of the cx property.
+         * 
+         */
+        public int getCx() {
+            return cx;
+        }
+
+        /**
+         * Sets the value of the cx property.
+         * 
+         */
+        public void setCx(int value) {
+            this.cx = value;
+        }
+
+        /**
+         * Gets the value of the cy property.
+         * 
+         */
+        public int getCy() {
+            return cy;
+        }
+
+        /**
+         * Sets the value of the cy property.
+         * 
+         */
+        public void setCy(int value) {
+            this.cy = value;
+        }
+
+        /**
+         * Gets the value of the type property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getType() {
+            if (type == null) {
+                return "custom";
+            } else {
+                return type;
+            }
+        }
+
+        /**
+         * Sets the value of the type property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setType(String value) {
+            this.type = value;
+        }
+
     }
 
 }

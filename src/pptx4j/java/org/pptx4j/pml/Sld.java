@@ -67,7 +67,7 @@ import org.docx4j.dml.CTColorMappingOverride;
 public class Sld {
 
     @XmlElement(required = true)
-    protected CTCommonSlideData cSld;
+    protected CommonSlideData cSld;
     protected CTColorMappingOverride clrMapOvr;
     protected CTSlideTransition transition;
     protected CTSlideTiming timing;
@@ -84,10 +84,10 @@ public class Sld {
      * 
      * @return
      *     possible object is
-     *     {@link CTCommonSlideData }
+     *     {@link CommonSlideData }
      *     
      */
-    public CTCommonSlideData getCSld() {
+    public CommonSlideData getCSld() {
         return cSld;
     }
 
@@ -96,10 +96,10 @@ public class Sld {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTCommonSlideData }
+     *     {@link CommonSlideData }
      *     
      */
-    public void setCSld(CTCommonSlideData value) {
+    public void setCSld(CommonSlideData value) {
         this.cSld = value;
     }
 

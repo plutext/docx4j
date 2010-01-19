@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTBlipFillProperties;
+import org.docx4j.dml.CTNonVisualDrawingProps;
+import org.docx4j.dml.CTNonVisualPictureProperties;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTShapeStyle;
 
@@ -40,7 +42,19 @@ import org.docx4j.dml.CTShapeStyle;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="nvPicPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_PictureNonVisual"/>
+ *         &lt;element name="nvPicPr">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
+ *                   &lt;element name="cNvPicPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualPictureProperties"/>
+ *                   &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
  *         &lt;element name="blipFill" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_BlipFillProperties"/>
  *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties"/>
  *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeStyle" minOccurs="0"/>
@@ -61,10 +75,10 @@ import org.docx4j.dml.CTShapeStyle;
     "style",
     "extLst"
 })
-public class CTPicture {
+public class Pic {
 
     @XmlElement(required = true)
-    protected CTPictureNonVisual nvPicPr;
+    protected Pic.NvPicPr nvPicPr;
     @XmlElement(required = true)
     protected CTBlipFillProperties blipFill;
     @XmlElement(required = true)
@@ -77,10 +91,10 @@ public class CTPicture {
      * 
      * @return
      *     possible object is
-     *     {@link CTPictureNonVisual }
+     *     {@link Pic.NvPicPr }
      *     
      */
-    public CTPictureNonVisual getNvPicPr() {
+    public Pic.NvPicPr getNvPicPr() {
         return nvPicPr;
     }
 
@@ -89,10 +103,10 @@ public class CTPicture {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTPictureNonVisual }
+     *     {@link Pic.NvPicPr }
      *     
      */
-    public void setNvPicPr(CTPictureNonVisual value) {
+    public void setNvPicPr(Pic.NvPicPr value) {
         this.nvPicPr = value;
     }
 
@@ -190,6 +204,117 @@ public class CTPicture {
      */
     public void setExtLst(CTExtensionListModify value) {
         this.extLst = value;
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
+     *         &lt;element name="cNvPicPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualPictureProperties"/>
+     *         &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/>
+     *       &lt;/sequence>
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "cNvPr",
+        "cNvPicPr",
+        "nvPr"
+    })
+    public static class NvPicPr {
+
+        @XmlElement(required = true)
+        protected CTNonVisualDrawingProps cNvPr;
+        @XmlElement(required = true)
+        protected CTNonVisualPictureProperties cNvPicPr;
+        @XmlElement(required = true)
+        protected NvPr nvPr;
+
+        /**
+         * Gets the value of the cNvPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTNonVisualDrawingProps }
+         *     
+         */
+        public CTNonVisualDrawingProps getCNvPr() {
+            return cNvPr;
+        }
+
+        /**
+         * Sets the value of the cNvPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTNonVisualDrawingProps }
+         *     
+         */
+        public void setCNvPr(CTNonVisualDrawingProps value) {
+            this.cNvPr = value;
+        }
+
+        /**
+         * Gets the value of the cNvPicPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTNonVisualPictureProperties }
+         *     
+         */
+        public CTNonVisualPictureProperties getCNvPicPr() {
+            return cNvPicPr;
+        }
+
+        /**
+         * Sets the value of the cNvPicPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTNonVisualPictureProperties }
+         *     
+         */
+        public void setCNvPicPr(CTNonVisualPictureProperties value) {
+            this.cNvPicPr = value;
+        }
+
+        /**
+         * Gets the value of the nvPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link NvPr }
+         *     
+         */
+        public NvPr getNvPr() {
+            return nvPr;
+        }
+
+        /**
+         * Sets the value of the nvPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link NvPr }
+         *     
+         */
+        public void setNvPr(NvPr value) {
+            this.nvPr = value;
+        }
+
     }
 
 }

@@ -25,8 +25,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.docx4j.dml.CTNonVisualDrawingProps;
+import org.docx4j.dml.CTNonVisualDrawingShapeProps;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTShapeStyle;
 import org.docx4j.dml.CTTextBody;
@@ -42,7 +43,19 @@ import org.docx4j.dml.CTTextBody;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="nvSpPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ShapeNonVisual"/>
+ *         &lt;element name="nvSpPr">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
+ *                   &lt;element name="cNvSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingShapeProps"/>
+ *                   &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
  *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties"/>
  *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeStyle" minOccurs="0"/>
  *         &lt;element name="txBody" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextBody" minOccurs="0"/>
@@ -64,11 +77,10 @@ import org.docx4j.dml.CTTextBody;
     "txBody",
     "extLst"
 })
-@XmlRootElement(name="sp")
-public class CTShape {
+public class Shape {
 
     @XmlElement(required = true)
-    protected CTShapeNonVisual nvSpPr;
+    protected Shape.NvSpPr nvSpPr;
     @XmlElement(required = true)
     protected CTShapeProperties spPr;
     protected CTShapeStyle style;
@@ -82,10 +94,10 @@ public class CTShape {
      * 
      * @return
      *     possible object is
-     *     {@link CTShapeNonVisual }
+     *     {@link Shape.NvSpPr }
      *     
      */
-    public CTShapeNonVisual getNvSpPr() {
+    public Shape.NvSpPr getNvSpPr() {
         return nvSpPr;
     }
 
@@ -94,10 +106,10 @@ public class CTShape {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTShapeNonVisual }
+     *     {@link Shape.NvSpPr }
      *     
      */
-    public void setNvSpPr(CTShapeNonVisual value) {
+    public void setNvSpPr(Shape.NvSpPr value) {
         this.nvSpPr = value;
     }
 
@@ -223,6 +235,117 @@ public class CTShape {
      */
     public void setUseBgFill(Boolean value) {
         this.useBgFill = value;
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
+     *         &lt;element name="cNvSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingShapeProps"/>
+     *         &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/>
+     *       &lt;/sequence>
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "cNvPr",
+        "cNvSpPr",
+        "nvPr"
+    })
+    public static class NvSpPr {
+
+        @XmlElement(required = true)
+        protected CTNonVisualDrawingProps cNvPr;
+        @XmlElement(required = true)
+        protected CTNonVisualDrawingShapeProps cNvSpPr;
+        @XmlElement(required = true)
+        protected NvPr nvPr;
+
+        /**
+         * Gets the value of the cNvPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTNonVisualDrawingProps }
+         *     
+         */
+        public CTNonVisualDrawingProps getCNvPr() {
+            return cNvPr;
+        }
+
+        /**
+         * Sets the value of the cNvPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTNonVisualDrawingProps }
+         *     
+         */
+        public void setCNvPr(CTNonVisualDrawingProps value) {
+            this.cNvPr = value;
+        }
+
+        /**
+         * Gets the value of the cNvSpPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTNonVisualDrawingShapeProps }
+         *     
+         */
+        public CTNonVisualDrawingShapeProps getCNvSpPr() {
+            return cNvSpPr;
+        }
+
+        /**
+         * Sets the value of the cNvSpPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTNonVisualDrawingShapeProps }
+         *     
+         */
+        public void setCNvSpPr(CTNonVisualDrawingShapeProps value) {
+            this.cNvSpPr = value;
+        }
+
+        /**
+         * Gets the value of the nvPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link NvPr }
+         *     
+         */
+        public NvPr getNvPr() {
+            return nvPr;
+        }
+
+        /**
+         * Sets the value of the nvPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link NvPr }
+         *     
+         */
+        public void setNvPr(NvPr value) {
+            this.nvPr = value;
+        }
+
     }
 
 }

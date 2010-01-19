@@ -29,6 +29,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTGroupShapeProperties;
+import org.docx4j.dml.CTNonVisualDrawingProps;
+import org.docx4j.dml.CTNonVisualGroupDrawingShapeProps;
 
 
 /**
@@ -41,7 +43,19 @@ import org.docx4j.dml.CTGroupShapeProperties;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="nvGrpSpPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_GroupShapeNonVisual"/>
+ *         &lt;element name="nvGrpSpPr">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
+ *                   &lt;element name="cNvGrpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGroupDrawingShapeProps"/>
+ *                   &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/>
+ *                 &lt;/sequence>
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
  *         &lt;element name="grpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_GroupShapeProperties"/>
  *         &lt;choice maxOccurs="unbounded" minOccurs="0">
  *           &lt;element name="sp" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Shape"/>
@@ -66,18 +80,18 @@ import org.docx4j.dml.CTGroupShapeProperties;
     "spOrGrpSpOrGraphicFrame",
     "extLst"
 })
-public class CTGroupShape {
+public class GroupShape {
 
     @XmlElement(required = true)
-    protected CTGroupShapeNonVisual nvGrpSpPr;
+    protected GroupShape.NvGrpSpPr nvGrpSpPr;
     @XmlElement(required = true)
     protected CTGroupShapeProperties grpSpPr;
     @XmlElements({
-        @XmlElement(name = "cxnSp", type = CTConnector.class),
-        @XmlElement(name = "grpSp", type = CTGroupShape.class),
-        @XmlElement(name = "pic", type = CTPicture.class),
-        @XmlElement(name = "sp", type = CTShape.class),
-        @XmlElement(name = "graphicFrame", type = CTGraphicalObjectFrame.class)
+        @XmlElement(name = "cxnSp", type = CxnSp.class),
+        @XmlElement(name = "graphicFrame", type = CTGraphicalObjectFrame.class),
+        @XmlElement(name = "pic", type = Pic.class),
+        @XmlElement(name = "grpSp", type = GroupShape.class),
+        @XmlElement(name = "sp", type = Shape.class)
     })
     protected List<Object> spOrGrpSpOrGraphicFrame;
     protected CTExtensionListModify extLst;
@@ -87,10 +101,10 @@ public class CTGroupShape {
      * 
      * @return
      *     possible object is
-     *     {@link CTGroupShapeNonVisual }
+     *     {@link GroupShape.NvGrpSpPr }
      *     
      */
-    public CTGroupShapeNonVisual getNvGrpSpPr() {
+    public GroupShape.NvGrpSpPr getNvGrpSpPr() {
         return nvGrpSpPr;
     }
 
@@ -99,10 +113,10 @@ public class CTGroupShape {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTGroupShapeNonVisual }
+     *     {@link GroupShape.NvGrpSpPr }
      *     
      */
-    public void setNvGrpSpPr(CTGroupShapeNonVisual value) {
+    public void setNvGrpSpPr(GroupShape.NvGrpSpPr value) {
         this.nvGrpSpPr = value;
     }
 
@@ -148,11 +162,11 @@ public class CTGroupShape {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTConnector }
-     * {@link CTGroupShape }
-     * {@link CTPicture }
-     * {@link CTShape }
+     * {@link CxnSp }
      * {@link CTGraphicalObjectFrame }
+     * {@link Pic }
+     * {@link GroupShape }
+     * {@link Shape }
      * 
      * 
      */
@@ -185,6 +199,117 @@ public class CTGroupShape {
      */
     public void setExtLst(CTExtensionListModify value) {
         this.extLst = value;
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;element name="cNvPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualDrawingProps"/>
+     *         &lt;element name="cNvGrpSpPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_NonVisualGroupDrawingShapeProps"/>
+     *         &lt;element name="nvPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ApplicationNonVisualDrawingProps"/>
+     *       &lt;/sequence>
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "cNvPr",
+        "cNvGrpSpPr",
+        "nvPr"
+    })
+    public static class NvGrpSpPr {
+
+        @XmlElement(required = true)
+        protected CTNonVisualDrawingProps cNvPr;
+        @XmlElement(required = true)
+        protected CTNonVisualGroupDrawingShapeProps cNvGrpSpPr;
+        @XmlElement(required = true)
+        protected NvPr nvPr;
+
+        /**
+         * Gets the value of the cNvPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTNonVisualDrawingProps }
+         *     
+         */
+        public CTNonVisualDrawingProps getCNvPr() {
+            return cNvPr;
+        }
+
+        /**
+         * Sets the value of the cNvPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTNonVisualDrawingProps }
+         *     
+         */
+        public void setCNvPr(CTNonVisualDrawingProps value) {
+            this.cNvPr = value;
+        }
+
+        /**
+         * Gets the value of the cNvGrpSpPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link CTNonVisualGroupDrawingShapeProps }
+         *     
+         */
+        public CTNonVisualGroupDrawingShapeProps getCNvGrpSpPr() {
+            return cNvGrpSpPr;
+        }
+
+        /**
+         * Sets the value of the cNvGrpSpPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link CTNonVisualGroupDrawingShapeProps }
+         *     
+         */
+        public void setCNvGrpSpPr(CTNonVisualGroupDrawingShapeProps value) {
+            this.cNvGrpSpPr = value;
+        }
+
+        /**
+         * Gets the value of the nvPr property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link NvPr }
+         *     
+         */
+        public NvPr getNvPr() {
+            return nvPr;
+        }
+
+        /**
+         * Sets the value of the nvPr property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link NvPr }
+         *     
+         */
+        public void setNvPr(NvPr value) {
+            this.nvPr = value;
+        }
+
     }
 
 }

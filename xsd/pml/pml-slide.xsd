@@ -212,6 +212,11 @@
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_ApplicationNonVisualDrawingProps">
+               <xsd:annotation>
+                        <xsd:appinfo>
+                                <jaxb:class name="nvPr"/>
+                        </xsd:appinfo>
+                </xsd:annotation>	
 		<xsd:sequence>
 			<xsd:element name="ph" type="CT_Placeholder" minOccurs="0"
 				maxOccurs="1">
@@ -246,7 +251,21 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_ShapeNonVisual">
+	<xsd:complexType name="CT_Shape">
+               <xsd:annotation>
+                        <xsd:appinfo>
+                                <jaxb:class name="Shape"/>
+                        </xsd:appinfo>
+                </xsd:annotation>	
+		<xsd:sequence>
+			<xsd:element name="nvSpPr"
+				minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						Non-Visual Properties for a Shape
+					</xsd:documentation>
+				</xsd:annotation>
+	<xsd:complexType>
 		<xsd:sequence>
 			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps"
 				minOccurs="1" maxOccurs="1">
@@ -276,15 +295,6 @@
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Shape">
-		<xsd:sequence>
-			<xsd:element name="nvSpPr" type="CT_ShapeNonVisual"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Non-Visual Properties for a Shape
-					</xsd:documentation>
-				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="spPr" type="a:CT_ShapeProperties"
 				minOccurs="1" maxOccurs="1" />
@@ -314,7 +324,21 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_ConnectorNonVisual">
+	<xsd:complexType name="CT_Connector">
+               <xsd:annotation>
+                        <xsd:appinfo>
+                                <jaxb:class name="CxnSp"/>
+                        </xsd:appinfo>
+                </xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="nvCxnSpPr" 
+				minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						Non-Visual Properties for a Connection Shape
+					</xsd:documentation>
+				</xsd:annotation>
+	<xsd:complexType> <!--  name="CT_ConnectorNonVisual"  -->
 		<xsd:sequence>
 			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps"
 				minOccurs="1" maxOccurs="1">
@@ -344,15 +368,6 @@
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Connector">
-		<xsd:sequence>
-			<xsd:element name="nvCxnSpPr" type="CT_ConnectorNonVisual"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Non-Visual Properties for a Connection Shape
-					</xsd:documentation>
-				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="spPr" type="a:CT_ShapeProperties"
 				minOccurs="1" maxOccurs="1">
@@ -374,7 +389,21 @@
 				minOccurs="0" maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_PictureNonVisual">
+	<xsd:complexType name="CT_Picture">
+               <xsd:annotation>
+                        <xsd:appinfo>
+                                <jaxb:class name="pic"/>
+                        </xsd:appinfo>
+                </xsd:annotation>	
+		<xsd:sequence>
+			<xsd:element name="nvPicPr" 
+				minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						Non-Visual Properties for a Picture
+					</xsd:documentation>
+				</xsd:annotation>
+	<xsd:complexType> <!-- name="CT_PictureNonVisual"-->
 		<xsd:sequence>
 			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps"
 				minOccurs="1" maxOccurs="1" />
@@ -392,15 +421,6 @@
 				maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_Picture">
-		<xsd:sequence>
-			<xsd:element name="nvPicPr" type="CT_PictureNonVisual"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Non-Visual Properties for a Picture
-					</xsd:documentation>
-				</xsd:annotation>
 			</xsd:element>
 			<xsd:element name="blipFill" type="a:CT_BlipFillProperties"
 				minOccurs="1" maxOccurs="1">
@@ -476,45 +496,50 @@
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:complexType name="CT_GroupShapeNonVisual">
-		<xsd:sequence>
-			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps"
-				minOccurs="1" maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Non-visual Drawing Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="cNvGrpSpPr"
-				type="a:CT_NonVisualGroupDrawingShapeProps" minOccurs="1"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Non-Visual Group Shape Drawing Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-			<xsd:element name="nvPr"
-				type="CT_ApplicationNonVisualDrawingProps" minOccurs="1"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>
-						Non-Visual Properties
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
 	<xsd:complexType name="CT_GroupShape">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="GroupShape" />
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:sequence>
-			<xsd:element name="nvGrpSpPr" type="CT_GroupShapeNonVisual"
-				minOccurs="1" maxOccurs="1">
+			<xsd:element name="nvGrpSpPr" minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation>
 						Non-Visual Properties for a Group Shape
 					</xsd:documentation>
 				</xsd:annotation>
+				<xsd:complexType><!-- name="CT_GroupShapeNonVisual"-->
+					<xsd:sequence>
+						<xsd:element name="cNvPr"
+							type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Non-visual Drawing Properties
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="cNvGrpSpPr"
+							type="a:CT_NonVisualGroupDrawingShapeProps" minOccurs="1"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Non-Visual Group Shape Drawing
+									Properties
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="nvPr"
+							type="CT_ApplicationNonVisualDrawingProps" minOccurs="1"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Non-Visual Properties
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
 			</xsd:element>
 			<xsd:element name="grpSpPr" type="a:CT_GroupShapeProperties"
 				minOccurs="1" maxOccurs="1">
@@ -653,6 +678,11 @@
 		</xsd:attribute>
 	</xsd:complexType>
 	<xsd:complexType name="CT_CommonSlideData">
+               <xsd:annotation>
+                        <xsd:appinfo>
+                                <jaxb:class name="CommonSlideData"/>
+                        </xsd:appinfo>
+                </xsd:annotation>	
 		<xsd:sequence>
 			<xsd:element name="bg" type="CT_Background" minOccurs="0"
 				maxOccurs="1">
@@ -662,11 +692,104 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="spTree" type="CT_GroupShape"
+			<xsd:element name="spTree" 
 				minOccurs="1" maxOccurs="1">
 				<xsd:annotation>
 					<xsd:documentation>Shape Tree</xsd:documentation>
 				</xsd:annotation>
+				<!--  copied name="CT_GroupShape" into here -->
+	<xsd:complexType >
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="GroupShape" />
+			</xsd:appinfo>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="nvGrpSpPr" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						Non-Visual Properties for a Group Shape
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType><!-- name="CT_GroupShapeNonVisual"-->
+					<xsd:sequence>
+						<xsd:element name="cNvPr"
+							type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Non-visual Drawing Properties
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="cNvGrpSpPr"
+							type="a:CT_NonVisualGroupDrawingShapeProps" minOccurs="1"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Non-Visual Group Shape Drawing
+									Properties
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="nvPr"
+							type="CT_ApplicationNonVisualDrawingProps" minOccurs="1"
+							maxOccurs="1">
+							<xsd:annotation>
+								<xsd:documentation>
+									Non-Visual Properties
+								</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="grpSpPr" type="a:CT_GroupShapeProperties"
+				minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>
+						Group Shape Properties
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="sp" type="CT_Shape">
+					<xsd:annotation>
+						<xsd:documentation>Shape</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="grpSp" type="CT_GroupShape">
+					<xsd:annotation>
+						<xsd:documentation>
+							Group Shape
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="graphicFrame"
+					type="CT_GraphicalObjectFrame">
+					<xsd:annotation>
+						<xsd:documentation>
+							Graphic Frame
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="cxnSp" type="CT_Connector">
+					<xsd:annotation>
+						<xsd:documentation>
+							Connection Shape
+						</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="pic" type="CT_Picture">
+					<xsd:annotation>
+						<xsd:documentation>Picture</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="extLst" type="CT_ExtensionListModify"
+				minOccurs="0" maxOccurs="1" />
+		</xsd:sequence>
+	</xsd:complexType>
+				
 			</xsd:element>
 			<xsd:element name="custDataLst" type="CT_CustomerDataList"
 				minOccurs="0" maxOccurs="1">
@@ -1106,7 +1229,22 @@
 			<xsd:minInclusive value="2147483648" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	<xsd:complexType name="CT_SlideLayoutIdListEntry">
+	<xsd:complexType name="CT_SlideLayoutIdList">
+               <xsd:annotation>
+                        <xsd:appinfo>
+                                <jaxb:class name="SlideLayoutIdList"/>
+                        </xsd:appinfo>
+                </xsd:annotation>	
+		<xsd:sequence>
+			<xsd:element name="sldLayoutId"
+				 minOccurs="0"
+				maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Slide Layout Id
+					</xsd:documentation>
+				</xsd:annotation>
+	<xsd:complexType> <!--  name="CT_SlideLayoutIdListEntry" -->
 		<xsd:sequence>
 			<xsd:element name="extLst" type="CT_ExtensionList"
 				minOccurs="0" maxOccurs="1" />
@@ -1126,16 +1264,6 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:complexType name="CT_SlideLayoutIdList">
-		<xsd:sequence>
-			<xsd:element name="sldLayoutId"
-				type="CT_SlideLayoutIdListEntry" minOccurs="0"
-				maxOccurs="unbounded">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Layout Id
-					</xsd:documentation>
-				</xsd:annotation>
 			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -1208,7 +1336,11 @@
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
-	<xsd:complexType name="CT_HandoutMaster">
+	<xsd:element name="handoutMaster">
+		<xsd:annotation>
+			<xsd:documentation>Handout Master</xsd:documentation>
+		</xsd:annotation>
+	<xsd:complexType>
 		<xsd:sequence>
 			<xsd:element name="cSld" type="CT_CommonSlideData"
 				minOccurs="1" maxOccurs="1">
@@ -1232,12 +1364,12 @@
 				minOccurs="0" maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:element name="handoutMaster" type="CT_HandoutMaster">
-		<xsd:annotation>
-			<xsd:documentation>Handout Master</xsd:documentation>
-		</xsd:annotation>
 	</xsd:element>
-	<xsd:complexType name="CT_NotesMaster">
+	<xsd:element name="notesMaster">
+		<xsd:annotation>
+			<xsd:documentation>Notes Master</xsd:documentation>
+		</xsd:annotation>
+	<xsd:complexType>
 		<xsd:sequence>
 			<xsd:element name="cSld" type="CT_CommonSlideData"
 				minOccurs="1" maxOccurs="1">
@@ -1269,12 +1401,12 @@
 				minOccurs="0" maxOccurs="1" />
 		</xsd:sequence>
 	</xsd:complexType>
-	<xsd:element name="notesMaster" type="CT_NotesMaster">
-		<xsd:annotation>
-			<xsd:documentation>Notes Master</xsd:documentation>
-		</xsd:annotation>
 	</xsd:element>
-	<xsd:complexType name="CT_NotesSlide">
+	<xsd:element name="notes">
+		<xsd:annotation>
+			<xsd:documentation>Notes Slide</xsd:documentation>
+		</xsd:annotation>
+	<xsd:complexType>
 		<xsd:sequence minOccurs="1" maxOccurs="1">
 			<xsd:element name="cSld" type="CT_CommonSlideData"
 				minOccurs="1" maxOccurs="1">
@@ -1290,9 +1422,5 @@
 		</xsd:sequence>
 		<xsd:attributeGroup ref="AG_ChildSlide" />
 	</xsd:complexType>
-	<xsd:element name="notes" type="CT_NotesSlide">
-		<xsd:annotation>
-			<xsd:documentation>Notes Slide</xsd:documentation>
-		</xsd:annotation>
 	</xsd:element>
 </xsd:schema>

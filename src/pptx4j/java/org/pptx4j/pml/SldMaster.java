@@ -72,10 +72,10 @@ import org.docx4j.dml.CTColorMapping;
 public class SldMaster {
 
     @XmlElement(required = true)
-    protected CTCommonSlideData cSld;
+    protected CommonSlideData cSld;
     @XmlElement(required = true)
     protected CTColorMapping clrMap;
-    protected CTSlideLayoutIdList sldLayoutIdLst;
+    protected SlideLayoutIdList sldLayoutIdLst;
     protected CTSlideTransition transition;
     protected CTSlideTiming timing;
     protected CTHeaderFooter hf;
@@ -89,10 +89,10 @@ public class SldMaster {
      * 
      * @return
      *     possible object is
-     *     {@link CTCommonSlideData }
+     *     {@link CommonSlideData }
      *     
      */
-    public CTCommonSlideData getCSld() {
+    public CommonSlideData getCSld() {
         return cSld;
     }
 
@@ -101,10 +101,10 @@ public class SldMaster {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTCommonSlideData }
+     *     {@link CommonSlideData }
      *     
      */
-    public void setCSld(CTCommonSlideData value) {
+    public void setCSld(CommonSlideData value) {
         this.cSld = value;
     }
 
@@ -137,10 +137,10 @@ public class SldMaster {
      * 
      * @return
      *     possible object is
-     *     {@link CTSlideLayoutIdList }
+     *     {@link SlideLayoutIdList }
      *     
      */
-    public CTSlideLayoutIdList getSldLayoutIdLst() {
+    public SlideLayoutIdList getSldLayoutIdLst() {
         return sldLayoutIdLst;
     }
 
@@ -149,10 +149,10 @@ public class SldMaster {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTSlideLayoutIdList }
+     *     {@link SlideLayoutIdList }
      *     
      */
-    public void setSldLayoutIdLst(CTSlideLayoutIdList value) {
+    public void setSldLayoutIdLst(SlideLayoutIdList value) {
         this.sldLayoutIdLst = value;
     }
 

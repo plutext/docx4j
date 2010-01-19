@@ -7,8 +7,8 @@
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">	
-	
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
 	<xsd:include schemaLocation="pml-baseTypes.xsd" />
 	<xsd:import
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
@@ -31,37 +31,6 @@
 			<xsd:maxExclusive value="2147483648" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	<xsd:complexType name="CT_SlideIdListEntry">
-		<xsd:sequence>
-			<xsd:element name="extLst" type="CT_ExtensionList"
-				minOccurs="0" maxOccurs="1" />
-		</xsd:sequence>
-		<xsd:attribute name="id" type="ST_SlideId" use="required">
-			<xsd:annotation>
-				<xsd:documentation>Slide Identifier</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute ref="r:id" use="required">
-			<xsd:annotation>
-				<xsd:documentation>
-					Relationship Identifier
-				</xsd:documentation>
-                <xsd:appinfo>
-                        <jaxb:property name="rid"/>
-                </xsd:appinfo>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<xsd:complexType name="CT_SlideIdList">
-		<xsd:sequence>
-			<xsd:element name="sldId" type="CT_SlideIdListEntry"
-				minOccurs="0" maxOccurs="unbounded">
-				<xsd:annotation>
-					<xsd:documentation>Slide ID</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
 	<xsd:simpleType name="ST_SlideMasterId">
 		<xsd:annotation>
 			<xsd:documentation>Slide Master ID</xsd:documentation>
@@ -70,43 +39,6 @@
 			<xsd:minInclusive value="2147483648" />
 		</xsd:restriction>
 	</xsd:simpleType>
-	<xsd:complexType name="CT_SlideMasterIdListEntry">
-		<xsd:sequence>
-			<xsd:element name="extLst" type="CT_ExtensionList"
-				minOccurs="0" maxOccurs="1" />
-		</xsd:sequence>
-		<xsd:attribute name="id" type="ST_SlideMasterId"
-			use="optional">
-			<xsd:annotation>
-				<xsd:documentation>
-					Slide Master Identifier
-				</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute ref="r:id" use="required">
-			<xsd:annotation>
-				<xsd:documentation>
-					Relationship Identifier
-				</xsd:documentation>
-                <xsd:appinfo>
-                        <jaxb:property name="rid"/>
-                </xsd:appinfo>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
-	<xsd:complexType name="CT_SlideMasterIdList">
-		<xsd:sequence>
-			<xsd:element name="sldMasterId"
-				type="CT_SlideMasterIdListEntry" minOccurs="0"
-				maxOccurs="unbounded">
-				<xsd:annotation>
-					<xsd:documentation>
-						Slide Master ID
-					</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
-		</xsd:sequence>
-	</xsd:complexType>
 	<xsd:complexType name="CT_NotesMasterIdListEntry">
 		<xsd:sequence>
 			<xsd:element name="extLst" type="CT_ExtensionList"
@@ -511,26 +443,6 @@
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
-	<xsd:complexType name="CT_SlideSize">
-		<xsd:attribute name="cx" type="ST_SlideSizeCoordinate"
-			use="required">
-			<xsd:annotation>
-				<xsd:documentation>Extent Length</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="cy" type="ST_SlideSizeCoordinate"
-			use="required">
-			<xsd:annotation>
-				<xsd:documentation>Extent Width</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute name="type" type="ST_SlideSizeType"
-			use="optional" default="custom">
-			<xsd:annotation>
-				<xsd:documentation>Type of Size</xsd:documentation>
-			</xsd:annotation>
-		</xsd:attribute>
-	</xsd:complexType>
 	<xsd:complexType name="CT_Kinsoku">
 		<xsd:attribute name="lang" type="xsd:string" use="optional">
 			<xsd:annotation>
@@ -742,12 +654,49 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element name="sldMasterIdLst"
-					type="CT_SlideMasterIdList" minOccurs="0" maxOccurs="1">
+					minOccurs="0" maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation>
 							List of Slide Master IDs
 						</xsd:documentation>
 					</xsd:annotation>
+	<xsd:complexType> <!--   name="CT_SlideMasterIdList" -->
+		<xsd:sequence>
+			<xsd:element name="sldMasterId" minOccurs="0"
+				maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>
+						Slide Master ID
+					</xsd:documentation>
+				</xsd:annotation>
+				<xsd:complexType><!--  name="CT_SlideMasterIdListEntry"  -->
+					<xsd:sequence>
+						<xsd:element name="extLst"
+							type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+					</xsd:sequence>
+					<xsd:attribute name="id" type="ST_SlideMasterId"
+						use="optional">
+						<xsd:annotation>
+							<xsd:documentation>
+								Slide Master Identifier
+							</xsd:documentation>
+						</xsd:annotation>
+					</xsd:attribute>
+					<xsd:attribute ref="r:id" use="required">
+						<xsd:annotation>
+							<xsd:documentation>
+								Relationship Identifier
+							</xsd:documentation>
+							<xsd:appinfo>
+								<jaxb:property name="rid" />
+							</xsd:appinfo>
+						</xsd:annotation>
+					</xsd:attribute>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+					
 				</xsd:element>
 				<xsd:element name="notesMasterIdLst"
 					type="CT_NotesMasterIdList" minOccurs="0" maxOccurs="1">
@@ -765,21 +714,82 @@
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element name="sldIdLst" type="CT_SlideIdList"
-					minOccurs="0" maxOccurs="1">
+				<xsd:element name="sldIdLst" minOccurs="0"
+					maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation>
 							List of Slide IDs
 						</xsd:documentation>
 					</xsd:annotation>
+					<xsd:complexType><!-- name="CT_SlideIdList"  -->
+						<xsd:sequence>
+							<xsd:element name="sldId" minOccurs="0"
+								maxOccurs="unbounded">
+								<xsd:annotation>
+									<xsd:documentation>
+										Slide ID
+									</xsd:documentation>
+								</xsd:annotation>
+								<xsd:complexType><!--  name="CT_SlideIdListEntry"  -->
+									<xsd:sequence>
+										<xsd:element name="extLst"
+											type="CT_ExtensionList" minOccurs="0" maxOccurs="1" />
+									</xsd:sequence>
+									<xsd:attribute name="id"
+										type="ST_SlideId" use="required">
+										<xsd:annotation>
+											<xsd:documentation>
+												Slide Identifier
+											</xsd:documentation>
+										</xsd:annotation>
+									</xsd:attribute>
+									<xsd:attribute ref="r:id"
+										use="required">
+										<xsd:annotation>
+											<xsd:documentation>
+												Relationship Identifier
+											</xsd:documentation>
+											<xsd:appinfo>
+												<jaxb:property
+													name="rid" />
+											</xsd:appinfo>
+										</xsd:annotation>
+									</xsd:attribute>
+								</xsd:complexType>
+							</xsd:element>
+
+						</xsd:sequence>
+					</xsd:complexType>
+
 				</xsd:element>
-				<xsd:element name="sldSz" type="CT_SlideSize"
+				<xsd:element name="sldSz" 
 					minOccurs="0" maxOccurs="1">
 					<xsd:annotation>
 						<xsd:documentation>
 							Presentation Slide Size
 						</xsd:documentation>
 					</xsd:annotation>
+	<xsd:complexType> <!--  name="CT_SlideSize"  -->
+		<xsd:attribute name="cx" type="ST_SlideSizeCoordinate"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation>Extent Length</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cy" type="ST_SlideSizeCoordinate"
+			use="required">
+			<xsd:annotation>
+				<xsd:documentation>Extent Width</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="type" type="ST_SlideSizeType"
+			use="optional" default="custom">
+			<xsd:annotation>
+				<xsd:documentation>Type of Size</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+					
 				</xsd:element>
 				<xsd:element name="notesSz" type="a:CT_PositiveSize2D"
 					minOccurs="1" maxOccurs="1">

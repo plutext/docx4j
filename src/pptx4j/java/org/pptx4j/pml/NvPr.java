@@ -68,7 +68,7 @@ import org.docx4j.dml.CTVideoFile;
     "custDataLst",
     "extLst"
 })
-public class CTApplicationNonVisualDrawingProps {
+public class NvPr {
 
     protected CTPlaceholder ph;
     @XmlElement(namespace = "http://schemas.openxmlformats.org/drawingml/2006/main")

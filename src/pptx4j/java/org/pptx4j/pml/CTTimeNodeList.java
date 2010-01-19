@@ -68,19 +68,19 @@ import javax.xml.bind.annotation.XmlType;
 public class CTTimeNodeList {
 
     @XmlElements({
-        @XmlElement(name = "video", type = CTTLMediaNodeVideo.class),
-        @XmlElement(name = "animMotion", type = CTTLAnimateMotionBehavior.class),
-        @XmlElement(name = "anim", type = CTTLAnimateBehavior.class),
-        @XmlElement(name = "animEffect", type = CTTLAnimateEffectBehavior.class),
-        @XmlElement(name = "animRot", type = CTTLAnimateRotationBehavior.class),
-        @XmlElement(name = "par", type = CTTLTimeNodeParallel.class),
-        @XmlElement(name = "excl", type = CTTLTimeNodeExclusive.class),
-        @XmlElement(name = "set", type = CTTLSetBehavior.class),
-        @XmlElement(name = "animScale", type = CTTLAnimateScaleBehavior.class),
         @XmlElement(name = "animClr", type = CTTLAnimateColorBehavior.class),
         @XmlElement(name = "cmd", type = CTTLCommandBehavior.class),
+        @XmlElement(name = "seq", type = CTTLTimeNodeSequence.class),
+        @XmlElement(name = "animRot", type = CTTLAnimateRotationBehavior.class),
+        @XmlElement(name = "animEffect", type = CTTLAnimateEffectBehavior.class),
+        @XmlElement(name = "anim", type = CTTLAnimateBehavior.class),
+        @XmlElement(name = "set", type = CTTLSetBehavior.class),
+        @XmlElement(name = "excl", type = CTTLTimeNodeExclusive.class),
+        @XmlElement(name = "animScale", type = CTTLAnimateScaleBehavior.class),
         @XmlElement(name = "audio", type = CTTLMediaNodeAudio.class),
-        @XmlElement(name = "seq", type = CTTLTimeNodeSequence.class)
+        @XmlElement(name = "par", type = CTTLTimeNodeParallel.class),
+        @XmlElement(name = "animMotion", type = CTTLAnimateMotionBehavior.class),
+        @XmlElement(name = "video", type = CTTLMediaNodeVideo.class)
     })
     protected List<Object> parOrSeqOrExcl;
 
@@ -102,19 +102,19 @@ public class CTTimeNodeList {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTTLMediaNodeVideo }
-     * {@link CTTLAnimateMotionBehavior }
-     * {@link CTTLAnimateBehavior }
-     * {@link CTTLAnimateEffectBehavior }
-     * {@link CTTLAnimateRotationBehavior }
-     * {@link CTTLTimeNodeParallel }
-     * {@link CTTLTimeNodeExclusive }
-     * {@link CTTLSetBehavior }
-     * {@link CTTLAnimateScaleBehavior }
      * {@link CTTLAnimateColorBehavior }
      * {@link CTTLCommandBehavior }
-     * {@link CTTLMediaNodeAudio }
      * {@link CTTLTimeNodeSequence }
+     * {@link CTTLAnimateRotationBehavior }
+     * {@link CTTLAnimateEffectBehavior }
+     * {@link CTTLAnimateBehavior }
+     * {@link CTTLSetBehavior }
+     * {@link CTTLTimeNodeExclusive }
+     * {@link CTTLAnimateScaleBehavior }
+     * {@link CTTLMediaNodeAudio }
+     * {@link CTTLTimeNodeParallel }
+     * {@link CTTLAnimateMotionBehavior }
+     * {@link CTTLMediaNodeVideo }
      * 
      * 
      */
