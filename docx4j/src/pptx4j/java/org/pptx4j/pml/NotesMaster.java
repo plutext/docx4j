@@ -24,24 +24,26 @@ package org.pptx4j.pml;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.docx4j.dml.CTShapeProperties;
-import org.docx4j.dml.CTShapeStyle;
+import org.docx4j.dml.CTColorMapping;
+import org.docx4j.dml.CTTextListStyle;
 
 
 /**
- * <p>Java class for CT_Connector complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_Connector">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="nvCxnSpPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ConnectorNonVisual"/>
- *         &lt;element name="spPr" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeProperties"/>
- *         &lt;element name="style" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ShapeStyle" minOccurs="0"/>
+ *         &lt;element name="cSld" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CommonSlideData"/>
+ *         &lt;group ref="{http://schemas.openxmlformats.org/presentationml/2006/main}EG_TopLevelSlide"/>
+ *         &lt;element name="hf" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HeaderFooter" minOccurs="0"/>
+ *         &lt;element name="notesStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/>
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionListModify" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -52,91 +54,118 @@ import org.docx4j.dml.CTShapeStyle;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Connector", propOrder = {
-    "nvCxnSpPr",
-    "spPr",
-    "style",
+@XmlType(name = "", propOrder = {
+    "cSld",
+    "clrMap",
+    "hf",
+    "notesStyle",
     "extLst"
 })
-public class CTConnector {
+@XmlRootElement(name = "notesMaster")
+public class NotesMaster {
 
     @XmlElement(required = true)
-    protected CTConnectorNonVisual nvCxnSpPr;
+    protected CommonSlideData cSld;
     @XmlElement(required = true)
-    protected CTShapeProperties spPr;
-    protected CTShapeStyle style;
+    protected CTColorMapping clrMap;
+    protected CTHeaderFooter hf;
+    protected CTTextListStyle notesStyle;
     protected CTExtensionListModify extLst;
 
     /**
-     * Gets the value of the nvCxnSpPr property.
+     * Gets the value of the cSld property.
      * 
      * @return
      *     possible object is
-     *     {@link CTConnectorNonVisual }
+     *     {@link CommonSlideData }
      *     
      */
-    public CTConnectorNonVisual getNvCxnSpPr() {
-        return nvCxnSpPr;
+    public CommonSlideData getCSld() {
+        return cSld;
     }
 
     /**
-     * Sets the value of the nvCxnSpPr property.
+     * Sets the value of the cSld property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTConnectorNonVisual }
+     *     {@link CommonSlideData }
      *     
      */
-    public void setNvCxnSpPr(CTConnectorNonVisual value) {
-        this.nvCxnSpPr = value;
+    public void setCSld(CommonSlideData value) {
+        this.cSld = value;
     }
 
     /**
-     * Gets the value of the spPr property.
+     * Gets the value of the clrMap property.
      * 
      * @return
      *     possible object is
-     *     {@link CTShapeProperties }
+     *     {@link CTColorMapping }
      *     
      */
-    public CTShapeProperties getSpPr() {
-        return spPr;
+    public CTColorMapping getClrMap() {
+        return clrMap;
     }
 
     /**
-     * Sets the value of the spPr property.
+     * Sets the value of the clrMap property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTShapeProperties }
+     *     {@link CTColorMapping }
      *     
      */
-    public void setSpPr(CTShapeProperties value) {
-        this.spPr = value;
+    public void setClrMap(CTColorMapping value) {
+        this.clrMap = value;
     }
 
     /**
-     * Gets the value of the style property.
+     * Gets the value of the hf property.
      * 
      * @return
      *     possible object is
-     *     {@link CTShapeStyle }
+     *     {@link CTHeaderFooter }
      *     
      */
-    public CTShapeStyle getStyle() {
-        return style;
+    public CTHeaderFooter getHf() {
+        return hf;
     }
 
     /**
-     * Sets the value of the style property.
+     * Sets the value of the hf property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTShapeStyle }
+     *     {@link CTHeaderFooter }
      *     
      */
-    public void setStyle(CTShapeStyle value) {
-        this.style = value;
+    public void setHf(CTHeaderFooter value) {
+        this.hf = value;
+    }
+
+    /**
+     * Gets the value of the notesStyle property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTTextListStyle }
+     *     
+     */
+    public CTTextListStyle getNotesStyle() {
+        return notesStyle;
+    }
+
+    /**
+     * Sets the value of the notesStyle property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTTextListStyle }
+     *     
+     */
+    public void setNotesStyle(CTTextListStyle value) {
+        this.notesStyle = value;
     }
 
     /**

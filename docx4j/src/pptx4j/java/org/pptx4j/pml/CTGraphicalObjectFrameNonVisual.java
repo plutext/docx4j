@@ -63,7 +63,7 @@ public class CTGraphicalObjectFrameNonVisual {
     @XmlElement(required = true)
     protected CTNonVisualGraphicFrameProperties cNvGraphicFramePr;
     @XmlElement(required = true)
-    protected CTApplicationNonVisualDrawingProps nvPr;
+    protected NvPr nvPr;
 
     /**
      * Gets the value of the cNvPr property.
@@ -118,10 +118,10 @@ public class CTGraphicalObjectFrameNonVisual {
      * 
      * @return
      *     possible object is
-     *     {@link CTApplicationNonVisualDrawingProps }
+     *     {@link NvPr }
      *     
      */
-    public CTApplicationNonVisualDrawingProps getNvPr() {
+    public NvPr getNvPr() {
         return nvPr;
     }
 
@@ -130,10 +130,10 @@ public class CTGraphicalObjectFrameNonVisual {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTApplicationNonVisualDrawingProps }
+     *     {@link NvPr }
      *     
      */
-    public void setNvPr(CTApplicationNonVisualDrawingProps value) {
+    public void setNvPr(NvPr value) {
         this.nvPr = value;
     }
 

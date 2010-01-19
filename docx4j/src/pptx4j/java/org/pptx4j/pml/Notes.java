@@ -23,28 +23,28 @@ package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.docx4j.dml.CTColorMapping;
-import org.docx4j.dml.CTTextListStyle;
+import org.docx4j.dml.CTColorMappingOverride;
 
 
 /**
- * <p>Java class for CT_NotesMaster complex type.
+ * <p>Java class for anonymous complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_NotesMaster">
+ * &lt;complexType>
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="cSld" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_CommonSlideData"/>
- *         &lt;group ref="{http://schemas.openxmlformats.org/presentationml/2006/main}EG_TopLevelSlide"/>
- *         &lt;element name="hf" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HeaderFooter" minOccurs="0"/>
- *         &lt;element name="notesStyle" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_TextListStyle" minOccurs="0"/>
+ *         &lt;group ref="{http://schemas.openxmlformats.org/presentationml/2006/main}EG_ChildSlide" minOccurs="0"/>
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionListModify" minOccurs="0"/>
  *       &lt;/sequence>
+ *       &lt;attGroup ref="{http://schemas.openxmlformats.org/presentationml/2006/main}AG_ChildSlide"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -53,32 +53,32 @@ import org.docx4j.dml.CTTextListStyle;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_NotesMaster", propOrder = {
+@XmlType(name = "", propOrder = {
     "cSld",
-    "clrMap",
-    "hf",
-    "notesStyle",
+    "clrMapOvr",
     "extLst"
 })
-public class CTNotesMaster {
+@XmlRootElement(name = "notes")
+public class Notes {
 
     @XmlElement(required = true)
-    protected CTCommonSlideData cSld;
-    @XmlElement(required = true)
-    protected CTColorMapping clrMap;
-    protected CTHeaderFooter hf;
-    protected CTTextListStyle notesStyle;
+    protected CommonSlideData cSld;
+    protected CTColorMappingOverride clrMapOvr;
     protected CTExtensionListModify extLst;
+    @XmlAttribute
+    protected Boolean showMasterSp;
+    @XmlAttribute
+    protected Boolean showMasterPhAnim;
 
     /**
      * Gets the value of the cSld property.
      * 
      * @return
      *     possible object is
-     *     {@link CTCommonSlideData }
+     *     {@link CommonSlideData }
      *     
      */
-    public CTCommonSlideData getCSld() {
+    public CommonSlideData getCSld() {
         return cSld;
     }
 
@@ -87,83 +87,35 @@ public class CTNotesMaster {
      * 
      * @param value
      *     allowed object is
-     *     {@link CTCommonSlideData }
+     *     {@link CommonSlideData }
      *     
      */
-    public void setCSld(CTCommonSlideData value) {
+    public void setCSld(CommonSlideData value) {
         this.cSld = value;
     }
 
     /**
-     * Gets the value of the clrMap property.
+     * Gets the value of the clrMapOvr property.
      * 
      * @return
      *     possible object is
-     *     {@link CTColorMapping }
+     *     {@link CTColorMappingOverride }
      *     
      */
-    public CTColorMapping getClrMap() {
-        return clrMap;
+    public CTColorMappingOverride getClrMapOvr() {
+        return clrMapOvr;
     }
 
     /**
-     * Sets the value of the clrMap property.
+     * Sets the value of the clrMapOvr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link CTColorMapping }
+     *     {@link CTColorMappingOverride }
      *     
      */
-    public void setClrMap(CTColorMapping value) {
-        this.clrMap = value;
-    }
-
-    /**
-     * Gets the value of the hf property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTHeaderFooter }
-     *     
-     */
-    public CTHeaderFooter getHf() {
-        return hf;
-    }
-
-    /**
-     * Sets the value of the hf property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTHeaderFooter }
-     *     
-     */
-    public void setHf(CTHeaderFooter value) {
-        this.hf = value;
-    }
-
-    /**
-     * Gets the value of the notesStyle property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTextListStyle }
-     *     
-     */
-    public CTTextListStyle getNotesStyle() {
-        return notesStyle;
-    }
-
-    /**
-     * Sets the value of the notesStyle property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTextListStyle }
-     *     
-     */
-    public void setNotesStyle(CTTextListStyle value) {
-        this.notesStyle = value;
+    public void setClrMapOvr(CTColorMappingOverride value) {
+        this.clrMapOvr = value;
     }
 
     /**
@@ -188,6 +140,62 @@ public class CTNotesMaster {
      */
     public void setExtLst(CTExtensionListModify value) {
         this.extLst = value;
+    }
+
+    /**
+     * Gets the value of the showMasterSp property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public boolean isShowMasterSp() {
+        if (showMasterSp == null) {
+            return true;
+        } else {
+            return showMasterSp;
+        }
+    }
+
+    /**
+     * Sets the value of the showMasterSp property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setShowMasterSp(Boolean value) {
+        this.showMasterSp = value;
+    }
+
+    /**
+     * Gets the value of the showMasterPhAnim property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public boolean isShowMasterPhAnim() {
+        if (showMasterPhAnim == null) {
+            return true;
+        } else {
+            return showMasterPhAnim;
+        }
+    }
+
+    /**
+     * Sets the value of the showMasterPhAnim property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setShowMasterPhAnim(Boolean value) {
+        this.showMasterPhAnim = value;
     }
 
 }
