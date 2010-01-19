@@ -45,11 +45,11 @@ public class PartsList {
 
 //		String inputfilepath = System.getProperty("user.dir") 
 //				+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx.pptx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml
-		org.docx4j.openpackaging.packages.Package wordMLPackage = org.docx4j.openpackaging.packages.Package.load(new java.io.File(inputfilepath));		
+		org.docx4j.openpackaging.packages.OpcPackage wordMLPackage = org.docx4j.openpackaging.packages.OpcPackage.load(new java.io.File(inputfilepath));		
 		
 		// List the parts by walking the rels tree
 		RelationshipsPart rp = wordMLPackage.getRelationshipsPart();
@@ -77,7 +77,7 @@ public class PartsList {
 	 */
 	public static HashMap<Part, Part> handled = new HashMap<Part, Part>();
 	
-	public static void traverseRelationships(org.docx4j.openpackaging.packages.Package wordMLPackage, 
+	public static void traverseRelationships(org.docx4j.openpackaging.packages.OpcPackage wordMLPackage, 
 			RelationshipsPart rp, 
 			StringBuilder sb, String indent) {
 		
