@@ -22,6 +22,7 @@ package org.pptx4j.samples;
 
 
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 
 
@@ -43,7 +44,7 @@ public class RoundTripTest {
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx.pptx";
 		
 		PresentationMLPackage presentationMLPackage = 
-			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));
+			(PresentationMLPackage)OpcPackage.load(new java.io.File(inputfilepath));
 		
 		System.out.println("\n\n saving .. \n\n");
 		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-out.pptx";

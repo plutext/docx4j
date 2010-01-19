@@ -27,7 +27,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
-import org.pptx4j.pml.CTShape;
+import org.pptx4j.pml.Shape;
 
 
 
@@ -53,7 +53,7 @@ public class CreateHelloWorld  {
 				new PartName("/ppt/slides/slide1.xml"));
 		
 		// Create and add shape
-		CTShape sample = ((CTShape)XmlUtils.unmarshalString(SAMPLE_SHAPE, Context.jcPML) );
+		Shape sample = ((Shape)XmlUtils.unmarshalString(SAMPLE_SHAPE, Context.jcPML) );
 		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(sample);
 		
 		// All done: save it

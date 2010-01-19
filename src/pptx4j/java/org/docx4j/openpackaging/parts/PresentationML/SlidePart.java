@@ -28,7 +28,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.pptx4j.pml.CTCommonSlideData;
+import org.pptx4j.pml.CommonSlideData;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Sld;
 
@@ -62,7 +62,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 		ObjectFactory factory = Context.getpmlObjectFactory(); 
 		Sld sld = factory.createSld();
 		sld.setCSld( 
-				(CTCommonSlideData)XmlUtils.unmarshalString(COMMON_SLIDE_DATA, Context.jcPML) );
+				(CommonSlideData)XmlUtils.unmarshalString(COMMON_SLIDE_DATA, Context.jcPML, CommonSlideData.class) );
 		// sld.setClrMapOvr(value)
 		
 		return sld;		
