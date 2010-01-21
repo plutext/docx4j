@@ -29,6 +29,7 @@ import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
@@ -553,7 +554,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     }
     
     
-    protected static void createCss(PPr pPr, StringBuffer result) {
+    public static void createCss(PPr pPr, StringBuffer result) {
     	
 		if (pPr==null) {
 			return;
@@ -566,7 +567,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     }
     
     
-    protected static void createCss(WordprocessingMLPackage wmlPackage, RPr rPr, StringBuffer result) {
+    public static void createCss(OpcPackage wmlPackage, RPr rPr, StringBuffer result) {
 
     	List<Property> properties = PropertyFactory.createProperties(wmlPackage, rPr);
     	

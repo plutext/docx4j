@@ -22,6 +22,7 @@ package org.docx4j.model.properties.run;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
@@ -33,9 +34,9 @@ public class Font extends AbstractRunProperty {
 	public final static String CSS_NAME = "font-family"; 
 	public final static String FO_NAME  = "font-family"; 
 	
-	private WordprocessingMLPackage wmlPackage;
+	private OpcPackage wmlPackage;
 	
-	public Font(WordprocessingMLPackage wmlPackage, RFonts rFonts ) {
+	public Font(OpcPackage wmlPackage, RFonts rFonts ) {
 		this.setObject(rFonts);
 		this.wmlPackage = wmlPackage;
 	}
@@ -67,17 +68,21 @@ public class Font extends AbstractRunProperty {
 		
 		String font = rFonts.getAscii();		
 		
-		if (font==null) {
-			font=wmlPackage.getDefaultFont();
+		if (font==null && wmlPackage instanceof WordprocessingMLPackage) {
+			font=((WordprocessingMLPackage)wmlPackage).getDefaultFont();
 		}
 		
 		return getPhysicalFont(wmlPackage, font);
 		
 	}
 
-	public static String getPhysicalFont(WordprocessingMLPackage wmlPackage, String fontName) {
+	public static String getPhysicalFont(OpcPackage wmlPackage, String fontName) {
 
-		PhysicalFont pf = wmlPackage.getFontMapper().getFontMappings().get(fontName);
+		if (!(wmlPackage instanceof WordprocessingMLPackage)) {
+			log.error("Implement me for pptx4j");
+			return null;
+		}
+		PhysicalFont pf = ((WordprocessingMLPackage)wmlPackage).getFontMapper().getFontMappings().get(fontName);
 		if (pf!=null) {
 			log.debug("Font '" + fontName + "' maps to " + pf.getName() );
 			return pf.getName();

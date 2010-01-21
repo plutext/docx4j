@@ -32,6 +32,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.BaseStyles.FontScheme;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -49,6 +50,7 @@ import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Style;
+import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.TextStyles;
@@ -238,6 +240,23 @@ public class PresentationMLPackage  extends OpcPackage {
 	    return globalPlaceHolders;
 	}
 	
+	private StyleTree styleTree;
+	public StyleTree getStyleTree() throws InvalidFormatException {
+		
+		if (styleTree==null) {
+			List<Style> styles = TextStyles.generateStyles(this);
+			
+			List<String> list = new ArrayList<String>();			
+			Map<String, Style> map = new HashMap<String, Style>();
+			for (Style s : styles) {
+				map.put(s.getStyleId(), s);
+				list.add(s.getStyleId());
+			}
+			styleTree = new StyleTree(list, map);
+		}
+		return styleTree;
+		
+	}
 	
 	public static void main(String[] args) throws Exception {
 
@@ -279,6 +298,8 @@ public class PresentationMLPackage  extends OpcPackage {
 	        	
 	        	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
 	        			"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
+	        	
+	        	SvgExporter.svg(presentationMLPackage, rl);
 	        }
 	    }
 		

@@ -47,6 +47,7 @@ import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.properties.table.tc.Shading;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblCellMar;
@@ -178,7 +179,7 @@ public class PropertyFactory {
 		
 	}
 
-	public static List<Property> createProperties(WordprocessingMLPackage wmlPackage, RPr rPr) {
+	public static List<Property> createProperties(OpcPackage wmlPackage, RPr rPr) {
 		
 		List<Property> properties = new ArrayList<Property>();
 		
