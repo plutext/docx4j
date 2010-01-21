@@ -68,19 +68,19 @@ import javax.xml.bind.annotation.XmlType;
 public class CTTimeNodeList {
 
     @XmlElements({
-        @XmlElement(name = "animClr", type = CTTLAnimateColorBehavior.class),
-        @XmlElement(name = "cmd", type = CTTLCommandBehavior.class),
-        @XmlElement(name = "seq", type = CTTLTimeNodeSequence.class),
-        @XmlElement(name = "animRot", type = CTTLAnimateRotationBehavior.class),
         @XmlElement(name = "animEffect", type = CTTLAnimateEffectBehavior.class),
+        @XmlElement(name = "seq", type = CTTLTimeNodeSequence.class),
+        @XmlElement(name = "par", type = CTTLTimeNodeParallel.class),
+        @XmlElement(name = "cmd", type = CTTLCommandBehavior.class),
         @XmlElement(name = "anim", type = CTTLAnimateBehavior.class),
+        @XmlElement(name = "audio", type = CTTLMediaNodeAudio.class),
         @XmlElement(name = "set", type = CTTLSetBehavior.class),
+        @XmlElement(name = "video", type = CTTLMediaNodeVideo.class),
+        @XmlElement(name = "animClr", type = CTTLAnimateColorBehavior.class),
         @XmlElement(name = "excl", type = CTTLTimeNodeExclusive.class),
         @XmlElement(name = "animScale", type = CTTLAnimateScaleBehavior.class),
-        @XmlElement(name = "audio", type = CTTLMediaNodeAudio.class),
-        @XmlElement(name = "par", type = CTTLTimeNodeParallel.class),
-        @XmlElement(name = "animMotion", type = CTTLAnimateMotionBehavior.class),
-        @XmlElement(name = "video", type = CTTLMediaNodeVideo.class)
+        @XmlElement(name = "animRot", type = CTTLAnimateRotationBehavior.class),
+        @XmlElement(name = "animMotion", type = CTTLAnimateMotionBehavior.class)
     })
     protected List<Object> parOrSeqOrExcl;
 
@@ -102,19 +102,19 @@ public class CTTimeNodeList {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTTLAnimateColorBehavior }
-     * {@link CTTLCommandBehavior }
-     * {@link CTTLTimeNodeSequence }
-     * {@link CTTLAnimateRotationBehavior }
      * {@link CTTLAnimateEffectBehavior }
+     * {@link CTTLTimeNodeSequence }
+     * {@link CTTLTimeNodeParallel }
+     * {@link CTTLCommandBehavior }
      * {@link CTTLAnimateBehavior }
+     * {@link CTTLMediaNodeAudio }
      * {@link CTTLSetBehavior }
+     * {@link CTTLMediaNodeVideo }
+     * {@link CTTLAnimateColorBehavior }
      * {@link CTTLTimeNodeExclusive }
      * {@link CTTLAnimateScaleBehavior }
-     * {@link CTTLMediaNodeAudio }
-     * {@link CTTLTimeNodeParallel }
+     * {@link CTTLAnimateRotationBehavior }
      * {@link CTTLAnimateMotionBehavior }
-     * {@link CTTLMediaNodeVideo }
      * 
      * 
      */

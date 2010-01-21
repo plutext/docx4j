@@ -59,10 +59,10 @@ import javax.xml.bind.annotation.XmlType;
 public class CTBuildList {
 
     @XmlElements({
-        @XmlElement(name = "bldP", type = CTTLBuildParagraph.class),
-        @XmlElement(name = "bldDgm", type = CTTLBuildDiagram.class),
         @XmlElement(name = "bldOleChart", type = CTTLOleBuildChart.class),
-        @XmlElement(name = "bldGraphic", type = CTTLGraphicalObjectBuild.class)
+        @XmlElement(name = "bldGraphic", type = CTTLGraphicalObjectBuild.class),
+        @XmlElement(name = "bldP", type = CTTLBuildParagraph.class),
+        @XmlElement(name = "bldDgm", type = CTTLBuildDiagram.class)
     })
     protected List<Object> bldPOrBldDgmOrBldOleChart;
 
@@ -84,10 +84,10 @@ public class CTBuildList {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTTLBuildParagraph }
-     * {@link CTTLBuildDiagram }
      * {@link CTTLOleBuildChart }
      * {@link CTTLGraphicalObjectBuild }
+     * {@link CTTLBuildParagraph }
+     * {@link CTTLBuildDiagram }
      * 
      * 
      */
