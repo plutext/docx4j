@@ -87,11 +87,11 @@ public class GroupShape {
     @XmlElement(required = true)
     protected CTGroupShapeProperties grpSpPr;
     @XmlElements({
-        @XmlElement(name = "cxnSp", type = CxnSp.class),
-        @XmlElement(name = "graphicFrame", type = CTGraphicalObjectFrame.class),
         @XmlElement(name = "pic", type = Pic.class),
         @XmlElement(name = "grpSp", type = GroupShape.class),
-        @XmlElement(name = "sp", type = Shape.class)
+        @XmlElement(name = "sp", type = Shape.class),
+        @XmlElement(name = "graphicFrame", type = CTGraphicalObjectFrame.class),
+        @XmlElement(name = "cxnSp", type = CxnSp.class)
     })
     protected List<Object> spOrGrpSpOrGraphicFrame;
     protected CTExtensionListModify extLst;
@@ -162,11 +162,11 @@ public class GroupShape {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CxnSp }
-     * {@link CTGraphicalObjectFrame }
      * {@link Pic }
      * {@link GroupShape }
      * {@link Shape }
+     * {@link CTGraphicalObjectFrame }
+     * {@link CxnSp }
      * 
      * 
      */
