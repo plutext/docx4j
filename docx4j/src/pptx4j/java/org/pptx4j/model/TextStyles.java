@@ -22,7 +22,10 @@ package org.pptx4j.model;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 
@@ -33,7 +36,9 @@ import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.BaseStyles.FontScheme;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -47,6 +52,7 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
+import org.docx4j.wml.Styles;
 import org.docx4j.wml.Style.Name;
 import org.pptx4j.pml.CTSlideMasterTextStyles;
 
@@ -288,13 +294,10 @@ public class TextStyles {
     	
     }	
     
-	public static void main(String[] args) throws Exception {
-
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-otherparts.xml";
-		
-		PresentationMLPackage presentationMLPackage = 
-			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
-
+    
+    
+	public static List<Style> generateStyles(PresentationMLPackage presentationMLPackage) 
+		throws InvalidFormatException {
 		
 		ThemePart tp = (ThemePart)presentationMLPackage.getParts().getParts().get(
 				new PartName("/ppt/theme/theme1.xml"));
@@ -320,7 +323,7 @@ public class TextStyles {
 						master.getJaxbElement().getTxStyles(), 
 						1, fontScheme));
 				
-		System.out.println("\n\n done .. \n\n");
+		return styles;
 		
 	}	
     

@@ -36,6 +36,7 @@ import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.run.Font;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.openpackaging.parts.Part;
@@ -284,11 +285,11 @@ public abstract class AbstractHtmlExporter implements Output {
 			return settings;
 		}
 		
-		public void setWmlPackage(WordprocessingMLPackage wmlPackage) {
+		public void setWmlPackage(OpcPackage wmlPackage) {
 			settings.put("wmlPackage", wmlPackage);
 		}
-		public WordprocessingMLPackage getWmlPackage() {
-			return (WordprocessingMLPackage)settings.get("wmlPackage");
+		public OpcPackage getWmlPackage() {
+			return (OpcPackage)settings.get("wmlPackage");
 		}
 		
 		public void setConditionalComments(Boolean conditionalComments) {

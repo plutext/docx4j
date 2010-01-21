@@ -91,7 +91,11 @@ public class ResolvedLayout implements Cloneable {
 		this.shapeTree = shapeTree;
 	}
 	
-	
+	// Record which master this layout uses
+	private int masterNumber;
+	public int getMasterNumber() {
+		return masterNumber;
+	}
 		
 	/**
 	 * Create a ResolvedLayout for a SlideLayoutPart.
@@ -117,6 +121,8 @@ public class ResolvedLayout implements Cloneable {
 		resolvedLayout.shapeTree = 
 			createEffectiveShapeTree( slideLayoutPart.getJaxbElement().getCSld().getSpTree(),  
 					 masterPlaceholders );
+		
+		resolvedLayout.masterNumber = 1; // TODO FIXME
 		
 		return resolvedLayout;
 	}
@@ -161,6 +167,8 @@ public class ResolvedLayout implements Cloneable {
 				createEffectiveShapeTree( slidePart.getJaxbElement().getCSld().getSpTree(),  
 						layoutPart.getIndexedPlaceHolders() );			
 		}
+
+		resolvedLayout.masterNumber = 1; // TODO FIXME
 		
 		return resolvedLayout;
 	}
@@ -219,7 +227,9 @@ public class ResolvedLayout implements Cloneable {
 	private static void handleNvSpPr(NvSpPr sp, NvSpPr layoutShape) {
 		
 		// Get rid of p:nvPr/p:ph
-		sp.getNvPr().setPh(null);		
+		// No, don't do that; we need to know for rendering text properly whether its a
+		// title or body elememt
+		// sp.getNvPr().setPh(null);		
 	}
 
 	private static void handleSpPr(CTShapeProperties sp, CTShapeProperties layoutShape) {

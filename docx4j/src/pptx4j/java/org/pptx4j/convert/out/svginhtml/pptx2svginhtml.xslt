@@ -1,0 +1,259 @@
+﻿
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:WX="http://schemas.microsoft.com/office/word/2003/auxHint"
+    xmlns:aml="http://schemas.microsoft.com/aml/2001/core"
+    xmlns:w10="urn:schemas-microsoft-com:office:word"
+	xmlns:pkg="http://schemas.microsoft.com/office/2006/xmlPackage"		    
+	xmlns:java="http://xml.apache.org/xalan/java" 
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+	xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="1.0"
+        exclude-result-prefixes="java w a o v WX aml w10 pkg wp pic xlink r p">	
+<!-- 	xmlns="http://www.w3.org/2000/svg"
+ -->        
+        <!--  Note definition of xmlns:r is different 
+              from the definition in an _rels file
+              (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
+
+<!-- 
+	<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" />
+   -->
+<!--  indent="no" gives a better result for things like subscripts, because it stops
+      the user-agent from replacing a carriage return in the HTML with a space in the output. 
+      
+      but, for now, make indent yes-->
+<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" indent="yes" /> 
+
+<!--  Input to this transform is a Shape Tree p:spTree. 
+
+	Ouput is SVG in HTML.
+
+ 	<text x="{$x}" y="{$y}"><xsl:value-of select="a:p/a:r/a:t"/></text>
+
+	  textArea (SVG 1.2 Tiny) - doesn't work in Chrome 4.0.249.64 or FF 3.5.7
+      so its not a feasible solution as at January 2010 :-(  
+      See http://www.w3.org/TR/SVGTiny12/examples/textArea01.svg
+      from http://www.w3.org/TR/SVGTiny12/text.html#TextInAnArea
+      Opera 9.5 apparently supports it though!
+
+	  Inkscape uses flowPara, but browsers can't render this.
+      
+      Could use mixed svg html, but that's unsatisfactory.  Will have to do for now.
+      Either svg in html, or html foreignObject in svg. 
+
+      carto textFlow.js works nicely in FF, but not Chrome :-(
+
+-->
+
+	<xsl:param name="wmlPackage"/> <!--  really, its pml -->
+	<xsl:param name="resolvedLayout"/>
+<!-- 
+	<xsl:param name="modelStates"/>	
+	<xsl:param name="imageDirPath"/>
+	   
+	<xsl:param name="fontMapper"/>	
+	<xsl:param name="fontFamilyStack"/>
+	
+	<xsl:param name="conditionalComments"/> 
+	 -->
+
+<!-- 
+
+<p:spTree xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+    <p:nvGrpSpPr>
+        <p:cNvPr name="" id="1"/>
+        <p:cNvGrpSpPr/>
+        <p:nvPr/>
+    </p:nvGrpSpPr>
+    <p:grpSpPr>
+        <a:xfrm>
+            <a:off y="0" x="0"/>
+            <a:ext cy="0" cx="0"/>
+            <a:chOff y="0" x="0"/>
+            <a:chExt cy="0" cx="0"/>
+        </a:xfrm>
+    </p:grpSpPr>
+    <p:sp>
+        <p:nvSpPr>
+            <p:cNvPr name="Title 1" id="2"/>
+            <p:cNvSpPr>
+                <a:spLocks noGrp="true"/>
+            </p:cNvSpPr>
+            <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+            <a:xfrm>
+                <a:off y="2130425" x="685800"/>
+                <a:ext cy="1470025" cx="7772400"/>
+            </a:xfrm>
+        </p:spPr>
+        <p:txBody>
+            <a:bodyPr/>
+            <a:lstStyle/>
+            <a:p>
+                <a:r>
+                    <a:rPr smtClean="false" lang="en-US"/>
+                    <a:t>My title</a:t>
+                </a:r>
+                <a:endParaRPr lang="en-US"/>
+            </a:p>
+        </p:txBody>
+    </p:sp>
+    <p:sp>
+        <p:nvSpPr>
+            <p:cNvPr name="Subtitle 2" id="3"/>
+            <p:cNvSpPr>
+                <a:spLocks noGrp="true"/>
+            </p:cNvSpPr>
+            <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+            <a:xfrm>
+                <a:off y="3886200" x="1371600"/>
+                <a:ext cy="1752600" cx="6400800"/>
+            </a:xfrm>
+        </p:spPr>
+        <p:txBody>
+            <a:bodyPr/>
+            <a:lstStyle/>
+            <a:p>
+                <a:r>
+                    <a:rPr smtClean="false" lang="en-US"/>
+                    <a:t>My subtitle</a:t>
+                </a:r>
+                <a:endParaRPr lang="en-US"/>
+            </a:p>
+        </p:txBody>
+    </p:sp>
+</p:spTree>
+
+
+
+ -->
+
+<xsl:template match="/">
+	<html>
+		<head>
+			<title>Slide output proof of concept</title>
+	        <style>
+	          <xsl:comment>
+							
+					/* Word style definitions */
+					<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.getCssForStyles( 
+	  											$wmlPackage)"/>
+	
+	          </xsl:comment>
+	        </style>
+			
+		</head>
+		<body>
+		
+			<xsl:apply-templates/>		
+		
+		</body>
+	</html>
+	
+<!-- 
+	<svg width="600px" height="600px" version="1.1"
+			baseProfile="full">
+		<xsl:apply-templates/>
+	</svg>
+	 -->
+</xsl:template>
+
+<xsl:template match="p:spTree">
+	<xsl:apply-templates/>
+</xsl:template>
+
+<xsl:template match="p:nvGrpSpPr"/>
+<xsl:template match="p:grpSpPr"/>
+
+<!-- 
+    <p:sp>
+        <p:nvSpPr>
+            <p:cNvPr name="Title 1" id="2"/>
+            <p:cNvSpPr>
+                <a:spLocks noGrp="true"/>
+            </p:cNvSpPr>
+            <p:nvPr/>
+        </p:nvSpPr>
+        <p:spPr>
+            <a:xfrm>
+                <a:off y="2130425" x="685800"/>
+                <a:ext cy="1470025" cx="7772400"/>
+            </a:xfrm>
+        </p:spPr>
+        <p:txBody>
+            <a:bodyPr/>
+            <a:lstStyle/>
+            <a:p>
+                <a:r>
+                    <a:rPr smtClean="false" lang="en-US"/>
+                    <a:t>My title</a:t>
+                </a:r>
+                <a:endParaRPr lang="en-US"/>
+            </a:p>
+        </p:txBody>
+    </p:sp>
+ -->
+ <xsl:template match="p:sp">
+ 	<xsl:apply-templates select="p:txBody"/>
+ </xsl:template>
+
+ <xsl:template match="p:txBody">
+ 
+ 
+ 	<!--  Convert from EMU at 96dpi -->
+ 	<xsl:variable name="x"><xsl:value-of select="round(number(../p:spPr/a:xfrm/a:off/@x)*96 div 914400)"/></xsl:variable>
+ 	<xsl:variable name="y"><xsl:value-of select="round(number(../p:spPr/a:xfrm/a:off/@y)*96 div 914400)"/></xsl:variable>
+ 	<xsl:variable name="cx"><xsl:value-of select="round(number(../p:spPr/a:xfrm/a:ext/@cx)*96 div 914400)"/></xsl:variable>
+ 	<xsl:variable name="cy"><xsl:value-of select="round(number(../p:spPr/a:xfrm/a:ext/@cy)*96 div 914400)"/></xsl:variable>
+ 	
+ 	<!--  At present, docx4j doesn't do text boxes in its docx html,
+ 	      so handle the box here.  -->
+ 	<div style="position: absolute; width:{$cx}; height:{$cy}; left:{$x}; top:{$y}; border: red dashed;">
+	 	<xsl:apply-templates select="a:p"/>
+ 	</div>
+ </xsl:template>
+
+ <xsl:template match="a:p">
+		<xsl:variable name="lvl"><xsl:value-of select="number(a:pPr/@lvl)"/></xsl:variable>
+		<xsl:variable name="cNvPrName"><xsl:value-of select="string(../../p:nvSpPr/p:cNvPr/@name)"/></xsl:variable>
+		<xsl:variable name="phType"><xsl:value-of select="string(../../p:nvSpPr/p:nvPr/p:ph/@type)"/></xsl:variable>
+		<xsl:variable name="childResults"><xsl:apply-templates select="a:r"/></xsl:variable>
+	  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.createBlockForP(
+	  		$wmlPackage, $resolvedLayout,
+	  		$lvl,
+	  		$cNvPrName, $phType,
+	  		 $childResults)" />
+ </xsl:template>
+
+ <xsl:template match="a:r">
+ 	<xsl:apply-templates select="a:t"/>
+ </xsl:template>
+
+  <xsl:template match="a:t">  	
+  	<xsl:value-of select="."/>
+  </xsl:template>  	
+
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+  <xsl:template match="*" priority="-1"> 
+		      <div
+		        color="red">
+        NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>
+      		</div> 
+      		 
+  </xsl:template>
+
+   
+</xsl:stylesheet>
