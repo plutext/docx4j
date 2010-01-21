@@ -45,7 +45,9 @@ public class PartsList {
 
 //		String inputfilepath = System.getProperty("user.dir") 
 //				+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx.pptx";
+		
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml
