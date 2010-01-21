@@ -20,15 +20,26 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import javax.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.relationships.Relationship;
+import org.pptx4j.model.ResolvedLayout;
+import org.pptx4j.model.ShapeWrapper;
+import org.pptx4j.pml.CTPlaceholder;
 import org.pptx4j.pml.CommonSlideData;
 import org.pptx4j.pml.ObjectFactory;
+import org.pptx4j.pml.Shape;
 import org.pptx4j.pml.Sld;
 import org.pptx4j.pml.SldLayout;
 
@@ -56,6 +67,32 @@ public final class SlideLayoutPart extends JaxbPmlPart<SldLayout> {
 		
 	}
 	
+	SlideMasterPart master = null;
+	public SlideMasterPart getSlideMasterPart() {
+		
+		if (master!=null) {
+			return master;
+		}
+		
+		Relationship masterRel = getRelationshipsPart().getRelationshipByType(
+				Namespaces.PRESENTATIONML_SLIDE_MASTER);
+		if (masterRel==null) {
+			log.warn(this.partName.getName() + " has no master!");
+		} else {
+			master = (SlideMasterPart)getRelationshipsPart().getPart(masterRel);
+		}
+		return master;
+	}
+	
+	private ResolvedLayout resolvedLayout;
+	public ResolvedLayout getResolvedLayout() {
+		if (resolvedLayout!=null) {
+			return resolvedLayout;		
+		}
+		resolvedLayout = ResolvedLayout.resolveSlideLayout(this);
+		return resolvedLayout;
+	}	
+	
 	public static SldLayout createSldLayout() throws JAXBException {
 
 		ObjectFactory factory = Context.getpmlObjectFactory(); 
@@ -68,6 +105,51 @@ public final class SlideLayoutPart extends JaxbPmlPart<SldLayout> {
 		
 		sldLayout.setCSld( cSld );
 		return sldLayout;		
+	}
+	
+	Map<String, ShapeWrapper> indexedPlaceHolders;
+	public Map<String, ShapeWrapper> getIndexedPlaceHolders() {
+		if (indexedPlaceHolders==null) {
+			indexPlaceHolders();
+		}
+		return indexedPlaceHolders;
+	}
+	
+	private Map<String, ShapeWrapper> indexPlaceHolders() {
+		
+		// All this for the 16 possible things defined in STPlaceholderType!
+		
+		indexedPlaceHolders = new HashMap<String, ShapeWrapper>();
+		
+//    	List<Object> possiblyShapes = getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame();
+		
+		
+		// The placeholders are resolved against the master.
+		List<Object> possiblyShapes = getResolvedLayout().getShapeTree().getSpOrGrpSpOrGraphicFrame();
+		
+    	
+    	for (Object o : possiblyShapes) {
+    		
+    		if (o instanceof Shape) {
+    			Shape sp = (Shape)o;
+    			if (sp.getNvSpPr()!=null
+    					&& sp.getNvSpPr().getNvPr()!=null
+    						&& sp.getNvSpPr().getNvPr().getPh() != null) {
+    				CTPlaceholder placeholder = sp.getNvSpPr().getNvPr().getPh();
+    				ShapeWrapper sw = new ShapeWrapper(sp, placeholder.getType().toString(),
+    						this);
+    				indexedPlaceHolders.put(sw.getPhType(), sw);
+    				
+    				String name = "";
+    				if (sp.getNvSpPr().getCNvPr()!=null) {
+    					name = sp.getNvSpPr().getCNvPr().getName();
+    				}
+    				
+    				log.debug("Indexed: " + sw.getPhType() + "(" + name + ") in " + sw.getOwner().getPartName().toString() );
+    			}
+    		}
+    	}
+	    return indexedPlaceHolders;
 	}
 	
 

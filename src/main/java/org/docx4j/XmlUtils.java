@@ -303,6 +303,42 @@ public class XmlUtils {
 		return null;				
 	}
 
+	/** Marshal to a String, for object
+	 *  missing an @XmlRootElement annotation.  */
+	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint,
+			JAXBContext jc,
+			String uri, String local, Class declaredType) {
+		// TODO - refactor this.
+		try {
+
+			Marshaller m = jc.createMarshaller();
+			NamespacePrefixMapperUtils.setProperty(m, 
+					NamespacePrefixMapperUtils.getPrefixMapper());			
+			
+			if (prettyprint) {
+				m.setProperty("jaxb.formatted.output", true);
+			}
+			
+			if (suppressDeclaration) {
+				m.setProperty(Marshaller.JAXB_FRAGMENT,true);
+			}			
+			
+			StringWriter sWriter = new StringWriter();
+
+			m.marshal( 
+					new JAXBElement(new QName(uri,local), declaredType, o ),
+					sWriter);
+
+			return sWriter.toString();
+			
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		return null;
+	}
+	
+	
 	public static java.io.InputStream marshaltoInputStream(Object o, boolean suppressDeclaration, JAXBContext jc ) {
 		
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html

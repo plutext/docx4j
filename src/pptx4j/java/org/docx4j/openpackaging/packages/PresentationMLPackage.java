@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2010, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,7 +21,17 @@
 package org.docx4j.openpackaging.packages;
 
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
+import org.docx4j.dml.CTTextListStyle;
+import org.docx4j.dml.BaseStyles.FontScheme;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -38,6 +48,13 @@ import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.Style;
+import org.pptx4j.model.ResolvedLayout;
+import org.pptx4j.model.ShapeWrapper;
+import org.pptx4j.model.TextStyles;
+import org.pptx4j.pml.CommonSlideData;
+import org.pptx4j.pml.GroupShape;
+import org.pptx4j.pml.SldLayout;
 
 
 
@@ -56,7 +73,7 @@ public class PresentationMLPackage  extends OpcPackage {
 	 */	
 	public PresentationMLPackage() {
 		super();
-		setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT)); // FIXME
+		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN)); 		
 	}
 	/**
 	 * Constructor.
@@ -66,7 +83,7 @@ public class PresentationMLPackage  extends OpcPackage {
 	 */
 	public PresentationMLPackage(ContentTypeManager contentTypeManager) {
 		super(contentTypeManager);
-		setContentType(new ContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT));
+		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN));
 	}
 	
 	
@@ -74,12 +91,12 @@ public class PresentationMLPackage  extends OpcPackage {
 	 * Convenience method to create a PresentationMLPackage
 	 * from an existing File (.pptx or .xml Flat OPC).
      *
-	 * @param docxFile
-	 *            The docx file 
+	 * @param pptxFile
+	 *            The pptx file 
 	 */	
-	public static PresentationMLPackage load(java.io.File docxFile) throws Docx4JException {
+	public static PresentationMLPackage load(java.io.File pptxFile) throws Docx4JException {
 		
-		return (PresentationMLPackage)OpcPackage.load(docxFile);
+		return (PresentationMLPackage)OpcPackage.load(pptxFile);
 	}
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
@@ -196,16 +213,86 @@ public class PresentationMLPackage  extends OpcPackage {
 + "</p:sp>";
 
 	
+	Map<String, ShapeWrapper> globalPlaceHolders;
+	public Map<String, ShapeWrapper> getPlaceHoldersFromAcrossLayouts() {
+		
+		if (globalPlaceHolders!=null) {
+			return globalPlaceHolders;
+		}
+		
+		// All this for the 16 possible things defined in STPlaceholderType!
+		
+		Map<String, ShapeWrapper> globalPlaceHolders = new HashMap<String, ShapeWrapper>();
+		
+		Iterator partIterator = this.getParts().getParts().entrySet().iterator();
+	    while (partIterator.hasNext()) {
+	    	
+	        Map.Entry pairs = (Map.Entry)partIterator.next();
+	        
+	        Part p = (Part)pairs.getValue();
+	        if (p instanceof SlideLayoutPart) {
+	        	SldLayout sldLayout = ((SlideLayoutPart)p).getJaxbElement();	        	
+	        	globalPlaceHolders.putAll( ((SlideLayoutPart)p).getIndexedPlaceHolders()  );
+	        }
+	    }
+	    return globalPlaceHolders;
+	}
+	
+	
 	public static void main(String[] args) throws Exception {
 
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-otherparts.xml";
 		
 		PresentationMLPackage presentationMLPackage = 
 			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
-		
-		System.out.println("\n\n saving .. \n\n");
-		
 
+		
+//		ThemePart tp = (ThemePart)presentationMLPackage.getParts().getParts().get(
+//				new PartName("/ppt/theme/theme1.xml"));
+//		FontScheme fontScheme = tp.getFontScheme();
+//		List<Style> styles = new ArrayList<Style>();
+//		
+//		// presentation.xml
+//		MainPresentationPart pp = (MainPresentationPart)presentationMLPackage.getParts().getParts().get(
+//				new PartName("/ppt/presentation.xml"));
+//		styles.addAll(
+//				TextStyles.generateWordStylesFromPresentationPart(
+//						pp.getJaxbElement().getDefaultTextStyle(),
+//						"", fontScheme));
+//
+//		// master
+//		SlideMasterPart master = (SlideMasterPart)presentationMLPackage.getParts().getParts().get(
+//				new PartName("/ppt/slideMasters/slideMaster1.xml"));
+//		styles.addAll(
+//				TextStyles.generateWordStylesForMaster(
+//						master.getJaxbElement().getTxStyles(), 
+//						1, fontScheme));
+		
+		Iterator partIterator = presentationMLPackage.getParts().getParts().entrySet().iterator();
+	    while (partIterator.hasNext()) {
+	    	
+	        Map.Entry pairs = (Map.Entry)partIterator.next();
+	        
+	        Part p = (Part)pairs.getValue();
+	        if (p instanceof SlidePart) {
+	        	ResolvedLayout rl = ((SlidePart)p).getResolvedLayout();	
+	        	
+	        	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
+	        			"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
+	        }
+	    }
+		
+		
+//		System.out.println(presentationMLPackage.getParts().getParts().size());
+//		Map<String, ShapeWrapper> index = ShapeWrapper.indexPlaceHolders(	presentationMLPackage.getParts().getParts());
+//		
+//		SlidePart slidePart = (SlidePart)presentationMLPackage.getParts().getParts().get(
+//				new PartName("/ppt/slides/slide1.xml"));
+//
+//		GroupShape shapeTree = slidePart.getEffectiveShapeTree( index );
+//		
+//		System.out.println( XmlUtils.marshaltoString(shapeTree, true, Context.jcPML));
+		
 		System.out.println("\n\n done .. \n\n");
 		
 	}	

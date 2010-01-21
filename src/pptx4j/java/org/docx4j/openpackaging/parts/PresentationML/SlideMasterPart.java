@@ -20,6 +20,9 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.xml.bind.JAXBException;
@@ -31,7 +34,11 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
+import org.pptx4j.model.ResolvedLayout;
+import org.pptx4j.model.ShapeWrapper;
+import org.pptx4j.pml.CTPlaceholder;
 import org.pptx4j.pml.CommonSlideData;
+import org.pptx4j.pml.Shape;
 import org.pptx4j.pml.SlideLayoutIdList;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Sld;
@@ -62,7 +69,20 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		
 	}
 	
-	
+	private ResolvedLayout resolvedLayout;
+	public ResolvedLayout getResolvedLayout() {
+		if (resolvedLayout!=null) {
+			return resolvedLayout;		
+		}
+		resolvedLayout = new ResolvedLayout();
+		resolvedLayout.setBg( getJaxbElement().getCSld().getBg() );
+		
+		// ShapeTree
+		resolvedLayout.setShapeTree( 
+					getJaxbElement().getCSld().getSpTree() );
+		
+		return resolvedLayout;
+	}
 	
 	public static SldMaster createSldMaster() throws JAXBException {
 
@@ -95,6 +115,39 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		return entry;
 	}
 	
+	Map<String, ShapeWrapper> indexedPlaceHolders;
+	public Map<String, ShapeWrapper> getIndexedPlaceHolders() {
+		if (indexedPlaceHolders==null) {
+			indexPlaceHolders();
+		}
+		return indexedPlaceHolders;
+	}
+	
+	private Map<String, ShapeWrapper> indexPlaceHolders() {
+		
+		// All this for the 16 possible things defined in STPlaceholderType!
+		
+		indexedPlaceHolders = new HashMap<String, ShapeWrapper>();
+		
+    	List<Object> possiblyShapes = getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame();
+    	    	
+    	for (Object o : possiblyShapes) {
+    		
+    		if (o instanceof Shape) {
+    			Shape sp = (Shape)o;
+    			if (sp.getNvSpPr()!=null
+    					&& sp.getNvSpPr().getNvPr()!=null
+    						&& sp.getNvSpPr().getNvPr().getPh() != null) {
+    				CTPlaceholder placeholder = sp.getNvSpPr().getNvPr().getPh();
+    				ShapeWrapper sw = new ShapeWrapper(sp, placeholder.getType().toString(),
+    						this);
+    				indexedPlaceHolders.put(sw.getPhType(), sw);
+    				log.debug("Indexed: " + sw.getPhType() + " in " + sw.getOwner().getPartName().toString() );
+    			}
+    		}
+    	}
+	    return indexedPlaceHolders;
+	}
 	
 
 }
