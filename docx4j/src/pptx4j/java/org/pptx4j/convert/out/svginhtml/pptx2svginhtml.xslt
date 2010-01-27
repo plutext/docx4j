@@ -209,6 +209,20 @@
 
  <xsl:template match="p:txBody">
  
+    <!--  I'd like to get JAXB representation of a:lstStyle just once,
+          then pass it in to each a:p as a parameter,
+          but Xalan doesn't seem to allow an arbitrary
+          Java object to be passed around like that?
+          
+	    	<xsl:variable name="lstStyle"><xsl:value-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.unmarshalFormatting(a:lstStyle)"/></xsl:variable>
+	    
+	    	with value-of, it becomes a string; with copy-of, its a node list.
+	    
+	 	<xsl:apply-templates select="a:p">
+	 		<xsl:with-param name="lstStyle" select="$lstStyle"/>
+	 	</xsl:apply-templates>
+
+           -->
  
  	<!--  Convert from EMU at 96dpi -->
  	<xsl:variable name="x"><xsl:value-of select="round(number(../p:spPr/a:xfrm/a:off/@x)*96 div 914400)"/></xsl:variable>
@@ -228,11 +242,18 @@
 		<xsl:variable name="cNvPrName"><xsl:value-of select="string(../../p:nvSpPr/p:cNvPr/@name)"/></xsl:variable>
 		<xsl:variable name="phType"><xsl:value-of select="string(../../p:nvSpPr/p:nvPr/p:ph/@type)"/></xsl:variable>
 		<xsl:variable name="childResults"><xsl:apply-templates select="a:r"/></xsl:variable>
+		<xsl:variable name="lvlPPr">
+			<xsl:choose>
+				<xsl:when test="count(../a:lstStyle)=0"/>
+				<xsl:when test="a:pPr/@lvl"><xsl:copy-of select="../a:lstStyle/*[$lvl]"/></xsl:when>
+				<xsl:otherwise><xsl:copy-of select="../a:lstStyle/*[1]"/></xsl:otherwise>
+			</xsl:choose>
+		</xsl:variable>
 	  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.createBlockForP(
 	  		$wmlPackage, $resolvedLayout,
 	  		$lvl,
 	  		$cNvPrName, $phType,
-	  		 $childResults)" />
+	  		 $childResults, $lvlPPr)" />
  </xsl:template>
 
  <xsl:template match="a:r">
