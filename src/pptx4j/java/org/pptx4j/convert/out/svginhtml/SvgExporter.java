@@ -3,6 +3,7 @@ package org.pptx4j.convert.out.svginhtml;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
@@ -17,6 +18,8 @@ import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
+import org.docx4j.dml.CTTextListStyle;
+import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
@@ -27,7 +30,9 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.Style;
 import org.pptx4j.model.ResolvedLayout;
+import org.pptx4j.model.TextStyles;
 import org.pptx4j.pml.GroupShape;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -37,7 +42,7 @@ import org.w3c.dom.traversal.NodeIterator;
 
 public class SvgExporter {
 	
-	protected static Logger log = Logger.getLogger(ResolvedLayout.class);	
+	protected static Logger log = Logger.getLogger(SvgExporter.class);	
 	
 	static Templates xslt;			
 	static {
@@ -87,9 +92,9 @@ public class SvgExporter {
     		ResolvedLayout rl,
     		String lvl,
     		String cNvPrName,
-    		String phType, NodeIterator childResults ) {
+    		String phType, NodeIterator childResults, NodeIterator lvlNpPr ) {
+    	    	
     	
-
 		StyleTree styleTree = null;
 		try {
 			styleTree = pmlPackage.getStyleTree();
@@ -138,15 +143,29 @@ public class SvgExporter {
 					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
 			);
 			
+
+			// Do we have CTTextParagraphProperties
+			// <a:lvl?pPr>
+			// Convert it to a WordML pPr
+			CTTextParagraphProperties lvlPPr = unmarshalFormatting(lvlNpPr);
+			if (lvlPPr!=null) {
 			
-//			// Does our pPr contain anything else?
-//			if (pPr!=null) {
-//				StringBuffer inlineStyle =  new StringBuffer();
-//				createCss(pPr, inlineStyle);				
-//				if (!inlineStyle.toString().equals("") ) {
-//					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
-//				}
-//			}
+				log.debug("We have lvlPPr");
+				log.debug(
+						XmlUtils.marshaltoString(lvlPPr, true, true, 
+								Context.jcPML, "FIXME", "lvl1pPr",
+								CTTextParagraphProperties.class)
+						);
+				PPr pPr = TextStyles.getWmlPPr(lvlPPr);
+				if (pPr!=null) {
+					StringBuffer inlineStyle =  new StringBuffer();
+					HtmlExporterNG.createCss(pPr, inlineStyle);				
+					if (!inlineStyle.toString().equals("") ) {
+						((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
+					}
+				}
+				// TODO RPR
+			}
 			
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
@@ -211,6 +230,71 @@ public class SvgExporter {
     	return null;
     	
     }
+
+
+  private static CTTextParagraphProperties unmarshalFormatting(NodeIterator lvlNpPr ) {
+	
+	// Get the pPr node as a JAXB object,
+	// so we can read it using our standard
+	// methods.  Its a bit sad that we 
+	// can't just adorn our DOM tree with the
+	// original JAXB objects?
+	try {
+		//CTTextListStyle lstStyle = null;
+		CTTextParagraphProperties pPr = null;
+		
+		if (lvlNpPr!=null) {
+			Node n = lvlNpPr.nextNode();
+			
+			log.debug(n.getClass().getName());
+			
+			String str = XmlUtils.w3CDomNodeToString(n);
+			//log.debug("'" + str + "'");
+			
+			// Convert to String first ... 
+			// unmarshalling the node directly doesn't work as expected
+			// (see comment in XmlUtils) 
+			
+//			if (n!=null) {
+//				return  (CTTextParagraphProperties)XmlUtils.unmarshal(n, Context.jcPML, 
+//						CTTextParagraphProperties.class);
+//			}
+			
+			if (!str.equals("")) {
+				return  (CTTextParagraphProperties)XmlUtils.unmarshalString(str, Context.jcPML, 
+						CTTextParagraphProperties.class);
+			}
+		}
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} 
+	return null;
+	
+}
+    
+//    public static CTTextListStyle unmarshalFormatting(NodeIterator lstStyleNodeIt ) {
+//		
+//    	// Get the pPr node as a JAXB object,
+//    	// so we can read it using our standard
+//    	// methods.  Its a bit sad that we 
+//    	// can't just adorn our DOM tree with the
+//    	// original JAXB objects?
+//    	try {
+//			CTTextListStyle lstStyle = null;
+//			if (lstStyleNodeIt!=null) {
+//				Node n = lstStyleNodeIt.nextNode();
+//				if (n!=null) {
+//					return  (CTTextListStyle)XmlUtils.unmarshal(n, Context.jcPML, CTTextListStyle.class);
+//				}
+//			}
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
+//		return null;
+//    	
+//    }
 	
     public static String getCssForStyles(PresentationMLPackage pmlPackage) {
     	

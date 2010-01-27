@@ -135,8 +135,30 @@ public class TextStyles {
 			return style; 
 		}
 		
+		style.setPPr(
+				getWmlPPr(lvlPPr) );
+		
+		style.setRPr(
+				getWmlRPr(lvlPPr, fontScheme) );
+				
+		
+		
+		if (log.isDebugEnabled() ) {
+			
+			log.debug( XmlUtils.marshaltoString(lvlPPr, true, true, Context.jc, 
+					"URI", "lvl1pPr", 
+					CTTextParagraphProperties.class));
+			
+			log.debug("Converted to: " +  XmlUtils.marshaltoString(style, true, true));
+		}
+		
+		return style;
+	}
+	
+	public static PPr getWmlPPr(CTTextParagraphProperties lvlPPr ) {
+		
+		ObjectFactory factory = Context.getWmlObjectFactory();
 		PPr pPr = factory.createPPr();		
-		style.setPPr(pPr);
 		
 //		*marL eg 342900 EMU
 //		*indent eg -342900
@@ -169,11 +191,17 @@ public class TextStyles {
 	//		*buFont, buChar
 //	    <a:buFont charset="0" pitchFamily="34" typeface="Arial"/>
 //	    <a:buChar char="•"/>
+
+		return pPr;
+	}
+	
+	public static RPr getWmlRPr(CTTextParagraphProperties lvlPPr,
+		FontScheme fontScheme) {
 		
-		
+		ObjectFactory factory = Context.getWmlObjectFactory();
+
 //		<w:rPr>
 		RPr rPr = factory.createRPr();
-		style.setRPr(rPr);
 
 		if (lvlPPr.getDefRPr()!=null) {  
 		
@@ -201,19 +229,9 @@ public class TextStyles {
 				rPr.setRFonts(rFonts);
 			}			
 		}
-		
-		if (log.isDebugEnabled() ) {
-			
-			log.debug( XmlUtils.marshaltoString(lvlPPr, true, true, Context.jc, 
-					"URI", "lvl1pPr", 
-					CTTextParagraphProperties.class));
-			
-			log.debug("Converted to: " +  XmlUtils.marshaltoString(style, true, true));
-		}
-		
-		return style;
-	}
 	
+		return rPr;
+	}	
 	// From Main Presentation Part
 	public static List<Style> generateWordStylesFromPresentationPart(CTTextListStyle textStyles, String suffix,  
 			FontScheme fontScheme) {

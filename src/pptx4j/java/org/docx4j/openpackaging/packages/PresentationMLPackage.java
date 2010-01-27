@@ -260,7 +260,7 @@ public class PresentationMLPackage  extends OpcPackage {
 	
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-otherparts.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-basic.xml";
 		
 		PresentationMLPackage presentationMLPackage = 
 			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		

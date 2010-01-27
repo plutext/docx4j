@@ -46,11 +46,12 @@ public class RenderAsSvgInHtml  {
 
 	public static void main(String[] args) throws Exception {
 	
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-otherparts.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-basic.xml";
 		
 		PresentationMLPackage presentationMLPackage = 
 			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
 		
+		// TODO - render slides in document order!
 		Iterator partIterator = presentationMLPackage.getParts().getParts().entrySet().iterator();
 	    while (partIterator.hasNext()) {
 	    	

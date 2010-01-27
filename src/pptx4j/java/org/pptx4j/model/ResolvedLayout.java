@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBody;
+import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
@@ -242,7 +243,16 @@ public class ResolvedLayout implements Cloneable {
 	
 	private static void handleTxBody(CTTextBody sp, CTTextBody layoutShape) {
 		
-		// TODO: a slide layout p:sp/p:txBody can override, with a <a:lstStyle> element
+		// a slide layout p:sp/p:txBody can override, with a <a:lstStyle> element
+		// so copy a:lstStyle over
+		if (sp.getLstStyle()!=null) {
+			log.warn("Slide shape contains lstStyle! (Not expected at that level)");
+			log.debug(XmlUtils.marshaltoString(sp.getLstStyle(), false, true, Context.jcPML,
+					"FIXME", "lstStyle", CTTextListStyle.class));
+		}		
+		if (layoutShape.getLstStyle()!=null) {
+			sp.setLstStyle( XmlUtils.deepCopy(layoutShape.getLstStyle(), Context.jcPML ));			
+		}
 		
 	}
 	
