@@ -51,6 +51,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
+import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapper;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -210,6 +211,25 @@ public class XmlUtils {
 
 		return u.unmarshal( n );
 	}
+
+	public static Object unmarshal(Node n, JAXBContext jc, Class declaredType) throws JAXBException {
+		
+		// THIS DOESN"T WORK PROPERLY WITH 1.6.0.03 JAXB RI
+		// (at least with CTTextParagraphProperties in 
+		//  a Xalan org.apache.xml.dtm.ref.DTMNodeProxy)
+		// but converting the Node to a String and
+		// unmarshalling that is fine!
+		
+		Unmarshaller u = jc.createUnmarshaller();					
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+		Object o = u.unmarshal(n,
+				declaredType);
+		if ( o instanceof javax.xml.bind.JAXBElement) {
+			return ((JAXBElement)o).getValue();
+		} else {
+			return o;
+		}
+	}
 	
 
 	/** Marshal to a String */ 
@@ -234,7 +254,8 @@ public class XmlUtils {
 	}
 	
 	/** Marshal to a String */ 
-	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint, JAXBContext jc ) {
+	public static String marshaltoString(Object o, boolean suppressDeclaration, boolean prettyprint, 
+			JAXBContext jc ) {
 				
 		/* http://weblogs.java.net/blog/kohsuke/archive/2005/10/101_ways_to_mar.html
 		 * 
