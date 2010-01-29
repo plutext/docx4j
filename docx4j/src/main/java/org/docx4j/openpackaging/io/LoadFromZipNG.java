@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
@@ -603,16 +604,16 @@ public class LoadFromZipNG extends Load {
 		return part;
 	}	
 		
-	class ByteArray {
+	public static class ByteArray implements Serializable {
 		
-		byte[] bytes;
+		private byte[] bytes;
 		
-		ByteArray(byte[] bytes) {
+		public ByteArray(byte[] bytes) {
 			this.bytes = bytes;
 			//log.info("Added " + bytes.length  );
 		}
 		
-		InputStream getInputStream() {
+		public InputStream getInputStream() {
 			
 			return new ByteArrayInputStream(bytes);
 			
