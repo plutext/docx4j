@@ -84,6 +84,65 @@ License version 2.0:
 
 
 
+Version 2.3.0
+=============
+
+Release date
+------------
+
+17 Feb 2009
+
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+Holger Schlegel
+
+Major Changes in Version 2.3.0
+------------------------------
+
+[1044] pptx4j
+[1041] More complete DML, generated from TC45 1.0 final, using dml__ROOT.xsd 
+[ 956] Basic implementation of styled tables in xsl fo.  More work needed on border conflict resolution.
+[ 949] Table styles in HTML NG2 output; borders, shading, vertical alignment
+[ 943] Added DocumentModel. DocumentModel is a list of SectionWrappers; a SectionWrapper has a HeaderFooterPolicy, PageDimensions and sectPr.
+HeaderFooterPolicy moved to new package, as there will be 1 per SectionWrapper.
+[ 923] introduce model/Property, to handle property conversion to CSS, and to XSL FO, more cleanly.
+Adds conversion from CSS.      
+[ 912] HtmlExporterNG2, which uses new StyleTree to take advantage of CSS cascade/priority rules to apply effective styles.
+
+Other Changes
+-------------
+
+[1050] Renamed Package -> OpcPackage
+[1039] Original dml-* from EcmaTC45 OOXML v1.0 final
+[1036] Original pml-* from EcmaTC45 OOXML v1.0 final 
+[1024] Footnotes in PDF via XSL FO.
+[1015] Support for footnotes and endnotes in HTML.
+[1008] added docs/Docx4j_GettingStarted
+[1003] Remove dom4j stuff
+[ 997] Basic support for list indentation in PDF via XSL FO
+[ 990] Updated fop jar to include support for wingdings and other TrueType fonts with symbol character maps (patched with fop r891181 of 20091216)
+[ 983] Support for adding linked (as opposed to embedded) images.
+[ 979] Basic support in pdf via XSL FO, and HTML NG2, for bookmarks, hyperlink, symbols, w:pict.
+[ 977] PDF via XSL FO: basic support for paragraph numbering
+[ 975] JCR: Methods to get content as string (workaround for ALFCOM-3049)
+[ 974] Handle w:t[@xml:space='preserve'] in NG2
+[ 962] Example: CopyPart.
+[ 962] New method setPartName(PartName newName), which is useful if you want to rename a part.
+[ 960] Mechanism for passing state during the conversion process
+[ 955] altChunk
+[ 932] DocPropsCustomPart: When setting property, overwrite existing property with same name.
+[ 930] Converter infrastructure can be used for incoming conversions (eg HTML table to w:tbl)
+[ 928] Model interface: remove Converter arg from build method 
+[ 925] Regenerated classes from wml.xsd, having added EG_MathContent back in to EG_RunLevelElements
+[ 924] New method Context.getWmlObjectFactory(); we only need one instance of the ObjectFactory..
+[ 922] new UnitsOfMeasurement class
+[ 909] LoadFromZipFile can conserve memory by not loading the contents of binary parts
+[ 905] Modify load method to also support loading a Flat OPC .xml file
+[ 903] Bug fix in revised deepCopy method: use JAXBContext parameter properly
+
 
 Version 2.2.2
 =============
