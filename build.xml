@@ -12,7 +12,7 @@
     <path id="Maven Dependencies.libraryclasspath">
         <pathelement location="${m2Repository}/junit/junit/4.4/junit-4.4.jar"/>    	
         <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
-        <pathelement location="${m2Repository}/log4j/log4j/1.2.13/log4j-1.2.13.jar"/>
+        <pathelement location="${m2Repository}/log4j/log4j/1.2.15/log4j-1.2.15.jar"/>
         <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.03/xml-apis-1.3.03.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
@@ -111,6 +111,8 @@
         
     </target>
  
+ 
+ <!-- ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist -->
     <target name="dist"  depends="clean, build-project" >
 				
         <mkdir dir="${dist}"/>
@@ -148,8 +150,22 @@
         <delete dir="javadoc"/>
         <mkdir dir="javadoc"/>
 	
-		<javadoc sourcepath="src/diffx" destdir="javadoc"/>
-		<javadoc sourcepath="${src.main.java.dir}" destdir="javadoc"/>
+		
+        <javadoc access="public" author="false" 
+         destdir="javadoc" 
+         doctitle="docx4j 2.3.0" 
+         nodeprecated="false" 
+         nodeprecatedlist="false" 
+         noindex="false" 
+         nonavbar="false" 
+         notree="false" 
+         source="1.6" 
+        sourcepath="src/main/java:src/pptx4j/java" 
+        splitindex="true" use="true" version="false"
+        maxmemory="512m">
+                    <classpath refid="docx4j.classpath"/>
+        </javadoc>
+
 		
 <!-- 		
       <Doctitle><![CDATA[<h1>docx4j API Documentation</h1>]]></Doctitle>
