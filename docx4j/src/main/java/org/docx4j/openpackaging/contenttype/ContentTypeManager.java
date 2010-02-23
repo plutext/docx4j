@@ -319,6 +319,10 @@ public class ContentTypeManager  {
 			}			
 			
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageTiffPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.IMAGE_EMF)) {
+			return new MetafileEmfPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
+			return new MetafileWmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)) {
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");

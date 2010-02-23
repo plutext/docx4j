@@ -20,21 +20,21 @@
 
 package org.docx4j.samples;
 
-import java.io.FileInputStream;
 import java.io.OutputStream;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporter;
-import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.convert.out.html.HtmlExporterNG2;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
+/**
+ * If the source docx contained a WMF, that
+ * will get converted to inline SVG.  In order
+ * to see the SVG in your browser, you'll need 
+ * to rename the file to .xml or serve
+ * it with MIME type application/xhtml+xml
+ *
+ */
 public class CreateHtml {
 	    
 	    public static void main(String[] args) 
@@ -43,8 +43,10 @@ public class CreateHtml {
 	    	boolean save = true;	    	
 	    	boolean useHtmlExporterNG = true;
 
+			String inputfilepath = System.getProperty("user.dir") + "/tmp/wmf.docx";
+	    	
 //	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
-	    	String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+//	    	String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
 //	    	String inputfilepath = System.getProperty("user.dir") 
 //    		+ "/sample-docs/test-docs/endnotes.xml";	    	
 //	    	String inputfilepath = System.getProperty("user.dir") 
