@@ -328,7 +328,9 @@ public class LoadFromZipNG extends Load {
 			
 			log.info("\n For Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
-					+ ", Target is " + r.getTarget() );
+					+ ", Target is " + r.getTarget()
+					+ ", type: " + r.getType() );
+					
 				// This is usually the first logged comment for
 				// a part, so start with a line break.
 			try {				

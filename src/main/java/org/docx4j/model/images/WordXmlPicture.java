@@ -27,12 +27,18 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MetafilePart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage.CxCy;
+import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart.SvgDocument;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.SectPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSStyleDeclaration;
 import org.w3c.dom.traversal.NodeIterator;
@@ -57,6 +63,8 @@ public class WordXmlPicture {
 	Document document;
     Node imageElement = null;
     Node linkElement = null;
+    
+    private MetafilePart metaFile;
 
     /** Extension function to create an HTML <img> element
      * from "E2.0 images" 
@@ -79,11 +87,71 @@ public class WordXmlPicture {
         		 imageDirPath, pictureData,  picSize,
         		 picLink,  linkData, true);
     	
-        Document d = picture.createHtmlImageElement();
+    	return getHtmlDocumentFragment(picture);
 
-		DocumentFragment docfrag = d.createDocumentFragment();
+    }
+    
+    public static DocumentFragment getHtmlDocumentFragment(WordXmlPicture picture) {
+    	
+    	DocumentFragment docfrag=null;
+    	Document d=null;
+    	try {
+        	if (picture==null) {
+    			log.warn("picture was null!");
+            	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+    			 try {
+    				d = factory.newDocumentBuilder().newDocument();
+    			} catch (ParserConfigurationException e1) {
+    				// TODO Auto-generated catch block
+    				e1.printStackTrace();
+    			}
+    			Element span = d.createElement("span");
+    			span.setAttribute("style", "color:red;");
+    			d.appendChild(span);
+    			
+    			Text err = d.createTextNode( "[null img]" );
+    			span.appendChild(err);
+    		
+        	} else if (picture.metaFile==null) {
+				// Usual case    	
+			    d = picture.createHtmlImageElement();
+			} else if (picture.metaFile instanceof MetafileWmfPart) {
+				
+				SvgDocument svgdoc = ((MetafileWmfPart)picture.metaFile).toSVG();
+				d = svgdoc.getDomDocument();
+				
+			} else if (picture.metaFile instanceof MetafileEmfPart) {
+				
+	        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+				 d = factory.newDocumentBuilder().newDocument();
+				
+				//log.info("Document: " + document.getClass().getName() );
+
+				Node span = d.createElement("span");			
+				d.appendChild(span);
+				
+				Text err = d.createTextNode( "[TODO emf image]" );
+				span.appendChild(err);
+				
+			}
+		} catch (Exception e) {
+			log.error(e);
+        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+			 try {
+				d = factory.newDocumentBuilder().newDocument();
+			} catch (ParserConfigurationException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			Element span = d.createElement("span");
+			span.setAttribute("style", "color:red;");
+			d.appendChild(span);
+			
+			Text err = d.createTextNode( e.getMessage() );
+			span.appendChild(err);
+		}
+		docfrag = d.createDocumentFragment();
 		docfrag.appendChild(d.getDocumentElement());
-
 		return docfrag;
     }
 
@@ -178,26 +246,39 @@ public class WordXmlPicture {
             	
             	if (rel.getTargetMode() == null
 						|| rel.getTargetMode().equals("Internal")) {
+            		
+            		
+            		BinaryPart part = (BinaryPart)wmlPackage.getMainDocumentPart()
+						.getRelationshipsPart().getPart(rel);
+            		
+            		if (part instanceof MetafilePart) {
+            			
+            			picture.metaFile = (MetafilePart)part;
+            			
+            		} else {
 
-            		BinaryPartAbstractImage part = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
-							.getRelationshipsPart().getPart(rel);
+	            		BinaryPartAbstractImage imagepart = (BinaryPartAbstractImage)part;
+						
+						String uri = handlePart(imageDirPath, picture, imagepart);
+						// Scale it?  Shouldn't be necessary, since Word should
+						// be providing the height/width
+	//					try {
+	//						ImageInfo imageInfo = BinaryPartAbstractImage.getImageInfo(uri);
+	//						
+	//						List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
+	//						PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
+	//						
+	//						picture.ensureFitsPage(imageInfo, page );
+	//					} catch (Exception e) {
+	//						e.printStackTrace();
+	//					}
+
+            		}
 					
-					String uri = handlePart(imageDirPath, picture, part);
-					// Scale it?  Shouldn't be necessary, since Word should
-					// be providing the height/width
-//					try {
-//						ImageInfo imageInfo = BinaryPartAbstractImage.getImageInfo(uri);
-//						
-//						List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
-//						PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
-//						
-//						picture.ensureFitsPage(imageInfo, page );
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-
 				} else { // External
 					picture.setSrc(rel.getTarget());
+					
+					// TODO: handle external metafiles
 				}
 
 			}
@@ -419,27 +500,7 @@ public class WordXmlPicture {
         		 imageDirPath,
         		 shape,  imageData, true);
     	
-    	if (picture==null) {
-    		
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            Document d;
-			try {
-				d = factory.newDocumentBuilder().newDocument();
-	    		return d.createDocumentFragment();
-			} catch (ParserConfigurationException e) {
-				log.error(e);
-				return null;
-			}  
-			
-    	} else {
-    	
-	        Document d = picture.createHtmlImageElement();
-	
-			DocumentFragment docfrag = d.createDocumentFragment();
-			docfrag.appendChild(d.getDocumentElement());
-	
-			return docfrag;
-    	}        
+    	return getHtmlDocumentFragment(picture);
     }
 
     /** Extension function to create an <img> element
@@ -525,9 +586,17 @@ public class WordXmlPicture {
         	if (rel.getTargetMode() == null
         			|| rel.getTargetMode().equals("Internal") ) {
         		
-        		BinaryPartAbstractImage part = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
+        		BinaryPart part = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
 					.getRelationshipsPart().getPart(rel);
-				String uri = handlePart(imageDirPath, picture, part);
+        		
+        		if (part instanceof MetafilePart) {
+        			
+        			picture.metaFile = (MetafilePart)part;
+        			
+        		} else {
+        		
+            		BinaryPartAbstractImage imagepart = (BinaryPartAbstractImage)part;       			
+            		String uri = handlePart(imageDirPath, picture, imagepart);
 				
 				// Scale it?  Shouldn't be necessary, since Word should
 				// be providing the height/width
@@ -541,7 +610,7 @@ public class WordXmlPicture {
 //				} catch (Exception e) {
 //					e.printStackTrace();
 //				}
-				
+        		}				
         		
         	} else {
                 picture.setSrc( rel.getTarget() );            	
