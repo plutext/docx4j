@@ -21,16 +21,14 @@
 
 package org.plutext.jaxb.svg11;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -41,25 +39,17 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;choice>
- *           &lt;element ref="{http://www.w3.org/2000/svg}feDistantLight"/>
- *           &lt;element ref="{http://www.w3.org/2000/svg}fePointLight"/>
- *           &lt;element ref="{http://www.w3.org/2000/svg}feSpotLight"/>
- *         &lt;/choice>
- *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element ref="{http://www.w3.org/2000/svg}animate"/>
- *           &lt;element ref="{http://www.w3.org/2000/svg}set"/>
- *           &lt;element ref="{http://www.w3.org/2000/svg}animateColor"/>
- *         &lt;/choice>
- *       &lt;/sequence>
+ *     &lt;extension base="{http://www.w3.org/2000/svg}SVG.feDiffuseLighting.content">
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Core.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Style.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Color.attrib"/>
  *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.FilterPrimitiveWithIn.attrib"/>
- *       &lt;attribute name="lighting-color" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="surfaceScale" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="diffuseConstant" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="kernelUnitLength" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *     &lt;/restriction>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.FilterColor.attrib"/>
+ *       &lt;attribute name="lighting-color" type="{http://www.w3.org/2000/svg}SVGColor.datatype" />
+ *       &lt;attribute name="surfaceScale" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="diffuseConstant" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="kernelUnitLength" type="{http://www.w3.org/2000/svg}NumberOptionalNumber.datatype" />
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -67,157 +57,61 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "feDistantLight",
-    "fePointLight",
-    "feSpotLight",
-    "animateOrSetOrAnimateColor"
-})
-@XmlRootElement(name = "feDiffuseLighting")
-public class FeDiffuseLighting {
+@XmlType(name = "")
+public class FeDiffuseLighting
+    extends SVGFeDiffuseLightingContent
+{
 
-    protected FeDistantLight feDistantLight;
-    protected FePointLight fePointLight;
-    protected FeSpotLight feSpotLight;
-    @XmlElements({
-        @XmlElement(name = "animateColor", type = AnimateColor.class),
-        @XmlElement(name = "set", type = Set.class),
-        @XmlElement(name = "animate", type = Animate.class)
-    })
-    protected List<Object> animateOrSetOrAnimateColor;
     @XmlAttribute(name = "lighting-color")
-    @XmlSchemaType(name = "anySimpleType")
     protected String lightingColor;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String surfaceScale;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String diffuseConstant;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String kernelUnitLength;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    protected String id;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String base;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String space;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String lang;
+    @XmlAttribute
+    protected String style;
+    @XmlAttribute(name = "class")
+    protected String clazz;
+    @XmlAttribute(name = "color-interpolation")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String colorInterpolation;
+    @XmlAttribute(name = "color-rendering")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String colorRendering;
+    @XmlAttribute
+    protected String color;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
     protected String in;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String x;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String y;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String width;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String height;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
     protected String result;
-
-    /**
-     * Gets the value of the feDistantLight property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FeDistantLight }
-     *     
-     */
-    public FeDistantLight getFeDistantLight() {
-        return feDistantLight;
-    }
-
-    /**
-     * Sets the value of the feDistantLight property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FeDistantLight }
-     *     
-     */
-    public void setFeDistantLight(FeDistantLight value) {
-        this.feDistantLight = value;
-    }
-
-    /**
-     * Gets the value of the fePointLight property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FePointLight }
-     *     
-     */
-    public FePointLight getFePointLight() {
-        return fePointLight;
-    }
-
-    /**
-     * Sets the value of the fePointLight property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FePointLight }
-     *     
-     */
-    public void setFePointLight(FePointLight value) {
-        this.fePointLight = value;
-    }
-
-    /**
-     * Gets the value of the feSpotLight property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FeSpotLight }
-     *     
-     */
-    public FeSpotLight getFeSpotLight() {
-        return feSpotLight;
-    }
-
-    /**
-     * Sets the value of the feSpotLight property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FeSpotLight }
-     *     
-     */
-    public void setFeSpotLight(FeSpotLight value) {
-        this.feSpotLight = value;
-    }
-
-    /**
-     * Gets the value of the animateOrSetOrAnimateColor property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the animateOrSetOrAnimateColor property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAnimateOrSetOrAnimateColor().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link AnimateColor }
-     * {@link Set }
-     * {@link Animate }
-     * 
-     * 
-     */
-    public List<Object> getAnimateOrSetOrAnimateColor() {
-        if (animateOrSetOrAnimateColor == null) {
-            animateOrSetOrAnimateColor = new ArrayList<Object>();
-        }
-        return this.animateOrSetOrAnimateColor;
-    }
+    @XmlAttribute(name = "color-interpolation-filters")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String colorInterpolationFilters;
 
     /**
      * Gets the value of the lightingColor property.
@@ -313,6 +207,222 @@ public class FeDiffuseLighting {
      */
     public void setKernelUnitLength(String value) {
         this.kernelUnitLength = value;
+    }
+
+    /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the base property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBase() {
+        return base;
+    }
+
+    /**
+     * Sets the value of the base property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBase(String value) {
+        this.base = value;
+    }
+
+    /**
+     * Gets the value of the space property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSpace() {
+        return space;
+    }
+
+    /**
+     * Sets the value of the space property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSpace(String value) {
+        this.space = value;
+    }
+
+    /**
+     * Gets the value of the lang property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLang() {
+        return lang;
+    }
+
+    /**
+     * Sets the value of the lang property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLang(String value) {
+        this.lang = value;
+    }
+
+    /**
+     * Gets the value of the style property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStyle() {
+        return style;
+    }
+
+    /**
+     * Sets the value of the style property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStyle(String value) {
+        this.style = value;
+    }
+
+    /**
+     * Gets the value of the clazz property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getClazz() {
+        return clazz;
+    }
+
+    /**
+     * Sets the value of the clazz property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setClazz(String value) {
+        this.clazz = value;
+    }
+
+    /**
+     * Gets the value of the colorInterpolation property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getColorInterpolation() {
+        return colorInterpolation;
+    }
+
+    /**
+     * Sets the value of the colorInterpolation property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColorInterpolation(String value) {
+        this.colorInterpolation = value;
+    }
+
+    /**
+     * Gets the value of the colorRendering property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getColorRendering() {
+        return colorRendering;
+    }
+
+    /**
+     * Sets the value of the colorRendering property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColorRendering(String value) {
+        this.colorRendering = value;
+    }
+
+    /**
+     * Gets the value of the color property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getColor() {
+        return color;
+    }
+
+    /**
+     * Sets the value of the color property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColor(String value) {
+        this.color = value;
     }
 
     /**
@@ -457,6 +567,30 @@ public class FeDiffuseLighting {
      */
     public void setResult(String value) {
         this.result = value;
+    }
+
+    /**
+     * Gets the value of the colorInterpolationFilters property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getColorInterpolationFilters() {
+        return colorInterpolationFilters;
+    }
+
+    /**
+     * Sets the value of the colorInterpolationFilters property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColorInterpolationFilters(String value) {
+        this.colorInterpolationFilters = value;
     }
 
 }

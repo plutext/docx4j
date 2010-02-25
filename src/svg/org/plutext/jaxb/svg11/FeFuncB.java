@@ -21,16 +21,15 @@
 
 package org.plutext.jaxb.svg11;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -41,14 +40,11 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice maxOccurs="unbounded" minOccurs="0">
- *         &lt;element ref="{http://www.w3.org/2000/svg}animate"/>
- *         &lt;element ref="{http://www.w3.org/2000/svg}set"/>
- *       &lt;/choice>
+ *     &lt;extension base="{http://www.w3.org/2000/svg}SVG.feFuncB.content">
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Core.attrib"/>
  *       &lt;attribute name="type" use="required">
  *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
+ *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token">
  *             &lt;enumeration value="identity"/>
  *             &lt;enumeration value="table"/>
  *             &lt;enumeration value="discrete"/>
@@ -58,12 +54,12 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;/simpleType>
  *       &lt;/attribute>
  *       &lt;attribute name="tableValues" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="slope" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="intercept" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="amplitude" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="exponent" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="offset" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *     &lt;/restriction>
+ *       &lt;attribute name="slope" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="intercept" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="amplitude" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="exponent" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="offset" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -71,67 +67,41 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "animateOrSet"
-})
+@XmlType(name = "")
 @XmlRootElement(name = "feFuncB")
-public class FeFuncB {
+public class FeFuncB
+    extends SVGFeFuncBContent
+{
 
-    @XmlElements({
-        @XmlElement(name = "set", type = Set.class),
-        @XmlElement(name = "animate", type = Animate.class)
-    })
-    protected List<Object> animateOrSet;
     @XmlAttribute(required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String type;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
     protected String tableValues;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String slope;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String intercept;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String amplitude;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String exponent;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String offset;
-
-    /**
-     * Gets the value of the animateOrSet property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the animateOrSet property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAnimateOrSet().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Set }
-     * {@link Animate }
-     * 
-     * 
-     */
-    public List<Object> getAnimateOrSet() {
-        if (animateOrSet == null) {
-            animateOrSet = new ArrayList<Object>();
-        }
-        return this.animateOrSet;
-    }
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    protected String id;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String base;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String space;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String lang;
 
     /**
      * Gets the value of the type property.
@@ -299,6 +269,102 @@ public class FeFuncB {
      */
     public void setOffset(String value) {
         this.offset = value;
+    }
+
+    /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the base property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBase() {
+        return base;
+    }
+
+    /**
+     * Sets the value of the base property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBase(String value) {
+        this.base = value;
+    }
+
+    /**
+     * Gets the value of the space property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSpace() {
+        return space;
+    }
+
+    /**
+     * Sets the value of the space property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSpace(String value) {
+        this.space = value;
+    }
+
+    /**
+     * Gets the value of the lang property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLang() {
+        return lang;
+    }
+
+    /**
+     * Sets the value of the lang property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLang(String value) {
+        this.lang = value;
     }
 
 }

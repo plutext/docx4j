@@ -21,16 +21,14 @@
 
 package org.plutext.jaxb.svg11;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -41,18 +39,17 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice maxOccurs="unbounded" minOccurs="0">
- *         &lt;element ref="{http://www.w3.org/2000/svg}desc"/>
- *         &lt;element ref="{http://www.w3.org/2000/svg}title"/>
- *         &lt;element ref="{http://www.w3.org/2000/svg}metadata"/>
- *       &lt;/choice>
+ *     &lt;extension base="{http://www.w3.org/2000/svg}SVG.animate.content">
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.External.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Conditional.attrib"/>
  *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.AnimationValue.attrib"/>
- *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.AnimationAddtion.attrib"/>
- *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Animation.attrib"/>
  *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.AnimationTiming.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Core.attrib"/>
  *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.AnimationAttribute.attrib"/>
- *     &lt;/restriction>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Animation.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.AnimationEvents.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.AnimationAddtion.attrib"/>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -60,19 +57,21 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "descOrTitleOrMetadata"
-})
-@XmlRootElement(name = "animate")
-public class Animate {
+@XmlType(name = "")
+public class Animate
+    extends SVGAnimateContent
+{
 
-    @XmlElements({
-        @XmlElement(name = "metadata", type = Metadata.class),
-        @XmlElement(name = "desc", type = Desc.class),
-        @XmlElement(name = "title", type = Title.class)
-    })
-    protected List<Object> descOrTitleOrMetadata;
     @XmlAttribute
+    protected BooleanDatatype externalResourcesRequired;
+    @XmlAttribute
+    protected String requiredFeatures;
+    @XmlAttribute
+    protected String requiredExtensions;
+    @XmlAttribute
+    protected String systemLanguage;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String calcMode;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
@@ -93,10 +92,6 @@ public class Animate {
     @XmlSchemaType(name = "anySimpleType")
     protected String by;
     @XmlAttribute
-    protected String additive;
-    @XmlAttribute
-    protected String accumulate;
-    @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
     protected String begin;
     @XmlAttribute
@@ -112,6 +107,7 @@ public class Animate {
     @XmlSchemaType(name = "anySimpleType")
     protected String max;
     @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String restart;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
@@ -120,43 +116,154 @@ public class Animate {
     @XmlSchemaType(name = "anySimpleType")
     protected String repeatDur;
     @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String fill;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    protected String id;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String base;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String space;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String lang;
     @XmlAttribute(required = true)
     @XmlSchemaType(name = "anySimpleType")
     protected String attributeName;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
     protected String attributeType;
+    @XmlAttribute(namespace = "http://www.w3.org/1999/xlink")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String type;
+    @XmlAttribute(namespace = "http://www.w3.org/1999/xlink")
+    protected String href;
+    @XmlAttribute(namespace = "http://www.w3.org/1999/xlink")
+    protected String role;
+    @XmlAttribute(namespace = "http://www.w3.org/1999/xlink")
+    protected String arcrole;
+    @XmlAttribute(namespace = "http://www.w3.org/1999/xlink")
+    @XmlSchemaType(name = "anySimpleType")
+    protected String title;
+    @XmlAttribute(namespace = "http://www.w3.org/1999/xlink", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String show;
+    @XmlAttribute(namespace = "http://www.w3.org/1999/xlink", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String actuate;
+    @XmlAttribute
+    protected String onbegin;
+    @XmlAttribute
+    protected String onend;
+    @XmlAttribute
+    protected String onload;
+    @XmlAttribute
+    protected String onrepeat;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String additive;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String accumulate;
 
     /**
-     * Gets the value of the descOrTitleOrMetadata property.
+     * Gets the value of the externalResourcesRequired property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the descOrTitleOrMetadata property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getDescOrTitleOrMetadata().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Metadata }
-     * {@link Desc }
-     * {@link Title }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link BooleanDatatype }
+     *     
      */
-    public List<Object> getDescOrTitleOrMetadata() {
-        if (descOrTitleOrMetadata == null) {
-            descOrTitleOrMetadata = new ArrayList<Object>();
-        }
-        return this.descOrTitleOrMetadata;
+    public BooleanDatatype getExternalResourcesRequired() {
+        return externalResourcesRequired;
+    }
+
+    /**
+     * Sets the value of the externalResourcesRequired property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BooleanDatatype }
+     *     
+     */
+    public void setExternalResourcesRequired(BooleanDatatype value) {
+        this.externalResourcesRequired = value;
+    }
+
+    /**
+     * Gets the value of the requiredFeatures property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRequiredFeatures() {
+        return requiredFeatures;
+    }
+
+    /**
+     * Sets the value of the requiredFeatures property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRequiredFeatures(String value) {
+        this.requiredFeatures = value;
+    }
+
+    /**
+     * Gets the value of the requiredExtensions property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRequiredExtensions() {
+        return requiredExtensions;
+    }
+
+    /**
+     * Sets the value of the requiredExtensions property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRequiredExtensions(String value) {
+        this.requiredExtensions = value;
+    }
+
+    /**
+     * Gets the value of the systemLanguage property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSystemLanguage() {
+        return systemLanguage;
+    }
+
+    /**
+     * Sets the value of the systemLanguage property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSystemLanguage(String value) {
+        this.systemLanguage = value;
     }
 
     /**
@@ -329,62 +436,6 @@ public class Animate {
      */
     public void setBy(String value) {
         this.by = value;
-    }
-
-    /**
-     * Gets the value of the additive property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAdditive() {
-        if (additive == null) {
-            return "replace";
-        } else {
-            return additive;
-        }
-    }
-
-    /**
-     * Sets the value of the additive property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAdditive(String value) {
-        this.additive = value;
-    }
-
-    /**
-     * Gets the value of the accumulate property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAccumulate() {
-        if (accumulate == null) {
-            return "none";
-        } else {
-            return accumulate;
-        }
-    }
-
-    /**
-     * Sets the value of the accumulate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAccumulate(String value) {
-        this.accumulate = value;
     }
 
     /**
@@ -612,6 +663,102 @@ public class Animate {
     }
 
     /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the base property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBase() {
+        return base;
+    }
+
+    /**
+     * Sets the value of the base property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBase(String value) {
+        this.base = value;
+    }
+
+    /**
+     * Gets the value of the space property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSpace() {
+        return space;
+    }
+
+    /**
+     * Sets the value of the space property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSpace(String value) {
+        this.space = value;
+    }
+
+    /**
+     * Gets the value of the lang property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLang() {
+        return lang;
+    }
+
+    /**
+     * Sets the value of the lang property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLang(String value) {
+        this.lang = value;
+    }
+
+    /**
      * Gets the value of the attributeName property.
      * 
      * @return
@@ -657,6 +804,330 @@ public class Animate {
      */
     public void setAttributeType(String value) {
         this.attributeType = value;
+    }
+
+    /**
+     * Gets the value of the type property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getType() {
+        if (type == null) {
+            return "simple";
+        } else {
+            return type;
+        }
+    }
+
+    /**
+     * Sets the value of the type property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setType(String value) {
+        this.type = value;
+    }
+
+    /**
+     * Gets the value of the href property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getHref() {
+        return href;
+    }
+
+    /**
+     * Sets the value of the href property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setHref(String value) {
+        this.href = value;
+    }
+
+    /**
+     * Gets the value of the role property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRole() {
+        return role;
+    }
+
+    /**
+     * Sets the value of the role property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRole(String value) {
+        this.role = value;
+    }
+
+    /**
+     * Gets the value of the arcrole property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getArcrole() {
+        return arcrole;
+    }
+
+    /**
+     * Sets the value of the arcrole property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setArcrole(String value) {
+        this.arcrole = value;
+    }
+
+    /**
+     * Gets the value of the title property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the value of the title property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTitle(String value) {
+        this.title = value;
+    }
+
+    /**
+     * Gets the value of the show property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getShow() {
+        return show;
+    }
+
+    /**
+     * Sets the value of the show property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setShow(String value) {
+        this.show = value;
+    }
+
+    /**
+     * Gets the value of the actuate property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getActuate() {
+        return actuate;
+    }
+
+    /**
+     * Sets the value of the actuate property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setActuate(String value) {
+        this.actuate = value;
+    }
+
+    /**
+     * Gets the value of the onbegin property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getOnbegin() {
+        return onbegin;
+    }
+
+    /**
+     * Sets the value of the onbegin property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setOnbegin(String value) {
+        this.onbegin = value;
+    }
+
+    /**
+     * Gets the value of the onend property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getOnend() {
+        return onend;
+    }
+
+    /**
+     * Sets the value of the onend property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setOnend(String value) {
+        this.onend = value;
+    }
+
+    /**
+     * Gets the value of the onload property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getOnload() {
+        return onload;
+    }
+
+    /**
+     * Sets the value of the onload property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setOnload(String value) {
+        this.onload = value;
+    }
+
+    /**
+     * Gets the value of the onrepeat property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getOnrepeat() {
+        return onrepeat;
+    }
+
+    /**
+     * Sets the value of the onrepeat property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setOnrepeat(String value) {
+        this.onrepeat = value;
+    }
+
+    /**
+     * Gets the value of the additive property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAdditive() {
+        if (additive == null) {
+            return "replace";
+        } else {
+            return additive;
+        }
+    }
+
+    /**
+     * Sets the value of the additive property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAdditive(String value) {
+        this.additive = value;
+    }
+
+    /**
+     * Gets the value of the accumulate property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAccumulate() {
+        if (accumulate == null) {
+            return "none";
+        } else {
+            return accumulate;
+        }
+    }
+
+    /**
+     * Sets the value of the accumulate property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAccumulate(String value) {
+        this.accumulate = value;
     }
 
 }
