@@ -1,4 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Converted from http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat-20030114.dtd
+     using trang; http://code.google.com/p/jing-trang/ 
+
+     This is a better approach than 
+     http://blogs.msdn.com/webdevtools/archive/2009/10/06/working-with-svg-files-in-visual-studio-and-visual-web-developer.aspx
+ 	 which has left off lots of attributes eg most of the attributes in %SVG.line.attlist
+ 	 
+ 	 I did have to remove the substitution groups which trang had generated for
+ 	 SVGCursorClass, SVGClipClass and a couple of others, since despite trying: 
+ 	 
+         <xs:annotation><xs:appinfo> <xjc:substitutable/></xs:appinfo></xs:annotation>
+     
+     and running xjc with -extension, I was still getting errors.
+ 	 
+      
+USAGE INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+		
+  To generate the classes (from the same directory)	
+			
+ 	 xjc  svg.xsd -d ~/workspace/svg-jaxb/src -no-header -target 2.0
+	 
+  It would be nice to be able to add the fluent api
+	 
+	  sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar:~/workspace/docx4j/lib/jaxb-fluent-api-2.1.8.jar  -Xfluent-api -Xparent-pointer wml.xsd -d tmp/  -no-header -target 2.0
+	 
+  jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
+  
+	
+	cd to the directory containing the new sources
+	
+	Then add the copyright notice:
+	
+	 sed -s -i -f script *.java
+	
+	where script is
+	
+	# sed script to insert "header.txt" above the first line
+	1{h; r header.txt
+	  D; }
+	2{x; G; }
+	#- - -end of sed script- - - 
+	
+	and header.txt contains the copyright notice.	
+	
+	     
+     -->
+
 <!-- ....................................................................... -->
 <!-- SVG 1.1 DTD ........................................................... -->
 <!-- file: svg11.dtd -->
@@ -96,9 +146,39 @@
   This module declares common data types for properties and attributes.
 -->
 <!-- feature specification -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    elementFormDefault="qualified" 
+    targetNamespace="http://www.w3.org/2000/svg" 
+    xmlns:svg="http://www.w3.org/2000/svg" 
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1"
+	jaxb:extensionBindingPrefixes="xjc">    
+
   <xs:import namespace="http://www.w3.org/1999/xlink" schemaLocation="xlink.xsd"/>
+  
   <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd"/>
+  
+	<xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				<jaxb:package name="org.plutext.jaxb.svg11"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>
+  
+  
   <xs:simpleType name="Boolean.datatype">
     <xs:restriction base="xs:token">
       <xs:enumeration value="false"/>
@@ -495,39 +575,6 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  <!-- module: svg-clip.mod .............................. -->
-  <xs:element name="SVG.Clip.class" abstract="true">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="svg:SVG.clipPath.content">
-          <xs:attributeGroup ref="svg:SVG.Core.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Conditional.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Style.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Text.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.TextContent.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Font.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Paint.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Color.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Opacity.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Graphics.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Clip.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Mask.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Filter.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Cursor.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.External.attrib"/>
-          <xs:attribute name="transform" type="svg:TransformList.datatype"/>
-          <xs:attribute name="clipPathUnits">
-            <xs:simpleType>
-              <xs:restriction base="xs:token">
-                <xs:enumeration value="userSpaceOnUse"/>
-                <xs:enumeration value="objectBoundingBox"/>
-              </xs:restriction>
-            </xs:simpleType>
-          </xs:attribute>
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
   <!-- module: svg-mask.mod .............................. -->
   <xs:element name="SVG.Mask.class" abstract="true">
     <xs:complexType>
@@ -598,21 +645,6 @@
     </xs:complexType>
   </xs:element>
   <xs:element name="SVG.FilterPrimitive.class" abstract="true"/>
-  <!-- module: svg-cursor.mod ............................ -->
-  <xs:element name="SVG.Cursor.class" abstract="true">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="svg:SVG.cursor.content">
-          <xs:attributeGroup ref="svg:SVG.Core.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.Conditional.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.XLinkRequired.attrib"/>
-          <xs:attributeGroup ref="svg:SVG.External.attrib"/>
-          <xs:attribute name="x" type="svg:Coordinate.datatype"/>
-          <xs:attribute name="y" type="svg:Coordinate.datatype"/>
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
   <!-- module: svg-hyperlink.mod ......................... -->
   <xs:element name="SVG.Hyperlink.class" abstract="true">
     <xs:complexType>
@@ -659,29 +691,23 @@
       <xs:attributeGroup ref="svg:SVG.Core.attrib"/>
       <xs:attributeGroup ref="svg:SVG.XLink.attrib"/>
       <xs:attributeGroup ref="svg:SVG.External.attrib"/>
-      <xs:attribute name="type" use="required" type="svg:ContentType.datatype"/>
+      <xs:attribute name="type" use="required" type="svg:ContentType.datatype">
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:property name="contentType"/>
+		</xs:appinfo>
+	</xs:annotation>                    
+          </xs:attribute>
+      
     </xs:complexType>
   </xs:element>
   <!-- module: svg-animation.mod ......................... -->
   <xs:element name="SVG.Animation.class" abstract="true"/>
   <!-- module: svg-font.mod .............................. -->
   <xs:element name="SVG.Font.class" abstract="true"/>
-  <!-- module: svg-extensibility.mod ..................... -->
-  <xs:element name="SVG.Extensibility.class" abstract="true">
-    <xs:complexType mixed="true">
-      <xs:attributeGroup ref="svg:SVG.Core.attrib"/>
-      <xs:attributeGroup ref="svg:SVG.Conditional.attrib"/>
-      <xs:attributeGroup ref="svg:SVG.Style.attrib"/>
-      <xs:attributeGroup ref="svg:SVG.Presentation.attrib"/>
-      <xs:attributeGroup ref="svg:SVG.GraphicalEvents.attrib"/>
-      <xs:attributeGroup ref="svg:SVG.External.attrib"/>
-      <xs:attribute name="x" type="svg:Coordinate.datatype"/>
-      <xs:attribute name="y" type="svg:Coordinate.datatype"/>
-      <xs:attribute name="width" use="required" type="svg:Length.datatype"/>
-      <xs:attribute name="height" use="required" type="svg:Length.datatype"/>
-      <xs:attribute name="transform" type="svg:TransformList.datatype"/>
-    </xs:complexType>
-  </xs:element>
+  
+  
+  
   <!-- end of svg11-model.mod -->
   <!-- instantiate the Attribute Collection declared in the DTD driver -->
   <!-- ....................................................................... -->
@@ -1728,10 +1754,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -1794,10 +1820,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -1836,10 +1862,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -1904,10 +1930,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -1987,7 +2013,7 @@
         <xs:element ref="svg:SVG.Image.class"/>
         <xs:element ref="svg:SVG.Shape.class"/>
         <xs:element ref="svg:SVG.Hyperlink.class"/>
-        <xs:element ref="svg:SVG.Extensibility.class"/>
+        <xs:element ref="svg:foreignObject"/>
       </xs:choice>
     </xs:sequence>
   </xs:complexType>
@@ -2731,10 +2757,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -2980,10 +3006,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -3035,7 +3061,41 @@
       </xs:choice>
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="clipPath" substitutionGroup="svg:SVG.Clip.class"/>
+  
+  <!-- module: svg-clip.mod .............................. -->
+  <xs:element name="clipPath">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="svg:SVG.clipPath.content">
+          <xs:attributeGroup ref="svg:SVG.Core.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Conditional.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Style.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Text.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.TextContent.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Font.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Paint.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Color.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Opacity.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Graphics.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Clip.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Mask.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Filter.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Cursor.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.External.attrib"/>
+          <xs:attribute name="transform" type="svg:TransformList.datatype"/>
+          <xs:attribute name="clipPathUnits">
+            <xs:simpleType>
+              <xs:restriction base="xs:token">
+                <xs:enumeration value="userSpaceOnUse"/>
+                <xs:enumeration value="objectBoundingBox"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  
   <!-- end of SVG.clipPath.element -->
   <!-- end of SVG.clipPath.attlist -->
   <!-- end of svg-clip.mod -->
@@ -3084,10 +3144,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -3894,7 +3954,23 @@
       <xs:element minOccurs="0" maxOccurs="unbounded" ref="svg:SVG.Description.class"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="cursor" substitutionGroup="svg:SVG.Cursor.class"/>
+  <!-- module: svg-cursor.mod ............................ -->
+  <xs:element name="cursor"> <!-- abstract="true"-->
+    <xs:complexType>
+    <xs:complexContent>
+        <xs:extension base="svg:SVG.cursor.content">
+          <xs:attributeGroup ref="svg:SVG.Core.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.Conditional.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.XLinkRequired.attrib"/>
+          <xs:attributeGroup ref="svg:SVG.External.attrib"/>
+          <xs:attribute name="x" type="svg:Coordinate.datatype"/>
+          <xs:attribute name="y" type="svg:Coordinate.datatype"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  
+  
   <!-- end of SVG.cursor.element -->
   <!-- end of SVG.cursor.attlist -->
   <!-- end of svg-cursor.mod -->
@@ -3945,10 +4021,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -4267,6 +4343,11 @@
           <xs:attributeGroup ref="svg:SVG.AnimationValue.attrib"/>
           <xs:attributeGroup ref="svg:SVG.AnimationAddtion.attrib"/>
           <xs:attribute name="type" default="translate">
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:property name="typeAnimate"/>
+		</xs:appinfo>
+	</xs:annotation>          
             <xs:simpleType>
               <xs:restriction base="xs:token">
                 <xs:enumeration value="translate"/>
@@ -4432,10 +4513,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -4454,7 +4535,13 @@
           <xs:attribute name="d" type="svg:PathData.datatype"/>
           <xs:attribute name="orientation"/>
           <xs:attribute name="arabic-form"/>
-          <xs:attribute name="lang" type="svg:LanguageCodes.datatype"/>
+          <xs:attribute name="lang" type="svg:LanguageCodes.datatype">
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:property name="langSvg"/>
+		</xs:appinfo>
+	</xs:annotation>                    
+          </xs:attribute>
           <xs:attribute name="horiz-adv-x" type="svg:Number.datatype"/>
           <xs:attribute name="vert-origin-x" type="svg:Number.datatype"/>
           <xs:attribute name="vert-origin-y" type="svg:Number.datatype"/>
@@ -4480,10 +4567,10 @@
       <xs:element ref="svg:SVG.ColorProfile.class"/>
       <xs:element ref="svg:SVG.Gradient.class"/>
       <xs:element ref="svg:SVG.Pattern.class"/>
-      <xs:element ref="svg:SVG.Clip.class"/>
+      <xs:element ref="svg:clipPath"/>
       <xs:element ref="svg:SVG.Mask.class"/>
       <xs:element ref="svg:SVG.Filter.class"/>
-      <xs:element ref="svg:SVG.Cursor.class"/>
+      <xs:element ref="svg:cursor"/>
       <xs:element ref="svg:SVG.Hyperlink.class"/>
       <xs:element ref="svg:SVG.View.class"/>
       <xs:element ref="svg:SVG.Script.class"/>
@@ -4627,7 +4714,25 @@
   <!-- SVG.Extensibility.class ........................... -->
   <!-- SVG.Presentation.attrib ........................... -->
   <!-- foreignObject: Foreign Object Element ............. -->
-  <xs:element name="foreignObject" substitutionGroup="svg:SVG.Extensibility.class"/>
+  
+  <!-- module: svg-extensibility.mod ..................... -->
+  <xs:element name="foreignObject">
+    <xs:complexType mixed="true">
+      <xs:attributeGroup ref="svg:SVG.Core.attrib"/>
+      <xs:attributeGroup ref="svg:SVG.Conditional.attrib"/>
+      <xs:attributeGroup ref="svg:SVG.Style.attrib"/>
+      <xs:attributeGroup ref="svg:SVG.Presentation.attrib"/>
+      <xs:attributeGroup ref="svg:SVG.GraphicalEvents.attrib"/>
+      <xs:attributeGroup ref="svg:SVG.External.attrib"/>
+      <xs:attribute name="x" type="svg:Coordinate.datatype"/>
+      <xs:attribute name="y" type="svg:Coordinate.datatype"/>
+      <xs:attribute name="width" use="required" type="svg:Length.datatype"/>
+      <xs:attribute name="height" use="required" type="svg:Length.datatype"/>
+      <xs:attribute name="transform" type="svg:TransformList.datatype"/>
+    </xs:complexType>
+  </xs:element>
+  
+  
 </xs:schema>
 <!-- end of SVG.foreignObject.element -->
 <!-- end of SVG.foreignObject.attlist -->
