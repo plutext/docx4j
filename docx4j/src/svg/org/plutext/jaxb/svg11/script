@@ -1,0 +1,5 @@
+# sed script to insert "header.txt" above the first line
+	1{h; r header.txt
+	  D; }
+	2{x; G; }
+#- - -end of sed script- - -

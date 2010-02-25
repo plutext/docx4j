@@ -21,16 +21,15 @@
 
 package org.plutext.jaxb.svg11;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -41,14 +40,13 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice maxOccurs="unbounded" minOccurs="0">
- *         &lt;element ref="{http://www.w3.org/2000/svg}animate"/>
- *         &lt;element ref="{http://www.w3.org/2000/svg}set"/>
- *         &lt;element ref="{http://www.w3.org/2000/svg}animateColor"/>
- *       &lt;/choice>
- *       &lt;attribute name="offset" use="required" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *     &lt;/restriction>
+ *     &lt;extension base="{http://www.w3.org/2000/svg}SVG.stop.content">
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Color.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Core.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Style.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Gradient.attrib"/>
+ *       &lt;attribute name="offset" use="required" type="{http://www.w3.org/2000/svg}NumberOrPercentage.datatype" />
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -56,52 +54,43 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "animateOrSetOrAnimateColor"
-})
+@XmlType(name = "")
 @XmlRootElement(name = "stop")
-public class Stop {
+public class Stop
+    extends SVGStopContent
+{
 
-    @XmlElements({
-        @XmlElement(name = "animate", type = Animate.class),
-        @XmlElement(name = "set", type = Set.class),
-        @XmlElement(name = "animateColor", type = AnimateColor.class)
-    })
-    protected List<Object> animateOrSetOrAnimateColor;
     @XmlAttribute(required = true)
-    @XmlSchemaType(name = "anySimpleType")
     protected String offset;
-
-    /**
-     * Gets the value of the animateOrSetOrAnimateColor property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the animateOrSetOrAnimateColor property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAnimateOrSetOrAnimateColor().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Animate }
-     * {@link Set }
-     * {@link AnimateColor }
-     * 
-     * 
-     */
-    public List<Object> getAnimateOrSetOrAnimateColor() {
-        if (animateOrSetOrAnimateColor == null) {
-            animateOrSetOrAnimateColor = new ArrayList<Object>();
-        }
-        return this.animateOrSetOrAnimateColor;
-    }
+    @XmlAttribute(name = "color-interpolation")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String colorInterpolation;
+    @XmlAttribute(name = "color-rendering")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String colorRendering;
+    @XmlAttribute
+    protected String color;
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    protected String id;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String base;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String space;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String lang;
+    @XmlAttribute
+    protected String style;
+    @XmlAttribute(name = "class")
+    protected String clazz;
+    @XmlAttribute(name = "stop-color")
+    protected String stopColor;
+    @XmlAttribute(name = "stop-opacity")
+    protected String stopOpacity;
 
     /**
      * Gets the value of the offset property.
@@ -125,6 +114,270 @@ public class Stop {
      */
     public void setOffset(String value) {
         this.offset = value;
+    }
+
+    /**
+     * Gets the value of the colorInterpolation property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getColorInterpolation() {
+        return colorInterpolation;
+    }
+
+    /**
+     * Sets the value of the colorInterpolation property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColorInterpolation(String value) {
+        this.colorInterpolation = value;
+    }
+
+    /**
+     * Gets the value of the colorRendering property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getColorRendering() {
+        return colorRendering;
+    }
+
+    /**
+     * Sets the value of the colorRendering property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColorRendering(String value) {
+        this.colorRendering = value;
+    }
+
+    /**
+     * Gets the value of the color property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getColor() {
+        return color;
+    }
+
+    /**
+     * Sets the value of the color property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColor(String value) {
+        this.color = value;
+    }
+
+    /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the base property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBase() {
+        return base;
+    }
+
+    /**
+     * Sets the value of the base property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBase(String value) {
+        this.base = value;
+    }
+
+    /**
+     * Gets the value of the space property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSpace() {
+        return space;
+    }
+
+    /**
+     * Sets the value of the space property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSpace(String value) {
+        this.space = value;
+    }
+
+    /**
+     * Gets the value of the lang property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLang() {
+        return lang;
+    }
+
+    /**
+     * Sets the value of the lang property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLang(String value) {
+        this.lang = value;
+    }
+
+    /**
+     * Gets the value of the style property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStyle() {
+        return style;
+    }
+
+    /**
+     * Sets the value of the style property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStyle(String value) {
+        this.style = value;
+    }
+
+    /**
+     * Gets the value of the clazz property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getClazz() {
+        return clazz;
+    }
+
+    /**
+     * Sets the value of the clazz property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setClazz(String value) {
+        this.clazz = value;
+    }
+
+    /**
+     * Gets the value of the stopColor property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStopColor() {
+        return stopColor;
+    }
+
+    /**
+     * Sets the value of the stopColor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStopColor(String value) {
+        this.stopColor = value;
+    }
+
+    /**
+     * Gets the value of the stopOpacity property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStopOpacity() {
+        return stopOpacity;
+    }
+
+    /**
+     * Sets the value of the stopOpacity property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStopOpacity(String value) {
+        this.stopOpacity = value;
     }
 
 }

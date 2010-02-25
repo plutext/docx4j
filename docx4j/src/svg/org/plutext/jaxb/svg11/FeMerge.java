@@ -21,14 +21,14 @@
 
 package org.plutext.jaxb.svg11;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -39,12 +39,11 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence maxOccurs="unbounded" minOccurs="0">
- *         &lt;element ref="{http://www.w3.org/2000/svg}feMergeNode"/>
- *       &lt;/sequence>
+ *     &lt;extension base="{http://www.w3.org/2000/svg}SVG.feMerge.content">
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.FilterColor.attrib"/>
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Core.attrib"/>
  *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.FilterPrimitive.attrib"/>
- *     &lt;/restriction>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -52,56 +51,157 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "feMergeNode"
-})
-@XmlRootElement(name = "feMerge")
-public class FeMerge {
+@XmlType(name = "")
+public class FeMerge
+    extends SVGFeMergeContent
+{
 
-    protected List<FeMergeNode> feMergeNode;
+    @XmlAttribute(name = "color-interpolation-filters")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String colorInterpolationFilters;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    protected String id;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String base;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String space;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String lang;
+    @XmlAttribute
     protected String x;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String y;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String width;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String height;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
     protected String result;
 
     /**
-     * Gets the value of the feMergeNode property.
+     * Gets the value of the colorInterpolationFilters property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the feMergeNode property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getFeMergeNode().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link FeMergeNode }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public List<FeMergeNode> getFeMergeNode() {
-        if (feMergeNode == null) {
-            feMergeNode = new ArrayList<FeMergeNode>();
-        }
-        return this.feMergeNode;
+    public String getColorInterpolationFilters() {
+        return colorInterpolationFilters;
+    }
+
+    /**
+     * Sets the value of the colorInterpolationFilters property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setColorInterpolationFilters(String value) {
+        this.colorInterpolationFilters = value;
+    }
+
+    /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the base property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBase() {
+        return base;
+    }
+
+    /**
+     * Sets the value of the base property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBase(String value) {
+        this.base = value;
+    }
+
+    /**
+     * Gets the value of the space property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSpace() {
+        return space;
+    }
+
+    /**
+     * Sets the value of the space property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSpace(String value) {
+        this.space = value;
+    }
+
+    /**
+     * Gets the value of the lang property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLang() {
+        return lang;
+    }
+
+    /**
+     * Sets the value of the lang property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLang(String value) {
+        this.lang = value;
     }
 
     /**

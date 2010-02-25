@@ -21,16 +21,14 @@
 
 package org.plutext.jaxb.svg11;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -41,95 +39,42 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;choice maxOccurs="unbounded" minOccurs="0">
- *           &lt;element ref="{http://www.w3.org/2000/svg}desc"/>
- *           &lt;element ref="{http://www.w3.org/2000/svg}title"/>
- *           &lt;element ref="{http://www.w3.org/2000/svg}metadata"/>
- *         &lt;/choice>
- *         &lt;element ref="{http://www.w3.org/2000/svg}font-face-src" minOccurs="0"/>
- *         &lt;element ref="{http://www.w3.org/2000/svg}definition-src" minOccurs="0"/>
- *       &lt;/sequence>
+ *     &lt;extension base="{http://www.w3.org/2000/svg}SVG.font-face.content">
+ *       &lt;attGroup ref="{http://www.w3.org/2000/svg}SVG.Core.attrib"/>
  *       &lt;attribute name="font-family" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="font-style">
- *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="normal"/>
- *             &lt;enumeration value="italic"/>
- *             &lt;enumeration value="oblique"/>
- *           &lt;/restriction>
- *         &lt;/simpleType>
- *       &lt;/attribute>
- *       &lt;attribute name="font-variant">
- *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="normal"/>
- *             &lt;enumeration value="small-caps"/>
- *           &lt;/restriction>
- *         &lt;/simpleType>
- *       &lt;/attribute>
- *       &lt;attribute name="font-weight">
- *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="normal"/>
- *             &lt;enumeration value="bold"/>
- *             &lt;enumeration value="100"/>
- *             &lt;enumeration value="200"/>
- *             &lt;enumeration value="300"/>
- *             &lt;enumeration value="400"/>
- *             &lt;enumeration value="500"/>
- *             &lt;enumeration value="600"/>
- *             &lt;enumeration value="700"/>
- *             &lt;enumeration value="800"/>
- *             &lt;enumeration value="900"/>
- *           &lt;/restriction>
- *         &lt;/simpleType>
- *       &lt;/attribute>
- *       &lt;attribute name="font-stretch">
- *         &lt;simpleType>
- *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *             &lt;enumeration value="normal"/>
- *             &lt;enumeration value="ultra-condensed"/>
- *             &lt;enumeration value="extra-condensed"/>
- *             &lt;enumeration value="condensed"/>
- *             &lt;enumeration value="semi-condensed"/>
- *             &lt;enumeration value="semi-expanded"/>
- *             &lt;enumeration value="expanded"/>
- *             &lt;enumeration value="extra-expanded"/>
- *             &lt;enumeration value="ultra-expanded"/>
- *           &lt;/restriction>
- *         &lt;/simpleType>
- *       &lt;/attribute>
+ *       &lt;attribute name="font-style" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="font-variant" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="font-weight" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="font-stretch" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
  *       &lt;attribute name="font-size" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
  *       &lt;attribute name="unicode-range" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="units-per-em" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="units-per-em" type="{http://www.w3.org/2000/svg}Number.datatype" />
  *       &lt;attribute name="panose-1" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="stemv" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="stemh" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="slope" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="cap-height" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="x-height" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="accent-height" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="ascent" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="descent" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
+ *       &lt;attribute name="stemv" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="stemh" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="slope" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="cap-height" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="x-height" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="accent-height" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="ascent" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="descent" type="{http://www.w3.org/2000/svg}Number.datatype" />
  *       &lt;attribute name="widths" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
  *       &lt;attribute name="bbox" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="ideographic" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="alphabetic" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="mathematical" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="hanging" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="v-ideographic" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="v-alphabetic" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="v-mathematical" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="v-hanging" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="underline-position" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="underline-thickness" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="strikethrough-position" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="strikethrough-thickness" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="overline-position" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *       &lt;attribute name="overline-thickness" type="{http://www.w3.org/2001/XMLSchema}anySimpleType" />
- *     &lt;/restriction>
+ *       &lt;attribute name="ideographic" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="alphabetic" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="mathematical" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="hanging" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="v-ideographic" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="v-alphabetic" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="v-mathematical" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="v-hanging" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="underline-position" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="underline-thickness" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="strikethrough-position" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="strikethrough-thickness" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="overline-position" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *       &lt;attribute name="overline-thickness" type="{http://www.w3.org/2000/svg}Number.datatype" />
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -137,34 +82,25 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-    "descOrTitleOrMetadata",
-    "fontFaceSrc",
-    "definitionSrc"
-})
-@XmlRootElement(name = "font-face")
-public class FontFace {
+@XmlType(name = "")
+public class FontFace
+    extends SVGFontFaceContent
+{
 
-    @XmlElements({
-        @XmlElement(name = "desc", type = Desc.class),
-        @XmlElement(name = "metadata", type = Metadata.class),
-        @XmlElement(name = "title", type = Title.class)
-    })
-    protected List<Object> descOrTitleOrMetadata;
-    @XmlElement(name = "font-face-src")
-    protected FontFaceSrc fontFaceSrc;
-    @XmlElement(name = "definition-src")
-    protected DefinitionSrc definitionSrc;
     @XmlAttribute(name = "font-family")
     @XmlSchemaType(name = "anySimpleType")
     protected String fontFamily;
     @XmlAttribute(name = "font-style")
+    @XmlSchemaType(name = "anySimpleType")
     protected String fontStyle;
     @XmlAttribute(name = "font-variant")
+    @XmlSchemaType(name = "anySimpleType")
     protected String fontVariant;
     @XmlAttribute(name = "font-weight")
+    @XmlSchemaType(name = "anySimpleType")
     protected String fontWeight;
     @XmlAttribute(name = "font-stretch")
+    @XmlSchemaType(name = "anySimpleType")
     protected String fontStretch;
     @XmlAttribute(name = "font-size")
     @XmlSchemaType(name = "anySimpleType")
@@ -173,34 +109,25 @@ public class FontFace {
     @XmlSchemaType(name = "anySimpleType")
     protected String unicodeRange;
     @XmlAttribute(name = "units-per-em")
-    @XmlSchemaType(name = "anySimpleType")
     protected String unitsPerEm;
     @XmlAttribute(name = "panose-1")
     @XmlSchemaType(name = "anySimpleType")
     protected String panose1;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String stemv;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String stemh;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String slope;
     @XmlAttribute(name = "cap-height")
-    @XmlSchemaType(name = "anySimpleType")
     protected String capHeight;
     @XmlAttribute(name = "x-height")
-    @XmlSchemaType(name = "anySimpleType")
     protected String xHeight;
     @XmlAttribute(name = "accent-height")
-    @XmlSchemaType(name = "anySimpleType")
     protected String accentHeight;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String ascent;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String descent;
     @XmlAttribute
     @XmlSchemaType(name = "anySimpleType")
@@ -209,126 +136,46 @@ public class FontFace {
     @XmlSchemaType(name = "anySimpleType")
     protected String bbox;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String ideographic;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String alphabetic;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String mathematical;
     @XmlAttribute
-    @XmlSchemaType(name = "anySimpleType")
     protected String hanging;
     @XmlAttribute(name = "v-ideographic")
-    @XmlSchemaType(name = "anySimpleType")
     protected String vIdeographic;
     @XmlAttribute(name = "v-alphabetic")
-    @XmlSchemaType(name = "anySimpleType")
     protected String vAlphabetic;
     @XmlAttribute(name = "v-mathematical")
-    @XmlSchemaType(name = "anySimpleType")
     protected String vMathematical;
     @XmlAttribute(name = "v-hanging")
-    @XmlSchemaType(name = "anySimpleType")
     protected String vHanging;
     @XmlAttribute(name = "underline-position")
-    @XmlSchemaType(name = "anySimpleType")
     protected String underlinePosition;
     @XmlAttribute(name = "underline-thickness")
-    @XmlSchemaType(name = "anySimpleType")
     protected String underlineThickness;
     @XmlAttribute(name = "strikethrough-position")
-    @XmlSchemaType(name = "anySimpleType")
     protected String strikethroughPosition;
     @XmlAttribute(name = "strikethrough-thickness")
-    @XmlSchemaType(name = "anySimpleType")
     protected String strikethroughThickness;
     @XmlAttribute(name = "overline-position")
-    @XmlSchemaType(name = "anySimpleType")
     protected String overlinePosition;
     @XmlAttribute(name = "overline-thickness")
-    @XmlSchemaType(name = "anySimpleType")
     protected String overlineThickness;
-
-    /**
-     * Gets the value of the descOrTitleOrMetadata property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the descOrTitleOrMetadata property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getDescOrTitleOrMetadata().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Desc }
-     * {@link Metadata }
-     * {@link Title }
-     * 
-     * 
-     */
-    public List<Object> getDescOrTitleOrMetadata() {
-        if (descOrTitleOrMetadata == null) {
-            descOrTitleOrMetadata = new ArrayList<Object>();
-        }
-        return this.descOrTitleOrMetadata;
-    }
-
-    /**
-     * Gets the value of the fontFaceSrc property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link FontFaceSrc }
-     *     
-     */
-    public FontFaceSrc getFontFaceSrc() {
-        return fontFaceSrc;
-    }
-
-    /**
-     * Sets the value of the fontFaceSrc property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link FontFaceSrc }
-     *     
-     */
-    public void setFontFaceSrc(FontFaceSrc value) {
-        this.fontFaceSrc = value;
-    }
-
-    /**
-     * Gets the value of the definitionSrc property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link DefinitionSrc }
-     *     
-     */
-    public DefinitionSrc getDefinitionSrc() {
-        return definitionSrc;
-    }
-
-    /**
-     * Sets the value of the definitionSrc property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link DefinitionSrc }
-     *     
-     */
-    public void setDefinitionSrc(DefinitionSrc value) {
-        this.definitionSrc = value;
-    }
+    @XmlAttribute
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    @XmlID
+    @XmlSchemaType(name = "ID")
+    protected String id;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    protected String base;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace", required = true)
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String space;
+    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    protected String lang;
 
     /**
      * Gets the value of the fontFamily property.
@@ -1120,6 +967,102 @@ public class FontFace {
      */
     public void setOverlineThickness(String value) {
         this.overlineThickness = value;
+    }
+
+    /**
+     * Gets the value of the id property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the base property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBase() {
+        return base;
+    }
+
+    /**
+     * Sets the value of the base property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBase(String value) {
+        this.base = value;
+    }
+
+    /**
+     * Gets the value of the space property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSpace() {
+        return space;
+    }
+
+    /**
+     * Sets the value of the space property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSpace(String value) {
+        this.space = value;
+    }
+
+    /**
+     * Gets the value of the lang property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLang() {
+        return lang;
+    }
+
+    /**
+     * Sets the value of the lang property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLang(String value) {
+        this.lang = value;
     }
 
 }
