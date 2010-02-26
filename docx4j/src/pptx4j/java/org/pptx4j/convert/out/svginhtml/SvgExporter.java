@@ -461,7 +461,7 @@ public class SvgExporter {
     	// Geometrical transforms
     	CTTransform2D xfrm = cxnSp.getSpPr().getXfrm();
     	Box b = new Box(xfrm.getOff().getX(), xfrm.getOff().getY(),
-    			xfrm.getExt().getCx(), xfrm.getExt().getCx() );
+    			xfrm.getExt().getCx(), xfrm.getExt().getCy() );
     	
     	if (xfrm.getRot()!=0) {
     		b.rotate(xfrm.getRot());
