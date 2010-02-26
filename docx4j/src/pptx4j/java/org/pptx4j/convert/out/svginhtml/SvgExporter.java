@@ -169,6 +169,7 @@ public class SvgExporter {
 			);
 			
 
+			StringBuffer inlineStyle =  new StringBuffer();
 			// Do we have CTTextParagraphProperties
 			// <a:lvl?pPr>
 			// Convert it to a WordML pPr
@@ -183,13 +184,16 @@ public class SvgExporter {
 						);
 				PPr pPr = TextStyles.getWmlPPr(lvlPPr);
 				if (pPr!=null) {
-					StringBuffer inlineStyle =  new StringBuffer();
 					HtmlExporterNG.createCss(pPr, inlineStyle);				
-					if (!inlineStyle.toString().equals("") ) {
-						((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
-					}
 				}
 				// TODO RPR
+			}
+			// Without this, top-margin is too large in Webkit (Midor).
+			// Not tested elsewhere...
+			inlineStyle.append("margin-left:3px; margin-top:3px;");
+			
+			if (!inlineStyle.toString().equals("") ) {
+				((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
 			}
 			
 			// Our fo:block wraps whatever result tree fragment
