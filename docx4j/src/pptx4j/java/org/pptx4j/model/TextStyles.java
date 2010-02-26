@@ -32,6 +32,7 @@ import javax.xml.bind.JAXBContext;
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.BaseStyles.FontScheme;
@@ -44,6 +45,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.Jc;
 import org.docx4j.wml.JcEnumeration;
@@ -53,6 +55,8 @@ import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.U;
+import org.docx4j.wml.UnderlineEnumeration;
 import org.docx4j.wml.Style.Name;
 import org.pptx4j.pml.CTSlideMasterTextStyles;
 
@@ -208,10 +212,7 @@ public class TextStyles {
 //		*sz hundreds of pt
 //		<w:sz w:val="28" />
 			if (lvlPPr.getDefRPr().getSz()!=null) {				
-				HpsMeasure sz = factory.createHpsMeasure();
-				int halfPts = Math.round(lvlPPr.getDefRPr().getSz()/50); 
-				sz.setVal( BigInteger.valueOf(halfPts) );
-				rPr.setSz(sz);
+				rPr.setSz( convertFontSize(lvlPPr.getDefRPr().getSz()) );
 			}
 			
 //		kern
@@ -232,6 +233,15 @@ public class TextStyles {
 	
 		return rPr;
 	}	
+	
+	private static HpsMeasure convertFontSize(Integer in) {
+		ObjectFactory factory = Context.getWmlObjectFactory();
+		HpsMeasure sz = factory.createHpsMeasure();
+		int halfPts = Math.round(in/50); 
+		sz.setVal( BigInteger.valueOf(halfPts) );
+		return sz;
+	}
+	
 	// From Main Presentation Part
 	public static List<Style> generateWordStylesFromPresentationPart(CTTextListStyle textStyles, String suffix,  
 			FontScheme fontScheme) {
@@ -345,5 +355,39 @@ public class TextStyles {
 		
 	}	
     
-	
+	public static RPr getWmlRPr(CTTextCharacterProperties in) {
+		
+		ObjectFactory factory = Context.getWmlObjectFactory();
+		RPr rPr = factory.createRPr();
+
+		if (in==null) {
+			System.out.println("Was passed null");
+			return rPr;
+		}
+		
+//        <a:rPr  i="true" />		
+		if (in.isI()!=null && in.isI()) {
+			rPr.setI( new BooleanDefaultTrue() );
+		}
+		
+//        <a:rPr  b="true"
+		if (in.isB()!=null && in.isB()) {
+			rPr.setB( new BooleanDefaultTrue() );
+		}
+		
+//        <a:rPr  u="sng" 
+		if (in.getU()!=null) {
+			U u = factory.createU(); 
+			u.setVal(UnderlineEnumeration.SINGLE);
+			rPr.setU(u);
+		}
+//        <a:rPr  sz="4000" 
+		if (in.getSz()!=null) {
+			rPr.setSz(
+					convertFontSize(in.getSz() ) );
+		}
+		
+		return rPr;
+
+	}
 }

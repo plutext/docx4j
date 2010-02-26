@@ -154,7 +154,11 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
  </xsl:template>
 
  <xsl:template match="a:r">
- 	<xsl:apply-templates select="a:t"/>
+		<xsl:variable name="rPr" select="a:rPr"/>
+		<xsl:variable name="childResults"><xsl:apply-templates select="a:t"/></xsl:variable>
+	  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.createBlockForR(
+	  		$wmlPackage, $rPr,
+	  		 $childResults)" />
  </xsl:template>
 
   <xsl:template match="a:t">  	
