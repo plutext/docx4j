@@ -21,6 +21,7 @@ import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.CTTransform2D;
@@ -35,6 +36,8 @@ import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.Pict;
+import org.docx4j.wml.RPr;
+//import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.plutext.jaxb.svg11.Line;
 import org.plutext.jaxb.svg11.ObjectFactory;
@@ -130,6 +133,8 @@ public class SvgExporter {
 		}
 		String pStyleVal;
     	
+		System.out.println("cNvPrName: " + cNvPrName + "; " + "phType: " + phType );
+		
 		if (cNvPrName.toLowerCase().indexOf("subtitle")>-1
 				|| phType.toLowerCase().indexOf("subtitle")>-1) {
 			// Subtitle on first page in default layout is styled as a Body.
@@ -138,8 +143,10 @@ public class SvgExporter {
 			|| phType.toLowerCase().indexOf("title")>-1) {
 			pStyleVal = "Lvl" + level + "Master" + rl.getMasterNumber() + "Title";
 		} else {
-			pStyleVal = "Lvl" + level + "Master" + rl.getMasterNumber() + "Body";			
+			// eg cNvPrName: TextBox 2; phType:
+			pStyleVal = "Lvl" + level + "Master" + rl.getMasterNumber() + "Other";			
 		}
+		System.out.println("--> " + pStyleVal );
 		
         try {
         	
@@ -290,8 +297,57 @@ public class SvgExporter {
 	return null;
 	
 }
-    
-//    public static CTTextListStyle unmarshalFormatting(NodeIterator lstStyleNodeIt ) {
+
+	public static DocumentFragment createBlockForR(
+			PresentationMLPackage pmlPackage, NodeIterator rPrNodeIt,
+			NodeIterator childResults) {
+
+		DocumentFragment docfrag = null;
+		Document d = null;
+		Element span = null;
+
+		try {
+
+			// Create a DOM builder and parse the fragment
+			DocumentBuilderFactory factory = DocumentBuilderFactory
+					.newInstance();
+			d = factory.newDocumentBuilder().newDocument();
+
+			span = d.createElement("span");
+			d.appendChild(span);
+
+			CTTextCharacterProperties textCharProps = (CTTextCharacterProperties) nodeToObjectModel(
+					rPrNodeIt.nextNode(), CTTextCharacterProperties.class);
+
+			RPr rPr = TextStyles.getWmlRPr(textCharProps);
+
+			// Does our rPr contain anything else?
+			StringBuffer inlineStyle = new StringBuffer();
+			HtmlExporterNG.createCss(pmlPackage, rPr, inlineStyle);
+			if (!inlineStyle.toString().equals("")) {
+				span.setAttribute("style", inlineStyle.toString());
+			}
+
+			Node n = childResults.nextNode();
+			XmlUtils.treeCopy((DTMNodeProxy) n, span);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error(e);
+			// If something went wrong with the formatting,
+			// still try to display the text!
+			Node n = childResults.nextNode();
+			XmlUtils.treeCopy((DTMNodeProxy) n, span);
+		}
+
+		// Machinery
+		docfrag = d.createDocumentFragment();
+		docfrag.appendChild(d.getDocumentElement());
+		return docfrag;
+
+	}
+
+	//    public static CTTextListStyle unmarshalFormatting(NodeIterator lstStyleNodeIt ) {
 //		
 //    	// Get the pPr node as a JAXB object,
 //    	// so we can read it using our standard
@@ -466,6 +522,15 @@ public class SvgExporter {
     }
 
     public static Object nodeToObjectModel(Node n, Class declaredType) throws Docx4JException {
+    	
+    	if (n==null) {
+    		throw new Docx4JException("null input");
+    	}
+    	
+//    	if (log.isDebugEnabled() ) {
+//    		System.out.println("IN: " + XmlUtils.w3CDomNodeToString(n));
+//    	}
+    	
 		Object jaxb=null;
 		try {
 			jaxb = XmlUtils.unmarshal(n, Context.jcPML, declaredType); 
