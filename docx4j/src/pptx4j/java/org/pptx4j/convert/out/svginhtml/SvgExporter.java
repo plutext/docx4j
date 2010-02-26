@@ -24,14 +24,17 @@ import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.CTTransform2D;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.Pict;
 import org.docx4j.wml.Style;
 import org.plutext.jaxb.svg11.Line;
 import org.plutext.jaxb.svg11.ObjectFactory;
@@ -48,6 +51,7 @@ import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
 public class SvgExporter {
@@ -354,50 +358,45 @@ public class SvgExporter {
     		PresentationMLPackage pmlPackage,
     		NodeIterator shapeIt ) {
     	
+    	DocumentFragment docfrag=null;
+    	Document d=null;
+    	
     	try {
-    		Object shape = null;
-    		
+    		Object shape = null;    		
     		if (shapeIt!=null) {
     			Node n = shapeIt.nextNode();
-    			
-    			log.debug(n.getClass().getName());
-//    			cxnSp
-//    			System.out.println(n.getLocalName());
-//    			p:cxnSp
-//    			System.out.println(n.getNodeName());
-    			
-    			String str = XmlUtils.w3CDomNodeToString(n);
-    			System.out.println("STRING-->" + str);
-    			if (str.equals("")) {
-    				
-    			} else if (str.startsWith("<p:cxnSp") ){
-    				shape = XmlUtils.unmarshalString(str, Context.jcPML, CxnSp.class);
-    				Document d = CxnSpToSVG( (CxnSp)shape);
-    				
-    				// Machinery
-    				DocumentFragment docfrag = d.createDocumentFragment();
-    				docfrag.appendChild(d.getDocumentElement());
-    				return docfrag;
-    			}
-    			
-    			log.info("** GOT " + shape.getClass().getName() );
-    			if (shape instanceof JAXBElement) {
-    				log.info(
-    						XmlUtils.JAXBElementDebug( (JAXBElement)shape)
-    					);
+    			if (n==null) {
+    				d=makeErr( "[null node?!]" );
+    			} else {
+	    			log.debug("Handling " + n.getNodeName());
+	    			
+	    			if (n.getNodeName().equals("p:cxnSp") ) {
+	    				
+	    				shape = nodeToObjectModel(n, CxnSp.class);    				
+	    				d = CxnSpToSVG( (CxnSp)shape);
+	    				
+	    			} else {    			
+		    			log.info("** TODO " + n.getNodeName() );
+	    				d=makeErr( "[" + n.getNodeName() + "]" );
+	    			}
     			}
     		}
     	} catch (Exception e) {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    	} 
-    	return null;
+			log.error(e);
+			d=makeErr(e.getMessage() );
+		}
     	
+		// Machinery
+		docfrag = d.createDocumentFragment();
+		docfrag.appendChild(d.getDocumentElement());
+		return docfrag;    	
     }
     
     
+    /**
+     * Connection (line)
+     */
     public static Document CxnSpToSVG(CxnSp cxnSp) {
-    	
     	
     	// Geometrical transforms
     	CTTransform2D xfrm = cxnSp.getSpPr().getXfrm();
@@ -422,10 +421,8 @@ public class SvgExporter {
 		Element xhtmlDiv = document.createElement("div");
 		// Firefox needs the following; Chrome doesn't
 		xhtmlDiv.setAttribute("style", 
-				"position: absolute; width:100%; height:100%; left:0px; top:0px;");
-		
+				"position: absolute; width:100%; height:100%; left:0px; top:0px;");		
 		Node n = document.appendChild(xhtmlDiv);
-		// TODO - set style
     	
     	// Convert the object itself to SVG
 		Svg svg = oFactory.createSvg();
@@ -448,6 +445,57 @@ public class SvgExporter {
     	XmlUtils.treeCopy(d2, n);
     	return document;
     	
+    }
+
+    private static Document makeErr(String msg) {
+    	Document d=null;
+    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+		 try {
+			d = factory.newDocumentBuilder().newDocument();
+		} catch (ParserConfigurationException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		Element span = d.createElement("span");
+		span.setAttribute("style", "color:red;");
+		d.appendChild(span);
+		
+		Text err = d.createTextNode( msg );
+		span.appendChild(err);
+		return d;
+    }
+
+    public static Object nodeToObjectModel(Node n, Class declaredType) throws Docx4JException {
+		Object jaxb=null;
+		try {
+			jaxb = XmlUtils.unmarshal(n, Context.jcPML, declaredType); 
+		} catch (JAXBException e1) {
+			throw new Docx4JException("Couldn't unmarshall " + XmlUtils.w3CDomNodeToString(n), e1);
+		}
+		try {
+			if (jaxb instanceof JAXBElement ) {
+				
+				JAXBElement jb = (JAXBElement)jaxb;
+				if (jb.getDeclaredType().getName().equals(declaredType.getName() )) {
+					return jb.getValue();
+				} else {
+    				log.error("UNEXPECTED " +
+    						XmlUtils.JAXBElementDebug(jb)
+    						);
+    				throw new Docx4JException("Expected " + declaredType.getName() + " but got " +
+    						XmlUtils.JAXBElementDebug(jb) );
+				}
+			} else if (jaxb.getClass().getName().equals(declaredType.getName() )) {    				
+				return jaxb;
+			} else {
+				log.error( jaxb.getClass().getName() ); 
+				throw new Docx4JException("Expected " + declaredType.getName() + " but got " +
+						jaxb.getClass().getName() );
+			}
+		} catch (ClassCastException e) {
+			throw new Docx4JException("Expected " + declaredType.getName() + " but got " +
+					jaxb.getClass().getName(), e );
+		}        	        			    	
     }
     
     public static Document createDocument() {
