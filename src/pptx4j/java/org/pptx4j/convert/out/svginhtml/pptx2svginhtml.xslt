@@ -1,5 +1,6 @@
 ﻿
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+	xmlns="http://www.w3.org/1999/xhtml" 
     xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
     xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
@@ -29,11 +30,14 @@
       the user-agent from replacing a carriage return in the HTML with a space in the output. 
       
       but, for now, make indent yes-->
-<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="yes" indent="yes" /> 
+<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" 
+doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
+<!-- either strict or transitional work for inline SVG --> 
 
 <!--  Input to this transform is a Shape Tree p:spTree. 
 
-	Ouput is SVG in HTML.
+	Output is SVG in HTML.
 
  	<text x="{$x}" y="{$y}"><xsl:value-of select="a:p/a:r/a:t"/></text>
 
@@ -54,92 +58,12 @@
 
 	<xsl:param name="wmlPackage"/> <!--  really, its pml -->
 	<xsl:param name="resolvedLayout"/>
-<!-- 
-	<xsl:param name="modelStates"/>	
-	<xsl:param name="imageDirPath"/>
-	   
-	<xsl:param name="fontMapper"/>	
-	<xsl:param name="fontFamilyStack"/>
-	
-	<xsl:param name="conditionalComments"/> 
-	 -->
 
-<!-- 
-
-<p:spTree xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
-    <p:nvGrpSpPr>
-        <p:cNvPr name="" id="1"/>
-        <p:cNvGrpSpPr/>
-        <p:nvPr/>
-    </p:nvGrpSpPr>
-    <p:grpSpPr>
-        <a:xfrm>
-            <a:off y="0" x="0"/>
-            <a:ext cy="0" cx="0"/>
-            <a:chOff y="0" x="0"/>
-            <a:chExt cy="0" cx="0"/>
-        </a:xfrm>
-    </p:grpSpPr>
-    <p:sp>
-        <p:nvSpPr>
-            <p:cNvPr name="Title 1" id="2"/>
-            <p:cNvSpPr>
-                <a:spLocks noGrp="true"/>
-            </p:cNvSpPr>
-            <p:nvPr/>
-        </p:nvSpPr>
-        <p:spPr>
-            <a:xfrm>
-                <a:off y="2130425" x="685800"/>
-                <a:ext cy="1470025" cx="7772400"/>
-            </a:xfrm>
-        </p:spPr>
-        <p:txBody>
-            <a:bodyPr/>
-            <a:lstStyle/>
-            <a:p>
-                <a:r>
-                    <a:rPr smtClean="false" lang="en-US"/>
-                    <a:t>My title</a:t>
-                </a:r>
-                <a:endParaRPr lang="en-US"/>
-            </a:p>
-        </p:txBody>
-    </p:sp>
-    <p:sp>
-        <p:nvSpPr>
-            <p:cNvPr name="Subtitle 2" id="3"/>
-            <p:cNvSpPr>
-                <a:spLocks noGrp="true"/>
-            </p:cNvSpPr>
-            <p:nvPr/>
-        </p:nvSpPr>
-        <p:spPr>
-            <a:xfrm>
-                <a:off y="3886200" x="1371600"/>
-                <a:ext cy="1752600" cx="6400800"/>
-            </a:xfrm>
-        </p:spPr>
-        <p:txBody>
-            <a:bodyPr/>
-            <a:lstStyle/>
-            <a:p>
-                <a:r>
-                    <a:rPr smtClean="false" lang="en-US"/>
-                    <a:t>My subtitle</a:t>
-                </a:r>
-                <a:endParaRPr lang="en-US"/>
-            </a:p>
-        </p:txBody>
-    </p:sp>
-</p:spTree>
-
-
-
- -->
 
 <xsl:template match="/">
-	<html>
+	<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
 		<head>
 			<title>Slide output proof of concept</title>
 	        <style>
@@ -154,18 +78,9 @@
 			
 		</head>
 		<body>
-		
 			<xsl:apply-templates/>		
-		
 		</body>
-	</html>
-	
-<!-- 
-	<svg width="600px" height="600px" version="1.1"
-			baseProfile="full">
-		<xsl:apply-templates/>
-	</svg>
-	 -->
+	</html>	
 </xsl:template>
 
 <xsl:template match="p:spTree">
@@ -175,34 +90,6 @@
 <xsl:template match="p:nvGrpSpPr"/>
 <xsl:template match="p:grpSpPr"/>
 
-<!-- 
-    <p:sp>
-        <p:nvSpPr>
-            <p:cNvPr name="Title 1" id="2"/>
-            <p:cNvSpPr>
-                <a:spLocks noGrp="true"/>
-            </p:cNvSpPr>
-            <p:nvPr/>
-        </p:nvSpPr>
-        <p:spPr>
-            <a:xfrm>
-                <a:off y="2130425" x="685800"/>
-                <a:ext cy="1470025" cx="7772400"/>
-            </a:xfrm>
-        </p:spPr>
-        <p:txBody>
-            <a:bodyPr/>
-            <a:lstStyle/>
-            <a:p>
-                <a:r>
-                    <a:rPr smtClean="false" lang="en-US"/>
-                    <a:t>My title</a:t>
-                </a:r>
-                <a:endParaRPr lang="en-US"/>
-            </a:p>
-        </p:txBody>
-    </p:sp>
- -->
  <xsl:template match="p:sp">
  	<xsl:apply-templates select="p:txBody"/>
  </xsl:template>
@@ -232,10 +119,20 @@
  	
  	<!--  At present, docx4j doesn't do text boxes in its docx html,
  	      so handle the box here.  -->
- 	<div style="position: absolute; width:{$cx}; height:{$cy}; left:{$x}; top:{$y}; border: red dashed;">
+ 	<div style="position: absolute; width:{$cx}px; height:{$cy}px; left:{$x}px; top:{$y}px; border: red dashed;">
 	 	<xsl:apply-templates select="a:p"/>
  	</div>
  </xsl:template>
+
+ <xsl:template match="p:cxnSp">
+
+		<xsl:variable name="shape" select="."/>
+
+	  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.shapeToSVG(
+	  		$wmlPackage, $shape)" />
+ 
+ </xsl:template>
+
 
  <xsl:template match="a:p">
 		<xsl:variable name="lvl"><xsl:value-of select="number(a:pPr/@lvl)"/></xsl:variable>
