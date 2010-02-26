@@ -3,9 +3,12 @@ package org.pptx4j.convert.out.svginhtml;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -20,6 +23,7 @@ import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.CTTextParagraphProperties;
+import org.docx4j.dml.CTTransform2D;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
@@ -29,8 +33,14 @@ import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.Style;
+import org.plutext.jaxb.svg11.Line;
+import org.plutext.jaxb.svg11.ObjectFactory;
+import org.plutext.jaxb.svg11.Svg;
+import org.pptx4j.Box;
+import org.pptx4j.Point;
 import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.model.TextStyles;
+import org.pptx4j.pml.CxnSp;
 import org.pptx4j.pml.GroupShape;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -43,19 +53,23 @@ import org.w3c.dom.traversal.NodeIterator;
 public class SvgExporter {
 	
 	protected static Logger log = Logger.getLogger(SvgExporter.class);	
-	
+
+	static JAXBContext jcSVG;	
+    static ObjectFactory oFactory;
 	static Templates xslt;			
 	static {
+		
 		try {
+			jcSVG = JAXBContext.newInstance("org.plutext.jaxb.svg11");
+			oFactory = new ObjectFactory();
+
 			Source xsltSource = new StreamSource(
 						org.docx4j.utils.ResourceUtils.getResource(
 								"org/pptx4j/convert/out/svginhtml/pptx2svginhtml.xslt"));
 			xslt = XmlUtils.getTransformerTemplate(xsltSource);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (TransformerConfigurationException e) {
-			e.printStackTrace();
-		}
+		} 
 	}
 	
 	public static void svg(PresentationMLPackage presentationMLPackage,
@@ -67,7 +81,7 @@ public class SvgExporter {
 		svg(presentationMLPackage, layout, intermediateResult);
 			
 		String svg = intermediate.toString("UTF-8");
-		log.debug(svg);
+		log.info(svg);
 	}
 	
 	
@@ -336,5 +350,115 @@ public class SvgExporter {
     	}
     }
     
+    public static DocumentFragment shapeToSVG( 
+    		PresentationMLPackage pmlPackage,
+    		NodeIterator shapeIt ) {
+    	
+    	try {
+    		Object shape = null;
+    		
+    		if (shapeIt!=null) {
+    			Node n = shapeIt.nextNode();
+    			
+    			log.debug(n.getClass().getName());
+//    			cxnSp
+//    			System.out.println(n.getLocalName());
+//    			p:cxnSp
+//    			System.out.println(n.getNodeName());
+    			
+    			String str = XmlUtils.w3CDomNodeToString(n);
+    			System.out.println("STRING-->" + str);
+    			if (str.equals("")) {
+    				
+    			} else if (str.startsWith("<p:cxnSp") ){
+    				shape = XmlUtils.unmarshalString(str, Context.jcPML, CxnSp.class);
+    				Document d = CxnSpToSVG( (CxnSp)shape);
+    				
+    				// Machinery
+    				DocumentFragment docfrag = d.createDocumentFragment();
+    				docfrag.appendChild(d.getDocumentElement());
+    				return docfrag;
+    			}
+    			
+    			log.info("** GOT " + shape.getClass().getName() );
+    			if (shape instanceof JAXBElement) {
+    				log.info(
+    						XmlUtils.JAXBElementDebug( (JAXBElement)shape)
+    					);
+    			}
+    		}
+    	} catch (Exception e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	} 
+    	return null;
+    	
+    }
+    
+    
+    public static Document CxnSpToSVG(CxnSp cxnSp) {
+    	
+    	
+    	// Geometrical transforms
+    	CTTransform2D xfrm = cxnSp.getSpPr().getXfrm();
+    	Box b = new Box(xfrm.getOff().getX(), xfrm.getOff().getY(),
+    			xfrm.getExt().getCx(), xfrm.getExt().getCx() );
+    	
+    	if (xfrm.getRot()!=0) {
+    		b.rotate(xfrm.getRot());
+    	}
+    	if (xfrm.isFlipH() ) {
+    		b.flipH();
+    	}
+    	if (xfrm.isFlipV() ) {
+    		b.flipV();
+    	}
+    	
+    	// Convert from EMU to pixels
+    	b.toPixels();
 
+    	// Wrap in a div positioning it on the page
+    	Document document = createDocument();
+		Element xhtmlDiv = document.createElement("div");
+		// Firefox needs the following; Chrome doesn't
+		xhtmlDiv.setAttribute("style", 
+				"position: absolute; width:100%; height:100%; left:0px; top:0px;");
+		
+		Node n = document.appendChild(xhtmlDiv);
+		// TODO - set style
+    	
+    	// Convert the object itself to SVG
+		Svg svg = oFactory.createSvg();
+    	Line line = oFactory.createLine();
+    	svg.getSVGDescriptionClassOrSVGAnimationClassOrSVGStructureClass().add(line);
+    	
+    	line.setX1(b.getOffset().getXAsString() );
+    	line.setY1(b.getOffset().getYAsString() );
+    	
+    	Point otherEnd = b.getOtherCorner();
+    	
+    	line.setX2( otherEnd.getXAsString() );
+    	line.setY2( otherEnd.getYAsString() );
+
+    	line.setStyle("stroke:rgb(99,99,99)");
+    	// You can't see the line in Midori, unless you specify the color.
+    	// width eg stroke-width:2 is optional
+    	
+    	Document d2 = XmlUtils.marshaltoW3CDomDocument(svg, jcSVG);   
+    	XmlUtils.treeCopy(d2, n);
+    	return document;
+    	
+    }
+    
+    public static Document createDocument() {
+    	
+    	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+		Document document=null;
+		try {
+			document = factory.newDocumentBuilder().newDocument();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+		return document;
+    }
 }
