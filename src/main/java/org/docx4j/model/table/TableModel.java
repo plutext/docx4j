@@ -24,23 +24,16 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Vector;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.Converter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
-import org.docx4j.model.properties.Property;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
@@ -55,9 +48,11 @@ import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.TcPrInner.GridSpan;
 import org.docx4j.wml.TcPrInner.VMerge;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 
 /**
  * There are different ways to represent a table with possibly merged
@@ -297,8 +292,33 @@ public class TableModel extends Model {
 		// int i = 0;
 		int r = 0;
 		for (Object o : rows) {
-			startRow();
-			Tr tr = (Tr) o;
+			startRow();			
+			Tr tr = null;
+			 if (o instanceof org.docx4j.wml.Tr) {				 
+				 log.debug( "\n in w:tr .. ");
+				 tr = (org.docx4j.wml.Tr)o;		
+			 } else if (o instanceof javax.xml.bind.JAXBElement
+					 && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tr")) {
+				 tr = (org.docx4j.wml.Tr)((JAXBElement)o).getValue();
+			 } else {
+				 // What?
+				if (o instanceof javax.xml.bind.JAXBElement) {
+					if (((JAXBElement) o).getDeclaredType().getName().equals(
+							"org.docx4j.wml.CTMarkupRange")) {
+						// Ignore w:bookmarkEnd
+					} else {
+						log.warn("TODO - skipping JAXBElement:  "
+										+ ((JAXBElement) o).getDeclaredType()
+												.getName());
+						log.debug(XmlUtils.marshaltoString(o, true));
+					}
+				} else {
+					log.warn("TODO - skipping:  " + o.getClass().getName());
+					log.debug(XmlUtils.marshaltoString(o, true));
+				}
+				continue;
+			 }			
+			
 			if (borderConflictResolutionRequired && tr.getTblPrEx()!=null
 					&& tr.getTblPrEx().getTblCellSpacing()!=null) {
 				borderConflictResolutionRequired = false;				
@@ -307,23 +327,29 @@ public class TableModel extends Model {
 			int c = 0;
 			for (Object o2 : cells) {
 
-				if (o2 instanceof javax.xml.bind.JAXBElement) {
+				Tc tc = null;
+				 if (o2 instanceof org.docx4j.wml.Tc) {				 
+					 tc = (org.docx4j.wml.Tc)o2;		
+				 } else if (o2 instanceof javax.xml.bind.JAXBElement
+						 && ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc")) {
+					 tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
+				 } else {
+					 // What?
+					 if (o2 instanceof javax.xml.bind.JAXBElement) {
+						 log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o2).getDeclaredType().getName() );
+					 } else {
+						 log.warn("TODO - skipping:  " + o2.getClass().getName() );
+					 }
+					 log.debug( XmlUtils.marshaltoString(o2, true));
+					 continue;
+				 }
+				
+				Node wtrNode = cellContents.item(r); //w:tr
+				addCell(tc, wtrNode.getChildNodes().item(c));
+				// addCell(tc, cellContents.item(i));
+				// i++;
+				c++;
 
-					//					System.out.println( ((JAXBElement)o2).getName() );
-					//					System.out.println( ((JAXBElement)o2).getDeclaredType().getName() + "\n\n");
-
-					Tc tc = (Tc) ((JAXBElement) o2).getValue();
-					Node wtrNode = cellContents.item(r); //w:tr
-					addCell(tc, wtrNode.getChildNodes().item(c));
-					// addCell(tc, cellContents.item(i));
-					// i++;
-					c++;
-
-				} else {
-
-					log.warn("Encountered unexpected: "
-							+ o2.getClass().getName());
-				}
 			}
 			r++;
 		}
