@@ -136,7 +136,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static WordXmlPictureE20 createWordXmlPictureFromE20(WordprocessingMLPackage wmlPackage,
+    public static WordXmlPictureE20 createWordXmlPictureFromE20(
+    		WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpInline) {
 
@@ -188,7 +189,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static DocumentFragment createHtmlImgE20(WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createHtmlImgE20(
+    		WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpInline) {
 
@@ -210,7 +212,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createXslFoImgE20(
+    		WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpInline) {
 

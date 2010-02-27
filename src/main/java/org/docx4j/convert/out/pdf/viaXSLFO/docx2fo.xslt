@@ -484,13 +484,11 @@
 
   <xsl:template match="wp:inline|wp:anchor">
   
-  	<xsl:variable name="pictureData" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill"/>
-  	<xsl:variable name="picSize" select="./wp:extent"/>
-  	<xsl:variable name="picLink" select="./wp:docPr/a:hlinkClick"/>
-  	<xsl:variable name="linkDataNode" select="./a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip"/>
+  	<xsl:variable name="wpinline" select="."/>
   	
-   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE20( $wmlPackage, string($imageDirPath),
-  			$pictureData, $picSize, $picLink, $linkDataNode)" />
+   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE20( 
+   			$wmlPackage, string($imageDirPath),
+  			$wpinline)" />
     
   </xsl:template>
   
@@ -500,11 +498,11 @@
 	<xsl:choose>
 		<xsl:when test="./v:shape/v:imagedata">
 
-		  	<xsl:variable name="shape" select="./v:shape"/>
-		  	<xsl:variable name="imageData" select="./v:shape/v:imagedata"/>
+	  	<xsl:variable name="wpict" select="."/>
 		  	
-		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE10( $wmlPackage, string($imageDirPath),
-		  			$shape, $imageData)" />
+		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE10( 
+		  	$wmlPackage, string($imageDirPath),
+  			$wpict)" />
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
