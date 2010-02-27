@@ -152,7 +152,8 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 		
 	}
 	
-    private static WordXmlPictureE10 createWordXmlPictureFromE10(WordprocessingMLPackage wmlPackage,
+    private static WordXmlPictureE10 createWordXmlPictureFromE10(
+    		WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpict) {
 
@@ -194,7 +195,8 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
      * @param imageData
      * @return
      */
-    public static DocumentFragment createHtmlImgE10(WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createHtmlImgE10(
+    		WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpict) {
     	
@@ -216,7 +218,8 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
      * @param imageData
      * @return
      */
-    public static DocumentFragment createXslFoImgE10(WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createXslFoImgE10(
+    		WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpict) {
     	
