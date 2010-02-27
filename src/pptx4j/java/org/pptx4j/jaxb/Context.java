@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.jaxb;
+package org.pptx4j.jaxb;
 
 
 import javax.xml.bind.JAXBContext;
@@ -27,15 +27,15 @@ import org.apache.log4j.Logger;
 
 public class Context {
 	
-	public static JAXBContext jc;
-	public static JAXBContext jcThemePart;
-	public static JAXBContext jcDocPropsCore;
-	public static JAXBContext jcDocPropsCustom;
-	public static JAXBContext jcDocPropsExtended;
-	public static JAXBContext jcXmlPackage;
-	public static JAXBContext jcRelationships;
-	public static JAXBContext jcCustomXmlProperties;
-	public static JAXBContext jcContentTypes;
+	/*
+	 * Two reasons for having a separate class for this:
+	 * 1. so that loading PML context does not slow
+	 *    down docx4j operation on docx files
+	 * 2. to try to maintain clean delineation between
+	 *    docx4j and pptx4j
+	 */
+	
+	public static JAXBContext jcPML;
 	
 	private static Logger log = Logger.getLogger(Context.class);
 	
@@ -65,34 +65,23 @@ public class Context {
 			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
 			//log.info("\n\nClassloader: " + classLoader.toString() );			
 			
-			log.info("loading Context jc");			
-			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math",classLoader );
-			log.info("loaded " + jc.getClass().getName() + " .. loading others ..");
-			
-			jcThemePart = jc; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
-			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader );
-			jcDocPropsCustom = JAXBContext.newInstance("org.docx4j.docProps.custom",classLoader );
-			jcDocPropsExtended = JAXBContext.newInstance("org.docx4j.docProps.extended",classLoader );
-			jcXmlPackage = JAXBContext.newInstance("org.docx4j.xmlPackage",classLoader );
-			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
-			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader );
-			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader );
-			log.info(".. others loaded ..");
+			log.info("loading Context jcPML");			
+			jcPML = JAXBContext.newInstance("org.pptx4j.pml:org.docx4j.dml:org.docx4j.dml.picture",classLoader );
+			log.info(".. loaded ..");
 			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}				
 	}
 	
-	public static org.docx4j.wml.ObjectFactory wmlObjectFactory;
 	
-	public static org.docx4j.wml.ObjectFactory getWmlObjectFactory() {
+	public static org.pptx4j.pml.ObjectFactory pmlObjectFactory;
+	public static org.pptx4j.pml.ObjectFactory getpmlObjectFactory() {
 		
-		if (wmlObjectFactory==null) {
-			wmlObjectFactory = new org.docx4j.wml.ObjectFactory();
+		if (pmlObjectFactory==null) {
+			pmlObjectFactory = new org.pptx4j.pml.ObjectFactory();
 		}
-		return wmlObjectFactory;
+		return pmlObjectFactory;
 		
 	}
-		
 }

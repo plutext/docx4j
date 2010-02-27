@@ -44,7 +44,7 @@ public class TextUtils {
 	 * Extract contents of <w:t> elements. 
 	 * 
 	 * @param o
-	 * @param jc JAXBContext
+	 * @param jcSVG JAXBContext
 	 * @return
 	 */
 	public static void extractText(Object o, Writer w) throws Exception {

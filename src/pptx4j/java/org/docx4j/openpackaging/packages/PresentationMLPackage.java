@@ -29,9 +29,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.dml.CTTextListStyle;
-import org.docx4j.dml.BaseStyles.FontScheme;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -51,10 +48,10 @@ import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Style;
 import org.pptx4j.convert.out.svginhtml.SvgExporter;
+import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.TextStyles;
-import org.pptx4j.pml.CommonSlideData;
 import org.pptx4j.pml.GroupShape;
 import org.pptx4j.pml.SldLayout;
 
@@ -252,7 +249,9 @@ public class PresentationMLPackage  extends OpcPackage {
 				map.put(s.getStyleId(), s);
 				list.add(s.getStyleId());
 			}
-			styleTree = new StyleTree(list, map);
+			styleTree = new StyleTree(list, map, "DocDefaults", "DocDefaults");
+				// We don't have defaultParagraphStyleId, defaultCharacterStyleId
+				// so use DocDefaults for now.
 		}
 		return styleTree;
 		

@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
+import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;

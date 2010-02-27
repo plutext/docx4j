@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
+import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
@@ -47,6 +47,7 @@ public class RenderAsSvgInHtml  {
 	public static void main(String[] args) throws Exception {
 	
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-basic.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/lines.pptx";
 		
 		PresentationMLPackage presentationMLPackage = 
 			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		

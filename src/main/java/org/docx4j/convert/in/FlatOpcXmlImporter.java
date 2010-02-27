@@ -438,7 +438,7 @@ public class FlatOpcXmlImporter  {
 
 					// Presentation type part
 					
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcPML);
+					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(org.pptx4j.jaxb.Context.jcPML);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( el );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {

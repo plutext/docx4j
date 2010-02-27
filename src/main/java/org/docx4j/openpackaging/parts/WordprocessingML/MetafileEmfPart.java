@@ -47,6 +47,10 @@ import org.docx4j.utils.BufferUtil;
 	Maybe the code to use openoffice for EMF conversions could go in 
 	src/docx4j-extras, so only those who wanted to use it would need 
 	to worry about the dependencies.
+	
+	TODO: Have a look at cairo, which has java bindings.  Can it be used
+	to read EMF? See also pymfvu - UniCovertor will ultimately be able
+	to import EMF
  *
  */
 public class MetafileEmfPart extends MetafilePart {

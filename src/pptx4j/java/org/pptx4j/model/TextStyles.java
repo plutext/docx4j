@@ -22,23 +22,15 @@ package org.pptx4j.model;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.JAXBContext;
 
 import org.apache.log4j.Logger;
-import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.BaseStyles.FontScheme;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.styles.StyleTree;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
@@ -54,7 +46,6 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.Styles;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
 import org.docx4j.wml.Style.Name;
@@ -114,6 +105,8 @@ public class TextStyles {
 //		<w:style w:type="paragraph" w:styleId="Heading1">
 		style.setType("paragraph");
 		style.setStyleId(id);
+		
+		System.out.println("created " + id);
 		
 //		<w:name w:val="heading 1" />
 		Name styleName = factory.createStyleName();

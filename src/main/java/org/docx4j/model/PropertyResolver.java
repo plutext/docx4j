@@ -171,6 +171,9 @@ public class PropertyResolver {
 		init();
 	}
 	
+	String defaultParagraphStyleId;  // "Normal" in English, but ...
+	String defaultCharacterStyleId;
+	
 	private void init() throws Docx4JException {
 
 		// Make sure we have a styles definitions part
@@ -186,6 +189,9 @@ public class PropertyResolver {
 		} catch (Exception e) {
 			throw new Docx4JException("Couldn't create default StyleDefinitionsPart", e);
 		}
+		
+		defaultParagraphStyleId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();
+		defaultCharacterStyleId = this.styleDefinitionsPart.getDefaultCharacterStyle().getStyleId();
 
 		// Initialise styles
 		styles = (org.docx4j.wml.Styles)styleDefinitionsPart.getJaxbElement();	
@@ -243,8 +249,9 @@ public class PropertyResolver {
 	private void addNormalToResolvedStylePPrComponent() {
 		
 		Stack<PPr> pPrStack = new Stack<PPr>();
-		String styleId = "Normal";
-
+//		String styleId = "Normal";
+		String styleId = defaultParagraphStyleId;
+		
 		fillPPrStack(styleId, pPrStack);
 		pPrStack.push(documentDefaultPPr);
 			
@@ -260,9 +267,8 @@ public class PropertyResolver {
 	private void addDefaultParagraphFontToResolvedStyleRPrComponent() {
 		
 		Stack<RPr> rPrStack = new Stack<RPr>();
-		String styleId = "DefaultParagraphFont";
 
-		fillRPrStack(styleId, rPrStack);
+		fillRPrStack(defaultCharacterStyleId, rPrStack);
 		rPrStack.push(documentDefaultRPr);
 			
 		RPr effectiveRPr = factory.createRPr();			
@@ -271,7 +277,7 @@ public class PropertyResolver {
 			RPr rPr = rPrStack.pop();
 			applyRPr(rPr, effectiveRPr);
 		}
-		resolvedStyleRPrComponent.put(styleId, effectiveRPr);		
+		resolvedStyleRPrComponent.put(defaultCharacterStyleId, effectiveRPr);		
 	}
 	
 	public Style getEffectiveTableStyle(TblPr tblPr) {
@@ -580,7 +586,9 @@ public class PropertyResolver {
 		PPr resolvedPPr = null;
 		String styleId;
 		if (expressPPr == null || expressPPr.getPStyle() == null ) {
-			styleId = "Normal";
+//			styleId = "Normal";
+			styleId = defaultParagraphStyleId;
+			
 		} else {
 			styleId = expressPPr.getPStyle().getVal();
 		}
@@ -644,7 +652,8 @@ public class PropertyResolver {
 		PPr expressPPr = s.getPPr();
 		if (expressPPr==null) {
 			log.error("style: " + styleId + " has no PPr");
-			resolvedPPr = resolvedStylePPrComponent.get("Normal");
+			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
+			resolvedPPr = resolvedStylePPrComponent.get(normalId);
 			return resolvedPPr;
 		}
 		
@@ -695,7 +704,7 @@ public class PropertyResolver {
 			// here as per conditions, because if there is a run style,
 			// walking the hierarchy will include this if it is needed
 			if (expressRPr == null || expressRPr.getRStyle() == null ) {
-				applyRPr(resolvedStyleRPrComponent.get("DefaultParagraphFont"), effectiveRPr);								
+				applyRPr(resolvedStyleRPrComponent.get(defaultCharacterStyleId), effectiveRPr);								
 			}
 		
 		//	Next, the table style properties are applied to each table in the document, 
@@ -775,7 +784,7 @@ public class PropertyResolver {
 //		RPr expressRPr = s.getRPr();
 //		if (expressRPr==null) {
 //			log.error("style: " + runStyleId + " has no RPr");
-//			resolvedRPr = resolvedStyleRPrComponent.get("DefaultParagraphFont");
+//			resolvedRPr = resolvedStyleRPrComponent.get(defaultCharacterStyleId);
 //			return resolvedRPr;
 //		}
 
@@ -808,6 +817,10 @@ public class PropertyResolver {
 	}
 	
 	private boolean hasDirectPPrFormatting(PPr pPrToApply) {
+		
+		// NB, any rPr is intentionally ignored,
+		// since pPr/rPr is not applicable to anything
+		// except the paragraph mark
 		
 		if (pPrToApply==null) {
 			return false;
@@ -1239,8 +1252,8 @@ public class PropertyResolver {
     		String basedOn = s.getBasedOn().getVal();
     		result1 = activateStyle( basedOn );
     		
-    	} else if ( s.getStyleId().equals("Normal")
-    			|| s.getStyleId().equals("DefaultParagraphFont") )
+    	} else if ( s.getStyleId().equals(defaultParagraphStyleId)
+    			|| s.getStyleId().equals(defaultCharacterStyleId) )
     	{
     		// stop condition
     		result1 = true;
