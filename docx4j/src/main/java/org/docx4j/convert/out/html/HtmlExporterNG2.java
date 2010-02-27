@@ -396,7 +396,8 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	// which implements org.w3c.dom.traversal.NodeIterator
 
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
-			pStyleVal = "Normal";
+//			pStyleVal = "Normal";
+			pStyleVal = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
 		}
     	log.debug("style '" + pStyleVal );     		
     	
@@ -446,8 +447,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 			((Element)xhtmlP).setAttribute("class", 
 					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
 			);
-			
-			
+						
 			// Does our pPr contain anything else?
 			if (pPr!=null) {
 				StringBuffer inlineStyle =  new StringBuffer();
@@ -577,7 +577,8 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 				}
 				
 				if (pStyleVal==null || pStyleVal.equals("")) {
-					pStyleVal = "Normal";
+//					pStyleVal = "Normal";
+					pStyleVal = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
 				}
 
 				// Set @class	

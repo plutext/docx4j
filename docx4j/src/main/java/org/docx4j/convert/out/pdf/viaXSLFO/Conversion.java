@@ -352,8 +352,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
     	// which implements org.w3c.dom.traversal.NodeIterator
     	
+    	String defaultParagraphStyleId = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId(); 
+    	
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
-			pStyleVal = "Normal";
+//			pStyleVal = "Normal";
+			pStyleVal = defaultParagraphStyleId;
 		}
     	log.debug("style '" + pStyleVal );     		
 
@@ -374,14 +377,14 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	RPr rPr = null;
         	if (pPrNodeIt==null) {  // Never happens?        		
     			log.debug("Here after all!!");        		
-        		pPr = propertyResolver.getEffectivePPr("Normal");
-        		rPr = propertyResolver.getEffectiveRPr("Normal");
+        		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
+        		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
         	} else {
         		Node n = pPrNodeIt.nextNode();
         		if (n==null) {
         			log.warn("pPrNodeIt.nextNode() was null.");
-            		pPr = propertyResolver.getEffectivePPr("Normal");
-            		rPr = propertyResolver.getEffectiveRPr("Normal");
+            		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
+            		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
             		// TODO - in this case, we should be able to compute once,
             		// and on subsequent calls, just return pre computed value
         		} else {

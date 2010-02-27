@@ -242,7 +242,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     	// which implements org.w3c.dom.traversal.NodeIterator
 
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
-			pStyleVal = "Normal";
+//			pStyleVal = "Normal";
+			pStyleVal = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
+
 		}
     	log.debug("style '" + pStyleVal );     		
     	
@@ -388,7 +390,8 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 				}
 				
 				if (pStyleVal==null || pStyleVal.equals("")) {
-					pStyleVal = "Normal";
+//					pStyleVal = "Normal";
+					pStyleVal = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
 				}
 
 				// Set @class				
@@ -437,8 +440,9 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     	StringBuffer result = new StringBuffer();
     	
     	Map stylesInUse = wmlPackage.getMainDocumentPart().getStylesInUse();
-    	if (stylesInUse.get("Normal")==null) {
-    		stylesInUse.put("Normal", "Normal");
+    	String defaultParagraphStyleId = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
+    	if (stylesInUse.get(defaultParagraphStyleId)==null) {
+    		stylesInUse.put(defaultParagraphStyleId, defaultParagraphStyleId);
     	}
     	
 

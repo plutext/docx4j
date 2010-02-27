@@ -23,7 +23,7 @@ package org.pptx4j.samples;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
+import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;

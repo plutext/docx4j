@@ -22,15 +22,12 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.io.IOException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -41,12 +38,15 @@ import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.docx4j.wml.Style.BasedOn;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
 
 public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 	
 	private static Logger log = Logger.getLogger(StyleDefinitionsPart.class);		
 	
-
 	public StyleDefinitionsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
 		init();
@@ -291,7 +291,19 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 		pDefault.setRPr(documentDefaultRPr);
 		
 		// Now point Normal at this
-		Style normal = getStyleById("Normal");		
+		Style normal = getDefaultParagraphStyle();
+		if (normal==null) {
+			log.warn("No default paragraph style!!");
+			normal = Context.getWmlObjectFactory().createStyle();
+			normal.setType("paragraph");
+			normal.setStyleId("Normal");
+			
+			org.docx4j.wml.Style.Name n = Context.getWmlObjectFactory().createStyleName();
+			n.setVal("Normal");
+			normal.setName(n);
+			this.jaxbElement.getStyle().add(normal);			
+		}
+		
 		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
 		based.setVal(ROOT_NAME);		
 		normal.setBasedOn(based);
@@ -309,6 +321,61 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 			}
 		}
     	return null;
+    }
+
+    private Style defaultCharacterStyle;
+    public Style getDefaultCharacterStyle() {
+    	
+    	if (defaultCharacterStyle==null) {
+    		defaultCharacterStyle = getDefaultStyle("character");
+    	}
+    	// OpenOffice conversion to docx
+    	// doesn't necessarily contain a default character style
+    	// so manufacture one
+    	if (defaultCharacterStyle==null) {
+    		try {
+				defaultCharacterStyle = (Style)XmlUtils.unmarshalString(DEFAULT_CHARACTER_STYLE_DEFAULT);
+				this.jaxbElement.getStyle().add(defaultCharacterStyle);
+			} catch (JAXBException e) {
+				e.printStackTrace();
+			}
+    	}
+		return defaultCharacterStyle;
+    }
+    
+    private final static String DEFAULT_CHARACTER_STYLE_DEFAULT = "<w:style w:type=\"character\" w:default=\"1\" w:styleId=\"DefaultParagraphFont\" " + Namespaces.W_NAMESPACE_DECLARATION + "><w:name w:val=\"Default Paragraph Font\" /></w:style>";
+    
+    
+    private Style defaultParagraphStyle;
+    public Style getDefaultParagraphStyle() {
+    	
+    	if (defaultParagraphStyle==null) {
+    		defaultParagraphStyle = getDefaultStyle("paragraph");
+    	}
+    	// OpenOffice conversion to docx
+    	// doesn't set default, so use name
+    	// (alternatively, could use id=style0)
+    	if (defaultParagraphStyle==null) {
+    		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+    			if( s.getType().equals("paragraph")
+    					&& s.getName().getVal().equals("Default") ) {
+    				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
+    				defaultParagraphStyle=s;
+    				break;
+    			}
+    		}    		
+    	}
+		return defaultParagraphStyle;
+    }
+    private Style getDefaultStyle(String type) {
+    	
+		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+			if( s.isDefault() && s.getType().equals(type)) {
+				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
+				return s;
+			}
+		}
+		return null;
     }
     
     
@@ -332,6 +399,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 	    + 	pPrDefaultsString
 	    + "</w:pPrDefault>"
 	  + "</w:docDefaults>";
+	
     
     
 //	public static void main(String[] args) throws Exception {

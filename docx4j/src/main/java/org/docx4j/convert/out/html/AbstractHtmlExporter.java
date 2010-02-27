@@ -1,36 +1,12 @@
 package org.docx4j.convert.out.html;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.vfs.CacheStrategy;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileSystemManager;
-import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.ConvertUtils;
 import org.docx4j.convert.out.Output;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.fonts.Mapper;
-import org.docx4j.fonts.BestMatchingMapper;
-import org.docx4j.fonts.IdentityPlusMapper;
-import org.docx4j.jaxb.Context;
-import org.docx4j.model.images.WordXmlPicture;
-import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.paragraph.Indent;
@@ -38,13 +14,6 @@ import org.docx4j.model.properties.run.Font;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-
-import org.w3c.dom.traversal.NodeIterator;
-import org.w3c.dom.Comment;
-import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;

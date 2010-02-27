@@ -28,7 +28,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTTextBody;
 import org.docx4j.dml.CTTextListStyle;
-import org.docx4j.jaxb.Context;
+import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;

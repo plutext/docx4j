@@ -59,7 +59,9 @@ public class StyleTree {
 	 * @param stylesInUse styles actually in use in the main document part, headers/footers, footnotes/endnotes 
 	 * @param allStyles styles defined in the style definitions part
 	 */
-	public StyleTree(List<String> stylesInUse, Map<String, Style> allStyles) {
+	public StyleTree(List<String> stylesInUse, Map<String, Style> allStyles,
+			String defaultParagraphStyleId, String defaultCharacterStyleId) {
+		
 		
 		// Set up Table style tree 
         for (String styleId : stylesInUse ) {
@@ -81,7 +83,7 @@ public class StyleTree {
 
 		// Set up Paragraph style tree 
         // but first, add Normal.  (Doesn't matter if its already there)
-		stylesInUse.add("Normal");
+		stylesInUse.add(defaultParagraphStyleId);
         for (String styleId : stylesInUse ) {
         	if (pTree.get(styleId)==null) {
         		
@@ -101,7 +103,7 @@ public class StyleTree {
         
 		// Set up Character style tree 
         // but first, add DefaultParagraphFont.  (Doesn't matter if its already there)
-		stylesInUse.add("DefaultParagraphFont");
+		stylesInUse.add(defaultCharacterStyleId);
         for (String styleId : stylesInUse ) {
         	if (cTree.get(styleId)==null) {
         		
@@ -195,7 +197,9 @@ public class StyleTree {
 			log.debug("live style: " + s.getStyleId() );
 		}
     	
-		StyleTree st = new StyleTree(stylesInUse, allStyles);
+		StyleTree st = new StyleTree(stylesInUse, allStyles,
+				wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId(),
+				wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle().getStyleId());
 		
 		System.out.println("\nParagraph styles\n");
 		System.out.println(st.pTree.toString());
