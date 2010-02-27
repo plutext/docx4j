@@ -171,7 +171,6 @@ public class TableWriter extends ModelConverter {
 	// Table level cell border defaults
     // Could do something like tbl.setAttribute("rules", "all" );
 	// but instead, these are handled by CSS for td in the stylesheet.
-	
     
     tbl.setAttribute("style", styleVal.toString() );
     
@@ -190,13 +189,16 @@ public class TableWriter extends ModelConverter {
     	log.warn("No w:tblGrid");
     	colgroup.setAttribute("span",  String.valueOf(cols));
     }
+
+//    Element tgroup = doc.createElement("tgroup");
+//    tbl.appendChild(tgroup);
     
-    Element tgroup = doc.createElement("tgroup");
-    tbl.appendChild(tgroup);
+    Element tbody = doc.createElement("tbody");
+    tbl.appendChild(tbody);
     
     for (List<Cell> rows : table.getCells()) {
 			Element row = doc.createElement("tr");
-			tgroup.appendChild(row);
+			tbody.appendChild(row);
 			
 			// vAlign fix: match Word's default of top
 			if (table.getEffectiveTableStyle().getTcPr()==null
