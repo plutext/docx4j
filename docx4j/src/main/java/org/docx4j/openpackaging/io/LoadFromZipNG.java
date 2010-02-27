@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,7 +59,6 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
-
 
 
 /**
@@ -170,8 +170,9 @@ public class LoadFromZipNG extends Load {
             zis.close();
         } catch (Exception e) {
             log.error(e.getMessage());
+            throw new Docx4JException("Error processing zip file (is it a zip file?)", e);
         }	
-	        
+	            
 		// At this point, we're finished with the zip input stream
         // TODO, so many of the below methods could be renamed.
         // If performance is ok, LoadFromJCR could be refactored to
@@ -288,11 +289,16 @@ public class LoadFromZipNG extends Load {
 	private static InputStream getInputStreamFromZippedPart(HashMap<String, ByteArray> partByteArrays,
 			String partName) 
 	//private static InputStream getInputStreamFromZippedPart(ZipFile zf, String partName) 
-		throws IOException {
+		throws IOException, NullPointerException {
 		
 		InputStream in = null;
 		//in = zf.getInputStream( zf.getEntry(partName ) );
-		in = partByteArrays.get(partName).getInputStream();
+		try {
+			in = partByteArrays.get(partName).getInputStream();
+		} catch (NullPointerException  npe) {
+			log.warn("Part " + partName + " was null");
+			throw npe;
+		}
 		return in;		
 	}
 	
@@ -553,6 +559,8 @@ public class LoadFromZipNG extends Load {
 				log.warn("PartUnrecognisedException shouldn't happen anymore!");
 				// Try to get it as a binary part
 				part = getBinaryPart(partByteArrays, ctm, resolvedPartUri);
+				log.warn("Using BinaryPart for " + resolvedPartUri);
+				
 				((BinaryPart)part).setBinaryData(is);
 			}
 		} catch (Exception ex) {
@@ -608,17 +616,41 @@ public class LoadFromZipNG extends Load {
 		
 	public static class ByteArray implements Serializable {
 		
+		private static final long serialVersionUID = -784146312250361899L;
+		// 4469266984448028582L; 
+		
 		private byte[] bytes;
+		public byte[] getBytes() {
+			return bytes;
+		}
+
+		private String mimetype;
+		public String getMimetype() {
+			return mimetype;			
+		}
 		
 		public ByteArray(byte[] bytes) {
 			this.bytes = bytes;
 			//log.info("Added " + bytes.length  );
 		}
 		
+		
+		public ByteArray(ByteBuffer bb, String mimetype ) {
+			
+			bb.clear();
+			bytes = new byte[bb.capacity()];
+			bb.get(bytes, 0, bytes.length);
+			
+			this.mimetype = mimetype;
+		}
+		
+		
 		public InputStream getInputStream() {
-			
 			return new ByteArrayInputStream(bytes);
-			
+		}
+
+		public int getLength() {
+			return bytes.length;			
 		}
 		
 	}
