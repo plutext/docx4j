@@ -54,6 +54,7 @@ import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
+import org.docx4j.wml.Tc;
 
 
 /**
@@ -111,14 +112,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		        stylesInUse.add(styleId);
 				//log.debug("style in use: " + styleId );
 		    }
-		    
-//	    	if (!stylesInUse.contains("Normal") ) {
-//	    		stylesInUse.add("Normal");
-//	    	}
-//	    	if (!stylesInUse.contains("DefaultParagraphFont") ) {
-//	    		stylesInUse.add("DefaultParagraphFont");
-//	    	}	
-		    
+		    		    
 		    try {
 				getStyleDefinitionsPart().createVirtualStylesForDocDefaults();
 			} catch (Docx4JException e) {
@@ -126,6 +120,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				log.error(e);
 			}
 	    	
+			// Get these first, so we can be sure they are defined... 
+			Style defaultParagraphStyle = getStyleDefinitionsPart().getDefaultParagraphStyle();
+			Style defaultCharacterStyle = getStyleDefinitionsPart().getDefaultCharacterStyle();
+			
 			// Styles defined in StyleDefinitionsPart
 			Map<String, Style> allStyles = new HashMap<String, Style>();
 			Styles styles = getStyleDefinitionsPart().getJaxbElement();		
@@ -133,7 +131,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				allStyles.put(s.getStyleId(), s);	
 				//log.debug("live style: " + s.getStyleId() );
 			}
-			styleTree = new StyleTree(stylesInUse, allStyles);
+			styleTree = new StyleTree(stylesInUse, allStyles, 
+					defaultParagraphStyle.getStyleId(),
+					defaultCharacterStyle.getStyleId());
 				
 		}
 		return styleTree;
@@ -419,6 +419,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 					org.docx4j.wml.R.Sym sym = (org.docx4j.wml.R.Sym)((JAXBElement)o).getValue();
 					fontsDiscovered.put(sym.getFont(), sym.getFont());
 
+				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals(
+						"org.docx4j.wml.CTBookmark") ) {
+					// Ignore					
 				} else if ( log.isDebugEnabled() ){
 					log.debug( XmlUtils.JAXBElementDebug((JAXBElement)o) );
 				}
@@ -449,8 +452,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 //
 //				}
 				
+			} else if (o instanceof org.docx4j.wml.ProofErr) {
+				// Ignore eg <w:proofErr w:type="spellStart" />
 			} else {
 				log.error( "UNEXPECTED: " + o.getClass().getName() );
+				 log.debug( XmlUtils.marshaltoString(o, true));						 
 			} 
 		}
 	}
@@ -475,37 +481,50 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		 // here, we are looking for styles in the tc.
 		 for (Object o : tbl.getEGContentRowContent() ) {
 			 
+			 org.docx4j.wml.Tr tr = null;
 			 if (o instanceof org.docx4j.wml.Tr) {				 
-				 log.debug( "\n in w:tr .. ");
-				 org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr)o;				 
-				 for (Object o2 : tr.getEGContentCellContent() ) {					 
-						if ( o2 instanceof javax.xml.bind.JAXBElement) {
-							// Usual content for w:tr is w:tc
-							if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc") ) {
-								log.debug( "\n  in w:tc .. ");
-								org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
-								
-								// Look at the paragraphs in the tc
-								traverseMainDocumentRecursive( tc.getEGBlockLevelElts(), 
-										fontsDiscovered, stylesInUse);
-								
-							} else {
-								// Could be custom markup (custom XML or sdt)
-								log.warn("TODO - not w:tc - handle:  " + XmlUtils.JAXBElementDebug((JAXBElement)o2) );
-							}
-						} else if (o2 instanceof org.docx4j.wml.Tc) {
-							// Again, it could be this or wrapped in a JAXBElement!
-							traverseMainDocumentRecursive( ((org.docx4j.wml.Tc)o2).getEGBlockLevelElts(), 
-									fontsDiscovered, stylesInUse);							
-							
-						} else {
-							 // Could be custom markup (custom XML or sdt)
-							 log.warn("TODO - not w:tc - handle:  " + o2.getClass().getName() );
-						}					 
-				 }
+				 tr = (org.docx4j.wml.Tr)o;		
+			 } else if (o instanceof javax.xml.bind.JAXBElement
+					 && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tr")) {
+				 tr = (org.docx4j.wml.Tr)((JAXBElement)o).getValue();
 			 } else {
 				 // What?
-				 log.warn("TODO - handle:  " + o.getClass().getName() );
+				 if (o instanceof javax.xml.bind.JAXBElement) {
+					if ( ((JAXBElement)o).getDeclaredType().getName().equals(
+						"org.docx4j.wml.CTMarkupRange") ) { 
+						// Ignore w:bookmarkEnd
+					} else {
+						log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o).getDeclaredType().getName() );
+						 log.debug( XmlUtils.marshaltoString(o, true));						 
+				 	}
+				 } else {
+					 log.warn("TODO - skipping:  " + o.getClass().getName() );
+					 log.debug( XmlUtils.marshaltoString(o, true));						 
+				 }
+				 continue;
+			 }
+			 
+			 for (Object o2 : tr.getEGContentCellContent() ) {	
+				 
+					Tc tc = null;
+					 if (o2 instanceof org.docx4j.wml.Tc) {				 
+						 tc = (org.docx4j.wml.Tc)o2;		
+					 } else if (o2 instanceof javax.xml.bind.JAXBElement
+							 && ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc")) {
+						 tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
+					 } else {
+						 // What?
+						 if (o2 instanceof javax.xml.bind.JAXBElement) {
+							 log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o2).getDeclaredType().getName() );
+						 } else {
+							 log.warn("TODO - skipping:  " + o2.getClass().getName() );
+						 }
+						 log.debug( XmlUtils.marshaltoString(o2, true));						 
+						 continue;
+					 }
+				 
+					traverseMainDocumentRecursive( tc.getEGBlockLevelElts(), 
+							fontsDiscovered, stylesInUse);
 			 }
 			 
 		 }
