@@ -22,10 +22,13 @@ package org.docx4j.model.images;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTBlip;
+import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.dml.picture.Pic;
+import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.images.AbstractWordXmlPicture.Dimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.relationships.Relationship;
@@ -73,6 +76,73 @@ import javax.xml.bind.Unmarshaller;
 						</a:graphic>
 					</wp:inline>
 				</w:drawing>
+				
+			<w:drawing>
+					<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" 
+					relativeHeight="251662336" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1">
+						<wp:simplePos x="0" y="0" />
+						<wp:positionH relativeFrom="column">
+							<wp:posOffset>3400425</wp:posOffset>
+						</wp:positionH>
+						<wp:positionV relativeFrom="paragraph">
+							<wp:posOffset>1991360</wp:posOffset>
+						</wp:positionV>
+						<wp:extent cx="552450" cy="209550" />
+						<wp:effectExtent l="38100" t="0" r="19050" b="38100" />
+						<wp:wrapTopAndBottom />
+						<wp:docPr id="4" name="Picture 1" descr="D:\\stuff\\untitled.bmp" />
+						<wp:cNvGraphicFramePr>
+							<a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1" />
+						</wp:cNvGraphicFramePr>
+						<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+							<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+								<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+									<pic:nvPicPr>
+										<pic:cNvPr id="0" name="Picture 1" descr="D:\\stuff\\untitled.bmp" />
+										<pic:cNvPicPr>
+											<a:picLocks noChangeAspect="1" noChangeArrowheads="1" />
+										</pic:cNvPicPr>
+									</pic:nvPicPr>
+									<pic:blipFill>
+										<a:blip r:embed="rId7" cstate="print">
+											<a:clrChange>
+												<a:clrFrom>
+													<a:srgbClr val="FFFFFF" />
+												</a:clrFrom>
+												<a:clrTo>
+													<a:srgbClr val="FFFFFF">
+														<a:alpha val="0" />
+													</a:srgbClr>
+												</a:clrTo>
+											</a:clrChange>
+											<a:biLevel thresh="50000" />
+										</a:blip>
+										<a:srcRect l="35365" t="28689" r="52846" b="65300" />
+										<a:stretch>
+											<a:fillRect />
+										</a:stretch>
+									</pic:blipFill>
+									<pic:spPr bwMode="auto">
+										<a:xfrm rot="21023481">
+											<a:off x="0" y="0" />
+											<a:ext cx="552450" cy="209550" />
+										</a:xfrm>
+										<a:prstGeom prst="rect">
+											<a:avLst />
+										</a:prstGeom>
+										<a:noFill />
+										<a:ln w="9525">
+											<a:noFill />
+											<a:miter lim="800000" />
+											<a:headEnd />
+											<a:tailEnd />
+										</a:ln>
+									</pic:spPr>
+								</pic:pic>
+							</a:graphicData>
+						</a:graphic>
+					</wp:anchor>
+				</w:drawing>				
  * 
  *
  */
@@ -80,16 +150,16 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	
 	protected static Logger log = Logger.getLogger(WordXmlPictureE20.class);
 
+	// It'll be one or the other of these
 	private Inline inline;
+	private Anchor anchor;
     
-    private WordXmlPictureE20(WordprocessingMLPackage wmlPackage, NodeIterator wpInline) {
+    private WordXmlPictureE20(WordprocessingMLPackage wmlPackage, NodeIterator anchorOrInline) {
     	
     	this.wmlPackage = wmlPackage;
     	
-    	// TODO: what if its wp:anchor instead?
-    	
-    	if (wpInline!=null) {
-    		Node n = wpInline.nextNode();
+    	if (anchorOrInline!=null) {
+    		Node n = anchorOrInline.nextNode();
     		if (n!=null) {
     			Object jaxb=null;
 				try {
@@ -106,6 +176,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
         				JAXBElement jb = (JAXBElement)jaxb;
         				if (jb.getDeclaredType().getName().equals("org.docx4j.dml.wordprocessingDrawing.Inline")) {
         					this.inline =  (Inline)jb.getValue();
+        				} else if (jb.getDeclaredType().getName().equals("org.docx4j.dml.wordprocessingDrawing.Anchor")) {
+            					this.anchor =  (Anchor)jb.getValue();
         				} else {
     	    				log.error("UNEXPECTED " +
     	    						XmlUtils.JAXBElementDebug(jb)
@@ -114,12 +186,14 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
         				}
         			} else if (jaxb instanceof Inline) {    				
         				this.inline =  (Inline)jaxb;
+        			} else if (jaxb instanceof Anchor) {    				
+        				this.anchor =  (Anchor)jaxb;
         			} else {
         				log.error( jaxb.getClass().getName() ); 
         				return;
         			}
     			} catch (ClassCastException e) {
-    		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to Inline");
+    		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to Anchor or Inline ");
     			}        	        			
     		}
     	}
@@ -136,24 +210,21 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static WordXmlPictureE20 createWordXmlPictureFromE20(
-    		WordprocessingMLPackage wmlPackage,
+    public static WordXmlPictureE20 createWordXmlPictureFromE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
-    		NodeIterator wpInline) {
+    		NodeIterator anchorOrInline) {
 
-    	WordXmlPictureE20 converter = new WordXmlPictureE20(wmlPackage, wpInline);
+    	WordXmlPictureE20 converter = new WordXmlPictureE20(wmlPackage, anchorOrInline);
     	
     	converter.readDimensions();
     	converter.readHyperlink();
     	
-    	if (converter.inline.getGraphic()==null
-    			|| converter.inline.getGraphic().getGraphicData()==null
-    			|| converter.inline.getGraphic().getGraphicData().getPic()==null) {
+    	
+    	Pic pic = converter.getPic();
+    	if (pic==null) {
     		log.error("pic missing!!");
     		return null;    		
     	}
-    	
-    	Pic pic = converter.inline.getGraphic().getGraphicData().getPic();
     	
     	if (pic.getBlipFill()==null
     			|| pic.getBlipFill().getBlip()==null) {
@@ -174,6 +245,32 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 
 		return converter;
 	}
+    
+    private Pic getPic() {
+    	
+    	if (inline!=null) {
+        	if (inline.getGraphic()==null
+        			|| inline.getGraphic().getGraphicData()==null
+        			|| inline.getGraphic().getGraphicData().getPic()==null) {
+        		log.error("pic missing!!");
+        		return null;    		
+        	}
+        	return inline.getGraphic().getGraphicData().getPic();
+    	}
+
+    	if (anchor!=null) {
+        	if (anchor.getGraphic()==null
+        			|| anchor.getGraphic().getGraphicData()==null
+        			|| anchor.getGraphic().getGraphicData().getPic()==null) {
+        		log.error("pic missing!!");
+        		return null;    		
+        	}
+        	return anchor.getGraphic().getGraphicData().getPic();
+    	}
+    	
+    	log.error("Anchor and inline both null!");
+    	return null;
+    }
 
 
     
@@ -189,8 +286,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static DocumentFragment createHtmlImgE20(
-    		WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createHtmlImgE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpInline) {
 
@@ -212,8 +308,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static DocumentFragment createXslFoImgE20(
-    		WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
     		NodeIterator wpInline) {
 
@@ -229,7 +324,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     }
     
     private void readDimensions() {
-    	CTPositiveSize2D size2d = inline.getExtent();
+    	CTPositiveSize2D size2d = getExtent();
     	if (size2d==null) {
     		log.warn("wp:inline/wp:extent missing!");
     		return;
@@ -244,13 +339,30 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		dimensions.heightUnit = "px";
     	}    	
     }
+    
+    
+    private CTPositiveSize2D getExtent() {
+    	
+    	if (inline!=null) {
+        	return inline.getExtent();
+    	}
+
+    	if (anchor!=null) {
+        	return anchor.getExtent();
+    	}
+    	
+    	log.error("Anchor and inline both null!");
+    	return null;
+    }
+    
+    
     private final int extentToPixelConversionFactor = 12700;
     
     private void readHyperlink() {
-    	if (inline.getDocPr()!=null
-    			&& inline.getDocPr().getHlinkClick()!=null) {
+    	if (getDocPr()!=null
+    			&& getDocPr().getHlinkClick()!=null) {
     		
-    		String linkRelId = inline.getDocPr().getHlinkClick().getId();
+    		String linkRelId = getDocPr().getHlinkClick().getId();
     		
             if ( linkRelId!=null && !linkRelId.equals("") ) 
             {
@@ -265,10 +377,33 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
             	}
             }
             
-            targetFrame = inline.getDocPr().getHlinkClick().getTgtFrame();
-            tooltip = inline.getDocPr().getHlinkClick().getTooltip();
+            targetFrame = getDocPr().getHlinkClick().getTgtFrame();
+            tooltip = getDocPr().getHlinkClick().getTooltip();
     	}
     }
+
+    private CTNonVisualDrawingProps getDocPr() {
+    	
+    	if (inline!=null) {
+        	if (inline.getDocPr()==null) {
+        		log.error("DocPr missing!!");
+        		return null;    		
+        	}
+        	return inline.getDocPr();
+    	}
+
+    	if (anchor!=null) {
+        	if (anchor.getDocPr()==null) {
+        		log.error("DocPr missing!!");
+        		return null;    		
+        	}
+        	return anchor.getDocPr();
+    	}
+    	
+    	log.error("Anchor and inline both null!");
+    	return null;
+    }
+    
     
 	private void handleImageRel(String imgRelId, String imageDirPath) {
 		
