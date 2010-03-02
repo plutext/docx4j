@@ -75,6 +75,11 @@ public class Justification extends AbstractParagraphProperty {
 
 	@Override
 	public void setXslFO(Element foElement) {
+		
+		if (((Jc)this.getObject()).getVal()==null) {
+			log.error("justification missing value");
+			return;
+		}
 
 		String val = ((Jc)this.getObject()).getVal().value();
 		if (val.equals("left") || val.equals("center") || val.equals("right")) {			
