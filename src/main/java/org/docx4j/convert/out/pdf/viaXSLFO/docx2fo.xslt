@@ -467,7 +467,7 @@
   </xsl:template>  	
   
   <xsl:template match="w:sdt">
-  	<xsl:apply-templates select="sdtContent"/>
+  	<xsl:apply-templates select="w:sdtContent/*"/>
   </xsl:template>
 
 
