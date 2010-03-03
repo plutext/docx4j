@@ -47,6 +47,12 @@
   		</xsl:otherwise>  		
   	</xsl:choose>    
   </xsl:template>
+
+  <xsl:template match="@*"  mode="bind">
+    <xsl:copy>
+      <xsl:apply-templates select="@*"/>
+    </xsl:copy>
+  </xsl:template>
   
   <xsl:template match="w:*" mode="bind">  
       	<xsl:param name="storeItemID" />
@@ -55,7 +61,7 @@
   		<!-- >xsl:variable name="dummy" 
   			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:* bind')"/-->
 		    <xsl:copy>
-		      <xsl:apply-templates mode="bind">
+		      <xsl:apply-templates select="@*|node()" mode="bind">
 		      	<xsl:with-param name="storeItemID"  select="$storeItemID" />
 	  			<xsl:with-param name="xpath"  select="$xpath" />
   				<xsl:with-param name="prefixMappings"  select="$prefixMappings" />
@@ -69,6 +75,17 @@
 		<xsl:param name="prefixMappings" />
   		<!-- >xsl:variable name="dummy" 
   			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:r bind')"/-->
+
+				<!-- TEMP: insert a new w:r, containing result -->
+				<w:r>
+					<w:t><xsl:value-of
+						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.getXPath(
+									$customXmlDataStorageParts,
+									$storeItemID,
+									$xpath,
+									$prefixMappings)" /></w:t>
+				</w:r>
+<!-- INSTEAD OF
 		<xsl:choose>
 			<xsl:when test="w:rPr/w:rStyle/@w:val='Entry' or w:rPr/w:rStyle/@w:val='PlaceholderText'">
 				<w:r>
@@ -88,6 +105,7 @@
 				<xsl:copy-of select="."/>
 			</xsl:otherwise>
 		</xsl:choose>
+		-->
   </xsl:template>
    
 </xsl:stylesheet>
