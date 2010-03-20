@@ -101,6 +101,12 @@ public class ContentTypes {
 	public final static String OFFICEDOCUMENT_OLE_OBJECT =
 		"application/vnd.openxmlformats-officedocument.oleObject";
 	
+	public final static String OFFICEDOCUMENT_ACTIVEX_XML_OBJECT =
+		"application/vnd.ms-office.activeX+xml";
+	
+//	public final static String OFFICEDOCUMENT_ACTIVEX_BINARY_OBJECT =
+//		"???";
+	
 	// PartName="/word/document.xml"
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 	public final static String WORDPROCESSINGML_DOCUMENT_MACROENABLED = "application/vnd.ms-word.document.macroEnabled.main+xml";

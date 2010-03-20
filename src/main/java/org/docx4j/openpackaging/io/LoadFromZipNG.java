@@ -54,6 +54,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -545,6 +546,10 @@ public class LoadFromZipNG extends Load {
 					CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();					
 					data.setDocument(is); // Not necessarily JAXB, that's just our method name
 					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);
+
+				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
+					
+					((XmlPart)part).setDocument(is);
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should

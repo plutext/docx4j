@@ -26,11 +26,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.zip.ZipEntry;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -229,7 +231,12 @@ public class FlatOpcXmlCreator implements Output {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 		        
-									
+							
+		} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
+
+		       Document doc =  ((org.docx4j.openpackaging.parts.XmlPart)part).getDocument();		       
+		       dataResult.setAny( doc.getDocumentElement() );
+		       
 		} else {
 			// Shouldn't happen, since ContentTypeManagerImpl should
 			// return an instance of one of the above, or throw an

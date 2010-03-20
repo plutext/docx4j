@@ -54,6 +54,7 @@ import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -469,6 +470,17 @@ public class FlatOpcXmlImporter  {
 					
 					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
 							.setData(data);
+					
+				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
+					
+					// Copy el into a new document
+					javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+					dbf.setNamespaceAware(true);
+					org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+					XmlUtils.treeCopy(el, doc);
+					
+					((XmlPart)part).setDocument(doc); 
+					
 
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
