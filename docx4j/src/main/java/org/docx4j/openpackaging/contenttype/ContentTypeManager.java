@@ -182,7 +182,7 @@ public class ContentTypeManager  {
 	 *            Content type of the part.
 	 */
 	public void addOverrideContentType(URI partUri, CTOverride contentType) {
-		log.info("Registered " + partUri.toString() );
+		log.info("Registered " + partUri.toString() + " of type " + contentType.getContentType() );
 		overrideContentType.put(partUri, contentType);
 	}
 	
@@ -285,6 +285,8 @@ public class ContentTypeManager  {
 			return CreateObfuscatedFontPartObject(partName );
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_ACTIVEX_XML_OBJECT)) {
+			return new org.docx4j.openpackaging.parts.ActiveXControlXmlPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_THEME)) {
 			return CreateThemePartObject(partName );
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_COMMENTS)) {

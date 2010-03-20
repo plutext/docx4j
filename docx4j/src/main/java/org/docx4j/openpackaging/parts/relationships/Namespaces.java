@@ -127,6 +127,10 @@ public class Namespaces {
 	public final static String OLE_OBJECT = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/oleObject"; 
 	
+	public final static String ACTIVEX_XML_OBJECT = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/control"; 
+	
+	
 	// Target="ppt/presentation.xml"
 	public final static String PRESENTATIONML_MAIN = 	
 	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"; 

@@ -388,6 +388,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
             		// TODO - in this case, we should be able to compute once,
             		// and on subsequent calls, just return pre computed value
         		} else {
+					log.debug( XmlUtils.w3CDomNodeToString(n) );
         			Unmarshaller u = Context.jc.createUnmarshaller();			
         			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
         			Object jaxb = u.unmarshal(n);

@@ -31,6 +31,10 @@ import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -41,6 +45,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.w3c.dom.Document;
 
 
 /**
@@ -192,7 +197,46 @@ public class SaveToZipFile {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} 
-			
+
+		} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
+
+			try {				
+		        // Add ZIP entry to output stream.
+		        out.putNextEntry(new ZipEntry(zipEntryName));		        
+
+		       Document doc =  ((org.docx4j.openpackaging.parts.XmlPart)part).getDocument();
+		       
+				/*
+				 * With Crimson, this gives:
+				 * 
+					Exception in thread "main" java.lang.AbstractMethodError: org.apache.crimson.tree.XmlDocument.getXmlStandalone()Z
+						at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.setDocumentInfo(DOM2TO.java:373)
+						at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.parse(DOM2TO.java:127)
+						at com.sun.org.apache.xalan.internal.xsltc.trax.DOM2TO.parse(DOM2TO.java:94)
+						at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transformIdentity(TransformerImpl.java:662)
+						at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(TransformerImpl.java:708)
+						at com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl.transform(TransformerImpl.java:313)
+						at org.docx4j.model.datastorage.CustomXmlDataStorageImpl.writeDocument(CustomXmlDataStorageImpl.java:174)
+				 * 
+				 */
+				 try {
+					DOMSource source = new DOMSource(doc);
+					 TransformerFactory.newInstance().newTransformer().transform(source, 
+							 new StreamResult(out) );
+				} catch (Exception e) {
+					throw new Docx4JException("Problems saving to OutputStream", e);
+				} 
+		       
+		        
+		        // Complete the entry
+		        out.closeEntry();
+				log.info( "PUT SUCCESS: " + zipEntryName);		
+		        
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+				
 //		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
 //
 //			try {
