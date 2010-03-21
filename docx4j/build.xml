@@ -83,6 +83,7 @@
             <src path="${src.main.java.dir}"/>
             <src path="src/diffx"/>
             <src path="src/pptx4j/java"/>
+            <src path="src/svg"/>
             <classpath refid="docx4j.classpath"/>
             <!--  nb, you need JAXB RI, for example, in jre/lib/endorsed -->
         </javac>
