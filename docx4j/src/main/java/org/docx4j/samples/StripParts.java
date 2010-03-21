@@ -21,33 +21,18 @@
 package org.docx4j.samples;
 
 
-import java.io.FileInputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.Body;
 
 
 public class StripParts {
@@ -58,11 +43,25 @@ public class StripParts {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		
-    	boolean save = false;
 
-		String inputfilepath = System.getProperty("user.dir") 
-				+ "/sample-docs/test-docs/header-footer/header_first-and-odd-even.xml";
+		// Do we want to save output? 
+		boolean save = true;
+		boolean flatOpcXmlOutput = true;
+		
+		String dir = System.getProperty("user.dir") + "/foo/";
+		
+		String file = "bar";
+		String inputfilepath = dir + file + ".docx";
+				
+		// If so, whereto?
+		String outputfilepath = null;
+		if (save) {
+			if (flatOpcXmlOutput) {
+				outputfilepath = dir + file + "_OUT.xml";
+			} else {
+				outputfilepath = dir + file + "_OUT.docx";				
+			}
+		}
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml
@@ -77,7 +76,9 @@ public class StripParts {
 		System.out.println(sb.toString());
 		
 		if (save) {
-			wordMLPackage.save(new java.io.File(inputfilepath));
+			wordMLPackage.save(new java.io.File(outputfilepath));
+			System.out.println("Saved stripped to " + outputfilepath);
+		} else {
 			System.out.println("Stripped parts from " + inputfilepath);
 		}
 	}
@@ -90,6 +91,10 @@ public class StripParts {
 			RelationshipsPart rp, 
 			StringBuilder sb, String indent)
 	 throws Docx4JException {
+		
+		boolean stripPropertiesParts = true;
+		boolean keepStyles = false;
+		boolean defaultToDelete = false;
 		
 		List<Relationship> deletions = new ArrayList<Relationship>();
 		
@@ -116,11 +121,41 @@ public class StripParts {
 				// Or could just have done:
 				// Part p = rp.getPart(r);
 				
+				// TEMP
+//				if ()
+
+				if (part!=null) {
+					printInfo(part, sb, indent);					
+				}
+				
 				if (part==null) {
 					sb.append("Part " + resolvedPartUri + " not found! \n");
+				} else if ( part instanceof org.docx4j.openpackaging.parts.ThemePart
+							|| part instanceof org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart
+							|| part instanceof org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart) {				
+					deletions.add(r );						
+					sb.append(".. DELETED" );						
+				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart) {
+					
+					if (!keepStyles) {
+						deletions.add(r );						
+						sb.append(".. DELETED" );						
+					} else {
+						sb.append(".. KEEPING" );						
+					}
+					
 				} else {					
-					printInfo(part, sb, indent);
-					if ( part instanceof org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
+					if (stripPropertiesParts
+							&& ( part instanceof org.docx4j.openpackaging.parts.DocPropsExtendedPart
+									|| part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart
+									|| part instanceof org.docx4j.openpackaging.parts.DocPropsCustomPart
+									|| part instanceof org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart
+									|| part instanceof org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart)) {
+						
+						deletions.add(r );
+						sb.append(".. DELETED" );						
+						
+					} else if ( part instanceof org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
 							|| part instanceof org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart
 							|| part instanceof org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart) {
 						sb.append(".. KEEPING" );
@@ -129,7 +164,8 @@ public class StripParts {
 						} else {
 							traverseRelationships(wordMLPackage, part.getRelationshipsPart(), sb, indent + "    ");
 						}
-					} else {
+					} 
+					else if (defaultToDelete) {
 						// Delete it
 						deletions.add(r );
 						sb.append(".. DELETED" );
