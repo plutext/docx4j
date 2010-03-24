@@ -346,7 +346,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 *            Content type manager
 	 * @return The Relationship
 	 */
-	public Relationship addPart(Part part, boolean overwriteExistingTarget, ContentTypeManager ctm) {
+	public Relationship addPart(Part part, boolean overwriteExistingTarget, 
+			ContentTypeManager ctm) {
 		
 		
 		// Now add a new relationship
@@ -426,7 +427,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 //		Relationship rel = new Relationship(sourceP, result, 
 //				TargetMode.INTERNAL, part.getRelationshipType(), id);
-		addRelationship(rel );
+		
+		addRelationship(rel );  // As id not already set, this will generate it
 		
 		// Add an override to ContentTypeManager
 		if ( part.getContentType().equals( ContentTypes.IMAGE_JPEG) ) {
@@ -612,7 +614,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			
 			// Relationship part  
 			// determines the Relationship Id
-			// but warn if we are overwriting		
+			// but warn if we are overwriting	
+			resetIdAllocator();
 			String id = getNextId();
 			if ( rel.getId() !=null 
 					&& !rel.getId().equals("") ) {
