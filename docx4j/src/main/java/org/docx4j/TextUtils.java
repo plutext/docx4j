@@ -26,7 +26,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
@@ -41,7 +43,7 @@ public class TextUtils {
 	private static Logger log = Logger.getLogger(TextUtils.class);	
 		
 	/**
-	 * Extract contents of <w:t> elements. 
+	 * Extract contents of descendant <w:t> elements. 
 	 * 
 	 * @param o
 	 * @param jcSVG JAXBContext
@@ -53,7 +55,7 @@ public class TextUtils {
 	}
 	
 	/**
-	 * Extract contents of <w:t> elements. 
+	 * Extract contents of descendant <w:t> elements. 
 	 * 
 	 * @param o
 	 * @param jc JAXBContext
@@ -67,6 +69,30 @@ public class TextUtils {
 		marshaller.marshal(o, new TextExtractor(w));
 		
 	}
+
+	/**
+	 * Extract contents of descendant <w:t> elements.
+	 * Use this for objects which don't have @XmlRootElement
+	 * 
+	 * @param o
+	 * @param w
+	 * @param jc
+	 * @param uri
+	 * @param local
+	 * @param declaredType
+	 * @throws Exception
+	 */
+	public static void extractText(Object o, Writer w, JAXBContext jc,
+			String uri, String local, Class declaredType) throws Exception {
+		
+		Marshaller marshaller=jc.createMarshaller();
+		NamespacePrefixMapperUtils.setProperty(marshaller, 
+				NamespacePrefixMapperUtils.getPrefixMapper());
+		marshaller.marshal(
+				new JAXBElement(new QName(uri,local), declaredType, o ), 
+				new TextExtractor(w));		
+	}
+	
 	
 	/**
 	 * A SAX ContentHandler that writes all #PCDATA onto a java.io.Writer
