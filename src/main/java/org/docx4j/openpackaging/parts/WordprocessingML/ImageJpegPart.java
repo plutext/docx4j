@@ -38,10 +38,10 @@ public class ImageJpegPart extends BinaryPartAbstractImage {
 		init();
 	}
 
-	public ImageJpegPart() throws InvalidFormatException {
-		super(new PartName( generateName() + "." + ContentTypes.EXTENSION_JPG_2 ));
-		init();
-	}
+//	public ImageJpegPart() throws InvalidFormatException {
+//		super(new PartName( generateName() + "." + ContentTypes.EXTENSION_JPG_2 ));
+//		init();
+//	}
 	
 	public ImageJpegPart(ExternalTarget externalTarget) {
 		super(externalTarget);
