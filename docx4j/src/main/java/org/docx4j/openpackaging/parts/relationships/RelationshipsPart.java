@@ -61,12 +61,10 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
-import org.docx4j.openpackaging.contenttype.CTDefault;
-import org.docx4j.openpackaging.contenttype.CTOverride;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.openpackaging.contenttype.ObjectFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -139,17 +137,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 	 */
 	
-	/**
-	 * Unless this is set to false, relationship id's
-	 * will be allocated automatically.
-	 */
-	boolean automaticIds = true;
-	public boolean isAutomaticIds() {
-		return automaticIds;
-	}
-	public void setAutomaticIds(boolean automaticIds) {
-		this.automaticIds = automaticIds;
-	}
 
 	/**
 	 * Constructor.
@@ -158,10 +145,43 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		super(partName);
 		init();
 	}
+	// NB partName is the partName of this relationship part,
+	// not the source Part.  sourceP above has the 
+	// sourcePartName, which will be required in order to resolve 
+	// relative targets
 
 	public RelationshipsPart() throws InvalidFormatException {
 		super(new PartName("/rels/.rels"));
 		init();
+	}
+
+	/**
+	 * Constructor.  Creates an appropriately named .rels XML document.
+	 * 
+	 * @param sourceP
+	 * 			  Source part for these relationships
+	 *             
+	 * @throws InvalidFormatException
+	 *             If the specified URI is not valid.
+	 */
+	public RelationshipsPart(Base sourceP)
+			throws InvalidFormatException {
+		
+		super(new PartName(PartName.getRelationshipsPartName(
+				sourceP.getPartName().getName() )) );
+		
+		this.sourceP = sourceP;
+		init();
+				
+		sourceP.setRelationships(this);
+			// TODO - use setRelationships from here 
+			// like this in other constructors
+			// in this class.
+						
+		org.docx4j.relationships.ObjectFactory factory =
+			new org.docx4j.relationships.ObjectFactory();
+		
+		jaxbElement = factory.createRelationships();		
 	}
 	
 	public void init() {		
@@ -169,10 +189,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART));
 
-		setJAXBContext(Context.jcRelationships);
-				
-	}
-	
+		setJAXBContext(Context.jcRelationships);				
+	}	
 	
 	public Relationships getRelationships() {
 		return jaxbElement;
@@ -181,11 +199,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public void setRelationships(Relationships jaxbElement) {
 		this.jaxbElement = jaxbElement;
 	}	
-
-	// NB partName is the partName of this relationship part,
-	// not the source Part.  sourceP above has the 
-	// sourcePartName, which will be required in order to resolve 
-	// relative targets
 	
 	/**
 	 * Source part for these relationships
@@ -205,8 +218,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		}
 		return sourceP.getPartName().getURI();
 	}
-	
-	
+		
 	/** This Relationship Part is the package relationship part
 	 * if its source is the Package. 
 	 */	 
@@ -214,38 +226,151 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		return (sourceP instanceof OpcPackage);
 	}
 
+	/** Gets a loaded Part by its id */
+	public Part getPart(String id) {
+
+		log.debug("looking for: " + id);
+		
+		Relationship r = getRelationshipByID(id);
+    	log.info(id + " points to " + r.getTarget());
+		
+		return getPart(r);		
+	}
+	
+	/**
+	 * Retrieves a package relationship based on its id.
+	 * 
+	 * @param id
+	 *            ID of the package relationship to retrieve.
+	 * @return The package relationship identified by the specified id.
+	 */
+	public Relationship getRelationshipByID(String id) {
+		
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
+			
+			if (r.getId().equals(id) ) {
+				return r;
+			}			
+		}		
+		return null;
+	}
 
 	/**
-	 * Constructor.  Creates an appropriately named .rels XML document.
-	 * 
-	 * @param sourceP
-	 * 			  Source part for these relationships
-	 *             
-	 * @throws InvalidFormatException
-	 *             If the specified URI is not valid.
+	 * Get the first rel with specified relationship type
+	 * (see Namespaces for pre-defined constants)
+	 * @param type
+	 * @return
 	 */
-	public RelationshipsPart(Base sourceP)
-			throws InvalidFormatException {
+	public Relationship getRelationshipByType(String type) {
 		
-		super(new PartName(PartName.getRelationshipsPartName(
-				sourceP.getPartName().getName() )) );
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
+			
+			if (r.getType().equals(type) ) {
+				return r;
+			}			
+		}		
+		return null;
+	}
+	
+
+	public Part getPart(Relationship r ) {
 		
-		this.sourceP = sourceP;
-		init();
+		log.info(" source is  " + sourceP.getPartName().toString() );
+    	// eg rId1 points to fonts/font1.odttf
+    		
+		if (r.getTargetMode() == null
+				|| !r.getTargetMode().equals("External") ) {
+			
+			// Usual case
+			URI uri = null;
+	
+			try {
+				uri = org.docx4j.openpackaging.URIHelper
+						.resolvePartUri(sourceP.partName.getURI(), new URI(
+								r.getTarget()));
+			} catch (URISyntaxException e) {
+				log.error("Cannot convert " + r.getTarget()
+						+ " in a valid relationship URI-> ignored", e);
+			}		
+	    		    	
+	    	try {
+				return getPackage().getParts().get( new PartName(uri, true ));
+			} catch (InvalidFormatException e) {
+				log.error("Couldn't get part using PartName: " + uri, e);
+				return null;
+			}
+			
+		} else {
+			// EXTERNAL
+			return getPackage().getExternalResources().get(
+					new ExternalTarget( r.getTarget() ) );
+			// TODO - doesn't handle a relative reference,
+			// because the keys are absolute references
+		}
+	}
+	
+	// ----------------------------------------------------------
+	
+
+	/* Requirements for Id allocation: 
+	 * 
+	 * 1. uniqueness
+	 * 
+	 * 2. if a rel is removed, best not to reuse it
+	 *    (ie don't just use size() 
+	 * */
+	private int nextId = 1;
+
+	public String getNextId() {
 		
-		
-		sourceP.setRelationships(this);
-			// TODO - use setRelationships from here 
-			// like this in other constructors
-			// in this class.
-		
-				
-		org.docx4j.relationships.ObjectFactory factory =
-			new org.docx4j.relationships.ObjectFactory();
-		
-		jaxbElement = factory.createRelationships();
+		// Relationship part always 
+		// determines the Relationship Id		
+		String id = "rId" + nextId;
+		nextId++;
+		return id;
 		
 	}
+	
+	public boolean isRelIdOccupied(String relId) {
+		
+		for (Relationship existing : jaxbElement.getRelationship() ) {			
+			if (existing.getId().equals(relId) ) {
+				log.debug(relId + " already in use, with target " + existing.getTarget() );
+				return true;
+			}			
+		}
+		return false;
+	}
+	
+	/**
+	 * Assumes relationship ids are all of the form
+	 * 'rIdn' where n is a positive integer.
+	 */
+	public void resetIdAllocator() {
+		
+		int highestId = 0;
+		for (Relationship rel : jaxbElement.getRelationship() ) {
+
+			String id = rel.getId();
+			try {
+				String idNum = id.substring(3);
+				
+				int current = Integer.parseInt(idNum);
+				
+				if (current > highestId) {
+					highestId = current;
+				}
+			} catch (Exception e) {
+				log.error("Couldn't process id: " + id);
+				return;
+			}			
+		}
+		nextId = highestId+1;		
+		logger.debug("nextId reset to : " + nextId);
+		
+	}
+	
+	// ----------------------------------------------------------
 	
 	/**
 	 * Loads a pre-existing target part.
@@ -283,60 +408,10 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		part.setPackage( getPackage() );
 		
 	}
-	
-	/** Gets a loaded Part by its id */
-	public Part getPart(String id) {
 
-		log.debug("looking for: " + id);
-		
-		Relationship r = getRelationshipByID(id);
-    	log.info(id + " points to " + r.getTarget());
-		
-		return getPart(r);
-		
-	}
-
-	public Part getPart(Relationship r ) {
-
-		
-		log.info(" source is  " + sourceP.getPartName().toString() );
-    	// eg rId1 points to fonts/font1.odttf
-    		
-		if (r.getTargetMode() == null
-				|| !r.getTargetMode().equals("External") ) {
-			
-			// Usual case
-			URI uri = null;
-	
-			try {
-				uri = org.docx4j.openpackaging.URIHelper
-						.resolvePartUri(sourceP.partName.getURI(), new URI(
-								r.getTarget()));
-			} catch (URISyntaxException e) {
-				log.error("Cannot convert " + r.getTarget()
-						+ " in a valid relationship URI-> ignored", e);
-			}		
-	    		    	
-	    	try {
-				return getPackage().getParts().get( new PartName(uri, true ));
-			} catch (InvalidFormatException e) {
-				log.error("Couldn't get part using PartName: " + uri, e);
-				return null;
-			}
-			
-		} else {
-			// EXTERNAL
-			return getPackage().getExternalResources().get(
-					new ExternalTarget( r.getTarget() ) );
-			// TODO - doesn't handle a relative reference,
-			// because the keys are absolute references
-		}
-	}
-	
 	
 	/**
 	 * Add a newly created part, a relationship and the content type.
-	 *  
 	 * 
 	 * @param part
 	 *            The part to add.
@@ -348,7 +423,25 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 */
 	public Relationship addPart(Part part, boolean overwriteExistingTarget, 
 			ContentTypeManager ctm) {
-		
+		return this.addPart(part, overwriteExistingTarget, ctm, null);
+	}
+	
+	/**
+	 * Add a newly created part, a relationship and the content type.
+	 * 
+	 * @param part
+	 *            The part to add.
+	 * @param overwriteExistingTarget
+	 *            Whether to replace any part with the same target
+	 * @param ctm
+	 *            Content type manager
+	 * @param relId
+	 *            the relId we wish to use (provided it is not in use)
+	 *            
+	 * @return The Relationship
+	 */
+	public Relationship addPart(Part part, boolean overwriteExistingTarget, 
+			ContentTypeManager ctm, String relId) {
 		
 		// Now add a new relationship
 
@@ -358,7 +451,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		log.debug("Relativising target " + tobeRelativized 
 				+ " against source " + relativizeAgainst);
 		
-		String result = org.docx4j.openpackaging.URIHelper.relativizeURI(relativizeAgainst, tobeRelativized).toString(); 
+		String result = URIHelper.relativizeURI(relativizeAgainst, 
+				tobeRelativized).toString(); 
 		
 		if (relativizeAgainst.getPath().equals("/")
 				&& result.startsWith("/")) {
@@ -383,6 +477,10 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		rel.setTarget(result.toString() );
 		//rel.setTargetMode( TargetMode.INTERNAL );
 		rel.setType( part.getRelationshipType() );
+		
+		if (relId!=null) {
+			rel.setId( relId );			
+		}
 
 		loadPart(part, rel);
 		
@@ -427,8 +525,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 //		Relationship rel = new Relationship(sourceP, result, 
 //				TargetMode.INTERNAL, part.getRelationshipType(), id);
-		
-		addRelationship(rel );  // As id not already set, this will generate it
+		addRelationship(rel );
 		
 		// Add an override to ContentTypeManager
 		if ( part.getContentType().equals( ContentTypes.IMAGE_JPEG) ) {
@@ -445,7 +542,35 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 	}
 
+	/**
+	 * Add the specified relationship to the collection.
+	 * 
+	 * @param rel
+	 *            The relationship to add.
+	 */
+	public boolean addRelationship(Relationship rel) 
+		throws InvalidOperationException {
 
+		if ( rel.getId()==null) {
+			String id = getNextId();
+			rel.setId( id );
+		}
+		
+		String relId = rel.getId();
+		
+		// Only add it if there is no rel with the same
+		// id there already
+		if (isRelIdOccupied(relId)) {
+			log.error("Refusing to add another rel with id " + relId 
+					+ ". Target is " + rel.getTarget() );
+			throw new InvalidOperationException(
+					"Refusing to add another rel with id " + relId 
+					+ ". Target is " + rel.getTarget() );
+		}
+		jaxbElement.getRelationship().add(rel);
+		return true;
+	}
+	
 	
 	 /** Remove all parts from this relationships
 	 *   part */ 
@@ -558,91 +683,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 //		this.isDirty = true;
 	}
 
-	/* Requirements for Id allocation: 
-	 * 
-	 * 1. uniqueness
-	 * 
-	 * 2. if a rel is removed, best not to reuse it
-	 *    (ie don't just use size() 
-	 * */
-	private int nextId = 1;
-
-	private String getNextId() {
-		
-		// Relationship part always 
-		// determines the Relationship Id		
-		String id = "rId" + nextId;
-		nextId++;
-		return id;
-		
-	}
-	
-	public void resetIdAllocator() {
-		
-		int highestId = 0;
-		for (Relationship rel : jaxbElement.getRelationship() ) {
-
-			String id = rel.getId();
-			try {
-				String idNum = id.substring(3);
-				
-				int current = Integer.parseInt(idNum);
-				
-				if (current > highestId) {
-					highestId = current;
-				}
-			} catch (Exception e) {
-				log.error("Couldn't process id: " + id);
-				return;
-			}			
-		}
-		nextId = highestId+1;		
-		logger.debug("nextId reset to : " + nextId);
-		
-	}
-	
-	/**
-	 * Add the specified relationship to the collection.
-	 * 
-	 * @param rel
-	 *            The relationship to add.
-	 */
-	public boolean addRelationship(Relationship rel) {
-
-		if (isAutomaticIds()
-				|| rel.getId() ==null) {
-			
-			// Relationship part  
-			// determines the Relationship Id
-			// but warn if we are overwriting	
-			resetIdAllocator();
-			String id = getNextId();
-			if ( rel.getId() !=null 
-					&& !rel.getId().equals("") ) {
-				logger.warn("replacing relationship id '" + rel.getId() + "' with '"
-						+ id + "'");
-			} else {
-				logger.debug("Using id: " + id);
-			}
-			rel.setId( id );
-		}
-		
-		String relId = rel.getId();
-		
-		// Only add it if there is no rel with the same
-		// id there already
-		for (Relationship existing : jaxbElement.getRelationship() ) {			
-			if (existing.getId().equals(relId) ) {
-				// A rel with this id is already present
-				log.info("Refusing to add another rel with id " + relId + ". Target is " + rel.getTarget() );
-				return false;
-			}			
-		}
-		jaxbElement.getRelationship().add(rel);
-		return true;
-	}
-
-
 	/**
 	 * Remove a relationship by its reference.
 	 * 
@@ -656,46 +696,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		jaxbElement.getRelationship().remove(rel);
 
 	}
-
-
-	/**
-	 * Retrieves a package relationship based on its id.
-	 * 
-	 * @param id
-	 *            ID of the package relationship to retrieve.
-	 * @return The package relationship identified by the specified id.
-	 */
-	public Relationship getRelationshipByID(String id) {
-		
-		for ( Relationship r : jaxbElement.getRelationship()  ) {
-			
-			if (r.getId().equals(id) ) {
-				return r;
-			}
-			
-		}
-		
-		return null;
-	}
-
-	/**
-	 * Get the first rel with specified relationship type
-	 * (see Namespaces for pre-defined constants)
-	 * @param type
-	 * @return
-	 */
-	public Relationship getRelationshipByType(String type) {
-		
-		for ( Relationship r : jaxbElement.getRelationship()  ) {
-			
-			if (r.getType().equals(type) ) {
-				return r;
-			}
-			
-		}
-		
-		return null;
-	}
 	
 	/**
 	 * Get the number of relationships in the collection.
@@ -703,7 +703,6 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public int size() {
 		return jaxbElement.getRelationship().size();
 	}
-
 	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
@@ -744,25 +743,22 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			e.printStackTrace();
 		}
 		
-		jaxbElement = (Relationships)jaxbElement;
-		
-		nextId = size() + 1;
+		jaxbElement = (Relationships)jaxbElement;		
+		resetIdAllocator();
 		    	
 		return jaxbElement;
     	
     }
     
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
-    	
-		marshal(node, NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() );
+		marshal(node, 
+				NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() );
 	}
     
     
     public void marshal(java.io.OutputStream os) throws JAXBException {
-
-		
-		marshal( os, NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() ); 
-
+		marshal( os, 
+				NamespacePrefixMapperUtils.getPrefixMapperRelationshipsPart() ); 
 	}
     
 

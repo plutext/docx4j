@@ -38,10 +38,10 @@ public class ImageGifPart extends BinaryPartAbstractImage {
 		init();
 	}
 
-	public ImageGifPart() throws InvalidFormatException {
-		super(new PartName( generateName() + "." + ContentTypes.EXTENSION_GIF ));
-		init();
-	}
+//	public ImageGifPart() throws InvalidFormatException {
+//		super(new PartName( generateName() + "." + ContentTypes.EXTENSION_GIF ));
+//		init();
+//	}
 	
 	public ImageGifPart(ExternalTarget externalTarget) {
 		super(externalTarget);

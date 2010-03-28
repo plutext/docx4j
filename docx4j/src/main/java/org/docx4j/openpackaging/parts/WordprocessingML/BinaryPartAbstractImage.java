@@ -85,13 +85,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	}
 	
 	
-	public static String generateName() {
-		counter++;
-		return IMAGE_PREFIX + counter;
-	}
-	static int counter = 0;
-	
-	
 	ImageInfo imageInfo;
 
 	public ImageInfo getImageInfo() {
@@ -171,7 +164,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @return
 	 * @throws Exception
 	 */
-	public static BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
+	public static BinaryPartAbstractImage createImagePart(
+			WordprocessingMLPackage wordMLPackage,
 			Part sourcePart, byte[] bytes) throws Exception {
 				
 		// Whatever image type this is, we're going to need 
@@ -193,15 +187,21 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// Word will accept
 		
 		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
-		BinaryPartAbstractImage imagePart = (BinaryPartAbstractImage)ctm.newPartForContentType(info.getMimeType(), 
-				generateName() );
+		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
+		// In order to ensure unique part name,
+		// idea is to use the relId, which ought to be unique
+		BinaryPartAbstractImage imagePart = 
+			(BinaryPartAbstractImage)ctm.newPartForContentType(
+				info.getMimeType(), 
+				IMAGE_PREFIX + proposedRelId );
+				
 		log.debug("created part " + imagePart.getClass().getName() +
 				" with name " + imagePart.getPartName().toString() );		
 		
 		FileInputStream fis = new FileInputStream(tmpImageFile); //reuse		
 		imagePart.setBinaryData( fis );
 				
-		imagePart.rel =  sourcePart.addTargetPart(imagePart);
+		imagePart.rel =  sourcePart.addTargetPart(imagePart, proposedRelId);
 		
 		imagePart.setImageInfo(info);
 
@@ -316,15 +316,22 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		ImageInfo info = ensureFormatIsSupported(fileurl, null,null);
 
 		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
-		BinaryPartAbstractImage imagePart = (BinaryPartAbstractImage) ctm.newPartForContentType(info.getMimeType(), 
-				generateName());
+		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
+		// In order to ensure unique part name,
+		// idea is to use the relId, which ought to be unique
+		BinaryPartAbstractImage imagePart = 
+			(BinaryPartAbstractImage)ctm.newPartForContentType(
+				info.getMimeType(), 
+				IMAGE_PREFIX + proposedRelId );
+				
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());
 
 		imagePart.rel = sourcePart.addTargetPart(imagePart);
 		imagePart.rel.setTargetMode("External");
 
-		wordMLPackage.getExternalResources().put(imagePart.getExternalTarget(), imagePart);			
+		wordMLPackage.getExternalResources().put(imagePart.getExternalTarget(), 
+				imagePart);			
 		
 		if (!fileurl.startsWith("file:///") && new File(fileurl).isFile()) {
 			imagePart.rel.setTarget("file:///" + fileurl);

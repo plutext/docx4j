@@ -150,6 +150,7 @@ public abstract class Base {
 //	public void setDirty(boolean isDirty) {
 //		this.isDirty = isDirty;
 //	}
+
 	
 	/**
 	 * Convenience method to add a part to this Part's
@@ -166,6 +167,25 @@ public abstract class Base {
 	 *            The part to add to this part's relationships
 	 */
 	public Relationship addTargetPart(Part targetpart) throws InvalidFormatException {
+		return this.addTargetPart(targetpart, null);
+	}
+	
+	/**
+	 * Convenience method to add a part to this Part's
+	 * relationships.  The package must be set on this
+	 * part in order for this to work.
+	 * 
+	 * The added part will replace any existing part
+	 * with the same name (ie same target in the rels 
+	 * part).  In other words, if you want to use the
+	 * one image as the target of 2 rels, don't use
+	 * this method. 
+	 * 
+	 * @param targetpart
+	 *            The part to add to this part's relationships
+	 */
+	public Relationship addTargetPart(Part targetpart, String proposedRelId
+			) throws InvalidFormatException {
 		
 		if ( this.getPackage()==null ) {						
 			throw new InvalidFormatException("Package not set; if you are adding part2 to part1, make sure part1 is added first.");
@@ -188,7 +208,7 @@ public abstract class Base {
 		
 		// Now add the targetpart to the relationships
 		Relationship rel = this.getRelationshipsPart().addPart(targetpart, true, 
-				getPackage().getContentTypeManager());
+				getPackage().getContentTypeManager(), proposedRelId);
 		
 		// Finally, set part shortcut if there is one to set
 		boolean shortcutSet = setPartShortcut(targetpart, targetpart.getRelationshipType());
