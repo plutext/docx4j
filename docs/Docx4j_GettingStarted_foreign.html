@@ -67,7 +67,7 @@
     <body>
         <div class="footer">
 
-            <p class="Title Normal DocDefaults "><span class="notranslate">docx4j</span> – Getting Started</p>
+            <p class="Title Normal DocDefaults "><span class="notranslate">docx4j</span> Getting Started</p>
 
             <p class="Normal DocDefaults ">
                 <span style="white-space:pre-wrap;">The latest version of this document can always be found in </span>
@@ -93,7 +93,7 @@
                 <span style="white-space:pre-wrap;">.  Recent versions of <span class="notranslate">docx4j</span> also support Powerpoint pptx files.  </span>
             </p>
 
-            <p class="Normal DocDefaults ">It is similar in concept to Microsoft’s  OpenXML SDK, which is for .NET.</p>
+            <p class="Normal DocDefaults ">It is similar in concept to Microsoft's  OpenXML SDK, which is for .NET.</p>
 
             <p class="Normal DocDefaults ">
                 <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span> is open source, available under the Apache License (v2).  As an open source project, contributions are welcome.  Please see the <span class="notranslate">docx4j</span> forum at </span>
@@ -105,7 +105,7 @@
 
             <p class="Normal DocDefaults ">
                 <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span> relies heavily on </span>
-                <span style="font-weight: bold;" class="notranslate">JAXB</span>, the JCP standard for Java – XML binding.  You can think of <span class="notranslate">docx4j</span> as a JAXB implementation of (amongst others):</p>
+                <span style="font-weight: bold;" class="notranslate">JAXB</span>, the JCP standard for Java XML binding.  You can think of <span class="notranslate">docx4j</span> as a JAXB implementation of (amongst others):</p>
 
             <p class="ListParagraph Normal DocDefaults ">
                 <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>Open Packaging Conventions</p>
@@ -127,13 +127,13 @@
 
             <p class="Normal DocDefaults "><span class="notranslate">docx4j</span> is for processing docx documents (and pptx presentations) in Java.</p>
 
-            <p class="Normal DocDefaults ">It isn’t for old binary (.doc) files.  For those, look at Apache POI’s HWPF. (In fact, <span class="notranslate">docx4j</span> uses HWPF for basic conversion of .doc to .docx)</p>
+            <p class="Normal DocDefaults ">It isn't for old binary (.doc) files.  For those, look at Apache POI's HWPF. (In fact, <span class="notranslate">docx4j</span> uses HWPF for basic conversion of .doc to .docx)</p>
 
             <p class="Normal DocDefaults ">Nor is it for RTF files.</p>
 
-            <p class="Normal DocDefaults ">If you want to process docx documents on the .NET platform, you should look at Microsoft’s  OpenXML SDK instead.</p>
+            <p class="Normal DocDefaults ">If you want to process docx documents on the .NET platform, you should look at Microsoft's  OpenXML SDK instead.</p>
 
-            <p class="Normal DocDefaults ">An alternative to <span class="notranslate">docx4j</span> is Apache POI.  I’d particularly recommend that for processing Excel documents.  It can also be used to process Word documents, and since it uses XmlBeans (not JAXB) it may be a better choice if you want to use XmlBeans.</p>
+            <p class="Normal DocDefaults ">An alternative to <span class="notranslate">docx4j</span> is Apache POI.  I'd particularly recommend that for processing Excel documents.  It can also be used to process Word documents, and since it uses XmlBeans (not JAXB) it may be a better choice if you want to use XmlBeans.</p>
 
             <p class="Heading1 Normal DocDefaults ">What sorts of things can you do with <span class="notranslate">docx4j</span>?</p>
 
@@ -184,7 +184,7 @@
 
             <p class="Normal DocDefaults ">The relevant parts of <span class="notranslate">docx4j</span> are generated from the ECMA schemas.</p>
 
-            <p class="Normal DocDefaults ">It can’t read/write Word 2003 XML documents.  The main problem with those is that the XML namespace is different.</p>
+            <p class="Normal DocDefaults ">It can't read/write Word 2003 XML documents.  The main problem with those is that the XML namespace is different.</p>
 
             <p class="Normal DocDefaults "><span class="notranslate">docx4j</span> will support Word 2010 docx files.</p>
 
@@ -244,7 +244,7 @@
             <p class="Normal DocDefaults "><span class="notranslate">docx4j</span> uses JAXB to marshall and unmarshall the key parts in a WordprocessingML document, including the main document part, the styles part, the theme part, and the properties parts.</p>
 
             <p class="Normal DocDefaults ">
-                <span style="white-space:pre-wrap;">JAXB is included in Sun’s Java 6 distributions, but not 1.5.  So if you are using the 1.5 JDK, you will need JAXB 2.1.x on your class path.  </span>
+                <span style="white-space:pre-wrap;">JAXB is included in Sun's Java 6 distributions, but not 1.5.  So if you are using the 1.5 JDK, you will need JAXB 2.1.x on your class path.  </span>
             </p>
 
             <p class="Normal DocDefaults ">
@@ -257,7 +257,7 @@
                 <a class="notranslate" class="notranslate" href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/dml">
                     <span class="Hyperlink DefaultParagraphFont ">org.docx4j.dml</span>
                 </a>
-                <span style="white-space:pre-wrap;"> were generated using JAXB’s XJC. We modified the wml.xsd schema in particular, so that the key resulting classes are a bit more human friendly (ie don't all start with CT_ and ST_). </span>
+                <span style="white-space:pre-wrap;"> were generated using JAXB's XJC. We modified the wml.xsd schema in particular, so that the key resulting classes are a bit more human friendly (ie don't all start with CT_ and ST_). </span>
             </p>
 
             <p class="Heading1 Normal DocDefaults ">
@@ -468,7 +468,7 @@
 
             <p class="Normal DocDefaults ">To do anything much beyond this, you need to have an understanding of basic WordML concepts.</p>
 
-            <p class="Normal DocDefaults ">According to the Microsoft Open Packaging spec, each docx document is made up of a number of “Part” files, zipped up.  A Part is usually XML, but might not be (an image part, for example, isn’t).</p>
+            <p class="Normal DocDefaults ">According to the Microsoft Open Packaging spec, each docx document is made up of a number of “Part” files, zipped up.  A Part is usually XML, but might not be (an image part, for example, isn't).</p>
 
             <p class="Normal DocDefaults ">An introduction to WordML is beyond the scope of this document.  You can find a very readable introduction in 1<span style="vertical-align: top;font-size: xx-small;">st</span>
                 <span style="white-space:pre-wrap;"> edition Part 3 (Primer) at </span>
@@ -902,10 +902,10 @@
                 <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>UnmarshallFromTemplate</p>
 </div>
 
-            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">If you installed the source code, you’ll have this package already.</p>
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">If you installed the source code, you'll have this package already.</p>
 
             <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
-                <span style="white-space:pre-wrap;">If you didn’t, you can browse it online, at </span>
+                <span style="white-space:pre-wrap;">If you didn't, you can browse it online, at </span>
             </p>
 
             <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
@@ -1099,7 +1099,7 @@
             </p>
 
             <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
-                <span style="white-space:pre-wrap;">That’s it.  </span>
+                <span style="white-space:pre-wrap;">That's it.  </span>
             </p>
 
             <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
@@ -1337,11 +1337,11 @@
                 <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wordDocumentPart.addTargetPart(stylesPart);</span>
             </p>
 
-            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">You’d take the same approach to add a header or footer.</p>
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">You'd take the same approach to add a header or footer.</p>
 
-            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">When you add a part this way, it is automatically added to the source part’s relationships part.</p>
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">When you add a part this way, it is automatically added to the source part's relationships part.</p>
 
-            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Generally, you’ll also need to add a reference to the part (using its relationship id) to the Main Document Part.  This applies to images, headers and footers. (Comments, footnotes and endnotes are a bit different, in that what you add to the main document part are references to individual comments/footnotes/endnotes).</p>
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Generally, you'll also need to add a reference to the part (using its relationship id) to the Main Document Part.  This applies to images, headers and footers. (Comments, footnotes and endnotes are a bit different, in that what you add to the main document part are references to individual comments/footnotes/endnotes).</p>
 
             <p class="Heading1 Normal DocDefaults ">
                 <span style="font-family: Calibri;">docx to (X)HTML</span>
@@ -1426,7 +1426,7 @@
 
             <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="notranslate">docx4j</span> produces XSL FO, which can in turn be used to create a PDF.</p>
 
-            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">At present, Apache FOP is integrated into <span class="notranslate">docx4j</span> for creating the PDF.  (Soon, we will be changing things so that <span class="notranslate">docx4j</span> generates FO, for use by your preferred FO renderer, whether that’s FOP, or a commercial tool such as XEP).</p>
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">At present, Apache FOP is integrated into <span class="notranslate">docx4j</span> for creating the PDF.  (Soon, we will be changing things so that <span class="notranslate">docx4j</span> generates FO, for use by your preferred FO renderer, whether that's FOP, or a commercial tool such as XEP).</p>
 
             <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">To create a PDF:</p>
 
@@ -1495,14 +1495,14 @@
                 <span style="font-family: Calibri;">Image Handling</span>
             </p>
 
-            <p class="Normal DocDefaults ">When you add an image to a document in Word 2007, it is generally added as a new Part (ie you’ll find a part in the resulting docx, containing the image in base 64 format).</p>
+            <p class="Normal DocDefaults ">When you add an image to a document in Word 2007, it is generally added as a new Part (ie you'll find a part in the resulting docx, containing the image in base 64 format).</p>
 
             <p class="Normal DocDefaults ">When you open the document in <span class="notranslate">docx4j</span>, <span class="notranslate">docx4j</span> will create an image part representing it.</p>
 
             <p class="Normal DocDefaults ">It is also possible to create a “linked” image.  In this case, the image is not embedded in the docx package, but rather, is referenced at its external location.</p>
 
             <p class="Normal DocDefaults ">
-                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span>’s </span>
+                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span>'s </span>
                 <span class="notranslate" style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 10.0pt;">BinaryPartAbstractImage</span>
                 <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
                     <span style="white-space:pre-wrap;"></span>
@@ -2270,7 +2270,7 @@
             <p class="Normal DocDefaults ">
                 <span style="white-space:pre-wrap;">Note the name </span>
                 <span style="font-weight: bold;">imconvert</span>
-                <span style="white-space:pre-wrap;">, which is used so that we don’t have to supply a full path to exec.  You’ll need to accommodate that.  </span>
+                <span style="white-space:pre-wrap;">, which is used so that we don't have to supply a full path to exec.  You'll need to accommodate that.  </span>
             </p>
 
             <p class="Heading1 Normal DocDefaults ">
@@ -2306,7 +2306,7 @@
                     <span style="white-space:pre-wrap;">org.docx4j.wml.Text </span>
                 </span>object in the form you expect.</p>
 
-            <p class="Normal DocDefaults ">However, that won’t necessarily be the case.  The string could be broken across text runs for any of the following reasons:</p>
+            <p class="Normal DocDefaults ">However, that won't necessarily be the case.  The string could be broken across text runs for any of the following reasons:</p>
 
             <p class="ListParagraph Normal DocDefaults ">
                 <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>part of the word is formatted differently (eg in bold)</p>
@@ -2317,7 +2317,7 @@
             <p class="ListParagraph Normal DocDefaults ">
                 <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>editing order (rsid)</p>
 
-            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span> will eventually accommodate these cases, but doesn’t right now.</p>
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span> will eventually accommodate these cases, but doesn't right now.</p>
 
             <p class="Normal DocDefaults ">Subject to that, you can do text substitution in a variety of ways, for example:</p>
 
@@ -2468,7 +2468,7 @@
 
             <p class="Heading2 Normal DocDefaults ">Work with the “Flat OPC XML Format”</p>
 
-            <p class="Normal DocDefaults ">When you want to look inside a docx document, it’s a bit of a pain to have to unzip it to look at the relevant part.</p>
+            <p class="Normal DocDefaults ">When you want to look inside a docx document, it's a bit of a pain to have to unzip it to look at the relevant part.</p>
 
             <p class="Normal DocDefaults ">There are 2 ways around this.</p>
 
@@ -2626,7 +2626,7 @@
             </p>
 
             <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
-                <span style="white-space:pre-wrap;">If you can’t add the annotation to the jaxb source code, an alternative is to </span>
+                <span style="white-space:pre-wrap;">If you can't add the annotation to the jaxb source code, an alternative is to </span>
                 <span style="text-decoration: none;">marshall</span>
                 <span style="white-space:pre-wrap;"> it using code which is explicit about the resulting QName.  For example, XmlUtils contains:</span>
             </p>
