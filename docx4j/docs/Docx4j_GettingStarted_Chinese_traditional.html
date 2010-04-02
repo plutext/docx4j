@@ -1,0 +1,2890 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="zh">
+<head>
+        <style><!--
+
+						/*paged media */ 
+						div.header {display: none }
+						div.footer {display: none } 
+						/*@media print { */
+						
+							div.footer {display: block; position: running(footer) }
+						
+
+						@page { size: A4; margin: 10%; @top-center {
+						content: element(header) } @bottom-center {
+						content: element(footer) } }
+
+
+						/*font definitions*/
+
+						/*element styles*/ del
+						{text-decoration:line-through;color:red;}
+						
+								ins {text-decoration:none;}
+							
+
+						/*class styles*/
+
+						
+						
+						/* Word style definitions */
+						
+ /* TABLE STYLES */ 
+.TableNormal {display:table;position: relative; margin-left: 0in;}
+.TableGrid {display:table;position: relative; margin-left: 0in;border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;space-after: 0in;line-height: 100%;}
+
+ /* PARAGRAPH STYLES */ 
+.DocDefaults {display:block;space-after: 4mm;line-height: 115%;font-family: Calibri;font-size: 11.0pt;}
+.Normal {display:block;}
+.NormalWeb {display:block;space-before: 0.07in;space-after: 0.07in;line-height: 100%;font-family: Times New Roman;font-size: 12.0pt;}
+.Command {display:block;position: relative; margin-left: 0.5in;font-family: Consolas;font-size: 10.0pt;}
+.Heading1 {display:block;page-break-after: avoid;space-before: 0.33in;space-after: 4mm;font-weight: bold;color: #365F91;font-family: Calibri;font-size: 18.0pt;}
+.Footer {display:block;space-after: 0in;line-height: 100%;}
+.Title {display:block;space-after: 0.21in;line-height: 100%;color: #17365D;font-family: Calibri;font-size: 26.0pt;}
+.FootnoteText {display:block;space-after: 0in;line-height: 100%;font-size: 10.0pt;}
+.ListParagraph {display:block;position: relative; margin-left: 0.5in;}
+.Heading2 {display:block;space-before: 0.07in;space-after: 0.07in;line-height: 100%;font-weight: bold;font-style: italic;font-family: Calibri;font-size: 14.0pt;}
+.h3 {display:block;font-style: normal;font-size: 11.0pt;text-decoration: none;}
+
+ /* CHARACTER STYLES */ .DefaultParagraphFont {display:inline;}
+.Hyperlink {display:inline;color: #0000FF;text-decoration: none;}
+.icon {display:inline;}
+.FootnoteReference {display:inline;vertical-align: top;font-size: xx-small;}
+.xmlmarkupattributename {display:inline;}
+.apple-style-span {display:inline;}
+.xmlmarkuptagname {display:inline;}
+.apple-converted-space {display:inline;}
+.xmlmarkupattributevalue {display:inline;}
+.xmlmarkupbracket {display:inline;}
+.underline {display:inline;}
+
+
+						/* TABLE CELL STYLES */
+						#docx4j_tbl_0 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
+--></style>
+</head>
+<body style="position: relative; top: 40px; ">
+
+            <p class="Title Normal DocDefaults "><span class="notranslate">docx4j</span>
+
+<span  >
+<span  > 入門</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >最新版本的這個文件總是可以找到 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/">
+                    <span class="Hyperlink DefaultParagraphFont ">docx4j svn in /docs</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > （在 </span></span><span class="notranslate">Flat OPC XML</span><span  ><span  > 格式為 Word 2007， </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/Docx4j_GettingStarted.html">
+                    <span class="Hyperlink DefaultParagraphFont ">HTML</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  >，和 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/Docx4j_GettingStarted.pdf">
+                    <span class="Hyperlink DefaultParagraphFont ">PDF</span>
+                </a><span  ><span  >）。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >這份文件是從英文翻譯使用谷歌翻譯。</span> <span  >如果你能提高翻譯，請隨時發送給你的改進版。</span> <span  >對於最近的報告，總是指英文版本。 </span></span></p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >什麼是 </span></span><span class="notranslate">docx4j</span><span  ><span  >？</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span><span  ><span  > 是一個解壓縮庫的docx“包”，並解析WordprocessingML XML創建一個內存中的代表性 </span></span></span>
+                <span style="font-weight: bold;" class="notranslate">Java</span>
+                <span style="white-space:pre-wrap;"><span  ><span  >。</span> <span  >最近版本 </span></span><span class="notranslate">docx4j</span><span  ><span  > 也支援PowerPoint pptx文件。  </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >它是在概念上類似於微軟的OpenXML SDK，它是對的。NET。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span><span  ><span  > 是開源的，可以按照Apache許可證（2版）。</span> <span  >作為一個開放源碼項目，歡迎踴躍投稿。</span> <span  >請參閱 </span></span><span class="notranslate">docx4j</span><span  ><span  > 論壇 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/forums/">
+                    <span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/forums/</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > 了解詳情。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span><span  ><span  > 嚴重依賴 </span></span></span>
+                <span style="font-weight: bold;" class="notranslate">JAXB</span><span  ><span  >，JCP的標準 XML綁定的Java。</span> <span  >你能想到的 </span></span><span class="notranslate">docx4j</span><span  ><span  > 作為一個 JAXB的實施（其中包括）：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >打開包裝公約</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >WordprocessingML（docx）的，部分的Open XML</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >Presentation ML (pptx) part of OpenXML </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >該圖書館的目的是往返docx文件100％的保真度，並支持所有2007 WordML中。</span> <span  >支持新的Word 2010功能，我們會盡快添加。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >該 </span></span><span class="notranslate">docx4j</span><span  ><span  > 項目是由 </span></span><span class="notranslate">Plutext</span><span  ><span  > （</span></span><a class="notranslate" href="http://www.plutext.com"><span class="Hyperlink DefaultParagraphFont ">www.plutext.com</span>
+                </a><span  ><span  >）。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >是 </span></span><span class="notranslate">docx4j</span><span  ><span  > 為你？</span></span></p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 負責處理的docx文件（和pptx介紹）在爪哇。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >這不是舊的二進制（。doc）格式文件。</span> <span  >針對這一情況，看看在Apache的POI的HWPF。</span> <span  >（事實上， </span></span><span class="notranslate">docx4j</span><span  ><span  > 使用HWPF基本轉換。文件，以。docx）的</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >它也不是為 RTF文件。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >如果你想處理的docx文件在。NET平台，你應該看看微軟的OpenXML SDK的代替。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >一種替代方法 </span></span><span class="notranslate">docx4j</span><span  ><span  > 是Apache的POI。</span> <span  >我特別建議，對於處理 Excel文件。</span> <span  >它也可以用來處理 Word文檔，而且由於它使用XMLBeans的（不使用JAXB）它可能是一個更好的選擇，如果你想使用XMLBeans。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >什麼種類的東西可以做 </span></span><span class="notranslate">docx4j</span><span  ><span  >？</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >打開現有的docx（從文件系統，SMB / CIFS通訊，使用WebDAV的VFS的）</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >創建新的docx</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >編程操縱的docx文件（當然）</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >Template substitution; CustomXML binding</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >導入二進制文檔（使用Apache的POI HWPF）</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >生產/消費的Word 2007的xmlPackage（封裝）格式</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >保存的docx，以文件系統作為一個的docx（即壓縮），或的JCR（解壓）</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >申請轉換，包括常用的過濾器</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >導出為HTML或PDF</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >漫射/比較文件，段落或特殊和差別待遇（內容控制）</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >支持字體（字體替換，和使用任何字體嵌入到文檔）</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >項目使用 </span></span><span class="notranslate">docx4j</span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >Docx4all是基於 Swing的文字處理器。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >Plutext協作為 Word 2007使用 </span></span><span class="notranslate">docx4j</span><span  ><span  > 在服務器上，以切碎成小塊的Word文件，可獨立版本。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >請聯繫 Plutext如果您希望您的項目在這裡列出。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >什麼它支持Word文檔？</span></span></p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 可以讀 /寫的docx文件創建或Word 2007或早期版本，具有兼容包安裝。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >有關部分 </span></span><span class="notranslate">docx4j</span><span  ><span  > 從 ECMA的生成模式。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >它不能讀 /寫的Word 2003 XML文檔。</span> <span  >主要的問題是，這些不同的XML命名空間。</span></span></p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 支持的Word 2010的docx文件。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >運用 </span></span><span class="notranslate">docx4j</span><span  ><span  > 二進制文件</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >你可以下載最新版本的 </span></span><span class="notranslate">docx4j</span><span  ><span  > 從 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/docx4j/">
+                    <span class="Hyperlink DefaultParagraphFont ">http://dev.plutext.org/docx4j/</span>
+                </a>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >一般來說，我們建議您開發針對目前每晚構建，因為最新的正式版本通常可以數個月大。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >支持jar文件中可以找到的。tar.gz的版本，或者在有關的子目錄。  </span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >運用 </span></span><span class="notranslate">docx4j</span><span  ><span  > 通過 </span></span><span class="notranslate">Maven</span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span class="notranslate">Maven POM</span><span  ><span  > 可在 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/m2/org/docx4j/docx4j">
+                    <span class="Hyperlink DefaultParagraphFont ">http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/m2/org/docx4j/docx4j</span>
+                </a>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >JDK版本</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span class="apple-style-span DefaultParagraphFont "><span  ><span  >你需要使用 </span></span><span class="notranslate">Java 1.5+</span><span  ><span  >。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span class="apple-style-span DefaultParagraphFont "><span  ><span  >這是因為JAXB的</span></span></span>
+                <span class="FootnoteReference DefaultParagraphFont ">
+                    <span style="vertical-align: top; font-size: xx-small">
+                        <a class="notranslate" name="fs1">
+                            </a><a href="#fn1"><span  ><span  >1</span></span></a>
+                        
+                    </span>
+                </span>
+                <span class="apple-style-span DefaultParagraphFont "><span  ><span  >。</span> <span  >如果您必須使用1.4，retrotranslator可以</span></span></span>
+                <span class="apple-converted-space DefaultParagraphFont ">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <a href="http://forums.java.net/jive/message.jspa?messageID=212494#googtrans/auto/zh-TW">
+                    <span class="icon DefaultParagraphFont "><span  ><span  >使據說</span></span></span>
+                </a>
+                <span class="apple-style-span DefaultParagraphFont ">
+                    <span style="white-space:pre-wrap;"><span  ><span  > 它的工作。</span></span></span>
+                </span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >關於 JAXB的一個詞</span></span></p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 使用JAXB的馬歇爾和unmarshall的關鍵部件在WordprocessingML文件，包括主要文件的一部分，風格的一部分，主題的一部分，性能部分。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >JAXB是包含在Sun的Java 6中的分佈，而不是1.5。</span> <span  >因此，如果您使用的是1.5的JDK，你將需要在您的JAXB 2.1.x類路徑。  </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >位的 </span></span><span class="notranslate">docx4j</span><span  ><span  >如 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml">
+                    <span class="Hyperlink DefaultParagraphFont ">org.docx4j.wml</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > 和 </span></span></span>
+                <span class="apple-converted-space DefaultParagraphFont " style="font-family: Calibri;"> </span>
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/dml">
+                    <span class="Hyperlink DefaultParagraphFont ">org.docx4j.dml</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > 產生了使用JAXB的XJC。</span> <span  >我們修改了wml.xsd架構，尤其是這樣產生的，關鍵是一類多一點人友好的（即不是所有的開始與 CT_和ST_）。 </span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >Log4j的</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span class="underline DefaultParagraphFont ">
+                    <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span><span  ><span  > 使用log4j的日誌記錄。</span> <span  >要啟用日誌記錄，您需要一個 log4.properties或log4j.xml您的類路徑。</span> <span  >例如見 </span></span></span>
+                </span>
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/resources/log4j.xml">
+                    <span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/resources/log4j.xml</span>
+                </a>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults notranslate">Javadoc</p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >Javadoc中在線瀏覽或下載，可以在目錄中找到 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/docx4j/">
+                    <span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/docx4j/</span>
+                </a>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 源代碼</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >要獲得一個複製的電流源代碼：</span></span></p>
+
+            <p class="NormalWeb Normal DocDefaults notranslate">   <span style="font-family: Consolas;font-size: 10.0pt;">svn co</span>
+                <span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span>
+                <a class="notranslate" href="http://dev.plutext.org/svn/docx4j/trunk/docx4j">
+                    <span class="icon DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j</span>
+                </a>
+                <span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span>
+                <span style="font-family: Consolas;font-size: 10.0pt;">docx4j</span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >或者，你可以瀏覽它的在線，網址為：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate">http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/</p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >建築 </span></span><span class="notranslate">docx4j</span><span  ><span  > 從源 </span></span></span>
+            </p>
+
+            <p class="Heading2 Normal DocDefaults "><span  ><span  >命令行 - 快捷操作</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >“快”，即只要你有Maven和Ant安裝。</span> <span  >請注意，我們只是使用Maven來獲取依賴，不求實際的建設。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >創建一個目錄稱為工作區，和CD進去。</span></span></p>
+
+            <p class="NormalWeb Normal DocDefaults notranslate">   <span style="font-family: Consolas;font-size: 10.0pt;">svn co</span>
+                <span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span>
+                <a class="notranslate" href="http://dev.plutext.org/svn/docx4j/trunk/docx4j">
+                    <span class="icon DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j</span>
+                </a>
+                <span class="apple-converted-space DefaultParagraphFont " style="font-family: Consolas;font-size: 10.0pt;"> </span>
+                <span style="font-family: Consolas;font-size: 10.0pt;">docx4j</span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >開放的pom.xml，找到一行字：</span></span></p>
+
+            <p class="Command NormalWeb Normal DocDefaults notranslate">&lt;systemPath&gt;/usr/lib/jvm/java-6-sun/jre/lib/rt.jar&lt;/systemPath&gt;</p>
+
+            <p class="Normal DocDefaults "><span  ><span  >並編輯它來適應你的系統。</span></span></p>
+
+            <p class="Command NormalWeb Normal DocDefaults ">
+                <span style="white-space:pre-wrap;" class="notranslate">mvn install </span>
+            </p>
+
+            <p class="NormalWeb Normal DocDefaults notranslate" style="position: relative; margin-left: 0.5in;">
+                <span style="font-family: Consolas;font-size: 10.0pt;">ant dist</span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >這 ant命令將創建 docx4j.jar並把它和所有它的依賴在dist目錄。</span></span></p>
+
+            <p class="Heading2 Normal DocDefaults"><span  ><span  >日食</span></span></p>
+
+            <p class="h3 Heading2 Normal DocDefaults "><span  ><span  >先決條件</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >Eclipse的安裝</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >安裝一個Eclipse插件，例如顛覆</span></span><span class="apple-converted-space DefaultParagraphFont "> </span>
+                <a class="notranslate" href="http://subclipse.tigris.org/update_1.2.x">
+                    <span class="icon DefaultParagraphFont ">http://subclipse.tigris.org/update_1.2.x</span>
+                </a>
+            </p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >安裝</span></span><span class="apple-converted-space DefaultParagraphFont "> </span>
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/trac/umbrella/wiki/MavenEclipse">
+                    <span class="Hyperlink DefaultParagraphFont " style="font-family: Calibri;">Maven and the Eclipse plugin</span>
+                </a>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >而且，正如上面討論：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >Java 1.5或6</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >JAXB的： </span></span></span>
+                <span style="font-weight: bold;"><span  ><span  >既</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 包括執行的JAXB的Java 6中， </span></span></span>
+                <span style="font-weight: bold;"><span  ><span  >並</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 在2.x的參考實現。</span> <span  >（這是價格支持無論是在運行時）</span></span></span>
+            </p>
+
+            <p class="h3 Heading2 Normal DocDefaults "><span  ><span  >說明</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults notranslate">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>File &gt; New "Project .." &gt; SVN &gt; Checkout Projects from SVN</p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >創建一個新的存儲庫的位置;網址是</span></span><span class="apple-converted-space DefaultParagraphFont "> </span>
+                <a class="notranslate" href="http://dev.plutext.org/svn/docx4j">
+                    <span class="icon DefaultParagraphFont ">http://dev.plutext.org/svn/docx4j</span>
+                </a>
+            </p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >點擊文件夾 </span></span><span class="notranslate">"trunk"</span><span  ><span  >，並選擇 docx4j;點擊下一步</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >您要檢查它作為一個項目的配置使用的新建項目嚮導</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >然後選擇Java&gt; Java項目，請點擊下一頁</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >選擇一個項目名稱（例如，'docx4j'），然後單擊下一步</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >點擊完成（我們將定義的Java構建設置在後面的步驟）</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >後一對夫婦的其他對話框，你應該有新的項目在您的工作區。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >現在，我們需要配置 </span></span></span>
+                <span style="font-weight: bold;"><span  ><span  >類路徑</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 等，以便它在Eclipse可以建立。</span></span></span>
+            </p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >生成路徑&gt;“配置構建路徑&gt; Java構建路徑&gt;源標籤</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >點擊鋼骨混凝土，然後按刪除按鈕</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >然後點擊“添加文件夾”，並瀏覽到src /主/ Java和剔的Java'</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >然後添加 </span></span><span class="notranslate">src/svg, src/diffx and src/pptx4j/java</span><span  ><span  > 以及</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >在Maven位：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >請確保您有安裝Maven和它的插件-見上面的先決條件。 </span></span></span>
+            </p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >安裝在運行mvn </span></span><span class="notranslate">docx4j</span><span  ><span  > 您從一個命令提示符（以防萬一）</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >右擊項目“&gt;的Maven 2&gt;”啟用</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >該項目現在應該在Eclipse工作沒有錯誤</span></span><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fs2"></a><a href="#fn2"><span  ><span  >2</span></span></a>
+                        
+                    </span>
+                </span>
+                <span style="white-space:pre-wrap;"><span  ><span  >。 </span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >打開一個現有的docx文件</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/packages/WordprocessingMLPackage.java">
+                    <span style="font-family: Consolas;">org.docx4j.openpackaging.packages.</span>
+                    <span style="font-weight: bold;font-family: Consolas;">WordprocessingMLPackage</span>
+                </a><span  ><span  > 代表一個 docx文檔。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >要加載的文件，所有您需要做的是：</span></span></p>
+
+            <p class="Command NormalWeb Normal DocDefaults notranslate" style="position: relative; margin-left: 0in;">   <span style="white-space:pre-wrap;">WordprocessingMLPackage wordMLPackage = </span>
+                <br clear="all">      WordprocessingMLPackage.load(new java.io.File(inputfilepath));</p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >這種方法還可以加載平板的OPC XML文件。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >然後，您可以得到的主要文件的一部分（字/ document.xml）：</span></span></p>
+
+            <p class="Command NormalWeb Normal DocDefaults notranslate">
+                <a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/parts/WordprocessingML/MainDocumentPart.java">
+                    <span style="font-family: Calibri;">MainDocumentPart</span>
+                </a> documentPart = wordMLPackage.getMainDocumentPart();</p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="white-space:pre-wrap;"><span  ><span  >在此之後，您可以操作的內容。 </span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >WordML中的概念</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >做任何事情遠遠超出這一點，你需要有一個基本了解WordML中的概念。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >根據微軟開放包裝規格，每個 docx文檔是由一個數部分文件，壓縮了。</span> <span  >通常是XML的一個部分，但未必是（1圖像的一部分，例如，是不是）。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >一個介紹WordML中超出了範圍本文件。</span> <span  >你可以找到一個非常可讀的介紹，在1</span></span><span style="vertical-align: top;font-size: xx-small;"><span  ><span  >日</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 第3版（底漆）在 </span></span></span>
+                <a class="notranslate" href="http://www.ecma-international.org/publications/standards/Ecma-376.htm">
+                    <span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/publications/standards/Ecma-376.htm</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > 或 </span></span></span>
+                <a class="notranslate" href="http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm">
+                    <span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > （一更好的聯繫，因為它不是壓縮了）。</span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >JAXB的：編組和解組 </span></span></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span><span  ><span  > 包含一個類代表每個部分。</span> <span  >例如，有一個 </span></span></span>
+                <span style="font-family: Consolas;"><span  ><span  >MainDocumentPart</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 類。</span> <span  >XML的部分繼承 </span></span></span>
+                <span style="font-family: Consolas;"><span  ><span  >JaxbXmlPart</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >，其中包含一個成員叫 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;"><span  ><span  >jaxbElement</span></span></span><span  ><span  >。</span> <span  >當您要使用的內容的一部分，你的工作與jaxbElement。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >當你打開一個 docx文檔使用 </span></span><span class="notranslate">docx4j</span><span  ><span  >， </span></span><span class="notranslate">docx4j</span><span  ><span  > 自動 </span></span></span>
+                <span style="font-weight: bold;font-style: italic;"><span  ><span  >反編排</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 的內容，每個XML部分一個強類型的Java對象樹（ </span></span><span class="notranslate">jaxbElement</span><span  ><span  >）。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >同樣，如果/當你告訴 </span></span><span class="notranslate">docx4j</span><span  ><span  > 保存這些 Java對象作為一個的docx， </span></span><span class="notranslate">docx4j</span><span  ><span  > 自動 </span></span></span>
+                <span style="font-weight: bold;font-style: italic;"><span  ><span  >糾察</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 的 </span></span><span class="notranslate">jaxbElement</span><span  ><span  > 在每一部分。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >有時候你會希望自己的東西編組或解組。</span> <span  >類 </span></span></span>
+                <span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 9.0pt;" class="notranslate">org.docx4j.jaxb.Context</span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 定義中使用的所有JAXBContexts </span></span><span class="notranslate">docx4j</span><span  ><span  >： </span></span></span>
+            </p>
+
+            <tgroup>
+                    </tgroup><table class="TableGrid TableNormal notranslate " id="docx4j_tbl_0" style="position: relative; margin-left: 0.76in;table-layout: fixed;border-collapse: collapse;">
+                <colgroup>
+                    <col style="width: 2in;">
+                    <col style="width: 2.94in;">
+                </colgroup>
+                <tbody><tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="font-family: Consolas;font-size: 9.0pt;">Jc</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">org.docx4j.dml</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">org.docx4j.dml.picture</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">org.docx4j.dml.wordprocessingDrawing</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">
+                                </span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.vml</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">org.docx4j.vml.officedrawing</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">org.docx4j.math</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcThemePart</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.dml</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcDocPropsCore</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.core</span>
+                            </p>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.core.dc.elements</span>
+                            </p>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.core.dc.terms</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcDocPropsCustom</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.custom</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcDocPropsExtended</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.docProps.extended</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcXmlPackage</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.xmlPackage</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcRelationships</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.relationships</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcCustomXmlProperties</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.customXmlProperties</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcContentTypes</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.openpackaging.contenttype</span>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr style="vertical-align: top;">
+                        <td style="vertical-align: middle;">
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">jcPML</span>
+                            </p>
+                        </td>
+                        <td>
+
+                            <p class="Normal DocDefaults ">
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.pml</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">org.docx4j.dml</span>
+                                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">
+                                    <br clear="all">org.docx4j.dml.picture</span>
+                            </p>
+                        </td>
+                    </tr>
+                
+            </tbody></table>
+
+            <p class="Normal DocDefaults ">
+
+            </p><p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >建築</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 有3個層次：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;"><span  ><span  >1。 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;" class="notranslate">org.docx4j.openpackaging</span>
+                <br clear="all">
+                <br clear="all">
+                <span style="white-space:pre-wrap;"><span  ><span  >OpenPackaging處事在開放式打包約定級別：解壓縮1的docx成 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;"><span  ><span  >WordprocessingMLPackage</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 和一組從第對象繼承;允許部分被添加/刪除;保存的docx</span></span></span>
+                <br clear="all">
+                <br clear="all">
+                <span style="white-space:pre-wrap;"><span  ><span  >這一層本來是基於對 OpenXML4J（這也是使用由Apache的POI）。 </span></span></span>
+                <br clear="all">
+                <br clear="all">
+                <span style="white-space:pre-wrap;"><span  ><span  >一般子類零件 </span></span></span>
+                <span style="font-weight: bold;color: #000000;font-family: Consolas;" class="notranslate">org.docx4j.openpackaging.parts.JaxbXmlPart</span>
+                <br clear="all">
+                <br clear="all">
+                <span style="white-space:pre-wrap;"><span  ><span  >零件都被排列在一棵樹上。</span> <span  >如果部分後裔，將有 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;" class="notranslate">org.docx4j.openpackaging.parts.relationships.RelationshipsPart</span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 其中確定的後裔部分。</span> <span  >該示例PartsList（見下一節）告訴您如何工作的。</span></span></span>
+                <br clear="all">
+                <br clear="all"><span  ><span  >阿JaxbXmlPart有一個內容樹：</span></span><br clear="all">
+                <br clear="all">
+
+                <span class="notranslate">
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   public Object getJaxbElement() {</span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">
+                        <br clear="all">
+                    </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   return jaxbElement;</span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">
+                        <br clear="all">
+                    </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   }</span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">
+                        <br clear="all">
+                    </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">
+                        <br clear="all">
+                    </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   public void setJaxbElement(Object jaxbElement) {</span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">
+                        <br clear="all">
+                    </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   this.jaxbElement = jaxbElement;</span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">
+                        <br clear="all">
+                    </span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">   }</span>
+                    <span style="font-family: Consolas;font-size: 9.0pt;">
+                        <br clear="all">
+                    </span>
+                </span>
+
+            </p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;"><span  ><span  >2。 </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >在 </span></span></span>
+                <span style="font-weight: bold;color: #000000;"><span  ><span  >JAXB的</span></span></span>
+                <span style="font-weight: bold;">
+                    <span style="white-space:pre-wrap;"><span  ><span  > 內容樹</span></span></span>
+                </span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 是第二個層面的三層模型。</span></span></span>
+                <br clear="all">
+                <br clear="all">
+                <span style="white-space:pre-wrap;"><span  ><span  >大部分地區（包括MainDocumentPart，樣式，頁眉/頁腳，註釋， </span></span></span>
+                <span style="color: #000000;"><span  ><span  >尾注</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >/腳註）的使用 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml">
+                    <span style="font-weight: bold;font-family: Consolas;">org.docx4j.wml</span>
+                </a>
+                <span style="font-weight: bold;font-family: Consolas;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="white-space:pre-wrap;"><span  ><span  >（WordprocessingML）; </span></span></span>
+                <span style="color: #000000;"><span  ><span  >WML的</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 提述 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml">
+                    <span style="font-weight: bold;font-family: Consolas;">org.docx4j.dml</span>
+                </a>
+                <span style="font-weight: bold;font-family: Consolas;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span><span  ><span  >圖形處理（DrawingML）作為必要的。</span></span><br clear="all">
+                <br clear="all"><span  ><span  >這些類都從打開 XML模式</span></span><br clear="all">
+                <br clear="all">
+            </p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;"><span  ><span  >3。 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;" class="notranslate">org.docx4j.model</span>
+                <span style="font-weight: bold;font-family: Consolas;">
+                    <br clear="all">
+                </span>
+                <span style="font-weight: bold;font-family: Consolas;">
+                    <br clear="all">
+                </span>
+                <span style="white-space:pre-wrap;"><span  ><span  >這個軟件包的基礎上降低2層，提供額外的功能，並正在逐步進一步發展。    </span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >樣品</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >該軟件包包含例子org.docx4j.samples如何做事與 </span></span><span class="notranslate">docx4j</span><span  ><span  >。</span> <span  >這些措施包括：</span></span></p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >基礎知識</span></span></p>
+
+<div class="notranslate">
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>CreateWordprocessingMLDocument</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>DisplayMainDocumentPartXml</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>OpenAndSaveRoundTripTest</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>OpenMainDocumentAndTraverse</p>
+
+</div>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >輸出 /轉型</span></span></p>
+
+<div class="notranslate">
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>CreateHtml</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>CreatePdf</p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+</p></div>
+                <span style="white-space:pre-wrap;"><span  ><span  >扁平的OPC XML的 </span></span></span>
+            <p></p>
+<div class="notranslate">
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>ExportInPackageFormat</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>ImportFromPackageFormat</p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+</p></div>
+                <span style="white-space:pre-wrap;"><span  ><span  >圖像處理 </span></span></span>
+            <p></p>
+<div class="notranslate">
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>AddImage</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>ConvertEmbeddedImageToLinked</p>
+</div>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >第一部分處理</span></span></p>
+<div class="notranslate">
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>CopyPart</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>ImportForeignPart</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>PartsList</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>StripParts</p>
+
+</div>
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >雜項</span></span></p>
+<div class="notranslate">
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>CompareDocuments</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>CreateDocxWithCustomXml</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>CustomXmlBinding</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>DocProps</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>Filter</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>HyperlinkTest</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>NumberingRestart</p>
+
+            <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;">* </span>UnmarshallFromTemplate</p>
+</div>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >如果您安裝了源代碼，你就會有這個包了。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="white-space:pre-wrap;"><span  ><span  >如果你沒有，你可以瀏覽它的在線，在 </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples">
+                    <span class="Hyperlink DefaultParagraphFont " style="font-size: 10.0pt;">http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples</span>
+                </a>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="white-space:pre-wrap;"><span  ><span  >此外，還有各種 </span></span></span>
+                <span style="font-weight: bold;"><span  ><span  >樣本文件</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 在/採樣docs目錄，這些是最容易進入的檢查出 </span></span><span class="notranslate">docx4j</span><span  ><span  > 使用svn。</span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >零件清單</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >為了更好地了解如何 </span></span><span class="notranslate">docx4j</span><span  ><span  > 工程和結構的docx文檔你可以運行 </span></span><span class="notranslate">PartsList</span><span  ><span  > 樣本上的docx（或pptx）。</span> <span  >如果這樣做，它會列出等級的零件用在這個包。</span> <span  >它會告訴你哪個類是用來表示每個部分，如該部分是一個JaxbXmlPart，它還會告訴你什麼階層的 </span></span></span>
+                <span style="font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >jaxbElement </span></span></span>
+                </span><span  ><span  >的。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >例如：</span></span></p>
+<div class="notranslate">
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /_rels/.rels [org.docx4j.openpackaging.parts.relationships.RelationshipsPart]</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <br clear="all">
+                    <span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.relationships.Relationships</span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">Part /docProps/app.xml [org.docx4j.openpackaging.parts.DocPropsExtendedPart]  </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <br clear="all">
+                    <span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.docProps.extended.Properties</span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">Part /docProps/core.xml [org.docx4j.openpackaging.parts.DocPropsCorePart]  </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <br clear="all">
+                    <span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.docProps.core.CoreProperties</span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">Part </span>
+                </span>
+                <span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 8.0pt;">/word/document.xml</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;"> [org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart]  </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <br clear="all">
+                    <span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.Document</span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/settings.xml [</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">.DocumentSettingsPart]  </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <br clear="all">
+                    <span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.CTSettings</span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/styles.xml [</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">.StyleDefinitionsPart]  </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <br clear="all">
+                    <span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.Styles</span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/media/image1.jpeg [</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">.ImageJpegPart] </span>
+                </span>
+            </p>
+</div>
+            <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;">
+
+            </p><p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >遍歷的docx</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <a class="notranslate" href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples/OpenMainDocumentAndTraverse.java">
+                    <span style="color: #0000FF;text-decoration: none;">OpenMainDocumentAndTraverse.java</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > 在樣本目錄顯示您如何遍歷一個的docx JAXB的代表性。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >關於 JAXB的一個惱人的事，是一個對象說一個表可以表示為 </span></span></span>
+                <span class="notranslate" style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Tbl</span>
+                <span style="white-space:pre-wrap;"><span  ><span  > （如您所期望的）。</span> <span  >或者它可能被包裝在一個 </span></span></span>
+                <span class="notranslate" style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 9.0pt;">javax.xml.bind.JAXBElement</span><span  ><span  >在這種情況下，我得到了真正的表，你必須做的是這樣的：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">if </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">( ((JAXBElement)o).getDeclaredType().getName().equals(</span>
+                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">"org.docx4j.wml.Tbl"</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">) ) </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >org.docx4j.wml.Tbl任務型=（org.docx4j.wml.Tbl）（（JAXBElement）海外）。的getValue（）;</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+
+            </p><p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >創建一個新的docx</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0.07in;line-height: 100%;"><span  ><span  >要創建一個新的docx：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建包</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /保存它</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-family: Consolas;font-size: 9.0pt;">wordMLPackage.save(new java.io.File("helloworld.docx") );</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="white-space:pre-wrap;"><span  ><span  >就是這樣。  </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;" class="notranslate">
+                    <span style="white-space:pre-wrap;">createPackage() </span>
+                </span><span  ><span  >是一個方便的方法，它的作用：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建包</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;" class="notranslate">WordprocessingMLPackage wordMLPackage = new WordprocessingMLPackage();</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建主文檔的一部分（字/ document.xml）</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="font-family: Consolas;font-size: 9.0pt;">MainDocumentPart wordDocumentPart = new MainDocumentPart();</span>
+            </p>
+
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建主文檔的一部分內容</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">ObjectFactory factory = Context.getWmlObjectFactory();</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Body body = factory .createBody();</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Document wmlDocumentEl = factory .createDocument();</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wmlDocumentEl.setBody(body);</span>
+            </p>
+
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /把內容的部分</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wordDocumentPart.setJaxbElement(wmlDocumentEl);</span>
+            </p>
+
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /添加主文檔的一部分，該程序包的關係</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /（創造，如果有必要）</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wmlPack.addTargetPart(wordDocumentPart);</span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >添加一個段落的文字</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >MainDocumentPart </span></span></span>
+                </span><span  ><span  >包含一個方法：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate">
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P addStyledParagraphOfText(String styleId, String text)</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >您可以使用該方法添加一個段落，使用指定的樣式。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >我們正在尋找的XML創建將是這樣的：</span></span></p>
+            
+<div class="notranslate">            
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">
+                    <span style="white-space:pre-wrap;">w:p </span>
+                </span>
+                <span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;"> </span>
+                <span class="xmlmarkupattributename DefaultParagraphFont " style="color: #FF0000;font-family: Consolas;font-size: 8.5pt;">xmlns:w</span>
+                <span class="xmlmarkupattributevalue DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">="http://schemas.openxmlformats.org/wordprocessingml/2006/main"</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">        </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">Hello world</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:p</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+            </p>
+
+</div>
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >addStyledParagraphOfText </span></span></span>
+                </span><span  ><span  >生成的JAXB對象結構的方式，並將其添加到文檔中。</span></span></p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">ObjectFactory factory = Context.getWmlObjectFactory();</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建該段</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P  para = factory.createP();</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建文本元素</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Text  t = factory.createText();</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">t.setValue(simpleText);</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建運行</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.R  run = factory.createR();</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">run.getRunContent().add(t);    </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">para.getParagraphContent().add(run);</span>
+            </p>
+            
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /現在我們添加到文檔的正文段</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">Body body = this.jaxbElement.getBody();</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">Body.getEGBlockLevelElts().add(para)</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >或者，您可以創建段的編組的XML：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /假設字符串的XML包含XML以上</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >對於這個工作，你必須確保所有命名空間聲明正確的字符串。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults "><span  ><span  >添加部分</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >如果你想添加一個新的風格的一部分？</span> <span  >具體方法如下：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /創建一個樣式的一部分</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">StyleDefinitionsPart stylesPart = </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">new </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">StyleDefinitionsPart();</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /填充它的默認樣式</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">stylesPart.unmarshalDefaultStyles();</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /添加樣式的一部分主文檔部分的關係</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wordDocumentPart.addTargetPart(stylesPart);</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >你會採取同樣的方法添加頁眉或頁腳。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >當您添加一個這樣的一部分，它會自動添加到源部分的關係的一部分。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >一般來說，您還需要添加一個引用的部分（使用的關係身份證）到主文檔的一部分。</span> <span  >這適用於圖像，標題和頁腳。</span> <span  >（註釋，腳註和尾注有一點不同，就是你添加到主文檔的一部分是參照個人意見 /腳註 /尾注）。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >的docx到（X）HTML的</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="notranslate">docx4j</span><span  ><span  > 使用XSLT的docx轉換為 XHTML 1：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">AbstractHtmlExporter exporter = </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">new </span>
+                </span>
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">HtmlExporterNG2();</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Courier New;font-size: 9.0pt;"><span  ><span  >/ /注意：* 2 *有</span></span></span>
+            </p>
+
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /寫入 StreamResult（在這種情況下，輸出流）</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">OutputStream os = </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">new </span>
+                </span>
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">java.io.FileOutputStream(inputfilepath + </span>
+                </span>
+                <span style="color: #2A00FF;font-family: Courier New;font-size: 9.0pt;">".html"</span>
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">);</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">javax.xml.transform.stream.StreamResult result </span>
+                </span>
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <br clear="all">
+                </span>
+                <span style="color: #FFFFFF;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">= </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">new </span>
+                </span>
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">javax.xml.transform.stream.StreamResult(os);</span>
+            </p>
+
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">exporter.html(wordMLPackage, result, </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">inputfilepath + </span>
+                </span>
+                <span style="color: #2A00FF;font-family: Courier New;font-size: 9.0pt;">"_files"</span>
+                <span style="color: #000000;font-family: Courier New;font-size: 9.0pt;">);</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >你會發現生成的HTML是乾淨的。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="notranslate">docx4j</span><span  ><span  > 使用Java的XSLT擴展函數做繁重，所以對 XSLT本身就是盡量簡單。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >的docx為 PDF</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span class="notranslate">docx4j</span><span  ><span  > 生產的XSL的，它可以反過來用於創建 PDF。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >目前，維克多被集成到Apache的 </span></span><span class="notranslate">docx4j</span><span  ><span  > 用於創建 PDF格式。</span> <span  >（不久，我們將改變這麼多的事 </span></span><span class="notranslate">docx4j</span><span  ><span  > 生成的，使用您的首選的渲染，不管是維克多，或商業工具，如XEP）。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >要創建一個 PDF：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /字體身份映射最好在微軟視窗</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wordMLPackage.setFontMapper(</span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">new </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">IdentityPlusMapper());</span>
+            </p>
+
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /設置轉換器</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">org.docx4j.convert.out.pdf.PdfConversion c </span>
+                </span>
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">
+                    <br clear="all">
+                </span>
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">= </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">new </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);</span>
+            </p>
+
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /寫入到輸出流</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">OutputStream os = </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">new </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">java.io.FileOutputStream(inputfilepath + </span>
+                </span>
+                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">".pdf"</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">);      </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">c.output(os);</span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >圖像處理</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >當您添加一個圖像文檔在Word 2007中，一般增加一條，作為一個新的部分（即你會發現一個組成部分，在造成的docx，包含圖像基地64格式）。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >當您打開該文檔中 </span></span><span class="notranslate">docx4j</span><span  ><span  >， </span></span><span class="notranslate">docx4j</span><span  ><span  > will create an image part representing it.</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >它也可以創建一個鏈接的圖像。</span> <span  >在這種情況下，圖像不是嵌入的docx包，而是在其引用的外部位置。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span><span  ><span  >之 </span></span></span>
+                <span class="notranslate" style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 10.0pt;">BinaryPartAbstractImage</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span><span  ><span  >類包含的方法，使您可以同時創建嵌入和鏈接的圖像（連同適當的關係）。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ **</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >*創建一個圖像的一部分從所提供的字節數組，將其附加到 </span></span></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*主要文件的一部分，並返回它.* /</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">byte</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">[] bytes) </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ **</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*創建一個圖像的一部分從所提供的字節數組，將其附加到源的一部分</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*（如主文件的一部分，一個頭的一部分等），並返回它.* /</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">Part sourcePart, </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">byte</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">[] bytes) </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ **</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*創建一個鏈接的圖像的一部分，並附它作為一個相對的指定來源的一部分</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*（例如一個頭的一部分）</span></span></span>
+                <span style="font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >* /</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">BinaryPartAbstractImage createLinkedImagePart(</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <br clear="all">
+                </span>
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">WordprocessingMLPackage wordMLPackage, Part sourcePart, String fileurl) </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+
+            </p><p class="Normal DocDefaults "><span  ><span  >對於一個圖像顯示在文檔中，也需要有適當的XML文件中的主要部分。</span> <span  >這個 XML可以採取 2基本形式：</span></span></p>
+
+
+            <p class="ListParagraph Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >在Word 2007 </span></span></span>
+                <span style="font-weight: bold;color: #800000;font-family: Consolas;"><span  ><span  >瓦特：繪製</span></span></span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span><span  ><span  >表格</span></span></p>
+<div class="notranslate">
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&lt;w:p&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;w:drawing&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   <span style="white-space:pre-wrap;">&lt;wp:inline </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">distT</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="0" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">distB</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="0" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">distL</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="0" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">distR</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="0"</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   <span style="white-space:pre-wrap;">&lt;wp:extent </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">cx</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="3238500" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">cy</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="2362200" /</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   <span style="white-space:pre-wrap;">&lt;wp:effectExtent </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">l</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="19050" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">t</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="0" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">r</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="0" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">b</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="0" /</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   :</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;a:graphic &gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   <span style="white-space:pre-wrap;">&lt;a:graphicData </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"> ..</span>
+                </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;pic:pic &gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   :</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;pic:blipFill&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="font-weight: bold;color: #800000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">a:blip </span>
+                </span>
+                <span style="font-weight: bold;color: #FF0000;font-family: Consolas;font-size: 9.0pt;">r:embed</span>
+                <span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="rId5"</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"> /</span>
+                </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   :</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">pic:blipFill&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   :</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">pic:pic&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">a:graphicData&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">a:graphic&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">wp:inline&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">w:drawing&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">w:p&gt;</span>
+            </p>
+</div>
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+
+            </p><p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >在Word 2003的VML的 </span></span></span>
+                <span style="font-weight: bold;color: #800000;font-family: Consolas;"><span  ><span  >瓦特：的PICT</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 格式</span></span></span>
+            </p>
+<div class="notranslate">
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&lt;w:p&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;w:pict&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   <span style="white-space:pre-wrap;">&lt;v:shapetype </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">id</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="_x0000_t75" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">coordsize</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">="21600,21600" </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"> .. </span>
+                </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   <span style="white-space:pre-wrap;">&lt;v:stroke </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">joinstyle</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="miter" /</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;v:formulas&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   :</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">v:formulas&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   :</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">v:shapetype&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   <span style="white-space:pre-wrap;">&lt;v:shape </span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">..</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">style</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="width:428.25pt;height:321pt"</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="font-weight: bold;color: #800000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">v:imagedata </span>
+                </span>
+                <span style="font-weight: bold;color: #FF0000;font-family: Consolas;font-size: 9.0pt;">r:id</span>
+                <span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="rId4"</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #FF0000;font-family: Consolas;font-size: 9.0pt;">o:title</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">="" /</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 9.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">v:shape&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="font-family: Consolas;font-size: 12.0pt;">   </span>
+                <span style="font-family: Consolas;font-size: 12.0pt;">   </span>
+                <span style="font-family: Consolas;font-size: 12.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">&lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:pict&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:p&gt;</span>
+            </p>
+</div>
+            <p class="Normal DocDefaults ">
+
+            </p><p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span class="notranslate">docx4j</span><span  ><span  > 可以創建Word 2007 </span></span></span>
+                <span style="font-weight: bold;color: #800000;font-family: Consolas;"><span  ><span  >瓦特：繪圖/可濕性粉劑：內聯</span></span></span>
+                <span style="color: #800000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span><span  ><span  >形式為您：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ **</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >* Create a </span></span></span>
+                </span>
+                <span style="color: #7F7F9F;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >&lt;wp:inline&gt; </span></span></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >element suitable for this image,</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*它可以鏈接或嵌入在W：對 /瓦特：讀 /寫：繪圖。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >* If the image is wider than the page, it will be scaled</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*自動。</span> <span  >查看Javadoc的其他簽名。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >* </span></span></span>
+                </span>
+                <span style="color: #7F9FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >@帕拉姆庫馬拉 </span></span></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >filenameHint任何文本，例如原始文件名</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >* </span></span></span>
+                </span>
+                <span style="color: #7F9FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >@帕拉姆庫馬拉 </span></span></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >altText像HTML的替代文字</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >* </span></span></span>
+                </span>
+                <span style="color: #7F9FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >@帕拉姆庫馬拉 </span></span></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >分化抑制因子ID1一個id獨一無二的文件</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >* </span></span></span>
+                </span>
+                <span style="color: #7F9FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >@帕拉姆庫馬拉 </span></span></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >id2另一名獨一無二的文件</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >* </span></span></span>
+                </span>
+                <span style="color: #7F9FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >@帕拉姆庫馬拉 </span></span></span>
+                </span>
+                <span style="font-weight: bold;color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >鏈接</span></span></span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >  ，如果這是真的要 </span></span></span>
+                </span>
+                <span style="font-weight: bold;color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >聯繫不嵌入</span></span></span>
+                <span style="font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >* /</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">Inline createImageInline(String filenameHint, String altText, </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">int </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">id1, </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">int </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">id2, </span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">boolean </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">link) </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+
+            </p><p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >然後您可以添加到 </span></span></span>
+                <span style="font-weight: bold;color: #800000;font-family: Consolas;"><span  ><span  >瓦特：讀/寫：繪圖。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >最後， </span></span><span class="notranslate">docx4j</span><span  ><span  >，你可以轉換圖像格式，不支持從由Word（如PDF），向巴新，這是一個支持的格式。</span> <span  >為此， </span></span><span class="notranslate">docx4j</span><span  ><span  > 使用 </span></span></span>
+                <span style="font-weight: bold;"><span  ><span  >ImageMagick的</span></span></span><span  ><span  >。</span> <span  >因此，如果您想使用此功能，您需要安裝ImageMagick的。  </span></span><span class="notranslate">docx4j</span><span  ><span  > 調用 ImageMagick的使用：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;"> Process p = Runtime.getRuntime().exec(</span>
+                </span>
+                <span style="color: #2A00FF;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">"imconvert -density " </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <span style="white-space:pre-wrap;">+ density + </span>
+                </span>
+                <span style="color: #2A00FF;font-family: Consolas;font-size: 8.0pt;">" -units PixelsPerInch - png:-"</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">);</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">
+                    <br clear="all">
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >注意名稱 </span></span></span>
+                <span style="font-weight: bold;"><span  ><span  >imconvert</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >，這是用來讓我們沒有提供一個完整路徑執行官。</span> <span  >您需要容納的。  </span></span></span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >文本提取</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >一個快速的方法來提取文本從的docx，是使用 </span></span></span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >TextUtils   </span></span></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static void </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">extractText(Object o, Writer w)</span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >其中糾察的對象是通過傳遞一個 SAX ContentHandler的，為了輸出文本的作家。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >文本替換</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >文本替換很容易，只要您正在搜索的字符串代表的是一個 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >org.docx4j.wml.Text </span></span></span>
+                </span><span  ><span  >對象的表格您的期望。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >不過，這並不一定是如此。</span> <span  >該字符串可以被打破跨文本運行任何理由如下：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >部分的字是不同的格式（如粗體）</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >拼寫/語法</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >編輯命令（rsid）</span></span></p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 最終將容納這些案件，但不是現在。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >除這一點，你可以做文字在各種替代方式，例如：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >遍歷主文檔的一部分，並期待在 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;">
+                    <span style="white-space:pre-wrap;" class="notranslate">org.docx4j.wml.Text </span>
+                </span><span  ><span  >對象</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >元帥為一個字符串，搜索/替換，那麼和解組再次 </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > s XmlUtils還包括：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ **</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*給一個字符串包含WML的$（key1），）$（key2，返回一個合適的</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*對象 .* /</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">Object unmarshallFromTemplate(String wmlTemplateString, </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >的java.util.HashMap &lt;String,字符串映射） </span></span></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <br clear="all">
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >見 UnmarshallFromTemplate例如，經營上一個包含：</span></span></p>
+<div class="notranslate">
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="font-family: Consolas;font-size: 12.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">&lt;w:p&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;w:t&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">
+                    <span style="white-space:pre-wrap;">My favourite colour is </span>
+                </span>
+                <span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 10.0pt;">${colour}</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">.</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">&lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:t&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:p&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   <span style="white-space:pre-wrap;">&lt;w:p </span>
+                </span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;w:p&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;w:t&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">
+                    <span style="white-space:pre-wrap;">My favourite ice cream is </span>
+                </span>
+                <span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 10.0pt;">${icecream}</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">.</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">&lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:t&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   </span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:r&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">   &lt;</span>
+                <span style="color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/</span>
+                <span style="color: #800000;font-family: Consolas;font-size: 10.0pt;">w:p&gt;</span>
+            </p>
+</div>
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >提示和技巧</span></span></span>
+            </p>
+
+            <p class="Heading2 Normal DocDefaults "><span  ><span  >與平面的OPC XML格式 </span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >當你想看看裡面一個 docx文檔，它是一個有點痛苦要解壓縮它要看看有關部分。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >有2種方式解決這個問題。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >一個是 </span></span></span>
+                <a class="notranslate" href="http://www.codeplex.com/PackageExplorer">
+                    <span style="color: #0000FF;text-decoration: none;">http://www.codeplex.com/PackageExplorer</span>
+                </a><span  ><span  >，可以解壓縮的docx，和漂亮的打印部分。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >另一種方法是保存為 Word的docx XML文檔（*. xml的）。</span> <span  >這將產生一個 XML文件，您可以打開一個 XML編輯器，如XPontus。</span></span></p>
+
+            <p class="Normal DocDefaults "><span class="notranslate">docx4j</span><span  ><span  > 可以打開單位的OPC XML文件，並保存它們。</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >要打開一個平面的OPC XML文件：</span></span></p>
+
+            <p class="Command NormalWeb Normal DocDefaults notranslate" style="position: relative; margin-left: 0in;">   <span style="white-space:pre-wrap;">WordprocessingMLPackage wordMLPackage = </span>
+                <br clear="all">      WordprocessingMLPackage.load(new java.io.File(inputfilepath));</p>
+
+            <p class="Normal DocDefaults "><span  ><span  >為了保存為扁平的OPC的XML：</span></span></p>
+
+            <p class="Command NormalWeb Normal DocDefaults notranslate" style="position: relative; margin-left: 0in;">   wordMLPackage.save(new java.io.File(outputfilepath));</p>
+
+            <p class="Normal DocDefaults "><span  ><span  >在這兩種情況下，平OPC的代碼將被用於當且僅當文件擴展名是。xml的。</span></span></p>
+
+            <p class="Heading2 Normal DocDefaults ">
+
+            </p><p class="Heading2 Normal DocDefaults "><span  ><span  >記住 UnmarshalFromString</span></span></p>
+
+            <p class="Normal DocDefaults "><span  ><span  >當你操縱的docx文件，它是很有用的解組片段的XML（如字符串，表示一個段落要插入到文檔）。</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >例如，給定：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate" style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">
+                    <span style="white-space:pre-wrap;">w:p </span>
+                </span>
+                <span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;"> </span>
+                <span class="xmlmarkupattributename DefaultParagraphFont " style="color: #FF0000;font-family: Consolas;font-size: 8.5pt;">xmlns:w</span>
+                <span class="xmlmarkupattributevalue DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">="http://schemas.openxmlformats.org/wordprocessingml/2006/main"</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">        </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">Hello world</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:t</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 8.5pt;">    </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:r</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 8.5pt;">
+                    <br clear="all">
+                </span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&lt;/</span>
+                <span class="xmlmarkuptagname DefaultParagraphFont " style="color: #A31515;font-family: Consolas;font-size: 8.5pt;">w:p</span>
+                <span class="xmlmarkupbracket DefaultParagraphFont " style="color: #0000FF;font-family: Consolas;font-size: 8.5pt;">&gt;</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >您可以簡單：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ /假設字符串的XML包含XML以上</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.P  para = XmlUtils.unmarshalString(xml);</span>
+            </p>
+
+            <p class="Heading2 Normal DocDefaults "><span  ><span  >克隆</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >要克隆一個 JAXB對象，使用下列方法之一在XmlUtils：</span></span></p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >/ **克隆這個 JAXB對象，使用默認 JAXBContext。</span> <span  >* / </span></span></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">&lt;T&gt; T deepCopy(T value) </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ **克隆這個 JAXB對象 * /</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">&lt;T&gt; T deepCopy(T value, JAXBContext jc) </span>
+                </span>
+            </p>
+
+            <p class="Heading2 Normal DocDefaults notranslate">
+                <span style="font-family: Consolas;">@XmlRootElement</span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >最常用的對象有一個 </span></span></span>
+                <span style="font-weight: bold;font-family: Consolas;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >@ XmlRootElement </span></span></span>
+                </span>
+                <span style="white-space:pre-wrap;"><span  ><span  >註釋，這樣他們就可以被整理和unmarshalled。  </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="white-space:pre-wrap;"><span  ><span  >在某些情況下，您可能會發現這個註釋丟失。  </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="white-space:pre-wrap;"><span  ><span  >如果您不能添加到JAXB註釋的源代碼，另一種是 </span></span></span>
+                <span style="text-decoration: none;"><span  ><span  >馬歇爾</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 它使用代碼是明確的擔憂由此產生的QName。</span> <span  >例如，XmlUtils包含：</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >/ **元帥到W3C的文件，供對象</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F5FBF;font-family: Consolas;font-size: 9.0pt;"><span  ><span  >*缺少@ XmlRootElement註解。</span> <span  >* /</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">org.w3c.dom.Document marshaltoW3CDomDocument(Object o, JAXBContext jc,</span>
+                <span style="font-family: Consolas;font-size: 9.0pt;">
+                    <br clear="all">
+                </span>
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">String uri, String local, Class declaredType) </span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >你可以使用這像這樣：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">CTFootnotes footnotes = </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <br clear="all">
+                </span>
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement().getValue();</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">CTFtnEdn ftn = footnotes.getFootnote().get(1);</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #3F7F5F;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"><span  ><span  >/ /沒有 @ XmlRootElement上CTFtnEdn，所以.. </span></span></span>
+                </span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">Document d = XmlUtils.marshaltoW3CDomDocument( ftn,</span>
+            </p>
+
+            <p class="Normal DocDefaults notranslate" style="space-after: 0in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">Context.jc, Namespaces.NS_WORD12, </span>
+                </span>
+                <span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">"footnote"</span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">,  CTFtnEdn.</span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">class </span>
+                </span>
+                <span style="color: #000000;font-family: Consolas;font-size: 9.0pt;">);</span>
+            </p>
+
+            <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span  ><span  >如果您需要解組，您可以使用：</span></span></p>
+
+            <p class="Normal DocDefaults notranslate" style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">
+                <span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;"></span>
+                </span>
+                <span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;">
+                    <span style="white-space:pre-wrap;">public static </span>
+                </span>
+                <span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 9.0pt;">Object unmarshalString(String str, JAXBContext jc, Class declaredType)</span>
+            </p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >該 </span></span><span class="notranslate">docx4j</span><span  ><span  > 論壇</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >自由的社會中提供的支持 </span></span><span class="notranslate">docx4j</span><span  ><span  > 座談會上，在 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/forums/">
+                    <span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/forums/</span>
+                </a>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >這種討論通常是在英國。</span> <span  >如果你可以自願到中度一個論壇，你的語言，請讓我們知道。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >其他支持選項</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >如果免費提供的社區支援 </span></span><span class="notranslate">docx4j</span><span  ><span  > 論壇不能滿足您的需求，或者您只是想外包一些編碼，歡迎您購買節目，諮詢和優先支持 </span></span></span>
+                <a class="notranslate" href="http://www.plutext.com/m/index.php/docx4j-support.html">
+                    <span class="Hyperlink DefaultParagraphFont " style="font-family: Trebuchet MS;font-size: 10.0pt;">http://www.plutext.com/m/index.php/docx4j-support.html</span>
+                </a>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >通過購買服務的Plutext，你支持繼續發展 </span></span><span class="notranslate">docx4j</span><span  ><span  >。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >路線圖</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="font-weight: bold;"><span  ><span  >2010字的支持。</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 支持新的XML元素/模式介紹與Word 2010，並兼容機制。</span> <span  >這是主要的理由為3.0標籤。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="font-weight: bold;"><span  ><span  >網頁出口商：</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 擺脫舊的，規範的NG2的。</span> <span  >這樣做是為了消除任何'是我應該用'混亂，並集中精力/訣竅。 </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="font-weight: bold;"><span  ><span  >PDF格式出口商：</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 規範viaXSLFO，並擺脫viaIText和viaHTML。</span> <span  >由於使用HTML，這個想法是消除任何'我應該用'混亂，並集中精力/訣竅。 </span></span><span class="notranslate">docx4j</span><span  ><span  > 唯一可能產生的XSL的，並依靠維克多的用戶有實際生產或同等學歷的PDF。</span> <span  >這將減少依賴性，使 </span></span><span class="notranslate">docx4j</span><span  ><span  > 打火機。</span> <span  >這樣做的目的是要消除的fop罐（280萬），PDF格式渲染罐（160萬），iText的罐（1.1米），且核心渲染器（100萬）。</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="font-weight: bold;"><span  ><span  >字體處理：</span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  > 刪除潘糖的東西，所以我們並不需要一個定制的維克多罐子。 </span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="font-weight: bold;"><span  ><span  >佈局模型/中級格式</span></span></span><span  ><span  >： </span></span><span class="notranslate">docx4j</span><span  ><span  > 包含DocumentModel，可以進一步發展，以支持：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >搜索/替換</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >估算網頁內容</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span><span  ><span  >樣式，關閉部分，列出了</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="font-weight: bold;"><span  ><span  >插入OLE對象</span></span></span><span  ><span  >：這樣的電子表格，PDF文件等可以嵌入。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >版本說明</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >這個文件是寫在Word 2007中，使用：</span></span></p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >漂亮的打印使用的XML </span></span></span>
+                <a class="notranslate" href="http://www.softlion.com/webTools/XmlPrettyPrint/default.aspx">
+                    <span style="color: #0000FF;text-decoration: none;">http://www.softlion.com/webTools/XmlPrettyPrint/default.aspx</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  > 或包資源管理器</span></span></span>
+            </p>
+
+            <p class="ListParagraph Normal DocDefaults ">
+                <span style="position: relative; margin-left: 0.5in;font-family: Symbol;"><span  ><span  >* </span></span></span>
+                <span style="white-space:pre-wrap;"><span  ><span  >Java源代碼格式化使用 </span></span></span>
+                <a class="notranslate" href="http://www.java2html.de">
+                    <span class="Hyperlink DefaultParagraphFont ">http://www.java2html.de</span>
+                </a>
+            </p>
+
+            <p class="Normal DocDefaults "><span  ><span  >PDF和HTML版本的使用產生 </span></span><span class="notranslate">docx4j</span><span  ><span  > （PDF格式和通過的XSL的維克多）。</span></span></p>
+
+            <p class="Heading1 Normal DocDefaults ">
+                <span style="font-family: Calibri;"><span  ><span  >聯繫 Plutext</span></span></span>
+            </p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >除非你付出的支持，我怎麼類型一般問題應直接向被張貼 </span></span></span>
+                <a class="notranslate" href="http://dev.plutext.org/forums/">
+                    <span class="Hyperlink DefaultParagraphFont "><span class="notranslate">docx4j</span> forum</span>
+                </a><span  ><span  >。</span> <span  >Plutext可以張貼到論壇的任何問題，它應該通過電子郵件接收已指示了座談會。</span></span></p>
+
+            <p class="Normal DocDefaults ">
+                <span style="white-space:pre-wrap;"><span  ><span  >Plutext可以在任何聯繫 </span></span></span>
+                <a class="notranslate" href="mailto:jason@plutext.org">
+                    <span class="Hyperlink DefaultParagraphFont ">jason@plutext.org</span>
+                </a>
+                <span style="white-space:pre-wrap;"><span  ><span  >或 </span></span></span>
+                <a class="notranslate" href="mailto:jharrop@plutext.com">
+                    <span class="Hyperlink DefaultParagraphFont ">jharrop@plutext.com</span>
+                </a>
+            </p>
+
+            <p class="Normal DocDefaults ">
+
+            </p><div class="footnotes">
+
+                <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;">
+
+                </p><p class="FootnoteText Normal DocDefaults ">
+                    <span class="FootnoteReference DefaultParagraphFont ">
+                        <span style="vertical-align: top; font-size: xx-small">
+                            <a name="fn1">
+                                </a><a class="notranslate" href="#fs1">1</a>
+                            
+                        </span>
+                    </span>
+                    <span style="white-space:pre-wrap;"></span>
+                        <span class="Hyperlink DefaultParagraphFont notranslate">http://forums.java.net/jive/thread.jspa?threadID=411</span>
+                </p>
+
+                <p class="FootnoteText Normal DocDefaults ">
+                    <span class="FootnoteReference DefaultParagraphFont ">
+                        <span style="vertical-align: top; font-size: xx-small">
+                            <a name="fn2">
+                                </a><a href="#fs2"><span  ><span  >2</span></span></a>
+                            
+                        </span>
+                    </span>
+                    <span style="white-space:pre-wrap;"><span  ><span  > ，如果你得到錯誤'的訪問限制：該類型</span></span></span>
+                    <span class="apple-converted-space DefaultParagraphFont "> </span>
+                    <span class="underline DefaultParagraphFont ">
+                        <span style="white-space:pre-wrap;"><span  ><span  >是由於無法訪問所需的庫rt.jar中限制'（可能使用一些組合的Eclipse 3.4和/或JDK 6更新10？），你需要進入生成路徑工程，圖書館標籤，選擇JRE的系統庫，並添加一個訪問規則，“無障礙，**”。 </span></span></span>
+                    </span>
+                </p>
+            </div>
+
+</body></html>
