@@ -383,6 +383,7 @@ public class P implements Child
     @XmlType(name = "", propOrder = {
         "paragraphContent"
     })
+    @XmlRootElement(name = "hyperlink")    
     public static class Hyperlink
         implements Child
     {
