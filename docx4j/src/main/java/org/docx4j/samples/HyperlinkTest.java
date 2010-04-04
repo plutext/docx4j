@@ -21,10 +21,12 @@
 
 package org.docx4j.samples;
 
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
 
 
@@ -86,8 +88,6 @@ public class HyperlinkTest {
 	
 	public static Hyperlink createHyperlink(WordprocessingMLPackage wordMLPackage, String url) {
 		
-		// TODO - regenerate JAXB so that CTHyperlink is just called Hyperlink
-		
 		try {
 
 			// We need to add a relationship to word/_rels/document.xml.rels
@@ -116,8 +116,8 @@ public class HyperlinkTest {
             "</w:r>" +
             "</w:hyperlink>";
 
+//			return (Hyperlink)XmlUtils.unmarshalString(hpl, Context.jc, P.Hyperlink.class);
 			return (Hyperlink)XmlUtils.unmarshalString(hpl);
-			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
