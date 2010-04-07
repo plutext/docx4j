@@ -486,7 +486,7 @@
   
   	<xsl:variable name="wpinline" select="."/>
   	
-   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE20( 
+   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createXslFoImgE20( 
    			$wmlPackage, string($imageDirPath),
   			$wpinline)" />
     
@@ -500,7 +500,7 @@
 
 	  	<xsl:variable name="wpict" select="."/>
 		  	
-		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPicture.createXslFoImgE10( 
+		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10( 
 		  	$wmlPackage, string($imageDirPath),
   			$wpict)" />
 		</xsl:when>
