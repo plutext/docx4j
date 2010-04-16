@@ -120,6 +120,9 @@ public class Tree<T> {
     		return list;
     	} else {
     		Node<T> parent = n.getParent();
+    		if (parent==null) { // no basedOn    			
+    			return list; 
+    		}
 	        climb(parent, list);
     	}
         return list;

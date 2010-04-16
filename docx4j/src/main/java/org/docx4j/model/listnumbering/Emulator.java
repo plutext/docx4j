@@ -176,6 +176,10 @@ public class Emulator {
 		        	return null;
 	    		}
 	    		
+	    		if (numPr.getNumId()==null) {
+	    			return null; // Is this the right thing to do? Check!	    			
+	    		}
+	    		
 	    		numId = numPr.getNumId().getVal().toString();
 	    		log.info("numId=" + numId + " (from style)" );
 	        	//System.out.println("numId=" + numId + " (from style)" );
