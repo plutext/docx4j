@@ -30,6 +30,7 @@ import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.images.AbstractWordXmlPicture.Dimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.relationships.Relationship;
 import org.w3c.dom.Document;
@@ -413,9 +414,18 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 		if (rel.getTargetMode() == null
 				|| rel.getTargetMode().equals("Internal")) {
 	
-			BinaryPartAbstractImage part = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
+			Part p = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
 					.getRelationshipsPart().getPart(rel);
 			
+			BinaryPartAbstractImage part = null;
+			if (p instanceof BinaryPartAbstractImage) {
+				part= (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
+						.getRelationshipsPart().getPart(rel);
+			} else {
+				// Could be a MetafileEmfPart or WMF
+				log.error("TODO: Add support for " + p.getClass().getName() );
+					// TODO
+			}
 			String uri = handlePart(imageDirPath, this, part);
 			// Scale it?  Shouldn't be necessary, since Word should
 			// be providing the height/width

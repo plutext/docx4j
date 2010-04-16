@@ -375,6 +375,7 @@
   </xsl:template>
 
 <xsl:template match="w:tblPr"/>  
+<xsl:template match="w:tblPrEx"/>  
 <xsl:template match="w:tblGrid"/>  
 <xsl:template match="w:tr|w:tc">
 	<xsl:copy>
@@ -388,6 +389,7 @@
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  other stuff  +++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
 
 	<xsl:template match="w:proofErr" />
 
@@ -469,6 +471,8 @@
 <xsl:template match="w:smartTag">
     <xsl:apply-templates />
 </xsl:template>
+
+	<xsl:template match="w:smartTagPr" />
 
 <!-- 
   
