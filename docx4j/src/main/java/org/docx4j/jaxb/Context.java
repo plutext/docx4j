@@ -66,7 +66,10 @@ public class Context {
 			//log.info("\n\nClassloader: " + classLoader.toString() );			
 			
 			log.info("loading Context jc");			
-			jc = JAXBContext.newInstance("org.docx4j.wml:org.docx4j.dml:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.math",classLoader );
+			jc = JAXBContext.newInstance("org.docx4j.wml:" +
+					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:" +
+					"org.docx4j.vml:org.docx4j.vml.officedrawing:" +
+					"org.docx4j.math",classLoader );
 			log.info("loaded " + jc.getClass().getName() + " .. loading others ..");
 			
 			jcThemePart = jc; //JAXBContext.newInstance("org.docx4j.dml",classLoader );

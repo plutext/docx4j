@@ -130,6 +130,22 @@ public class Namespaces {
 	public final static String ACTIVEX_XML_OBJECT = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/control"; 
 	
+	// "/word/diagrams/data1.xml"
+	public final static String DRAWINGML_DIAGRAM_DATA =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramData";
+
+	// "/word/diagrams/layout1.xml"
+	public final static String DRAWINGML_DIAGRAM_LAYOUT =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramLayout";
+	
+	// "/word/diagrams/colors1.xml"
+	public final static String DRAWINGML_DIAGRAM_COLORS =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramColors";
+	
+	// "/word/diagrams/quickStyle1.xml"
+	public final static String DRAWINGML_DIAGRAM_STYLE =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramQuickStyle";
+	
 	
 	// Target="ppt/presentation.xml"
 	public final static String PRESENTATIONML_MAIN = 	

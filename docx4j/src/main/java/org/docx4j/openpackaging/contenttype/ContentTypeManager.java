@@ -344,6 +344,16 @@ public class ContentTypeManager  {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
+		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
+			return JaxbPmlPart.newPartForContentType(contentType, partName);
+		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_COLORS)) {
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramColorsPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DATA)) {
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT)) {
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_STYLE)) {
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart(new PartName(partName));			
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			// Simple minded detection of XML content.
@@ -351,9 +361,7 @@ public class ContentTypeManager  {
 			// will catch the error and load it as a binary part instead.
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");
-			return CreateDefaultPartObject(partName );
-		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
-			return JaxbPmlPart.newPartForContentType(contentType, partName);
+			return CreateDefaultXmlPartObject(partName );
 		} else {
 			
 			log.error("No subclass found for " + partName + "; defaulting to binary");
@@ -363,7 +371,7 @@ public class ContentTypeManager  {
 
 	}
 
-	public Part CreateDefaultPartObject(String partName)
+	public Part CreateDefaultXmlPartObject(String partName)
 			throws InvalidFormatException {
 		return new DefaultXmlPart(new PartName(partName));
 	}
