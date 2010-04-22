@@ -143,7 +143,22 @@ public class ContentTypes {
 	public final static String WORDPROCESSINGML_WEBSETTINGS =
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.webSettings+xml";
 
+	// "/word/diagrams/data1.xml"
+	public final static String DRAWINGML_DIAGRAM_DATA =
+		"application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml";
 
+	// "/word/diagrams/layout1.xml"
+	public final static String DRAWINGML_DIAGRAM_LAYOUT =
+		"application/vnd.openxmlformats-officedocument.drawingml.diagramLayout+xml";
+	
+	// "/word/diagrams/colors1.xml"
+	public final static String DRAWINGML_DIAGRAM_COLORS =
+		"application/vnd.openxmlformats-officedocument.drawingml.diagramColors+xml";
+	
+	// "/word/diagrams/quickStyle1.xml"
+	public final static String DRAWINGML_DIAGRAM_STYLE =
+		"application/vnd.openxmlformats-officedocument.drawingml.diagramStyle+xml";
+			
     // /ppt/presentation.xml
 	public final static String PRESENTATIONML_MAIN = 
 		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";
