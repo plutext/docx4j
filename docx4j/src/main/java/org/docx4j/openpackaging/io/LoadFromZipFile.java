@@ -485,7 +485,20 @@ public class LoadFromZipFile extends Load {
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
 					
-					((XmlPart)part).setDocument(is);
+					try {
+						((XmlPart)part).setDocument(is);
+					} catch (Docx4JException d) {
+						// This isn't an XML part after all,
+						// even though ContentTypeManager detected it as such
+						// So get it as a binary part
+						part = getBinaryPart(zf, ctm, resolvedPartUri);
+						if (conserveMemory) {
+							((BinaryPart)part).setBinaryDataRef(
+									zf.getName(), resolvedPartUri);
+						} else {
+							((BinaryPart)part).setBinaryData(is);
+						}
+					}
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
