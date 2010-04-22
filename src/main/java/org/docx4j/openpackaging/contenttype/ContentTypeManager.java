@@ -344,7 +344,11 @@ public class ContentTypeManager  {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.APPLICATION_XML)) {
+		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
+				|| partName.endsWith(".xml")) {
+			// Simple minded detection of XML content.
+			// If it turns out not to be XML, the zip loader
+			// will catch the error and load it as a binary part instead.
 			log.warn("DefaultPart used for part '" + partName 
 					+ "' of content type '" + contentType + "'");
 			return CreateDefaultPartObject(partName );
