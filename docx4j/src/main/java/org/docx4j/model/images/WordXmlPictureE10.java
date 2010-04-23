@@ -19,6 +19,7 @@
  */
 package org.docx4j.model.images;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -103,7 +104,9 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	}
     	
     }
+    
 	CTShape shape=null;
+	
 	private void findShape() {
     	if (pict.getAnyAndAny()!=null) {
     		for (Object o : pict.getAnyAndAny() ) {
@@ -128,6 +131,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	}
 
 	CTImageData imageData = null;
+	
 	private void findImageData() {
 		
     	if (shape.getAny()==null) {
@@ -140,7 +144,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     					imageData = (CTImageData)jb.getValue();
     					break;
     				} else {
-	    				log.info("Skipping " +
+	    				log.debug("Skipping " +
 	    						XmlUtils.JAXBElementDebug((JAXBElement)o)
 	    						);
     				}
@@ -177,10 +181,15 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		return null;
     	}
 
-        String imgRelId = converter.imageData.getId();
+        String imgRelId = converter.imageData.getOtherAttributes().get(
+        		new QName("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));   
+        	//NB r:id is not given by getId()!
         if (imgRelId!=null && !imgRelId.equals("")) {
+        	log.debug("Handling " + imgRelId);
         	converter.handleImageRel(imgRelId, imageDirPath);
-        }        
+        } else {
+        	log.error("No relId?!");
+        }
         return converter;
     }  
     
@@ -228,7 +237,11 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
         		 imageDirPath,
         		 wpict);
     	
+    	log.debug("imageDirPath: " + imageDirPath);
+    	
     	if (converter==null) {
+    		
+    		log.error("WordXmlPictureE10 object was null!");
     		
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             Document d;
