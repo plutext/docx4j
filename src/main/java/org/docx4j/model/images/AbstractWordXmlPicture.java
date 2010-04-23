@@ -197,6 +197,8 @@ public abstract class AbstractWordXmlPicture {
             if (src !=null && !src.equals(""))
             {
             	imageElement.setAttribute("src", src);
+            } else {
+            	log.error("@src missing!");
             }
 
 //            if (id !=null && !id.equals("") )
