@@ -65,6 +65,7 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
+            <fileset dir="src/pptx4j/java" excludes="**/*.launch, **/*.java"/>
         </copy>
     </target>
 	
