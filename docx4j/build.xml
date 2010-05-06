@@ -104,13 +104,15 @@
               -->
         <sleep seconds="2"/> <!--  wait a little, so our modifications times are newer -->
         <touch><fileset dir="${src.main.java.dir}" includes="**/package-info.java" /></touch>        
+        <touch><fileset dir="src/pptx4j/java" includes="**/package-info.java" /></touch>        
         <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
-        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}"
-        	srcdir="${src.main.java.dir}">
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="${src.main.java.dir}"/>
+            <src path="src/pptx4j/java"/>
         	<include name="**/package-info.java"/>
             <classpath refid="docx4j.classpath"/>
         </javac>
-        
+
         
     </target>
  
