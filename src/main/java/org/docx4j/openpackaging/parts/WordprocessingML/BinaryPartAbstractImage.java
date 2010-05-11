@@ -246,7 +246,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			
 			if ( imagePreloaderFound &&
 					(info.getMimeType().equals(ContentTypes.IMAGE_TIFF)
-					|| info.getMimeType().equals(ContentTypes.IMAGE_EMF) 
+					|| info.getMimeType().equals(ContentTypes.IMAGE_EMF2) // ImageInfo 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_WMF) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_PNG) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_JPEG) 
@@ -575,7 +575,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
 	public static void main(String[] args) throws Exception {
 		
-		String uri = "/tmp/img4448.img";
+		//String uri = System.getProperty("user.dir") + "/sample-docs/metafile-samples/gradient.emf";
+		String uri = System.getProperty("user.dir") + "/sample-docs/metafile-samples/freehand_picture_saveas.wmf";
+		System.out.println(uri);
+		
+		//String uri = "/tmp/img4448.img";
 		
 		ImageInfo ii = getImageInfo(uri);
 		
