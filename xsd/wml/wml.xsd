@@ -3287,6 +3287,34 @@ PRINCIPLES:
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
+	<!-- The next 2 types created, so CT_MarkupRange is only
+	     used by bookmarkEnd, so it can have @XmlRootElement -->
+	<xsd:complexType name="CT_MoveFromRangeEnd">
+		<xsd:complexContent>
+			<xsd:extension base="CT_Markup">
+				<xsd:attribute name="displacedByCustomXml"
+					type="ST_DisplacedByCustomXml" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>Annotation Marker Relocated For Custom XML
+							Markup</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="CT_MoveToRangeEnd">
+		<xsd:complexContent>
+			<xsd:extension base="CT_Markup">
+				<xsd:attribute name="displacedByCustomXml"
+					type="ST_DisplacedByCustomXml" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>Annotation Marker Relocated For Custom XML
+							Markup</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
 	<xsd:complexType name="CT_BookmarkRange">
 		<xsd:complexContent>
 			<xsd:extension base="CT_MarkupRange">
@@ -3604,7 +3632,7 @@ PRINCIPLES:
 						Start</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="moveFromRangeEnd" type="CT_MarkupRange">
+			<xsd:element name="moveFromRangeEnd" type="CT_MoveFromRangeEnd">
 				<xsd:annotation>
 					<xsd:documentation>Move Source Location Container -
 						End</xsd:documentation>
@@ -3616,7 +3644,7 @@ PRINCIPLES:
 						Start</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="moveToRangeEnd" type="CT_MarkupRange">
+			<xsd:element name="moveToRangeEnd" type="CT_MoveToRangeEnd">
 				<xsd:annotation>
 					<xsd:documentation>Move Destination Location Container -
 						End</xsd:documentation>

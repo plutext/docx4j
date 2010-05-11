@@ -32,7 +32,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_MarkupRange complex type.
+ * <p>Java class for CT_MarkupRange complex type, which represents bookmarkEnd.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
@@ -50,8 +50,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_MarkupRange")
-// We don't have @XmlRootElement here, because in addition to bookmarkEnd, there are elements
-// which become this.
+@XmlRootElement(name = "bookmarkEnd")
 public class CTMarkupRange
     extends CTMarkup
     implements Child
