@@ -39,7 +39,9 @@ public abstract class AbstractWordXmlPicture {
 	
 	WordprocessingMLPackage wmlPackage;
     Dimensions dimensions;
-    private MetafilePart metaFile;
+    
+    // TODO: partially implemented
+    private BinaryPart metaFile;
 	
 	protected final static String IMAGE_URL = "http://docxwave.appspot.com/image?";
 	
@@ -72,7 +74,8 @@ public abstract class AbstractWordXmlPicture {
 				SvgDocument svgdoc = ((MetafileWmfPart)picture.metaFile).toSVG();
 				d = svgdoc.getDomDocument();
 				
-			} else if (picture.metaFile instanceof MetafileEmfPart) {
+			} 
+			else if (picture.metaFile instanceof MetafileEmfPart) {
 				
 	        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 				 d = factory.newDocumentBuilder().newDocument();

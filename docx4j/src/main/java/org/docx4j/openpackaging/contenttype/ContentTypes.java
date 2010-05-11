@@ -233,6 +233,7 @@ public class ContentTypes {
 	// Images format supported by WordprocessingML. See tc45-2006-334.pdf p.146
 
 	public static final String IMAGE_EMF = "image/x-emf";
+	public static final String IMAGE_EMF2 = "image/emf";  // as per org.apache.xmlgraphics.image.loader.ImageInfo
 	public static final String EXTENSION_EMF = "emf";
 	
 	public static final String IMAGE_WMF = "image/x-wmf";
