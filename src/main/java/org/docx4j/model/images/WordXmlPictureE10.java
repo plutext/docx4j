@@ -302,7 +302,9 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	private void handleImageRel(String imgRelId, String imageDirPath, Part sourcePart) {
 
 		setID(imgRelId);            			
-    	Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
+
+		//Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
+		Relationship rel = sourcePart.getRelationshipsPart().getRelationshipByID(imgRelId);
     	
         // if the relationship isn't found, produce a warning
         //if (String.IsNullOrEmpty(picture.Src))
