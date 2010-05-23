@@ -19,8 +19,11 @@
  */
 package org.docx4j.model.images;
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.pdf.viaXSLFO.PartTracker;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTPositiveSize2D;
@@ -28,6 +31,7 @@ import org.docx4j.dml.picture.Pic;
 import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.images.AbstractWordXmlPicture.Dimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -213,7 +217,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      */
     public static WordXmlPictureE20 createWordXmlPictureFromE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
-    		NodeIterator anchorOrInline) {
+    		NodeIterator anchorOrInline,
+    		Part sourcePart) {
 
     	WordXmlPictureE20 converter = new WordXmlPictureE20(wmlPackage, anchorOrInline);
     	
@@ -237,9 +242,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	
     	String imgRelId = blip.getEmbed();    	
     	if (imgRelId!=null) {
-    		converter.handleImageRel(imgRelId, imageDirPath);
+    		converter.handleImageRel(imgRelId, imageDirPath, sourcePart);
     	} else if (blip.getLink()!=null) {
-    		converter.handleImageRel(blip.getLink(), imageDirPath);
+    		converter.handleImageRel(blip.getLink(), imageDirPath, sourcePart);
     	} else {
     		log.error("not linked or embedded?!");
     	}
@@ -292,7 +297,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     		NodeIterator wpInline) {
 
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
-        		 imageDirPath, wpInline);
+        		 imageDirPath, wpInline, wmlPackage.getMainDocumentPart() );
     	
     	return getHtmlDocumentFragment(converter);
     }
@@ -311,10 +316,13 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      */
     public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
     		String imageDirPath,
-    		NodeIterator wpInline) {
+    		NodeIterator wpInline, 
+    		HashMap<String, TransformState> modelStates) {
 
+    	Part sourcePart = PartTracker.getPartTrackerState(modelStates);
+    	
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
-        		 imageDirPath, wpInline);
+        		 imageDirPath, wpInline, sourcePart);
     	
         Document d = converter.createXslFoImageElement();
 
@@ -406,7 +414,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     }
     
     
-	private void handleImageRel(String imgRelId, String imageDirPath) {
+	private void handleImageRel(String imgRelId, String imageDirPath, Part sourcePart) {
 		
 		setID(imgRelId);            	
 		Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
@@ -414,12 +422,16 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 		if (rel.getTargetMode() == null
 				|| rel.getTargetMode().equals("Internal")) {
 	
-			Part p = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
-					.getRelationshipsPart().getPart(rel);
+//			Part p = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
+//					.getRelationshipsPart().getPart(rel);
+			Part p = (BinaryPartAbstractImage)sourcePart
+						.getRelationshipsPart().getPart(rel);
 			
 			BinaryPartAbstractImage part = null;
 			if (p instanceof BinaryPartAbstractImage) {
-				part= (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
+//				part= (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
+//						.getRelationshipsPart().getPart(rel);
+				part= (BinaryPartAbstractImage)sourcePart
 						.getRelationshipsPart().getPart(rel);
 			} else {
 				// Could be a MetafileEmfPart or WMF

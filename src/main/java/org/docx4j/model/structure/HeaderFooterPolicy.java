@@ -22,8 +22,13 @@ limitations under the License.
 ==================================================================== */
 
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.pdf.viaXSLFO.Conversion;
+import org.docx4j.convert.out.pdf.viaXSLFO.PartTracker;
+import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -301,4 +306,62 @@ public class HeaderFooterPolicy {
 
 	}
 
+	public static void inFirstHeader(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getFirstHeader(),
+				modelStates);
+		// TODO: store current section in model states, and use it to get
+		// appropriate header/footer
+	}
+	
+	public static void inOddHeader(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getOddHeader(),
+				modelStates);
+	}
+
+	public static void inEvenHeader(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getEvenHeader(),
+				modelStates);
+	}
+
+	public static void inDefaultHeader(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getDefaultHeader(),
+				modelStates);
+	}
+
+	public static void inFirstFooter(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getFirstFooter(),
+				modelStates);
+	}
+
+	public static void inOddFooter(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getOddFooter(),
+				modelStates);
+	}
+
+	public static void inEvenFooter(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getEvenFooter(),
+				modelStates);
+	}
+
+	public static void inDefaultFooter(WordprocessingMLPackage wordmlPackage,
+			HashMap<String, TransformState> modelStates) {
+		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(0)
+				.getHeaderFooterPolicy().getDefaultFooter(),
+				modelStates);
+	}
+	
 }

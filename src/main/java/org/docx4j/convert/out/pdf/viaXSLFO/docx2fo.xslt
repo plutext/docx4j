@@ -265,6 +265,10 @@
 				<!--  First Page Header -->
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeader($wmlPackage)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inFirstHeader($wmlPackage, $modelStates)" />
+					
 					<fo:static-content
 						flow-name="xsl-region-before-firstpage">
 
@@ -278,6 +282,9 @@
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstFooter($wmlPackage)">
 
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inFirstFooter($wmlPackage, $modelStates)" />
+
 					<fo:static-content
 						flow-name="xsl-region-after-firstpage">
 						<xsl:apply-templates
@@ -286,6 +293,10 @@
 				</xsl:if>
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeader($wmlPackage)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inEvenHeader($wmlPackage, $modelStates)" />
+					
 					<fo:static-content
 						flow-name="xsl-region-before-evenpage">
 						<xsl:apply-templates
@@ -294,6 +305,10 @@
 				</xsl:if>
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenFooter($wmlPackage)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inEvenFooter($wmlPackage, $modelStates)" />
+					
 					<fo:static-content
 						flow-name="xsl-region-after-evenpage">
 						<xsl:apply-templates
@@ -303,6 +318,10 @@
 <!-- 				
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeader($wmlPackage)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inOddHeader($wmlPackage, $modelStates)" />
+					
 					<fo:static-content
 						flow-name="xsl-region-before-default">
 						<xsl:apply-templates
@@ -311,6 +330,10 @@
 				</xsl:if>				
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddFooter($wmlPackage)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inOddFooter($wmlPackage, $modelStates)" />
+					
 					<fo:static-content
 						flow-name="xsl-region-after-default">
 						<xsl:apply-templates
@@ -320,6 +343,10 @@
  -->				
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inDefaultHeader($wmlPackage, $modelStates)" />
+					
 					<fo:static-content
 						flow-name="xsl-region-before-default">
 						<xsl:apply-templates
@@ -328,6 +355,10 @@
 				</xsl:if>
 				<xsl:if
 					test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.inDefaultFooter($wmlPackage, $modelStates)" />
+					
 					<fo:static-content
 						flow-name="xsl-region-after-default">
 						<xsl:apply-templates
@@ -360,6 +391,9 @@
 					in this case there is only one target: xsl-region-body
 				-->
 				<fo:flow flow-name="xsl-region-body">
+
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.convert.out.pdf.viaXSLFO.inMainDocumentPart($wmlPackage, $modelStates)" />
 
 					<xsl:apply-templates select="w:body/*" />
 
@@ -488,7 +522,7 @@
   	
    	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createXslFoImgE20( 
    			$wmlPackage, string($imageDirPath),
-  			$wpinline)" />
+  			$wpinline, $modelStates)" />
     
   </xsl:template>
   
@@ -502,7 +536,7 @@
 		  	
 		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10( 
 		  	$wmlPackage, string($imageDirPath),
-  			$wpict)" />
+  			$wpict, $modelStates)" />
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>

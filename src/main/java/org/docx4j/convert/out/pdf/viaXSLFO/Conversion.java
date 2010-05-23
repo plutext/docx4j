@@ -77,6 +77,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 	protected static Logger log = Logger.getLogger(Conversion.class);	
 	
+	public static final String PART_TRACKER = "partTracker";
+	
 	public Conversion(WordprocessingMLPackage wordMLPackage) {
 		super(wordMLPackage);
 	}
@@ -285,6 +287,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	      	
 			modelStates.put("footnoteNumber", new FootnoteState() );
 			modelStates.put("endnoteNumber", new EndnoteState() );
+			modelStates.put(PART_TRACKER, new PartTracker() );
 			
 	      	Converter.getInstance().start(wordMLPackage);
 	      	  
