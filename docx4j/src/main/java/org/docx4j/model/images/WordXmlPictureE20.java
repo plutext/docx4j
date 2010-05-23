@@ -417,7 +417,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	private void handleImageRel(String imgRelId, String imageDirPath, Part sourcePart) {
 		
 		setID(imgRelId);            	
-		Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
+		//Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
+		Relationship rel = sourcePart.getRelationshipsPart().getRelationshipByID(imgRelId);
 		
 		if (rel.getTargetMode() == null
 				|| rel.getTargetMode().equals("Internal")) {

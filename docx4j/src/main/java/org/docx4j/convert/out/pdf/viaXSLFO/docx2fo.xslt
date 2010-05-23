@@ -393,7 +393,7 @@
 				<fo:flow flow-name="xsl-region-body">
 
 					<xsl:variable name="partname" 
-						select="java:org.docx4j.convert.out.pdf.viaXSLFO.inMainDocumentPart($wmlPackage, $modelStates)" />
+						select="java:org.docx4j.convert.out.pdf.viaXSLFO.PartTracker.inMainDocumentPart($wmlPackage, $modelStates)" />
 
 					<xsl:apply-templates select="w:body/*" />
 
