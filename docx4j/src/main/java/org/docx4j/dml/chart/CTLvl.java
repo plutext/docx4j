@@ -48,7 +48,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Lvl", propOrder = {
+@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/chart", name = "CT_Lvl", propOrder = {
     "pt"
 })
 public class CTLvl {

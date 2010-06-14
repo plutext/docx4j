@@ -48,7 +48,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Rules", propOrder = {
+@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram", name = "CT_Rules", propOrder = {
     "rule"
 })
 public class CTRules {

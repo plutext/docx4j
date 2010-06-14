@@ -47,7 +47,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Compat")
+@XmlType(namespace = "http://schemas.openxmlformats.org/drawingml/2006/compatibility", name = "CT_Compat")
 public class CTCompat {
 
     @XmlAttribute(required = true)
