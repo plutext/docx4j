@@ -46,7 +46,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_NumFmt")
+@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/chart", name = "CT_NumFmt")
 public class CTNumFmt {
 
     @XmlAttribute(required = true)

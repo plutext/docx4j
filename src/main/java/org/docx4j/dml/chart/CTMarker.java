@@ -50,7 +50,7 @@ import org.docx4j.dml.CTShapeProperties;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Marker", propOrder = {
+@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/chart", name = "CT_Marker", propOrder = {
     "symbol",
     "size",
     "spPr",

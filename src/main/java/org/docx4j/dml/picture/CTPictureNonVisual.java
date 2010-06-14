@@ -50,7 +50,7 @@ import org.docx4j.dml.CTNonVisualPictureProperties;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_PictureNonVisual", propOrder = {
+@XmlType(namespace = "http://schemas.openxmlformats.org/drawingml/2006/picture", name = "CT_PictureNonVisual", propOrder = {
     "cNvPr",
     "cNvPicPr"
 })

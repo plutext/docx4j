@@ -51,7 +51,7 @@ import org.docx4j.dml.CTShapeProperties;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Picture", propOrder = {
+@XmlType(namespace = "http://schemas.openxmlformats.org/drawingml/2006/picture", name = "CT_Picture", propOrder = {
     "nvPicPr",
     "blipFill",
     "spPr"

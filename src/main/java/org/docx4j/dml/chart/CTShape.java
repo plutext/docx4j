@@ -45,7 +45,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Shape")
+@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/chart", name = "CT_Shape")
 public class CTShape {
 
     @XmlAttribute

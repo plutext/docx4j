@@ -38,7 +38,7 @@ import org.docx4j.dml.CTTextBody;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Shape", propOrder = {
+@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing", name = "CT_Shape", propOrder = {
     "nvSpPr",
     "spPr",
     "style",

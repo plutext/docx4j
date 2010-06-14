@@ -56,7 +56,7 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Shape", propOrder = {
+@XmlType(namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram", name = "CT_Shape", propOrder = {
     "adjLst",
     "extLst"
 })
