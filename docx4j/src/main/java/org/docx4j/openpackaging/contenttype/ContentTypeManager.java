@@ -271,6 +271,10 @@ public class ContentTypeManager  {
 			// Main Document part)						
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED)) {
 			return CreateMainDocumentPartObject(partName);
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE)) {
+			return CreateMainDocumentPartObject(partName);
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED)) {
+			return CreateMainDocumentPartObject(partName);
 		} else if (contentType.equals(ContentTypes.PACKAGE_COREPROPERTIES)) {
 			return CreateDocPropsCorePartObject(partName ); 
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMPROPERTIES)) {
@@ -705,7 +709,9 @@ public class ContentTypeManager  {
 		OpcPackage p;
 		
 		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null) {
+				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
+				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
+				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) != null ) {
 			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
 			return p;

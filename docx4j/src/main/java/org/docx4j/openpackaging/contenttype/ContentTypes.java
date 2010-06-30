@@ -110,6 +110,8 @@ public class ContentTypes {
 	// PartName="/word/document.xml"
 	public final static String WORDPROCESSINGML_DOCUMENT = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
 	public final static String WORDPROCESSINGML_DOCUMENT_MACROENABLED = "application/vnd.ms-word.document.macroEnabled.main+xml";
+	public final static String WORDPROCESSINGML_TEMPLATE = "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml";
+	public final static String WORDPROCESSINGML_TEMPLATE_MACROENABLED = "application/vnd.ms-word.template.macroEnabledTemplate.main+xml";
 
 	
 	// PartName="/word/comments.xml"
