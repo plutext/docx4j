@@ -206,6 +206,16 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     }
 
     
+    private static void debug(WordXmlPictureE20 converter) {
+    	
+    	if (converter.inline!=null)
+    		log.error(XmlUtils.marshaltoString(converter.inline, true, true,
+    				Context.jc, "foo", "bar", Inline.class ));
+    	else 
+    		log.error(XmlUtils.marshaltoString(converter.anchor, true, true,
+    				Context.jc, "foo", "bar", Anchor.class ));
+    }
+    
     /**
      * @param wmlPackage
      * @param imageDirPath - images won't be saved if this is not set
@@ -229,6 +239,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	Pic pic = converter.getPic();
     	if (pic==null) {
     		log.error("pic missing!!");
+    		debug(converter);
     		return null;    		
     	}
     	

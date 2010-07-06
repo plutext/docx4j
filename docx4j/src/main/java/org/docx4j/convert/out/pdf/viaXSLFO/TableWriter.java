@@ -17,6 +17,8 @@ import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
+import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblGridCol;
@@ -74,7 +76,19 @@ public class TableWriter extends ModelConverter {
 	if (table.getEffectiveTableStyle().getTblPr()!=null) {
 		tblBorders = table.getEffectiveTableStyle().getTblPr().getTblBorders();
 		// will apply these as a default on each td, and then override
-	}	
+	} 
+//	if (tblBorders == null)
+//	{
+//		// Make up some defaults
+//		logger.warn("FIXME: handle properly case where tblBorders is null");
+//		tblBorders = new TblBorders();
+//		CTBorder border = new CTBorder();
+//		border.setVal(STBorder.DASHED);
+//		tblBorders.setTop(border);
+//		tblBorders.setBottom(border);
+//		tblBorders.setLeft(border);
+//		tblBorders.setRight(border);
+//	}
 	
 //	if (logger.isDebugEnabled()) {					
 //		logger.debug(XmlUtils.marshaltoString(tbl, true, true));					
@@ -154,14 +168,16 @@ public class TableWriter extends ModelConverter {
 					// style
 					//cellNode.setAttribute("border-style", "dashed");
 					
-					if (tblBorders.getInsideH()!=null) {
-						( new BorderTop(   tblBorders.getTop()    )).setXslFO(cellNode);
-						( new BorderBottom(tblBorders.getBottom() )).setXslFO(cellNode);
+					if (tblBorders!=null) {
+						if (tblBorders.getInsideH()!=null) {
+							( new BorderTop(   tblBorders.getTop()    )).setXslFO(cellNode);
+							( new BorderBottom(tblBorders.getBottom() )).setXslFO(cellNode);
+						}
+						if (tblBorders.getInsideV()!=null) { 
+							( new BorderRight(tblBorders.getRight() )).setXslFO(cellNode);
+							( new BorderLeft( tblBorders.getLeft()  )).setXslFO(cellNode);
+						}						
 					}
-					if (tblBorders.getInsideV()!=null) { 
-						( new BorderRight(tblBorders.getRight() )).setXslFO(cellNode);
-						( new BorderLeft( tblBorders.getLeft()  )).setXslFO(cellNode);
-					}						
 					// Ensure empty cells have a sensible height
 					cellNode.setAttribute("height", "5mm");
 						

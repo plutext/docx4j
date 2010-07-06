@@ -733,7 +733,27 @@
 
 <!-- <w:bookmarkStart w:id="0" w:name="mybm"/>  -->
 <xsl:template match="w:bookmarkStart" >
-	<fo:inline id="{@w:name}"/>
+        <xsl:choose>
+          <xsl:when test="ancestor::w:p"><!--  TODO or other block element -->
+			<fo:inline id="{@w:name}"/>
+          </xsl:when>
+          <xsl:otherwise>
+          <!-- 
+          eg
+          <w:sdtContent>
+        	<w:bookmarkStart w:id="0" w:name="_Toc253042998" w:displacedByCustomXml="prev"/>
+        	<w:p w:rsidR="00BF4F8D" w:rsidRDefault="00BF4F8D" w:rsidP="00112955">
+          
+          which would result in 
+          
+              inline" is not a valid child of "fo:flow"          
+           -->
+		    <fo:block>
+				<fo:inline id="{@w:name}"/>
+		    </fo:block>
+          </xsl:otherwise>
+           
+        </xsl:choose>
 </xsl:template>
 
 <xsl:template match="w:bookmarkEnd" />
@@ -800,6 +820,12 @@
   </xsl:template>
     
   <xsl:template match="w:continuationSeparator" />
+
+<!--  tmp bookmarks -->
+
+  <xsl:template match="w:fldSimple" />
+  <xsl:template match="w:fldChar" />
+  <xsl:template match="w:instrText" />
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->

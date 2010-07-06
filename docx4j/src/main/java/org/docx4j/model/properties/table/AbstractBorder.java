@@ -74,6 +74,8 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		//         w:space="0" w:color="000000" w:themeColor="text1"/>
 		CTBorder border = (CTBorder)getObject();
 		
+		if (border==null) return "";
+		
 		String val = "";
 		if (border.getVal()!=null) {
 			STBorder stBorder = border.getVal();
@@ -134,6 +136,8 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 	public void setXslFO(Element foElement) {
 		
 		CTBorder border = (CTBorder)getObject();
+		
+		if (border==null) return;
 		
 		if (border.getVal()!=null) {
 			STBorder stBorder = border.getVal();
