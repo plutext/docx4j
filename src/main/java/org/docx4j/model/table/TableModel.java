@@ -333,6 +333,22 @@ public class TableModel extends Model {
 				 } else if (o2 instanceof javax.xml.bind.JAXBElement
 						 && ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc")) {
 					 tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
+				 } else if (o2 instanceof javax.xml.bind.JAXBElement
+						 && ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.CTSdtCell")) {
+					 org.docx4j.wml.CTSdtCell sdtCell = (org.docx4j.wml.CTSdtCell)((JAXBElement)o2).getValue();
+					 Object o3 = sdtCell.getSdtContent().getEGContentCellContent().get(0);
+					 if (o3 instanceof javax.xml.bind.JAXBElement
+							 && ((JAXBElement)o3).getDeclaredType().getName().equals("org.docx4j.wml.Tc")) {
+						 tc =(org.docx4j.wml.Tc)((JAXBElement)o3).getValue();
+					 } else {
+						 if (o3 instanceof javax.xml.bind.JAXBElement) {
+							 log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o3).getDeclaredType().getName() );
+						 } else {
+							 log.warn("TODO - skipping:  " + o3.getClass().getName() );
+						 }
+					 }
+					 if (sdtCell.getSdtContent().getEGContentCellContent().size()>1) 
+						 log.warn("w:sdtContent contains more than 1 cell. TODO");
 				 } else {
 					 // What?
 					 if (o2 instanceof javax.xml.bind.JAXBElement) {
