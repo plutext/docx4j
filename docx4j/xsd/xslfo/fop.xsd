@@ -16,7 +16,35 @@
   limitations under the License.
 -->
 <!-- $Id$ -->
-<schema xmlns = "http://www.w3.org/2001/XMLSchema" targetNamespace = "http://www.w3.org/1999/XSL/Format"  xmlns:fo = "http://www.w3.org/1999/XSL/Format" xmlns:xs = "http://www.w3.org/2001/XMLSchema" elementFormDefault = "qualified">
+<schema xmlns = "http://www.w3.org/2001/XMLSchema"
+ targetNamespace = "http://www.w3.org/1999/XSL/Format" 
+  xmlns:fo = "http://www.w3.org/1999/XSL/Format"
+   xmlns:xs = "http://www.w3.org/2001/XMLSchema"
+    elementFormDefault = "qualified" 
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1"
+	jaxb:extensionBindingPrefixes="xjc"> 
+	
+<!--
+
+JAXB INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+  
+  (I used JAXB 2.1.10 included in JDK 1.6.0_15)
+		
+  To generate the classes (from the same directory)	
+			
+ 	 xjc  fop.xsd -d ~/workspace/docx4j/src/xslfo -no-header -target 2.0 -extension
+	 
+  It would be nice to be able to add the fluent api
+	 
+	  sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar:~/workspace/docx4j/lib/jaxb-fluent-api-2.1.8.jar  -Xfluent-api -Xparent-pointer wml.xsd -d tmp/  -no-header -target 2.0
+	 
+  jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
+  
+
+-->
 
   <annotation>
     <documentation> 
@@ -104,6 +132,25 @@
         Updated the restriction base of those types from NMTOKEN to string
 
     </documentation>
+    
+		<appinfo>
+			<appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				
+				<jaxb:package name="org.plutext.jaxb.xslfo"/>
+			</jaxb:schemaBindings>
+		</appinfo>
+    
   </annotation>
 
   <group name = "initial_property_set_List_Not">
