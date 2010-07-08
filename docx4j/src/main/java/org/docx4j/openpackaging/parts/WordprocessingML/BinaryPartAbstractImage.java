@@ -208,7 +208,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// Delete the tmp file
 		// As per http://stackoverflow.com/questions/991489/i-cant-delete-a-file-in-java
 		// the following 3 lines are necessary, at least on Win 7 x64
-		// Also reported on Win XP. 
+		// Also reported on Win XP, but in my testing, the files were deleting OK anyway.
 		fos = null;
 		fis = null;
 		System.gc();		
