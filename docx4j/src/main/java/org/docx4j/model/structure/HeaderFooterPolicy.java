@@ -175,9 +175,13 @@ public class HeaderFooterPolicy {
 		return defaultFooter;
 	}
 	
+		
+	
 	// -------------------------------------------------------------
 	// XSLT extension functions, used by docx2fo.xslt
 	// and DocX2Html.xslt
+	
+	// Yuck! Getting rid of as many of these as possible ....
 	
 	public static boolean hasFirstHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
 		return (wordmlPackage.getHeaderFooterPolicy().getFirstHeader()==null && 

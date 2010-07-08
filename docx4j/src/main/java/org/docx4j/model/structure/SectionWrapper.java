@@ -19,6 +19,9 @@
  */
 package org.docx4j.model.structure;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.SectPr;
 
@@ -72,5 +75,15 @@ public class SectionWrapper {
 	public SectPr getSectPr() {
 		return sectPr;
 	}
+	
+//    protected List<Object> egBlockLevelElts;
+//	
+//    public List<Object> getEGBlockLevelElts() {
+//        if (egBlockLevelElts == null) {
+//            egBlockLevelElts = new ArrayList<Object>();
+//        }
+//        return this.egBlockLevelElts;
+//    }
+	
 			
 }

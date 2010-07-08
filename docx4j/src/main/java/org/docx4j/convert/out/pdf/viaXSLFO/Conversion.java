@@ -32,6 +32,7 @@ import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
@@ -40,14 +41,20 @@ import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.run.Font;
+import org.docx4j.model.structure.SectionWrapper;
+import org.docx4j.model.structure.jaxb.ObjectFactory;
+import org.docx4j.model.structure.jaxb.Sections;
+import org.docx4j.model.structure.jaxb.Sections.Section;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
@@ -260,7 +267,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	   * Flat OPC XML file.
     	   */
     	  //Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
-    	  Document domDoc = XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
+    	  //Document domDoc = XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
+    	  
+    	  Sections sections = createSectionContainers(wordMLPackage);
+    	  Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections, Context.jcSectionModel);
     	  
     	  java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
 			settings.put("wmlPackage", wordMLPackage);
@@ -329,6 +339,76 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	}		
 		
 	}
+    
+	private Sections createSectionContainers(WordprocessingMLPackage wordMLPackage) {
+				
+		ObjectFactory factory = new ObjectFactory();
+		
+		Sections sections = factory.createSections();
+		Section section = factory.createSectionsSection();
+		section.setName("s1"); // name must match fo master
+		
+		sections.getSection().add(section);
+						
+		org.docx4j.wml.Document doc = (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
+		
+		int i = 2;
+		for (Object o : doc.getBody().getEGBlockLevelElts() ) {
+			
+			if (o instanceof org.docx4j.wml.P) {
+				if (((org.docx4j.wml.P)o).getPPr() != null ) {
+					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
+					if (ppr.getSectPr()!=null) {
+						section = factory.createSectionsSection();
+						section.setName("s" +i); // name must match fo master
+						sections.getSection().add(section);	
+						i++;
+					}
+				}				
+			} 
+			section.getAny().add( marshall(o) );
+				// TODO: since the section model knows nothing about WML,
+				// we have to marshall each object separately.
+				// To fix this, next time wml is generated, include the section model there!
+		}
+		return sections;				
+	}
+    
+	private Element marshall(Object o) {
+		
+		try {
+			org.w3c.dom.Document w3cDoc = 
+				XmlUtils.marshaltoW3CDomDocument(o);
+			
+			
+				/* Force the RelationshipsPart to be marshalled using
+				 * the normal non-rels part NamespacePrefixMapper,
+				 * since otherwise (because we'd be using 2 namespace
+				 * prefix mappers?) we end up with errant xmlns="",
+				 * which is wrong and stops Word 2007 from loading the
+				 * document.
+				 * 
+				 * Note that xmlPackage.xsd defines:
+				 * 	<xsd:complexType name="CT_XmlData">
+						<xsd:sequence>
+							<xsd:any processContents="skip" />
+						</xsd:sequence>
+				 *
+				 * Note also that marshaltoString uses 
+				 * just the normal non-rels part NamespacePrefixMapper,
+				 * so if/when this is marshalled again, that could
+				 * have been causing problems as well?? 
+				 */
+	        return w3cDoc.getDocumentElement();		        
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 		        
+		return null;
+		
+	}
+	
+	
 
     /* ---------------Xalan XSLT Extension Functions ---------------- */
     
