@@ -80,7 +80,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		if (border.getVal()!=null) {
 			STBorder stBorder = border.getVal();
 			
-			System.out.println(stBorder);
+			log.debug("border: " + stBorder);
 			
 			if (stBorder.equals(STBorder.NIL)
 					|| stBorder == STBorder.NONE) {
@@ -142,7 +142,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		if (border.getVal()!=null) {
 			STBorder stBorder = border.getVal();
 			
-			System.out.println(stBorder);
+			log.debug("border: " + stBorder);
 			
 			if (stBorder.equals(STBorder.NIL)
 					|| stBorder == STBorder.NONE) {

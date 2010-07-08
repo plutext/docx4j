@@ -726,7 +726,7 @@ public class PropertyResolver {
 		//  document (those only apply to a paragraph mark).
 			
 			if (pPr==null) {
-				log.warn("pPr was null");
+				log.debug("pPr was null");
 			} else {
 				// At the pPr level, what rPr do we have?
 				// .. ascend the paragraph style tree
@@ -734,7 +734,7 @@ public class PropertyResolver {
 //					log.warn("No pstyle:");
 //					log.debug(XmlUtils.marshaltoString(pPr, true, true));
 				} else {
-					log.warn("pstyle:" + pPr.getPStyle().getVal());
+					log.info("pstyle:" + pPr.getPStyle().getVal());
 					RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
 					// .. and apply those
 					applyRPr(pPrLevelRunStyle, effectiveRPr);

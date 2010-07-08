@@ -27,7 +27,7 @@ public class NumberFormatLowerLetter extends NumberFormat {
 		  
 		  format.format(1);
 		  format.format(2);
-		  System.out.println(format.format(3));
+		  log.debug(format.format(3));
 		  
 		  
 		  

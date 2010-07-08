@@ -140,7 +140,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	private void findImageData() {
 		
     	if (shape.getAny()==null) {
-    		System.out.println("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
+    		log.debug("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
     	} else {
     		for (Object o : shape.getAny() ) {
     			if (o instanceof JAXBElement ) {
@@ -380,7 +380,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	
         // E10: <v:shape style="width:428.25pt;height:321pt"
     	log.info("Looking for '" + name + "' in " + style);
-    	System.out.println("Looking for '" + name + "' in " + style);
+    	//System.out.println("Looking for '" + name + "' in " + style);
     	// eg position:absolute;left:0;text-align:left;margin-left:320pt;
     	// margin-top:11.8pt;width:104.85pt;height:2in;z-index:251658240
 
@@ -392,7 +392,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	
     	if (beginIndex<0) {
     		// Not found
-    		System.out.println("No value for '" + name);
+    		log.debug("No value for '" + name);
     		return;
     		// TODO
     	}
@@ -404,7 +404,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	} else {
     		val = style.substring(beginIndex, endIndex);
     	}
-    	System.out.println("val: " + val);
+    	log.debug("val: " + val);
     	
     	String unit;
     	float f=0;
@@ -412,11 +412,11 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	if (val.endsWith("pt") ) {
     		f = Float.parseFloat(val.substring(0, val.length()-2));
     		unit="pt";
-    		System.out.println(f);    		
+    		log.debug(f);    		
     	} else if (val.endsWith("in") ) {
     		f = Float.parseFloat(val.substring(0, val.length()-2));
     		unit="in";
-    		System.out.println(f);    		
+    		log.debug(f);    		
 
     	} else {
     		// Unknown units
