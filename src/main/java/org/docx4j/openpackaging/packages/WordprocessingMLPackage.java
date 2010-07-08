@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.packages;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
@@ -39,10 +40,13 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.convert.out.pdf.viaXSLFO.Conversion;
+import org.docx4j.convert.out.pdf.viaXSLFO.PartTracker;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.structure.DocumentModel;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
@@ -416,7 +420,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		return wmlPack;
 		
 	}
-	
+
 	public static class FilterSettings {
 		
 		Boolean removeProofErrors = Boolean.FALSE;		

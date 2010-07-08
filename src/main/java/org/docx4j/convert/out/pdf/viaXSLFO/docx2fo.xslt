@@ -78,7 +78,7 @@
   </xsl:text>
 </xsl:template>
 
-<!--  Not used, if we just pass in document.xml -->
+<!--  Not used, if we just pass in document.xml
 <xsl:template match="/pkg:package">
 
 	<xsl:apply-templates select="pkg:part/pkg:xmlData/w:document"/>
@@ -86,6 +86,11 @@
   </xsl:template>
 
   <xsl:template match="w:document">
+  
+  -->
+  
+  
+  <xsl:template match="sections">
   
 		<xsl:variable name="logging" 
 			select="java:org.docx4j.convert.out.pdf.PdfConversion.log('/pkg:package')" />
@@ -99,160 +104,17 @@
 
 		<fo:root>
 
-			<fo:layout-master-set>
-				<!-- fo:layout-master-set defines in its children the page layout:
-					the pagination and layout specifications
-					- page-masters: have the role of describing the intended subdivisions
-					of a page and the geometry of these subdivisions
-					In this case there is only a simple-page-master which defines the
-					layout for all pages of the text
-					
-					We handle headers/footers, but not yet on a per section basis.	
-					
-					See http://www.dpawson.co.uk/xsl/sect3/headers.html				
-				-->
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.LayoutMasterSetBuilder.getLayoutMasterSetFragment( 
+	  		$wmlPackage)" />
+	  		
+	  		<xsl:apply-templates match="section"/>
 
-					<!--  First Page -->
-					<xsl:if
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeaderOrFooter($wmlPackage)">
-						<fo:simple-page-master master-name="firstpage"
-							page-height="297mm" page-width="210mm" margin-top="10mm"
-							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
-							
-							<fo:region-body margin-top="20mm"
-								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
+		</fo:root>
+  </xsl:template>
 
 
-							<!--  First Page Header -->
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeader($wmlPackage)">
-								<fo:region-before
-									region-name="xsl-region-before-firstpage" extent="10mm" />
-							</xsl:if>
-
-							<!--  First Page Footer -->
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstFooter($wmlPackage)">
-								<fo:region-after
-									region-name="xsl-region-after-firstpage" extent="10mm" />
-							</xsl:if>
-
-						</fo:simple-page-master>
-					</xsl:if>
-					<xsl:if
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenOrOddHeaderOrFooter($wmlPackage)">
-						<!-- layout for the even page -->
-						<fo:simple-page-master master-name="evenpage"
-							page-height="297mm" page-width="210mm" margin-top="10mm"
-							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
-							
-							<fo:region-body margin-top="20mm"
-								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeader($wmlPackage)">
-								<fo:region-before
-									region-name="xsl-region-before-evenpage" extent="10mm" />
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenFooter($wmlPackage)">
-								<fo:region-after
-									region-name="xsl-region-after-evenpage" extent="10mm" />
-							</xsl:if>
-						</fo:simple-page-master>
-						<!-- layout for the odd page -->
-						<fo:simple-page-master master-name="oddpage"
-							page-height="297mm" page-width="210mm" margin-top="10mm"
-							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
-							
-							<fo:region-body margin-top="20mm"
-								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeader($wmlPackage)">
-								<fo:region-before
-									region-name="xsl-region-before-default" extent="10mm" />
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddFooter($wmlPackage)">
-								<fo:region-after
-									region-name="xsl-region-after-default" extent="10mm" />
-							</xsl:if>
-						</fo:simple-page-master>
-					</xsl:if>
-					<xsl:if
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeaderOrFooter($wmlPackage)">
-						<fo:simple-page-master master-name="default"
-							page-height="297mm" page-width="210mm" margin-top="10mm"
-							margin-bottom="10mm" margin-left="25mm" margin-right="20mm">
-							
-							<fo:region-body margin-top="20mm"
-								margin-bottom="20mm" margin-left="0mm" margin-right="0mm" />
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
-								<fo:region-before
-									region-name="xsl-region-before-default" extent="10mm" />
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
-								<fo:region-after
-									region-name="xsl-region-after-default" extent="10mm" />
-							</xsl:if>
-						</fo:simple-page-master>
-					</xsl:if>
-
-					<fo:simple-page-master master-name="simple"
-						page-height="29.7cm" page-width="21cm" margin-top="1cm"
-						margin-bottom="2cm" margin-left="2.5cm" margin-right="2.5cm">
-						<fo:region-body margin-top="3cm" />
-						<fo:region-before extent="3cm" />
-						<fo:region-after extent="1.5cm" />
-					</fo:simple-page-master>
-
-
-				<fo:page-sequence-master master-name="twoside">
-
-					<fo:repeatable-page-master-alternatives>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasFirstHeaderOrFooter($wmlPackage)">
-								<fo:conditional-page-master-reference
-									master-reference="firstpage" page-position="first" />
-							</xsl:if>
-							
-							<xsl:choose>
-								<xsl:when test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeaderOrFooter($wmlPackage)">
-									<fo:conditional-page-master-reference
-										master-reference="evenpage" odd-or-even="even" />
-									<fo:conditional-page-master-reference
-										master-reference="oddpage" odd-or-even="odd" />
-								</xsl:when>
-								<xsl:when test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeaderOrFooter($wmlPackage)">
-									<fo:conditional-page-master-reference
-										master-reference="default" />	
-								</xsl:when>
-								<xsl:otherwise>
-									<fo:conditional-page-master-reference
-										master-reference="simple" />																
-								</xsl:otherwise>
-							</xsl:choose>
-<!-- 
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
-								<fo:conditional-page-master-reference
-									master-reference="default" />
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeaderOrFooter($wmlPackage)">
-								<fo:conditional-page-master-reference
-									master-reference="oddpage" odd-or-even="odd" />
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeaderOrFooter($wmlPackage)">
-								<fo:conditional-page-master-reference
-									master-reference="evenpage" odd-or-even="even" />
-							</xsl:if>
- -->							
-					</fo:repeatable-page-master-alternatives>
-				</fo:page-sequence-master>
-			</fo:layout-master-set>
+	<xsl:template match="section">
+	
 
 			<!-- start page-sequence
 				here comes the text (contained in flow objects)
@@ -260,7 +122,7 @@
 				the attribute value of master-name refers to the page layout
 				which is to be used to layout the text contained in this
 				page-sequence-->
-			<fo:page-sequence master-reference="twoside">
+			<fo:page-sequence master-reference="{@name}">
 
 				<!--  First Page Header -->
 				<xsl:if
@@ -395,7 +257,8 @@
 					<xsl:variable name="partname" 
 						select="java:org.docx4j.convert.out.pdf.viaXSLFO.PartTracker.inMainDocumentPart($wmlPackage, $modelStates)" />
 
-					<xsl:apply-templates select="w:body/*" />
+					<!--<xsl:apply-templates select="w:body/*" />-->
+					<xsl:apply-templates select="*" />
 
 				  	<xsl:call-template name="pretty-print-block"/>
 
@@ -416,12 +279,9 @@
 			</fo:page-sequence><!-- closes the page-sequence -->
 
 			<!-- end: defines page layout -->
-
-
-
-
-		</fo:root>
-  </xsl:template>
+	
+	
+	</xsl:template>
 
   <!--  the extension functions fetch these
         for processing -->

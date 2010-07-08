@@ -1,12 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" 
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1"
+	jaxb:extensionBindingPrefixes="xjc"> 
+	
+<!--
+
+JAXB INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+  
+  (I used JAXB 2.1.10 included in JDK 1.6.0_15)
+		
+  To generate the classes (from the same directory)	
+			
+ 	 xjc  sections.xsd -d ~/workspace/docx4j/src/main/java -no-header -target 2.0 -extension
+	 
+  It would be nice to be able to add the fluent api
+	 
+	  sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar:~/workspace/docx4j/lib/jaxb-fluent-api-2.1.8.jar  -Xfluent-api -Xparent-pointer wml.xsd -d tmp/  -no-header -target 2.0
+	 
+  jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
+  
+
+-->
+
+	<xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.model.structure.jaxb"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>
+
+	
   <xs:element name="sections">
     <xs:complexType>
       <xs:sequence>
         <xs:element maxOccurs="unbounded" name="section">
           <xs:complexType>
             <xs:sequence>
-              <xs:any processContents="skip" minOccurs="0" />
+              <xs:any processContents="skip" minOccurs="0" maxOccurs="unbounded" />
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required" />
           </xs:complexType>

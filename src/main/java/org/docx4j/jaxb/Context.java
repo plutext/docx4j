@@ -32,10 +32,14 @@ public class Context {
 	public static JAXBContext jcDocPropsCore;
 	public static JAXBContext jcDocPropsCustom;
 	public static JAXBContext jcDocPropsExtended;
-	public static JAXBContext jcXmlPackage;
 	public static JAXBContext jcRelationships;
 	public static JAXBContext jcCustomXmlProperties;
 	public static JAXBContext jcContentTypes;
+
+	public static JAXBContext jcXmlPackage;
+	
+	private static JAXBContext jcXslFo;
+	public static JAXBContext jcSectionModel;
 	
 	private static Logger log = Logger.getLogger(Context.class);
 	
@@ -80,6 +84,9 @@ public class Context {
 			jcRelationships = JAXBContext.newInstance("org.docx4j.relationships",classLoader );
 			jcCustomXmlProperties = JAXBContext.newInstance("org.docx4j.customXmlProperties",classLoader );
 			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader );
+			
+			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader );
+			
 			log.info(".. others loaded ..");
 			
 		} catch (Exception ex) {
@@ -97,5 +104,20 @@ public class Context {
 		return wmlObjectFactory;
 		
 	}
-		
+
+	public static JAXBContext getXslFoContext() {
+		if (jcXslFo==null) {
+			try {	
+				Context tmp = new Context();
+				java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
+
+				jcXslFo = JAXBContext.newInstance("org.plutext.jaxb.xslfo",classLoader );
+				
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}						
+		}
+		return jcXslFo;		
+	}
+	
 }

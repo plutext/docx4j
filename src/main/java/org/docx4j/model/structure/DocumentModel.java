@@ -62,8 +62,9 @@ public class DocumentModel {
 	// At present, objects (eg w:p, w:tbl) don't know which
 	// section they are in, and nor does a SectionWrapper
 	// know which objects are in it.  
-	// We will soon add objects to a SectionWrapper (but not
-	// vice versa)
+	// Should we add objects to a SectionWrapper? 
+	// PDF via XSL FO pre-processes the document to wrap
+	// section containers, but that is only done in the PDF stuff.
 	
 	public DocumentModel(WordprocessingMLPackage wordMLPackage) {
 		
