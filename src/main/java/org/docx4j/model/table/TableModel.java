@@ -503,10 +503,10 @@ public class TableModel extends Model {
 
 		for (int i = 0; i < children.getLength(); i++) {
 
-			System.out.println(i);
+			log.debug(i);
 
-			System.out.println(children.item(i).getTextContent());
-			System.out.println(children.item(i).getLocalName());
+			log.debug(children.item(i).getTextContent());
+			log.debug(children.item(i).getLocalName());
 
 		}
 

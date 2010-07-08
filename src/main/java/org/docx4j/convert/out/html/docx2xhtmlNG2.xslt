@@ -65,11 +65,11 @@
 						div.footer {display: none } 
 						/*@media print { */
 						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
+							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 0)">
 							div.header {display: block; position: running(header) }
 						</xsl:if>
 						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
+							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 0)">
 							div.footer {display: block; position: running(footer) }
 						</xsl:if>
 
@@ -134,17 +134,17 @@
 		      Appropriate extension functions similar to the below already exist 
 		       -->
 		<xsl:if
-			test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage)">
+			test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 0)">
 			<div class="header">
 				<xsl:apply-templates
-					select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage)" />
+					select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage, 0)" />
 			</div>
 		</xsl:if>
 		<xsl:if
-			test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage)">
+			test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 0)">
 			<div class="footer">
 				<xsl:apply-templates
-					select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage)" />
+					select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage, 0)" />
 			</div>
 		</xsl:if>
              
@@ -582,6 +582,11 @@
   	<xsl:apply-templates/>  
   </xsl:template>
   
+<!--  tmp bookmarks -->
+
+  <xsl:template match="w:fldSimple" />
+  <xsl:template match="w:fldChar" />
+  <xsl:template match="w:instrText" />
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->

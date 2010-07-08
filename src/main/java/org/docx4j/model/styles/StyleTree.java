@@ -201,12 +201,12 @@ public class StyleTree {
 				wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId(),
 				wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultCharacterStyle().getStyleId());
 		
-		System.out.println("\nParagraph styles\n");
-		System.out.println(st.pTree.toString());
-		System.out.println("\nCharacter styles\n");
-		System.out.println(st.cTree.toString());
+		log.debug("\nParagraph styles\n");
+		log.debug(st.pTree.toString());
+		log.debug("\nCharacter styles\n");
+		log.debug(st.cTree.toString());
 		
-		System.out.println("\nParagraph classes\n");
+		log.debug("\nParagraph classes\n");
 		it = st.pTree.nodes.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
@@ -220,12 +220,12 @@ public class StyleTree {
 	        	= (Node<AugmentedStyle>)pairs.getValue();
 	        List<Node<AugmentedStyle>> classVals =  st.pTree.climb(n);
 	        
-	        System.out.println(n.name + ":'" + 
+	        log.debug(n.name + ":'" + 
 	        		getHtmlClassAttributeValue(st.pTree, n)
 	        		+ "'");
 	    }
 
-		System.out.println("\nRun classes\n");
+	    log.debug("\nRun classes\n");
 		it = st.cTree.nodes.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
@@ -234,7 +234,7 @@ public class StyleTree {
 	        	= (Node<AugmentedStyle>)pairs.getValue();
 	        List<Node<AugmentedStyle>> classVals =  st.cTree.climb(n);
 	        
-	        System.out.println(n.name + ":'" + 
+	        log.debug(n.name + ":'" + 
 	        		getHtmlClassAttributeValue(st.cTree, n)
 	        		+ "'");
 	    }
