@@ -85,6 +85,7 @@
             <src path="src/diffx"/>
             <src path="src/pptx4j/java"/>
             <src path="src/svg"/>
+            <src path="src/xslfo"/>
             <classpath refid="docx4j.classpath"/>
             <!--  nb, you need JAXB RI, for example, in jre/lib/endorsed -->
         </javac>
@@ -109,6 +110,8 @@
         	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="${src.main.java.dir}"/>
             <src path="src/pptx4j/java"/>
+            <src path="src/svg"/>
+            <src path="src/xslfo"/>
         	<include name="**/package-info.java"/>
             <classpath refid="docx4j.classpath"/>
         </javac>
