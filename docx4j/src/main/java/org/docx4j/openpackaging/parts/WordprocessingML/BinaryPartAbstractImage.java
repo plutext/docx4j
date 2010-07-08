@@ -198,15 +198,28 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		log.debug("created part " + imagePart.getClass().getName() +
 				" with name " + imagePart.getPartName().toString() );		
 		
-		FileInputStream fis = new FileInputStream(tmpImageFile); //reuse		
+		FileInputStream fis = new FileInputStream(tmpImageFile); 		
 		imagePart.setBinaryData( fis );
 				
 		imagePart.rel =  sourcePart.addTargetPart(imagePart, proposedRelId);
 		
 		imagePart.setImageInfo(info);
 
-		  // Delete the tmp file
-		tmpImageFile.delete();
+		// Delete the tmp file
+		// As per http://stackoverflow.com/questions/991489/i-cant-delete-a-file-in-java
+		// the following 3 lines are necessary, at least on Win 7 x64
+		// Also reported on Win XP. 
+		fos = null;
+		fis = null;
+		System.gc();		
+		if (tmpImageFile.delete() ) {
+			log.debug(".. deleted " +  tmpImageFile.getAbsolutePath() );			
+		} else {
+			log.warn("Couldn't delete tmp file " + tmpImageFile.getAbsolutePath());
+			tmpImageFile.deleteOnExit();
+			// If that doesn't work, see "Clean Up Your Mess: Managing Temp Files in Java Apps"
+			// at devx.com
+		}
 		
 		return imagePart;
 		
@@ -265,10 +278,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				log.debug(".. attempting to convert to PNG");		
 				
 				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);			
-				fos = new FileOutputStream(imageFile); //reuse
+				fos = new FileOutputStream(imageFile); 
 							
 				convertToPNG(bais, fos, density);
 				fos.close();
+				fos = null;
 				
 				// We need to refresh image info 
 				imageManager.getCache().clearCache();

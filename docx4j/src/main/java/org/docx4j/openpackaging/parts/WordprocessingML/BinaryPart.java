@@ -81,6 +81,7 @@ public class BinaryPart extends Part {
 				log.info(".. closed.");
 			} catch (Exception nested) {
 				// ignored
+				log.error(nested);				
 			}
 		}
 	}	
