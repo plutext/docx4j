@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -61,6 +62,7 @@ import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.UnderlineEnumeration;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.plutext.jaxb.xslfo.LayoutMasterSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -68,6 +70,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
@@ -83,6 +87,12 @@ import org.apache.xml.dtm.ref.DTMNodeProxy;
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 	protected static Logger log = Logger.getLogger(Conversion.class);	
+	
+	public static boolean isLoggingEnabled() {
+		return log.isDebugEnabled();
+	}
+	
+	
 	
 	public static final String PART_TRACKER = "partTracker";
 	
@@ -411,7 +421,61 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 
     /* ---------------Xalan XSLT Extension Functions ---------------- */
-    
+	
+	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
+
+		Node n = nodes.nextNode();
+		log.warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "\n" + message);
+		
+		if (log.isDebugEnabled() ) {
+			
+			if (message==null) message="";
+			
+			log.debug( XmlUtils.w3CDomNodeToString(n)  );
+
+			// Return something which will show up in the PDF
+			return message("NOT IMPLEMENTED: support for " + n.getNodeName() + " - " + message);
+		} else {
+			
+			// Put it in a comment node instead?
+			
+			return null;
+		}
+	}
+	
+	public static DocumentFragment message(String message) {
+		
+		if (!log.isDebugEnabled()) return null;
+
+		String fo = "<fo:block xmlns:fo=\"http://www.w3.org/1999/XSL/Format\"  " 
+			+ "font-size=\"12pt\" "
+        	+ "color=\"red\" "
+        	+ "font-family=\"sans-serif\" "
+        	+ "line-height=\"15pt\" "
+        	+ "space-after.optimum=\"3pt\" "
+        	+ "text-align=\"justify\"> "
+			+ message
+			+ "</fo:block>";  
+
+		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
+				.newInstance();
+		dbf.setNamespaceAware(true);
+		StringReader reader = new StringReader(fo);
+		InputSource inputSource = new InputSource(reader);
+		Document doc = null;
+		try {
+			doc = dbf.newDocumentBuilder().parse(inputSource);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		reader.close();
+
+		DocumentFragment docfrag = doc.createDocumentFragment();
+		docfrag.appendChild(doc.getDocumentElement());
+		return docfrag;		
+	}
+	
     /**
      * On the block representing the w:p, we want to put both
      * pPr and rPr attributes.

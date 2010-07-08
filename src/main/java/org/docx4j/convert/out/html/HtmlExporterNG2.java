@@ -2,6 +2,7 @@ package org.docx4j.convert.out.html;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +79,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.InputSource;
 
 /**
  * HtmlExporterNG has 2 salient features:
@@ -159,7 +161,57 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 	
     
     /* ---------------Xalan XSLT Extension Functions ---------------- */
-    
+
+	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
+
+		Node n = nodes.nextNode();
+		log.warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "\n" + message);
+		
+		if (log.isDebugEnabled() ) {
+			
+			if (message==null) message="";
+			
+			log.debug( XmlUtils.w3CDomNodeToString(n)  );
+
+			// Return something which will show up in the PDF
+			return message("NOT IMPLEMENTED: support for " + n.getNodeName() + " - " + message);
+		} else {
+			
+			// Put it in a comment node instead?
+			
+			return null;
+		}
+	}
+	
+	public static DocumentFragment message(String message) {
+		
+		if (!log.isDebugEnabled()) return null;
+
+		String html = "<div style=\"color:red\" >"
+			+ message
+			+ "</div>";  
+
+		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
+				.newInstance();
+		dbf.setNamespaceAware(true);
+		StringReader reader = new StringReader(html);
+		InputSource inputSource = new InputSource(reader);
+		Document doc = null;
+		try {
+			doc = dbf.newDocumentBuilder().parse(inputSource);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		reader.close();
+
+		DocumentFragment docfrag = doc.createDocumentFragment();
+		docfrag.appendChild(doc.getDocumentElement());
+		return docfrag;		
+	}
+	
+	
+	
     public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {
     	
     	StringBuffer result = new StringBuffer();

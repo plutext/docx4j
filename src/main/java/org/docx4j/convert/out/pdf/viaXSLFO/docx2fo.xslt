@@ -281,6 +281,10 @@
 					<xsl:variable name="partname" 
 						select="java:org.docx4j.convert.out.pdf.viaXSLFO.PartTracker.inMainDocumentPart($wmlPackage, $modelStates)" />
 
+					<!--  Info -->
+					<xsl:copy-of 
+						select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.message('TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.pdf.viaXSLFO ' )" />  	  		
+
 					<!--<xsl:apply-templates select="w:body/*" />-->
 					<xsl:apply-templates select="*" />
 
@@ -404,9 +408,21 @@
   
   	<xsl:variable name="wpinline" select="."/>
   	
-   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createXslFoImgE20( 
-   			$wmlPackage, string($imageDirPath),
-  			$wpinline, $modelStates)" />
+  	<xsl:choose>
+  		<!--  sanity check -->
+  		<xsl:when test="./a:graphic/a:graphicData/pic:pic">
+  		
+		   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createXslFoImgE20( 
+		   			$wmlPackage, string($imageDirPath),
+		  			$wpinline, $modelStates)" />  		
+  		</xsl:when>
+  		<xsl:otherwise>
+  		
+			<xsl:copy-of 
+				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., ' without pic:pic ' )" />  	  		
+  		</xsl:otherwise>  	
+  	</xsl:choose>
+  	
     
   </xsl:template>
   
@@ -424,6 +440,8 @@
 		</xsl:when>
 		<xsl:otherwise>
 			<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
+			<xsl:copy-of 
+				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., ' without v:imagedata ' )" />  	  		
 		</xsl:otherwise>
 	</xsl:choose>  			
 
@@ -707,23 +725,26 @@
 
 <!--  tmp bookmarks -->
 
-  <xsl:template match="w:fldSimple" />
-  <xsl:template match="w:fldChar" />
-  <xsl:template match="w:instrText" />
+  <xsl:template match="w:fldSimple" >
+		<xsl:copy-of 
+			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., 'no support for fields' )" />  	
+  </xsl:template>
+  <xsl:template match="w:fldChar" >
+		<xsl:copy-of 
+			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., '' )" />  	
+  </xsl:template>
+  <xsl:template match="w:instrText" >
+		<xsl:copy-of 
+			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., 'no support for fields' )" />  	
+  </xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
   <xsl:template match="*">
-		      <fo:block font-size="12pt"
-		        color="red"
-                font-family="sans-serif"
-                line-height="15pt"
-                space-after.optimum="3pt"
-                text-align="justify">
-        NOT IMPLEMENTED: support for <xsl:value-of select="local-name(.)"/>
-      </fo:block>  
+		<xsl:copy-of 
+			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., '' )" />  	
   </xsl:template>
 
 </xsl:stylesheet>
