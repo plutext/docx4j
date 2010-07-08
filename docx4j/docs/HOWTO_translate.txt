@@ -1,0 +1,21 @@
+Procedure for saving a translated web page.
+
+First, make sure your source document doesn't contain any dodgy characters: all your tools need to be UTF-8 capable.  I recommend using SC UniPad, since it will let you know whether there are any problems, and you can configure it to convert any dodgy characters to the U-FFFD replacement character.
+
+I used the Google Translate toolbar in Chrome to convert my source page.
+
+Now the tricky bit: how do you save the resulting HTML?
+
+In Chrome, right click to inspect element, then you can copy the HTML element, and paste it into SC UniPad.
+
+Make sure this document has a suitable XML declaration:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+
+Now the document will display in your browser, but the original text popups don't work.  Those aren't stored in the document, but rather, look like they are retrieved on the fly from Google.  So you may as well delete the Google Javascript from your HTML source (at the top and the bottom).
+
+Also, there's a lot of redundant CSS which you can remove via search/replace.
+
+Stick @lang="" on the html tag
