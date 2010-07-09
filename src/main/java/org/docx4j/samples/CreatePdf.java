@@ -48,14 +48,15 @@ public class CreatePdf {
 	    public static void main(String[] args) 
 	            throws Exception {
 
-	    	boolean save = false;
+	    	boolean save = true;
 	    	
 //	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
 //	    	String inputfilepath = System.getProperty("user.dir") 
 //	    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
-	    	String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+	    	//String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
 //	    	String inputfilepath = System.getProperty("user.dir") 
 //    		+ "/sample-docs/test-docs/endnotes.xml";	    	
+	    	String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\tmp\\TestDocmToPDFConversion.docm";
 	    	
 			WordprocessingMLPackage wordMLPackage;
 			if (inputfilepath==null) {
@@ -86,8 +87,15 @@ public class CreatePdf {
 				// Load .docx or Flat OPC .xml
 				wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 			}
-			// Need document content first..
-			wordMLPackage.setFontMapper(new IdentityPlusMapper());
+			// Set up font mapper
+			Mapper fontMapper = new IdentityPlusMapper();
+			wordMLPackage.setFontMapper(fontMapper);
+			
+			// Example of mapping missing font Algerian to installed font Comic Sans MS
+			PhysicalFont font 
+					= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
+			fontMapper.getFontMappings().put("Algerian", font);
+			
 			
 			/* Choose which of the three methods you want to use...
 			 * 
