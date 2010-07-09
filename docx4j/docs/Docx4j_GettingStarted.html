@@ -59,7 +59,6 @@
 						#docx4j_tbl_0 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
 --></style></head><body>
 
-  
   <p class="Title Normal DocDefaults ">Docx4j – Getting Started</p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">The latest version of this document can always be found in </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/"><span class="Hyperlink DefaultParagraphFont ">docx4j svn in /docs</span></a><span style="white-space:pre-wrap;"> (in Flat OPC XML format for Word 2007, </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/Docx4j_GettingStarted.html"><span class="Hyperlink DefaultParagraphFont ">HTML</span></a><span style="white-space:pre-wrap;">, and </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/docs/Docx4j_GettingStarted.pdf"><span class="Hyperlink DefaultParagraphFont ">PDF</span></a>).</p>
@@ -90,7 +89,7 @@
   
   <p class="Normal DocDefaults ">Docx4j is for processing docx documents (and pptx presentations) in Java.</p>
   
-  <p class="Normal DocDefaults ">It isn’t for old binary (.doc) files.  For those, look at Apache POI’s HWPF. (In fact, docx4j uses HWPF for basic conversion of .doc to .docx)</p>
+  <p class="Normal DocDefaults ">It isn’t for old binary (.doc) files.  For those, Apache POI’s HWPF offers basic support (in fact, docx4j can use HWPF for basic conversion of .doc to .docx).  If you wish to invest your effort around docx (as is wise), but you also need to be able to handle old doc files, Plutext has had success using OpenOffice to convert the doc to docx, using docx4j to process the docx, and then using OpenOffice to convert back to .doc.</p>
   
   <p class="Normal DocDefaults ">Nor is it for RTF files.</p>
   
@@ -650,6 +649,8 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">If you have log4j debug level logging enabled for </span><span style="font-weight: bold;font-size: 9.0pt;">org.docx4j.convert.out.html.HtmlExporterNG2</span><span style="white-space:pre-wrap;">, anything which is not implemented will be obvious in the output document.  </span><span style="font-weight: bold;font-style: italic;">If debug level logging is not switched on, unsupported elements will be silently dropped.</span></p>
   
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">The XSLT can be found at </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/src/main/java/org/docx4j/convert/out/html/docx2xhtmlNG2.xslt"><span class="Hyperlink DefaultParagraphFont " style="font-size: 10.0pt;">src/main/java/org/docx4j/convert/out/html/docx2xhtmlNG2.xslt</span></a></p>
+  
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"/>
   
   <p class="Heading1 Normal DocDefaults "><span>docx to PDF</span></p>
@@ -681,6 +682,56 @@
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">See the CreatePdf sample.</p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">If you have log4j debug level logging enabled for </span><span style="font-weight: bold;font-size: 9.0pt;">org.docx4j.convert.out.pdf.viaXSLFO</span><span style="white-space:pre-wrap;">, anything which is not implemented will be obvious in the output document.  In addition, the logs will contain the intermediate XSL FO for inspection.  </span><span style="font-weight: bold;font-style: italic;">If debug level logging is not switched on, unsupported elements will be silently dropped.</span></p>
+  
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">The XSLT can be found at </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/docx2fo.xslt"><span style="white-space:pre-wrap;"> </span><span class="Hyperlink DefaultParagraphFont " style="font-size: 10.0pt;">src/main/java/org/docx4j/convert/out/pdf/viaXSLFO/docx2fo.xslt</span></a></p>
+  
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"/>
+  
+  <p class="Heading1 Normal DocDefaults "><span>Fonts</span></p>
+  
+  <p class="Normal DocDefaults ">When docx4j is used to create a PDF, it can only use fonts which are available to it.</p>
+  
+  <p class="Normal DocDefaults ">These fonts come from 2 sources:</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>those installed on the computer</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>those embedded in the document</p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Note that Word silently performs </span><span style="font-weight: bold;font-style: italic;">font substitution</span><span style="white-space:pre-wrap;">.  When you open an existing document in Word, and select text in a particular font, the actual font you see on the screen won't be the font reported in the ribbon if it is not installed on your computer or embedded in the document.  To see whether Word 2007 is substituting a font, go into Word Options &gt; Advanced &gt; Show Document Content and press the "Font Substitution" button.  </span></p>
+  
+  <p class="Normal DocDefaults ">Word's font substitution information is not available to docx4j.  As a developer, you 3 options:</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>ensure the font is installed or embedded</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>tell docx4j which font to use instead, or</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;"> </span>allow docx4j to fallback to a default font</p>
+  
+  <p class="Normal DocDefaults ">To embed a font in a document, open it in Word on a computer which has the font installed (check no substitution is occuring), and go to Word Options &gt; Save &gt; Embed Fonts in File.</p>
+  
+  <p class="Normal DocDefaults ">If you want to tell docx4j to use a different font, you need to add a font mapping.  The FontMapper interface is used to do this.</p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">On a Windows computer, font names for installed fonts are mapped 1:1 to the corresponding physical fonts via the IdentityPlusMapper. </span></p>
+  
+  <p class="Normal DocDefaults ">A font mapper contains Map&lt;String, PhysicalFont&gt;; to add a font mapping, as per the example in the CreatePdf sample:</p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-size: 8.0pt;">   </span><span style="color: #3F7F5F;font-size: 8.0pt;"><span style="white-space:pre-wrap;">// Set up font </span></span><span style="color: #3F7F5F;font-size: 8.0pt;text-decoration: none;">mapper</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-size: 8.0pt;">   <span style="white-space:pre-wrap;">Mapper fontMapper = </span></span><span style="font-weight: bold;color: #7F0055;font-size: 8.0pt;">new</span><span style="color: #000000;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> IdentityPlusMapper();</span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-size: 8.0pt;">   wordMLPackage.setFontMapper(fontMapper);</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-size: 8.0pt;">   </span><span style="color: #000000;font-size: 8.0pt;">   </span><span style="color: #000000;font-size: 8.0pt;">   </span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-size: 8.0pt;">   </span><span style="color: #3F7F5F;font-size: 8.0pt;"><span style="white-space:pre-wrap;">// Example of mapping missing font Algerian to installed font Comic </span></span><span style="color: #3F7F5F;font-size: 8.0pt;text-decoration: none;">Sans</span><span style="color: #3F7F5F;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> MS</span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-size: 8.0pt;">   PhysicalFont font = PhysicalFonts.</span><span style="color: #000000;font-style: italic;font-size: 8.0pt;">getPhysicalFonts</span><span style="color: #000000;font-size: 8.0pt;">().get(</span><span style="color: #2A00FF;font-size: 8.0pt;">"Comic Sans MS"</span><span style="color: #000000;font-size: 8.0pt;">);</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-size: 8.0pt;">   fontMapper.getFontMappings().put(</span><span style="color: #2A00FF;font-size: 8.0pt;">"Algerian"</span><span style="color: #000000;font-size: 8.0pt;">, font);</span></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">You'll see the font names if you configure log4j debug level logging for </span><span style="font-weight: bold;font-size: 9.0pt;">org.docx4j.fonts.PhysicalFonts</span></p>
   
   <p class="Heading1 Normal DocDefaults "><span>Image Handling</span></p>
   
