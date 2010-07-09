@@ -43,7 +43,7 @@ http://dev.plutext.org/downloads.html
 How do I get started?
 ------------------
 
-See the sample code at http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples
+See the Getting Started guide.
 
 
 Where to get help?
@@ -82,6 +82,51 @@ License version 2.0:
   RELEASE NOTES
 ==============================================================================
 
+Version 2.4.0
+=============
+
+Release date
+------------
+
+9 July 2010
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Major Changes in Version 2.4.0
+------------------------------
+
+[1135] PDF via XSL FO: header/footer support for more than 1 section
+[1134] JAXB representation of XSL FO
+
+Other Changes
+-------------
+
+[1140] Try harder to delete add image temp file
+[1139] HTML, PDF: highlight wholly unimplemented features, only if debug-level logging is enabled.
+[1131] Enhancements to XSL FO output
+[1130] Support for .dotx and .dotm
+[1129] Fix instances of "Two classes have the same XML type name -- Use .. @XmlType namespace to assign different names to them."
+[1127] PDF output: Handle images in headers/footers
+[1126] MetafileEmfPart now extends BinaryPartAbstractImage, so EMF images can be added to the docx.
+[1125] Add @XmlRootElement to CT_MarkupRange, indicating it is bookmarkEnd.
+XSD: create new types CT_MoveFrom|ToRangeEnd, so elements moveFrom|ToRangeEnd don't get confused with bookmarkEnd. TODO: havn't run xjc on this new xsd.
+[1121] Support for 4 SmartArt parts.
+[1120] XML parts which we don't specifically know how to handle: load these as xml parts (previously they were loaded as binary parts).
+[1107] When creating image part names in BPAI, use the generated relId as the image name.
+[1102] Support for ActiveX parts.  Previously the Xml part was being represented as binary, and hence encoded in output.
+[1098] Support image of type anchor, not just inline.
+[1078] Support for WMF (but not EMF, yet) as SVG in HTML output.
+
+pptx4j changes
+--------------
+
+[1088] SVG output: Paragraphs of large text in a box with a border, need a reduced top-margin.
+[1087] Basic character formatting in SVG output
+[1085] Convert line to SVG
+[1083] JAXB representation of SVG 1.1
 
 
 Version 2.3.0
@@ -90,7 +135,7 @@ Version 2.3.0
 Release date
 ------------
 
-17 Feb 2009
+17 Feb 2010
 
 
 Contributors to this release

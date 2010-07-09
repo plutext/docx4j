@@ -5,7 +5,9 @@ Check jar versions in pom.xml, build.xml
 
 Update README.txt with release info.
 
-Update pom,xml with target version number
+    svn log -r 1073:HEAD > tmp_log_2_4_0.txt
+
+Update pom.xml with target version number
 
 Tag the version in svn
 
