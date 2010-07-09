@@ -6,11 +6,11 @@
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
 	<name>docx4j</name>
-	<version>2.3.0</version>
+	<version>2.4.0</version>
 	<description>
 		docx4j is a library which helps you to work with the Office Open
-		XML file format, specifically WordprocessingML as used in docx
-		documents.
+		XML file format, including WordprocessingML and DrawingML, as used in docx
+		documents and pptx presentations.
 	</description>
 	<url>http://dev.plutext.org/</url>
 	<prerequisites />
