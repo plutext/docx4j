@@ -151,6 +151,8 @@ public final class CustomXmlDataStoragePart extends Part {
 	
 	public static void applyBindings(DocumentPart documentPart) throws Docx4JException {
 		
+		// TODO: need to be able to apply to other parts eg header|footer
+		
 		// Get the package from documentPart
 		org.docx4j.openpackaging.packages.OpcPackage pkg 
 			= documentPart.getPackage();		
@@ -207,4 +209,11 @@ public final class CustomXmlDataStoragePart extends Part {
 			return null;
 		}
 	}
+	
+	/* ---------------------------------------------------------------------------
+	 * Pre-processing of content controls which have a tag containing "bindingrole"
+	 * 
+	 * 
+	 */
+	
 }

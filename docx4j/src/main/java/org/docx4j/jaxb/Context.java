@@ -49,7 +49,12 @@ public class Context {
     	Class c;
     	try {
     		c = Class.forName("com.sun.xml.bind.marshaller.NamespacePrefixMapper");
-    		System.out.println("JAXB: Using RI");
+    		System.out.println("JAXB: Using RI (or recent Java 6?)");
+    		
+    		// 2010 07 13 recent versions of Java 6 seem to include
+    		// com.sun.xml.bind.marshaller.NamespacePrefixMapper,
+    		// so we can't be sure its the RI.
+    		
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
     		System.out.println("JAXB: RI not present.  Trying Java 6 implementation.");

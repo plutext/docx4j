@@ -28,9 +28,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -55,6 +57,7 @@ import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.docx4j.wml.Tc;
+import org.w3c.dom.Node;
 
 
 /**
@@ -82,6 +85,42 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.DOCUMENT);
+	}	
+
+	
+	private Binder<Node> binder;
+	
+	
+	/**
+	 * Enables synchronization between XML infoset nodes and JAXB objects 
+	 * representing same XML document.
+	 * 
+	 * An instance of this class maintains the association between XML nodes
+	 * of an infoset preserving view and a JAXB representation of an XML document. 
+	 * Navigation between the two views is provided by the methods 
+	 * getXMLNode(Object) and getJAXBNode(Object) .
+	 * 
+	 * In theory, modifications can be made to either the infoset preserving view or 
+	 * the JAXB representation of the document while the other view remains
+	 * unmodified. The binder ought to be able to synchronize the changes made in
+	 * the modified view back into the other view using the appropriate
+	 * Binder update methods, #updateXML(Object, Object) or #updateJAXB(Object).
+	 * 
+	 * But JAXB doesn't currently work as advertised .. access to this
+	 * object is offered for advanced users on an experimental basis only.
+	 */
+	public Binder<Node> getBinder() {
+		
+//		if (binder ==null) {
+//			binder = jc.createBinder();			
+//		}		
+		return binder;
+	}
+	
+	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
+			throws JAXBException {
+		
+		return XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, "//w:p", refreshXmlFirst);
 	}	
 	
     private PropertyResolver propertyResolver;
@@ -140,8 +179,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		
 	}
 	
-	
-	
+		
     /**
      * Unmarshal XML data from the specified InputStream and return the 
      * resulting content tree.  Validation event location information may
@@ -160,7 +198,20 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
     public org.docx4j.wml.Document unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
-		    		    
+			
+			log.info("For MDP, unmarshall via binder");
+			// InputStream to Document
+			javax.xml.parsers.DocumentBuilderFactory dbf 
+				= DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			org.w3c.dom.Document doc = dbf.newDocumentBuilder().parse(is);
+
+			// 
+			binder = jc.createBinder();
+			jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );
+			
+			return jaxbElement;
+/*		    		    
 			Unmarshaller u = jc.createUnmarshaller();
 
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);			
@@ -173,7 +224,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 			return jaxbElement;
 			
 			//System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
-
+*/
+			
 		} catch (Exception e ) {
 			e.printStackTrace();
 			return null;

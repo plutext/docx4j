@@ -20,13 +20,16 @@
 
 package org.docx4j.jaxb;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.lang.text.StrTokenizer;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 /**
@@ -188,15 +191,22 @@ public class NamespacePrefixMappings implements NamespaceContext {
 	}
 	
 	protected static String getNamespaceURIStatic(String prefix) {
-	
+
+		// Pre-defined prefixes
 		if (prefix.equals("w"))  
 			return Namespaces.NS_WORD12;
 		else if (prefix.equals("r"))
 			return Namespaces.RELATIONSHIPS_OFFICEDOC;
 		else if (prefix.equals("pkg"))
 			return Namespaces.PKG_XML;
-		else
+		
+		// Registered prefixes
+		String result = namespaces.get(prefix);
+		if (result==null) {
 			return XMLConstants.NULL_NS_URI;
+		} else {
+			return result;
+		}
 		
 	}
 
@@ -216,5 +226,30 @@ public class NamespacePrefixMappings implements NamespaceContext {
 	public Iterator getPrefixes(String namespaceURI) {
 		return null;
 	}
+	
+	private static Map<String, String> namespaces = new HashMap<String, String>();	
+	public static void registerPrefixMappings(String prefixMappings) {
+		// eg  w:prefixMappings="xmlns:ns0='http://schemas.medchart'"
+		// according to the spec, whitespace is the delimiter
+		
+		// we get one of these each time we encounter a w:dataBinding
+		// element in a content control; pity it is not done just
+		// once!
+		
+		// first tokenise on space
+		StrTokenizer tokens = new StrTokenizer(prefixMappings);
+		while (tokens.hasNext() ) {
+			String token = tokens.nextToken();
+			//log.debug("Got: " + token);
+			int pos = token.indexOf("=");
+			String prefix = token.substring(6, pos); // drop xmlns:
+			//log.debug("Got: " + prefix);
+			String uri = token.substring(pos+2, token.lastIndexOf("'"));
+			//log.debug("Got: " + uri);
+			namespaces.put(prefix, uri);
+		}
+		
+	}
+	
     
 }
