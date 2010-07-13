@@ -117,10 +117,25 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		return binder;
 	}
 	
+	/**
+	 * Fetch JAXB Nodes matching an XPath (for example "//w:p").
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+	 * 
+	 * @param xpathExpr
+	 * @param refreshXmlFirst
+	 * @return
+	 * @throws JAXBException
+	 */	
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException {
 		
-		return XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, "//w:p", refreshXmlFirst);
+		return XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, xpathExpr, refreshXmlFirst);
 	}	
 	
     private PropertyResolver propertyResolver;
@@ -230,10 +245,24 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 			e.printStackTrace();
 			return null;
 		}
-    	
-    	
     }
 
+    public org.docx4j.wml.Document unmarshal(org.w3c.dom.Element el) throws JAXBException {
+
+		try {
+
+			binder = jc.createBinder();
+			jaxbElement = (org.docx4j.wml.Document) binder.unmarshal( el );
+
+			return jaxbElement;
+			
+		} catch (JAXBException e) {
+//			e.printStackTrace();
+			log.error(e);
+			throw e;
+		}
+	}
+	
     
     /**
      * Traverse the document, looking for fonts which have been applied, either
