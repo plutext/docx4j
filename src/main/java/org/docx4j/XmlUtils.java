@@ -27,15 +27,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -48,6 +53,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
@@ -57,6 +66,7 @@ import org.docx4j.jaxb.NamespacePrefixMapper;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -231,6 +241,38 @@ public class XmlUtils {
 		}
 	}
 	
+    /**
+	 * Give a string of wml containing ${key1}, ${key2}, return a suitable
+	 * object.
+	 * 
+	 * @param wmlTemplateString
+	 * @param mappings
+	 * @return
+	 */
+	public static Object unmarshallFromTemplate(String wmlTemplateString, 
+			java.util.HashMap<String, String> mappings) throws JAXBException {
+	    return unmarshallFromTemplate(wmlTemplateString, mappings, Context.jc);
+	 }
+	
+	public static Object unmarshallFromTemplate(String wmlTemplateString, 
+			java.util.HashMap<String, String> mappings, JAXBContext jc) throws JAXBException {
+	    String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
+	    log.debug("Results of substitution: " + wmlString);
+	    return unmarshalString(wmlString, jc);
+	 }
+	
+	 private static StringBuilder replace(String s, int offset, StringBuilder b, java.util.HashMap<String, String> mappings) {
+	    int startKey = s.indexOf("${", offset);
+	    if (startKey == -1)
+	       return b.append(s.substring(offset));
+	    else {
+	       b.append(s.substring(offset, startKey));
+	       int keyEnd = s.indexOf('}', startKey);
+	       String key = s.substring(startKey + 2, keyEnd);
+	       b.append( mappings.get(key) );
+	       return replace(s, keyEnd + 1, b, mappings);
+	    }
+	 }
 
 	/** Marshal to a String */ 
 	public static String marshaltoString(Object o, boolean suppressDeclaration ) {
@@ -524,6 +566,26 @@ public class XmlUtils {
 		}
 	}
 	
+	
+    public static String w3CDomNodeToString(Node n) {
+   	 
+		// Why doesn't Java have a nice neat way of getting 
+		// the XML as a String??  
+   	 		
+		StringWriter sw = new StringWriter();
+		try {
+				Transformer serializer = tfactory.newTransformer();
+				serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+				serializer.transform( new DOMSource(n) , new StreamResult(sw) );				
+				return sw.toString();
+				//log.debug("serialised:" + n);
+			} catch (Exception e) {
+				// Unexpected!
+				e.printStackTrace();
+				return null;
+			} 
+    }
+
 	/** Use DocumentBuilderFactory to create and return a new w3c dom Document. */ 
 	public static org.w3c.dom.Document neww3cDomDocument() {
 		
@@ -538,7 +600,6 @@ public class XmlUtils {
 		}		
 		
 	}
-
     
     public static void transform(org.w3c.dom.Document doc,
     		javax.xml.transform.Templates template, 
@@ -632,59 +693,67 @@ public class XmlUtils {
     	
     }
    
-     /**
-		 * Give a string of wml containing ${key1}, ${key2}, return a suitable
-		 * object.
-		 * 
-		 * @param wmlTemplateString
-		 * @param mappings
-		 * @return
-		 */
-    public static Object unmarshallFromTemplate(String wmlTemplateString, 
-    		java.util.HashMap<String, String> mappings) throws JAXBException {
-        return unmarshallFromTemplate(wmlTemplateString, mappings, Context.jc);
-     }
-
-    public static Object unmarshallFromTemplate(String wmlTemplateString, 
-    		java.util.HashMap<String, String> mappings, JAXBContext jc) throws JAXBException {
-        String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
-        log.debug("Results of substitution: " + wmlString);
-        return unmarshalString(wmlString, jc);
-     }
-
-     private static StringBuilder replace(String s, int offset, StringBuilder b, java.util.HashMap<String, String> mappings) {
-        int startKey = s.indexOf("${", offset);
-        if (startKey == -1)
-           return b.append(s.substring(offset));
-        else {
-           b.append(s.substring(offset, startKey));
-           int keyEnd = s.indexOf('}', startKey);
-           String key = s.substring(startKey + 2, keyEnd);
-           b.append( mappings.get(key) );
-           return replace(s, keyEnd + 1, b, mappings);
+	/**
+	 * Fetch JAXB Nodes matching an XPath (for example "//w:p").
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+	 * 
+	 * @param binder
+	 * @param jaxbElement
+	 * @param refreshXmlFirst
+	 * @param xpathExpr
+	 * @return
+	 * @throws JAXBException
+	 */
+	public static List<Object> getJAXBNodesViaXPath(Binder<Node> binder, 
+			Object jaxbElement, String xpathExpr, boolean refreshXmlFirst) 
+			throws JAXBException {
+		
+		Node node;
+		if (refreshXmlFirst) 
+			node = binder.updateXML(jaxbElement);
+		node = binder.getXMLNode(jaxbElement);
+		
+        List<Object> resultList = new ArrayList<Object>();
+        for( Node n : xpath(node, xpathExpr) ) {
+        	Object o = binder.getJAXBNode(n);
+        	if (o==null) 
+        		System.out.println("no association");
+        	else resultList.add(o);
         }
-     }
+        return resultList;
+    }
+	
+    private static List<Node> xpath(Node node, String xpathExpression) {
+        // create XPath
+        XPathFactory xpf = XPathFactory.newInstance();
+        XPath xpath = xpf.newXPath();
 
-	
-     public static String w3CDomNodeToString(Node n) {
-    	 
- 		// Why doesn't Java have a nice neat way of getting 
- 		// the XML as a String??  
-    	 		
- 		StringWriter sw = new StringWriter();
- 		try {
-				Transformer serializer = tfactory.newTransformer();
-				serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
-				serializer.transform( new DOMSource(n) , new StreamResult(sw) );				
-				return sw.toString();
-				//log.debug("serialised:" + n);
-			} catch (Exception e) {
-				// Unexpected!
-				e.printStackTrace();
-				return null;
-			} 
-     }
-	
+		// Prepare XPath
+        NamespaceContext nsContext = new NamespacePrefixMappings();
+		//((NamespacePrefixMappings)nsContext).registerPrefixMappings("xmlns:w='" + Namespaces.NS_WORD12 + "'" );
+		xpath.setNamespaceContext(nsContext);
+        
+        try {
+            List<Node> result = new ArrayList<Node>();
+            NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
+            for( int i=0; i<nl.getLength(); i++ )
+                result.add(nl.item(i));
+            return result;
+        } catch (XPathExpressionException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+
+    }	
+
+
+     
      static class LoggingErrorListener implements ErrorListener {
     	 
     	 // See http://www.cafeconleche.org/slides/sd2003west/xmlandjava/346.html

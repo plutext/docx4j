@@ -36,6 +36,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.text.StrTokenizer;
+import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.w3c.dom.Document;
@@ -100,10 +101,11 @@ public abstract class XmlPart extends Part {
 		
 	}
 	
-	private XmlNamespaceContext nsContext;
-	private XmlNamespaceContext getNamespaceContext() {
+	
+	private NamespacePrefixMappings nsContext;
+	private NamespacePrefixMappings getNamespaceContext() {
 		if (nsContext==null) {
-			nsContext = new XmlNamespaceContext();
+			nsContext = new NamespacePrefixMappings();
 			xPath.setNamespaceContext(nsContext);
 		}
 		return nsContext;
@@ -181,67 +183,6 @@ public abstract class XmlPart extends Part {
 		} catch (Exception e) {
 			throw new Docx4JException("Problem setting value at xpath " + xpath);
 		} 
-		
-	}
-
-	public class XmlNamespaceContext implements NamespaceContext {
-
-		Map<String, String> namespaces = new HashMap<String, String>();
-		public XmlNamespaceContext() {
-			//namespaces.put("ns0", "http://schemas.medchart");			
-		}
-		
-		/* (non-Javadoc)
-		 * @see javax.xml.namespace.NamespaceContext#getNamespaceURI(java.lang.String)
-		 */
-		public String getNamespaceURI(String prefix) {
-			if (prefix==null) throw new NullPointerException("Null prefix");
-			String result = namespaces.get(prefix);
-			if (result==null) {
-				return XMLConstants.NULL_NS_URI;
-			} else {
-				return result;
-			}
-		}
-
-		/* (non-Javadoc)
-		 * @see javax.xml.namespace.NamespaceContext#getPrefix(java.lang.String)
-		 */
-		public String getPrefix(String uri) {
-			// This method isn't necessary for xpath processing
-			throw new UnsupportedOperationException();
-		}
-
-		/* (non-Javadoc)
-		 * @see javax.xml.namespace.NamespaceContext#getPrefixes(java.lang.String)
-		 */
-		public Iterator getPrefixes(String uri) {
-			// This method isn't necessary for xpath processing
-			throw new UnsupportedOperationException();
-		}
-		
-		public void registerPrefixMappings(String prefixMappings) {
-			// eg  w:prefixMappings="xmlns:ns0='http://schemas.medchart'"
-			// according to the spec, whitespace is the delimiter
-			
-			// we get one of these each time we encounter a w:dataBinding
-			// element in a content control; pity it is not done just
-			// once!
-			
-			// first tokenise on space
-			StrTokenizer tokens = new StrTokenizer(prefixMappings);
-			while (tokens.hasNext() ) {
-				String token = tokens.nextToken();
-				//log.debug("Got: " + token);
-				int pos = token.indexOf("=");
-				String prefix = token.substring(6, pos); // drop xmlns:
-				//log.debug("Got: " + prefix);
-				String uri = token.substring(pos+2, token.lastIndexOf("'"));
-				//log.debug("Got: " + uri);
-				namespaces.put(prefix, uri);
-			}
-			
-		}
 		
 	}
 	
