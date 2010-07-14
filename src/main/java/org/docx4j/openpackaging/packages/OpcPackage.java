@@ -87,7 +87,7 @@ public class OpcPackage extends Base {
 	}	
 	
 	protected HashMap<String, CustomXmlDataStoragePart> customXmlDataStorageParts
-		= new HashMap<String, CustomXmlDataStoragePart>();
+		= new HashMap<String, CustomXmlDataStoragePart>(); // NB key is lowercase
 	public HashMap<String, CustomXmlDataStoragePart> getCustomXmlDataStorageParts() {
 		return customXmlDataStorageParts;
 	}	

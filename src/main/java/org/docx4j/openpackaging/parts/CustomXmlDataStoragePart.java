@@ -174,7 +174,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	 */
 	public static void preprocess(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
-		Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = wordMLPackage.getCustomXmlDataStorageParts();		
+		//Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = wordMLPackage.getCustomXmlDataStorageParts();		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 				
 		String xpathSdt = "//w:sdt";
@@ -233,7 +233,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		log.info(tag.getVal());
 
 		QueryString qs = new QueryString();
-		HashMap<String, String> map = qs.parseQueryString(tag.getVal());
+		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
 		
 		String bindingrole = map.get("bindingrole");
 		if (bindingrole==null) {
@@ -244,7 +244,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		
 		// get the value
-		String storeItemId = map.get("w:storeItemID");
+		String storeItemId = map.get("w:storeItemID").toLowerCase();
 		String xpath = map.get("w:xpath");
 		String prefixMappings = map.get("w:prefixMappings");
 		
@@ -268,7 +268,7 @@ public final class CustomXmlDataStoragePart extends Part {
 			
 			log.info("Got value: " + val);
 			
-			if (Boolean.getBoolean(val)) {
+			if (new Boolean(val) ) {
 				log.debug("so keeping");
 			} else {
 				// Remove it
@@ -364,7 +364,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	        				if (thisXPath.startsWith(xpathBase)) {
 	        					log.debug("xpathBase: " + xpathBase);
 	        					int beginIndex = thisXPath.indexOf("/", xpathBase.length()+1 ); // +1 for good measure	        					
-	        					String newPath = xpathBase + "/*[" + i + "]/" + thisXPath.substring(beginIndex+1);	        					
+	        					String newPath = xpathBase + "/*[" + (i+1) + "]/" + thisXPath.substring(beginIndex+1);	        					
 	        					log.debug("newPath: " + newPath);
 	        					binding.setXpath(newPath);
 	        				}
@@ -504,7 +504,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	public static String xpathGetString(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 			String storeItemId, String xpath, String prefixMappings) {
 		
-		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId);
+		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + storeItemId);
 			return null;

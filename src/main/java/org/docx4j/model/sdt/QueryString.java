@@ -70,6 +70,10 @@ public class QueryString {
 		return sb.toString();
 
     }		
+
+	public static HashMap<String, String> parseQueryString(String s) {
+		return parseQueryString(s, false);
+	}
 	
 	/**
      *
@@ -104,7 +108,7 @@ public class QueryString {
      *						is invalid
      *
      */
-	public static HashMap<String, String> parseQueryString(String s) {
+	public static HashMap<String, String> parseQueryString(String s, boolean lax) {
 
 		log.debug("Query string: " + s);
 		
@@ -119,13 +123,21 @@ public class QueryString {
 			String pair = (String) st.nextToken();
 			int pos = pair.indexOf('=');
 			if (pos == -1) {
-				// XXX
-				// should give more detail about the illegal argument
-				throw new IllegalArgumentException();
+				
+				if (lax) {
+					log.warn("Suspect parameter: " + pair);
+					map.put(pair, pair);
+				} else {
+					// XXX
+					// should give more detail about the illegal argument
+					log.error("Suspect parameter: " + pair);					
+					throw new IllegalArgumentException();
+				}
+			} else {
+				String key = parseName(pair.substring(0, pos) );
+				String val = pair.substring(pos + 1, pair.length());
+				map.put(key, val);
 			}
-			String key = parseName(pair.substring(0, pos) );
-			String val = pair.substring(pos + 1, pair.length());
-			map.put(key, val);
 		}
 		return map;
 	}

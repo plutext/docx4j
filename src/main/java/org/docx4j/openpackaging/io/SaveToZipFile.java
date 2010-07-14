@@ -69,11 +69,10 @@ public class SaveToZipFile {
 	/**
 	 * This HashMap is intended to prevent loops.
 	 */
-	private HashMap<String, String> handled = new HashMap<String, String>();
+	private HashMap<String, String> handled;
 
 	/* Save a Package as a Zip file in the file system */
 	public boolean save(String filepath) throws Docx4JException  {
-		
 		log.info("Saving to" +  filepath );		
 		try {
 			return save(new FileOutputStream(filepath));
@@ -86,7 +85,6 @@ public class SaveToZipFile {
 
 	/* Save a Package as a Zip file in the file system */
 	public boolean save(java.io.File docxFile) throws Docx4JException  {
-		
 		log.info("Saving to" +  docxFile );		
 		try {
 			return save(new FileOutputStream(docxFile));
@@ -99,7 +97,7 @@ public class SaveToZipFile {
 	
 	/* Save a Package as a Zip file in the outputstream provided */
 	public boolean save(OutputStream realOS) throws Docx4JException  {		
-		
+		handled = new HashMap<String, String>();
 		 try {
 
 			ZipOutputStream out = new ZipOutputStream(realOS);
