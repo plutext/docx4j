@@ -305,7 +305,7 @@ public class SdtPr
     	
     	if (existingTag!=null) {
     		if (!existingTag.equals(value)) {
-    			log.debug("Changing SDT ID from " + existingTag + " to " + value);
+    			log.debug("Changing SDT tag from " + existingTag + " to " + value);
         		rPrOrAliasOrLock.remove(existingTag);
         		rPrOrAliasOrLock.add(value);
     		}
@@ -315,8 +315,34 @@ public class SdtPr
     		//JAXBElement idWrapper = factory.createSdtPrId(value);
     		rPrOrAliasOrLock.add(value);
     	}
+    }
+    
+    public CTDataBinding getDataBinding() {
+    	
+    	for (Object o : getRPrOrAliasOrLock()) {
+    		if ( o instanceof CTDataBinding ) {
+    			return (CTDataBinding)o;
+    		} 
+    	}
+        return null;
+    }
+    
+    public void setDataBinding(CTDataBinding value) {
         
-        
+    	CTDataBinding existingBinding = getDataBinding(); 
+    	
+    	if (existingBinding!=null) {
+    		if (!existingBinding.equals(value)) {
+    			log.debug("Changing DataBinding tag from " + existingBinding + " to " + value);
+        		rPrOrAliasOrLock.remove(existingBinding);
+        		rPrOrAliasOrLock.add(value);
+    		}
+    		// else - they are the same, so do nothing
+    	} else {
+    		//ObjectFactory factory = new ObjectFactory();
+    		//JAXBElement idWrapper = factory.createSdtPrId(value);
+    		rPrOrAliasOrLock.add(value);
+    	}
     }
     
 

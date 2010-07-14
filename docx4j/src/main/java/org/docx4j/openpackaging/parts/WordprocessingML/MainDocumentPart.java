@@ -137,6 +137,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		
 		return XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, xpathExpr, refreshXmlFirst);
 	}	
+
+	public List<Object> getJAXBNodesViaXPath(String xpathExpr, Object someJaxbElement, boolean refreshXmlFirst) 
+		throws JAXBException {
+
+		return XmlUtils.getJAXBNodesViaXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
+	}	
 	
     private PropertyResolver propertyResolver;
 	public PropertyResolver getPropertyResolver() {

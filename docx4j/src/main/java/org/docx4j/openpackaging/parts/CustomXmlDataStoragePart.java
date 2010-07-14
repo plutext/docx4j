@@ -22,10 +22,15 @@ package org.docx4j.openpackaging.parts;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -34,11 +39,21 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
+import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTDataBinding;
+import org.docx4j.wml.CTSdtContentRow;
+import org.docx4j.wml.CTSdtContentRun;
+import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.Tag;
+import org.w3c.dom.Node;
 
 
 public final class CustomXmlDataStoragePart extends Part {
@@ -148,6 +163,304 @@ public final class CustomXmlDataStoragePart extends Part {
 		this.data = data;
 	}
 	
+	/**
+	 * Preprocess content controls which have tag bindingrole="conditional|repeat".
+	 * 
+	 * Limitations:
+	 * - nested repeats?
+	 * 
+	 * @param documentPart
+	 * @throws Docx4JException
+	 */
+	public static void preprocess(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+
+		Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = wordMLPackage.getCustomXmlDataStorageParts();		
+		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+				
+		String xpathSdt = "//w:sdt";
+		List<Object> list = null;
+		try {
+			list = documentPart.getJAXBNodesViaXPath(xpathSdt, false);
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		for(Object raw : list) {
+			
+			log.info(raw.getClass().getName() );
+			
+			Object o = XmlUtils.unwrap(raw);
+			
+			if (o instanceof org.docx4j.wml.SdtBlock ) {
+				
+				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock)o;
+				if (sdt.getSdtPr().getDataBinding()!=null) continue; // a real binding attribute trumps any tag
+				Tag tag = sdt.getSdtPr().getTag();								
+				processSdt(wordMLPackage, sdt.getParent(), sdt, tag, sdt.getSdtContent() );
+				
+			} else if ( o instanceof org.docx4j.wml.SdtRun ) { // sdt in paragraph
+					
+				org.docx4j.wml.SdtRun sdtrun = (org.docx4j.wml.SdtRun)o;
+				if (sdtrun.getSdtPr().getDataBinding()!=null) continue; // a real binding attribute trumps any tag
+				Tag tag = sdtrun.getSdtPr().getTag();	
+				processSdt(wordMLPackage, sdtrun.getParent(), sdtrun, tag, sdtrun.getSdtContent() );					
+				
+			} else if (  o instanceof org.docx4j.wml.CTSdtRow ) { // sdt wrapping row
+
+				org.docx4j.wml.CTSdtRow sdtrow = (org.docx4j.wml.CTSdtRow)o;
+				if (sdtrow.getSdtPr().getDataBinding()!=null) continue; // a real binding attribute trumps any tag
+				Tag tag = sdtrow.getSdtPr().getTag();	
+				processSdt(wordMLPackage, sdtrow.getParent(), sdtrow, tag, sdtrow.getSdtContent() );
+				
+			} else if (o instanceof org.docx4j.wml.CTSdtCell ) { // sdt wrapping cell
+				
+				log.warn("Cowardly ignoring bindingrole on SdtCell");
+				
+			} else {
+				log.warn("TODO: Handle " + o.getClass().getName() );					
+			}
+			
+		}
+		
+	}
+	
+	private static void processSdt(WordprocessingMLPackage wordMLPackage,
+			Object sdtParent, Object sdt, Tag tag, Object sdtContent) {
+		
+		if (tag==null) return;
+		
+		log.info(tag.getVal());
+
+		QueryString qs = new QueryString();
+		HashMap<String, String> map = qs.parseQueryString(tag.getVal());
+		
+		String bindingrole = map.get("bindingrole");
+		if (bindingrole==null) {
+			return; // do nothing
+		} 
+
+		Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = wordMLPackage.getCustomXmlDataStorageParts();		
+		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+		
+		// get the value
+		String storeItemId = map.get("w:storeItemID");
+		String xpath = map.get("w:xpath");
+		String prefixMappings = map.get("w:prefixMappings");
+		
+		if (bindingrole.equals("conditional")) {
+
+			log.info("Processing Conditional: " + tag.getVal());
+			
+			/*
+			 * eg   <w:tag w:val="bindingrole=conditional
+			 * 						&amp;w:xpath=/root/inornot
+			 * 						&amp;w:storeItemID={543111b2-fc12-4cae-89cc-1d5996e6a7a3}"/>
+                    
+                    <w:tag w:val="bindingrole=conditional
+                    				&amp;w:xpath=/root/inornot/text()
+                    				&amp;w:storeItemID={543111b2-fc12-4cae-89cc-1d5996e6a7a3}"/>-->
+			 * 
+			 */
+			
+			String val = xpathGetString(customXmlDataStorageParts,
+					storeItemId, xpath, prefixMappings);	
+			
+			log.info("Got value: " + val);
+			
+			if (Boolean.getBoolean(val)) {
+				log.debug("so keeping");
+			} else {
+				// Remove it
+				log.info("Removed? " + removeSdt(sdtParent, sdt) );
+			}
+			
+		} else if (bindingrole.equals("repeat")) {
+
+			log.info("Processing Repeat: " + tag.getVal());
+			
+			// Get the bound XML	
+			String xpathBase;
+			if (xpath.endsWith("/*")) {
+				xpathBase = xpath.substring(0, xpath.length()-2);
+			} else if (xpath.endsWith("/")) {
+				xpathBase = xpath.substring(0, xpath.length()-1);
+			} else {
+				xpathBase = xpath;
+			}
+			log.debug("Repeat: using xpath: " + xpath);
+	        NamespaceContext nsContext = new NamespacePrefixMappings();			
+	        List<Node> repeatChildren = xpathGetNodes(customXmlDataStorageParts,
+					storeItemId, xpathBase+"/*", prefixMappings);	
+			
+			// Count children
+	        int numRepeats = repeatChildren.size();
+	        log.debug("Got children: " + numRepeats );
+	        
+	        if (numRepeats==0) {
+	        	// Remove repeat std
+				log.info("Removed? " + removeSdt(sdtParent, sdt) );
+				return;
+	        }
+			
+	        
+	        List<List<Object>> newContent = new ArrayList<List<Object>>(); 
+	        for (int i=0; i<numRepeats; i++) {
+	        	newContent.add(new ArrayList<Object>() );
+	        }
+	        
+			// Process the sdt contents
+	        List<Object> content;
+	        if (sdtContent instanceof CTSdtContentRow) {
+	        	content = ((CTSdtContentRow)sdtContent).getEGContentRowContent();
+	        } else if (sdtContent instanceof SdtContentBlock) {	        	
+	        	content = ((SdtContentBlock)sdtContent).getEGContentBlockContent();	        	
+	        } else if (sdtContent instanceof CTSdtContentRun) {	        	
+	        	content = ((CTSdtContentRun)sdtContent).getParagraphContent();	        	
+	        } else {
+	        	log.error("TODO: handle " + sdtContent.getClass().getName() );
+	        	return;
+	        }
+	        
+        	for (Object c : content) {
+        		
+        		// Find child content controls.
+        		// We expect some .. that's the whole point
+    			// Limitation: For now, we only mangle real binding elements,
+    			// not things with @bindingrole
+        		String xpathDataBindings = "//w:sdt/w:sdtPr/w:dataBinding";
+        		List<Object> bindingsToMangle = null;
+        		try {
+        			bindingsToMangle = documentPart.getJAXBNodesViaXPath(xpathDataBindings, c, false);
+        		} catch (JAXBException e) {
+        			e.printStackTrace();
+        		}        		
+        		
+        		if (bindingsToMangle.size()>0) {
+
+        	        for (int i=0; i<numRepeats; i++) {
+        			
+	        			// Alter XPaths in any child content controls
+        	        	// For now, we don't worry about the fact that there will be duplicate ids.
+	        			
+	        			// First, mangle
+	        			// but keep a copy so we can restore state
+	        			List<String> initialBindingXPath = new ArrayList<String>();
+	        			for (Object ob : bindingsToMangle) {
+	        				
+	        				
+	        				CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(ob);
+//	        				if (ob instanceof CTDataBinding) {
+//	        					binding	= (CTDataBinding)ob;
+//	        				} else if (ob instanceof javax.xml.bind.JAXBElement) {
+//	        					binding	= (CTDataBinding)((JAXBElement)ob).getValue();
+//	        				}
+	        				initialBindingXPath.add(binding.getXpath());
+	        				
+	        				String thisXPath = binding.getXpath();
+        					log.debug("existing xpath: " + thisXPath);
+	        				
+	        				// The tricky part
+	        				if (thisXPath.startsWith(xpathBase)) {
+	        					log.debug("xpathBase: " + xpathBase);
+	        					int beginIndex = thisXPath.indexOf("/", xpathBase.length()+1 ); // +1 for good measure	        					
+	        					String newPath = xpathBase + "/*[" + i + "]/" + thisXPath.substring(beginIndex+1);	        					
+	        					log.debug("newPath: " + newPath);
+	        					binding.setXpath(newPath);
+	        				}
+	        			}
+	        			        			
+	        			// Clone
+        	        	newContent.get(i).add(
+        	        			XmlUtils.deepCopy(c)	        	        	
+        	        	);
+	        			
+	        			// Unmangle, ready for next iteration
+	        			int it = 0;
+	        			for (Object ob : bindingsToMangle) {        				
+	        				CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(ob);
+//	        				CTDataBinding binding = null;
+//	        				if (ob instanceof CTDataBinding) {
+//	        					binding	= (CTDataBinding)ob;
+//	        				} else if (ob instanceof javax.xml.bind.JAXBElement) {
+//	        					binding	= (CTDataBinding)((JAXBElement)ob).getValue();
+//	        				}
+	        				binding.setXpath( initialBindingXPath.get(it));
+	        				it++;
+	        			}
+        	        }        			
+        		} else {
+        			
+        			log.warn("No descendant content controls found in the repeat");
+        			
+        	        for (int i=0; i<numRepeats; i++) {
+        	        	newContent.get(i).add(
+        	        			XmlUtils.deepCopy(c)	        	        	
+        	        	);
+        	        }
+        			
+        		}	        		
+        	}
+        		        	
+			// Replace
+	        if (sdtContent instanceof CTSdtContentRow) {
+	        	((CTSdtContentRow)sdtContent).getEGContentRowContent().clear();
+		        for (int i=0; i<numRepeats; i++) {
+		        	((CTSdtContentRow)sdtContent).getEGContentRowContent().addAll(
+	    	        	newContent.get(i)	        	        	
+		        	);
+		        }	        	
+	        } else if (sdtContent instanceof SdtContentBlock) {	        	
+	        	((SdtContentBlock)sdtContent).getEGContentBlockContent().clear();
+		        for (int i=0; i<numRepeats; i++) {
+		        	((SdtContentBlock)sdtContent).getEGContentBlockContent().addAll(
+	    	        	newContent.get(i)	        	        	
+		        	);
+		        }	        	
+	        } else if (sdtContent instanceof CTSdtContentRun) {	        	
+	        	((CTSdtContentRun)sdtContent).getParagraphContent().clear();
+		        for (int i=0; i<numRepeats; i++) {
+		        	((CTSdtContentRun)sdtContent).getParagraphContent().addAll(
+	    	        	newContent.get(i)	        	        	
+		        	);
+		        }	        	
+	        } else {
+	        	log.error("TODO: handle " + sdtContent.getClass().getName() );
+	        	return;
+	        }
+	        	
+		}	
+	}
+		
+	private static boolean removeSdt(Object sdtParent, Object sdt) {
+		
+		if (sdtParent instanceof org.docx4j.wml.Body) {			
+			return ((org.docx4j.wml.Body)sdtParent).getEGBlockLevelElts().remove(sdt);
+		} else if (sdtParent instanceof org.docx4j.wml.P) {
+			return ((org.docx4j.wml.P)sdtParent).getParagraphContent().remove(sdt);
+		} else if (sdtParent instanceof org.docx4j.wml.Tbl) {
+			return ((org.docx4j.wml.Tbl)sdtParent).getEGContentRowContent().remove(sdt);
+		} else if (sdtParent instanceof org.docx4j.wml.Tr) {
+			return ((org.docx4j.wml.Tr)sdtParent).getEGContentCellContent().remove(sdt);
+		} else if (sdtParent instanceof org.docx4j.wml.Tc) {
+			return ((org.docx4j.wml.Tc)sdtParent).getEGBlockLevelElts().remove(sdt);
+        } else {
+        	log.error("TODO: handle removal from parent " + sdtParent.getClass().getName() );
+        	return false;
+        }
+	}
+	
+	private static List<Node> xpathGetNodes(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			String storeItemId, String xpath, String prefixMappings) {
+		
+		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId);
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + storeItemId);
+			return null;
+		}
+		return part.getData().xpathGetNodes(xpath, prefixMappings);
+	}
+	
 	
 	public static void applyBindings(DocumentPart documentPart) throws Docx4JException {
 		
@@ -188,7 +501,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	 * @param prefixMappings a string such as "xmlns:ns0='http://schemas.medchart'"
 	 * @return
 	 */
-	public static String getXPath(HashMap<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+	public static String xpathGetString(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 			String storeItemId, String xpath, String prefixMappings) {
 		
 		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId);
@@ -198,17 +511,18 @@ public final class CustomXmlDataStoragePart extends Part {
 		}
 		try {
 			if (log.isDebugEnabled() ) {
-				String r = part.getData().getXPath(xpath, prefixMappings);
+				String r = part.getData().xpathGetString(xpath, prefixMappings);
 				log.debug(xpath + " yielded result " + r);
 				return r;
 			} else {
-				return part.getData().getXPath(xpath, prefixMappings);
+				return part.getData().xpathGetString(xpath, prefixMappings);
 			}
 		} catch (Docx4JException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
+
 	
 	/* ---------------------------------------------------------------------------
 	 * Pre-processing of content controls which have a tag containing "bindingrole"
