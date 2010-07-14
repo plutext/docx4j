@@ -31,11 +31,18 @@ import java.util.HashMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -75,7 +82,9 @@ public class SaveToZipFile {
 	public boolean save(String filepath) throws Docx4JException  {
 		log.info("Saving to" +  filepath );		
 		try {
-			return save(new FileOutputStream(filepath));
+			if (filepath.toLowerCase().endsWith(".xml") ) {
+				return saveFlatOPC(new FileOutputStream(filepath));
+			} else return save(new FileOutputStream(filepath));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -87,12 +96,38 @@ public class SaveToZipFile {
 	public boolean save(java.io.File docxFile) throws Docx4JException  {
 		log.info("Saving to" +  docxFile );		
 		try {
-			return save(new FileOutputStream(docxFile));
+			if (docxFile.getPath().toLowerCase().endsWith(".xml") ) {
+				return saveFlatOPC(new FileOutputStream(docxFile));
+			} else return save(new FileOutputStream(docxFile));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
 		}
+	}
+	
+	public boolean saveFlatOPC(OutputStream realOS) {
+		
+		try {
+			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(p);
+			org.docx4j.xmlPackage.Package pkg = worker.get();
+			
+			// Now marshall it
+			JAXBContext jc = Context.jcXmlPackage;
+			Marshaller marshaller=jc.createMarshaller();
+			
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			NamespacePrefixMapperUtils.setProperty(marshaller, 
+					NamespacePrefixMapperUtils.getPrefixMapper());			
+			
+			marshaller.marshal(pkg, realOS);
+			return true;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		} 			
+		
 	}
 	
 	/* Save a Package as a Zip file in the outputstream provided */
