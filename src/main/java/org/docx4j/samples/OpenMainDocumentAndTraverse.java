@@ -21,21 +21,15 @@
 package org.docx4j.samples;
 
 
-import java.io.FileInputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.picture.Pic;
 import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -46,6 +40,19 @@ import org.docx4j.wml.Body;
 import org.w3c.dom.Element;
 
 
+/**
+ * This sample shows how a JAXB object tree can be traversed.
+ * 
+ * This is useful if you want to get a particular JAXB node,
+ * and also to see what objects are used in your document.
+ * 
+ * In practice, if you want to find/manipulate elements in
+ * your main document part, the method getJAXBNodesViaXPath
+ * is more convenient.  
+ * 
+ * @author jharrop
+ *
+ */
 public class OpenMainDocumentAndTraverse {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
@@ -55,8 +62,7 @@ public class OpenMainDocumentAndTraverse {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Images.docx";
-//    	String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fo-200912.xml";
+    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
 		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
@@ -69,6 +75,8 @@ public class OpenMainDocumentAndTraverse {
 		// 2. Fetch the document part 		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		
+		
+		
 		// Display its contents 
 		System.out.println( "\n\n OUTPUT " );
 		System.out.println( "====== \n\n " );	
@@ -78,7 +86,7 @@ public class OpenMainDocumentAndTraverse {
 
 		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
-		walkJAXBElements(bodyChildren);		
+		walkJAXBElements(bodyChildren, "");		
 		
 		org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart commentsPart = documentPart.getCommentsPart();
 		
@@ -116,103 +124,117 @@ public class OpenMainDocumentAndTraverse {
 				
 	}
 	
-	static void walkJAXBElements(List <Object> bodyChildren){
+	static void walkJAXBElements(List <Object> children, String indent){
 	
-		for (Object o : bodyChildren ) {
-
-			if ( o instanceof javax.xml.bind.JAXBElement) {
-			
-				System.out.println("\n"+ XmlUtils.JAXBElementDebug((JAXBElement)o) );
-					
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
-					org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();
-					describeTable(tbl);
-				}
-			} else if (o instanceof org.docx4j.wml.P) {
-				System.out.println( "Paragraph object: ");
-				
-				if (((org.docx4j.wml.P)o).getPPr() != null ) {
-					
-					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
-					if (ppr.getSectPr()!=null) {
-						System.out.println( "paragraph contains sectpr");						
-					}
-					
-					if ( ppr.getRPr() != null
-						&& ppr.getRPr().getB() !=null ) {
-						System.out.println( "For a ParaRPr bold!");
-					}
-				}
-				
-				walkList( ((org.docx4j.wml.P)o).getParagraphContent());
-			}
+		for (Object o : children ) {
+			inspectObject(o, indent + "  ");
 		}
 	}
 	
-	static void walkList(List children){
+	static void inspectObject(Object o, String indent) {
 		
-		for (Object o : children ) {					
-			if ( o instanceof javax.xml.bind.JAXBElement) {
-				
-				System.out.println( "\n" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
-				
-				// TODO - unmarshall directly to Text.
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
-					org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o).getValue();
-					System.out.println("      " +  t.getValue() );
-					
-				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Drawing") ) {
-					describeDrawing( (org.docx4j.wml.Drawing)((JAXBElement)o).getValue() );
+		// if its wrapped in javax.xml.bind.JAXBElement, get its value
+		o = XmlUtils.unwrap(o);
 
-				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Pict") ) {
-					org.docx4j.wml.Pict pic = (org.docx4j.wml.Pict)((JAXBElement)o).getValue();
-					walkList(pic.getAnyAndAny());
-				}
-				
-				
-				if ( ((JAXBElement)o).getName().getLocalPart().equals("bookmarkStart") ) {
-					org.docx4j.wml.CTBookmark bs = (org.docx4j.wml.CTBookmark)((JAXBElement)o).getValue(); 
-					System.out.println(" .. bookmarkStart" );
-				}
-				
-				if ( ((JAXBElement)o).getName().getLocalPart().equals("bookmarkEnd") ) {
-					org.docx4j.wml.CTMarkupRange be = (org.docx4j.wml.CTMarkupRange)((JAXBElement)o).getValue(); 
-					System.out.println(" .. bookmarkEnd" );
-				}
-				
+		if (o instanceof org.docx4j.wml.SdtBlock) {
+
+			System.out.println(indent+"SDT (Content Control): ");
+
+			walkJAXBElements(((org.docx4j.wml.SdtBlock) o).getSdtContent()
+					.getEGContentBlockContent(), indent + "  ");
+		} else if (o instanceof org.docx4j.wml.P) {
+			System.out.println(indent+"Paragraph object: ");
+
+			// if (((org.docx4j.wml.P)o).getPPr() != null ) {
+			//				
+			// org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
+			// if (ppr.getSectPr()!=null) {
+			// System.out.println(indent+ "paragraph contains sectpr");
+			// }
+			//				
+			// if ( ppr.getRPr() != null
+			// && ppr.getRPr().getB() !=null ) {
+			// System.out.println(indent+ "For a ParaRPr bold!");
+			// }
+			// }
+
+			walkJAXBElements(((org.docx4j.wml.P) o).getParagraphContent(), indent + "  ");
+
+		} else if (o instanceof org.docx4j.wml.R) {
+			org.docx4j.wml.R run = (org.docx4j.wml.R) o;
+			// if (run.getRPr()!=null) {
+			// System.out.println(indent+"      " + "Properties...");
+			// if (run.getRPr().getB()!=null) {
+			// System.out.println(indent+"      " + "B not null ");
+			// System.out.println(indent+"      " + "--> " +
+			// run.getRPr().getB().isVal() );
+			// } else {
+			// System.out.println(indent+"      " + "B null.");
+			// }
+			// }
+			walkJAXBElements(run.getRunContent(), indent + "  ");
+		} else if (o instanceof org.docx4j.wml.Text) {
+			org.docx4j.wml.Text t = (org.docx4j.wml.Text) o;
+			System.out.println(indent+"      " + t.getValue());
+
+		} else if (o instanceof org.docx4j.wml.Tbl) {
+			describeTable((org.docx4j.wml.Tbl) o, indent);
+		} else if (o instanceof org.docx4j.wml.Drawing) {
+			describeDrawing((org.docx4j.wml.Drawing) o, indent);
+		} else if (o instanceof org.docx4j.wml.Tr) {
+
+			System.out.println(indent+"in w:tr .. ");
+			org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr) o;
+
+			for (Object o2 : tr.getEGContentCellContent()) {
+
+				inspectObject(o2, indent + "  ");
+			}
+
+		} else if (o instanceof org.docx4j.wml.Tc) {
+			System.out.println(indent+"in w:tc .. ");
+			org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc) o;
+
+			// Look at the paragraphs in the tc
+			walkJAXBElements(tc.getEGBlockLevelElts(), indent + "  ");
+
+		} else if (o instanceof org.docx4j.wml.Pict) {
+			org.docx4j.wml.Pict pic = (org.docx4j.wml.Pict) o;
+			walkJAXBElements(pic.getAnyAndAny(), indent + "  ");
+
+		} else if (o instanceof org.docx4j.wml.CTBookmark) {
+			org.docx4j.wml.CTBookmark bs = (org.docx4j.wml.CTBookmark) o;
+			System.out.println(indent+" .. bookmarkStart");
+
+		} else if (o instanceof org.docx4j.wml.CTMarkupRange) {
+			org.docx4j.wml.CTMarkupRange be = (org.docx4j.wml.CTMarkupRange) o;
+			System.out.println(indent+" .. bookmarkEnd");
+
+		} else {
+			System.out.println(indent+"  " + o.getClass().getName());
+			if (o instanceof org.w3c.dom.Node) {
+				System.out.println(indent+" IGNORED "
+						+ ((org.w3c.dom.Node) o).getNodeName());
 			} else {
-				System.out.println("  " + o.getClass().getName() );
-				if ( o instanceof org.docx4j.wml.R) {
-					org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
-					if (run.getRPr()!=null) {
-						System.out.println("      " +   "Properties...");
-						if (run.getRPr().getB()!=null) {
-							System.out.println("      " +   "B not null ");						
-							System.out.println("      " +   "--> " + run.getRPr().getB().isVal() );
-						} else {
-							System.out.println("      " +   "B null.");												
-						}
-					}
-					walkList(run.getRunContent());									
-				} else if (o instanceof org.w3c.dom.Node) {
-						System.out.println(" IGNORED " + ((org.w3c.dom.Node)o).getNodeName() );					
-				} else {					
-					System.out.println(" IGNORED " + o.getClass().getName() );					
-				}
+				System.out.println(indent+" IGNORED " + o.getClass().getName());
 			}
-//			else if ( o instanceof org.docx4j.jaxb.document.Text) {
-//				org.docx4j.jaxb.document.Text  t = (org.docx4j.jaxb.document.Text)o;
-//				System.out.println("      " +  t.getValue() );					
-//			}
 		}
-	}
-
-	static void describeTable( org.docx4j.wml.Tbl tbl ) {
+		// else if ( o instanceof org.docx4j.jaxb.document.Text) {
+		// org.docx4j.jaxb.document.Text t = (org.docx4j.jaxb.document.Text)o;
+		// System.out.println(indent+"      " + t.getValue() );
+		// }
 		
+	}
+	
+	static void describeTable( org.docx4j.wml.Tbl tbl, String indent ) {
+		
+		System.out.println(indent+"w:tbl ");
+
 		// What does a table look like?
 		boolean suppressDeclaration = false;
 		boolean prettyprint = true;
-		System.out.println( org.docx4j.XmlUtils.marshaltoString(tbl, suppressDeclaration, prettyprint) );
+		// Uncomment to see table xml
+		//System.out.println(indent+ org.docx4j.XmlUtils.marshaltoString(tbl, suppressDeclaration, prettyprint) );
 		
 		// Could get the TblPr if we wanted them
 		 org.docx4j.wml.TblPr tblPr = tbl.getTblPr();
@@ -222,51 +244,19 @@ public class OpenMainDocumentAndTraverse {
 		 
 		 // But here, let's look at the table contents
 		 for (Object o : tbl.getEGContentRowContent() ) {
-			 
-			 if (o instanceof org.docx4j.wml.Tr) {
-				 
-				 System.out.println( "\n in w:tr .. ");
-				 org.docx4j.wml.Tr tr = (org.docx4j.wml.Tr)o;
-				 
-				 for (Object o2 : tr.getEGContentCellContent() ) {
 					 
-						if ( o2 instanceof javax.xml.bind.JAXBElement) {
-							
-							if ( ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc") ) {
-								System.out.println( "\n  in w:tc .. ");
-								org.docx4j.wml.Tc tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
-								
-								// Look at the paragraphs in the tc
-								walkJAXBElements( tc.getEGBlockLevelElts() );
-								
-							} else {
-								// What is it, if it isn't a Tc?
-								System.out.println( "\n  NOT Tc: " + XmlUtils.JAXBElementDebug((JAXBElement)o) );
-							}
-						} else {
-							System.out.println("  " + o.getClass().getName() );							
-						}
-					 
-				 }
-				 
-				 
-			 } else {
-				System.out.println("  " + o.getClass().getName() );
-			 }
-			 
+			 inspectObject(o, indent + "  ");					 			 
 		 }
-		 
-		 
 		
 	}
 	
-	static void describeDrawing( org.docx4j.wml.Drawing d ) {
+	static void describeDrawing( org.docx4j.wml.Drawing d, String indent ) {
 	
-		System.out.println(" describeDrawing " );
+		System.out.println(indent+" describeDrawing " );
 		
 		if ( d.getAnchorOrInline().get(0) instanceof Anchor ) {
 			
-			System.out.println(" ENCOUNTERED w:drawing/wp:anchor " );
+			System.out.println(indent+" ENCOUNTERED w:drawing/wp:anchor " );
 			// That's all for now...
 			
 		} else if ( d.getAnchorOrInline().get(0) instanceof Inline ) {
@@ -278,13 +268,13 @@ public class OpenMainDocumentAndTraverse {
 			Pic pic = inline.getGraphic().getGraphicData().getPic();
 				
 			if (pic!=null) {
-				System.out.println( "image relationship: " +  pic.getBlipFill().getBlip().getEmbed() );
+				System.out.println(indent+ "image relationship: " +  pic.getBlipFill().getBlip().getEmbed() );
 			}
 			
 			
 		} else {
 			
-			System.out.println(" Didn't get Inline :(  How to handle " + d.getAnchorOrInline().get(0).getClass().getName() );
+			System.out.println(indent+" Didn't get Inline :(  How to handle " + d.getAnchorOrInline().get(0).getClass().getName() );
 		}
 		
 	}
