@@ -232,6 +232,8 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		// eg  w:prefixMappings="xmlns:ns0='http://schemas.medchart'"
 		// according to the spec, whitespace is the delimiter
 		
+		if (prefixMappings==null || prefixMappings.equals("") ) return;
+		
 		// we get one of these each time we encounter a w:dataBinding
 		// element in a content control; pity it is not done just
 		// once!

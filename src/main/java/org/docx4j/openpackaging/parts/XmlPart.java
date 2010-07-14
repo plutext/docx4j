@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.parts;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
@@ -36,6 +37,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang.text.StrTokenizer;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -125,7 +127,7 @@ public abstract class XmlPart extends Part {
 	
 	public abstract Document getDocument() throws Docx4JException;
 	
-	public String getXPath(String xpathString, String prefixMappings)  throws Docx4JException {
+	public String xpathGetString(String xpathString, String prefixMappings)  throws Docx4JException {
 		try {
 			getNamespaceContext().registerPrefixMappings(prefixMappings);
 			
@@ -136,6 +138,16 @@ public abstract class XmlPart extends Part {
 			throw new Docx4JException("Problems evaluating xpath '" + xpathString + "'", e);
 		}
 	}
+	
+	public List<Node> xpathGetNodes(String xpathString, String prefixMappings) {
+		
+		getNamespaceContext().registerPrefixMappings(prefixMappings);
+		
+		return XmlUtils.xpath(doc, xpathString, 
+				getNamespaceContext() );
+		
+	}
+	
 	
 	/**
 	 * Set the value of the node referenced in the xpath expression.

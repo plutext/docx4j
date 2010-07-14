@@ -19,7 +19,10 @@
  */
 package org.docx4j.model.datastorage;
 
+import java.util.List;
+
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.w3c.dom.Node;
 
 /**
  * Interface to provide access to the data stored in a 
@@ -45,7 +48,10 @@ public interface CustomXmlDataStorage {
 	 * @param xpath
 	 * @return
 	 */
-	public String getXPath(String xpath, String prefixMappings) throws Docx4JException;
+	public String xpathGetString(String xpath, String prefixMappings) throws Docx4JException;
+		
+	public List<Node> xpathGetNodes(String xpathString, String prefixMappings);
+	
 		
 	/**
 	 * Set the contents of this object from the input stream

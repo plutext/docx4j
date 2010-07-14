@@ -146,7 +146,31 @@ public class XmlUtils {
 				TRANSFORMER_FACTORY_ORIGINAL);
 		
 	}
+
+	public static Object unwrap(Object o) {
 		
+		if (o instanceof javax.xml.bind.JAXBElement) {
+			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+			return ((JAXBElement)o).getValue();
+		} else {
+			return o;
+		}
+	}
+
+//	public static Object unwrap(Object o, Class<?> x) {
+//		
+//		if (o instanceof x) {
+//			
+//		}
+//		else if (o instanceof javax.xml.bind.JAXBElement) {
+//			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+//			return ((JAXBElement)o).getValue();
+//		} else {
+//			return o;
+//		}
+//	}
+
+	
 	public static String JAXBElementDebug(javax.xml.bind.JAXBElement o)  {
 				
 		String prefix = null;
@@ -515,6 +539,7 @@ public class XmlUtils {
 		return deepCopy(value, Context.jc);		
 	}
 	
+	
 	/** Clone this JAXB object
 	 * @param value
 	 * @param jc
@@ -729,14 +754,21 @@ public class XmlUtils {
         return resultList;
     }
 	
-    private static List<Node> xpath(Node node, String xpathExpression) {
+    public static List<Node> xpath(Node node, String xpathExpression) {
+        XPathFactory xpf = XPathFactory.newInstance();
+        XPath xpath = xpf.newXPath();
+
+        NamespaceContext nsContext = new NamespacePrefixMappings();
+        
+        return xpath(node, xpathExpression, nsContext);
+        
+    }	
+
+    public static List<Node> xpath(Node node, String xpathExpression, NamespaceContext nsContext) {
         // create XPath
         XPathFactory xpf = XPathFactory.newInstance();
         XPath xpath = xpf.newXPath();
 
-		// Prepare XPath
-        NamespaceContext nsContext = new NamespacePrefixMappings();
-		//((NamespacePrefixMappings)nsContext).registerPrefixMappings("xmlns:w='" + Namespaces.NS_WORD12 + "'" );
 		xpath.setNamespaceContext(nsContext);
         
         try {
@@ -749,9 +781,7 @@ public class XmlUtils {
             e.printStackTrace();
             return Collections.emptyList();
         }
-
     }	
-
 
      
      static class LoggingErrorListener implements ErrorListener {
