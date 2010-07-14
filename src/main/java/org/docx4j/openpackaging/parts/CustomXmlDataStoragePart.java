@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts;
 
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +53,7 @@ import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentRow;
 import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.SdtContentBlock;
+import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.w3c.dom.Node;
 
@@ -328,10 +330,10 @@ public final class CustomXmlDataStoragePart extends Part {
         		// We expect some .. that's the whole point
     			// Limitation: For now, we only mangle real binding elements,
     			// not things with @bindingrole
-        		String xpathDataBindings = "//w:sdt/w:sdtPr/w:dataBinding";
+        		String xpathSdtPr = ".//w:sdt/w:sdtPr";
         		List<Object> bindingsToMangle = null;
         		try {
-        			bindingsToMangle = documentPart.getJAXBNodesViaXPath(xpathDataBindings, c, false);
+        			bindingsToMangle = documentPart.getJAXBNodesViaXPath(xpathSdtPr, c, false);
         		} catch (JAXBException e) {
         			e.printStackTrace();
         		}        		
@@ -346,15 +348,16 @@ public final class CustomXmlDataStoragePart extends Part {
 	        			// First, mangle
 	        			// but keep a copy so we can restore state
 	        			List<String> initialBindingXPath = new ArrayList<String>();
+	        			List<BigInteger> initialId = new ArrayList<BigInteger>();
 	        			for (Object ob : bindingsToMangle) {
 	        				
+	        				SdtPr sdtPr = (SdtPr)XmlUtils.unwrap(ob);
+	        				log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
+	        				CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
 	        				
-	        				CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(ob);
-//	        				if (ob instanceof CTDataBinding) {
-//	        					binding	= (CTDataBinding)ob;
-//	        				} else if (ob instanceof javax.xml.bind.JAXBElement) {
-//	        					binding	= (CTDataBinding)((JAXBElement)ob).getValue();
-//	        				}
+	        				if (binding==null) log.warn("couldn't find binding!");
+	        				
+	        				initialId.add(sdtPr.getId().getVal());
 	        				initialBindingXPath.add(binding.getXpath());
 	        				
 	        				String thisXPath = binding.getXpath();
@@ -368,6 +371,11 @@ public final class CustomXmlDataStoragePart extends Part {
 	        					log.debug("newPath: " + newPath);
 	        					binding.setXpath(newPath);
 	        				}
+	        				
+	        				// Change ID
+	        				BigInteger bi = sdtPr.getId().getVal();
+	        				long longid = 10*bi.longValue()+i;
+	        				sdtPr.getId().setVal( BigInteger.valueOf(longid)  );
 	        			}
 	        			        			
 	        			// Clone
@@ -378,13 +386,10 @@ public final class CustomXmlDataStoragePart extends Part {
 	        			// Unmangle, ready for next iteration
 	        			int it = 0;
 	        			for (Object ob : bindingsToMangle) {        				
-	        				CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(ob);
-//	        				CTDataBinding binding = null;
-//	        				if (ob instanceof CTDataBinding) {
-//	        					binding	= (CTDataBinding)ob;
-//	        				} else if (ob instanceof javax.xml.bind.JAXBElement) {
-//	        					binding	= (CTDataBinding)((JAXBElement)ob).getValue();
-//	        				}
+	        				SdtPr sdtPr = (SdtPr)XmlUtils.unwrap(ob);
+	        				CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
+
+	        				sdtPr.getId().setVal(initialId.get(it));
 	        				binding.setXpath( initialBindingXPath.get(it));
 	        				it++;
 	        			}
