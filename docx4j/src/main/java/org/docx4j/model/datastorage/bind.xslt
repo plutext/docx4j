@@ -79,7 +79,7 @@
 				<!-- TEMP: insert a new w:r, containing result -->
 				<w:r>
 					<w:t><xsl:value-of
-						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.getXPath(
+						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.xpathGetString(
 									$customXmlDataStorageParts,
 									$storeItemID,
 									$xpath,
@@ -94,7 +94,7 @@
 						<xsl:copy-of select="w:rPr/*[not(self::w:rStyle)]"/>
 					</w:rPr>
 					<w:t><xsl:value-of
-						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.getXPath(
+						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.xpathGetString(
 									$customXmlDataStorageParts,
 									$storeItemID,
 									$xpath,

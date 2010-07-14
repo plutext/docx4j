@@ -283,7 +283,7 @@ public class Load {
 					log.error(".. but the target seems to be missing?");
 					continue;
 				}
-				String itemId = customXmlProps.getItemId();
+				String itemId = customXmlProps.getItemId().toLowerCase();
 				log.info("Identified/registered ds:itemId " + itemId);
 				pkg.getCustomXmlDataStorageParts().put(itemId, 
 						(org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)entry );
