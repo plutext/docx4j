@@ -138,6 +138,23 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		return XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, xpathExpr, refreshXmlFirst);
 	}	
 
+	/**
+	 * Fetch JAXB Nodes matching an XPath (for example ".//w:p" - note the dot,
+	 * which is necessary for this sort of relative path).
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+
+	 * @param xpathExpr
+	 * @param someJaxbElement
+	 * @param refreshXmlFirst
+	 * @return
+	 * @throws JAXBException
+	 */
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, Object someJaxbElement, boolean refreshXmlFirst) 
 		throws JAXBException {
 

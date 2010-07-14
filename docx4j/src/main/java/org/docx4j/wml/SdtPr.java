@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 
 /**
  * <p>Java class for CT_SdtPr complex type.
@@ -320,6 +321,8 @@ public class SdtPr
     public CTDataBinding getDataBinding() {
     	
     	for (Object o : getRPrOrAliasOrLock()) {
+    		o = XmlUtils.unwrap(o);
+    		log.debug("inspecting " + o.getClass().getName() );
     		if ( o instanceof CTDataBinding ) {
     			return (CTDataBinding)o;
     		} 
