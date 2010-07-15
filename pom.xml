@@ -290,19 +290,14 @@
 				6396599 has also been committed to backport to 6u release 6u10 -->
 		</dependency>
 
-		<!--  built from cvs -->
+<!-- Uncomment for the PDF conversion via HTML, which
+		may be found in docx4j-extras.
+		 
 		<dependency>
 			<groupId>pdf-renderer</groupId>
 			<artifactId>pdf-renderer</artifactId>
 			<version>0.2009.0324</version>
 		</dependency>
- 
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons.ppp</groupId>
-			<artifactId>parent-pointer-plugin</artifactId>
-			<version>1.0</version>
-		</dependency>
-
 		<dependency>
 			<groupId>xhtmlrenderer</groupId>
 			<artifactId>minium</artifactId>
@@ -313,7 +308,15 @@
 			<groupId>xhtmlrenderer</groupId>
 			<artifactId>core-renderer</artifactId>
 			<version>R8pre2</version>
+		</dependency> 
+ -->
+
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons.ppp</groupId>
+			<artifactId>parent-pointer-plugin</artifactId>
+			<version>1.0</version>
 		</dependency>
+
 
 		<dependency>
 			<groupId>docx4j</groupId>

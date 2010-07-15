@@ -43,31 +43,30 @@ public abstract class PdfConversion  {
 		this.wordMLPackage = wordMLPackage;
 	}
 	
-	// Method to visualise using pdf-renderer
-	// TODO - comment out, if we choose not to distribute that ...
-	public void view() throws Exception {
-		
-		File tmpFile = File.createTempFile("output", ".pdf");
-		// Delete the temporary file when program exits.
-		tmpFile.deleteOnExit();
-		
-		OutputStream os = new java.io.FileOutputStream(tmpFile);
+//	// Method to visualise using pdf-renderer
+//	public void view() throws Exception {
+//		
+//		File tmpFile = File.createTempFile("output", ".pdf");
+//		// Delete the temporary file when program exits.
+//		tmpFile.deleteOnExit();
+//		
+//		OutputStream os = new java.io.FileOutputStream(tmpFile);
+//
+//		// Could write to a ByteBuffer and avoid the temp file if:
+//		// 1. com.sun.pdfview.PDFViewer had an appropriate open method
+//		// 2. We knew how big to make the buffer
+//		// java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(15000);
+//		// //15kb
+//		// OutputStream os = newOutputStream(buf);
+//		
+//		this.output(os);
+//		
+//		com.sun.pdfview.PDFViewer pv = new com.sun.pdfview.PDFViewer(true); 	
+////		pv.openFile(buf, "some name"); // requires modified com.sun.pdfview.PDFViewer		
+//		pv.openFile(tmpFile);
+//		
+//	}
 
-		// Could write to a ByteBuffer and avoid the temp file if:
-		// 1. com.sun.pdfview.PDFViewer had an appropriate open method
-		// 2. We knew how big to make the buffer
-		// java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(15000);
-		// //15kb
-		// OutputStream os = newOutputStream(buf);
-		
-		this.output(os);
-		
-		com.sun.pdfview.PDFViewer pv = new com.sun.pdfview.PDFViewer(true); 	
-//		pv.openFile(buf, "some name"); // requires modified com.sun.pdfview.PDFViewer		
-		pv.openFile(tmpFile);
-		
-		
-	}
 	
 //    /** Returns an output stream for a ByteBuffer. 
 //     *  The write() methods use the relative ByteBuffer put() methods.

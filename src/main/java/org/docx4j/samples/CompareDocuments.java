@@ -98,10 +98,9 @@ public class CompareDocuments {
 		
 		newerPackage.setFontMapper(new IdentityPlusMapper());		
 		org.docx4j.convert.out.pdf.PdfConversion c 
-//			= new org.docx4j.convert.out.pdf.viaHTML.Conversion(olderPackage);
 			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(newerPackage);
-//			= new org.docx4j.convert.out.pdf.viaIText.Conversion(olderPackage);		
-			c.view();
+
+//		c.view();
 				
 	}
 
