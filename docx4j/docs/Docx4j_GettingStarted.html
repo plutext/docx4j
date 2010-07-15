@@ -409,13 +409,17 @@
   
   <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>StripParts</p>
   
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Miscellaneous</p>
-  
-  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CompareDocuments</p>
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Document generation/document assembly using content controls</p>
   
   <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CreateDocxWithCustomXml</p>
   
   <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CustomXmlBinding</p>
+  
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>ContentControlBindingExtensions</p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Miscellaneous</p>
+  
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CompareDocuments</p>
   
   <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>DocProps</p>
   
@@ -585,7 +589,7 @@
   
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Selecting your insertion point</span></p>
   
-  <p class="Normal DocDefaults "><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples/OpenMainDocumentAndTraverse.java"><span style="color: #0000FF;text-decoration: none;">OpenMainDocumentAndTraverse.java</span></a><span style="white-space:pre-wrap;"> in the samples directory shows you how to traverse the JAXB representation of a docx.  Once you have found the JAXB node you wish to change, you can go ahead and change it.  Note: see next section below for how - from nightly 2010 07 13 - you can do this via XPath.</span></p>
+  <p class="Normal DocDefaults "><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples/OpenMainDocumentAndTraverse.java"><span style="color: #0000FF;text-decoration: none;">OpenMainDocumentAndTraverse.java</span></a><span style="white-space:pre-wrap;"> in the samples directory shows you how to traverse the JAXB representation of a docx.  Once you have found the JAXB node you wish to change, you can go ahead and change it.  Note: see next section below for how you can do this via XPath.</span></p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">One annoying thing about JAXB, is that an object – say a table – could be represented as </span><span style="color: #2A00FF;font-family: Consolas;font-size: 9.0pt;">org.docx4j.wml.Tbl</span><span style="white-space:pre-wrap;"> (as you would expect).  Or it might be wrapped in a </span><span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 9.0pt;">javax.xml.bind.JAXBElement</span>, in which case to get the real table, you have to do something like:</p>
   
@@ -599,7 +603,7 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">It can be a bit painful traversing the content tree using JAXB.</p>
   
-  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Happily, from nightly 2010 07 13, you can do use XPath to select JAXB nodes:</p>
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Happily, from docx4j 2.<span style="font-weight: bold;">5</span>.0, you can do use XPath to select JAXB nodes:</p>
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();</span></p>
   
@@ -1053,7 +1057,17 @@
   
   <p class="Normal DocDefaults ">If you want to create the same document 5 times, each populated with different data, obviously you'd need to insert new XML data first.</p>
   
-  <p class="Normal DocDefaults "/>
+  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Binding extensions for repeats and conditionals</span></p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">A content control is said to be </span><span style="font-style: italic;">conditional</span><span style="white-space:pre-wrap;"> if it (and its contents) are included/excluded from the document based on whether some condition is true or false.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">A content control is a </span><span style="font-style: italic;">repeat</span><span style="white-space:pre-wrap;"> if it designates that its contents are to be included more than once.  For example, a row of a table for each invoice/order item, or person.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">docx4j (from 2.5.0) contains a mechanism for processing conditional content controls and repeats.  See </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/sample-docs/databinding/conventions.docx"><span class="Hyperlink DefaultParagraphFont ">http://dev.plutext.org/svn/docx4j/trunk/docx4j/sample-docs/databinding/conventions.docx</span></a><span style="white-space:pre-wrap;"> for an explanation.</span></p>
+  
+  <p class="Normal DocDefaults ">See also the docx4j sample ContentControlBindingExtensions.</p>
+  
+  <p class="Normal DocDefaults ">You can use the content control toolkit to set up your bindings in the usual way.  For your repeats and conditionals, move the content of the w:dataBinding to the w:tag, as described in conventions.docx.</p>
   
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Tips and Tricks</span></p>
   
