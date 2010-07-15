@@ -105,9 +105,7 @@ public class CreatePdf {
 				OutputStream os = new java.io.FileOutputStream(inputfilepath + ".pdf");			
 				c.output(os);
 				System.out.println("Saved " + inputfilepath + ".pdf");
-			} else {
-				c.view();
-			}    
+			}  
 	    }
 	    
 	    public static void createContent(MainDocumentPart wordDocumentPart ) {

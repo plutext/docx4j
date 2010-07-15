@@ -38,14 +38,16 @@
 		the BaseFont stuff in PhysicalFonts. 	
 		
         <pathelement location="${m2Repository}/com/lowagie/itext-unsigned/2.0.8/itext-unsigned-2.0.8.jar"/>    	
-	    -->
-	    
-        <pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>
+	    -->	    
+<!--    Uncomment for the PDF conversion via HTML, which
+		may be found in docx4j-extras. Note that core-renderer R8pre2 incompatible with iText SVN 	
         <pathelement location="${m2Repository}/pdf-renderer/pdf-renderer/0.2009.0324/pdf-renderer-0.2009.0324.jar"/>
-        <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
         <pathelement location="${m2Repository}/xhtmlrenderer/minium/0.1/minium-0.1.jar"/>
         <pathelement location="${m2Repository}/xhtmlrenderer/core-renderer/R8pre2/core-renderer-R8pre2.jar"/>
-        	<!--  core-renderer R8pre2 incompatible with iText SVN  -->	
+-->
+
+        <pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>
+        <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
 
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
