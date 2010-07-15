@@ -50,13 +50,8 @@ public class CreatePdf {
 
 	    	boolean save = true;
 	    	
-//	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
-//	    	String inputfilepath = System.getProperty("user.dir") 
-//	    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
+	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
 	    	//String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
-//	    	String inputfilepath = System.getProperty("user.dir") 
-//    		+ "/sample-docs/test-docs/endnotes.xml";	    	
-	    	String inputfilepath = "C:\\Users\\jharrop\\workspace\\docx4j\\tmp\\TestDocmToPDFConversion.docm";
 	    	
 			WordprocessingMLPackage wordMLPackage;
 			if (inputfilepath==null) {
@@ -96,30 +91,9 @@ public class CreatePdf {
 					= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
 			fontMapper.getFontMappings().put("Algerian", font);
 			
+			// As of docx4j 2.5.0, only viaXSLFO is supported.
+			// The viaIText and viaHTML source code can be found in src/docx4j-extras directory
 			
-			/* Choose which of the three methods you want to use...
-			 * 
-			 * .. viaHTML uses the old docX2HTML.xslt and xhtmlrenderer, 
-			 *    and supports numbering, images,
-			 *    and tables, but is pretty hard to understand
-			 *    
-			 *    It is a trivial change to instead use 
-			 *    HTMLExporterNG, but that should produce
-			 *    the same output as viaXSLFO, so we don't
-			 *    do that. 
-			 *    
-			 * .. viaXSLFO uses docx2fo.xslt and FOP.  It is
-			 *    coming along, with support for
-			 *    headers/footers, images and tables
-			 *    
-			 * .. viaItext - for developers who don't like xslt
-			 *    at all! Or want to use iText's features..
-			 *    Displays images, but as at 2009 03 19.
-			 *    doesn't try to scale them.
-			 *    
-			 * Fonts should work pretty well via any of these
-			 * methods!
-			 */
 			org.docx4j.convert.out.pdf.PdfConversion c 
 //				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
 				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);

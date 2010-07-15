@@ -30,14 +30,16 @@
         <pathelement location="${m2Repository}/org/apache/poi/hwpf/3.4.0/hwpf-3.4.0.jar"/>
 <!--         <pathelement location="${m2Repository}/com/topologi/diffx/0.61/diffx-0.61.jar"/>
  -->
+ 
+<!--    Uncomment for the PDF conversion via HTML or iText, which
+		may be found in docx4j-extras.
+		
+		If you are planning to use that, you'll also want to uncomment
+		the BaseFont stuff in PhysicalFonts. 	
+		
         <pathelement location="${m2Repository}/com/lowagie/itext-unsigned/2.0.8/itext-unsigned-2.0.8.jar"/>    	
-<!--
-	    <pathelement location="${m2Repository}/com/lowagie/itext/2.0.8/itext-2.0.8.jar"/> 
 	    -->
-    <!--Explicit Exclusions from iText: 
-        <pathelement location="${m2Repository}/bouncycastle/bcmail-jdk14/138/bcmail-jdk14-138.jar"/>
-        <pathelement location="${m2Repository}/bouncycastle/bcprov-jdk14/138/bcprov-jdk14-138.jar"/>
-        -->
+	    
         <pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>
         <pathelement location="${m2Repository}/pdf-renderer/pdf-renderer/0.2009.0324/pdf-renderer-0.2009.0324.jar"/>
         <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
@@ -161,7 +163,7 @@
 		
         <javadoc access="public" author="false" 
          destdir="javadoc" 
-         doctitle="docx4j 2.3.0" 
+         doctitle="docx4j 2.4.0" 
          nodeprecated="false" 
          nodeprecatedlist="false" 
          noindex="false" 

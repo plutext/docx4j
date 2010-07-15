@@ -231,14 +231,13 @@
 			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2			 
 		-->
 		
-		<!--  We need SVN build, not v1.3.1,
-			  in order to run headless.
-			  Replace with public copy once there
-			  is something newer than v1.3.1 -->
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>xmlgraphics-commons</artifactId>
 			<version>1.3.757686</version>
+			<!-- Not in maven yet as of 2010 07 15
+				<version>1.4</version>
+				-->
 		</dependency>
 
 		<dependency>
@@ -252,7 +251,13 @@
 			<artifactId>hwpf</artifactId>
 			<version>3.4.0</version>
 		</dependency>
-	 	
+		
+<!--	Uncomment for the PDF conversion via HTML or iText, which
+		may be found in docx4j-extras.
+		
+		If you are planning to use that, you'll also want to uncomment
+		the BaseFont stuff in PhysicalFonts. 	
+		
  		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext-unsigned</artifactId>
@@ -268,6 +273,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+	-->	
 		<dependency>
 			<groupId>xalan</groupId>
 			<artifactId>xalan-patched</artifactId>

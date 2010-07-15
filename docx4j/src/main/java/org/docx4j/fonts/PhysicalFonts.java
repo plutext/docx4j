@@ -19,7 +19,7 @@ import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.microsoft.MicrosoftFontsRegistry;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 
-import com.lowagie.text.pdf.BaseFont;
+//import com.lowagie.text.pdf.BaseFont;
 
 /**
  * The fonts which are physically installed on the system.
@@ -271,21 +271,22 @@ public class PhysicalFonts {
 			        if (f.exists()) {
 			        	
 			        	log.debug(".. found");
-			        	
-			        	// We're only interested if this font supports UTF-8 encoding
-			        	// since otherwise iText can't use it (at least on a
-			        	// UTF8 encoded XHTML document) 
-			        	try {
-			    		    BaseFont bf = BaseFont.createFont(afm,
-			    		    		BaseFont.IDENTITY_H, 
-									BaseFont.NOT_EMBEDDED);
-						} catch (java.io.UnsupportedEncodingException uee) {
-							log.error(afm + " does not support UTF encoding, so ignoring");
-							continue;
-						} catch (Exception e) {
-							log.error(e);
-							continue;
-						}
+
+// Uncomment if you want to use the iText stuff in docx4j-extras			        	
+//			        	// We're only interested if this font supports UTF-8 encoding
+//			        	// since otherwise iText can't use it (at least on a
+//			        	// UTF8 encoded XHTML document) 
+//			        	try {
+//			    		    BaseFont bf = BaseFont.createFont(afm,
+//			    		    		BaseFont.IDENTITY_H, 
+//									BaseFont.NOT_EMBEDDED);
+//						} catch (java.io.UnsupportedEncodingException uee) {
+//							log.error(afm + " does not support UTF encoding, so ignoring");
+//							continue;
+//						} catch (Exception e) {
+//							log.error(e);
+//							continue;
+//						}
 			        	pf = new PhysicalFont(triplet.getName(),fontInfo);
 			        	
 			        	
@@ -297,18 +298,20 @@ public class PhysicalFonts {
 						f = new File(pfm);
 				        if (f.exists()) {				
 				        	log.debug(".. found");
-				        	// We're only interested if this font supports UTF-8 encoding
-				        	try {
-				    		    BaseFont bf = BaseFont.createFont(pfm,
-				    		    		BaseFont.IDENTITY_H, 
-										BaseFont.NOT_EMBEDDED);
-							} catch (java.io.UnsupportedEncodingException uee) {
-								log.error(pfm + " does not support UTF encoding, so ignoring");
-								continue;
-							} catch (Exception e) {
-								log.error(e);
-								continue;
-							}
+
+				        	// Uncomment if you want to use the iText stuff in docx4j-extras			        					        	
+//				        	// We're only interested if this font supports UTF-8 encoding
+//				        	try {
+//				    		    BaseFont bf = BaseFont.createFont(pfm,
+//				    		    		BaseFont.IDENTITY_H, 
+//										BaseFont.NOT_EMBEDDED);
+//							} catch (java.io.UnsupportedEncodingException uee) {
+//								log.error(pfm + " does not support UTF encoding, so ignoring");
+//								continue;
+//							} catch (Exception e) {
+//								log.error(e);
+//								continue;
+//							}
 				        	pf = new PhysicalFont(triplet.getName(), fontInfo);
 				        } else {
 				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
