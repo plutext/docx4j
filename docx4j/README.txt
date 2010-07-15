@@ -82,6 +82,34 @@ License version 2.0:
   RELEASE NOTES
 ==============================================================================
 
+Version 2.5.0
+=============
+
+Release date
+------------
+
+15 July 2010
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+Major Changes in Version 2.5.0
+------------------------------
+
+[1152] XPath query which returns live JAXB objects
+[1158] Content control pre-processing for conditionals, repeats.
+[1167/8] PDF conversion via HTML or iText moved from main source tree;
+       iText, xhtmlrenderer and pdf-renderer dependencies removed.
+
+Other Changes
+-------------
+
+[1152] Content control data binding xpath namespace stuff integrated into NamespacePrefixMappings.
+[1164] SaveToZip: .xml extension implies save as Flat OPC instead
+[1164] XmlUtils.unwrap
+
 Version 2.4.0
 =============
 
