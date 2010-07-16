@@ -154,7 +154,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		super(new PartName("/rels/.rels"));
 		init();
 	}
-
+	
 	/**
 	 * Constructor.  Creates an appropriately named .rels XML document.
 	 * 
@@ -183,6 +183,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 		jaxbElement = factory.createRelationships();		
 	}
+		
 	
 	public void init() {		
 		// Used if this Part is added to [Content_Types].xml 
@@ -190,6 +191,34 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 				org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART));
 
 		setJAXBContext(Context.jcRelationships);				
+	}
+	
+	public static RelationshipsPart createRelationshipsPartForPart(
+			Base sourcePart) {
+
+		if (sourcePart.getRelationshipsPart() != null)
+			return sourcePart.getRelationshipsPart();
+
+		RelationshipsPart rp = null;
+		try {
+			rp = new RelationshipsPart(sourcePart);
+		} catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		rp.setPackage(sourcePart.getPackage());
+
+		// sourcePart.setRelationships(rp);
+
+		// Make sure content manager knows how to handle .rels
+		sourcePart
+				.getPackage()
+				.getContentTypeManager()
+				.addDefaultContentType(
+						"rels",
+						org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
+
+		return rp;
 	}	
 	
 	public Relationships getRelationships() {

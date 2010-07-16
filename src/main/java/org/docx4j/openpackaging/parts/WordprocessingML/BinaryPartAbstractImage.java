@@ -56,6 +56,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.SectPr.PgMar;
@@ -187,6 +188,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// Word will accept
 		
 		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
+		
+		// Ensure the relationships part exists
+		if (sourcePart.getRelationshipsPart()==null) 
+			RelationshipsPart.createRelationshipsPartForPart(sourcePart);
+		
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 		// In order to ensure unique part name,
 		// idea is to use the relId, which ought to be unique

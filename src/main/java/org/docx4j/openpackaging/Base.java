@@ -195,16 +195,8 @@ public abstract class Base {
 		}
 
 		// Create RelationshipsPart for this part if necessary
-		if (this.getRelationshipsPart() == null ) {
-			RelationshipsPart rp = new RelationshipsPart( this );
-			rp.setPackage(this.getPackage());
-			
-			this.setRelationships(rp);
-			
-			// Make sure content manager knows how to handle .rels
-			getPackage().getContentTypeManager().addDefaultContentType("rels", 
-					org.docx4j.openpackaging.contenttype.ContentTypes.RELATIONSHIPS_PART);
-		}
+		if (this.getRelationshipsPart() == null ) 
+			RelationshipsPart.createRelationshipsPartForPart(this);
 		
 		// Now add the targetpart to the relationships
 		Relationship rel = this.getRelationshipsPart().addPart(targetpart, true, 
