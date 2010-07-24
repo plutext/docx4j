@@ -268,4 +268,41 @@ public class PageDimensions {
 		this.marginGutter = marginGutter;
 	}
 
+	
+	/* From http://msdn.microsoft.com/en-us/library/aa537167(office.11).aspx 
+	 * 
+	 * In Word, the size of header and footer areas can change dynamically. 
+	 * The central region of the page increases or decreases when the contents of a side region changes. 
+	 * The XSL-FO format has no means to express dynamically changing header and footer areas. 
+	 * In the XSL-FO format, side regions must have fixed dimensions, regardless of their actual contents. 
+	 * 
+	 * That article goes on to say:
+	 * 
+	 *    Consequently, you must reserve the space for headers and footers manually by adjusting page margins.
+	 *    
+	 * (that is, in the Word document).  We don't require that.
+	 * 
+	 * Instead, this class allows headerExtent and footerExtent to be
+	 * set as required (in TWIPS).  In due course (when we have an algorirthm for amount of 
+	 * space occupied), it may be possible to do this automatically.   
+	 * 
+	 */
+	
+	private int headerExtent = 708;
+	public int getHeaderExtent() {
+		return headerExtent;
+	}
+	public void setHeaderExtent(int headerExtent) {
+		this.headerExtent = headerExtent;
+	}
+
+	private int footerExtent = 1440; //708;
+	public int getFooterExtent() {
+		return footerExtent;
+	}
+	public void setFooterExtent(int footerExtent) {
+		this.footerExtent = footerExtent;
+	}
+	
+	
 }
