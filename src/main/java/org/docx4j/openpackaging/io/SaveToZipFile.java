@@ -86,27 +86,23 @@ public class SaveToZipFile {
 				return saveFlatOPC(new FileOutputStream(filepath));
 			} else return save(new FileOutputStream(filepath));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
+			throw new Docx4JException("Failed to save package to path " + filepath, e);
 		}
 	}
 
 	/* Save a Package as a Zip file in the file system */
 	public boolean save(java.io.File docxFile) throws Docx4JException  {
-		log.info("Saving to" +  docxFile );		
+		log.info("Saving to" +  docxFile.getPath() );		
 		try {
 			if (docxFile.getPath().toLowerCase().endsWith(".xml") ) {
 				return saveFlatOPC(new FileOutputStream(docxFile));
 			} else return save(new FileOutputStream(docxFile));
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
+			throw new Docx4JException("Failed to save package to path " + docxFile.getPath(), e);
 		}
 	}
 	
-	public boolean saveFlatOPC(OutputStream realOS) {
+	public boolean saveFlatOPC(OutputStream realOS) throws Docx4JException {
 		
 		try {
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(p);
@@ -123,9 +119,7 @@ public class SaveToZipFile {
 			marshaller.marshal(pkg, realOS);
 			return true;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
+			throw new Docx4JException("Failed to save Flat OPC ", e);
 		} 			
 		
 	}
