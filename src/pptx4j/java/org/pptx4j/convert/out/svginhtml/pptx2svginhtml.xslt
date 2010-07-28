@@ -33,7 +33,12 @@
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" 
 doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
      doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
-<!-- either strict or transitional work for inline SVG --> 
+
+<!-- either strict or transitional work for inline SVG 
+
+	NB: file suffix must end with .xhtml in order to see the SVG in a browser
+
+--> 
 
 <!--  Input to this transform is a Shape Tree p:spTree. 
 
@@ -58,6 +63,8 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 	<xsl:param name="wmlPackage"/> <!--  really, its pml -->
 	<xsl:param name="resolvedLayout"/>
+	<xsl:param name="imageDirPath"/>
+	
 
 
 <xsl:template match="/">
@@ -164,6 +171,20 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   <xsl:template match="a:t">  	
   	<xsl:value-of select="."/>
   </xsl:template>  	
+
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++ image support +++++++++++++++++++++++ -->
+  <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+
+  <xsl:template match="p:pic">
+    		
+  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.PictureExporter.createHtmlImg( 
+  			$wmlPackage, $resolvedLayout,
+  			string($imageDirPath),
+  			.)" />
+    
+  </xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->

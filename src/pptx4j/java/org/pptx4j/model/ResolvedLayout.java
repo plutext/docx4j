@@ -35,6 +35,7 @@ import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.pptx4j.pml.CTBackground;
 import org.pptx4j.pml.CTPlaceholder;
@@ -128,6 +129,8 @@ public class ResolvedLayout implements Cloneable {
 		return resolvedLayout;
 	}
 
+	public RelationshipsPart relationships;
+	
 	/**
 	 * Create a ResolvedLayout for a SlidePart.
 	 * @param slideLayoutPart
@@ -140,6 +143,10 @@ public class ResolvedLayout implements Cloneable {
 		// Does this slide reference a layout explicitly?
 		// .. sometimes it doesn't.
 		SlideLayoutPart layoutPart = null; 
+		
+		// Need these for images etc
+		resolvedLayout.relationships = slidePart.getRelationshipsPart();		
+		
 		Relationship rel = slidePart.getRelationshipsPart().getRelationshipByType(
 				Namespaces.PRESENTATIONML_SLIDE_LAYOUT);
 		if (rel==null) {

@@ -50,9 +50,11 @@ import org.w3c.dom.traversal.NodeIterator;
 
 public class SvgExporter {
 	
+	// NB: file suffix must end with .xhtml in order to see the SVG in a browser
+	
 	protected static Logger log = Logger.getLogger(SvgExporter.class);	
 
-	static JAXBContext jcSVG;	
+	public static JAXBContext jcSVG;	
     static ObjectFactory oFactory;
 	static Templates xslt;			
 	static {
@@ -68,6 +70,11 @@ public class SvgExporter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} 
+	}
+	
+	private static String imageDirPath;
+	public static void setImageDirPath(String _imageDirPath) {
+		imageDirPath = _imageDirPath;
 	}
 	
 	public static void svg(PresentationMLPackage presentationMLPackage,
@@ -95,6 +102,7 @@ public class SvgExporter {
     	HtmlSettings htmlSettings = new HtmlSettings();
 		htmlSettings.setWmlPackage(presentationMLPackage);
 		htmlSettings.getSettings().put("resolvedLayout", layout);
+    	htmlSettings.getSettings().put("imageDirPath", imageDirPath);
 		
 		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
 	}
