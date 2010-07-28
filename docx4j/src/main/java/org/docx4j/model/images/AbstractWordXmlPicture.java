@@ -38,7 +38,7 @@ public abstract class AbstractWordXmlPicture {
 	protected static Logger log = Logger.getLogger(AbstractWordXmlPicture.class);
 	
 	WordprocessingMLPackage wmlPackage;
-    Dimensions dimensions;
+    protected Dimensions dimensions;
     
     // TODO: partially implemented
     private BinaryPart metaFile;
@@ -179,6 +179,7 @@ public abstract class AbstractWordXmlPicture {
             return document;
             
         } catch (Exception e) {
+        	e.printStackTrace();
         	log.error(e);
             return null;
         }
@@ -476,13 +477,13 @@ public abstract class AbstractWordXmlPicture {
      * Values as parsed from E10 CSS.
      *
      */
-    class Dimensions {
+    public class Dimensions {
     	
-    	int height;
-    	String heightUnit;
+    	public int height;
+    	public String heightUnit;
     	
-    	int width;
-    	String widthUnit;
+    	public int width;
+    	public String widthUnit;
     	
     //  /**
     //  * If the docx does not explicitly size the

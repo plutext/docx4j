@@ -64,11 +64,15 @@ public class RenderAsSvgInHtml  {
 	        	
 	        	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
 	        			"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
+
+	        	// Where to save images
+	        	SvgExporter.setImageDirPath(System.getProperty("user.dir") + "/sample-docs/pptx/");
 	        	
 	        	SvgExporter.svg(presentationMLPackage, rl);
 	        }
 	    }
 		
+	    // NB: file suffix must end with .xhtml in order to see the SVG in a browser
 	}	
 	
 	
