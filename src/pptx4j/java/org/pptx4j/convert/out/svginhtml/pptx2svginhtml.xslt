@@ -126,9 +126,25 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
  	
  	<!--  At present, docx4j doesn't do text boxes in its docx html,
  	      so handle the box here.  -->
- 	<div style="position: absolute; width:{$cx}px; height:{$cy}px; left:{$x}px; top:{$y}px; border: red dashed;">
-	 	<xsl:apply-templates select="a:p"/>
- 	</div>
+ 	<xsl:choose>
+ 		<xsl:when test="java:org.pptx4j.convert.out.svginhtml.SvgExporter.isDebugEnabled()">
+ 			
+ 			<!-- Use border: red dashed -->
+ 			
+		 	<div style="position: absolute; width:{$cx}px; height:{$cy}px; left:{$x}px; top:{$y}px; border: red dashed;">
+	 			<xsl:apply-templates select="a:p"/>
+ 			</div>
+ 		
+ 		</xsl:when>
+ 		<xsl:otherwise>
+ 		
+		 	<div style="position: absolute; width:{$cx}px; height:{$cy}px; left:{$x}px; top:{$y}px;">
+	 			<xsl:apply-templates select="a:p"/>
+ 			</div> 		
+ 		
+ 		</xsl:otherwise>
+ 	</xsl:choose>
+ 	      
  </xsl:template>
 
  <xsl:template match="p:cxnSp">

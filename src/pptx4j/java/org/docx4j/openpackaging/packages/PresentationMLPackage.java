@@ -293,12 +293,14 @@ public class PresentationMLPackage  extends OpcPackage {
 	        
 	        Part p = (Part)pairs.getValue();
 	        if (p instanceof SlidePart) {
-	        	ResolvedLayout rl = ((SlidePart)p).getResolvedLayout();	
+
+//	        	ResolvedLayout rl = ((SlidePart)p).getResolvedLayout();		        	
+//	        	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
+//	        			"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
 	        	
-	        	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
-	        			"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
-	        	
-	        	SvgExporter.svg(presentationMLPackage, rl);
+	        	System.out.println(
+	        			SvgExporter.svg(presentationMLPackage, (SlidePart)p)
+	        			);
 	        }
 	    }
 		

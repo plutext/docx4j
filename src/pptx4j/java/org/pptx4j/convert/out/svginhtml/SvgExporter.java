@@ -1,6 +1,7 @@
 package org.pptx4j.convert.out.svginhtml;
 
 import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -27,6 +28,7 @@ import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
+import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
@@ -47,6 +49,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
+import org.xml.sax.InputSource;
 
 public class SvgExporter {
 	
@@ -77,7 +80,32 @@ public class SvgExporter {
 		imageDirPath = _imageDirPath;
 	}
 	
-	public static void svg(PresentationMLPackage presentationMLPackage,
+	
+	/**
+	 * Create an HTML (with SVG) page representing the slide.
+	 * @param presentationMLPackage
+	 * @param slide
+	 * @return
+	 * @throws Exception
+	 */
+	public static String svg(PresentationMLPackage presentationMLPackage,
+			SlidePart slide) throws Exception {
+		
+    	ResolvedLayout rl = ((SlidePart)slide).getResolvedLayout();	
+
+//    	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
+//		"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
+    	
+    	return SvgExporter.svg(presentationMLPackage, rl);
+	}
+	
+	/**
+	 * @param presentationMLPackage
+	 * @param layout
+	 * @return
+	 * @throws Exception
+	 */
+	private static String svg(PresentationMLPackage presentationMLPackage,
 			ResolvedLayout layout) throws Exception {
 	
 		ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
@@ -85,12 +113,12 @@ public class SvgExporter {
 			
 		svg(presentationMLPackage, layout, intermediateResult);
 			
-		String svg = intermediate.toString("UTF-8");
-		log.info(svg);
+		return intermediate.toString("UTF-8");
+		//log.info(svg);
 	}
 	
 	
-	public static void svg(PresentationMLPackage presentationMLPackage,
+	private static void svg(PresentationMLPackage presentationMLPackage,
 			ResolvedLayout layout, javax.xml.transform.Result result
 			) throws Exception {
     			
@@ -107,6 +135,59 @@ public class SvgExporter {
 		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
 	}
 
+	public static boolean isDebugEnabled() {
+		
+		return log.isDebugEnabled();
+	}
+	
+	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
+
+		Node n = nodes.nextNode();
+		log.warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "\n" + message);
+		
+		if (log.isDebugEnabled() ) {
+			
+			if (message==null) message="";
+			
+			log.debug( XmlUtils.w3CDomNodeToString(n)  );
+
+			// Return something which will show up in the output
+			return message("NOT IMPLEMENTED: support for " + n.getNodeName() + " - " + message);
+		} else {
+			
+			// Put it in a comment node instead?
+			
+			return null;
+		}
+	}
+	
+	public static DocumentFragment message(String message) {
+		
+		if (!log.isDebugEnabled()) return null;
+
+		String html = "<div style=\"color:red\" >"
+			+ message
+			+ "</div>";  
+
+		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
+				.newInstance();
+		dbf.setNamespaceAware(true);
+		StringReader reader = new StringReader(html);
+		InputSource inputSource = new InputSource(reader);
+		Document doc = null;
+		try {
+			doc = dbf.newDocumentBuilder().parse(inputSource);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		reader.close();
+
+		DocumentFragment docfrag = doc.createDocumentFragment();
+		docfrag.appendChild(doc.getDocumentElement());
+		return docfrag;		
+	}	
+	
     public static DocumentFragment createBlockForP( 
     		PresentationMLPackage pmlPackage,
     		ResolvedLayout rl,
