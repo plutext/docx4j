@@ -129,6 +129,11 @@
 
 	<xsl:template match="section">
 	
+			<xsl:variable name="pageNumberFormat" 
+				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberFormat($wmlPackage, position())" />
+	
+			<xsl:variable name="pageNumberInitial" 
+				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberInitial($wmlPackage, position())" />
 
 			<!-- start page-sequence
 				here comes the text (contained in flow objects)
@@ -136,7 +141,8 @@
 				the attribute value of master-name refers to the page layout
 				which is to be used to layout the text contained in this
 				page-sequence-->
-			<fo:page-sequence master-reference="{@name}">
+				
+			<fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" initial-page-number="{$pageNumberInitial}" >
 
 				<!--  First Page Header -->
 				<xsl:if
@@ -723,12 +729,18 @@
     
   <xsl:template match="w:continuationSeparator" />
 
-<!--  tmp bookmarks -->
 
   <xsl:template match="w:fldSimple" >
+  
+		<xsl:variable name="childResults">
+			<xsl:apply-templates/>
+		</xsl:variable>
+				
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., 'no support for fields' )" />  	
+			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForFldSimple(
+		  		$wmlPackage, ., $childResults)" />
   </xsl:template>
+  
   <xsl:template match="w:fldChar" >
 		<xsl:copy-of 
 			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., '' )" />  	

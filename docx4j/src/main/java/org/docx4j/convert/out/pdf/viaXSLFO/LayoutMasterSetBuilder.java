@@ -182,7 +182,7 @@ public class LayoutMasterSetBuilder {
 		SimplePageMaster spm = factory.createSimplePageMaster();
 		spm.setMasterName(masterName);
 		
-		// dimensions.  TODO. Read these from the document.
+		// dimensions.  
 		//   <w:pgSz w:w="12240" w:h="15840"/>
         //   <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
 
