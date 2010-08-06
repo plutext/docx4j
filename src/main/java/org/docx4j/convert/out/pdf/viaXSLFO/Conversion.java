@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -50,8 +51,11 @@ import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.wml.CTPageNumber;
+import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
+import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
@@ -854,6 +858,170 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	}
 		
 	}
+	
+
+    public static DocumentFragment createBlockForFldSimple( 
+    		WordprocessingMLPackage wmlPackage,
+    		NodeIterator fldSimpleNodeIt,
+    		NodeIterator childResults ) {
+    	
+    	/* Support page numbering
+    	 * 
+    	 *  <w:fldSimple w:instr=" PAGE   \* MERGEFORMAT ">
+	          <w:r>
+	            <w:rPr>
+	              <w:noProof/>
+	            </w:rPr>
+	            <w:t>- 1 -</w:t>
+	          </w:r>
+	        </w:fldSimple>
+	        
+	        could also include:
+	        
+				{ PAGE \* Arabic }
+				{ PAGE \* alphabetic }
+				{ PAGE \* ALPHABETIC }
+				{ PAGE \* roman }
+				{ PAGE \* ROMAN }	        
+
+		    <w:sectPr>
+		      <w:pgNumType w:fmt="numberInDash"/>
+		      
+		    could also include start at value.
+
+    	 */
+    	
+    	try {
+
+        	CTSimpleField field = null;
+        	
+			try {
+				field = (CTSimpleField)XmlUtils.unmarshal(
+							fldSimpleNodeIt.nextNode(), 
+							Context.jc, 
+							CTSimpleField.class);
+			} catch (JAXBException e1) {
+				e1.printStackTrace();
+			}			
+        	
+            // Create a DOM builder and parse the fragment
+        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+			Document document = factory.newDocumentBuilder().newDocument();
+			
+			//log.info("Document: " + document.getClass().getName() );
+
+			
+			String instr = field.getInstr();			
+			if ( !instr.toLowerCase().contains( "page") ) {
+				
+				if (log.isDebugEnabled() ) {
+					return message("no support for fields (except PAGE numbering)");
+				} else {
+					
+					// Try this
+					Node foInlineElement = document.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:inline");			
+					document.appendChild(foInlineElement);
+					
+					Node n = childResults.nextNode();
+					XmlUtils.treeCopy( (DTMNodeProxy)n,  foInlineElement );
+					
+					DocumentFragment docfrag = document.createDocumentFragment();
+					docfrag.appendChild(document.getDocumentElement());
+
+					return docfrag;					
+				}
+			}
+
+			// Its a PAGE numbering field
+			
+			/*
+			 * For XSL FO page numbering, see generally
+			 * http://www.dpawson.co.uk/xsl/sect3/N8703.html
+			 * 
+			 * In summary, 
+			 * 
+			 * <fo:page-sequence master-name="blagh" 
+			 * 				format="i"
+			 * 				initial-page-number="1"> ....
+			 * 
+			 */
+
+			Node foPageNumber = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
+					"fo:page-number");			
+			document.appendChild(foPageNumber);
+						
+			DocumentFragment docfrag = document.createDocumentFragment();
+			docfrag.appendChild(document.getDocumentElement());
+
+			return docfrag;
+						
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(e.toString() );
+			log.error(e);
+		} 
+    	
+    	return null;
+    	
+    }
+    
+    public static String getPageNumberFormat(WordprocessingMLPackage wordmlPackage, int sectionNumber) {
+    	
+    	SectionWrapper sw = wordmlPackage.getDocumentModel().getSections().get(sectionNumber-1);
+    	
+    	if (sw.getSectPr()==null) return "1";
+    	
+    	CTPageNumber pageNumber = sw.getSectPr().getPgNumType();
+    	
+    	if (pageNumber==null) return "1";
+    	
+    	NumberFormat format = pageNumber.getFmt();
+    	
+    	log.debug("w:pgNumType/@w:fmt=" + format.toString());
+    	
+    	if (format==null) return "1";
+    	
+//    	 *     &lt;enumeration value="decimal"/>
+//    	 *     &lt;enumeration value="upperRoman"/>
+//    	 *     &lt;enumeration value="lowerRoman"/>
+//    	 *     &lt;enumeration value="upperLetter"/>
+//    	 *     &lt;enumeration value="lowerLetter"/>    	
+    	if (format==NumberFormat.DECIMAL)
+    		return "1";
+    	else if (format==NumberFormat.UPPER_ROMAN)
+    		return "I";
+    	else if (format==NumberFormat.LOWER_ROMAN)
+    		return "i";
+    	//else if (format.equals(NumberFormat.UPPER_LETTER))
+    	else if (format==NumberFormat.UPPER_LETTER)
+    		return "A";
+    	else if (format==NumberFormat.LOWER_LETTER)
+    		return "a";
+
+        // TODO .. other formats
+    		
+    	return "1";
+    }
+	
+    public static String getPageNumberInitial(WordprocessingMLPackage wordmlPackage, int sectionNumber) {
+
+    	SectionWrapper sw = wordmlPackage.getDocumentModel().getSections().get(sectionNumber-1);
+
+    	if (sw.getSectPr()==null) return "1";
+    	
+    	CTPageNumber pageNumber = sw.getSectPr().getPgNumType();
+    	
+    	if (pageNumber==null) {
+    		log.debug("No PgNumType");
+    		return "1";
+    	}
+    	
+    	BigInteger start = pageNumber.getStart();
+    	
+    	if (start==null) return "1";
+    	
+    	return start.toString();
+    }
 	
 }
     
