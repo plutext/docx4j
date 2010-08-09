@@ -290,6 +290,11 @@ public final class CustomXmlDataStoragePart extends Part {
 			} else {
 				xpathBase = xpath;
 			}
+			
+			// Drop any trailing position 
+			if (xpathBase.endsWith("]")) 
+				xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
+			
 			log.debug("Repeat: using xpath: " + xpath);
 	        NamespaceContext nsContext = new NamespacePrefixMappings();			
 	        List<Node> repeatChildren = xpathGetNodes(customXmlDataStorageParts,
@@ -363,11 +368,28 @@ public final class CustomXmlDataStoragePart extends Part {
 	        				String thisXPath = binding.getXpath();
         					log.debug("existing xpath: " + thisXPath);
 	        				
-	        				// The tricky part
+	        				/* The tricky part: replace path segment
+	        				 * 
+	        				 * For xpathBase=/invoice[1]/items
+	        				 * 
+	        				 *  eg1 
+	        				 *  
+								/invoice[1]/items/item[1]/name becomes
+								/invoice[1]/items/   *[n]/name
+								
+							 * eg2
+							 * 	
+								/invoice[1]/items[1]/item[1]/name becomes
+								/invoice[1]/items   /   *[n]/name
+	        				 */
 	        				if (thisXPath.startsWith(xpathBase)) {
 	        					log.debug("xpathBase: " + xpathBase);
-	        					int beginIndex = thisXPath.indexOf("/", xpathBase.length()+1 ); // +1 for good measure	        					
-	        					String newPath = xpathBase + "/*[" + (i+1) + "]/" + thisXPath.substring(beginIndex+1);	        					
+	        					int beginIndex = thisXPath.indexOf("/", xpathBase.length()+1 ); // +1 for good measure	  
+	        					int endIndex = thisXPath.indexOf("/", beginIndex+1 ); 
+	        					if (endIndex<0) endIndex = beginIndex;
+	        					
+	        					String newPath = xpathBase + "/*[" + (i+1) + "]/" + thisXPath.substring(endIndex+1);
+	        					
 	        					log.debug("newPath: " + newPath);
 	        					binding.setXpath(newPath);
 	        				}
