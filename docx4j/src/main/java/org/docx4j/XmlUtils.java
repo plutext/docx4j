@@ -177,7 +177,11 @@ public class XmlUtils {
 				
 		String prefix = null;
 		if (o.getName().getNamespaceURI()!=null) {
-			prefix = NamespacePrefixMapper.getPreferredPrefix(o.getName().getNamespaceURI() );
+			try {
+				prefix = NamespacePrefixMapperUtils.getPreferredPrefix(o.getName().getNamespaceURI(), null, false);
+			} catch (JAXBException e) {
+				e.printStackTrace();
+			}
 		}
 		if (prefix!=null) {
 			return  prefix + ':' + o.getName().getLocalPart() 
