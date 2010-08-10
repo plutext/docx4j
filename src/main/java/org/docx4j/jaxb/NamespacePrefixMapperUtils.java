@@ -15,9 +15,10 @@ public class NamespacePrefixMapperUtils {
     	Class c;
     	try {
     		c = Class.forName("com.sun.xml.bind.marshaller.NamespacePrefixMapper");
-    		return new NamespacePrefixMapper();
+    		return new NamespacePrefixMapper();  // JAXB Reference Implementation 
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
+    		// Use Java 6 implementation
     		log.info("JAXB RI (com.sun.xml.bind.marshaller.NamespacePrefixMapper) not present.  Trying Java 6 implementation.");
         	try {
 				c = Class.forName("com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper");
@@ -91,6 +92,25 @@ public class NamespacePrefixMapperUtils {
 			log.error(cnfe);
 			throw cnfe;
 			
+		}
+		
+	}
+	
+	public static String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) throws JAXBException {
+
+		Object namespacePrefixMapper = getPrefixMapper();
+		
+		if ( namespacePrefixMapper instanceof NamespacePrefixMapperSunInternal) {
+			// Java 6
+			return ((NamespacePrefixMapperSunInternal)namespacePrefixMapper).getPreferredPrefix(namespaceUri, suggestion, requirePrefix); 
+			
+		} else if (namespacePrefixMapper instanceof NamespacePrefixMapper) {
+    		// JAXB Reference Implementation		
+			return ((NamespacePrefixMapper)namespacePrefixMapper).getPreferredPrefix(namespaceUri, suggestion, requirePrefix); 
+			
+		} else {
+			log.warn("Namespace prefix mapper not found!");
+			return null;
 		}
 		
 	}
