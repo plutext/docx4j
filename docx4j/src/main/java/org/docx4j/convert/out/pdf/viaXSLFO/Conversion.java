@@ -99,6 +99,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 	
 	public static final String PART_TRACKER = "partTracker";
+	public static final String FIELD_TRACKER = "fieldTracker";  // are we in a field or not?
 	
 	public Conversion(WordprocessingMLPackage wordMLPackage) {
 		super(wordMLPackage);
@@ -312,6 +313,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			modelStates.put("footnoteNumber", new FootnoteState() );
 			modelStates.put("endnoteNumber", new EndnoteState() );
 			modelStates.put(PART_TRACKER, new PartTracker() );
+			modelStates.put(FIELD_TRACKER, new InField() );
 			
 	      	Converter.getInstance().start(wordMLPackage);
 	      	  
@@ -865,7 +867,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     		NodeIterator fldSimpleNodeIt,
     		NodeIterator childResults ) {
     	
-    	/* Support page numbering
+    	/* Support page numbering.
+    	 * 
+    	 * Word 2007 emits:
     	 * 
     	 *  <w:fldSimple w:instr=" PAGE   \* MERGEFORMAT ">
 	          <w:r>
@@ -888,22 +892,36 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		      <w:pgNumType w:fmt="numberInDash"/>
 		      
 		    could also include start at value.
+		    
+		 *
+		 * Word 2003 emits:
+		 * 
+		 *       <w:instrText xml:space="preserve">PAGE  </w:instrText>
 
     	 */
     	
-    	try {
 
-        	CTSimpleField field = null;
+    	CTSimpleField field = null;
+    	
+		try {
+			field = (CTSimpleField)XmlUtils.unmarshal(
+						fldSimpleNodeIt.nextNode(), 
+						Context.jc, 
+						CTSimpleField.class);
+		} catch (JAXBException e1) {
+			e1.printStackTrace();
+		}
+			
+		String instr = field.getInstr();			
+
+		return handleField(instr, childResults);
         	
-			try {
-				field = (CTSimpleField)XmlUtils.unmarshal(
-							fldSimpleNodeIt.nextNode(), 
-							Context.jc, 
-							CTSimpleField.class);
-			} catch (JAXBException e1) {
-				e1.printStackTrace();
-			}			
-        	
+   	}
+    	
+   	private static DocumentFragment handleField(String instr, NodeIterator childResults) {
+    		
+    		try {
+    			
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
 			Document document = factory.newDocumentBuilder().newDocument();
@@ -911,7 +929,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			//log.info("Document: " + document.getClass().getName() );
 
 			
-			String instr = field.getInstr();			
 			if ( !instr.toLowerCase().contains( "page") ) {
 				
 				if (log.isDebugEnabled() ) {
@@ -962,6 +979,38 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		} 
     	
     	return null;
+    	
+    }
+
+    public static DocumentFragment createBlockForInstrText( 
+    		WordprocessingMLPackage wmlPackage,
+    		NodeIterator fldSimpleNodeIt,
+    		NodeIterator childResults ) {
+    	
+    	/* Support page numbering.
+    	 * 
+		 * Word 2003 emits :
+		 * 
+		 * 		 <w:fldChar w:fldCharType="begin"/>
+		 * 
+		 *       <w:instrText xml:space="preserve">PAGE  </w:instrText>
+
+				 <w:fldChar w:fldCharType="end"/>
+    	 */
+    	
+    	org.docx4j.wml.Text field = null;
+    	
+		try {
+			field = 
+				(org.docx4j.wml.Text)XmlUtils.unmarshal(
+						fldSimpleNodeIt.nextNode(), 
+						Context.jc, 
+						org.docx4j.wml.Text.class);
+		} catch (JAXBException e1) {
+			e1.printStackTrace();
+		}			
+    	
+		return handleField( field.getValue(), childResults);
     	
     }
     

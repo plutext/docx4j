@@ -18,8 +18,7 @@
 
 <!-- =======================================
 
-	 This is the beginnings of a basic XSLT
-	 to convert WordML2FO.
+	 This is an XSLT to convert WordML2FO.
 	 
 	 I'm not aware of any more complete
 	 open source offering.
@@ -348,27 +347,44 @@
 
   <xsl:template match="w:pPr | w:rPr" /> <!--  handle via extension function -->
 
-  <xsl:template match="w:r">  	
+  <xsl:template match="w:r">
+  
   	<xsl:choose>
-  		<xsl:when test="w:rPr">
-  			<!--  Invoke an extension function, so we can use
-  			      docx4j to populate the fo:block -->
+  		<xsl:when test="java:org.docx4j.convert.out.pdf.viaXSLFO.InField.getState($modelStates)" >
+  			<!-- in a field, so ignore, unless this run contains a fldChar or instrText -->
+  			
+		  	<xsl:if test="w:fldChar"><xsl:apply-templates/></xsl:if>
+  			
+  			<xsl:if test="w:instrText"><xsl:apply-templates/></xsl:if>
+  			
+  		</xsl:when>
+  		<xsl:otherwise>
   		
-			<xsl:variable name="childResults">
-				<xsl:apply-templates/>
-			</xsl:variable>
+		  	<xsl:choose>
+  				<xsl:when test="w:rPr">
+		  			<!--  Invoke an extension function, so we can use
+  					      docx4j to populate the fo:block -->
+  		
+					<xsl:variable name="childResults">
+						<xsl:apply-templates/>
+					</xsl:variable>
 			
-			<!-- <xsl:variable name="pPrNode" select="../w:pPr" />  -->  	
-			<xsl:variable name="rPrNode" select="w:rPr" />  	
+					<!-- <xsl:variable name="pPrNode" select="../w:pPr" />  -->  	
+					<xsl:variable name="rPrNode" select="w:rPr" />  	
 	
-		  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForRPr( 
-		  		$wmlPackage, $rPrNode, $childResults)" />
+				  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForRPr( 
+				  		$wmlPackage, $rPrNode, $childResults)" />
 	  		
-	  	</xsl:when>
-	  	<xsl:otherwise>
-        	<xsl:apply-templates/>
-	  	</xsl:otherwise>
-	  </xsl:choose>					
+			  	</xsl:when>
+	  			<xsl:otherwise>
+		        	<xsl:apply-templates/>
+	  			</xsl:otherwise>
+			  </xsl:choose>					
+  		
+  		</xsl:otherwise>
+  		
+  	</xsl:choose>
+    	
 		
   </xsl:template>
 
@@ -743,11 +759,17 @@
   
   <xsl:template match="w:fldChar" >
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., '' )" />  	
+			select="java:org.docx4j.convert.out.pdf.viaXSLFO.InField.updateState($modelStates, .)" />  	
   </xsl:template>
+
   <xsl:template match="w:instrText" >
+		<xsl:variable name="childResults">
+			<xsl:apply-templates/>
+		</xsl:variable>
+			
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.notImplemented(., 'no support for fields' )" />  	
+			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForInstrText(
+		  		$wmlPackage, ., $childResults)" />
   </xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
