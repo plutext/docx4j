@@ -615,8 +615,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	        	}
 				
 				if (triple==null) {
-	        		log.info("computed number ResultTriple was null");
-					foListItemLabelBody.setTextContent("?");
+	        		log.warn("computed number ResultTriple was null");
+	        		if (log.isDebugEnabled() ) {
+	        			foListItemLabelBody.setTextContent("nrt");
+	        		} 
 	        	} else {
 	        		
 	        		// Indent (in combination with provisional-distance-between-starts
@@ -638,8 +640,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	        		if (triple.getBullet()!=null ) {
 		        		foListItemLabelBody.setTextContent(triple.getBullet() );
 		        	} else if (triple.getNumString()==null) {
-			    		log.error("computed NumString was null!");
-						foListItemLabelBody.setTextContent("?");
+			    		log.warn("computed NumString was null!");
+		        		if (log.isDebugEnabled() ) {
+		        			foListItemLabelBody.setTextContent("nns");
+		        		} 
 			    	} else {
 						Text number = document.createTextNode( triple.getNumString() );
 						foListItemLabelBody.appendChild(number);		    		
