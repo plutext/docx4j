@@ -34,6 +34,7 @@ import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.wml.CTSdtRow;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
@@ -300,6 +301,28 @@ public class TableModel extends Model {
 			 } else if (o instanceof javax.xml.bind.JAXBElement
 					 && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tr")) {
 				 tr = (org.docx4j.wml.Tr)((JAXBElement)o).getValue();
+			 } else if (o instanceof javax.xml.bind.JAXBElement
+					 && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.CTSdtRow")) {
+				 
+//				 log.debug("Inspecting CTSdtRow");
+				 
+				 CTSdtRow sdt = (org.docx4j.wml.CTSdtRow)((JAXBElement)o).getValue();
+				 
+				 if (sdt.getSdtContent().getEGContentRowContent().size()>0 ) {
+				 
+					 Object content0 = sdt.getSdtContent().getEGContentRowContent().get(0);					 
+					 
+					 if (content0  instanceof org.docx4j.wml.Tr) {
+						 tr = (org.docx4j.wml.Tr)content0;
+					 } else {
+						 log.warn("Unexpected " + content0.getClass().getName() );						 
+						 continue;
+					 }
+				 } else {
+					 log.warn("Empty sdt!" );						 
+					 continue;					 
+				 }
+				 
 			 } else {
 				 // What?
 				if (o instanceof javax.xml.bind.JAXBElement) {
