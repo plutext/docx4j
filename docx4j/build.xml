@@ -165,14 +165,14 @@
 		
         <javadoc access="public" author="false" 
          destdir="javadoc" 
-         doctitle="docx4j 2.4.0" 
+         doctitle="docx4j 2.5.0" 
          nodeprecated="false" 
          nodeprecatedlist="false" 
          noindex="false" 
          nonavbar="false" 
          notree="false" 
          source="1.6" 
-        sourcepath="src/main/java:src/pptx4j/java" 
+        sourcepath="src/main/java:src/pptx4j/java:src/svg:src/xslfo" 
         splitindex="true" use="true" version="false"
         maxmemory="512m">
                     <classpath refid="docx4j.classpath"/>
