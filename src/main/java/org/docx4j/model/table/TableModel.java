@@ -293,44 +293,46 @@ public class TableModel extends Model {
 		// int i = 0;
 		int r = 0;
 		for (Object o : rows) {
-			startRow();			
 			Tr tr = null;
-			 if (o instanceof org.docx4j.wml.Tr) {				 
-				 log.debug( "\n in w:tr .. ");
-				 tr = (org.docx4j.wml.Tr)o;		
-			 } else if (o instanceof javax.xml.bind.JAXBElement
-					 && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tr")) {
-				 tr = (org.docx4j.wml.Tr)((JAXBElement)o).getValue();
-			 } else if (o instanceof javax.xml.bind.JAXBElement
-					 && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.CTSdtRow")) {
-				 
-//				 log.debug("Inspecting CTSdtRow");
-				 
-				 CTSdtRow sdt = (org.docx4j.wml.CTSdtRow)((JAXBElement)o).getValue();
-				 
-				 if (sdt.getSdtContent().getEGContentRowContent().size()>0 ) {
-				 
-					 Object content0 = sdt.getSdtContent().getEGContentRowContent().get(0);					 
-					 
-					 if (content0  instanceof org.docx4j.wml.Tr) {
-						 tr = (org.docx4j.wml.Tr)content0;
-					 } else {
-						 log.warn("Unexpected " + content0.getClass().getName() );						 
-						 continue;
-					 }
-				 } else {
-					 log.warn("Empty sdt!" );						 
-					 continue;					 
-				 }
-				 
-			 } else {
-				 // What?
+			if (o instanceof org.docx4j.wml.Tr) {
+				startRow();
+				tr = (org.docx4j.wml.Tr) o;
+				handleRow(cellContents, tr, r);
+				r++;
+			} else if (o instanceof javax.xml.bind.JAXBElement
+					&& ((JAXBElement) o).getDeclaredType().getName().equals(
+							"org.docx4j.wml.Tr")) {
+				startRow();
+				tr = (org.docx4j.wml.Tr) ((JAXBElement) o).getValue();
+				handleRow(cellContents, tr, r);
+				r++;
+			} else if (o instanceof javax.xml.bind.JAXBElement
+					&& ((JAXBElement) o).getDeclaredType().getName().equals(
+							"org.docx4j.wml.CTSdtRow")) {
+
+				CTSdtRow sdt = (org.docx4j.wml.CTSdtRow) ((JAXBElement) o).getValue();
+
+				for (Object content0 : sdt.getSdtContent().getEGContentRowContent()) {
+
+					if (content0 instanceof org.docx4j.wml.Tr) {
+						startRow();
+						tr = (org.docx4j.wml.Tr) content0;
+						handleRow(cellContents, tr, r);
+						r++;
+					} else {
+						log.warn("Unexpected " + content0.getClass().getName());
+					}
+				}
+
+			} else {
+				// What?
 				if (o instanceof javax.xml.bind.JAXBElement) {
 					if (((JAXBElement) o).getDeclaredType().getName().equals(
 							"org.docx4j.wml.CTMarkupRange")) {
 						// Ignore w:bookmarkEnd
 					} else {
-						log.warn("TODO - skipping JAXBElement:  "
+						log
+								.warn("TODO - skipping JAXBElement:  "
 										+ ((JAXBElement) o).getDeclaredType()
 												.getName());
 						log.debug(XmlUtils.marshaltoString(o, true));
@@ -340,58 +342,71 @@ public class TableModel extends Model {
 					log.debug(XmlUtils.marshaltoString(o, true));
 				}
 				continue;
-			 }			
-			
-			if (borderConflictResolutionRequired && tr.getTblPrEx()!=null
-					&& tr.getTblPrEx().getTblCellSpacing()!=null) {
-				borderConflictResolutionRequired = false;				
 			}
-			List<Object> cells = tr.getEGContentCellContent();
-			int c = 0;
-			for (Object o2 : cells) {
 
-				Tc tc = null;
-				 if (o2 instanceof org.docx4j.wml.Tc) {				 
-					 tc = (org.docx4j.wml.Tc)o2;		
-				 } else if (o2 instanceof javax.xml.bind.JAXBElement
-						 && ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc")) {
-					 tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
-				 } else if (o2 instanceof javax.xml.bind.JAXBElement
-						 && ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.CTSdtCell")) {
-					 org.docx4j.wml.CTSdtCell sdtCell = (org.docx4j.wml.CTSdtCell)((JAXBElement)o2).getValue();
-					 Object o3 = sdtCell.getSdtContent().getEGContentCellContent().get(0);
-					 if (o3 instanceof javax.xml.bind.JAXBElement
-							 && ((JAXBElement)o3).getDeclaredType().getName().equals("org.docx4j.wml.Tc")) {
-						 tc =(org.docx4j.wml.Tc)((JAXBElement)o3).getValue();
-					 } else {
-						 if (o3 instanceof javax.xml.bind.JAXBElement) {
-							 log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o3).getDeclaredType().getName() );
-						 } else {
-							 log.warn("TODO - skipping:  " + o3.getClass().getName() );
-						 }
-					 }
-					 if (sdtCell.getSdtContent().getEGContentCellContent().size()>1) 
-						 log.warn("w:sdtContent contains more than 1 cell. TODO");
-				 } else {
-					 // What?
-					 if (o2 instanceof javax.xml.bind.JAXBElement) {
-						 log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o2).getDeclaredType().getName() );
-					 } else {
-						 log.warn("TODO - skipping:  " + o2.getClass().getName() );
-					 }
-					 log.debug( XmlUtils.marshaltoString(o2, true));
-					 continue;
-				 }
-				
-				Node wtrNode = cellContents.item(r); //w:tr
-				addCell(tc, wtrNode.getChildNodes().item(c));
-				// addCell(tc, cellContents.item(i));
-				// i++;
-				c++;
-
-			}
-			r++;
 		}
+	}
+
+	private void handleRow(NodeList cellContents, Tr tr, int r) {
+
+		if (borderConflictResolutionRequired && tr.getTblPrEx() != null
+				&& tr.getTblPrEx().getTblCellSpacing() != null) {
+			borderConflictResolutionRequired = false;
+		}
+		List<Object> cells = tr.getEGContentCellContent();
+		int c = 0;
+		for (Object o2 : cells) {
+
+			Tc tc = null;
+			if (o2 instanceof org.docx4j.wml.Tc) {
+				tc = (org.docx4j.wml.Tc) o2;
+			} else if (o2 instanceof javax.xml.bind.JAXBElement
+					&& ((JAXBElement) o2).getDeclaredType().getName().equals(
+							"org.docx4j.wml.Tc")) {
+				tc = (org.docx4j.wml.Tc) ((JAXBElement) o2).getValue();
+			} else if (o2 instanceof javax.xml.bind.JAXBElement
+					&& ((JAXBElement) o2).getDeclaredType().getName().equals(
+							"org.docx4j.wml.CTSdtCell")) {
+				org.docx4j.wml.CTSdtCell sdtCell = (org.docx4j.wml.CTSdtCell) ((JAXBElement) o2)
+						.getValue();
+				Object o3 = sdtCell.getSdtContent().getEGContentCellContent()
+						.get(0);
+				if (o3 instanceof javax.xml.bind.JAXBElement
+						&& ((JAXBElement) o3).getDeclaredType().getName()
+								.equals("org.docx4j.wml.Tc")) {
+					tc = (org.docx4j.wml.Tc) ((JAXBElement) o3).getValue();
+				} else {
+					if (o3 instanceof javax.xml.bind.JAXBElement) {
+						log.warn("TODO - skipping JAXBElement:  "
+								+ ((JAXBElement) o3).getDeclaredType()
+										.getName());
+					} else {
+						log
+								.warn("TODO - skipping:  "
+										+ o3.getClass().getName());
+					}
+				}
+				if (sdtCell.getSdtContent().getEGContentCellContent().size() > 1)
+					log.warn("w:sdtContent contains more than 1 cell. TODO");
+			} else {
+				// What?
+				if (o2 instanceof javax.xml.bind.JAXBElement) {
+					log.warn("TODO - skipping JAXBElement:  "
+							+ ((JAXBElement) o2).getDeclaredType().getName());
+				} else {
+					log.warn("TODO - skipping:  " + o2.getClass().getName());
+				}
+				log.debug(XmlUtils.marshaltoString(o2, true));
+				continue;
+			}
+
+			Node wtrNode = cellContents.item(r); // w:tr
+			addCell(tc, wtrNode.getChildNodes().item(c));
+			// addCell(tc, cellContents.item(i));
+			// i++;
+			c++;
+		}
+
 	}
 
 	/* (non-Javadoc)
