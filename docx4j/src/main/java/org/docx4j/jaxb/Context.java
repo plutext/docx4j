@@ -48,18 +48,14 @@ public class Context {
 		// Display diagnostic info about version of JAXB being used.
     	Class c;
     	try {
-    		c = Class.forName("com.sun.xml.bind.marshaller.NamespacePrefixMapper");
-    		System.out.println("JAXB: Using RI (or recent Java 6?)");
-    		
-    		// 2010 07 13 recent versions of Java 6 seem to include
-    		// com.sun.xml.bind.marshaller.NamespacePrefixMapper,
-    		// so we can't be sure its the RI.
+    		c = Class.forName("com.sun.xml.bind.marshaller.MinimumEscapeHandler");
+    		System.out.println("JAXB: Using RI");
     		
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
     		System.out.println("JAXB: RI not present.  Trying Java 6 implementation.");
         	try {
-				c = Class.forName("com.sun.xml.internal.bind.marshaller.NamespacePrefixMapper");
+				c = Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
 	    		System.out.println("JAXB: Using Java 6 implementation.");
 			} catch (ClassNotFoundException e) {
 				System.out.println("JAXB: neither Reference Implementation nor Java 6 implementation present?");

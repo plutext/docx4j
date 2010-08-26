@@ -55,6 +55,8 @@
         <pathelement location="${m2Repository}/docx4j/fop-patched/0.95.756437/fop-patched-0.95.756437.jar"/>
         <pathelement location="${m2Repository}/org/apache/commons/commons-vfs-patched/1.9.1/commons-vfs-patched-1.9.1.jar"/>
         <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.8.3/wmf2svg-0.8.3.jar"/>
+        
+        <pathelement location="${m2Repository}//com/sun/xml/jaxb-NamespacePrefixMapper-interfaces/2.0.0/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>
     </path>
     <path id="docx4j.classpath">
         <pathelement location="bin"/>
@@ -91,7 +93,6 @@
             <src path="src/svg"/>
             <src path="src/xslfo"/>
             <classpath refid="docx4j.classpath"/>
-            <!--  nb, you need JAXB RI, for example, in jre/lib/endorsed -->
         </javac>
         
         <!--  Force ant to compile package-info.java.
