@@ -5,6 +5,8 @@
 						div.footer {display: none } 
 						/*@media print { */
 						
+							div.footer {display: block; position: running(footer) }
+						
 
 						@page { size: A4; margin: 10%; @top-center {
 						content: element(header) } @bottom-center {
@@ -57,7 +59,11 @@
 
 						/* TABLE CELL STYLES */
 						#docx4j_tbl_0 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
---></style></head><body>
+--></style></head><body><div class="footer">
+  
+  <p class="Footer Normal DocDefaults " style="text-align: center;"/>
+  
+  <p class="Footer Normal DocDefaults "/></div>
   
   <p class="Title Normal DocDefaults ">Docx4j - Getting Started</p>
   
@@ -89,7 +95,7 @@
   
   <p class="Normal DocDefaults ">Docx4j is for processing docx documents (and pptx presentations) in Java.</p>
   
-  <p class="Normal DocDefaults ">It isn't for old binary (.doc) files.  For those, Apache POI's HWPF offers basic support (in fact, docx4j can use HWPF for basic conversion of .doc to .docx).  If you wish to invest your effort around docx (as is wise), but you also need to be able to handle old doc files, Plutext has had success using OpenOffice to convert the doc to docx, using docx4j to process the docx, and then using OpenOffice to convert back to .doc.</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">It isn't for old binary (.doc) files.  If you wish to invest your effort around docx (as is wise), but you also need to be able to handle old doc files, see further below for your options. </span></p>
   
   <p class="Normal DocDefaults ">Nor is it for RTF files.</p>
   
@@ -106,8 +112,6 @@
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Programmatically manipulate the docx document (of course)</p>
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Template substitution; CustomXML binding</p>
-  
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Import a binary doc (uses Apache POI's HWPF)</p>
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Produce/consume Word 2007's xmlPackage (pkg) format</p>
   
@@ -138,6 +142,14 @@
   <p class="Normal DocDefaults ">It can't read/write Word 2003 XML documents.  The main problem with those is that the XML namespace is different.</p>
   
   <p class="Normal DocDefaults ">Docx4j will support Word 2010 docx files.</p>
+  
+  <p class="Heading1 Normal DocDefaults ">Handling legacy binary .doc files</p>
+  
+  <p class="Normal DocDefaults ">Apache POI's HWPF can read .doc files, and docx4j could use this for basic conversion of .doc to .docx.  The problem with this approach is that POI's HWPF code fails on many .doc files.</p>
+  
+  <p class="Normal DocDefaults ">An effective approach is to use OpenOffice (via jodconverter) to convert the doc to docx, which docx4j can then process.  If you need to return a binary .doc, OpenOffice/jodconverter can convert the docx back to .doc.</p>
+  
+  <p class="Normal DocDefaults ">There is also http://b2xtranslator.sourceforge.net/ .  If a pure Java approach were required, this could be converted.</p>
   
   <p class="Heading1 Normal DocDefaults ">Using docx4j binaries</p>
   
@@ -193,7 +205,7 @@
   
   <p class="Heading2 Normal DocDefaults ">Command line - Quick Instructions</p>
   
-  <p class="Normal DocDefaults ">“Quick” that is, provided you have maven and ant installed.  Note that we only use maven to grab the dependencies, not to do the actual build.</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">“Quick” that is, provided you have maven and ant installed.  </span></p>
   
   <p class="Normal DocDefaults ">Create a directory called workspace, and cd into it.</p>
   
@@ -205,7 +217,11 @@
   
   <p class="Normal DocDefaults ">and edit it to suit your system.</p>
   
-  <p class="Command NormalWeb Normal DocDefaults "><span style="white-space:pre-wrap;">mvn install </span></p>
+  <p class="Command NormalWeb Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;">export MAVEN_OPTS=-Xmx512m</span><span style="color: #000000;font-family: Calibri;"><br clear="all"/></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;">mvn install -Dmaven.test.skip=true</span></p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">That will install the dependencies and all being well, create a jar. </span></p>
+  
+  <p class="Normal DocDefaults ">Once the dependencies are installed, you can also build docx4j using ant:</p>
   
   <p class="NormalWeb Normal DocDefaults " style="position: relative; margin-left: 0.5in;"><span style="font-family: Consolas;font-size: 10.0pt;">ant dist</span></p>
   
@@ -225,7 +241,7 @@
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Java 1.5 or 6</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">JAXB: </span><span style="font-weight: bold;">both</span><span style="white-space:pre-wrap;"> the JAXB implementation included in Java 6, </span><span style="font-weight: bold;">and</span><span style="white-space:pre-wrap;"> the 2.x reference implementation. (This is the price of supporting either at runtime)</span></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">JAXB: </span><span style="font-weight: bold;">either</span><span style="white-space:pre-wrap;"> the JAXB implementation included in Java 6, </span><span style="font-weight: bold;">or</span><span style="white-space:pre-wrap;"> the 2.x reference implementation. </span></p>
   
   <p class="h3 Heading2 Normal DocDefaults ">Instructions</p>
   
@@ -273,7 +289,7 @@
   
   <p class="Normal DocDefaults ">The project should now be working in Eclipse without errors<span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fs2"><a href="#fn2">2</a></a></span></span><span style="white-space:pre-wrap;">. </span></p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Open an existing docx document</span></p>
+  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Open an existing docx/pptx document</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/packages/WordprocessingMLPackage.java"><span style="font-family: Consolas;">org.docx4j.openpackaging.packages.</span><span style="font-weight: bold;font-family: Consolas;">WordprocessingMLPackage</span></a> represents a docx document.</p>
   
@@ -289,11 +305,33 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">After that, you can manipulate its contents. </span></p>
   
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">WordprocessingMLPackage.load uses </span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   <span style="white-space:pre-wrap;">LoadFromZipNG loader = </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 8.0pt;">new</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> LoadFromZipNG();</span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">If you need to load a docx from an input stream, you can do something like:</p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   WordprocessingMLPackage pkg = (WordprocessingMLPackage)loader.get(stream);</span></p>
+  
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">A similar approach works for pptx files:</p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   <span style="white-space:pre-wrap;">PresentationMLPackage presentationMLPackage = </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   </span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   (PresentationMLPackage)OpcPackage.</span><span style="color: #000000;font-style: italic;font-family: Consolas;font-size: 8.0pt;">load</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">(</span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 8.0pt;">new</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> java.io.File(inputfilepath));</span></span></p>
+  
   <p class="Heading1 Normal DocDefaults ">WordML concepts</p>
   
   <p class="Normal DocDefaults ">To do anything much beyond this, you need to have an understanding of basic WordML concepts.</p>
   
   <p class="Normal DocDefaults ">According to the Microsoft Open Packaging spec, each docx document is made up of a number of “Part” files, zipped up.  A Part is usually XML, but might not be (an image part, for example, isn't).</p>
+  
+  <p class="Normal DocDefaults ">The parts form a tree. If a part has child parts, it must have a relationships part which identifies these.</p>
+  
+  <p class="Normal DocDefaults ">The part which contains the main text of the document is the Main Document Part.  Each Part has a name.  The name of the Main Document Part is usually "/word/document.xml".</p>
+  
+  <p class="Normal DocDefaults ">If the document has a header, then the main document part woud have a header child part, and this would be described in the main document part's relationships (part).</p>
+  
+  <p class="Normal DocDefaults ">Similarly for any images.  To see the structure of any given document, see "Parts List" further below.</p>
   
   <p class="Normal DocDefaults ">An introduction to WordML is beyond the scope of this document.  You can find a very readable introduction in 1<span style="vertical-align: top;font-size: xx-small;">st</span><span style="white-space:pre-wrap;"> edition Part 3 (Primer) at </span><a href="http://www.ecma-international.org/publications/standards/Ecma-376.htm"><span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/publications/standards/Ecma-376.htm</span></a><span style="white-space:pre-wrap;"> or </span><a href="http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm"><span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm</span></a><span style="white-space:pre-wrap;"> (a better link, since its not zipped up).</span></p>
   
@@ -359,7 +397,7 @@
   
   <p class="Normal DocDefaults ">Docx4j has 3 layers:</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">1. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">OpenPackaging handles things at the Open Packaging Conventions level:  unzipping a docx into </span><span style="font-weight: bold;font-family: Consolas;">WordprocessingMLPackage</span><span style="white-space:pre-wrap;"> and a set of objects inheriting from Part;  allowing parts to be added/deleted; saving the docx</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">This layer is based originally on OpenXML4J (which is also used by Apache POI). </span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are generally subclasses of </span><span style="font-weight: bold;color: #000000;font-family: Consolas;">org</span><span style="font-weight: bold;font-family: Consolas;">.docx4j.</span><span style="font-weight: bold;color: #000000;font-family: Consolas;">openpackaging</span><span style="font-weight: bold;font-family: Consolas;">.parts.JaxbXmlPart</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are arranged in a tree.  If a part has descendants, it will have a </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging.parts.relationships.RelationshipsPart</span><span style="white-space:pre-wrap;"> which identifies those descendant parts.  The sample PartsList (see next section) shows you how this works.</span><br clear="all"/><br clear="all"/>A JaxbXmlPart has a content tree:<br clear="all"/><br clear="all"/><span style="font-family: Consolas;font-size: 9.0pt;">   public Object getJaxbElement() {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   return jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   public void setJaxbElement(Object jaxbElement) {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   this.jaxbElement = jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span></p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">1. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">OpenPackaging handles things at the Open Packaging Conventions level:  unzipping a docx into </span><span style="font-weight: bold;font-family: Consolas;">WordprocessingMLPackage</span><span style="white-space:pre-wrap;"> and a set of objects inheriting from Part;  allowing parts to be added/deleted; saving the docx</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">This layer is based originally on OpenXML4J (which is also used by Apache POI). </span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are generally subclasses of </span><span style="font-weight: bold;color: #000000;font-family: Consolas;">org</span><span style="font-weight: bold;font-family: Consolas;">.docx4j.</span><span style="font-weight: bold;color: #000000;font-family: Consolas;">openpackaging</span><span style="font-weight: bold;font-family: Consolas;">.parts.JaxbXmlPart</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are arranged in a tree.  If a part has descendants, it will have a </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging.parts.relationships.RelationshipsPart</span><span style="white-space:pre-wrap;"> which identifies those descendant parts.  The sample PartsList (see next section) shows you how this </span>works.<br clear="all"/><br clear="all"/>A JaxbXmlPart has a content tree:<br clear="all"/><br clear="all"/><span style="font-family: Consolas;font-size: 9.0pt;">   public Object getJaxbElement() {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   return jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   public void setJaxbElement(Object jaxbElement) {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   this.jaxbElement = jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span></p>
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">2. </span><span style="white-space:pre-wrap;">The </span><span style="font-weight: bold;color: #000000;">jaxb</span><span style="font-weight: bold;"><span style="white-space:pre-wrap;"> content tree</span></span><span style="white-space:pre-wrap;"> is the second level of the three layered model.</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Most parts (including MainDocumentPart, styles, headers/footers, comments, </span><span style="color: #000000;">endnotes</span><span style="white-space:pre-wrap;">/footnotes) use </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.wml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span><span style="white-space:pre-wrap;">(WordprocessingML); </span><span style="color: #000000;">wml</span><span style="white-space:pre-wrap;"> references </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.dml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span>(DrawingML) as necessary.<br clear="all"/><br clear="all"/>These classes were generated from the Open XML schemas<br clear="all"/><br clear="all"/></p>
   
@@ -411,6 +449,8 @@
   
   <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Document generation/document assembly using content controls</p>
   
+  <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>AltChunk</p>
+  
   <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CreateDocxWithCustomXml</p>
   
   <p class="ListParagraph Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>CustomXmlBinding</p>
@@ -441,7 +481,7 @@
   
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Parts List</span></p>
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">To get a better understanding of how docx4j works – and the structure of a docx document – you can run the PartsList sample on a docx (or a pptx).  If you do, it will list the hierarchy of parts used in that package.  It will tell you which class is used to represent each part, and where that part is a JaxbXmlPart, it will also tell you what class the </span><span style="font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">jaxbElement </span></span>is.</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">To get a better understanding of how docx4j works – and the structure of a docx document – you can run the PartsList sample on a docx (or a pptx).  If you do, it will list the hierarchy of parts used in that </span><span style="white-space:pre-wrap;">package.  It will tell you which class is used to represent each part, and where that part is a JaxbXmlPart, it will also tell you what class the </span><span style="font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">jaxbElement </span></span>is.</p>
   
   <p class="Normal DocDefaults ">For example:</p>
   
@@ -925,6 +965,34 @@
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Note the name </span><span style="font-weight: bold;">imconvert</span><span style="white-space:pre-wrap;">, which is used so that we don't have to supply a full path to exec.  You'll need to accommodate that.  </span></p>
   
+  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Manual Image Manipulation</span></p>
+  
+  <p class="Normal DocDefaults ">Images involve three things:</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.52in;font-family: Symbol;"> </span>the image part itself</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.52in;font-family: Symbol;"> </span>a relationship, in the relationships part of the main document part (or header part etc).  This relationship includes:</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 1.02in;font-family: Courier New;">o </span><span style="white-space:pre-wrap;">the name of the image part (for example, </span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">/word/media/image1.jpeg</span>)</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 1.02in;font-family: Courier New;">o </span>the relationship ID</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.52in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">some XML in the main document part (or header part etc), referencing the relationship ID (see </span><span style="font-weight: bold;color: #800000;font-family: Consolas;">w:drawing</span><span style="white-space:pre-wrap;"> and </span><span style="font-weight: bold;color: #800000;font-family: Consolas;">w:pict</span><span style="white-space:pre-wrap;"> examples above)</span></p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">This means that if you are moving images around, you need to take care to ensure that the relationships remain valid. </span></p>
+  
+  <p class="Normal DocDefaults ">You can manually manipulate the relationship, and you can manually manipulate the XML referencing the relationship IDs.</p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Given an image part, you can get the relationship pointing to it </span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   </span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   </span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Relationship</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> rel = copiedImagePart.getSourceRelationship();</span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   </span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   String id = rel.getId();</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults ">You can then ensure the reference matches.</p>
+  
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Text extraction</span></p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">A quick way to extract the text from a docx, is to use </span><span style="color: #000000;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">TextUtils‘  </span></span></p>
@@ -1169,11 +1237,9 @@
   
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Roadmap</span></p>
   
-  <p class="Normal DocDefaults "><span style="font-weight: bold;">Word 2010 support.</span><span style="white-space:pre-wrap;"> Support for the new XML elements/schemas introduced with Word 2010, and for the compatibility mechanism. This is the main justification for the 3.0 label.</span></p>
+  <p class="Normal DocDefaults "><span style="font-weight: bold;">Word 2010 support.</span><span style="white-space:pre-wrap;"> Support for the new XML elements/schemas introduced with Word 2010, and for the compatibility mechanism. </span></p>
   
   <p class="Normal DocDefaults "><span style="font-weight: bold;">HTML exporters:</span><span style="white-space:pre-wrap;"> get rid of old ones; standardise on NG2. The idea is to remove any 'which should I use' confusion, and focus effort/know-how. </span></p>
-  
-  <p class="Normal DocDefaults "><span style="font-weight: bold;">PDF exporters:</span><span style="white-space:pre-wrap;"> standardise on viaXSLFO, and get rid of viaIText and viaHTML. As with HTML, the idea is to remove any 'which should I use' confusion, and focus effort/know-how. docx4j could produce XSL FO only, and rely on the user to have FOP or equivalent to actually produce the PDF. This will reduce dependencies, making docx4j lighter. The goal would be to remove the fop jar (2.8M), PDF renderer jar (1.6M), iText jar (1.1M), and core-renderer (1M).</span></p>
   
   <p class="Normal DocDefaults "><span style="font-weight: bold;">Font handling:</span><span style="white-space:pre-wrap;"> remove the panose stuff, so we don't need a customised FOP jar. </span></p>
   
@@ -1182,8 +1248,6 @@
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Search/replace</p>
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Estimating page content</p>
-  
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>XSLT, by enclosing sections, lists</p>
   
   <p class="Normal DocDefaults "><span style="font-weight: bold;">Inserting OLE objects</span>: so spreadsheets, PDFs etc can be embedded.</p>
   
