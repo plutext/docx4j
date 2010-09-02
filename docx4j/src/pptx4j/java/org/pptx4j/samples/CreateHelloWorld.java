@@ -26,6 +26,8 @@ import org.docx4j.XmlUtils;
 import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
+import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
 import org.pptx4j.pml.Shape;
 
@@ -44,14 +46,19 @@ public class CreateHelloWorld  {
 		// Where will we save our new .ppxt?
 		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx-test.pptx";
 		
-		// Create skeletal package
+		// Create skeletal package, including a MainPresentationPart and a SlideLayoutPart
 		PresentationMLPackage presentationMLPackage = PresentationMLPackage.createPackage(); 
 		
-		// It contains a first slide; get it ..
-		// TODO - add convenience methods?
-		SlidePart slidePart = (SlidePart)presentationMLPackage.getParts().getParts().get(
-				new PartName("/ppt/slides/slide1.xml"));
+		// Need references to these parts to create a slide
+		MainPresentationPart pp = (MainPresentationPart)presentationMLPackage.getParts().getParts().get(
+				new PartName("/ppt/presentation.xml"));		
+		SlideLayoutPart layoutPart = (SlideLayoutPart)presentationMLPackage.getParts().getParts().get(
+				new PartName("/ppt/slideLayouts/slideLayout1.xml"));
 		
+		// OK, now we can create a slide
+		SlidePart slidePart = presentationMLPackage.createSlidePart(pp, layoutPart, 
+				new PartName("/ppt/slides/slide1.xml"));
+				
 		// Create and add shape
 		Shape sample = ((Shape)XmlUtils.unmarshalString(SAMPLE_SHAPE, Context.jcPML) );
 		slidePart.getJaxbElement().getCSld().getSpTree().getSpOrGrpSpOrGraphicFrame().add(sample);

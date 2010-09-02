@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.styles.StyleTree;
@@ -142,17 +144,17 @@ public class PresentationMLPackage  extends OpcPackage {
 			pp.setJaxbElement(MainPresentationPart.createJaxbPresentationElement() );
 			pmlPack.addTargetPart(pp);		
 			
-			// Slide part
-			SlidePart slidePart = new SlidePart();
-			pp.addSlideIdListEntry(slidePart);
-
-			slidePart.setJaxbElement( SlidePart.createSld() );
+//			// Slide part
+//			SlidePart slidePart = new SlidePart();
+//			pp.addSlideIdListEntry(slidePart);
+//
+//			slidePart.setJaxbElement( SlidePart.createSld() );
 			
 			// Slide layout part
 			SlideLayoutPart layoutPart = new SlideLayoutPart(); 
 			layoutPart.setJaxbElement( SlideLayoutPart.createSldLayout() );
 			
-			slidePart.addTargetPart(layoutPart);
+//			slidePart.addTargetPart(layoutPart);
 			
 			// Slide Master part
 			SlideMasterPart masterPart = new SlideMasterPart();
@@ -185,6 +187,32 @@ public class PresentationMLPackage  extends OpcPackage {
 		return pmlPack;
 		
 	}
+	
+	/**
+	 * Create a slide and add it to the package
+	 * 
+	 * @param pp
+	 * @param layoutPart
+	 * @param partName
+	 * @return the slide
+	 * @throws InvalidFormatException
+	 * @throws JAXBException
+	 */
+	public static SlidePart createSlidePart(MainPresentationPart pp, SlideLayoutPart layoutPart, PartName partName) 
+		throws InvalidFormatException, JAXBException {
+		
+		// Slide part
+		SlidePart slidePart = new SlidePart(partName);
+		pp.addSlideIdListEntry(slidePart);
+
+		slidePart.setJaxbElement( SlidePart.createSld() );
+		
+		// Slide layout part
+		slidePart.addTargetPart(layoutPart);
+		
+		return slidePart;
+	}
+	
 	
 	private static String SAMPLE_SHAPE = 			
 		"<p:sp   xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\">"
