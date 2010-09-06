@@ -24,6 +24,7 @@ package org.docx4j.dml.diagram;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTBackgroundFormatting;
 import org.docx4j.dml.CTOfficeArtExtensionList;
@@ -61,6 +62,7 @@ import org.docx4j.dml.CTWholeE2OFormatting;
     "whole",
     "extLst"
 })
+@XmlRootElement(name = "dataModel")
 public class CTDataModel {
 
     @XmlElement(required = true)

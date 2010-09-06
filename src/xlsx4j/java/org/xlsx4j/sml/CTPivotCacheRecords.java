@@ -26,6 +26,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
@@ -56,6 +57,7 @@ import javax.xml.bind.annotation.XmlType;
     "r",
     "extLst"
 })
+@XmlRootElement(name = "pivotCacheRecords")
 public class CTPivotCacheRecords {
 
     protected List<CTRecord> r;

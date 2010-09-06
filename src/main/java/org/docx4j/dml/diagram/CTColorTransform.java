@@ -26,6 +26,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTOfficeArtExtensionList;
 
@@ -63,6 +64,7 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
     "styleLbl",
     "extLst"
 })
+@XmlRootElement(name = "colorsDef")
 public class CTColorTransform {
 
     protected List<CTCTName> title;

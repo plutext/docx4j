@@ -26,6 +26,7 @@ import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -54,6 +55,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_Footnotes", propOrder = {
     "footnote"
 })
+@XmlRootElement(name = "footnotes")
 public class CTFootnotes
     implements Child
 {
