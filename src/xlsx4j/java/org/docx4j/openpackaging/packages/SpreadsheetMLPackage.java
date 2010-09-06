@@ -37,25 +37,22 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
-import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
-import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
-import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
-import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.wml.Style;
-import org.pptx4j.convert.out.svginhtml.SvgExporter;
-import org.pptx4j.jaxb.Context;
-import org.pptx4j.model.ResolvedLayout;
-import org.pptx4j.model.ShapeWrapper;
-import org.pptx4j.model.TextStyles;
-import org.pptx4j.pml.GroupShape;
-import org.pptx4j.pml.SldLayout;
+import org.docx4j.relationships.Relationship;
+import org.xlsx4j.jaxb.Context;
+import org.xlsx4j.sml.Sheet;
+import org.xlsx4j.sml.SheetData;
+import org.xlsx4j.sml.Sheets;
+import org.xlsx4j.sml.Worksheet;
 
 
 
@@ -87,17 +84,19 @@ public class SpreadsheetMLPackage extends OpcPackage {
 		setContentType(new ContentType(ContentTypes.PRESENTATIONML_MAIN));
 	}
 	
+	// Workbook part
+	WorkbookPart wb;
 	
 	/**
-	 * Convenience method to create a PresentationMLPackage
-	 * from an existing File (.pptx or .xml Flat OPC).
+	 * Convenience method to create a SpreadsheetMLPackage
+	 * from an existing File (.xlsx or .xml Flat OPC).
      *
-	 * @param pptxFile
-	 *            The pptx file 
+	 * @param xlsxFile
+	 *            The xlsx file 
 	 */	
-	public static PresentationMLPackage load(java.io.File pptxFile) throws Docx4JException {
+	public static SpreadsheetMLPackage load(java.io.File xlsxFile) throws Docx4JException {
 		
-		return (PresentationMLPackage)OpcPackage.load(pptxFile);
+		return (SpreadsheetMLPackage)OpcPackage.load(xlsxFile);
 	}
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
@@ -130,150 +129,86 @@ public class SpreadsheetMLPackage extends OpcPackage {
 	 * @return
 	 * @throws InvalidFormatException
 	 */
-	public static PresentationMLPackage createPackage() throws InvalidFormatException {
+	public static SpreadsheetMLPackage createPackage() throws InvalidFormatException {
 		
 		
 		// Create a package
-		PresentationMLPackage pmlPack = new PresentationMLPackage();
+		SpreadsheetMLPackage xlsPack = new SpreadsheetMLPackage();
 
-		// Presentation part
-		MainPresentationPart pp;
 		try {
 			
-			pp = new MainPresentationPart();
-			pp.setJaxbElement(MainPresentationPart.createJaxbPresentationElement() );
-			pmlPack.addTargetPart(pp);		
+			xlsPack.wb = new WorkbookPart();
+			xlsPack.wb.setJaxbElement(
+					Context.getsmlObjectFactory().createWorkbook()
+			);
+			xlsPack.addTargetPart(xlsPack.wb);	
 			
-//			// Slide part
-//			SlidePart slidePart = new SlidePart();
-//			pp.addSlideIdListEntry(slidePart);
-//
-//			slidePart.setJaxbElement( SlidePart.createSld() );
-			
-			// Slide layout part
-			SlideLayoutPart layoutPart = new SlideLayoutPart(); 
-			layoutPart.setJaxbElement( SlideLayoutPart.createSldLayout() );
-			
-//			slidePart.addTargetPart(layoutPart);
-			
-			// Slide Master part
-			SlideMasterPart masterPart = new SlideMasterPart();
-			pp.addSlideMasterIdListEntry(masterPart);
-
-			masterPart.setJaxbElement(masterPart.createSldMaster() );
-			masterPart.addSlideLayoutIdListEntry(layoutPart);
-			
-			layoutPart.addTargetPart(masterPart);
-			
-			// Theme part
-			ThemePart themePart = new ThemePart(new PartName("/ppt/theme/theme1.xml"));
-			java.io.InputStream is = org.docx4j.utils.ResourceUtils.getResource(
-						"org/docx4j/openpackaging/parts/PresentationML/theme.xml");
-			themePart.unmarshal(is);
-			
-			// .. add it in 2 places ..
-			masterPart.addTargetPart(themePart);
-			pp.addTargetPart(themePart);
-			
+			xlsPack.wb.getJaxbElement().setSheets(
+					Context.getsmlObjectFactory().createSheets()					
+			);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new InvalidFormatException("Couldn't create package", e);
 		}
-		
-		
 
 		// Return the new package
-		return pmlPack;
+		return xlsPack;
 		
 	}
 	
 	/**
-	 * Create a slide and add it to the package
+	 * Create a worksheet and add it to the package
 	 * 
-	 * @param pp
-	 * @param layoutPart
+	 * @param wb
 	 * @param partName
-	 * @return the slide
+	 * @param sheetName
+	 * @param sheetId
+	 * @return
 	 * @throws InvalidFormatException
 	 * @throws JAXBException
 	 */
-	public static SlidePart createSlidePart(MainPresentationPart pp, SlideLayoutPart layoutPart, PartName partName) 
+	public WorksheetPart createWorksheetPart(PartName partName,
+			String sheetName, long sheetId) 
 		throws InvalidFormatException, JAXBException {
 		
-		// Slide part
-		SlidePart slidePart = new SlidePart(partName);
-		pp.addSlideIdListEntry(slidePart);
-
-		slidePart.setJaxbElement( SlidePart.createSld() );
+		WorksheetPart worksheetPart = new WorksheetPart(partName);
 		
-		// Slide layout part
-		slidePart.addTargetPart(layoutPart);
+		Relationship r = wb.addTargetPart(worksheetPart);
 		
-		return slidePart;
+		Sheets sheets = wb.getJaxbElement().getSheets();
+		
+		Sheet s = Context.getsmlObjectFactory().createSheet();
+		s.setName(sheetName);
+		s.setId(r.getId());
+		s.setSheetId(sheetId);
+		
+		sheets.getSheet().add(s);
+		
+		// minimal content for the part
+		Worksheet ws = Context.getsmlObjectFactory().createWorksheet();
+		worksheetPart.setJaxbElement(ws);
+		ws.setSheetData(
+				Context.getsmlObjectFactory().createSheetData()
+				);
+		
+		return worksheetPart;
 	}
 	
 	
 	
 	public static void main(String[] args) throws Exception {
-
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-basic.xml";
 		
-		PresentationMLPackage presentationMLPackage = 
-			(PresentationMLPackage)PresentationMLPackage.load(new java.io.File(inputfilepath));		
-
+		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/test-out.xlsx";
 		
-//		ThemePart tp = (ThemePart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/theme/theme1.xml"));
-//		FontScheme fontScheme = tp.getFontScheme();
-//		List<Style> styles = new ArrayList<Style>();
-//		
-//		// presentation.xml
-//		MainPresentationPart pp = (MainPresentationPart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/presentation.xml"));
-//		styles.addAll(
-//				TextStyles.generateWordStylesFromPresentationPart(
-//						pp.getJaxbElement().getDefaultTextStyle(),
-//						"", fontScheme));
-//
-//		// master
-//		SlideMasterPart master = (SlideMasterPart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/slideMasters/slideMaster1.xml"));
-//		styles.addAll(
-//				TextStyles.generateWordStylesForMaster(
-//						master.getJaxbElement().getTxStyles(), 
-//						1, fontScheme));
+		SpreadsheetMLPackage pkg = createPackage();
 		
-		Iterator partIterator = presentationMLPackage.getParts().getParts().entrySet().iterator();
-	    while (partIterator.hasNext()) {
-	    	
-	        Map.Entry pairs = (Map.Entry)partIterator.next();
-	        
-	        Part p = (Part)pairs.getValue();
-	        if (p instanceof SlidePart) {
-
-//	        	ResolvedLayout rl = ((SlidePart)p).getResolvedLayout();		        	
-//	        	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
-//	        			"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
-	        	
-	        	System.out.println(
-	        			SvgExporter.svg(presentationMLPackage, (SlidePart)p)
-	        			);
-	        }
-	    }
+		pkg.createWorksheetPart(new PartName("/xl/worksheets/sheet1.xml"), "Sheet1", 1);
 		
-		
-//		System.out.println(presentationMLPackage.getParts().getParts().size());
-//		Map<String, ShapeWrapper> index = ShapeWrapper.indexPlaceHolders(	presentationMLPackage.getParts().getParts());
-//		
-//		SlidePart slidePart = (SlidePart)presentationMLPackage.getParts().getParts().get(
-//				new PartName("/ppt/slides/slide1.xml"));
-//
-//		GroupShape shapeTree = slidePart.getEffectiveShapeTree( index );
-//		
-//		System.out.println( XmlUtils.marshaltoString(shapeTree, true, Context.jcPML));
-		
-		System.out.println("\n\n done .. \n\n");
+		SaveToZipFile saver = new SaveToZipFile(pkg);
+		saver.save(outputfilepath);
+				
+		System.out.println("\n\n done .. " + outputfilepath);
 		
 	}	
 }
