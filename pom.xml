@@ -50,6 +50,7 @@
 								<source>src/xslfo</source>
 								<source>src/pptx4j/java</source>
 								<source>src/svg</source>
+								<source>src/xlsx4j/java</source>
 								<!--source>src/sun</source-->
 							</sources>
 						</configuration>
@@ -258,7 +259,10 @@
 			
 			 mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=../fop/tmp/fop-patched.jar -DgroupId=docx4j -DartifactId=fop-patched -Dversion=0.95.756436 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 			 
-			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2			 
+			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+			
+			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=JAXB-NamespacePrefixMapperInterfaces.jar  -DgroupId=com.sun.xml -DartifactId=jaxb-NamespacePrefixMapper-interfaces -Dversion=2.0.0 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+						 
 		-->
 		
 		<dependency>

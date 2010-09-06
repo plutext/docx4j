@@ -90,6 +90,7 @@
             <src path="${src.main.java.dir}"/>
             <src path="src/diffx"/>
             <src path="src/pptx4j/java"/>
+            <src path="src/xlsx4j/java"/>
             <src path="src/svg"/>
             <src path="src/xslfo"/>
             <classpath refid="docx4j.classpath"/>
