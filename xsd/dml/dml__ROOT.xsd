@@ -10,7 +10,8 @@
 	
 	<!--   
 	
-		This file ought to generate all dml, except dml-spreadsheetDrawing.xsd
+		This file ought to generate all dml, including (as from 2010 09 06) dml-spreadsheetDrawing.xsd
+		If you regenerate, make sure you implement changeset 1129
 		 
 	
 	sh ~/jaxb-ri-20071219/bin/xjc.sh dml__ROOT.xsd -d  ~/workspace/docx4j/src/main/java -no-header -target 2.0 
@@ -96,9 +97,7 @@
 	<xsd:include schemaLocation="dml-shapeMiscellaneous.xsd" />
 	<xsd:include schemaLocation="dml-shapeProperties.xsd" />
 	<xsd:include schemaLocation="dml-shapeStyle.xsd" />
-	<!--  docx4j doesn't do spreadsheets
-	  <xsd:include schemaLocation="dml-spreadsheetDrawing.xsd" />
-	   -->
+    <xsd:import  namespace="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" schemaLocation="dml-spreadsheetDrawing.xsd" />
 	<xsd:include schemaLocation="dml-styleDefaults.xsd" />
 	<xsd:include schemaLocation="dml-stylesheet.xsd" />
 	<xsd:include schemaLocation="dml-tableStyle.xsd" />
