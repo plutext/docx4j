@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+	elementFormDefault="qualified"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+<!--
+	
+	The other XSDs in this dir were obtained from OfficeOpenXML-XMLSchema.zip
+	v1.0 final
+		 
+	http://www.ecma-international.org/publications/standards/Ecma-376.htm says
+	"Copy these file(s), free of charge"
+	
+WHICH VERSION?
+
+This is based on ECMA-376, first edition (as opposed to 2ed, which was not then available,
+and in any case is not supported by Office 2007).	
+
+	
+USAGE INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from Java 6 or the JAXB 2.1 RI.
+  The Java 6 version won't let us use ppp?
+	
+	
+  To generate the classes (from the same directory)	
+			
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer sml_root.xsd -d ~/workspace/docx4j/src/xlsx4j/java -no-header -target 2.0
+
+ 	 sh ~/jaxb-ri-20071219/bin/xjc.sh sml_root.xsd -d tmp -no-header -target 2.0
+
+	 	 
+  jaxb-ri-20071219 is 2.1.6; jaxb-ri-20070917 works equally well.
+  
+	cd to the directory containing the new sources
+	
+	Then add the copyright notice:
+	
+	 sed -s -i -f script *.java
+	
+REVISION HISTORY
+
+2010 09 06 - First compiled and added to docx4j
+
+	 Used &lt;jaxb:property> to resolve several Property xxx is already defined conflicts. 
+	
+	
+-->
+	   
+	   
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.sml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+
+
+  <xsd:include schemaLocation="sml-autoFilter.xsd" />
+  <xsd:include schemaLocation="sml-baseTypes.xsd" />
+  <xsd:include schemaLocation="sml-calculationChain.xsd" />
+  <xsd:include schemaLocation="sml-comments.xsd" />
+  <xsd:include schemaLocation="sml-customXmlMappings.xsd" />
+  <xsd:include schemaLocation="sml-externalConnections.xsd" />
+  <xsd:include schemaLocation="sml-pivotTableShared.xsd" />
+  <xsd:include schemaLocation="sml-pivotTable.xsd" />
+  <xsd:include schemaLocation="sml-queryTable.xsd" />
+  <xsd:include schemaLocation="sml-sharedStringTable.xsd" />
+  <xsd:include schemaLocation="sml-sharedWorkbookRevisions.xsd" />
+  <xsd:include schemaLocation="sml-sharedWorkbookUserNames.xsd" />
+  <xsd:include schemaLocation="sml-sheetMetadata.xsd" />
+  <xsd:include schemaLocation="sml-sheet.xsd" />
+  <xsd:include schemaLocation="sml-singleCellTable.xsd" />
+  <xsd:include schemaLocation="sml-styles.xsd" />
+  <xsd:include schemaLocation="sml-supplementaryWorkbooks.xsd" />
+  <xsd:include schemaLocation="sml-table.xsd" />
+  <xsd:include schemaLocation="sml-volatileDependencies.xsd" />
+  <xsd:include schemaLocation="sml-workbook.xsd" />
+  
+</xsd:schema>

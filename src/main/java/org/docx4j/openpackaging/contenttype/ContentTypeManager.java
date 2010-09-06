@@ -68,6 +68,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
@@ -78,6 +79,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
+import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -357,8 +359,11 @@ public class ContentTypeManager  {
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_STYLE)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart(new PartName(partName));			
-		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart(new PartName(partName));
+		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
+			return JaxbSmlPart.newPartForContentType(contentType, partName);
+			
+		}  if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader
@@ -719,7 +724,10 @@ public class ContentTypeManager  {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
 			return p;
-			
+		} else if (getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_MAIN) != null) {
+			log.info("Detected SpreadhseetMLPackage package ");
+			p = new SpreadsheetMLPackage(this);
+			return p;			
 		} else {
 			throw new InvalidFormatException("Unexpected package (docx4j supports docx/docxm and pptx only");
 //			log.warn("No part in [Content_Types].xml for content type"

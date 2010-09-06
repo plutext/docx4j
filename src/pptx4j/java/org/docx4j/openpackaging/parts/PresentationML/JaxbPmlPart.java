@@ -112,23 +112,23 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 		}
 	}	
 	
-    public E unmarshal( java.io.InputStream is ) throws JAXBException {
-    	
-		try {
-			setJAXBContext(Context.jcPML);						
-		    		    
-			Unmarshaller u = jc.createUnmarshaller();
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			jaxbElement = (E)u.unmarshal( is );						
-			log.debug( this.getClass().getName() + " unmarshalled" );									
-
-		} catch (JAXBException e ) {
-			log.error(e);
-			throw e;
-		}
-		return jaxbElement;
-    }	
+//    public E unmarshal( java.io.InputStream is ) throws JAXBException {
+//    	
+//		try {
+//			setJAXBContext(Context.jcPML);						
+//		    		    
+//			Unmarshaller u = jc.createUnmarshaller();
+//			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+//
+//			jaxbElement = (E)u.unmarshal( is );						
+//			log.debug( this.getClass().getName() + " unmarshalled" );									
+//
+//		} catch (JAXBException e ) {
+//			log.error(e);
+//			throw e;
+//		}
+//		return jaxbElement;
+//    }	
     
     
 	
