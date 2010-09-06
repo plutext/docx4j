@@ -11,7 +11,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.CTStylesheet;
 
-public class Drawing extends JaxbDmlPart<JAXBElement<CTDrawing>> {
+public class Drawing extends JaxbDmlPart<CTDrawing> {
 	// This part uses a JAXB content model from dml,
 	// so we need to use that context.
 	// Hence this class doesn't extent JaxbPmlPart.

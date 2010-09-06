@@ -411,12 +411,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		// Styles in endnotes, footnotes?
 		if (this.getEndNotesPart()!=null) {
 			log.debug("Looking at endnotes");
-			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement().getValue();
+			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement();
 			traverseMainDocumentRecursive(endnotes.getEndnote(), null, stylesInUse);			
 		}
 		if (this.getFootnotesPart()!=null) {
 			log.debug("Looking at footnotes");
-			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement().getValue();
+			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement();
 			traverseMainDocumentRecursive(footnotes.getFootnote(), null, stylesInUse);			
 		}
 		

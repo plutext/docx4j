@@ -10,7 +10,7 @@ import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.CTCalcChain;
 import org.xlsx4j.sml.Worksheet;
 
-public class WorksheetPart extends JaxbSmlPart<JAXBElement<Worksheet>> {
+public class WorksheetPart extends JaxbSmlPart<Worksheet> {
 	
 	public WorksheetPart(PartName partName) throws InvalidFormatException {
 		super(partName);

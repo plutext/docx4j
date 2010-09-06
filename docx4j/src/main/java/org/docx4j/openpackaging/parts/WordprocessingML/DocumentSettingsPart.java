@@ -58,23 +58,5 @@ public final class DocumentSettingsPart extends JaxbXmlPart<Object> {
 		setRelationshipType(Namespaces.SETTINGS);
 				
 	}
-	
-	@Override
-	public Object getJaxbElement() {	
 		
-		if (jaxbElement instanceof JAXBElement) {
-			if (((JAXBElement)jaxbElement).getName().getLocalPart().equals("settings")) {
-				return (CTSettings)((JAXBElement)jaxbElement).getValue();				
-			} else {
-				log.error("Unexpected " + XmlUtils.JAXBElementDebug((JAXBElement)jaxbElement) );				
-				return jaxbElement;
-			}
-		} else if (jaxbElement instanceof CTSettings){
-			return jaxbElement;			
-		} else {
-			log.error( "Unexpected" + jaxbElement.getClass().getName() );
-			return jaxbElement;
-		}
-	}
-	
 }

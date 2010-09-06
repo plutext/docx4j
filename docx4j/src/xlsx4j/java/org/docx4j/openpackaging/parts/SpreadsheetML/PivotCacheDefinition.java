@@ -10,7 +10,7 @@ import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.CTPivotCacheDefinition;
 import org.xlsx4j.sml.CTStylesheet;
 
-public class PivotCacheDefinition  extends JaxbSmlPart<JAXBElement<CTPivotCacheDefinition>> {
+public class PivotCacheDefinition  extends JaxbSmlPart<CTPivotCacheDefinition> {
 	
 	public PivotCacheDefinition(PartName partName) throws InvalidFormatException {
 		super(partName);

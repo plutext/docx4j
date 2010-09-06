@@ -30,7 +30,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
 
 
-public final class EndnotesPart extends JaxbXmlPart<JAXBElement<CTEndnotes>> {
+public final class EndnotesPart extends JaxbXmlPart<CTEndnotes> {
 	
 	public EndnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);

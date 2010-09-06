@@ -9,7 +9,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.CTStylesheet;
 
-public class Styles  extends JaxbSmlPart<JAXBElement<CTStylesheet>> {
+public class Styles  extends JaxbSmlPart<CTStylesheet> {
 	
 	public Styles(PartName partName) throws InvalidFormatException {
 		super(partName);
