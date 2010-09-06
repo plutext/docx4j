@@ -30,7 +30,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
-public final class DiagramLayoutPart extends JaxbXmlPart<CTDiagramDefinition> {
+public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 	// <xsd:element name="layoutDef" type="CT_DiagramDefinition">
 	
 	private static Logger log = Logger.getLogger(DiagramLayoutPart.class);			

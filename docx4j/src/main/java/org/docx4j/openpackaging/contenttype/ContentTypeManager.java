@@ -78,6 +78,9 @@ import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.DrawingML.Chart;
+import org.docx4j.openpackaging.parts.DrawingML.Drawing;
+import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -350,19 +353,12 @@ public class ContentTypeManager  {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
+		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.drawing")) {
+			return JaxbDmlPart.newPartForContentType(contentType, partName);
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
 			return JaxbPmlPart.newPartForContentType(contentType, partName);
-		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_COLORS)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.DiagramColorsPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DATA)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_STYLE)) {
-			return new org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
 			return JaxbSmlPart.newPartForContentType(contentType, partName);
-			
 		}  if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			// Simple minded detection of XML content.
@@ -646,6 +642,25 @@ public class ContentTypeManager  {
 		return types;
 	}
 	
+	public void listTypes() {
+		
+
+		for (Entry<String, CTDefault> entry : defaultContentType.entrySet()) {
+			
+			System.out.println("// " + entry.getValue().getExtension());
+			System.out.println("public final static String XX =" );
+			System.out.println(entry.getValue().getContentType());
+		}
+
+		if (overrideContentType != null) {
+			for (Entry<URI, CTOverride> entry : overrideContentType.entrySet()) {
+				System.out.println("// " + entry.getValue().getPartName());
+				System.out.println("public final static String XX =" );
+				System.out.println("\"" + entry.getValue().getContentType() + "\";");
+			}
+		}	
+	}
+	
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
 		
 		try {
@@ -724,7 +739,10 @@ public class ContentTypeManager  {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
 			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_MAIN) != null) {
+		} else if (getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK) != null
+				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) != null
+				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE) != null
+				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) != null) {
 			log.info("Detected SpreadhseetMLPackage package ");
 			p = new SpreadsheetMLPackage(this);
 			return p;			

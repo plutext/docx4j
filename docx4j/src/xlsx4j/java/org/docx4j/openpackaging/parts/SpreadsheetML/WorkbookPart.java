@@ -24,7 +24,7 @@ public class WorkbookPart  extends JaxbSmlPart<Workbook> {
 				
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
-				org.docx4j.openpackaging.contenttype.ContentTypes.SPREADSHEETML_MAIN));
+				org.docx4j.openpackaging.contenttype.ContentTypes.SPREADSHEETML_WORKBOOK));
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.SPREADSHEETML_WORKBOOK);

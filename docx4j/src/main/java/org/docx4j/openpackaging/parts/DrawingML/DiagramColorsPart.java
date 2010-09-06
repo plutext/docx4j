@@ -30,7 +30,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
-public final class DiagramColorsPart extends JaxbXmlPart<CTColorTransform> {
+public final class DiagramColorsPart extends JaxbDmlPart<CTColorTransform> {
 	// <xsd:element name="colorsDef" type="CT_ColorTransform">
 	
 	private static Logger log = Logger.getLogger(DiagramColorsPart.class);			

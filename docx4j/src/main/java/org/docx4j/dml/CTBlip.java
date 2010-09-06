@@ -79,23 +79,23 @@ import javax.xml.bind.annotation.XmlType;
 public class CTBlip {
 
     @XmlElements({
-        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class),
-        @XmlElement(name = "alphaInv", type = CTAlphaInverseEffect.class),
-        @XmlElement(name = "blur", type = CTBlurEffect.class),
         @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
-        @XmlElement(name = "alphaCeiling", type = CTAlphaCeilingEffect.class),
-        @XmlElement(name = "lum", type = CTLuminanceEffect.class),
+        @XmlElement(name = "blur", type = CTBlurEffect.class),
         @XmlElement(name = "alphaModFix", type = CTAlphaModulateFixedEffect.class),
-        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
         @XmlElement(name = "tint", type = CTTintEffect.class),
+        @XmlElement(name = "alphaInv", type = CTAlphaInverseEffect.class),
         @XmlElement(name = "hsl", type = CTHSLEffect.class),
-        @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class),
         @XmlElement(name = "biLevel", type = CTBiLevelEffect.class),
-        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
-        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
-        @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
+        @XmlElement(name = "alphaCeiling", type = CTAlphaCeilingEffect.class),
+        @XmlElement(name = "alphaBiLevel", type = CTAlphaBiLevelEffect.class),
         @XmlElement(name = "alphaFloor", type = CTAlphaFloorEffect.class),
-        @XmlElement(name = "clrChange", type = CTColorChangeEffect.class)
+        @XmlElement(name = "alphaRepl", type = CTAlphaReplaceEffect.class),
+        @XmlElement(name = "duotone", type = CTDuotoneEffect.class),
+        @XmlElement(name = "clrRepl", type = CTColorReplaceEffect.class),
+        @XmlElement(name = "lum", type = CTLuminanceEffect.class),
+        @XmlElement(name = "clrChange", type = CTColorChangeEffect.class),
+        @XmlElement(name = "grayscl", type = CTGrayscaleEffect.class),
+        @XmlElement(name = "alphaMod", type = CTAlphaModulateEffect.class)
     })
     protected List<Object> alphaBiLevelOrAlphaCeilingOrAlphaFloor;
     protected CTOfficeArtExtensionList extLst;
@@ -124,23 +124,23 @@ public class CTBlip {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTAlphaBiLevelEffect }
-     * {@link CTAlphaInverseEffect }
-     * {@link CTBlurEffect }
      * {@link CTFillOverlayEffect }
-     * {@link CTAlphaCeilingEffect }
-     * {@link CTLuminanceEffect }
+     * {@link CTBlurEffect }
      * {@link CTAlphaModulateFixedEffect }
-     * {@link CTColorReplaceEffect }
      * {@link CTTintEffect }
+     * {@link CTAlphaInverseEffect }
      * {@link CTHSLEffect }
-     * {@link CTAlphaModulateEffect }
      * {@link CTBiLevelEffect }
-     * {@link CTDuotoneEffect }
-     * {@link CTAlphaReplaceEffect }
-     * {@link CTGrayscaleEffect }
+     * {@link CTAlphaCeilingEffect }
+     * {@link CTAlphaBiLevelEffect }
      * {@link CTAlphaFloorEffect }
+     * {@link CTAlphaReplaceEffect }
+     * {@link CTDuotoneEffect }
+     * {@link CTColorReplaceEffect }
+     * {@link CTLuminanceEffect }
      * {@link CTColorChangeEffect }
+     * {@link CTGrayscaleEffect }
+     * {@link CTAlphaModulateEffect }
      * 
      * 
      */

@@ -208,8 +208,17 @@ public class ContentTypes {
 	public final static String PRESENTATIONML_HANDOUT_MASTER =
 		"application/vnd.openxmlformats-officedocument.presentationml.handoutMaster+xml"; 
 	  
+	public final static String SPREADSHEETML_WORKBOOK_MACROENABLED = 
+		"application/vnd.ms-excel.sheet.macroEnabled.main+xml";
+
+	public final static String SPREADSHEETML_TEMPLATE_MACROENABLED = 
+		"application/vnd.ms-excel.template.macroEnabled.main+xml";
+
+	public final static String SPREADSHEETML_TEMPLATE = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.template.main+xml";;
+	
 	// PartName="/xl/workbook.xml"
-	public final static String SPREADSHEETML_MAIN = 
+	public final static String SPREADSHEETML_WORKBOOK = 
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
 
 	public final static String SPREADSHEETML_PRINTER_SETTINGS = 
@@ -230,6 +239,29 @@ public class ContentTypes {
 	// PartName="/xl/sharedStrings.xml"
 	public final static String SPREADSHEETML_SHARED_STRINGS = 
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml";
+
+	// /xl/pivotCache/pivotCacheDefinition1.xml
+	public final static String SPREADSHEETML_PIVOT_CACHE_DEFINITION =
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheDefinition+xml";
+
+	// /xl/pivotCache/pivotCacheRecords1.xml
+	public final static String SPREADSHEETML_PIVOT_CACHE_RECORDS =
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.pivotCacheRecords+xml";
+
+	// /xl/pivotTables/pivotTable1.xml
+	public final static String SPREADSHEETML_PIVOT_TABLE =
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml";
+	
+	
+	// /xl/charts/chart1.xml
+	public final static String DRAWINGML_CHART =
+		"application/vnd.openxmlformats-officedocument.drawingml.chart+xml";
+
+	// /xl/drawings/drawing1.xml
+	public final static String DRAWINGML_DRAWING =
+		"application/vnd.openxmlformats-officedocument.drawing+xml";
+
+	
 	
 	/*
 	 * Open Packaging Convention (Annex F : Standard Namespaces and Content

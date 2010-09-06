@@ -73,11 +73,11 @@ public class CTGvmlGroupShape {
     @XmlElement(required = true)
     protected CTGroupShapeProperties grpSpPr;
     @XmlElements({
-        @XmlElement(name = "graphicFrame", type = CTGvmlGraphicalObjectFrame.class),
-        @XmlElement(name = "cxnSp", type = CTGvmlConnector.class),
-        @XmlElement(name = "grpSp", type = CTGvmlGroupShape.class),
-        @XmlElement(name = "pic", type = CTGvmlPicture.class),
         @XmlElement(name = "sp", type = CTGvmlShape.class),
+        @XmlElement(name = "grpSp", type = CTGvmlGroupShape.class),
+        @XmlElement(name = "cxnSp", type = CTGvmlConnector.class),
+        @XmlElement(name = "graphicFrame", type = CTGvmlGraphicalObjectFrame.class),
+        @XmlElement(name = "pic", type = CTGvmlPicture.class),
         @XmlElement(name = "txSp", type = CTGvmlTextShape.class)
     })
     protected List<Object> txSpOrSpOrCxnSp;
@@ -149,11 +149,11 @@ public class CTGvmlGroupShape {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTGvmlGraphicalObjectFrame }
-     * {@link CTGvmlConnector }
-     * {@link CTGvmlGroupShape }
-     * {@link CTGvmlPicture }
      * {@link CTGvmlShape }
+     * {@link CTGvmlGroupShape }
+     * {@link CTGvmlConnector }
+     * {@link CTGvmlGraphicalObjectFrame }
+     * {@link CTGvmlPicture }
      * {@link CTGvmlTextShape }
      * 
      * 

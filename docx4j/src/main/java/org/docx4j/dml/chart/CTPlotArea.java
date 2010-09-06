@@ -90,28 +90,28 @@ public class CTPlotArea {
 
     protected CTLayout layout;
     @XmlElements({
-        @XmlElement(name = "pie3DChart", type = CTPie3DChart.class),
-        @XmlElement(name = "area3DChart", type = CTArea3DChart.class),
-        @XmlElement(name = "radarChart", type = CTRadarChart.class),
-        @XmlElement(name = "bar3DChart", type = CTBar3DChart.class),
-        @XmlElement(name = "doughnutChart", type = CTDoughnutChart.class),
         @XmlElement(name = "bubbleChart", type = CTBubbleChart.class),
-        @XmlElement(name = "line3DChart", type = CTLine3DChart.class),
+        @XmlElement(name = "radarChart", type = CTRadarChart.class),
         @XmlElement(name = "surface3DChart", type = CTSurface3DChart.class),
-        @XmlElement(name = "barChart", type = CTBarChart.class),
-        @XmlElement(name = "stockChart", type = CTStockChart.class),
-        @XmlElement(name = "surfaceChart", type = CTSurfaceChart.class),
-        @XmlElement(name = "pieChart", type = CTPieChart.class),
+        @XmlElement(name = "area3DChart", type = CTArea3DChart.class),
         @XmlElement(name = "ofPieChart", type = CTOfPieChart.class),
         @XmlElement(name = "areaChart", type = CTAreaChart.class),
+        @XmlElement(name = "barChart", type = CTBarChart.class),
+        @XmlElement(name = "surfaceChart", type = CTSurfaceChart.class),
+        @XmlElement(name = "line3DChart", type = CTLine3DChart.class),
+        @XmlElement(name = "doughnutChart", type = CTDoughnutChart.class),
+        @XmlElement(name = "lineChart", type = CTLineChart.class),
         @XmlElement(name = "scatterChart", type = CTScatterChart.class),
-        @XmlElement(name = "lineChart", type = CTLineChart.class)
+        @XmlElement(name = "bar3DChart", type = CTBar3DChart.class),
+        @XmlElement(name = "pieChart", type = CTPieChart.class),
+        @XmlElement(name = "pie3DChart", type = CTPie3DChart.class),
+        @XmlElement(name = "stockChart", type = CTStockChart.class)
     })
     protected List<Object> areaChartOrArea3DChartOrLineChart;
     @XmlElements({
         @XmlElement(name = "catAx", type = CTCatAx.class),
-        @XmlElement(name = "valAx", type = CTValAx.class),
         @XmlElement(name = "serAx", type = CTSerAx.class),
+        @XmlElement(name = "valAx", type = CTValAx.class),
         @XmlElement(name = "dateAx", type = CTDateAx.class)
     })
     protected List<Object> valAxOrCatAxOrDateAx;
@@ -161,22 +161,22 @@ public class CTPlotArea {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTPie3DChart }
-     * {@link CTArea3DChart }
-     * {@link CTRadarChart }
-     * {@link CTBar3DChart }
-     * {@link CTDoughnutChart }
      * {@link CTBubbleChart }
-     * {@link CTLine3DChart }
+     * {@link CTRadarChart }
      * {@link CTSurface3DChart }
-     * {@link CTBarChart }
-     * {@link CTStockChart }
-     * {@link CTSurfaceChart }
-     * {@link CTPieChart }
+     * {@link CTArea3DChart }
      * {@link CTOfPieChart }
      * {@link CTAreaChart }
-     * {@link CTScatterChart }
+     * {@link CTBarChart }
+     * {@link CTSurfaceChart }
+     * {@link CTLine3DChart }
+     * {@link CTDoughnutChart }
      * {@link CTLineChart }
+     * {@link CTScatterChart }
+     * {@link CTBar3DChart }
+     * {@link CTPieChart }
+     * {@link CTPie3DChart }
+     * {@link CTStockChart }
      * 
      * 
      */
@@ -206,8 +206,8 @@ public class CTPlotArea {
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link CTCatAx }
-     * {@link CTValAx }
      * {@link CTSerAx }
+     * {@link CTValAx }
      * {@link CTDateAx }
      * 
      * 

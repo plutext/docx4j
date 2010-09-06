@@ -48,7 +48,7 @@ import org.docx4j.dml.picture.Pic;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;any/>
+ *         &lt;any maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="uri" type="{http://www.w3.org/2001/XMLSchema}token" />
  *     &lt;/restriction>

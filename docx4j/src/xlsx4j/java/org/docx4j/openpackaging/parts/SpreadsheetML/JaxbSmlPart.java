@@ -26,32 +26,27 @@ public abstract class JaxbSmlPart<E>  extends JaxbXmlPart<E> {
 	public static Part newPartForContentType(String contentType, String partName)
 	throws InvalidFormatException, PartUnrecognisedException {
 		
-		if (contentType.equals(ContentTypes.SPREADSHEETML_MAIN)) {
-			return new WorkbookPart(
-					new PartName(partName));
-		} else if (contentType
-				.equals(ContentTypes.SPREADSHEETML_PRINTER_SETTINGS)) {
-			return new PrinterSettings(
-					new PartName(partName));
+		if (contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK)) {
+			return new WorkbookPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_PRINTER_SETTINGS)) {
+			return new PrinterSettings(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_STYLES)) {
-			return new Styles(
-					new PartName(partName));
-
+			return new Styles(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_WORKSHEET)) {
-			return new WorksheetPart(
-					new PartName(partName));
-
+			return new WorksheetPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_CALC_CHAIN)) {
-			return new CalcChain(
-					new PartName(partName));
-
-		} else if (contentType
-				.equals(ContentTypes.SPREADSHEETML_SHARED_STRINGS)) {
-			return new SharedStrings(
-					new PartName(partName));
+			return new CalcChain(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_SHARED_STRINGS)) {
+			return new SharedStrings(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_PIVOT_TABLE)) {
+			return new PivotTable(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_PIVOT_CACHE_DEFINITION)) {
+			return new PivotCacheDefinition(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_PIVOT_CACHE_RECORDS)) {
+			return new PivotCacheRecords(new PartName(partName));
 		} else {
-			throw new PartUnrecognisedException("No subclass found for " 
-					+ partName + " (content type '" + contentType + "')");					
+			throw new PartUnrecognisedException("No subclass found for "
+					+ partName + " (content type '" + contentType + "')");
 		}
 	}	
 	

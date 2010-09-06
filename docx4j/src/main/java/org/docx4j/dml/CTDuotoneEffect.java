@@ -56,12 +56,12 @@ import javax.xml.bind.annotation.XmlType;
 public class CTDuotoneEffect {
 
     @XmlElements({
-        @XmlElement(name = "prstClr", type = CTPresetColor.class),
-        @XmlElement(name = "schemeClr", type = CTSchemeColor.class),
-        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
         @XmlElement(name = "sysClr", type = CTSystemColor.class),
         @XmlElement(name = "hslClr", type = CTHslColor.class),
-        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class)
+        @XmlElement(name = "schemeClr", type = CTSchemeColor.class),
+        @XmlElement(name = "srgbClr", type = CTSRgbColor.class),
+        @XmlElement(name = "scrgbClr", type = CTScRgbColor.class),
+        @XmlElement(name = "prstClr", type = CTPresetColor.class)
     })
     protected List<Object> egColorChoice;
 
@@ -83,12 +83,12 @@ public class CTDuotoneEffect {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTPresetColor }
-     * {@link CTSchemeColor }
-     * {@link CTSRgbColor }
      * {@link CTSystemColor }
      * {@link CTHslColor }
+     * {@link CTSchemeColor }
+     * {@link CTSRgbColor }
      * {@link CTScRgbColor }
+     * {@link CTPresetColor }
      * 
      * 
      */
