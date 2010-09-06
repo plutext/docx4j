@@ -1,5 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" elementFormDefault="qualified" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing">
+<xsd:schema targetNamespace="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" elementFormDefault="qualified" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.dml.spreadsheetdrawing"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+
   <xsd:import schemaLocation="dml-shapeStyle.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
   <xsd:import schemaLocation="dml-shapeProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
   <xsd:import schemaLocation="dml-documentProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
