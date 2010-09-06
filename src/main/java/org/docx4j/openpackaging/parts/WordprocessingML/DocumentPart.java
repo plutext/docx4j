@@ -171,7 +171,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 		} else {
 			// Word seems to add an endnotes part when it adds a footnotes part,
 			// so existence of part is not determinative
-			CTEndnotes endnotes = wmlPackage.getMainDocumentPart().getEndNotesPart().getJaxbElement().getValue();
+			CTEndnotes endnotes = wmlPackage.getMainDocumentPart().getEndNotesPart().getJaxbElement();
 			
 			if (endnotes.getEndnote().size()<3) {
 				// id's 0 & 1 are:
@@ -202,7 +202,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 
 	public static Node getFootnote(WordprocessingMLPackage wmlPackage, String id) {	
 		
-		CTFootnotes footnotes = wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement().getValue();
+		CTFootnotes footnotes = wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement();
 		int pos = Integer.parseInt(id);
 		
 		// No @XmlRootElement on CTFtnEdn, so .. 

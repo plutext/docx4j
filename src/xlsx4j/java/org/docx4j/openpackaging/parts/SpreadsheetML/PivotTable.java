@@ -10,7 +10,7 @@ import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.CTPivotTableDefinition;
 import org.xlsx4j.sml.CTStylesheet;
 
-public class PivotTable  extends JaxbSmlPart<JAXBElement<CTPivotTableDefinition>> {
+public class PivotTable  extends JaxbSmlPart<CTPivotTableDefinition> {
 	
 	public PivotTable(PartName partName) throws InvalidFormatException {
 		super(partName);

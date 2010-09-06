@@ -10,7 +10,7 @@ import org.xlsx4j.jaxb.Context;
 import org.xlsx4j.sml.CTCalcChain;
 import org.xlsx4j.sml.CTSst;
 
-public class SharedStrings  extends JaxbSmlPart<JAXBElement<CTSst>> {
+public class SharedStrings  extends JaxbSmlPart<CTSst> {
 	
 	public SharedStrings(PartName partName) throws InvalidFormatException {
 		super(partName);

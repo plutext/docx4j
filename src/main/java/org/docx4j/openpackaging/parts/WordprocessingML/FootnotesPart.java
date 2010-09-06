@@ -30,7 +30,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTFootnotes;
 
 
-public final class FootnotesPart extends JaxbXmlPart<JAXBElement<CTFootnotes>> {
+public final class FootnotesPart extends JaxbXmlPart<CTFootnotes> {
 	
 	public FootnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);

@@ -25,6 +25,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -213,7 +214,8 @@ public abstract class JaxbXmlPart<E> extends Part {
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
 			log.debug("unmarshalling " + this.getClass().getName() );															
-			jaxbElement = (E) u.unmarshal( is );						
+			jaxbElement = (E) XmlUtils.unwrap(
+					u.unmarshal( is ));						
 			log.debug( this.getClass().getName() + " unmarshalled" );									
 
 		} catch (JAXBException e ) {

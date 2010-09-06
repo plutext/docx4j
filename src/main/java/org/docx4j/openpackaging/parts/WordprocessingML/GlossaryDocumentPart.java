@@ -58,44 +58,5 @@ public final class GlossaryDocumentPart extends DocumentPart<GlossaryDocument> {
 		
 	}
 		
-    /**
-     * Unmarshal XML data from the specified InputStream and return the 
-     * resulting content tree.  Validation event location information may
-     * be incomplete when using this form of the unmarshal API.
-     *
-     * <p>
-     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
-     * 
-     * @param is the InputStream to unmarshal XML data from
-     * @return the newly created root object of the java content tree 
-     *
-     * @throws JAXBException 
-     *     If any unexpected errors occur while unmarshalling
-     */
-	@Override
-    public GlossaryDocument unmarshal( java.io.InputStream is ) throws JAXBException {
-    	
-		try {
-		    		    
-			Unmarshaller u = jc.createUnmarshaller();
-
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);			
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			
-//			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );			
-//			jaxbElement = (org.docx4j.wml.Document)root.getValue();
-			
-			jaxbElement =  (GlossaryDocument) u.unmarshal( is );
-			return jaxbElement;
-			
-			//System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
-
-		} catch (Exception e ) {
-			e.printStackTrace();
-			return null;
-		}
-    	
-    	
-    }
 	
 }
