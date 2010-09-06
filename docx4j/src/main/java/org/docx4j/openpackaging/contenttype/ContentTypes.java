@@ -208,6 +208,29 @@ public class ContentTypes {
 	public final static String PRESENTATIONML_HANDOUT_MASTER =
 		"application/vnd.openxmlformats-officedocument.presentationml.handoutMaster+xml"; 
 	  
+	// PartName="/xl/workbook.xml"
+	public final static String SPREADSHEETML_MAIN = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml";
+
+	public final static String SPREADSHEETML_PRINTER_SETTINGS = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.printerSettings";
+
+	// PartName="/xl/styles.xml"
+	public final static String SPREADSHEETML_STYLES = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml";
+	
+	// PartName="/xl/worksheets/sheet1.xml"
+	public final static String SPREADSHEETML_WORKSHEET = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml";
+	
+	// PartName="/xl/calcChain.xml"
+	public final static String SPREADSHEETML_CALC_CHAIN = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.calcChain+xml";
+	
+	// PartName="/xl/sharedStrings.xml"
+	public final static String SPREADSHEETML_SHARED_STRINGS = 
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml";
+	
 	/*
 	 * Open Packaging Convention (Annex F : Standard Namespaces and Content
 	 * Types)

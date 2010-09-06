@@ -533,7 +533,7 @@ public class LoadFromZipNG extends Load {
 
 					// MainDocument part, Styles part, Font part etc
 					
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
+					//((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {

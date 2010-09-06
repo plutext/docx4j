@@ -196,6 +196,32 @@ public class Namespaces {
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/handoutMaster"; 
 	
 
+
+	// xl/workbook.xml
+	public final static String SPREADSHEETML_WORKBOOK = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+
+	// worksheets/sheet1.xml
+	public final static String SPREADSHEETML_WORKSHEET = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
+
+	// ../printerSettings/printerSettings1.bin
+	public final static String SPREADSHEETML_PRINTER_SETTINGS = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings";
+
+	// calcChain.xml
+	public final static String SPREADSHEETML_CALC_CHAIN = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain";
+
+	// sharedStrings.xml
+	public final static String SPREADSHEETML_SHARED_STRINGS = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings";
+
+	// styles.xml
+	public final static String SPREADSHEETML_STYLES = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
+
+	
             
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 
