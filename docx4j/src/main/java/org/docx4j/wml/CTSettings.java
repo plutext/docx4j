@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.customxml.SchemaLibrary;
@@ -367,6 +368,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "decimalSymbol",
     "listSeparator"
 })
+@XmlRootElement(name = "settings")
 public class CTSettings
     implements Child
 {
