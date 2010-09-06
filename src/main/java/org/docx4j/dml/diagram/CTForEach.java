@@ -69,15 +69,15 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 public class CTForEach {
 
     @XmlElements({
-        @XmlElement(name = "constrLst", type = CTConstraints.class),
-        @XmlElement(name = "presOf", type = CTPresentationOf.class),
         @XmlElement(name = "forEach", type = CTForEach.class),
-        @XmlElement(name = "alg", type = CTAlgorithm.class),
-        @XmlElement(name = "ruleLst", type = CTRules.class),
-        @XmlElement(name = "shape", type = CTShape.class),
-        @XmlElement(name = "layoutNode", type = CTLayoutNode.class),
         @XmlElement(name = "extLst", type = CTOfficeArtExtensionList.class),
-        @XmlElement(name = "choose", type = CTChoose.class)
+        @XmlElement(name = "shape", type = CTShape.class),
+        @XmlElement(name = "alg", type = CTAlgorithm.class),
+        @XmlElement(name = "presOf", type = CTPresentationOf.class),
+        @XmlElement(name = "choose", type = CTChoose.class),
+        @XmlElement(name = "ruleLst", type = CTRules.class),
+        @XmlElement(name = "layoutNode", type = CTLayoutNode.class),
+        @XmlElement(name = "constrLst", type = CTConstraints.class)
     })
     protected List<Object> algOrShapeOrPresOf;
     @XmlAttribute
@@ -115,15 +115,15 @@ public class CTForEach {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTConstraints }
-     * {@link CTPresentationOf }
      * {@link CTForEach }
-     * {@link CTAlgorithm }
-     * {@link CTRules }
-     * {@link CTShape }
-     * {@link CTLayoutNode }
      * {@link CTOfficeArtExtensionList }
+     * {@link CTShape }
+     * {@link CTAlgorithm }
+     * {@link CTPresentationOf }
      * {@link CTChoose }
+     * {@link CTRules }
+     * {@link CTLayoutNode }
+     * {@link CTConstraints }
      * 
      * 
      */

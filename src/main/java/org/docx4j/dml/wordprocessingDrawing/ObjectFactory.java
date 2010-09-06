@@ -55,6 +55,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTWrapNone }
+     * 
+     */
+    public CTWrapNone createCTWrapNone() {
+        return new CTWrapNone();
+    }
+
+    /**
      * Create an instance of {@link Inline }
      * 
      */
@@ -71,6 +79,30 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTWrapTight }
+     * 
+     */
+    public CTWrapTight createCTWrapTight() {
+        return new CTWrapTight();
+    }
+
+    /**
+     * Create an instance of {@link CTWrapPath }
+     * 
+     */
+    public CTWrapPath createCTWrapPath() {
+        return new CTWrapPath();
+    }
+
+    /**
+     * Create an instance of {@link CTPosV }
+     * 
+     */
+    public CTPosV createCTPosV() {
+        return new CTPosV();
+    }
+
+    /**
      * Create an instance of {@link CTWrapTopBottom }
      * 
      */
@@ -79,11 +111,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTWrapNone }
+     * Create an instance of {@link CTWrapSquare }
      * 
      */
-    public CTWrapNone createCTWrapNone() {
-        return new CTWrapNone();
+    public CTWrapSquare createCTWrapSquare() {
+        return new CTWrapSquare();
     }
 
     /**
@@ -103,43 +135,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTPosV }
-     * 
-     */
-    public CTPosV createCTPosV() {
-        return new CTPosV();
-    }
-
-    /**
-     * Create an instance of {@link CTWrapSquare }
-     * 
-     */
-    public CTWrapSquare createCTWrapSquare() {
-        return new CTWrapSquare();
-    }
-
-    /**
      * Create an instance of {@link Anchor }
      * 
      */
     public Anchor createAnchor() {
         return new Anchor();
-    }
-
-    /**
-     * Create an instance of {@link CTWrapTight }
-     * 
-     */
-    public CTWrapTight createCTWrapTight() {
-        return new CTWrapTight();
-    }
-
-    /**
-     * Create an instance of {@link CTWrapPath }
-     * 
-     */
-    public CTWrapPath createCTWrapPath() {
-        return new CTWrapPath();
     }
 
     /**

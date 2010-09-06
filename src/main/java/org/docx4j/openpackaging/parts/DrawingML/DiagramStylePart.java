@@ -30,7 +30,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
-public final class DiagramStylePart extends JaxbXmlPart<CTStyleDefinition> {
+public final class DiagramStylePart extends JaxbDmlPart<CTStyleDefinition> {
 	//<xsd:element name="styleDef" type="CT_StyleDefinition">
 
 	

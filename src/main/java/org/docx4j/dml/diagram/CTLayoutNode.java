@@ -71,15 +71,15 @@ import org.docx4j.dml.CTOfficeArtExtensionList;
 public class CTLayoutNode {
 
     @XmlElements({
-        @XmlElement(name = "presOf", type = CTPresentationOf.class),
-        @XmlElement(name = "forEach", type = CTForEach.class),
-        @XmlElement(name = "choose", type = CTChoose.class),
-        @XmlElement(name = "varLst", type = CTLayoutVariablePropertySet.class),
-        @XmlElement(name = "shape", type = CTShape.class),
-        @XmlElement(name = "ruleLst", type = CTRules.class),
-        @XmlElement(name = "constrLst", type = CTConstraints.class),
-        @XmlElement(name = "extLst", type = CTOfficeArtExtensionList.class),
         @XmlElement(name = "layoutNode", type = CTLayoutNode.class),
+        @XmlElement(name = "ruleLst", type = CTRules.class),
+        @XmlElement(name = "varLst", type = CTLayoutVariablePropertySet.class),
+        @XmlElement(name = "forEach", type = CTForEach.class),
+        @XmlElement(name = "extLst", type = CTOfficeArtExtensionList.class),
+        @XmlElement(name = "choose", type = CTChoose.class),
+        @XmlElement(name = "constrLst", type = CTConstraints.class),
+        @XmlElement(name = "presOf", type = CTPresentationOf.class),
+        @XmlElement(name = "shape", type = CTShape.class),
         @XmlElement(name = "alg", type = CTAlgorithm.class)
     })
     protected List<Object> algOrShapeOrPresOf;
@@ -110,15 +110,15 @@ public class CTLayoutNode {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTPresentationOf }
-     * {@link CTForEach }
-     * {@link CTChoose }
-     * {@link CTLayoutVariablePropertySet }
-     * {@link CTShape }
-     * {@link CTRules }
-     * {@link CTConstraints }
-     * {@link CTOfficeArtExtensionList }
      * {@link CTLayoutNode }
+     * {@link CTRules }
+     * {@link CTLayoutVariablePropertySet }
+     * {@link CTForEach }
+     * {@link CTOfficeArtExtensionList }
+     * {@link CTChoose }
+     * {@link CTConstraints }
+     * {@link CTPresentationOf }
+     * {@link CTShape }
      * {@link CTAlgorithm }
      * 
      * 

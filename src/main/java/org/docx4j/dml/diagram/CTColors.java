@@ -65,12 +65,12 @@ import org.docx4j.dml.CTSystemColor;
 public class CTColors {
 
     @XmlElements({
-        @XmlElement(name = "scrgbClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTScRgbColor.class),
-        @XmlElement(name = "prstClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTPresetColor.class),
-        @XmlElement(name = "hslClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTHslColor.class),
         @XmlElement(name = "srgbClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSRgbColor.class),
-        @XmlElement(name = "schemeClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSchemeColor.class),
-        @XmlElement(name = "sysClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSystemColor.class)
+        @XmlElement(name = "prstClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTPresetColor.class),
+        @XmlElement(name = "scrgbClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTScRgbColor.class),
+        @XmlElement(name = "sysClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSystemColor.class),
+        @XmlElement(name = "hslClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTHslColor.class),
+        @XmlElement(name = "schemeClr", namespace = "http://schemas.openxmlformats.org/drawingml/2006/main", type = CTSchemeColor.class)
     })
     protected List<Object> egColorChoice;
     @XmlAttribute
@@ -96,12 +96,12 @@ public class CTColors {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTScRgbColor }
-     * {@link CTPresetColor }
-     * {@link CTHslColor }
      * {@link CTSRgbColor }
-     * {@link CTSchemeColor }
+     * {@link CTPresetColor }
+     * {@link CTScRgbColor }
      * {@link CTSystemColor }
+     * {@link CTHslColor }
+     * {@link CTSchemeColor }
      * 
      * 
      */

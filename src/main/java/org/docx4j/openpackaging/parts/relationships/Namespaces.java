@@ -221,7 +221,25 @@ public class Namespaces {
 	public final static String SPREADSHEETML_STYLES = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
 
+	///xl/drawings/drawing1.xml
+	public final static String SPREADSHEETML_DRAWING =
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing";
 	
+	///xl/charts/chart1.xml
+	public final static String SPREADSHEETML_CHART =
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
+	
+	///xl/pivotTables/pivotTable1.xml
+	public final static String SPREADSHEETML_PIVOT_TABLE =
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable";
+	
+	///xl/pivotCache/pivotCacheDefinition1.xml
+	public final static String SPREADSHEETML_PIVOT_CACHE_DEFINITION =
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition";
+	
+	///xl/pivotCache/pivotCacheRecords1.xml
+	public final static String SPREADSHEETML_PIVOT_CACHE_RECORDS =
+	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords";
             
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 

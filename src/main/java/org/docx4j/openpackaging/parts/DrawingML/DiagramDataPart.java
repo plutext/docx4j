@@ -29,7 +29,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
-public final class DiagramDataPart extends JaxbXmlPart<CTDataModel> {
+public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	
 	private static Logger log = Logger.getLogger(DiagramDataPart.class);			
 	

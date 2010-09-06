@@ -42,7 +42,7 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;any/>
+ *         &lt;any processContents='lax'/>
  *       &lt;/sequence>
  *       &lt;attribute name="uri" type="{http://www.w3.org/2001/XMLSchema}token" />
  *     &lt;/restriction>

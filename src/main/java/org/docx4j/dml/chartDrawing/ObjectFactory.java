@@ -1,3 +1,23 @@
+/*
+ *  Copyright 2007-2008, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
 
 package org.docx4j.dml.chartDrawing;
 
@@ -30,35 +50,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTGroupShape }
-     * 
-     */
-    public CTGroupShape createCTGroupShape() {
-        return new CTGroupShape();
-    }
-
-    /**
      * Create an instance of {@link CTShapeNonVisual }
      * 
      */
     public CTShapeNonVisual createCTShapeNonVisual() {
         return new CTShapeNonVisual();
-    }
-
-    /**
-     * Create an instance of {@link CTRelSizeAnchor }
-     * 
-     */
-    public CTRelSizeAnchor createCTRelSizeAnchor() {
-        return new CTRelSizeAnchor();
-    }
-
-    /**
-     * Create an instance of {@link CTGraphicFrameNonVisual }
-     * 
-     */
-    public CTGraphicFrameNonVisual createCTGraphicFrameNonVisual() {
-        return new CTGraphicFrameNonVisual();
     }
 
     /**
@@ -70,30 +66,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTConnectorNonVisual }
-     * 
-     */
-    public CTConnectorNonVisual createCTConnectorNonVisual() {
-        return new CTConnectorNonVisual();
-    }
-
-    /**
-     * Create an instance of {@link CTDrawing }
-     * 
-     */
-    public CTDrawing createCTDrawing() {
-        return new CTDrawing();
-    }
-
-    /**
-     * Create an instance of {@link CTGroupShapeNonVisual }
-     * 
-     */
-    public CTGroupShapeNonVisual createCTGroupShapeNonVisual() {
-        return new CTGroupShapeNonVisual();
-    }
-
-    /**
      * Create an instance of {@link CTPictureNonVisual }
      * 
      */
@@ -102,27 +74,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTGraphicFrame }
+     * Create an instance of {@link CTGroupShape }
      * 
      */
-    public CTGraphicFrame createCTGraphicFrame() {
-        return new CTGraphicFrame();
-    }
-
-    /**
-     * Create an instance of {@link CTAbsSizeAnchor }
-     * 
-     */
-    public CTAbsSizeAnchor createCTAbsSizeAnchor() {
-        return new CTAbsSizeAnchor();
-    }
-
-    /**
-     * Create an instance of {@link CTMarker }
-     * 
-     */
-    public CTMarker createCTMarker() {
-        return new CTMarker();
+    public CTGroupShape createCTGroupShape() {
+        return new CTGroupShape();
     }
 
     /**
@@ -134,11 +90,75 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link CTGroupShapeNonVisual }
+     * 
+     */
+    public CTGroupShapeNonVisual createCTGroupShapeNonVisual() {
+        return new CTGroupShapeNonVisual();
+    }
+
+    /**
      * Create an instance of {@link CTShape }
      * 
      */
     public CTShape createCTShape() {
         return new CTShape();
+    }
+
+    /**
+     * Create an instance of {@link CTDrawing }
+     * 
+     */
+    public CTDrawing createCTDrawing() {
+        return new CTDrawing();
+    }
+
+    /**
+     * Create an instance of {@link CTRelSizeAnchor }
+     * 
+     */
+    public CTRelSizeAnchor createCTRelSizeAnchor() {
+        return new CTRelSizeAnchor();
+    }
+
+    /**
+     * Create an instance of {@link CTMarker }
+     * 
+     */
+    public CTMarker createCTMarker() {
+        return new CTMarker();
+    }
+
+    /**
+     * Create an instance of {@link CTGraphicFrameNonVisual }
+     * 
+     */
+    public CTGraphicFrameNonVisual createCTGraphicFrameNonVisual() {
+        return new CTGraphicFrameNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTConnectorNonVisual }
+     * 
+     */
+    public CTConnectorNonVisual createCTConnectorNonVisual() {
+        return new CTConnectorNonVisual();
+    }
+
+    /**
+     * Create an instance of {@link CTAbsSizeAnchor }
+     * 
+     */
+    public CTAbsSizeAnchor createCTAbsSizeAnchor() {
+        return new CTAbsSizeAnchor();
+    }
+
+    /**
+     * Create an instance of {@link CTGraphicFrame }
+     * 
+     */
+    public CTGraphicFrame createCTGraphicFrame() {
+        return new CTGraphicFrame();
     }
 
 }
