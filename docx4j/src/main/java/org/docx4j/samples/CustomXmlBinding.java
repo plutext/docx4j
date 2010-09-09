@@ -67,10 +67,14 @@ public class CustomXmlBinding {
 		// Convenient to read from .xml file,
 		// so it is easy to manually edit it (ie without having to unzip etc etc) 
 		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/MedicalChartSample.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/tmp/MedicalChartSample.docx";
 			// To get the sample file, google for "Content Control Toolkit"
 			// I've saved as xml, but docx works as well
-		String itemId = "{DD6E220C-54BC-47B3-8AE8-A0A61D4934FF}";
+
+		String outputfilepath = System.getProperty("user.dir") + "/tmp/MedicalChartSample-OUT.docx";
 		
+		String itemId = "{DD6E220C-54BC-47B3-8AE8-A0A61D4934FF}".toLowerCase();
+
 		// Load the Package
 		WordprocessingMLPackage wordMLPackage;
 		if (inputfilepath.endsWith(".xml")) {
@@ -136,6 +140,9 @@ public class CustomXmlBinding {
 //		org.docx4j.convert.out.pdf.PdfConversion c 
 //			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 //			c.view();
+		
+		wordMLPackage.save(new java.io.File(outputfilepath) );
+		System.out.println("..done");
 	}
 		
 
