@@ -30,6 +30,11 @@ import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
 import org.docx4j.model.properties.paragraph.LineSpacing;
 import org.docx4j.model.properties.paragraph.NumberingProperty;
+import org.docx4j.model.properties.paragraph.PBorderBottom;
+import org.docx4j.model.properties.paragraph.PBorderLeft;
+import org.docx4j.model.properties.paragraph.PBorderRight;
+import org.docx4j.model.properties.paragraph.PBorderTop;
+import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.paragraph.PageBreakBefore;
 import org.docx4j.model.properties.paragraph.SpaceAfter;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
@@ -60,6 +65,7 @@ import org.docx4j.wml.TblPr;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
+import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.Spacing;
 import org.w3c.dom.css.CSSValue;
 
@@ -308,16 +314,25 @@ public class PropertyFactory {
 //			dest.setOverflowPunct(pPr.getOverflowPunct());
 		if (pPr.getPageBreakBefore() != null)
 			properties.add(new PageBreakBefore(pPr.getPageBreakBefore()));
-//		if (pPr.getPBdr() != null)
-//			dest.setPBdr(pPr.getPBdr());
+		if (pPr.getPBdr() != null) {
+			PBdr pBdr = pPr.getPBdr();
+			if (pBdr.getTop()!=null) 
+				properties.add(new PBorderTop(pBdr.getTop()) );				
+			if (pBdr.getBottom()!=null) 
+				properties.add(new PBorderBottom(pBdr.getBottom()) );				
+			if (pBdr.getLeft()!=null) 
+				properties.add(new PBorderLeft(pBdr.getLeft()) );				
+			if (pBdr.getRight()!=null) 
+				properties.add(new PBorderRight(pBdr.getRight()) );	
+		}
 //		if (pPr.getPPrChange() != null)
 //			dest.setPPrChange(pPr.getPPrChange());
 //		if (pPr.getPStyle() != null)
 //			dest.setPStyle(pPr.getPStyle());
 //		if (pPr.getSectPr() != null)
 //			dest.setSectPr(pPr.getSectPr());
-//		if (pPr.getShd() != null)
-//			dest.setShd(pPr.getShd());
+		if (pPr.getShd() != null)
+			properties.add(new PShading(pPr.getShd()));
 //		if (pPr.getSnapToGrid() != null)
 //			dest.setSnapToGrid(pPr.getSnapToGrid());
 		if (pPr.getSpacing() != null) {

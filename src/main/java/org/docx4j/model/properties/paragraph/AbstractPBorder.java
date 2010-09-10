@@ -17,22 +17,16 @@
     limitations under the License.
 
  */
-package org.docx4j.model.properties.table;
+package org.docx4j.model.properties.paragraph;
 
 import org.docx4j.UnitsOfMeasurement;
-import org.docx4j.jaxb.Context;
-import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
-import org.docx4j.wml.Color;
-import org.docx4j.wml.RPr;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.STBorder;
-import org.docx4j.wml.TblBorders;
-import org.docx4j.wml.TblPr;
-import org.docx4j.wml.TcPrInner;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
-public abstract class AbstractBorder extends AbstractTableProperty {
+public abstract class AbstractPBorder extends AbstractParagraphProperty {
 	
 	public String CSS_NAME_BASE;  
 	public String CSS_NAME__STYLE; 
@@ -43,7 +37,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 	//public final static String FO_NAME  = "TODO"; 
 	
 	
-	public AbstractBorder(CTBorder val, String css_name) {
+	public AbstractPBorder(CTBorder val, String css_name) {
 		init(css_name);
 		this.setObject(val);
 	}
@@ -55,7 +49,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		CSS_NAME__COLOR = CSS_NAME_BASE + "-color";
 	}
 	
-	public AbstractBorder(CSSValue value, String css_name) {	
+	public AbstractPBorder(CSSValue value, String css_name) {	
 		init(css_name);
 		
 		// TODO
@@ -104,6 +98,7 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		String sz = "";
 		if (border.getSz()!=null) {
 			float mm = eighthsToMM(border.getSz().intValue()); // eights of a point
+			System.out.println("Border width: " + mm);
 			if (mm<0.262) {
 				// At 96dpi, that's 1 pixel. Anything less WebKit won't display
 				sz = composeCss(CSS_NAME__WIDTH, "1px" );
@@ -181,6 +176,6 @@ public abstract class AbstractBorder extends AbstractTableProperty {
 		
 	}
 
-	public abstract void set(TcPrInner tcPr);
+	public abstract void set(PPr pPr);
 	
 }
