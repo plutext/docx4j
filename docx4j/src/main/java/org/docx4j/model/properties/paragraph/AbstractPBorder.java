@@ -98,7 +98,6 @@ public abstract class AbstractPBorder extends AbstractParagraphProperty {
 		String sz = "";
 		if (border.getSz()!=null) {
 			float mm = eighthsToMM(border.getSz().intValue()); // eights of a point
-			System.out.println("Border width: " + mm);
 			if (mm<0.262) {
 				// At 96dpi, that's 1 pixel. Anything less WebKit won't display
 				sz = composeCss(CSS_NAME__WIDTH, "1px" );
