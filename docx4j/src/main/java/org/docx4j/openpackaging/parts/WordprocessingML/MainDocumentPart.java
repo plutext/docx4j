@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBElement;
@@ -51,10 +52,12 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
+import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
+import org.docx4j.wml.P;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
@@ -62,6 +65,7 @@ import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.PPrBase.PBdr;
 import org.w3c.dom.Node;
 
 
@@ -841,111 +845,6 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		org.docx4j.wml.P  para = (org.docx4j.wml.P)org.docx4j.XmlUtils.unmarshalString(pXml); 
 		body.getEGBlockLevelElts().add( para );
 		return para;
-	}
-	
-	/**
-	 * In Word, adjacent paragraphs with the same borders are enclosed in a single border
-	 * (unless bullets/numbering apply).
-	 * 
-	 * Similarly with shading.  (If the 2 paragraphs are shaded different colors, then the
-	 * color of the first extends to the start of the second, so there is no white strip
-	 * between them).
-	 * 
-	 * To do the same in HTML and PDF output, we put matching paragraphs into a content
-	 * control, and set the border/shading on that.  This gives us an appropriate
-	 * div or fo:block.
-	 */
-	public void groupAdjacentBorders() {
-		
-		List<Object> newList = new ArrayList<Object>(); 
-		
-		boolean inGroup = false;
-		Object currentContainer = newList;
-		for (Object o : this.getJaxbElement().getBody().getEGBlockLevelElts() ) {
-			
-			if (!(o instanceof org.docx4j.wml.P)) {
-				
-				// Just add to whatever our current container is
-				if (currentContainer instanceof ArrayList) {
-					((ArrayList)currentContainer).add(o);
-				} else if (currentContainer instanceof SdtContentBlock) {
-					((SdtContentBlock)currentContainer).getEGContentBlockContent().add(o);
-				} else {
-					log.error("Unrecognised container!");
-				}
-				
-				continue;
-			}
-			
-			// So its a paragraph.  Handle this.
-			
-			// Does the paragraph have borders/shading set?
-			// Simple minded approach for now
-			org.docx4j.wml.P p = (org.docx4j.wml.P)o;
-			boolean bordersOrShading = false;
-			if (p.getPPr() != null ) {
-				org.docx4j.wml.PPr ppr = p.getPPr();
-				
-				// TODO: use effective ppr properties! that will slow things down ..
-				
-				bordersOrShading = 	(p.getPPr().getPBdr() !=null) || (p.getPPr().getShd() !=null);
-			}
-			
-			// has this changed?
-			if (inGroup==bordersOrShading) {
-				
-				// nope, ok.   Just add to whatever the current container is
-				if (currentContainer instanceof ArrayList) {
-					((ArrayList)currentContainer).add(o);
-				} else if (currentContainer instanceof SdtContentBlock) {
-					((SdtContentBlock)currentContainer).getEGContentBlockContent().add(o);
-				} else {
-					log.error("Unrecognised container!");
-				}
-				
-			} else {
-			
-				if (bordersOrShading) {
-					// we've entered
-					inGroup = true;
-					
-					// .. so create content control!
-					SdtBlock sdtBlock = Context.getWmlObjectFactory().createSdtBlock();
-
-					SdtPr sdtPr = Context.getWmlObjectFactory().createSdtPr();
-					sdtBlock.setSdtPr(sdtPr);
-
-					SdtContentBlock sdtContent = Context.getWmlObjectFactory().createSdtContentBlock();
-					sdtBlock.setSdtContent(sdtContent);
-					
-					// For borders/shading, we'll use the values in this first paragraph.
-					// We'll use a tag, so the XSLT can detect that its supposed to do something special.
-					Tag tag = Context.getWmlObjectFactory().createTag();
-					tag.setVal("XSLT_BS");
-					
-					sdtPr.setTag(tag);
-					
-					sdtContent.getEGContentBlockContent().add(p);
-					
-					newList.add(sdtBlock);
-					
-					currentContainer = sdtContent; 
-				} else {
-					// we've exited
-					inGroup = false;
-					currentContainer = newList;
-					newList.add(p);							
-				}
-			
-			} 
-		
-		} // end for
-			
-		// finally
-		this.getJaxbElement().getBody().getEGBlockLevelElts().clear();
-		this.getJaxbElement().getBody().getEGBlockLevelElts().addAll(newList);
-		
-		log.info(XmlUtils.marshaltoString(this.getJaxbElement(), false));
 	}
 	
 	

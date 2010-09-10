@@ -27,6 +27,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.html.HtmlExporterNG2.EndnoteState;
 import org.docx4j.convert.out.html.HtmlExporterNG2.FootnoteState;
@@ -289,7 +290,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	  //Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
     	  //Document domDoc = XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
 
-    	  wordMLPackage.getMainDocumentPart().groupAdjacentBorders();
+    	  Containerization.groupAdjacentBorders(wordMLPackage.getMainDocumentPart());
     	  
     	  Sections sections = createSectionContainers(wordMLPackage);
     	  Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections, Context.jcSectionModel);

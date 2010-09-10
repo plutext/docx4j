@@ -341,7 +341,7 @@
 
 
 		<xsl:choose>
-  			<xsl:when test="contains(../../w:sdtPr/w:tag/@w:val, 'XSLT_BS')">
+  			<xsl:when test="contains(../../w:sdtPr/w:tag/@w:val, 'XSLT_')">
   				<!-- We need to ignore borders  -->
 
 				<xsl:variable name="inherited" select="../w:p[1]/w:pPr" />  	
@@ -431,9 +431,9 @@
   
   <xsl:template match="w:sdt">
   	<xsl:choose>
-  		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, 'XSLT_BS')">
+  		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, 'XSLT_')">
   			<!-- An SDT we've inserted to handle adjacent borders/shading nodes -->
-  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('XSLT_BS')" />
+  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('XSLT_')" />
 
 			<xsl:variable name="childResults">
 	  			<xsl:apply-templates select="w:sdtContent/*"/>
@@ -442,11 +442,11 @@
 			<xsl:variable name="pPrNode" select="./w:sdtContent/w:p[1]/w:pPr" />  	
 			<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
 
-  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_BS block')" />
+  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_ block')" />
 	  		<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForSdt( 
 	  			$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
 	  			
-  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_BS done')" />
+  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_ done')" />
 	  			
   		
   		</xsl:when>
