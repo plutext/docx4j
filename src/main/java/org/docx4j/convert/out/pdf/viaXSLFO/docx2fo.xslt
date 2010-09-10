@@ -339,9 +339,28 @@
 		<xsl:variable name="pPrNode" select="w:pPr" />  	
 		<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
 
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
-	  		$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
-	  		
+
+		<xsl:choose>
+  			<xsl:when test="contains(../../w:sdtPr/w:tag/@w:val, 'XSLT_BS')">
+  				<!-- We need to ignore borders  -->
+
+				<xsl:variable name="inherited" select="../w:p[1]/w:pPr" />  	
+
+			  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
+		  			$wmlPackage, $pPrNode, $pStyleVal, $childResults, $inherited)" />
+		  		
+		  	</xsl:when>
+		  	<xsl:otherwise>
+		  		
+				<xsl:variable name="inherited" select="null" />  	
+
+			  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
+		  			$wmlPackage, $pPrNode, $pStyleVal, $childResults, $inherited)" />
+		
+		  	</xsl:otherwise>
+
+		</xsl:choose>
+
 		
   </xsl:template>
 
@@ -411,7 +430,30 @@
   </xsl:template>  	
   
   <xsl:template match="w:sdt">
-  	<xsl:apply-templates select="w:sdtContent/*"/>
+  	<xsl:choose>
+  		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, 'XSLT_BS')">
+  			<!-- An SDT we've inserted to handle adjacent borders/shading nodes -->
+  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('XSLT_BS')" />
+
+			<xsl:variable name="childResults">
+	  			<xsl:apply-templates select="w:sdtContent/*"/>
+			</xsl:variable>
+		
+			<xsl:variable name="pPrNode" select="./w:sdtContent/w:p[1]/w:pPr" />  	
+			<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
+
+  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_BS block')" />
+	  		<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForSdt( 
+	  			$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+	  			
+  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_BS done')" />
+	  			
+  		
+  		</xsl:when>
+  		<xsl:otherwise>
+  			<xsl:apply-templates select="w:sdtContent/*"/>
+  		</xsl:otherwise>
+  	</xsl:choose>
   </xsl:template>
 
 

@@ -41,7 +41,11 @@ import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.AbstractPBorder;
 import org.docx4j.model.properties.paragraph.Indent;
+import org.docx4j.model.properties.paragraph.PBorderBottom;
+import org.docx4j.model.properties.paragraph.PBorderTop;
+import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.model.structure.jaxb.ObjectFactory;
@@ -85,6 +89,7 @@ import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.fop.fonts.FontTriplet;
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 
 
@@ -283,6 +288,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	   */
     	  //Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
     	  //Document domDoc = XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
+
+    	  wordMLPackage.getMainDocumentPart().groupAdjacentBorders();
     	  
     	  Sections sections = createSectionContainers(wordMLPackage);
     	  Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections, Context.jcSectionModel);
@@ -427,6 +434,16 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
 
     /* ---------------Xalan XSLT Extension Functions ---------------- */
+
+	public static void logDebug(String message) {
+		log.debug(message);
+	}	
+	public static void logInfo(String message) {
+		log.info(message);
+	}	
+	public static void logWarn(String message) {
+		log.warn(message);
+	}
 	
 	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
 
@@ -481,7 +498,17 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		docfrag.appendChild(doc.getDocumentElement());
 		return docfrag;		
 	}
-	
+
+    public static DocumentFragment createBlockForSdt( 
+    		WordprocessingMLPackage wmlPackage,
+    		NodeIterator pPrNodeIt,
+    		String pStyleVal, NodeIterator childResults) {
+    	
+    	return createBlockForPPr( wmlPackage,
+        		 pPrNodeIt,
+        		 pStyleVal,  childResults,
+        		 null);
+    }	
     /**
      * On the block representing the w:p, we want to put both
      * pPr and rPr attributes.
@@ -495,7 +522,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     public static DocumentFragment createBlockForPPr( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults ) {
+    		String pStyleVal, NodeIterator childResults,
+    		NodeIterator inheritedBS) {
     	
     	PropertyResolver propertyResolver = 
     		wmlPackage.getMainDocumentPart().getPropertyResolver();
@@ -666,10 +694,28 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				document.appendChild(foBlockElement);
 			}
 			
+			boolean ignoreBorders = false;
+			if (inheritedBS!=null) {
+				Node inheritedBSNode = inheritedBS.nextNode();
+				if (inheritedBSNode!=null) {
+					// Will always be the case for a top-level w:p
+					// which had to be wrapped in a w:sdt (even if just one w:p)
+					PPr inheritedPpr = (PPr)XmlUtils.unmarshal(inheritedBSNode );
+					
+					if (inheritedPpr.getPBdr()!=null) { 
+						ignoreBorders = true;
+						log.info("ignoring child borders");
+					}
+				}
+			}
 							
 			if (pPr!=null) {
-				createFoAttributes(pPr, ((Element)foBlockElement), inlist );
+				createFoAttributes(pPr, ((Element)foBlockElement), inlist, ignoreBorders );
 			}
+
+			if (inheritedBS!=null 
+					&& pPr.getShd()==null)
+				((Element)foBlockElement).setAttribute( PShading.FO_NAME, "#FFFFFF");
 			
 			if (rPr!=null) {											
 				createFoAttributes(wmlPackage, rPr, ((Element)foBlockElement) );
@@ -719,12 +765,20 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     }
 
-	public static void createFoAttributes(PPr pPr, Element foBlockElement, boolean inList){
+	public static void createFoAttributes(PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
 		
     	List<Property> properties = PropertyFactory.createProperties(pPr);
     	
     	for( Property p :  properties ) {
 			if (p!=null) {
+				
+				if (ignoreBorders &&
+						((p instanceof PBorderTop)
+								|| (p instanceof PBorderBottom))) {
+					log.warn(".. ignored!");
+					continue;
+				}
+								
 				if (inList && !(p instanceof Indent) ) { 
 					// Don't set start-indent in 
 					// fo:list-item-body/fo:block.
@@ -737,6 +791,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			}
     	}
 		
+    	
+    	
 	}
 	
     protected static void createFoAttributes(TcPr tcPr, Element foBlockElement){
