@@ -339,27 +339,8 @@
 		<xsl:variable name="pPrNode" select="w:pPr" />  	
 		<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
 
-
-		<xsl:choose>
-  			<xsl:when test="contains(../../w:sdtPr/w:tag/@w:val, 'XSLT_')">
-  				<!-- We need to ignore borders; $inherited allows this  -->
-
-				<xsl:variable name="inherited" select="../w:p[1]/w:pPr" />  	
-
-			  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
-		  			$wmlPackage, $pPrNode, $pStyleVal, $childResults, $inherited)" />
-		  		
-		  	</xsl:when>
-		  	<xsl:otherwise>
-		  		
-				<xsl:variable name="inherited" select="null" />  	
-
-			  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
-		  			$wmlPackage, $pPrNode, $pStyleVal, $childResults, $inherited)" />
-		
-		  	</xsl:otherwise>
-
-		</xsl:choose>
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForPPr( 
+  			$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
 
 		
   </xsl:template>
@@ -439,15 +420,35 @@
 	  			<xsl:apply-templates select="w:sdtContent/*"/>
 			</xsl:variable>
 		
-			<xsl:variable name="pPrNode" select="./w:sdtContent/w:p[1]/w:pPr" />  	
-			<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
+		  	<xsl:choose>
+  				<xsl:when test="./w:sdtContent/w:p[1]/w:pPr">
+  				
+					<xsl:variable name="pPrNode" select="./w:sdtContent/w:p[1]/w:pPr" />
+				  	
+					<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
 
-  			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_ block')" />
-	  		<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForSdt( 
-	  			$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
-	  			
+			  		<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForSdt( 
+	  					$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
+  				
+  				</xsl:when>
+  				<xsl:when test="./w:sdtContent/w:sdt/w:sdtContent/w:p[1]/w:pPr">
+  				
+					<xsl:variable name="pPrNode" select="./w:sdtContent/w:sdt/w:sdtContent/w:p[1]/w:pPr" />
+				  	
+					<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
+
+			  		<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForSdt( 
+	  					$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
+  				
+  				</xsl:when>
+		  		<xsl:otherwise>
+		  			<!-- Should not happen. -->
+  					<xsl:apply-templates select="w:sdtContent/*"/>
+  				</xsl:otherwise>  				  				
+  			</xsl:choose>
+
   			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_ done')" />
-	  			
+
   		
   		</xsl:when>
   		<xsl:otherwise>
