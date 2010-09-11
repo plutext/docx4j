@@ -243,10 +243,10 @@
 		</xsl:variable>
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  	
-		
-
+			  		
 	  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
-	  		$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+ 				$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+		
 		
   </xsl:template>
 
@@ -287,7 +287,43 @@
   </xsl:template>  	
   
   <xsl:template match="w:sdt">
-  	<xsl:apply-templates select="w:sdtContent/*"/>
+  	<xsl:choose>
+  		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, 'XSLT_')">
+  			<!-- An SDT we've inserted to handle adjacent borders/shading nodes -->
+
+			<xsl:variable name="childResults">
+	  			<xsl:apply-templates select="w:sdtContent/*"/>
+			</xsl:variable>
+		
+		
+		  	<xsl:choose>
+  				<xsl:when test="./w:sdtContent/w:p[1]/w:pPr">
+  				
+					<xsl:variable name="pPrNode" select="./w:sdtContent/w:p[1]/w:pPr" />
+				  	
+					<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
+
+			  		<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForSdt( 
+	  					$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
+  				
+  				</xsl:when>
+  				<xsl:when test="./w:sdtContent/w:sdt/w:sdtContent/w:p[1]/w:pPr">
+  				
+					<xsl:variable name="pPrNode" select="./w:sdtContent/w:sdt/w:sdtContent/w:p[1]/w:pPr" />
+				  	
+					<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  	
+
+			  		<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForSdt( 
+	  					$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
+  				
+  				</xsl:when>
+  			</xsl:choose>
+  		
+  		</xsl:when>
+  		<xsl:otherwise>
+  			<xsl:apply-templates select="w:sdtContent/*"/>
+  		</xsl:otherwise>
+  	</xsl:choose>
   </xsl:template>
 
 

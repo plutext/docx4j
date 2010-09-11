@@ -342,7 +342,7 @@
 
 		<xsl:choose>
   			<xsl:when test="contains(../../w:sdtPr/w:tag/@w:val, 'XSLT_')">
-  				<!-- We need to ignore borders  -->
+  				<!-- We need to ignore borders; $inherited allows this  -->
 
 				<xsl:variable name="inherited" select="../w:p[1]/w:pPr" />  	
 
@@ -444,7 +444,7 @@
 
   			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_ block')" />
 	  		<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForSdt( 
-	  			$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+	  			$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
 	  			
   			<xsl:value-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.logWarn('.. XSLT_ done')" />
 	  			
