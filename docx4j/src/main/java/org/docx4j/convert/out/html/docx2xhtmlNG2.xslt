@@ -317,6 +317,10 @@
 	  					$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
   				
   				</xsl:when>
+		  		<xsl:otherwise>
+		  			<!-- Should not happen. -->
+  					<xsl:apply-templates select="w:sdtContent/*"/>
+  				</xsl:otherwise>  				
   			</xsl:choose>
   		
   		</xsl:when>

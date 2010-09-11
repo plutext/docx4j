@@ -520,10 +520,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults, String tag) {
     	
-    	DocumentFragment docfrag = createBlockForPPr( wmlPackage,
+    	DocumentFragment docfrag = createBlock( wmlPackage,
         		 pPrNodeIt,
         		 pStyleVal,  childResults,
-        		 null);
+        		 true);
     	
     	// Set margins, but only for a shading container,
     	// not a borders container
@@ -554,9 +554,21 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     public static DocumentFragment createBlockForPPr( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
+    		String pStyleVal, NodeIterator childResults) {
+
+    	return createBlock( 
+        		wmlPackage,
+        		pPrNodeIt,
+        		pStyleVal, childResults,
+        		false);    	
+    }
+    
+    public static DocumentFragment createBlock( 
+    		WordprocessingMLPackage wmlPackage,
+    		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults,
-    		NodeIterator inheritedBS) {
-    	
+    		boolean sdt) {
+
     	PropertyResolver propertyResolver = 
     		wmlPackage.getMainDocumentPart().getPropertyResolver();
     	
@@ -732,23 +744,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				document.appendChild(foBlockElement);
 			}
 			
-			// Ignore paragraph borders once inside the container
-			boolean ignoreBorders = false;
-			if (inheritedBS!=null) {
-				Node inheritedBSNode = inheritedBS.nextNode();
-				if (inheritedBSNode!=null) {
-					// Will always be the case for a top-level w:p
-					// which had to be wrapped in a w:sdt (even if just one w:p)
-					PPr inheritedPpr = (PPr)XmlUtils.unmarshal(inheritedBSNode );
-					
-					if (inheritedPpr.getPBdr()!=null) { 
-						ignoreBorders = true;
-						log.info("ignoring child borders");
-					}
-				}
-			}
 							
 			if (pPr!=null) {
+				// Ignore paragraph borders once inside the container
+				boolean ignoreBorders = !sdt;
+
 				createFoAttributes(pPr, ((Element)foBlockElement), inlist, ignoreBorders );
 			}
 
