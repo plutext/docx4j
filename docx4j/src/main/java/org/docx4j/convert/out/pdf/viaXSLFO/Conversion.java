@@ -55,7 +55,9 @@ import org.docx4j.model.structure.jaxb.Sections.Section;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.wml.Body;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.Ftr;
@@ -290,9 +292,22 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	  //Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
     	  //Document domDoc = XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
 
-    	  Containerization.groupAdjacentBorders(wordMLPackage.getMainDocumentPart());
+    	  // Containerization of borders/shading
+    	  MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+    	  List<Object> newList = Containerization.groupAdjacentBorders(mdp);
+    	  // Don't change the user's Document object; create a tmp one
+    	  org.docx4j.wml.Document tmpDoc = Context.getWmlObjectFactory().createDocument();
+    	  Body newBody = Context.getWmlObjectFactory().createBody();
+    	  tmpDoc.setBody(newBody);
+    	  newBody.getEGBlockLevelElts().addAll(newList);
     	  
-    	  Sections sections = createSectionContainers(wordMLPackage);
+//    	  mdp.getJaxbElement().getBody().getEGBlockLevelElts().clear();
+//    	  mdp.getJaxbElement().getBody().getEGBlockLevelElts().addAll(newList);
+
+    	  //log.info(XmlUtils.marshaltoString(mdp.getJaxbElement(), false));
+    	  
+    	  Sections sections = createSectionContainers(
+    			  tmpDoc );
     	  Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections, Context.jcSectionModel);
     	  
     	  java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
@@ -364,7 +379,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		
 	}
     
-	private Sections createSectionContainers(WordprocessingMLPackage wordMLPackage) {
+	private Sections createSectionContainers(org.docx4j.wml.Document doc) {
 				
 		ObjectFactory factory = new ObjectFactory();
 		
@@ -374,7 +389,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		
 		sections.getSection().add(section);
 						
-		org.docx4j.wml.Document doc = (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
+		//org.docx4j.wml.Document doc = (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
 		
 		int i = 2;
 		for (Object o : doc.getBody().getEGBlockLevelElts() ) {
@@ -503,12 +518,28 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     public static DocumentFragment createBlockForSdt( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
-    		String pStyleVal, NodeIterator childResults) {
+    		String pStyleVal, NodeIterator childResults, String tag) {
     	
-    	return createBlockForPPr( wmlPackage,
+    	DocumentFragment docfrag = createBlockForPPr( wmlPackage,
         		 pPrNodeIt,
         		 pStyleVal,  childResults,
         		 null);
+    	
+    	// Set margins, but only for a shading container,
+    	// not a borders container
+    	if (tag.equals(Containerization.TAG_SHADING) && docfrag!=null) {
+    		// docfrag.getNodeName() is  #document-fragment
+    	    Node foBlock = docfrag.getFirstChild();
+    	    if (foBlock!=null) {
+				((Element)foBlock).setAttribute("margin-top", "0in");    	    	
+				((Element)foBlock).setAttribute("margin-bottom", "0in");    	    	
+
+//				((Element)foBlock).setAttribute("padding-top", "0in");    	    	
+//				((Element)foBlock).setAttribute("padding-bottom", "0in");    	    	
+    	    }
+    	}
+    	    
+    	return docfrag;
     }	
     /**
      * On the block representing the w:p, we want to put both
@@ -613,6 +644,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 								
 				foListBlock.setAttribute("provisional-distance-between-starts", "0.5in");
 				
+				// Need to apply shading at fo:list-block level
+				if (pPr.getShd()!=null) {
+					PShading pShading = new PShading(pPr.getShd());
+					pShading.setXslFO(foListBlock);
+				}
+				
 				Element foListItem = document.createElementNS("http://www.w3.org/1999/XSL/Format", 
 						"fo:list-item");
 				foListBlock.appendChild(foListItem);				
@@ -695,6 +732,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				document.appendChild(foBlockElement);
 			}
 			
+			// Ignore paragraph borders once inside the container
 			boolean ignoreBorders = false;
 			if (inheritedBS!=null) {
 				Node inheritedBSNode = inheritedBS.nextNode();
@@ -714,9 +752,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				createFoAttributes(pPr, ((Element)foBlockElement), inlist, ignoreBorders );
 			}
 
-			if (inheritedBS!=null 
-					&& pPr.getShd()==null)
-				((Element)foBlockElement).setAttribute( PShading.FO_NAME, "#FFFFFF");
 			
 			if (rPr!=null) {											
 				createFoAttributes(wmlPackage, rPr, ((Element)foBlockElement) );
@@ -776,7 +811,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				if (ignoreBorders &&
 						((p instanceof PBorderTop)
 								|| (p instanceof PBorderBottom))) {
-					log.warn(".. ignored!");
 					continue;
 				}
 								

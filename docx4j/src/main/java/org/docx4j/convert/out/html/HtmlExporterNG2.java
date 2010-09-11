@@ -33,6 +33,7 @@ import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
@@ -260,7 +261,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		createCss( s.getPPr(), result );
+        		createCss( s.getPPr(), result, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -280,7 +281,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		createCss( s.getPPr(), result );
+        		createCss( s.getPPr(), result, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -433,11 +434,37 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
     	
     }
     
-    
+    public static DocumentFragment createBlockForSdt( 
+    		WordprocessingMLPackage wmlPackage,
+    		NodeIterator pPrNodeIt,
+    		String pStyleVal, NodeIterator childResults, String tag) {
+    	
+    	DocumentFragment docfrag = createBlock( wmlPackage,
+        		 pPrNodeIt,
+        		 pStyleVal,  childResults,
+        		 "div");
+    	    	    
+    	return docfrag;
+    }	    
+
     public static DocumentFragment createBlockForPPr( 
     		WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults ) {
+
+    	return createBlock( 
+        		 wmlPackage,
+        		 pPrNodeIt,
+        		 pStyleVal,  childResults,
+        		  "p" );
+    	
+    }
+    
+    private static DocumentFragment createBlock( 
+    		WordprocessingMLPackage wmlPackage,
+    		NodeIterator pPrNodeIt,
+    		String pStyleVal, NodeIterator childResults,
+    		String htmlElementName ) {
     	
 
 		StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
@@ -485,7 +512,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 			
 			//log.info("Document: " + document.getClass().getName() );
 
-			Node xhtmlP = document.createElement("p");			
+			Node xhtmlP = document.createElement(htmlElementName);			
 			document.appendChild(xhtmlP);
 							
 			if (log.isDebugEnabled() && pPr!=null) {					
@@ -501,9 +528,10 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 			);
 						
 			// Does our pPr contain anything else?
+			boolean ignoreBorders = (htmlElementName.equals("p"));
 			if (pPr!=null) {
 				StringBuffer inlineStyle =  new StringBuffer();
-				createCss(pPr, inlineStyle);				
+				createCss(pPr, inlineStyle, ignoreBorders);				
 				if (!inlineStyle.toString().equals("") ) {
 					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
 				}

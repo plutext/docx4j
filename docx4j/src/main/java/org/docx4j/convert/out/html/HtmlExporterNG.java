@@ -16,6 +16,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.html.SymbolWriter;
 import org.docx4j.convert.out.html.HtmlExporterNG2.EndnoteState;
@@ -27,10 +28,16 @@ import org.docx4j.model.TransformState;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.PBorderBottom;
+import org.docx4j.model.properties.paragraph.PBorderTop;
+import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.Body;
+import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
@@ -182,8 +189,17 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, 
     		HtmlSettings htmlSettings) throws Exception {
     			
+  	  // Containerization of borders/shading
+  	  MainDocumentPart mdp = wmlPackage.getMainDocumentPart();
+  	  List<Object> newList = Containerization.groupAdjacentBorders(mdp);
+	  // Don't change the user's Document object; create a tmp one
+	  org.docx4j.wml.Document tmpDoc = Context.getWmlObjectFactory().createDocument();
+	  Body newBody = Context.getWmlObjectFactory().createBody();
+	  tmpDoc.setBody(newBody);
+	  newBody.getEGBlockLevelElts().addAll(newList);
+		
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
-				wmlPackage.getMainDocumentPart().getJaxbElement() ); 	
+				tmpDoc ); 	
 		
 		//log.debug( XmlUtils.w3CDomNodeToString(doc));
 			
@@ -296,7 +312,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 			// Does our pPr contain anything else?
 			if (pPr!=null) {
 				StringBuffer inlineStyle =  new StringBuffer();
-				createCss(pPr, inlineStyle);				
+				createCss(pPr, inlineStyle, false);				
 				if (!inlineStyle.toString().equals("") ) {
 					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
 				}
@@ -467,7 +483,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 	        		log.debug("null pPr for style " + styleId);
 	        	} else {
 		        	result.append( "."+styleId + PPR_COMPONENT + " {display:block;" );
-		        	createCss( pPr, result);
+		        	createCss( pPr, result, false);
 		        	result.append( "}\n" );
 	        	}
 	        	// the rPr component
@@ -558,7 +574,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     }
     
     
-    public static void createCss(PPr pPr, StringBuffer result) {
+    public static void createCss(PPr pPr, StringBuffer result, boolean ignoreBorders) {
     	
 		if (pPr==null) {
 			return;
@@ -566,6 +582,22 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
     	
     	List<Property> properties = PropertyFactory.createProperties(pPr);    	
     	for( Property p :  properties ) {
+    		
+			if (ignoreBorders &&
+					((p instanceof PBorderTop)
+							|| (p instanceof PBorderBottom))) {
+				continue;
+			}
+			
+			if (p instanceof PShading) {
+    	    	// To close the gap between divs, we need to avoid
+    	    	// CSS margin collapse.    	    	
+    	    	// To do that, we add a border the same color as 
+    	    	// the background color				
+				String fill = ((CTShd)p.getObject()).getFill();				
+				result.append("border-color: #" + fill + "; border-style:solid; border-width:1px;");
+			}
+    		
     		result.append(p.getCssProperty());
     	}    
     }

@@ -39,8 +39,8 @@ public class PShading extends AbstractParagraphProperty {
 	public final static String FO_NAME  = "background-color"; 
 	
 	
-	public PShading(CTShd textAlignment) {
-		this.setObject(textAlignment);
+	public PShading(CTShd shading) {
+		this.setObject(shading);
 	}
 	
 	public PShading(CSSValue value) {	

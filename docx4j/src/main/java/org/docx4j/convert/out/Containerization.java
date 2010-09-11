@@ -21,14 +21,11 @@ package org.docx4j.convert.out;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.CTShd;
-import org.docx4j.wml.P;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
@@ -39,6 +36,8 @@ public class Containerization {
 
 	private static Logger log = Logger.getLogger(Containerization.class);
 
+	public final static String TAG_SHADING = "XSLT_Shd";
+	public final static String TAG_BORDERS = "XSLT_PBdr";
 	
 	/**
 	 * In Word, adjacent paragraphs with the same borders are enclosed in a single border
@@ -52,7 +51,7 @@ public class Containerization {
 	 * control, and set the border/shading on that.  This gives us an appropriate
 	 * div or fo:block.
 	 */
-	public static void groupAdjacentBorders(MainDocumentPart mdp) {
+	public static List<Object> groupAdjacentBorders(MainDocumentPart mdp) {
 		
 		List<Object> newList = new ArrayList<Object>(); 
 		SdtBlock sdtBorders = null;
@@ -94,7 +93,7 @@ public class Containerization {
 				if (currentBorders == null) {
 					sdtBorders = null;
 				} else {
-					sdtBorders = createSdt("XSLT_PBdr");					
+					sdtBorders = createSdt(TAG_BORDERS);					
 					addBordersSdt(sdtBorders, newList );
 				}
 			}
@@ -114,7 +113,12 @@ public class Containerization {
 				if (currentShading == null) {
 					sdtShading = null;
 				} else {
-					sdtShading = createSdt("XSLT_Shd");					
+					sdtShading = createSdt(TAG_SHADING);
+					
+					// need to set margins, so there isn't a white strip
+					// between paragraphs.  hmm, model.properties.paragraph
+					// won't translate this.  so do it at the fo level
+					
 					addShadingSdt( sdtShading, newList, sdtBorders );
 				}
 
@@ -128,12 +132,9 @@ public class Containerization {
 		}				
 		
 		 // end for
-			
-		// finally
-		mdp.getJaxbElement().getBody().getEGBlockLevelElts().clear();
-		mdp.getJaxbElement().getBody().getEGBlockLevelElts().addAll(newList);
 		
-		log.info(XmlUtils.marshaltoString(mdp.getJaxbElement(), false));
+		return newList;
+		
 	}
 	
 	private static SdtBlock createSdt(String tagVal) {
