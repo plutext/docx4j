@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2010, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,35 +21,22 @@
 package org.docx4j.samples;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.util.HashMap;
+import java.util.List;
 
-import javax.xml.bind.JAXBException;
-
-import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
-import org.docx4j.openpackaging.contenttype.ContentType;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.relationships.Relationships;
-import org.docx4j.wml.Body;
 import org.docx4j.wml.Hdr;
 import org.docx4j.wml.HdrFtrRef;
 import org.docx4j.wml.HeaderReference;
 import org.docx4j.wml.ObjectFactory;
-import org.docx4j.wml.P;
-import org.docx4j.wml.R;
 import org.docx4j.wml.SectPr;
-import org.docx4j.wml.Text;
 
 public class HeaderFooter {
 
@@ -173,17 +160,21 @@ public class HeaderFooter {
 			Relationship relationship )
 			throws InvalidFormatException {
 
-		SectPr sectPr = objectFactory.createSectPr();
+		List<SectionWrapper> sections = wordprocessingMLPackage.getDocumentModel().getSections();
+		   
+		SectPr sectPr = sections.get(sections.size() - 1).getSectPr();
+		// There is always a section wrapper, but it might not contain a sectPr
+		if (sectPr==null ) {
+			sectPr = objectFactory.createSectPr();
+			wordprocessingMLPackage.getMainDocumentPart().addObject(sectPr);
+			sections.get(sections.size() - 1).setSectPr(sectPr);
+		}
 
 		HeaderReference headerReference = objectFactory.createHeaderReference();
 		headerReference.setId(relationship.getId());
 		headerReference.setType(HdrFtrRef.DEFAULT);
 		sectPr.getEGHdrFtrReferences().add(headerReference);// add header or
 		// footer references
-
-		wordprocessingMLPackage.getMainDocumentPart().addObject(sectPr);
-
-//		wordprocessingMLPackage.getMainDocumentPart().addObject(getP());
 
 	}
 	

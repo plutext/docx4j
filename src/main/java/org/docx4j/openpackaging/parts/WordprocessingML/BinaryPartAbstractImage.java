@@ -67,7 +67,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
 	protected static Logger log = Logger.getLogger(BinaryPartAbstractImage.class);
 	
-	final static String IMAGE_PREFIX = "/word/media/image";
+	final static String IMAGE_DIR_PREFIX = "/word/media/";
+	final static String IMAGE_NAME_PREFIX = "image";
 	
 	public BinaryPartAbstractImage(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -154,6 +155,20 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 	}
 	
+	private static String createImageName(Part sourcePart, String proposedRelId ) {
+		
+		// In order to ensure unique part name,
+		// idea is to use the relId, which ought to be unique
+		
+		// Also need partName, since images for different parts are stored in a common dir
+		String sourcepartName = sourcePart.getPartName().getName();
+		int beginIndex = sourcepartName.lastIndexOf("/")+1;
+		int endIndex = sourcepartName.lastIndexOf(".");
+		String partPrefix = sourcepartName.substring(beginIndex, endIndex);
+		
+		return IMAGE_DIR_PREFIX + partPrefix + "_" + IMAGE_NAME_PREFIX +  proposedRelId;
+		
+	}
 	
 	/**
 	 * Create an image part from the provided byte array, attach it to the source part
@@ -192,14 +207,13 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// Ensure the relationships part exists
 		if (sourcePart.getRelationshipsPart()==null) 
 			RelationshipsPart.createRelationshipsPartForPart(sourcePart);
-		
+
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
-		// In order to ensure unique part name,
-		// idea is to use the relId, which ought to be unique
+				
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
-				info.getMimeType(), 
-				IMAGE_PREFIX + proposedRelId );
+				info.getMimeType(), createImageName(sourcePart, proposedRelId)
+				 );
 				
 		log.debug("created part " + imagePart.getClass().getName() +
 				" with name " + imagePart.getPartName().toString() );		
@@ -269,7 +283,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 					|| info.getMimeType().equals(ContentTypes.IMAGE_WMF) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_PNG) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_JPEG) 
-					|| info.getMimeType().equals(ContentTypes.IMAGE_GIF) )  ) {
+					|| info.getMimeType().equals(ContentTypes.IMAGE_GIF) 
+//					 || info.getMimeType().equals(ContentTypes.IMAGE_EPS)
+					)) {
 					// TODO: add other supported formats
 				
 				// If its a format Word supports natively, 
@@ -279,6 +295,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			} else if ( imageFile!=null && bytes!=null ) {
 				
 				// otherwise (eg if its an EPS or PDF), try to convert it
+				// Although the Word UI suggests you can embed an EPS
+				// directly, Word actually converts it to an EMF;
+				// Word is unable to read a plain EPS image part.
+				
+				
 				// (TODO: detect failure)
 
 				log.debug(".. attempting to convert to PNG");		
@@ -342,7 +363,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
 				info.getMimeType(), 
-				IMAGE_PREFIX + proposedRelId );
+				createImageName(sourcePart, proposedRelId) );
 				
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());
