@@ -237,7 +237,8 @@ public abstract class JaxbXmlPart<E> extends Part {
 						
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			jaxbElement = (E) u.unmarshal( el );
+			jaxbElement = (E) XmlUtils.unwrap(
+					u.unmarshal( el ) );
 
 			return jaxbElement;
 			
