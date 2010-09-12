@@ -75,6 +75,9 @@ public class SectionWrapper {
 	public SectPr getSectPr() {
 		return sectPr;
 	}
+	public void setSectPr(SectPr sectPr) {
+		this.sectPr = sectPr;
+	}
 	
 //    protected List<Object> egBlockLevelElts;
 //	
