@@ -856,7 +856,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
      */
     public static DocumentFragment createBlockForRPr( 
     		WordprocessingMLPackage wmlPackage,
-    		//NodeIterator pPrNodeIt,
+    		NodeIterator pPrNodeIt,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
 
@@ -875,27 +875,23 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
         try {
         	
-        	// Get the pPr node as a JAXB object,
-        	// so we can read it using our standard
-        	// methods.  Its a bit sad that we 
-        	// can't just adorn our DOM tree with the
-        	// original JAXB objects?
 			Unmarshaller u = Context.jc.createUnmarshaller();			
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-//			// We might not have a pPr node
-//			PPr pPrDirect = null;
-//        	if (pPrNodeIt!=null) {
-//        		Node n = pPrNodeIt.nextNode();
-//        		if (n!=null) {
-//        			Object jaxb = u.unmarshal(n);
-//        			try {
-//        				pPrDirect =  (PPr)jaxb;
-//        			} catch (ClassCastException e) {
-//        		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
-//        			}        	        			
-//        		}
-//        	}
+			// If there is w:pPr/w:pStyle,			
+			// we need to honour any rPr in the pStyle
+			PPr pPrDirect = null;
+        	if (pPrNodeIt!=null) {
+        		Node n = pPrNodeIt.nextNode();
+        		if (n!=null) {
+        			Object jaxb = u.unmarshal(n);
+        			try {
+        				pPrDirect =  (PPr)jaxb;
+        			} catch (ClassCastException e) {
+        		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
+        			}        	        			
+        		}
+        	}
         	
 			Object jaxbR = u.unmarshal(rPrNodeIt.nextNode());			
 			RPr rPrDirect = null;
@@ -904,7 +900,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			} catch (ClassCastException e) {
 		    	log.error("Couldn't cast .." );
 			}        	
-        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect, null);
+        	RPr rPr = propertyResolver.getEffectiveRPr(rPrDirect, pPrDirect);
         	
             // Create a DOM builder and parse the fragment
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
