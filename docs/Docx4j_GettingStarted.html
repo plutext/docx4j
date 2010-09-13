@@ -38,7 +38,7 @@
 .Command {display:block;position: relative; margin-left: 0.5in;font-family: Consolas;font-size: 10.0pt;}
 .Heading1 {display:block;page-break-after: avoid;space-before: 0.33in;space-after: 4mm;font-weight: bold;color: #365F91;font-family: Calibri;font-size: 18.0pt;}
 .Footer {display:block;space-after: 0in;line-height: 100%;}
-.Title {display:block;space-after: 0.21in;line-height: 100%;color: #17365D;font-family: Calibri;font-size: 26.0pt;}
+.Title {display:block;border-bottom-style: solid;border-bottom-width: 0.35mm;border-bottom-color: #4F81BD;space-after: 0.21in;line-height: 100%;color: #17365D;font-family: Calibri;font-size: 26.0pt;}
 .FootnoteText {display:block;space-after: 0in;line-height: 100%;font-size: 10.0pt;}
 .ListParagraph {display:block;position: relative; margin-left: 0.5in;}
 .Heading2 {display:block;space-before: 0.07in;space-after: 0.07in;line-height: 100%;font-weight: bold;font-style: italic;font-family: Calibri;font-size: 14.0pt;}
@@ -73,11 +73,21 @@
   
   <p class="Heading1 Normal DocDefaults ">What is docx4j?</p>
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">docx4j is a library for unzipping a docx "package", and parsing the WordprocessingML XML to create an in-memory representation in </span><span style="font-weight: bold;">Java</span><span style="white-space:pre-wrap;">.  Recent versions of docx4j also support Powerpoint pptx files.  </span></p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">docx4j is a library for unzipping a docx "package", and parsing the WordprocessingML XML to create an in-memory representation in </span><span style="font-weight: bold;">Java</span>.  Recent versions of docx4j also support Powerpoint pptx files and Excel xlsx files.</p>
   
   <p class="Normal DocDefaults ">It is similar in concept to Microsoft's  OpenXML SDK, which is for .NET.</p>
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">docx4j is open source, available under the Apache License (v2).  As an open source project, contributions are welcome.  Please see the docx4j forum at </span><a href="http://dev.plutext.org/forums/"><span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/forums/</span></a><span style="white-space:pre-wrap;"> for details.</span></p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">docx4j is open source, available under the Apache License (v2).  As an open source project, contributions are welcome.  Please see the docx4j forum at </span><a href="http://dev.plutext.org/forums/"><span style="color: #0000FF;text-decoration: none;">http://dev.plutext.org/forums/</span></a><span style="white-space:pre-wrap;"> for details.</span></p><div class="Normal DocDefaults " style="border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><div class="Normal DocDefaults " style="border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;">
+  
+  <p class="Normal DocDefaults " style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><span class="apple-style-span DefaultParagraphFont " style="font-weight: bold;color: #000000;font-family: Calibri;text-decoration: none;">The Docx4j social contract</span></p>
+  
+  <p class="Normal DocDefaults " style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;">docx4j is currently available under the Apache Software license.  This gives you freedom to do pretty much anything you like with it.  It also means you don't have to pay for it (there is no incentive to take up a commercial license, so we don't offer one).</span></p>
+  
+  <p class="Normal DocDefaults " style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;"><span style="white-space:pre-wrap;">The </span></span><span class="apple-style-span DefaultParagraphFont " style="font-weight: bold;color: #000000;font-style: italic;font-family: Calibri;">quid pro quo</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;"><span style="white-space:pre-wrap;"> is that if docx4j helps you out, you should "give something back", by way of code, community support, by "spreading the word" (promotion), or by buying commerical support. Your choice.</span></span></p>
+  
+  <p class="Normal DocDefaults " style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;">If you choose promotion, your options include emailing a</span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Calibri;"><span style="white-space:pre-wrap;"> testimonial we can put on our </span></span><span style="color: #000000;font-family: Calibri;"><span style="white-space:pre-wrap;">website, a </span></span>blog<span style="color: #000000;font-family: Calibri;"> post, a tweet</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;"><span style="white-space:pre-wrap;">, or a helpful (non-spammy) comment in an online forum.  Your promotion/support will help grow the docx4j community and thus its strength, to the benefit of all. </span></span></p>
+  
+  <p class="Normal DocDefaults " style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;"><span style="white-space:pre-wrap;">Please complete our very short new user survey at </span></span><a href="http://www.plutext.com/limesurvey/index.php?sid=78372&amp;lang=en"><span class="Hyperlink DefaultParagraphFont " style="color: #819D26;font-family: Calibri;font-size: 8.0pt;">http://www.plutext.com/limesurvey/index.php?sid=78372</span></a><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;">. It includes a question on the above.  Thanks.</span></p></div></div>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Docx4j relies heavily on </span><span style="font-weight: bold;">JAXB</span>, the JCP standard for Java - XML binding.  You can think of docx4j as a JAXB implementation of (amongst others):</p>
   
@@ -87,13 +97,15 @@
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span style="white-space:pre-wrap;">Presentation ML (pptx) part of OpenXML </span></p>
   
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>SpreadsheetML (xlsx) part of Open XML.</p>
+  
   <p class="Normal DocDefaults ">The library is designed to round trip docx files with 100% fidelity, and supports all 2007 WordML.  Support for new Word 2010 features will be added soon.</p>
   
   <p class="Normal DocDefaults ">The docx4j project is sponsored by Plutext (<a href="http://www.plutext.com"><span class="Hyperlink DefaultParagraphFont ">www.plutext.com</span></a>).</p>
   
   <p class="Heading1 Normal DocDefaults ">Is docx4j for you?</p>
   
-  <p class="Normal DocDefaults ">Docx4j is for processing docx documents (and pptx presentations) in Java.</p>
+  <p class="Normal DocDefaults ">Docx4j is for processing docx documents (and pptx presentations and xlsx spreadsheets) in Java.</p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">It isn't for old binary (.doc) files.  If you wish to invest your effort around docx (as is wise), but you also need to be able to handle old doc files, see further below for your options. </span></p>
   
@@ -101,15 +113,17 @@
   
   <p class="Normal DocDefaults ">If you want to process docx documents on the .NET platform, you should look at Microsoft's  OpenXML SDK instead.</p>
   
-  <p class="Normal DocDefaults ">An alternative to docx4j is Apache POI.  I'd particularly recommend that for processing Excel documents.  It can also be used to process Word documents, and since it uses XmlBeans (not JAXB) it may be a better choice if you want to use XmlBeans.</p>
+  <p class="Normal DocDefaults ">An alternative to docx4j is Apache POI.  I'd particularly recommend that if you are only processing Excel documents, and need support for the old binary xls format.  Since POI uses XmlBeans (not JAXB) it may be a better choice if you want to use XmlBeans.</p>
   
   <p class="Heading1 Normal DocDefaults ">What sorts of things can you do with docx4j?</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS), pptx, xlsx</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Create new docx</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Create new docx, pptx, xlsx</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Programmatically manipulate the docx document (of course)</p>
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Programmatically manipulate the above (of course)</p>
+  
+  <p class="Normal DocDefaults ">Specific to docx4j (as opposed to pptx4j, xlsx4j):</p>
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Template substitution; CustomXML binding</p>
   
@@ -125,13 +139,7 @@
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span>Font support (font substitution, and use of any fonts embedded in the document)</p>
   
-  <p class="Heading1 Normal DocDefaults ">Projects using docx4j</p>
-  
-  <p class="Normal DocDefaults ">Docx4all is a Swing-based word processor.</p>
-  
-  <p class="Normal DocDefaults ">Plutext collaboration for Word 2007 uses docx4j on the server, to shred Word documents into smaller pieces which can be independently versioned.</p>
-  
-  <p class="Normal DocDefaults ">Please contact Plutext if you would like your project to be listed here.</p>
+  <p class="Normal DocDefaults ">This document focuses primarily on docx4j, but the general principles are equally applicable to pptx4j and xlsx4j.</p>
   
   <p class="Heading1 Normal DocDefaults ">What Word documents does it support?</p>
   
@@ -223,7 +231,7 @@
   
   <p class="Normal DocDefaults ">Once the dependencies are installed, you can also build docx4j using ant:</p>
   
-  <p class="NormalWeb Normal DocDefaults " style="position: relative; margin-left: 0.5in;"><span style="font-family: Consolas;font-size: 10.0pt;">ant dist</span></p>
+  <p class="Normal DocDefaults "><span style="font-family: Consolas;font-size: 10.0pt;">   ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist</span></p>
   
   <p class="Normal DocDefaults ">That ant command will create the docx4j.jar and place it and all its dependencies in the dist dir.</p>
   
@@ -275,6 +283,8 @@
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 1in;font-family: Courier New;">o </span>src/pptx4j/java</p>
   
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 1in;font-family: Courier New;">o </span>src/xlsx4j/java</p>
+  
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 1in;font-family: Courier New;">o </span>src/svg</p>
   
   <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 1in;font-family: Courier New;">o </span>src/xslfo</p>
@@ -289,7 +299,7 @@
   
   <p class="Normal DocDefaults ">The project should now be working in Eclipse without errors<span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fs2"><a href="#fn2">2</a></a></span></span><span style="white-space:pre-wrap;">. </span></p>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Open an existing docx/pptx document</span></p>
+  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Open an existing docx/pptx/xlsx document</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/openpackaging/packages/WordprocessingMLPackage.java"><span style="font-family: Consolas;">org.docx4j.openpackaging.packages.</span><span style="font-weight: bold;font-family: Consolas;">WordprocessingMLPackage</span></a> represents a docx document.</p>
   
@@ -319,6 +329,8 @@
   
   <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   </span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">   (PresentationMLPackage)OpcPackage.</span><span style="color: #000000;font-style: italic;font-family: Consolas;font-size: 8.0pt;">load</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">(</span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 8.0pt;">new</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> java.io.File(inputfilepath));</span></span></p>
   
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">An similarly for xlsx files.</p>
+  
   <p class="Heading1 Normal DocDefaults ">WordML concepts</p>
   
   <p class="Normal DocDefaults ">To do anything much beyond this, you need to have an understanding of basic WordML concepts.</p>
@@ -333,7 +345,35 @@
   
   <p class="Normal DocDefaults ">Similarly for any images.  To see the structure of any given document, see "Parts List" further below.</p>
   
-  <p class="Normal DocDefaults ">An introduction to WordML is beyond the scope of this document.  You can find a very readable introduction in 1<span style="vertical-align: top;font-size: xx-small;">st</span><span style="white-space:pre-wrap;"> edition Part 3 (Primer) at </span><a href="http://www.ecma-international.org/publications/standards/Ecma-376.htm"><span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/publications/standards/Ecma-376.htm</span></a><span style="white-space:pre-wrap;"> or </span><a href="http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm"><span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm</span></a><span style="white-space:pre-wrap;"> (a better link, since its not zipped up).</span></p>
+  <p class="Normal DocDefaults ">An introduction to WordML is beyond the scope of this document.  You can find a very readable introduction in 1<span style="vertical-align: top;font-size: xx-small;">st</span><span style="white-space:pre-wrap;"> edition Part 3 (Primer) at </span><a href="http://www.ecma-international.org/publications/standards/Ecma-376.htm"><span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/publications/standards/Ecma-376.htm</span></a><span style="white-space:pre-wrap;"> or </span><a href="http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm"><span style="color: #0000FF;text-decoration: none;">http://www.ecma-international.org/news/TC45_current_work/TC45_available_docs.htm</span></a><span style="white-space:pre-wrap;"> (a better link for the 1st edition (Dec 2006), since its not zipped up). </span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;"><span style="white-space:pre-wrap;">Specification versions </span></span></p>
+  
+  <p class="Normal DocDefaults ">From Wikipedia:</p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">The</span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><a href="http://en.wikipedia.org/wiki/Office_Open_XML"><span class="Hyperlink DefaultParagraphFont " style="color: #0645AD;font-family: Arial;font-size: 8.0pt;">Office Open XML</span></a><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">file formats were standardised between December 2006 and November 2008, </span></span></p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">first by the</span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><a href="http://en.wikipedia.org/wiki/Ecma_International"><span class="Hyperlink DefaultParagraphFont " style="color: #0645AD;font-family: Arial;font-size: 8.0pt;">Ecma International</span></a><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">consortium (where they became</span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="font-weight: bold;color: #000000;font-family: Arial;font-size: 8.0pt;">ECMA-376</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">), </span></span></p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">and subsequently .. by the</span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><a href="http://en.wikipedia.org/wiki/International_Organization_for_Standardization"><span class="Hyperlink DefaultParagraphFont " style="color: #0645AD;font-family: Arial;font-size: 8.0pt;">ISO</span></a><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">/</span><a href="http://en.wikipedia.org/wiki/International_Electrotechnical_Commission"><span class="Hyperlink DefaultParagraphFont " style="color: #0645AD;font-family: Arial;font-size: 8.0pt;">IEC</span></a><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">'s</span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><a href="http://en.wikipedia.org/wiki/International_Organization_for_Standardization&#10;            #ISO.2FIEC_Joint_Technical_Committee_1"><span class="Hyperlink DefaultParagraphFont " style="color: #0645AD;font-family: Arial;font-size: 8.0pt;">Joint Technical Committee 1</span></a><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">(where they became</span><span class="apple-converted-space DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="font-weight: bold;color: #000000;font-family: Arial;font-size: 8.0pt;">ISO/IEC 29500:2008</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">).</span></p>
+  
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">The Ecma-376.htm link also contains the 2nd edition documents (of Dec 2008), which are </span><span class="apple-converted-space DefaultParagraphFont " style="color: #333333;font-family: Verdana;font-size: 8.5pt;">"</span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Verdana;font-size: 8.5pt;">technically aligned with ISO/IEC 29500".</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Verdana;font-size: 8.5pt;">Office 2007 SP2 implements ECMA-376 1st Edition</span><span class="FootnoteReference DefaultParagraphFont " style="color: #333333;font-family: Verdana;font-size: 8.5pt;"><span style="vertical-align: top; font-size: xx-small"><a name="fs3"><a href="#fn3">3</a></a></span></span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Verdana;font-size: 8.5pt;">; this is what docx4j implements.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;">ISO/IEC 29500 (</span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Verdana;font-size: 8.5pt;">ECMA-376 2nd Edition) has</span><span class="apple-converted-space DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-style: italic;font-family: Arial;font-size: 8.5pt;">Strict</span><span class="apple-converted-space DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;">and</span><span class="apple-converted-space DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-style: italic;font-family: Arial;font-size: 8.5pt;"><span style="white-space:pre-wrap;">Transitional </span></span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;">conformance classes.  Office 2010 supports</span><span class="FootnoteReference DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;"><span style="vertical-align: top; font-size: xx-small"><a name="fs4"><a href="#fn4">4</a></a></span></span><span class="apple-style-span DefaultParagraphFont " style="color: #333333;font-family: Arial;font-size: 8.5pt;"><span style="white-space:pre-wrap;"> transitional, and also has read only support for strict.</span></span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Architecture</span></p>
+  
+  <p class="Normal DocDefaults ">Docx4j has 3 layers:</p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">1. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">OpenPackaging handles things at the Open Packaging Conventions level:  unzipping a docx into </span><span style="font-weight: bold;font-family: Consolas;">WordprocessingMLPackage</span><span style="white-space:pre-wrap;"> and a set of objects inheriting from Part;  allowing parts to be added/deleted; saving the docx</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">This layer is based originally on OpenXML4J (which is also used by Apache POI). </span><br clear="all"/></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">2. </span><span style="white-space:pre-wrap;">Parts are generally subclasses of </span><span style="font-weight: bold;color: #000000;font-family: Consolas;">org</span><span style="font-weight: bold;font-family: Consolas;">.docx4j.</span><span style="font-weight: bold;color: #000000;font-family: Consolas;">openpackaging</span><span style="font-weight: bold;font-family: Consolas;">.parts.JaxbXmlPart</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">This (the </span><span style="font-weight: bold;color: #000000;">jaxb</span><span style="font-weight: bold;"><span style="white-space:pre-wrap;"> content tree</span></span>) is the second level of the three layered model.<br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are arranged in a tree.  If a part has descendants, it will have a </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging.parts.relationships.RelationshipsPart</span><span style="white-space:pre-wrap;"> which identifies those descendant parts.  The sample PartsList (see next section) shows you how this works.</span><br clear="all"/><br clear="all"/>A JaxbXmlPart has a content tree:<br clear="all"/><br clear="all"/><span style="font-family: Consolas;font-size: 9.0pt;">   public Object getJaxbElement() {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   return jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   public void setJaxbElement(Object jaxbElement) {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   this.jaxbElement = jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="white-space:pre-wrap;">Most parts (including MainDocumentPart, styles, headers/footers, comments, </span><span style="color: #000000;">endnotes</span><span style="white-space:pre-wrap;">/footnotes) use </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.wml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span><span style="white-space:pre-wrap;">(WordprocessingML); </span><span style="color: #000000;">wml</span><span style="white-space:pre-wrap;"> references </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.dml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span>(DrawingML) as necessary.<br clear="all"/><br clear="all"/>These classes were generated from the Open XML schemas<br clear="all"/></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">3. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.model</span><span style="font-weight: bold;font-family: Consolas;"><br clear="all"/></span><span style="font-weight: bold;font-family: Consolas;"><br clear="all"/></span><span style="white-space:pre-wrap;">This package builds on the lower two layers to provide extra functionality, and is being progressively further developed.    </span></p>
   
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;"><span style="white-space:pre-wrap;">Jaxb: marshalling and unmarshalling </span></span></p>
   
@@ -393,19 +433,45 @@
   
   <p class="Normal DocDefaults "/>
   
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Architecture</span></p>
+  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Parts List</span></p>
   
-  <p class="Normal DocDefaults ">Docx4j has 3 layers:</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">To get a better understanding of how docx4j works – and the structure of a docx document – you can run the PartsList sample on a docx (or a pptx or xlsx).  If you do, it will list the hierarchy of parts used in that package.  It will tell you which class is used to represent each part, and where that part is a JaxbXmlPart, it will also tell you what class the </span><span style="font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">jaxbElement </span></span>is.</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">1. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">OpenPackaging handles things at the Open Packaging Conventions level:  unzipping a docx into </span><span style="font-weight: bold;font-family: Consolas;">WordprocessingMLPackage</span><span style="white-space:pre-wrap;"> and a set of objects inheriting from Part;  allowing parts to be added/deleted; saving the docx</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">This layer is based originally on OpenXML4J (which is also used by Apache POI). </span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are generally subclasses of </span><span style="font-weight: bold;color: #000000;font-family: Consolas;">org</span><span style="font-weight: bold;font-family: Consolas;">.docx4j.</span><span style="font-weight: bold;color: #000000;font-family: Consolas;">openpackaging</span><span style="font-weight: bold;font-family: Consolas;">.parts.JaxbXmlPart</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Parts are arranged in a tree.  If a part has descendants, it will have a </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.openpackaging.parts.relationships.RelationshipsPart</span><span style="white-space:pre-wrap;"> which identifies those descendant parts.  The sample PartsList (see next section) shows you how this </span>works.<br clear="all"/><br clear="all"/>A JaxbXmlPart has a content tree:<br clear="all"/><br clear="all"/><span style="font-family: Consolas;font-size: 9.0pt;">   public Object getJaxbElement() {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   return jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   public void setJaxbElement(Object jaxbElement) {</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   </span><span style="font-family: Consolas;font-size: 9.0pt;">   this.jaxbElement = jaxbElement;</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span><span style="font-family: Consolas;font-size: 9.0pt;">   }</span><span style="font-family: Consolas;font-size: 9.0pt;"><br clear="all"/></span></p>
+  <p class="Normal DocDefaults ">For example:</p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">2. </span><span style="white-space:pre-wrap;">The </span><span style="font-weight: bold;color: #000000;">jaxb</span><span style="font-weight: bold;"><span style="white-space:pre-wrap;"> content tree</span></span><span style="white-space:pre-wrap;"> is the second level of the three layered model.</span><br clear="all"/><br clear="all"/><span style="white-space:pre-wrap;">Most parts (including MainDocumentPart, styles, headers/footers, comments, </span><span style="color: #000000;">endnotes</span><span style="white-space:pre-wrap;">/footnotes) use </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.wml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span><span style="white-space:pre-wrap;">(WordprocessingML); </span><span style="color: #000000;">wml</span><span style="white-space:pre-wrap;"> references </span><a href="http://dev.plutext.org/trac/docx4j/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/wml"><span style="font-weight: bold;font-family: Consolas;">org.docx4j.dml</span></a><span style="font-weight: bold;font-family: Consolas;"><span style="white-space:pre-wrap;"> </span></span>(DrawingML) as necessary.<br clear="all"/><br clear="all"/>These classes were generated from the Open XML schemas<br clear="all"/><br clear="all"/></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /_rels/.rels [org.docx4j.openpackaging.parts.relationships.RelationshipsPart]</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.relationships.Relationships</span></span></p>
   
-  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;">3. </span><span style="font-weight: bold;font-family: Consolas;">org.docx4j.model</span><span style="font-weight: bold;font-family: Consolas;"><br clear="all"/></span><span style="font-weight: bold;font-family: Consolas;"><br clear="all"/></span><span style="white-space:pre-wrap;">This package builds on the lower two layers to provide extra functionality, and is being progressively further developed.    </span></p>
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Part /docProps/app.xml [org.docx4j.openpackaging.parts.DocPropsExtendedPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.docProps.extended.Properties</span></span></p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Part /docProps/core.xml [org.docx4j.openpackaging.parts.DocPropsCorePart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.docProps.core.CoreProperties</span></span></p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Part </span></span><span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 8.0pt;">/word/document.xml</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> [org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.Document</span></span></p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/settings.xml [</span><span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">.DocumentSettingsPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.CTSettings</span></span></p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/styles.xml [</span><span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">.StyleDefinitionsPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.Styles</span></span></p>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/media/image1.jpeg [</span><span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">.ImageJpegPart] </span></span></p>
+  
+  <p class="Normal DocDefaults "/>
   
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Samples</span></p>
   
-  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">The package org.docx4j.samples contains examples of how to do things with docx4j.  These include:</p>
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">The package org.docx4j.samples contains examples of how to do things with docx4j.  There are pptx and xlsx samples in packages org.pptx4j.samples and org.xlsx4j.samples respectively.</p>
+  
+  <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;">The docx4j samples include:</p>
   
   <p class="Normal DocDefaults " style="position: relative; margin-left: 0.25in;space-before: 0.07in;space-after: 0.07in;line-height: 100%;">Basics</p>
   
@@ -478,38 +544,6 @@
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples"><span class="Hyperlink DefaultParagraphFont " style="font-size: 10.0pt;">http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples</span></a></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="white-space:pre-wrap;">There are also various </span><span style="font-weight: bold;">sample documents</span><span style="white-space:pre-wrap;"> in the /sample-docs directory; these are most easily accessed by checking out docx4j svn.</span></p>
-  
-  <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Parts List</span></p>
-  
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">To get a better understanding of how docx4j works – and the structure of a docx document – you can run the PartsList sample on a docx (or a pptx).  If you do, it will list the hierarchy of parts used in that </span><span style="white-space:pre-wrap;">package.  It will tell you which class is used to represent each part, and where that part is a JaxbXmlPart, it will also tell you what class the </span><span style="font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">jaxbElement </span></span>is.</p>
-  
-  <p class="Normal DocDefaults ">For example:</p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /_rels/.rels [org.docx4j.openpackaging.parts.relationships.RelationshipsPart]</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.relationships.Relationships</span></span></p>
-  
-  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Part /docProps/app.xml [org.docx4j.openpackaging.parts.DocPropsExtendedPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.docProps.extended.Properties</span></span></p>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Part /docProps/core.xml [org.docx4j.openpackaging.parts.DocPropsCorePart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.docProps.core.CoreProperties</span></span></p>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Part </span></span><span style="font-weight: bold;color: #000000;font-family: Consolas;font-size: 8.0pt;">/word/document.xml</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> [org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.Document</span></span></p>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 0.5in;space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/settings.xml [</span><span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">.DocumentSettingsPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.CTSettings</span></span></p>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/styles.xml [</span><span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">.StyleDefinitionsPart]  </span></span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><br clear="all"/><span style="white-space:pre-wrap;">  containing JaxbElement:org.docx4j.wml.Styles</span></span></p>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"/>
-  
-  <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;">Part /word/media/image1.jpeg [</span><span style="color: #000000;font-family: Consolas;font-size: 7.0pt;">org.docx4j.openpackaging.parts.WordprocessingML</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;">.ImageJpegPart] </span></span></p>
   
   <p class="Normal DocDefaults " style="position: relative; margin-left: 1in;space-after: 0in;line-height: 100%;"/>
   
@@ -1061,7 +1095,7 @@
   
   <p class="Normal DocDefaults ">If you have an XML file containing your own data, WordML has a mechansim for associating entries in that XML with content controls in the document.</p>
   
-  <p class="Normal DocDefaults ">Then, when you open the document in Word 2007, Word automatically populates the content controls with the relevant XML data.</p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Then, when you open the document in Word 2007, Word automatically populates the content controls with the relevant XML data.  (This approach supersedes Word's legacy mail merge fields.  Simple VBA for migrating a document is available at </span><a href="http://blogs.msdn.com/b/microsoft_office_word/archive/2007/03/28/migrating-mail-merge-fields-to-content-controls.aspx"><span class="Hyperlink DefaultParagraphFont " style="font-size: 9.0pt;">http://blogs.msdn.com/b/microsoft_office_word/archive/2007/03/28/migrating-mail-merge-fields-to-content-controls.aspx</span></a><span style="white-space:pre-wrap;"> )</span></p>
   
   <p class="Normal DocDefaults ">This works using XPath.  A data-bound content control looks something like:</p>
   
@@ -1275,4 +1309,8 @@
   
   <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn1"><a href="#fs1">1</a></a></span></span><span style="white-space:pre-wrap;"> </span><a href="../customXml/item1.xml"><span class="Hyperlink DefaultParagraphFont ">http://forums.java.net/jive/thread.jspa?threadID=411</span></a></p>
   
-  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn2"><a href="#fs2">2</a></a></span></span><span style="white-space:pre-wrap;"> If you get the error 'Access restriction: The type</span><span class="apple-converted-space DefaultParagraphFont "> </span><span class="underline DefaultParagraphFont "><span style="white-space:pre-wrap;">is not accessible due to restriction on required library rt.jar' (perhaps using some combination of Eclipse 3.4 and/or JDK 6 update 10?), you need to go into the Build Path for the project, Libraries tab, select the JRE System Library, and add an access rule, "Accessible, **". </span></span></p></div></body></html>
+  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn2"><a href="#fs2">2</a></a></span></span><span style="white-space:pre-wrap;"> If you get the error 'Access restriction: The type</span><span class="apple-converted-space DefaultParagraphFont "> </span><span class="underline DefaultParagraphFont "><span style="white-space:pre-wrap;">is not accessible due to restriction on required library rt.jar' (perhaps using some combination of Eclipse 3.4 and/or JDK 6 update 10?), you need to go into the Build Path for the project, Libraries tab, select the JRE System Library, and add an access rule, "Accessible, **". </span></span></p>
+  
+  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn3"><a href="#fs3">3</a></a></span></span><span style="white-space:pre-wrap;"> </span><a href="numbering.xml"><span class="Hyperlink DefaultParagraphFont " style="font-size: 9.0pt;">http://blogs.msdn.com/b/dmahugh/archive/2009/01/16/ecma-376-implementation-notes-for-office-2007-sp2.aspx</span></a></p>
+  
+  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn4"><a href="#fs4">4</a></a></span></span><span style="white-space:pre-wrap;"> </span><a href="styles.xml"><span class="Hyperlink DefaultParagraphFont " style="font-size: 9.0pt;">http://blogs.msdn.com/b/dmahugh/archive/2010/04/06/office-s-support-for-iso-iec-29500-strict.aspx</span></a></p></div></body></html>
