@@ -369,11 +369,11 @@
 						<xsl:apply-templates/>
 					</xsl:variable>
 			
-					<!-- <xsl:variable name="pPrNode" select="../w:pPr" />  -->  	
+					<xsl:variable name="pPrNode" select="../w:pPr" />   	
 					<xsl:variable name="rPrNode" select="w:rPr" />  	
 	
 				  	<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForRPr( 
-				  		$wmlPackage, $rPrNode, $childResults)" />
+				  		$wmlPackage, $pPrNode, $rPrNode, $childResults)" />
 	  		
 			  	</xsl:when>
 	  			<xsl:otherwise>
