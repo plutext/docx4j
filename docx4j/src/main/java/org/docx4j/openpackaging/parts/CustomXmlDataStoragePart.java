@@ -549,15 +549,11 @@ public final class CustomXmlDataStoragePart extends Part {
 
 			if (o instanceof org.docx4j.wml.SdtBlock
 					|| o instanceof org.docx4j.wml.SdtRun
-					|| o instanceof org.docx4j.wml.CTSdtRow) {
+					|| o instanceof org.docx4j.wml.CTSdtRow
+					|| o instanceof org.docx4j.wml.CTSdtCell) { // SdtCell as well, here
 
 				processDescendantBindings(o, xpathBase, index);
 					// whether it has a databinding or not
-
-			} else if (o instanceof org.docx4j.wml.CTSdtCell) { // sdt wrapping
-																// cell
-
-				log.warn("Cowardly ignoring bindingrole on SdtCell");
 
 			} else {
 //				log.warn("TODO: Handle " + o.getClass().getName()
@@ -659,8 +655,14 @@ public final class CustomXmlDataStoragePart extends Part {
 				newPath = thisXPath + "[" + (index+1) + "]";			
 				
 			} else {
-				//newPath = xpathBase + "/*[" + (index+1) + "]/" + thisXPath.substring(endIndex+1);			
-				newPath = thisXPath.substring(0, endIndex) + "[" + (index+1) + "]/" + thisXPath.substring(endIndex+1);
+				
+				// Remove any trailing [ ]; aim to allow user to leave [1]
+				// in their bindings
+				String startBit = thisXPath.substring(0, endIndex); 
+				if (startBit.endsWith("]")) 
+					startBit = startBit.substring(0, startBit.lastIndexOf("["));
+
+				newPath = startBit + "[" + (index+1) + "]/" + thisXPath.substring(endIndex+1);
 			}
 			log.debug("newPath: " + newPath + "\n");
 			
@@ -710,7 +712,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		} else if (  o instanceof org.docx4j.wml.CTSdtRow ) { // sdt wrapping row
 			return ((org.docx4j.wml.CTSdtRow)o).getSdtPr();
 		} else if (o instanceof org.docx4j.wml.CTSdtCell ) { // sdt wrapping cell
-			log.warn("Cowardly ignoring bindingrole on SdtCell");
+			return ((org.docx4j.wml.CTSdtCell)o).getSdtPr();
 		} else {
 			log.warn("TODO: Handle " + o.getClass().getName() );					
 		}		
