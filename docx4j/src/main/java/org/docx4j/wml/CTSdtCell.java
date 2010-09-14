@@ -24,6 +24,7 @@ package org.docx4j.wml;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -56,6 +57,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "sdtEndPr",
     "sdtContent"
 })
+@XmlRootElement(name = "sdt")
 public class CTSdtCell
     implements Child
 {
