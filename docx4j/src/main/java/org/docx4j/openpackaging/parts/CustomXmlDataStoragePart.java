@@ -86,6 +86,17 @@ import org.w3c.dom.Node;
  * useful if you want to generate n docx documents, each
  * with different XML.)
  * 
+ * If this contains XML which is bound in an sdt
+ * via w:sdtPr/w:dataBinding, then its rels
+ * will point to CustomXmlDataStoragePropertiesPart
+ * which gives its datastore itemID.
+ * 
+ * (The datastore itemID is used in the w:dataBinding)
+ *  
+ * The Package contains a hashmap<String, CustomXmlDataStoragePart>
+ * to make it easy to get the part to which we apply the 
+ * XPath.  The part is registered as the document is loaded.
+ * 
  * This class supports content control extensions
  * (ie bindingrole="conditional|repeat"). Use the 
  * preprocess method to process these.
@@ -102,32 +113,10 @@ public final class CustomXmlDataStoragePart extends Part {
 		log.info(message);
 	}
 	
-	/*
-	 * If this contains XML which is bound in an sdt
-	 * via w:sdtPr/w:dataBinding, then its rels
-	 * will point to CustomXmlDataStoragePropertiesPart
-	 * which gives its datastore itemID.
-	 * 
-	 * (The datastore itemID is used in the w:dataBinding)
-	 *  
-	 * The Package contains a hashmap<String, CustomXmlDataStoragePart>
-	 * to make it easy to get the part to which we apply the 
-	 * XPath.  The part is registered as the document is loaded.
-	 *
-	 * There are only 2 things we need to do here:
-	 * 
-	 * 1. inject the XML (form data) into the package.
-	 *    - this is simply a matter of attaching it to this part.
-	 *    
-	 * 2. copy the XML data into the sdt's, so it is there
-	 *    for PDF, HTML output.  (we don't actually need to
-	 *    do anything for it to appear in the Word 2007 UI - 
-	 *    Word does this step itself).  This will be a new
-	 *    static method in this class.
-	 *    
-	 * A user who wishes to set up the bindings is advised
-	 * to use the Content Control Toolkit.
-	 */
+	private final static String BINDING_ROLE = "bindingrole";
+	private final static String BINDING_ROLE_REPEAT = "repeat";
+	private final static String BINDING_ROLE_CONDITIONAL = "conditional";
+	
 	
 	static Templates xslt;			
 	static {
@@ -208,8 +197,31 @@ public final class CustomXmlDataStoragePart extends Part {
 	/**
 	 * Preprocess content controls which have tag bindingrole="conditional|repeat".
 	 * 
-	 * Limitations:
-	 * - nested repeats?
+	 * The algorithm is as follows:
+	 * 
+	 * 	Look at each top level SDT (ShallowTraversor).  
+	 *  If it does not have a real data binding, it might have a bindingrole tag
+	 *  we need to process (processBindingRoleIfAny).
+	 *  
+	 *  Conditionals are easy.
+	 *  
+	 *  processRepeat method:
+	 *  
+	 *  - clones the sdt n times
+	 *  
+	 *  - invokes DeepTraversor which changes xpath binding on descendant sdts
+	 *    (both sdts with real bindings and sdts with bindingrole tags).
+	 *    
+	 *  It is not the job of DeepTraversor to expand out any other repeats it
+	 *  might encounter, or to resolve conditionals.
+	 *  
+	 *  Those things are done by ShallowTraversor, to which control returns,
+	 *  as it continues its traverse.
+	 * 
+	 *  This implementation of 13 Sept 2010 replaces the previous XPath based
+	 *  implementation, which did not support nested repeats.  I've chosen to
+	 *  build this around TraversalUtil, instead of using XSLT, and this
+	 *  seems to have worked out nicely.
 	 * 
 	 * @param documentPart
 	 * @throws Docx4JException
@@ -226,6 +238,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		new TraversalUtil(body, shallowTraversor); 
 		
 	}
+	
 	static ShallowTraversor shallowTraversor = new ShallowTraversor();
 	
 	/**
@@ -243,31 +256,13 @@ public final class CustomXmlDataStoragePart extends Part {
 			// apply processSdt to any sdt
 			// which might be a conditional|repeat
 
-			if (o instanceof org.docx4j.wml.SdtBlock ) {
+			if (o instanceof org.docx4j.wml.SdtBlock 
+					|| o instanceof org.docx4j.wml.SdtRun
+					|| o instanceof org.docx4j.wml.CTSdtRow ) {
 				
-				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock)o;
-				if (sdt.getSdtPr().getDataBinding()==null) {
+				if (getSdtPr(o).getDataBinding()==null) {
 					// a real binding attribute trumps any tag
-					Tag tag = sdt.getSdtPr().getTag();								
-					return processSdt(wordMLPackage, sdt.getParent(), sdt, tag, sdt.getSdtContent() );
-				}
-				
-			} else if ( o instanceof org.docx4j.wml.SdtRun ) { // sdt in paragraph
-					
-				org.docx4j.wml.SdtRun sdtrun = (org.docx4j.wml.SdtRun)o;
-				if (sdtrun.getSdtPr().getDataBinding()==null) {
-					// a real binding attribute trumps any tag
-					Tag tag = sdtrun.getSdtPr().getTag();	
-					return processSdt(wordMLPackage, sdtrun.getParent(), sdtrun, tag, sdtrun.getSdtContent() );					
-				}
-				
-			} else if (  o instanceof org.docx4j.wml.CTSdtRow ) { // sdt wrapping row
-
-				org.docx4j.wml.CTSdtRow sdtrow = (org.docx4j.wml.CTSdtRow)o;
-				if (sdtrow.getSdtPr().getDataBinding()==null) {
-					// a real binding attribute trumps any tag
-					Tag tag = sdtrow.getSdtPr().getTag();	
-					return processSdt(wordMLPackage, sdtrow.getParent(), sdtrow, tag, sdtrow.getSdtContent() );
+					return processBindingRoleIfAny(wordMLPackage, o);
 				}
 				
 			} else if (o instanceof org.docx4j.wml.CTSdtCell ) { // sdt wrapping cell
@@ -288,28 +283,6 @@ public final class CustomXmlDataStoragePart extends Part {
 		@Override
 		public boolean shouldTraverse(Object o) {
 			
-//			if (o instanceof org.docx4j.wml.SdtBlock ) {
-//				
-//				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock)o;
-//				if (sdt.getSdtPr().getDataBinding()==null) {
-//					return hasBindingRole( sdt.getSdtPr().getTag() );								
-//				} else return false;
-//				
-//			} else if ( o instanceof org.docx4j.wml.SdtRun ) { // sdt in paragraph
-//					
-//				org.docx4j.wml.SdtRun sdtrun = (org.docx4j.wml.SdtRun)o;
-//				if (sdtrun.getSdtPr().getDataBinding()==null) {
-//					return hasBindingRole( sdtrun.getSdtPr().getTag() );								
-//				} else return false;
-//				
-//			} else if (  o instanceof org.docx4j.wml.CTSdtRow ) { // sdt wrapping row
-//
-//				org.docx4j.wml.CTSdtRow sdtrow = (org.docx4j.wml.CTSdtRow)o;
-//				if (sdtrow.getSdtPr().getDataBinding()==null) {
-//					return hasBindingRole( sdtrow.getSdtPr().getTag() );								
-//				} else return false;
-//			}
-			
 			// we want to traverse all sdts, since an sdt which
 			// doesn't have a binding role might contain one
 			// which does
@@ -319,9 +292,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		}
 		
 //		private boolean hasBindingRole(Tag tag) {
-//			
 //			return tag.getVal().contains("bindingrole");
-//			
 //		}
 
 //		private boolean isRepeat(Tag tag) {			
@@ -383,9 +354,11 @@ public final class CustomXmlDataStoragePart extends Part {
 	 * @param sdtContent
 	 * @return
 	 */
-	private static List<Object> processSdt(WordprocessingMLPackage wordMLPackage,
-			Object sdtParent, Object sdt, Tag tag, Object sdtContent) 
+	private static List<Object> processBindingRoleIfAny(WordprocessingMLPackage wordMLPackage,
+			Object sdt) 
 	{
+		
+		Tag tag = getSdtPr(sdt).getTag();										
 		
 		if (tag==null) {
 			List<Object> newContent = new ArrayList<Object>();
@@ -398,22 +371,22 @@ public final class CustomXmlDataStoragePart extends Part {
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
 		
-		String bindingrole = map.get("bindingrole");
+		String bindingrole = map.get(BINDING_ROLE);
 		if (bindingrole==null) {
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
 			return newContent;
 		} 
 
-		Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = wordMLPackage.getCustomXmlDataStorageParts();		
-		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+		Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts
+			= wordMLPackage.getCustomXmlDataStorageParts();		
 		
 		// get the value
 		String storeItemId = map.get("w:storeItemID").toLowerCase();
 		String xpath = map.get("w:xpath");
 		String prefixMappings = map.get("w:prefixMappings");
 		
-		if (bindingrole.equals("conditional")) {
+		if (bindingrole.equals(BINDING_ROLE_CONDITIONAL)) {
 
 			log.info("Processing Conditional: " + tag.getVal());
 			
@@ -446,25 +419,24 @@ public final class CustomXmlDataStoragePart extends Part {
 				return new ArrayList<Object>();  // effectively, delete
 			}
 			
-		} else if (bindingrole.equals("repeat")) {
+		} else if (bindingrole.equals(BINDING_ROLE_REPEAT)) {
 
 			log.info("Processing Repeat: " + tag.getVal());
 			
-			return processRepeat(sdtParent, sdt, sdtContent,
-					customXmlDataStorageParts, tag);
+			return processRepeat(sdt,
+					customXmlDataStorageParts);
 	        	
 		}	
 		// shouldn't happen
 		return null;
 	}
 
-	private static List<Object>  processRepeat(Object sdtParent, Object sdt,
-			Object sdtContent,
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-			Tag tag) {
+	private static List<Object>  processRepeat(Object sdt,
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts) {
 		
-		QueryString qs = new QueryString();
-		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
+		Tag tag = getSdtPr(sdt).getTag();										
+		
+		HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 		
 		String storeItemId = map.get("w:storeItemID").toLowerCase();
 		String xpath = map.get("w:xpath");
@@ -481,7 +453,7 @@ public final class CustomXmlDataStoragePart extends Part {
 			xpathBase = xpath;
 		}
 		
-//		// Drop any trailing position 
+// DON'T Drop any trailing position! That breaks nested repeats 
 //		if (xpathBase.endsWith("]")) 
 //			xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 		
@@ -495,8 +467,6 @@ public final class CustomXmlDataStoragePart extends Part {
 		log.debug("yields REPEATS: " + numRepeats );
 		
 		if (numRepeats==0) {
-			// Remove repeat std
-//			log.info("Removed? " + removeSdt(sdtParent, sdt) );
 			return new ArrayList<Object>();  // effectively, delete
 		}
 		
@@ -515,24 +485,17 @@ public final class CustomXmlDataStoragePart extends Part {
 			new TraversalUtil(repeated.get(i), dt); 			
 		}
 		log.info(".. deep traversals done " );
-		
-		
-//		// shallow traverse to process its sdts - DONE AT TOP LEVEL
-//		for (int i=0; i<repeated.size(); i++) {
-//			
-//			new TraversalUtil(sdtContent, shallowTraversor); 
-//		}
-		
+				
 		return repeated;	        	
 	}
 	
 	
-	private static List<Object> cloneRepeatSdt(Object o,
+	private static List<Object> cloneRepeatSdt(Object sdt,
 			String xpathBase, int numRepeats) {
 		
 		List<Object> newContent = new ArrayList<Object>();
 							
-		SdtPr sdtPr = getSdtPr(o);
+		SdtPr sdtPr = getSdtPr(sdt);
 		
 		log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
 		
@@ -553,13 +516,14 @@ public final class CustomXmlDataStoragePart extends Part {
         for (int i=0; i<numRepeats; i++) {
 		
 			// Change ID
-			BigInteger bi = sdtPr.getId().getVal();
-			long longid = 10*bi.longValue()+i;
-			sdtPr.getId().setVal( BigInteger.valueOf(longid)  );
+    		sdtPr.setId();
+//			BigInteger bi = sdtPr.getId().getVal();
+//			long longid = 10*bi.longValue()+i;
+//			sdtPr.getId().setVal( BigInteger.valueOf(longid)  );
 			
 			// Clone
 			newContent.add(
-					XmlUtils.deepCopy(o)	        	        	
+					XmlUtils.deepCopy(sdt)	        	        	
 	    	);
 			
 			// Unmangle, ready for next iteration
@@ -587,11 +551,8 @@ public final class CustomXmlDataStoragePart extends Part {
 					|| o instanceof org.docx4j.wml.SdtRun
 					|| o instanceof org.docx4j.wml.CTSdtRow) {
 
-//				if (getSdtPr(o).getDataBinding() == null) {
-					processDescendantBindings(o, xpathBase, index);
-//				} else {
-//					log.debug(".. but no binding ");
-//				}
+				processDescendantBindings(o, xpathBase, index);
+					// whether it has a databinding or not
 
 			} else if (o instanceof org.docx4j.wml.CTSdtCell) { // sdt wrapping
 																// cell
@@ -614,10 +575,7 @@ public final class CustomXmlDataStoragePart extends Part {
 
 				for (Object o : children) {
 
-					// if its wrapped in javax.xml.bind.JAXBElement, get its
-					// value
 					o = XmlUtils.unwrap(o);
-
 					this.apply(o);
 
 					if (this.shouldTraverse(o)) {
@@ -641,10 +599,10 @@ public final class CustomXmlDataStoragePart extends Part {
 
 	}
 	
-	private static void processDescendantBindings(Object o,
+	private static void processDescendantBindings(Object sdt,
 			String xpathBase, int index) {
 		
-		SdtPr sdtPr =  getSdtPr(o); 
+		SdtPr sdtPr =  getSdtPr(sdt); 
 		
 		// Give it a unique ID (supersedes above?)
 		sdtPr.setId();
@@ -655,8 +613,9 @@ public final class CustomXmlDataStoragePart extends Part {
 		String thisXPath = null; 
 		if (binding==null) {
 			
-			Tag tag = sdtPr.getTag();								
-			if (!tag.getVal().contains("bindingrole")) {
+			Tag tag = sdtPr.getTag();	
+			
+			if (!tag.getVal().contains(BINDING_ROLE)) {
 				log.warn("couldn't find binding or bindingrole!"); 
 				// not all sdt's need have a binding; 
 				// they could be present in the docx for other purposes
@@ -664,7 +623,6 @@ public final class CustomXmlDataStoragePart extends Part {
 			} else {
 				QueryString qs = new QueryString();
 				HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
-				//String bindingrole = map.get("bindingrole");
 				
 				thisXPath = map.get("w:xpath");
 				
@@ -711,7 +669,6 @@ public final class CustomXmlDataStoragePart extends Part {
 				Tag tag = sdtPr.getTag();								
 				QueryString qs = new QueryString();
 				HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
-				//String bindingrole = map.get("bindingrole");
 				
 				map.put("w:xpath", newPath);
 				tag.setVal(qs.create(map));
@@ -760,6 +717,24 @@ public final class CustomXmlDataStoragePart extends Part {
 		return null;
 	}
 	
+//	public static Object getSdtContent(Object o) {
+//		
+//		if (o instanceof org.docx4j.wml.SdtBlock) {
+//			return ((org.docx4j.wml.SdtBlock) o).getSdtContent();
+//		} else if (o instanceof org.docx4j.wml.SdtRun) { // sdt in paragraph
+//			return ((org.docx4j.wml.SdtRun) o).getSdtContent();
+//		} else if (o instanceof org.docx4j.wml.CTSdtRow) { // sdt wrapping row
+//			return ((org.docx4j.wml.CTSdtRow) o).getSdtContent();
+//		} else if (o instanceof org.docx4j.wml.CTSdtCell) { // sdt wrapping cell
+//			log.warn("Cowardly ignoring bindingrole on SdtCell");
+//			return null;
+//		} else {
+//			// log.warn("TODO: Handle " + o.getClass().getName() +
+//			// " (if that's an sdt)");
+//		}
+//		return null;
+//	}
+	
 	private static List<Node> xpathGetNodes(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 			String storeItemId, String xpath, String prefixMappings) {
 		
@@ -774,6 +749,16 @@ public final class CustomXmlDataStoragePart extends Part {
 /* ---------------------------------------------------------------------------
  * Apply bindings
  * 
+ * There are only 2 things we need to do here:
+ * 
+ * 1. inject the XML (form data) into the package.
+ *    - this is simply a matter of attaching it to this part.
+ *    
+ * 2. copy the XML data into the sdt's, so it is there
+ *    for PDF, HTML output.  (we don't actually need to
+ *    do anything for it to appear in the Word 2007 UI - 
+ *    Word does this step itself).  This will be a new
+ *    static method in this class.
  */
 	
 	public static void applyBindings(DocumentPart documentPart) throws Docx4JException {
