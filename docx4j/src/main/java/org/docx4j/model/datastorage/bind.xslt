@@ -30,7 +30,7 @@
   	<xsl:choose>
   		<xsl:when test="w:sdtPr/w:dataBinding">
 		    <xsl:copy>
-		      <xsl:copy-of select="w:sdtPr"/>
+		      <xsl:apply-templates select="w:sdtPr"/>
 	  		<!-- xsl:variable name="dummy" 
 	  			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('Entering bind mode')"/-->
 		      <xsl:apply-templates select="w:sdtContent" mode="bind">		      
@@ -107,5 +107,10 @@
 		</xsl:choose>
 		-->
   </xsl:template>
+
+  <!-- Remove these, so missing data does not result
+       in Click here to enter text in Word -->
+  <xsl:template match="w:placeholder"/>  
+
    
 </xsl:stylesheet>
