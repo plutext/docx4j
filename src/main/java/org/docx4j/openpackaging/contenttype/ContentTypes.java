@@ -326,6 +326,9 @@ public class ContentTypes {
 	public static final String IMAGE_TIFF = "image/tiff";
 	public static final String EXTENSION_TIFF = "tiff";
 
+	public static final String IMAGE_EPS = "application/postscript";  // as reported by XmlGraphics 
+	public static final String EXTENSION_EPS = "eps";  
+	
 
 	public static final String XML = "text/xml";
 	

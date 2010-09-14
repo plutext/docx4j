@@ -349,6 +349,13 @@ public class ContentTypeManager  {
 			}			
 			
 			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageTiffPart(new PartName(partName));
+//		} else if (contentType.equals(ContentTypes.IMAGE_EPS)) {
+//			
+//			if (!partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_EPS) ) {
+//				partName = partName + "." + ContentTypes.EXTENSION_EPS;
+//			}			
+//			
+//			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageEpsPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_EMF) || contentType.equals(ContentTypes.IMAGE_EMF2)) {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
