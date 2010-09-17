@@ -47,8 +47,10 @@
 -->
 
         <pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>
+<!-- As from 2010 09 17 source is included (see src/main/java/org/jvnet..)
+	 so this is no longer required.
         <pathelement location="${m2Repository}/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar"/>
-
+ -->
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
 
