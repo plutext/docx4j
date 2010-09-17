@@ -345,12 +345,15 @@
 		</dependency> 
  -->
 
+<!-- As from 2010 09 17 source is included (see src/main/java/org/jvnet..)
+	 so this is no longer required.
+	   
 		<dependency>
 			<groupId>org.jvnet.jaxb2_commons.ppp</groupId>
 			<artifactId>parent-pointer-plugin</artifactId>
 			<version>1.0</version>
 		</dependency>
-
+ -->
 
 		<dependency>
 			<groupId>docx4j</groupId>
