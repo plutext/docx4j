@@ -35,24 +35,29 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * it with MIME type application/xhtml+xml
  *
  */
-public class CreateHtml {
+public class CreateHtml extends AbstractSample {
 	    
 	    public static void main(String[] args) 
 	            throws Exception {
 	    	
+			try {
+				getInputFilePath(args);
+			} catch (IllegalArgumentException e) {
+				// inputfilepath = System.getProperty("user.dir") + "/tmp/wmf.docx";
+		    	
+//		    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
+		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+//		    	 inputfilepath = System.getProperty("user.dir") 
+//	    		+ "/sample-docs/test-docs/endnotes.xml";	    	
+//		    	 inputfilepath = System.getProperty("user.dir") 
+//	    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
+			}
+			System.out.println(inputfilepath);	    	
+	    	
 	    	boolean save = true;	    	
 	    	boolean useHtmlExporterNG = true;
 
-			String inputfilepath = System.getProperty("user.dir") + "/tmp/wmf.docx";
 	    	
-//	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
-//	    	String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
-//	    	String inputfilepath = System.getProperty("user.dir") 
-//    		+ "/sample-docs/test-docs/endnotes.xml";	    	
-//	    	String inputfilepath = System.getProperty("user.dir") 
-//    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
-	    	
-			System.out.println(inputfilepath);
 			
 			// Load .docx or Flat OPC .xml
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));

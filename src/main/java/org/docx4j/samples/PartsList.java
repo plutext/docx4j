@@ -27,13 +27,15 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
 
-public class PartsList {
+public class PartsList extends AbstractSample {
 	
 	private static Logger log = Logger.getLogger(PartsList.class);						
 
@@ -43,27 +45,54 @@ public class PartsList {
 	public static void main(String[] args) throws Exception {
 		
 
-//		String inputfilepath = System.getProperty("user.dir") 
-//				+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx.pptx";
+		
+		try {
+			getInputFilePath(args);
+		} catch (IllegalArgumentException e) {
+//			 inputfilepath = System.getProperty("user.dir") 
+//			+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
+//	 inputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/pivot.xlsm";
+		inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+	// inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/lines.pptx";
+		}
 		
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml
-		org.docx4j.openpackaging.packages.OpcPackage wordMLPackage = org.docx4j.openpackaging.packages.OpcPackage.load(new java.io.File(inputfilepath));		
+		org.docx4j.openpackaging.packages.OpcPackage opcPackage = org.docx4j.openpackaging.packages.OpcPackage.load(new java.io.File(inputfilepath));		
+		
+		//printContentTypes(opcPackage);
 		
 		// List the parts by walking the rels tree
-		RelationshipsPart rp = wordMLPackage.getRelationshipsPart();
+		RelationshipsPart rp = opcPackage.getRelationshipsPart();
 		StringBuilder sb = new StringBuilder();
 		printInfo(rp, sb, "");
-		traverseRelationships(wordMLPackage, rp, sb, "    ");
+		traverseRelationships(opcPackage, rp, sb, "    ");
 		
 		System.out.println(sb.toString());
 	}
 	
+	public static void printContentTypes(org.docx4j.openpackaging.packages.OpcPackage p) {
+		
+		ContentTypeManager ctm = p.getContentTypeManager();
+		
+		ctm.listTypes();
+		
+	}
+	
 	public static void  printInfo(Part p, StringBuilder sb, String indent) {
-		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " );		
+		
+		String relationshipType = "";
+		if (p.getSourceRelationship()!=null ) {
+			relationshipType = p.getSourceRelationship().getType();
+		}
+		
+		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " + relationshipType );
+		
+//		System.out.println("//" + p.getPartName() );
+//		System.out.println("public final static String XX =");
+//		System.out.println("\"" +  relationshipType +  "\";");
+		
 		if (p instanceof JaxbXmlPart) {
 			Object o = ((JaxbXmlPart)p).getJaxbElement();
 			if (o instanceof javax.xml.bind.JAXBElement) {
@@ -87,9 +116,10 @@ public class PartsList {
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			log.info("For Relationship Id=" + r.getId() 
+			log.info("\nFor Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
-					+ ", Target is " + r.getTarget() );
+					+ ", Target is " + r.getTarget() 
+					+ " type " + r.getType() + "\n");
 		
 			if (r.getTargetMode() != null
 					&& r.getTargetMode().equals("External") ) {
@@ -100,7 +130,7 @@ public class PartsList {
 			}
 			
 			Part part = rp.getPart(r);
-			
+						
 			
 			printInfo(part, sb, indent);
 			if (handled.get(part)!=null) {

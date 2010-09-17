@@ -49,11 +49,19 @@ import org.docx4j.wml.Tbl;
  * @author Jason Harrop
  * @version 1.0
  */
-public class CreateWordprocessingMLDocument {
+public class CreateWordprocessingMLDocument extends AbstractSample {
 
 	public static void main(String[] args) throws Exception {
 		
-		boolean save = true;
+		
+		try {
+			getInputFilePath(args);
+		} catch (IllegalArgumentException e) {
+	    	inputfilepath = System.getProperty("user.dir") + "/CreateWordprocessingMLDocument_out.docx";	    	
+		}
+		
+		boolean save = 
+			(inputfilepath == null ? false : true);
 		
 		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
@@ -134,8 +142,8 @@ public class CreateWordprocessingMLDocument {
 		
 		// Now save it
 		if (save) {
-			System.out.println("Saved.");
-			wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/ad.docx") );
+			wordMLPackage.save(new java.io.File(inputfilepath) );
+			System.out.println("Saved " + inputfilepath);
 		} else {
 		   	// Create a org.docx4j.wml.Package object
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);

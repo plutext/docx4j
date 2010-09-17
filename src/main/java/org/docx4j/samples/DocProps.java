@@ -32,24 +32,35 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
 
 
-public class DocProps {
+public class DocProps extends AbstractSample {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String path = System.getProperty("user.dir") + "/sample-docs/docProps.docx";		
-		String path = System.getProperty("user.dir") + "/sample-docs/docProps.docx";		
 
-		// Do we want to save output? 
-		boolean save = true;
-		// If so, whereto?
-		String out = System.getProperty("user.dir") + "/sample-docs/docProps-out.docx";		
+		
+		try {
+			getInputFilePath(args);
+		} catch (IllegalArgumentException e) {
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/docProps.docx";		
+		}
+		
+		
+		boolean save = false;
+		try {
+			getOutputFilePath(args);
+			save = true;
+		} catch (IllegalArgumentException e) {
+			outputfilepath = System.getProperty("user.dir") + "/sample-docs/docProps-out.docx";		
+			
+//			save = true;
+		}
 		
 		// Open a document from the file system
 		// 1. Load the Package
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(path));
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
 		// Let's look at the core properties
 		org.docx4j.openpackaging.parts.DocPropsCorePart docPropsCorePart = wordMLPackage.getDocPropsCorePart();
@@ -124,8 +135,8 @@ public class DocProps {
 		
 		if (save) {		
 			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-			saver.save(out);
-			System.out.println("Document saved as " + out);
+			saver.save(outputfilepath);
+			System.out.println("Document saved as " + outputfilepath);
 		}
 		
 		System.out.println("Done.");
