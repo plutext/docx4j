@@ -23,10 +23,9 @@
         -->
 		<!-- For Ole -->
     	<pathelement location="${m2Repository}/commons-codec/commons-codec/1.3/commons-codec-1.3.jar"/>
-<!--   	
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.3.1/xmlgraphics-commons-1.3.1.jar"/>
-         -->
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.3.757686/xmlgraphics-commons-1.3.757686.jar"/>
+
+        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.4/xmlgraphics-commons-1.4.jar"/>
+        
         <pathelement location="${m2Repository}/org/apache/poi/hwpf/3.4.0/hwpf-3.4.0.jar"/>
 <!--         <pathelement location="${m2Repository}/com/topologi/diffx/0.61/diffx-0.61.jar"/>
  -->
