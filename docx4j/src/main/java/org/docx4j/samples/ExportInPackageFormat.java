@@ -34,24 +34,23 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 
-public class ExportInPackageFormat {
+public class ExportInPackageFormat extends AbstractSample {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Table.docx";
-		String dir =  "C:\\Documents and Settings\\Jason Harrop\\My Documents\\tmp-test-docs\\";
-		String file = "tmp1261";
-		String inputfilepath = dir + file + ".docx";
-				
+		try {
+			getInputFilePath(args);
+		} catch (IllegalArgumentException e) {
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		}
+		
 		// Do we want to save output? 
 		boolean save = true;
 		// If so, whereto?
-		String outputfilepath = dir + file + ".xml";
-			//System.getProperty("user.dir") + "/sample-docs/tmp.pkg";		
-		
+		outputfilepath = inputfilepath + ".xml";
 		
 		// Open a document from the file system
 		// 1. Load the Package

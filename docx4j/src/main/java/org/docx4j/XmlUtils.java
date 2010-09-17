@@ -132,18 +132,29 @@ public class XmlUtils {
 	
 	private static void setTFactory() {
 		
-		System.setProperty("javax.xml.transform.TransformerFactory",
-				TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS);
-		tfactory = javax.xml.transform.TransformerFactory
-				.newInstance();
+		try {
+			System.setProperty("javax.xml.transform.TransformerFactory",
+					TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS);
+			tfactory = javax.xml.transform.TransformerFactory
+					.newInstance();
+			// We've got our factory now, so set it back again!
+			System.setProperty("javax.xml.transform.TransformerFactory",
+					TRANSFORMER_FACTORY_ORIGINAL);
+		} catch (javax.xml.transform.TransformerFactoryConfigurationError e) {
+			
+			// Provider org.apache.xalan.processor.TransformerFactoryImpl not found
+			System.out.println("Warning: Xalan jar missing from classpath; xslt not supported");
+			
+			// but try anyway
+			System.setProperty("javax.xml.transform.TransformerFactory",
+					TRANSFORMER_FACTORY_ORIGINAL);
+			
+			tfactory = javax.xml.transform.TransformerFactory
+			.newInstance();
+		}
 		
 		LoggingErrorListener errorListener = new LoggingErrorListener(false);
 		tfactory.setErrorListener(errorListener);
-		
-		
-		// We've got our factory now, so set it back again!
-		System.setProperty("javax.xml.transform.TransformerFactory",
-				TRANSFORMER_FACTORY_ORIGINAL);
 		
 	}
 

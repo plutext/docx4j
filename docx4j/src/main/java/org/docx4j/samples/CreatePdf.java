@@ -43,18 +43,24 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
-public class CreatePdf {
+public class CreatePdf extends AbstractSample {
 	    
 	    public static void main(String[] args) 
 	            throws Exception {
 
 	    	boolean save = true;
 	    	
-	    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
-	    	//String inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+			try {
+				getInputFilePath(args);
+			} catch (IllegalArgumentException e) {
+//		    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+			}
+	    	
 	    	
 			WordprocessingMLPackage wordMLPackage;
 			if (inputfilepath==null) {
+				// Create a docx
 				
 				// If this is to be saved..
 				inputfilepath = System.getProperty("user.dir") + "/tmp/output";

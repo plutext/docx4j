@@ -44,22 +44,23 @@ import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
  * This is a convenient format for loading certain test cases.
  * 
  * */
-public class ImportFromPackageFormat {
+public class ImportFromPackageFormat extends AbstractSample {
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = "/home/dev/simple-out.xml"; 
-			
-			//System.getProperty("user.dir") + "/sample-docs/docProps-out.pkg";
-				
+		try {
+			getInputFilePath(args);
+		} catch (IllegalArgumentException e) {
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		}
+							
 		// Do we want to save output? 
-		boolean save = false;
+		boolean save = true;
 		// If so, where to?
-		String outputfilepath = "/home/dev/simple-out-rtt.docx";
-			//System.getProperty("user.dir") + "/sample-docs/just-created.docx";		
+		String outputfilepath = inputfilepath + ".docx";
 		
 		try {
 			JAXBContext jc = Context.jcXmlPackage;

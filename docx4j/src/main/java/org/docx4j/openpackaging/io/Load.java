@@ -21,16 +21,11 @@
 package org.docx4j.openpackaging.io;
 
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.commons.vfs.FileContent;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.VFS;
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
@@ -41,13 +36,9 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
-import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImageGifPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImageJpegPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.ImagePngPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 
@@ -203,45 +194,6 @@ public class Load {
 		return part;
 	}
 		
-	public static BinaryPart getExternalResource(String absoluteTarget) throws Docx4JException {
-
-		try {
-			FileObject fo = VFS.getManager().resolveFile(absoluteTarget);
-			
-			ExternalTarget externalTarget = new ExternalTarget(absoluteTarget);
-			
-			// Assume it is a binary part, though there is no reason in principle
-			// that it couldn't be an XML part..			
-			BinaryPart bp;
-			if (absoluteTarget.toLowerCase().endsWith(".gif" )) {
-				
-				bp = new ImageGifPart(externalTarget); 
-				
-			} else if  (absoluteTarget.toLowerCase().endsWith(".jpeg" )
-					|| absoluteTarget.toLowerCase().endsWith(".jpg" )) {
-				
-				bp = new ImageJpegPart(externalTarget); 
-				
-			} else if (absoluteTarget.toLowerCase().endsWith(".png" )) {
-				
-				bp = new ImagePngPart(externalTarget); 
-				
-			} else {
-				log.warn("Using simple BinaryPart for " + absoluteTarget);
-				bp = new BinaryPart(externalTarget);
-			}
-			
-			FileContent fc = fo.getContent();
-			bp.setBinaryData(fc.getInputStream());			
-			
-			return bp;
-			
-		} catch (FileSystemException exc) {
-			exc.printStackTrace();
-			throw new Docx4JException("Couldn't get FileObject", exc);			
-		}
-		
-	}
 	
 	/**
 	 * Find any /customXml/itemN.xml which have a props part

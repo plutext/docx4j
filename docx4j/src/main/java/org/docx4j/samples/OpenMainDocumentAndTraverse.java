@@ -53,7 +53,7 @@ import org.w3c.dom.Element;
  * @author jharrop
  *
  */
-public class OpenMainDocumentAndTraverse {
+public class OpenMainDocumentAndTraverse extends AbstractSample {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
 
@@ -61,11 +61,36 @@ public class OpenMainDocumentAndTraverse {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
+		
+		/*
+		 * You can invoke this from an OS command line with
+		 * something like:
+		 * 
+		 *  java -cp dist/docx4j.jar:dist/log4j-1.2.15.jar org.docx4j.samples.OpenMainDocumentAndTraverse inputdocx
+		 *  
+		 * Note the minimal set of supporting jars. 
+		 * 
+		 * If there are any images in the document, you will also need:
+		 * 
+		 *  dist/xmlgraphics-commons-1.4.jar:dist/commons-logging-1.1.1.jar  
+		 * 
+		 */
 
-    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		try {
+			getInputFilePath(args);
+		} catch (IllegalArgumentException e) {
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		}
+		
 		
 		boolean save = false;
-		String outputfilepath = System.getProperty("user.dir") + "/test-out.docx";		
+		try {
+			getOutputFilePath(args);
+			save = true;
+		} catch (IllegalArgumentException e) {
+			outputfilepath = System.getProperty("user.dir") + "/test-out.docx";
+//			save = true;
+		}
 		
 		
 		// Open a document from the file system
