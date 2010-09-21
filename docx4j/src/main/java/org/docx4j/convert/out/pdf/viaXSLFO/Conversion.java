@@ -165,7 +165,11 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		    	continue;
 		    }
 		    
-		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\">" );
+		    String subFontAtt = "";
+		    if (pf.getEmbedFontInfo().getSubFontName()!=null)
+		    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
+		    
+		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
 		    	// now add the first font triplet
 			    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
 			    addFontTriplet(result, fontTriplet);
@@ -174,24 +178,26 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		    // bold, italic etc
 		    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
 		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\">" );
+			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
 		    	addFontTriplet(result, pf.getName(), "normal", "bold");
 			    result.append("</font>" );
 		    }
 		    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
 		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\">" );
+			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
 		    	addFontTriplet(result, pf.getName(), "italic", "bold");
 			    result.append("</font>" );
 		    }
 		    pfVariation = PhysicalFonts.getItalicForm(pf);
 		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\">" );
+			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
 		    	addFontTriplet(result, pf.getName(), "italic", "normal");
 			    result.append("</font>" );
 		    }
 			    
 		}
+		
+		log.info(result.toString());
 		
 		return result.toString();
 		
