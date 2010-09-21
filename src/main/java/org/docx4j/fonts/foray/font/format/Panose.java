@@ -32,7 +32,7 @@
  */
 
 //package org.foray.font.format;
-package org.foray.font.format;
+package org.docx4j.fonts.foray.font.format;
 
 import java.io.Serializable;
 

@@ -194,7 +194,8 @@
 			<version>2.4</version>
 		</dependency>				
 		<dependency>
-			<!-- required for fop fonts -->
+			<!-- required for fop, xmlgraphics-commons;
+			     list it explicitly, so dependencies can be excluded. -->
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>1.1.1</version>
@@ -220,23 +221,6 @@
 				</exclusion>
 				</exclusions> -->
 		</dependency>
-		<!-- required for fop  -->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>1.3.1</version>
-		</dependency>				
-		<dependency>
-			<groupId>org.apache.avalon.framework</groupId>
-			<artifactId>avalon-framework-api</artifactId>
-			<version>4.3.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.avalon.framework</groupId>
-			<artifactId>avalon-framework-impl</artifactId>
-			<version>4.3.1</version>
-		</dependency>
-		<!-- /required for fop  -->
 		<dependency>
 			<!--  required for ole introspection -->
 			<groupId>commons-codec</groupId>
@@ -255,6 +239,42 @@
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>xmlgraphics-commons</artifactId>
 			<version>1.4</version>
+		</dependency>
+
+ 		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>fop</artifactId>
+			<version>1.0</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.apache.xmlgraphics</groupId>
+						<artifactId>batik-svg-dom</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.xmlgraphics</groupId>
+						<artifactId>batik-bridge</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.xmlgraphics</groupId>
+						<artifactId>batik-awt-util</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.xmlgraphics</groupId>
+						<artifactId>batik-gvt</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.xmlgraphics</groupId>
+						<artifactId>batik-transcoder</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.xmlgraphics</groupId>
+						<artifactId>batik-extension</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>org.apache.xmlgraphics</groupId>
+						<artifactId>batik-ext</artifactId>
+					</exclusion>
+				</exclusions>			
 		</dependency>
  
   		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 
@@ -352,31 +372,6 @@
 			<version>1.0</version>
 		</dependency>
  -->
-
-		<dependency>
-			<groupId>docx4j</groupId>
-			<artifactId>fop-patched</artifactId>
-			<version>0.95.756437</version>
-		</dependency>
-			<!--  its really 95.756434, but i had to re-build it to remove
-			      Class-Path from the MANIFEST.MF, which was 
-			      being used by Java Web Start to try to fetch certain
-			      jars. So the number is incremented (0.95.756435).
-			      And then, Panose.java moved to original foray package (0.95.756436) 
-			      
-			      0.95.756437 has fop r891181 of 20091216 applied, which adds support for
-			      symbol character maps (eg Wingdings) to TTFFile
-			        
-			      -->
-
-		
-<!-- 
-		<dependency>
-			<groupId>docx4j</groupId>
-			<artifactId>fop-fonts</artifactId>
-			<version>0.2.0</version>
-		</dependency>
-   -->
    
 		<!-- end of svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 -->
 

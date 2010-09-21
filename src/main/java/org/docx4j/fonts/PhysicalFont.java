@@ -3,8 +3,8 @@
  */
 package org.docx4j.fonts;
 
-import org.apache.fop.fonts.EmbedFontInfo;
 import org.apache.log4j.Logger;
+import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
 
 /**
  * This class represents a font which is
@@ -98,11 +98,11 @@ public class PhysicalFont {
 		this.embeddedFile = embeddedFile;
 	}
 	
-	org.foray.font.format.Panose panose;
-	public org.foray.font.format.Panose getPanose() {
+	org.docx4j.fonts.foray.font.format.Panose panose;
+	public org.docx4j.fonts.foray.font.format.Panose getPanose() {
 		return panose;
 	}
-	public void setPanose(org.foray.font.format.Panose panose) {
+	public void setPanose(org.docx4j.fonts.foray.font.format.Panose panose) {
 		this.panose = panose;
 	}
 
