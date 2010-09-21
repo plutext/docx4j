@@ -54,7 +54,7 @@ public class CreatePdf extends AbstractSample {
 				getInputFilePath(args);
 			} catch (IllegalArgumentException e) {
 //		    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
-		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+//		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
 			}
 	    	
 	    	
@@ -72,18 +72,8 @@ public class CreatePdf extends AbstractSample {
 				 * is weird, since viaIText works in both).
 				 */
 				
-				 wordMLPackage = new WordprocessingMLPackage();
-				MainDocumentPart wordDocumentPart = new MainDocumentPart();		
-				wordMLPackage.addTargetPart(wordDocumentPart);
-				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-				org.docx4j.wml.Body  body = factory.createBody();
-				org.docx4j.wml.Document wmlDocumentEl = factory.createDocument();
-				wmlDocumentEl.setBody(body);
-						
-				// Put the content in the part
-				((org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart)wordDocumentPart).setJaxbElement(wmlDocumentEl);
-	
-				createContent(wordDocumentPart);	
+				 wordMLPackage = WordprocessingMLPackage.createPackage();
+				createContent(wordMLPackage.getMainDocumentPart());	
 			} else {
 				// Load .docx or Flat OPC .xml
 				wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));

@@ -20,14 +20,14 @@
 
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import org.apache.fop.fonts.CustomFont;
-import org.apache.fop.fonts.EncodingMode;
-import org.apache.fop.fonts.FontLoader;
-import org.apache.fop.fonts.FontResolver;
-import org.apache.fop.fonts.FontSetup;
-import org.apache.fop.fonts.autodetect.FontFileFinder;
-import org.apache.fop.fonts.autodetect.FontInfoFinder;
 import org.apache.log4j.Logger;
+import org.docx4j.fonts.fop.fonts.CustomFont;
+import org.docx4j.fonts.fop.fonts.EncodingMode;
+import org.docx4j.fonts.fop.fonts.FontLoader;
+import org.docx4j.fonts.fop.fonts.FontResolver;
+import org.docx4j.fonts.fop.fonts.FontSetup;
+import org.docx4j.fonts.fop.fonts.autodetect.FontFileFinder;
+import org.docx4j.fonts.fop.fonts.autodetect.FontInfoFinder;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;

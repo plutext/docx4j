@@ -34,6 +34,10 @@ import org.docx4j.convert.out.html.HtmlExporterNG2.FootnoteState;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
+//import org.docx4j.fonts.fop.apps.Fop;
+//import org.docx4j.fonts.fop.apps.FopFactory;
+//import org.docx4j.fonts.fop.apps.MimeConstants;
+import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.PropertyResolver;
@@ -67,6 +71,7 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.SectPr;
+import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
@@ -87,10 +92,9 @@ import org.xml.sax.SAXException;
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.io.FileUtils;
-import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
-import org.apache.fop.fonts.FontTriplet;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
 import org.apache.xml.dtm.ref.DTMNodeProxy;
@@ -577,7 +581,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	// incoming objects are org.apache.xml.dtm.ref.DTMNodeIterator 
     	// which implements org.w3c.dom.traversal.NodeIterator
     	
-    	String defaultParagraphStyleId = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId(); 
+		Style defaultParagraphStyle = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle();
+				// TODO: handle the case where there is no SDP!
+		
+    	String defaultParagraphStyleId;
+    	if (defaultParagraphStyle==null) // possible, for non MS source docx
+    		defaultParagraphStyleId = "Normal";
+    	else defaultParagraphStyleId = defaultParagraphStyle.getStyleId();
     	
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
 //			pStyleVal = "Normal";
