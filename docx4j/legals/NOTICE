@@ -2,8 +2,10 @@
    Copyright 2007-2010 Plutext Pty Ltd
    
    Portions of the package org.docx4j.openpackaging are
-   derivative works of OpenXML4J.
-   [TODO: URL, license, attributions]   
+   derivative works of OpenXML4J. OpenXml4J is copyright
+   Wygwam, and available under two licenses, BSD and 
+   Apache License, Version 2.0 (ASLv2).
+   http://openxml4j.svn.sourceforge.net
  	
  	org.jvnet.jaxb2_commons.ppp is copyright 2007 Gregory A. Kick
  	It is licensed under ASLv2.
