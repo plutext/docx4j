@@ -59,7 +59,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.dtm.ref.DTMNodeProxy;
+//import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapper;
@@ -81,33 +81,26 @@ public class XmlUtils {
 		
 	
 	public static String TRANSFORMER_FACTORY_ORIGINAL;
-	public static String TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS;
+	
+	public static String TRANSFORMER_FACTORY_PROCESSOR_XALAN = "org.apache.xalan.processor.TransformerFactoryImpl";
+	// TRANSFORMER_FACTORY_PROCESSOR_SUN .. JDK/JRE does not include anything like com.sun.org.apache.xalan.TransformerFactoryImpl
+	
+	//public static String TRANSFORMER_FACTORY_SAXON = "net.sf.saxon.TransformerFactoryImpl";
+
+	// *.xsltc.trax.TransformerImpl don't
+	// work with our extension functions in their current form.
+	//public static String TRANSFORMER_FACTORY_XSLTC_XALAN = "org.apache.xalan.xsltc.trax.TransformerFactoryImpl";
+	//public static String TRANSFORMER_FACTORY_XSLTC_SUN = "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
 	
 	public static javax.xml.transform.TransformerFactory tfactory; 
 	
 	static {
 		
-		// Whenever we flush Preferences in a Swing application on Linux, 
-		// < Java 6u10 RC (as of b23)
-		// we'll get java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
-		// if we are using our Xalan jar.
-		// See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
-		// So Swing applications will need to use the original 
-		// setting, which we record for their convenience here.
-		// eg com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
-		// It would be nice to reset to the original whenever we finish
-		// using, but that goal seems to be elusive!
-		
-		
 		javax.xml.transform.TransformerFactory tmpfactory = javax.xml.transform.TransformerFactory.newInstance();			
 		TRANSFORMER_FACTORY_ORIGINAL = tmpfactory.getClass().getName();
 		tmpfactory = null;
 		log.debug("Set TRANSFORMER_FACTORY_ORIGINAL to " + TRANSFORMER_FACTORY_ORIGINAL);
-		
-		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't
-		// work with our extension functions.		
-		TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS = "org.apache.xalan.processor.TransformerFactoryImpl";
-		
+				
 		setTFactory();
 		
     	// Crimson fails to parse the HTML XSLT, so use Xerces ..
@@ -132,15 +125,20 @@ public class XmlUtils {
 	
 	private static void setTFactory() {
 		
+		// see further docs/JAXP_TransformerFactory_XSLT_notes.txt
+		
 		try {
 			System.setProperty("javax.xml.transform.TransformerFactory",
-					TRANSFORMER_FACTORY_SUPPORTING_EXTENSIONS);
+					TRANSFORMER_FACTORY_PROCESSOR_XALAN);
+			
 			tfactory = javax.xml.transform.TransformerFactory
 					.newInstance();
 			// We've got our factory now, so set it back again!
 			System.setProperty("javax.xml.transform.TransformerFactory",
 					TRANSFORMER_FACTORY_ORIGINAL);
 		} catch (javax.xml.transform.TransformerFactoryConfigurationError e) {
+			
+			log.error(e);
 			
 			// Provider org.apache.xalan.processor.TransformerFactoryImpl not found
 			System.out.println("Warning: Xalan jar missing from classpath; xslt not supported");

@@ -31,7 +31,7 @@ import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
-import org.apache.xml.dtm.ref.DTMNodeProxy;
+//import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
@@ -541,7 +541,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			// init
-			DTMNodeProxy n = (DTMNodeProxy)childResults.nextNode();
+			Node n = childResults.nextNode();
 			do {	
 				
 				// getNumberXmlNode creates a span node, which is empty
@@ -582,7 +582,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 					XmlUtils.treeCopy( n,  xhtmlP );
 				}
 				// next 
-				n = (DTMNodeProxy)childResults.nextNode();
+				n = childResults.nextNode();
 				
 			} while ( n !=null ); 
 			
@@ -687,7 +687,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 				// our style sheet produced when it applied-templates
 				// to the child nodes
 				Node n = childResults.nextNode();
-				XmlUtils.treeCopy( (DTMNodeProxy)n,  span );			
+				XmlUtils.treeCopy( n,  span );			
 			}
 			
 			DocumentFragment docfrag = document.createDocumentFragment();

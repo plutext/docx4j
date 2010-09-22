@@ -12,11 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -26,27 +24,28 @@ import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.avalon.framework.configuration.Configuration;
+import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
+import org.apache.commons.io.FileUtils;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.MimeConstants;
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.html.HtmlExporterNG2.EndnoteState;
 import org.docx4j.convert.out.html.HtmlExporterNG2.FootnoteState;
-import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
-//import org.docx4j.fonts.fop.apps.Fop;
-//import org.docx4j.fonts.fop.apps.FopFactory;
-//import org.docx4j.fonts.fop.apps.MimeConstants;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
-import org.docx4j.model.properties.paragraph.AbstractPBorder;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
@@ -60,44 +59,22 @@ import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTSimpleField;
-import org.docx4j.wml.Ftr;
-import org.docx4j.wml.Hdr;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.Tbl;
-import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
-import org.docx4j.wml.Tr;
-import org.docx4j.wml.UnderlineEnumeration;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
-import org.plutext.jaxb.xslfo.LayoutMasterSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
-import org.apache.avalon.framework.configuration.Configuration;
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
-import org.apache.commons.io.FileUtils;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
-import org.apache.fop.apps.MimeConstants;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
-import org.apache.xml.dtm.ref.DTMNodeProxy;
 
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
@@ -197,8 +174,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			    
 		}
 		
-		log.info(result.toString());
-		
 		return result.toString();
 		
 	}
@@ -270,7 +245,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 						// "<auto-detect/>" +
 						"</fonts></renderer></renderers></fop>";
 
-				log.info("\nUsing config:\n " + myConfig + "\n");
+				log.debug("\nUsing config:\n " + myConfig + "\n");
 
 				// See FOP's PrintRendererConfigurator
 				// String myConfig = "<fop
@@ -798,7 +773,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				 * 
 				 * So instead of importNode, use 
 				 */
-				XmlUtils.treeCopy( (DTMNodeProxy)n,  foBlockElement );
+				XmlUtils.treeCopy( n,  foBlockElement );
 				
 			}
 			
@@ -940,7 +915,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			Node n = childResults.nextNode();
-			XmlUtils.treeCopy( (DTMNodeProxy)n,  foInlineElement );			
+			XmlUtils.treeCopy( n,  foInlineElement );			
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());
@@ -1047,7 +1022,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					document.appendChild(foInlineElement);
 					
 					Node n = childResults.nextNode();
-					XmlUtils.treeCopy( (DTMNodeProxy)n,  foInlineElement );
+					XmlUtils.treeCopy( n,  foInlineElement );
 					
 					DocumentFragment docfrag = document.createDocumentFragment();
 					docfrag.appendChild(document.getDocumentElement());

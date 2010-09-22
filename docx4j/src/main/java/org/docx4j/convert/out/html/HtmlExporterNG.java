@@ -14,7 +14,7 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.dtm.ref.DTMNodeProxy;
+//import org.apache.xml.dtm.ref.DTMNodeProxy;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
@@ -334,7 +334,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 			 * 
 			 * So instead of importNode, use 
 			 */
-			XmlUtils.treeCopy( (DTMNodeProxy)n,  xhtmlP );
+			XmlUtils.treeCopy( n,  xhtmlP );
 			
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
@@ -430,7 +430,7 @@ public class HtmlExporterNG extends  AbstractHtmlExporter {
 				// our style sheet produced when it applied-templates
 				// to the child nodes
 				Node n = childResults.nextNode();
-				XmlUtils.treeCopy( (DTMNodeProxy)n,  span );			
+				XmlUtils.treeCopy( n,  span );			
 			}
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
