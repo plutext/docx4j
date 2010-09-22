@@ -11,8 +11,6 @@
 	<property name="m2Repository" value="../../.m2/repository"/>	
     <path id="Maven Dependencies.libraryclasspath">
     
-        <pathelement location="${m2Repository}/junit/junit/4.4/junit-4.4.jar"/>
-        <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
         <pathelement location="${m2Repository}/log4j/log4j/1.2.15/log4j-1.2.15.jar"/>
         <pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
@@ -25,9 +23,16 @@
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
         <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.8.3/wmf2svg-0.8.3.jar"/>
         <pathelement location="${m2Repository}/org/apache/poi/hwpf/3.4.0/hwpf-3.4.0.jar"/>
-        <pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>
+        <!--<pathelement location="${m2Repository}/xalan/xalan-patched/2.7.0/xalan-patched-2.7.0.jar"/>-->
         <pathelement location="${m2Repository}/org/apache/commons/commons-vfs-patched/1.9.1/commons-vfs-patched-1.9.1.jar"/>
         <pathelement location="${m2Repository}/com/sun/xml/jaxb-NamespacePrefixMapper-interfaces/2.0.0/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>    
+
+        <!--<pathelement location="${m2Repository}/junit/junit/4.4/junit-4.4.jar"/>-->
+
+<!-- Uncomment for load/save via JCR, which
+		may be found in docx4j-extras.		
+        <pathelement location="${m2Repository}/javax/jcr/jcr/1.0/jcr-1.0.jar"/>
+		-->
  
 <!--    Uncomment for the PDF conversion via HTML or iText, which
 		may be found in docx4j-extras.
