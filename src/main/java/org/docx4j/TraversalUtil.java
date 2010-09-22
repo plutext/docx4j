@@ -152,9 +152,16 @@ public class TraversalUtil {
 
 		new Callback() {
 
+			String indent = "";
+			
 			@Override
 			public List<Object> apply(Object o) {
-				System.out.println(o.getClass().getName());
+				
+				String text = "";
+				if (o instanceof org.docx4j.wml.Text)
+					text = ((org.docx4j.wml.Text)o).getValue();
+				
+				System.out.println(indent + o.getClass().getName() + "  \"" + text + "\"");
 				return null;
 			}
 
@@ -167,6 +174,8 @@ public class TraversalUtil {
 			@Override
 			public void walkJAXBElements(Object parent) {
 
+				indent += "    ";
+				
 				List children = getChildren(parent);
 				if (children != null) {
 
@@ -184,6 +193,8 @@ public class TraversalUtil {
 
 					}
 				}
+				
+				indent = indent.substring(0, indent.length()-4);
 			}
 
 			@Override

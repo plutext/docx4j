@@ -326,21 +326,26 @@
 			</exclusions>
 		</dependency>
 	-->	
-		<dependency>
-			<groupId>xalan</groupId>
-			<artifactId>xalan-patched</artifactId>
-			<version>2.7.0</version>
-			<!-- required for transforming to xhtml 
-				
-				But we use a patched copy as a workaround
-				for http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
-				
-				remove META-INF/services from the xalan jar to prevent xalan 
-				being picked up as the default provider for jaxp transform.
-				
-				6396599 has been fixed in the on-going release JDK7. 
-				6396599 has also been committed to backport to 6u release 6u10 -->
-		</dependency>
+
+<dependency>
+    <groupId>xalan</groupId>
+    <artifactId>xalan</artifactId>
+    <version>2.7.1</version>
+</dependency>
+
+<!-- These work for basic marshalling/unmarshalling,
+     but not with our XSLT extension functions. 	
+<dependency>
+    <groupId>net.sf.saxon</groupId>
+    <artifactId>saxon</artifactId>
+    <version>8.7</version> 
+</dependency>
+<dependency>
+    <groupId>net.sf.saxon</groupId>
+    <artifactId>saxon-dom</artifactId>
+    <version>8.7</version>
+</dependency>
+-->
 
 <!-- Uncomment for the PDF conversion via HTML, which
 		may be found in docx4j-extras.
