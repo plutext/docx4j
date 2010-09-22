@@ -159,11 +159,15 @@
 			<version>4.4</version>
 			<scope>test</scope>
 		</dependency>
+		
+<!-- Uncomment for load/save via JCR, which
+		may be found in docx4j-extras.		
 		<dependency>
 			<groupId>javax.jcr</groupId>
 			<artifactId>jcr</artifactId>
 			<version>1.0</version>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
