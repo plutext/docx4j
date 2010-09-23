@@ -1,0 +1,84 @@
+Xalan notes
+-----------
+
+		// com.sun.org.apache.xalan.internal.xsltc.trax.TransformerImpl won't
+		// work with our extension functions.	
+		
+		(Same problem with Xalan 2.7.1 and org.apache.xalan.xsltc.trax.TransformerImpl)
+		
+		javax.xml.transform.TransformerException: Cannot convert argument/return type in call to method
+		for many extension functions
+		
+		Problem is returning a DocumentFragment?
+		Return a NodeSet instead. 
+		But there is org.apache.xpath.NodeSet,
+		and com.sun.org.apache.xpath.NodeSet.
+		
+		Returning one of these is not enough .. problems with args as well?
+		Would need to build Xalan from source to debug
+						
+		Real Xalan 2.7.1 works in docx4j.
+		
+		JDK/JRE doesn't include an equivalent.
+		
+		Saxon doesn't work with our extension functions.
+		
+		So the only option today is real Xalan with processor, not xsltc
+		
+		docx4all now specifies xalan-patched.
+		
+		// Whenever we flush Preferences in a Swing application on Linux, 
+		// < Java 6u10 RC (as of b23)
+		// we'll get java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
+		// if we are using our Xalan jar.
+		// See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+		// So Swing applications will need to use the original 
+		// setting, which we record for their convenience here.
+		// eg com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+		// It would be nice to reset to the original whenever we finish
+		// using, but that goal seems to be elusive!
+		
+		HOWEVER, docx4all encounters http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6396599
+		
+			java.util.prefs.FileSystemPreferences syncWorld
+			WARNING: Couldn't flush user prefs: java.util.prefs.BackingStoreException: java.lang.IllegalArgumentException: Not supported: indent-number
+		
+		every 30 seconds (on Linux, with JDK < Java 6u10 RC (as of b23)
+
+		The workaround implemented (xalan-patched) is to remove META-INF/services from the xalan jar 
+		to prevent xalan being picked up as the default provider for jaxp transform,
+		so we have to use it explicitly.
+		
+		.. which means 
+
+			System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+
+		  (unfortunately, there is no com.sun.org.apache.xalan.processor.TransformerFactoryImpl,
+		   so we have to bundle xalan jar, which is 2.7 MB
+		   
+		   But we can make it smaller:
+		   
+		   	org/apache/xalan/lib$ rm sql -rf
+		    org/apache/xalan$ rm xsltc -rf
+
+          That gets us from 2.7 MB to 1.85 MB.
+          
+          Sun already has:
+          
+			com.sun.org.apache.xpath;			
+			com.sun.org.apache.xml.internal.dtm;			
+			com.sun.org.apache.xalan.internal.extensions|lib|res
+		   
+		  so you might think we can refactor Xalan to point to those, and them out of our jar.
+		  
+		  well, it turns out that its too messy leaving out org.apache.xpath or xalan.extensions	 
+		  
+		  so you have to keep xalan.extensions, processor, serialize, trace, transformer
+
+		  leaving out just org.apache.xalan.resources and org.apache.xpath.resources
+		  only gets us down to 1.5 MB. (and that's with just jar cvf xalan-minimal.jar org/apache/xalan org/apache/xpath
+			- we'd still need to include org/apache/xml)
+			
+			ie once you include the whole of org.apache.xpath, you may as well just go with the 1.85 MB  :(
+		
+		
