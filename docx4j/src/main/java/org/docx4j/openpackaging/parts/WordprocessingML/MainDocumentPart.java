@@ -255,6 +255,10 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 
 			// 
 			binder = jc.createBinder();
+			
+			binder.setEventHandler(
+					new org.docx4j.jaxb.JaxbValidationEventHandler());
+			
 			jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );
 			
 			return jaxbElement;
@@ -284,6 +288,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		try {
 
 			binder = jc.createBinder();
+			binder.setEventHandler(
+					new org.docx4j.jaxb.JaxbValidationEventHandler());			
 			jaxbElement = (org.docx4j.wml.Document) binder.unmarshal( el );
 
 			return jaxbElement;
