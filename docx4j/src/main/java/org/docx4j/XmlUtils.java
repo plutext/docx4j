@@ -22,10 +22,8 @@
 package org.docx4j;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,12 +37,10 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
@@ -59,18 +55,12 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.Logger;
-//import org.apache.xml.dtm.ref.DTMNodeProxy;
-import org.docx4j.dml.CTTextListStyle;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapper;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -156,16 +146,34 @@ public class XmlUtils {
 		
 	}
 
+	/**
+	 * If an object is wrapped in a JAXBElement, return the object.
+	 * Warning: be careful with this. If you are copying objects
+	 * into your document (rather than just reading them), you'll
+	 * probably want the object to remain wrapped (JAXB usually wraps them
+	 * for a reason; without the wrapper, you'll (probably?) need an 
+	 * @XmlRootElement annotation in order to be able to marshall ie save your
+	 * document).
+	 * 
+	 * @param o
+	 * @return
+	 */
 	public static Object unwrap(Object o) {
 		
 		if (o==null) return null;
 		
 		if (o instanceof javax.xml.bind.JAXBElement) {
-			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+			log.warn("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 			return ((JAXBElement)o).getValue();
 		} else {
 			return o;
 		}
+		
+		/*
+		 * Interestingly, DocumentSettingsPart (settings.xml) gets unwrapped,
+		 * and CTSettings does not have @XmlRootElement, but this does
+		 * not cause a problem when it is marshalled.
+		 */
 	}
 
 //	public static Object unwrap(Object o, Class<?> x) {

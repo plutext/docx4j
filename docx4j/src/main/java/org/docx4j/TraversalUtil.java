@@ -182,7 +182,8 @@ public class TraversalUtil {
 					for (Object o : children) {
 
 						// if its wrapped in javax.xml.bind.JAXBElement, get its
-						// value
+						// value; this is ok, provided the results of the Callback
+						// won't be marshalled
 						o = XmlUtils.unwrap(o);
 
 						this.apply(o);
