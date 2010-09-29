@@ -1,5 +1,6 @@
 package org.docx4j;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,23 +70,22 @@ public class TraversalUtil {
 
 	public static List<Object> getChildrenImpl(Object o) {
 
-		if (o instanceof org.docx4j.wml.Body) {
-
-			return ((org.docx4j.wml.Body) o).getEGBlockLevelElts();
-
+		if (o instanceof org.docx4j.wml.Text) return null;
+		
+		// Short circuit for common elements
+		if (o instanceof org.docx4j.wml.R) {
+			return ((org.docx4j.wml.R) o).getRunContent();
+		} else	 if (o instanceof org.docx4j.wml.P) {
+			return ((org.docx4j.wml.P) o).getParagraphContent();
+		} else if (o instanceof org.docx4j.wml.Tc) {
+			return ((org.docx4j.wml.Tc) o).getEGBlockLevelElts();
+		} else if (o instanceof org.docx4j.wml.Tr) {
+			return ((org.docx4j.wml.Tr) o).getEGContentCellContent();
+		} else if (o instanceof org.docx4j.wml.Tbl) {
+			return ((org.docx4j.wml.Tbl) o).getEGContentRowContent();
 		} else if (o instanceof org.docx4j.wml.SdtBlock) {
-
 			return ((org.docx4j.wml.SdtBlock) o).getSdtContent()
 					.getEGContentBlockContent();
-
-		} else if (o instanceof org.docx4j.wml.P) {
-
-			return ((org.docx4j.wml.P) o).getParagraphContent();
-
-		} else if (o instanceof org.docx4j.wml.R) {
-
-			return ((org.docx4j.wml.R) o).getRunContent();
-
 		} else if (o instanceof org.docx4j.wml.CTSdtContentRow) {
 			return ((org.docx4j.wml.CTSdtContentRow) o)
 					.getEGContentRowContent();
@@ -94,46 +94,35 @@ public class TraversalUtil {
 					.getEGContentBlockContent();
 		} else if (o instanceof org.docx4j.wml.CTSdtContentRun) {
 			return ((org.docx4j.wml.CTSdtContentRun) o).getParagraphContent();
-
 		} else if (o instanceof org.docx4j.wml.SdtRun) {
-
 			return ((org.docx4j.wml.SdtRun) o).getSdtContent()
 					.getParagraphContent();
-
 		} else if (o instanceof org.docx4j.wml.CTSdtRow) {
-
 			return ((org.docx4j.wml.CTSdtRow) o).getSdtContent()
 					.getEGContentRowContent();
-
-		} else if (o instanceof org.docx4j.wml.Tbl) {
-
-			// Could get the TblPr if we wanted them
-			// org.docx4j.wml.TblPr tblPr = tbl.getTblPr();
-
-			// Could get the TblGrid if we wanted it
-			// org.docx4j.wml.TblGrid tblGrid = tbl.getTblGrid();
-
-			return ((org.docx4j.wml.Tbl) o).getEGContentRowContent();
-
-		} else if (o instanceof org.docx4j.wml.Tr) {
-
-			return ((org.docx4j.wml.Tr) o).getEGContentCellContent();
-
-		} else if (o instanceof org.docx4j.wml.Tc) {
-
-			return ((org.docx4j.wml.Tc) o).getEGBlockLevelElts();
-
-		} else {
-
-			if (o instanceof org.w3c.dom.Node) {
-				log.warn(" IGNORED " + ((org.w3c.dom.Node) o).getNodeName());
-			} else {
-//				log.warn(" IGNORED " + o.getClass().getName());
-			}
-
+		} else if (o instanceof org.docx4j.wml.Body) {
+			return ((org.docx4j.wml.Body) o).getEGBlockLevelElts();
 		}
+
+		// OK, what is this? Use reflection ..
+		log.debug("getting children of " + o.getClass().getName() );
+		try {
+			Method[] methods = o.getClass().getDeclaredMethods();
+			for (int i = 0; i<methods.length; i++) {
+				Method m = methods[i];
+				if (m.getReturnType().getName().equals("java.util.List") ) {					
+					return (List<Object>)m.invoke(o);					
+				}
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		log.debug(".. no list member");
 		return null;
 	}
+	
 
 	public static void main(String[] args) throws Exception {
 
