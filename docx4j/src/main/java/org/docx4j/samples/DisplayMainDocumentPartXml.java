@@ -21,18 +21,11 @@
 package org.docx4j.samples;
 
 
-import java.util.List;
-
-import javax.xml.bind.JAXBElement;
-
-import org.docx4j.openpackaging.io.LoadFromZipFile;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
 
 
-public class DisplayMainDocumentPartXml {
+public class DisplayMainDocumentPartXml extends AbstractSample {
 
 
 		/**
@@ -40,8 +33,28 @@ public class DisplayMainDocumentPartXml {
 		 */
 		public static void main(String[] args) throws Exception {
 
-			//String inputfilepath = "/home/jharrop/tmp/simple.docx";
-			String inputfilepath = System.getProperty("user.dir") + "/sample-docs/TableAndPng.docx";
+			/*
+			 * You can invoke this from an OS command line with something like:
+			 * 
+			 * java -cp dist/docx4j.jar:dist/log4j-1.2.15.jar
+			 * org.docx4j.samples.DisplayMainDocumentPartXml inputdocx
+			 * 
+			 * Note the minimal set of supporting jars.
+			 * 
+			 * If there are any images in the document, you will also need:
+			 * 
+			 * dist/xmlgraphics-commons-1.4.jar:dist/commons-logging-1.1.1.jar
+			 */
+
+			try {
+				getInputFilePath(args);
+			} catch (IllegalArgumentException e) {
+				inputfilepath = System.getProperty("user.dir")
+						+ "/sample-docs/sample-docx.xml";
+
+//				inputfilepath = System.getProperty("user.dir")
+//				+ "/tmp/toc.docx";
+			}
 			
 			// Open a document from the file system
 			// 1. Load the Package
