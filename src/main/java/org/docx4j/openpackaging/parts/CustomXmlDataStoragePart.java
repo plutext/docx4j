@@ -49,6 +49,8 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTDataBinding;
@@ -57,6 +59,7 @@ import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
+import org.opendope.conditions.Condition;
 import org.w3c.dom.Node;
 
 
@@ -113,9 +116,17 @@ public final class CustomXmlDataStoragePart extends Part {
 		log.info(message);
 	}
 	
-	private final static String BINDING_ROLE = "bindingrole";
-	private final static String BINDING_ROLE_REPEAT = "repeat";
-	private final static String BINDING_ROLE_CONDITIONAL = "conditional";
+	/* TODO:
+	 * 
+	 * - add the new stuff in LoadFromZipNG to other loaders
+	 * - do I need anything new in the savers? 
+	 * 
+	 */
+	
+	//private final static String BINDING_ROLE = "bindingrole";
+	private final static String BINDING_ROLE_REPEAT = "od:repeat";
+	private final static String BINDING_ROLE_CONDITIONAL = "od:condition";
+	private final static String BINDING_ROLE_XPATH = "od:xpath";
 	
 	
 	static Templates xslt;			
@@ -194,8 +205,11 @@ public final class CustomXmlDataStoragePart extends Part {
  * 
  */
 	
+	private static org.opendope.conditions.Conditions conditions;
+	private static org.opendope.xpaths.Xpaths xPaths;
+	
 	/**
-	 * Preprocess content controls which have tag bindingrole="conditional|repeat".
+	 * Preprocess content controls which have tag "odc:condition|odc:repeat".
 	 * 
 	 * The algorithm is as follows:
 	 * 
@@ -229,6 +243,15 @@ public final class CustomXmlDataStoragePart extends Part {
 	public static void preprocess(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+		
+		if (wordMLPackage.getXPathsPart()==null) {
+			throw new Docx4JException("OpenDoPE XPaths part missing");
+		} else {
+			xPaths = wordMLPackage.getXPathsPart().getJaxbElement();
+		}
+		if (wordMLPackage.getConditionsPart()!=null) {
+			conditions = wordMLPackage.getConditionsPart().getJaxbElement();
+		}
 
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
@@ -238,6 +261,11 @@ public final class CustomXmlDataStoragePart extends Part {
 		new TraversalUtil(body, shallowTraversor); 
 		
 	}
+	
+	//private static XPathsPart getXPathsPart(WordprocessingMLPackage wordMLPackage) {
+	//	wordMLPackage.getParts().
+	//}
+	
 	
 	static ShallowTraversor shallowTraversor = new ShallowTraversor();
 	
@@ -371,8 +399,14 @@ public final class CustomXmlDataStoragePart extends Part {
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
 		
-		String bindingrole = map.get(BINDING_ROLE);
-		if (bindingrole==null) {
+		//String bindingrole = map.get(BINDING_ROLE);
+		String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
+		String repeatId = map.get(BINDING_ROLE_REPEAT);
+		//String xp = map.get(BINDING_ROLE_XPATH);
+		if (conditionId==null
+				&& repeatId==null
+				//&& xp==null
+				) {
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
 			return newContent;
@@ -382,27 +416,28 @@ public final class CustomXmlDataStoragePart extends Part {
 			= wordMLPackage.getCustomXmlDataStorageParts();		
 		
 		// get the value
-		String storeItemId = map.get("w:storeItemID").toLowerCase();
-		String xpath = map.get("w:xpath");
-		String prefixMappings = map.get("w:prefixMappings");
+//		String storeItemId = map.get("w:storeItemID").toLowerCase();
+//		String xpath = map.get("w:xpath");
+//		String prefixMappings = map.get("w:prefixMappings");
 		
-		if (bindingrole.equals(BINDING_ROLE_CONDITIONAL)) {
+		
+		
+		if (conditionId!=null
+				//bindingrole.equals(BINDING_ROLE_CONDITIONAL)
+				) {
 
 			log.info("Processing Conditional: " + tag.getVal());
-			
-			/*
-			 * eg   <w:tag w:val="bindingrole=conditional
-			 * 						&amp;w:xpath=/root/inornot
-			 * 						&amp;w:storeItemID={543111b2-fc12-4cae-89cc-1d5996e6a7a3}"/>
-                    
-                    <w:tag w:val="bindingrole=conditional
-                    				&amp;w:xpath=/root/inornot/text()
-                    				&amp;w:storeItemID={543111b2-fc12-4cae-89cc-1d5996e6a7a3}"/>-->
-			 * 
-			 */
+						
+			// At present, this only handles simple conditions
+			Condition c = wordMLPackage.getConditionsPart().getConditionById(conditionId);
+			org.opendope.conditions.Xpath xpathRef = c.getXpath();
+			// Now get the xpath 
+			org.opendope.xpaths.Xpaths.Xpath xpath = wordMLPackage.getXPathsPart().getXPathById(xpathRef.getId()); 			
 			
 			String val = xpathGetString(customXmlDataStorageParts,
-					storeItemId, xpath, prefixMappings);	
+					xpath.getDataBinding().getStoreItemID(),
+					xpath.getDataBinding().getXpath(),
+					xpath.getDataBinding().getPrefixMappings() );					
 			
 			log.info("Got value: " + val);
 			
@@ -419,12 +454,15 @@ public final class CustomXmlDataStoragePart extends Part {
 				return new ArrayList<Object>();  // effectively, delete
 			}
 			
-		} else if (bindingrole.equals(BINDING_ROLE_REPEAT)) {
+		} else if ( repeatId!=null
+				//bindingrole.equals(BINDING_ROLE_REPEAT)
+				) {
 
 			log.info("Processing Repeat: " + tag.getVal());
 			
 			return processRepeat(sdt,
-					customXmlDataStorageParts);
+					customXmlDataStorageParts,
+					wordMLPackage.getXPathsPart());
 	        	
 		}	
 		// shouldn't happen
@@ -432,16 +470,24 @@ public final class CustomXmlDataStoragePart extends Part {
 	}
 
 	private static List<Object>  processRepeat(Object sdt,
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts) {
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			XPathsPart xPathsPart) {
 		
 		Tag tag = getSdtPr(sdt).getTag();										
 		
 		HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 		
-		String storeItemId = map.get("w:storeItemID").toLowerCase();
-		String xpath = map.get("w:xpath");
-		String prefixMappings = map.get("w:prefixMappings");
-		
+		//String storeItemId = map.get("w:storeItemID").toLowerCase();
+		//String xpath = map.get("w:xpath");
+		//String prefixMappings = map.get("w:prefixMappings");
+
+		String repeatId = map.get(BINDING_ROLE_REPEAT);
+
+		org.opendope.xpaths.Xpaths.Xpath xpathObj = xPathsPart.getXPathById(repeatId);
+
+		String storeItemId = xpathObj.getDataBinding().getStoreItemID();
+		String xpath = xpathObj.getDataBinding().getXpath();
+		String prefixMappings = xpathObj.getDataBinding().getPrefixMappings();
 		
 		// Get the bound XML	
 		String xpathBase;
@@ -611,16 +657,38 @@ public final class CustomXmlDataStoragePart extends Part {
 			
 			Tag tag = sdtPr.getTag();	
 			
-			if (!tag.getVal().contains(BINDING_ROLE)) {
+			QueryString qs = new QueryString();
+			HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
+			
+			String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
+			String repeatId = map.get(BINDING_ROLE_REPEAT);
+			//String xp = map.get(BINDING_ROLE_XPATH);
+			if (conditionId==null
+					&& repeatId==null) {			
+			//if (!tag.getVal().contains(BINDING_ROLE)) {
 				log.warn("couldn't find binding or bindingrole!"); 
 				// not all sdt's need have a binding; 
 				// they could be present in the docx for other purposes
 				return;
 			} else {
-				QueryString qs = new QueryString();
-				HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
+				//QueryString qs = new QueryString();
+				//HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
 				
 				thisXPath = map.get("w:xpath");
+				
+				/* Up to here ... will need different handling 
+				 * depending whether its a condition or a repeat
+				 * (or a standard binding)
+				 * 
+				 * If its a condition, i have to clone the condition,
+				 * and any xpath it uses,
+				 * and replace the conditionid
+				 * 
+				 * If its a repeat, just have to clone the xpath,
+				 * and replace the repeat id
+				 * 
+				 * If its a bind, ..
+				 */
 				
 			}
 		} else {

@@ -65,6 +65,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.GlossaryDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.SectPr;
@@ -112,6 +114,22 @@ public class WordprocessingMLPackage extends OpcPackage {
 	
 	// (optional) Glossary document
 	protected GlossaryDocumentPart glossaryDoc;
+	
+	private ConditionsPart conditionsPart;
+	public ConditionsPart getConditionsPart() {
+		return conditionsPart;
+	}
+	public void setConditionsPart(ConditionsPart conditionsPart) {
+		this.conditionsPart = conditionsPart;
+	}
+
+	private XPathsPart xPathsPart;
+	public XPathsPart getXPathsPart() {
+		return xPathsPart;
+	}
+	public void setXPathsPart(XPathsPart xPathsPart) {
+		this.xPathsPart = xPathsPart;
+	}
 	
 	private DocumentModel documentModel;
 	public DocumentModel getDocumentModel() {
@@ -219,7 +237,13 @@ public class WordprocessingMLPackage extends OpcPackage {
 		} else if (relationshipType.equals(Namespaces.DOCUMENT)) {
 			mainDoc = (MainDocumentPart)part;
 			log.info("Set shortcut for mainDoc");
-			return true;			
+			return true;
+		} else if (part instanceof ConditionsPart) {
+			this.setConditionsPart((ConditionsPart)part);
+			return true;
+		} else if (part instanceof XPathsPart) {
+			this.setXPathsPart((XPathsPart)part);
+			return true;
 		} else {	
 			return false;
 		}
