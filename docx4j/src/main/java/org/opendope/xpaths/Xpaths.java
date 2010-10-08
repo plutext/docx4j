@@ -1,0 +1,411 @@
+
+package org.opendope.xpaths;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+
+/**
+ * <p>Java class for anonymous complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType>
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="xpath" maxOccurs="unbounded">
+ *           &lt;complexType>
+ *             &lt;complexContent>
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                 &lt;sequence>
+ *                   &lt;element name="dataBinding">
+ *                     &lt;complexType>
+ *                       &lt;complexContent>
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *                           &lt;attribute name="xpath" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                           &lt;attribute name="storeItemID" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                           &lt;attribute name="prefixMappings" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                         &lt;/restriction>
+ *                       &lt;/complexContent>
+ *                     &lt;/complexType>
+ *                   &lt;/element>
+ *                 &lt;/sequence>
+ *                 &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
+ *                 &lt;attribute name="questionID" type="{http://www.w3.org/2001/XMLSchema}NCName" />
+ *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="descrption" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="comments" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *               &lt;/restriction>
+ *             &lt;/complexContent>
+ *           &lt;/complexType>
+ *         &lt;/element>
+ *       &lt;/sequence>
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+    "xpath"
+})
+@XmlRootElement(name = "xpaths")
+public class Xpaths {
+
+    @XmlElement(required = true)
+    protected List<Xpaths.Xpath> xpath;
+
+    /**
+     * Gets the value of the xpath property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the xpath property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getXpath().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link Xpaths.Xpath }
+     * 
+     * 
+     */
+    public List<Xpaths.Xpath> getXpath() {
+        if (xpath == null) {
+            xpath = new ArrayList<Xpaths.Xpath>();
+        }
+        return this.xpath;
+    }
+
+
+    /**
+     * <p>Java class for anonymous complex type.
+     * 
+     * <p>The following schema fragment specifies the expected content contained within this class.
+     * 
+     * <pre>
+     * &lt;complexType>
+     *   &lt;complexContent>
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *       &lt;sequence>
+     *         &lt;element name="dataBinding">
+     *           &lt;complexType>
+     *             &lt;complexContent>
+     *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+     *                 &lt;attribute name="xpath" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *                 &lt;attribute name="storeItemID" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *                 &lt;attribute name="prefixMappings" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *               &lt;/restriction>
+     *             &lt;/complexContent>
+     *           &lt;/complexType>
+     *         &lt;/element>
+     *       &lt;/sequence>
+     *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
+     *       &lt;attribute name="questionID" type="{http://www.w3.org/2001/XMLSchema}NCName" />
+     *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="descrption" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="comments" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *     &lt;/restriction>
+     *   &lt;/complexContent>
+     * &lt;/complexType>
+     * </pre>
+     * 
+     * 
+     */
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {
+        "dataBinding"
+    })
+    public static class Xpath {
+
+        @XmlElement(required = true)
+        protected Xpaths.Xpath.DataBinding dataBinding;
+        @XmlAttribute(required = true)
+        @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+        @XmlID
+        @XmlSchemaType(name = "ID")
+        protected String id;
+        @XmlAttribute
+        @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+        @XmlSchemaType(name = "NCName")
+        protected String questionID;
+        @XmlAttribute
+        protected String name;
+        @XmlAttribute
+        protected String descrption;
+        @XmlAttribute
+        protected String comments;
+
+        /**
+         * Gets the value of the dataBinding property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Xpaths.Xpath.DataBinding }
+         *     
+         */
+        public Xpaths.Xpath.DataBinding getDataBinding() {
+            return dataBinding;
+        }
+
+        /**
+         * Sets the value of the dataBinding property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Xpaths.Xpath.DataBinding }
+         *     
+         */
+        public void setDataBinding(Xpaths.Xpath.DataBinding value) {
+            this.dataBinding = value;
+        }
+
+        /**
+         * Gets the value of the id property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getId() {
+            return id;
+        }
+
+        /**
+         * Sets the value of the id property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setId(String value) {
+            this.id = value;
+        }
+
+        /**
+         * Gets the value of the questionID property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getQuestionID() {
+            return questionID;
+        }
+
+        /**
+         * Sets the value of the questionID property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setQuestionID(String value) {
+            this.questionID = value;
+        }
+
+        /**
+         * Gets the value of the name property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Sets the value of the name property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setName(String value) {
+            this.name = value;
+        }
+
+        /**
+         * Gets the value of the descrption property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getDescrption() {
+            return descrption;
+        }
+
+        /**
+         * Sets the value of the descrption property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setDescrption(String value) {
+            this.descrption = value;
+        }
+
+        /**
+         * Gets the value of the comments property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getComments() {
+            return comments;
+        }
+
+        /**
+         * Sets the value of the comments property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setComments(String value) {
+            this.comments = value;
+        }
+
+
+        /**
+         * <p>Java class for anonymous complex type.
+         * 
+         * <p>The following schema fragment specifies the expected content contained within this class.
+         * 
+         * <pre>
+         * &lt;complexType>
+         *   &lt;complexContent>
+         *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+         *       &lt;attribute name="xpath" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *       &lt;attribute name="storeItemID" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *       &lt;attribute name="prefixMappings" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *     &lt;/restriction>
+         *   &lt;/complexContent>
+         * &lt;/complexType>
+         * </pre>
+         * 
+         * 
+         */
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class DataBinding {
+
+            @XmlAttribute(required = true)
+            protected String xpath;
+            @XmlAttribute(required = true)
+            protected String storeItemID;
+            @XmlAttribute
+            protected String prefixMappings;
+
+            /**
+             * Gets the value of the xpath property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getXpath() {
+                return xpath;
+            }
+
+            /**
+             * Sets the value of the xpath property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setXpath(String value) {
+                this.xpath = value;
+            }
+
+            /**
+             * Gets the value of the storeItemID property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getStoreItemID() {
+                return storeItemID;
+            }
+
+            /**
+             * Sets the value of the storeItemID property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setStoreItemID(String value) {
+                this.storeItemID = value;
+            }
+
+            /**
+             * Gets the value of the prefixMappings property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getPrefixMappings() {
+                return prefixMappings;
+            }
+
+            /**
+             * Sets the value of the prefixMappings property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setPrefixMappings(String value) {
+                this.prefixMappings = value;
+            }
+
+        }
+
+    }
+
+}
