@@ -209,7 +209,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	private static org.opendope.xpaths.Xpaths xPaths;
 	
 	/**
-	 * Preprocess content controls which have tag "odc:condition|odc:repeat".
+	 * Preprocess content controls which have tag "od:condition|od:repeat".
 	 * 
 	 * The algorithm is as follows:
 	 * 
@@ -244,13 +244,13 @@ public final class CustomXmlDataStoragePart extends Part {
 
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		
-		if (wordMLPackage.getXPathsPart()==null) {
+		if (wordMLPackage.getMainDocumentPart().getXPathsPart()==null) {
 			throw new Docx4JException("OpenDoPE XPaths part missing");
 		} else {
-			xPaths = wordMLPackage.getXPathsPart().getJaxbElement();
+			xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
 		}
-		if (wordMLPackage.getConditionsPart()!=null) {
-			conditions = wordMLPackage.getConditionsPart().getJaxbElement();
+		if (wordMLPackage.getMainDocumentPart().getConditionsPart()!=null) {
+			conditions = wordMLPackage.getMainDocumentPart().getConditionsPart().getJaxbElement();
 		}
 
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
@@ -429,10 +429,8 @@ public final class CustomXmlDataStoragePart extends Part {
 			log.info("Processing Conditional: " + tag.getVal());
 						
 			// At present, this only handles simple conditions
-			Condition c = wordMLPackage.getConditionsPart().getConditionById(conditionId);
-			org.opendope.conditions.Xpath xpathRef = c.getXpath();
-			// Now get the xpath 
-			org.opendope.xpaths.Xpaths.Xpath xpath = wordMLPackage.getXPathsPart().getXPathById(xpathRef.getId()); 			
+			Condition c = ConditionsPart.getConditionById(conditions, conditionId);
+			org.opendope.xpaths.Xpaths.Xpath xpath = getXPathFromCondition(c);
 			
 			String val = xpathGetString(customXmlDataStorageParts,
 					xpath.getDataBinding().getStoreItemID(),
@@ -462,13 +460,20 @@ public final class CustomXmlDataStoragePart extends Part {
 			
 			return processRepeat(sdt,
 					customXmlDataStorageParts,
-					wordMLPackage.getXPathsPart());
+					wordMLPackage.getMainDocumentPart().getXPathsPart());
 	        	
 		}	
 		// shouldn't happen
 		return null;
 	}
 
+	private static org.opendope.xpaths.Xpaths.Xpath getXPathFromCondition(Condition c) {
+		
+		org.opendope.conditions.Xpath xpathRef = c.getXpath();
+		// Now get the xpath 
+		return XPathsPart.getXPathById(xPaths, xpathRef.getId()); 					
+	}
+	
 	private static List<Object>  processRepeat(Object sdt,
 			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 			XPathsPart xPathsPart) {
@@ -483,7 +488,7 @@ public final class CustomXmlDataStoragePart extends Part {
 
 		String repeatId = map.get(BINDING_ROLE_REPEAT);
 
-		org.opendope.xpaths.Xpaths.Xpath xpathObj = xPathsPart.getXPathById(repeatId);
+		org.opendope.xpaths.Xpaths.Xpath xpathObj = xPathsPart.getXPathById(xPaths, repeatId);
 
 		String storeItemId = xpathObj.getDataBinding().getStoreItemID();
 		String xpath = xpathObj.getDataBinding().getXpath();
@@ -652,47 +657,58 @@ public final class CustomXmlDataStoragePart extends Part {
 		//log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
 		CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
 		
-		String thisXPath = null; 
+		String thisXPath = null;
+		
+		// It'll have one of these three...
+		String conditionId =null;
+		String repeatId = null;
+		String bindingId = null;
+		
+		Condition c = null;
+		org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
+
+		Tag tag = sdtPr.getTag();	
+		HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
+		
 		if (binding==null) {
 			
-			Tag tag = sdtPr.getTag();	
+			conditionId = map.get(BINDING_ROLE_CONDITIONAL);
+			repeatId = map.get(BINDING_ROLE_REPEAT);
 			
-			QueryString qs = new QueryString();
-			HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
-			
-			String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
-			String repeatId = map.get(BINDING_ROLE_REPEAT);
-			//String xp = map.get(BINDING_ROLE_XPATH);
-			if (conditionId==null
-					&& repeatId==null) {			
-			//if (!tag.getVal().contains(BINDING_ROLE)) {
+			if (conditionId!=null) {
+				
+				c = ConditionsPart.getConditionById(conditions, conditionId);
+				
+				// TODO: this code assumes the condition contains
+				// a simple xpath
+				xpathObj = getXPathFromCondition(c);
+				thisXPath = xpathObj.getDataBinding().getXpath();
+				
+			} else if (repeatId!=null) {			
+
+				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
+				thisXPath = xpathObj.getDataBinding().getXpath();
+				
+			} else {
+				
 				log.warn("couldn't find binding or bindingrole!"); 
 				// not all sdt's need have a binding; 
 				// they could be present in the docx for other purposes
 				return;
-			} else {
-				//QueryString qs = new QueryString();
-				//HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
-				
-				thisXPath = map.get("w:xpath");
-				
-				/* Up to here ... will need different handling 
-				 * depending whether its a condition or a repeat
-				 * (or a standard binding)
-				 * 
-				 * If its a condition, i have to clone the condition,
-				 * and any xpath it uses,
-				 * and replace the conditionid
-				 * 
-				 * If its a repeat, just have to clone the xpath,
-				 * and replace the repeat id
-				 * 
-				 * If its a bind, ..
-				 */
-				
 			}
+			
 		} else {
 			thisXPath = binding.getXpath();			
+
+			// Set this stuff up now
+			bindingId = map.get(BINDING_ROLE_XPATH);
+			xpathObj = XPathsPart.getXPathById(xPaths, bindingId);
+			
+			// Sanity test
+			if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
+				log.error("XPaths didn't match for id " + bindingId + ": " 
+						+ xpathObj.getDataBinding().getXpath() );
+			}
 		}
 				
 		log.debug("existing xpath: " + thisXPath);
@@ -733,24 +749,70 @@ public final class CustomXmlDataStoragePart extends Part {
 				newPath = startBit + "[" + (index+1) + "]/" + thisXPath.substring(endIndex+1);
 			}
 			log.debug("newPath: " + newPath + "\n");
+
 			
 			if (binding==null) {
-				
-				Tag tag = sdtPr.getTag();								
-				QueryString qs = new QueryString();
-				HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
-				
-				map.put("w:xpath", newPath);
-				tag.setVal(qs.create(map));
+								
+				if (conditionId!=null) {
 					
+					// Create and add new condition
+					Condition newCondition = XmlUtils.deepCopy(c);
+					String newConditionId = conditionId + "_" + index;
+					newCondition.setId(newConditionId);					
+					conditions.getCondition().add(newCondition);
+					
+					// set sdt to use it
+					map.put(BINDING_ROLE_CONDITIONAL, newConditionId);
+					tag.setVal(QueryString.create(map));
+					
+					// TODO: this code assumes the condition contains
+					// a simple xpath
+					
+					// Clone the condition's xpath
+					org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(newPath, 
+							xpathObj, index);
+					
+					// Use it
+					newCondition.getXpath().setId(newXPathObj.getId());					
+					
+				} else if (repeatId!=null) {			
+			
+					// Create the new xpath object
+					org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(newPath, 
+							xpathObj, index);
+
+					// set sdt to use it
+					map.put(BINDING_ROLE_REPEAT, newXPathObj.getId());					
+					tag.setVal(QueryString.create(map));
+				}
+				
 			} else {
 				binding.setXpath(newPath);
+				
+				// Also need to create new xpath id, and add that
+				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(newPath, 
+						xpathObj, index);
+
+				// set sdt to use it
+				map.put(BINDING_ROLE_XPATH, newXPathObj.getId());					
+				tag.setVal(QueryString.create(map));
 			}
 			
 			
 		} else {
 			log.debug("DOESNT START WITH xpathBase: '" + xpathBase + "'");			
 		}
+	}
+	
+	private static org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(String newPath, 
+			org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
+		
+		org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils.deepCopy(xpathObj);
+		String newXPathId = newXPathObj.getId() + "_" + index;
+		newXPathObj.setId(newXPathId);
+		newXPathObj.getDataBinding().setXpath(newPath);
+		xPaths.getXpath().add(newXPathObj);
+		return newXPathObj;
 	}
 	
 //	private static boolean removeSdt(Object sdtParent, Object sdt) {

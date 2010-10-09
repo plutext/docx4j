@@ -115,22 +115,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 	// (optional) Glossary document
 	protected GlossaryDocumentPart glossaryDoc;
 	
-	private ConditionsPart conditionsPart;
-	public ConditionsPart getConditionsPart() {
-		return conditionsPart;
-	}
-	public void setConditionsPart(ConditionsPart conditionsPart) {
-		this.conditionsPart = conditionsPart;
-	}
-
-	private XPathsPart xPathsPart;
-	public XPathsPart getXPathsPart() {
-		return xPathsPart;
-	}
-	public void setXPathsPart(XPathsPart xPathsPart) {
-		this.xPathsPart = xPathsPart;
-	}
-	
 	private DocumentModel documentModel;
 	public DocumentModel getDocumentModel() {
 		if (documentModel==null) {
@@ -222,6 +206,9 @@ public class WordprocessingMLPackage extends OpcPackage {
 	
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
+		
+		log.info("?? for part " + part.getClass().getName() );
+		
 		if (relationshipType.equals(Namespaces.PROPERTIES_CORE)) {
 			docPropsCorePart = (DocPropsCorePart)part;
 			log.info("Set shortcut for docPropsCorePart");
@@ -237,12 +224,6 @@ public class WordprocessingMLPackage extends OpcPackage {
 		} else if (relationshipType.equals(Namespaces.DOCUMENT)) {
 			mainDoc = (MainDocumentPart)part;
 			log.info("Set shortcut for mainDoc");
-			return true;
-		} else if (part instanceof ConditionsPart) {
-			this.setConditionsPart((ConditionsPart)part);
-			return true;
-		} else if (part instanceof XPathsPart) {
-			this.setXPathsPart((XPathsPart)part);
 			return true;
 		} else {	
 			return false;
