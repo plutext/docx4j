@@ -21,9 +21,9 @@ public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths
 		init();
 	}
 	
-	public Xpath getXPathById(String id) {
+	public static Xpath getXPathById(org.opendope.xpaths.Xpaths xpaths, String id) {
 		
-		for (Xpath c : this.jaxbElement.getXpath() ) {
+		for (Xpath c : xpaths.getXpath() ) {
 			
 			if (c.getId().equals(id))
 				return c;

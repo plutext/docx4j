@@ -35,6 +35,8 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
@@ -121,6 +123,12 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 		} else if (relationshipType.equals(Namespaces.NUMBERING)) {
 			numberingDefinitionsPart = (NumberingDefinitionsPart)part;
 			return true;	
+		} else if (part instanceof ConditionsPart) {
+			conditionsPart = ((ConditionsPart)part);
+			return true;
+		} else if (part instanceof XPathsPart) {
+			xPathsPart = ((XPathsPart)part);
+			return true;
 			
 			// TODO - to be completed.
 		} else {	
@@ -245,5 +253,21 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 		return webSettingsPart;
 	}
 
+	private ConditionsPart conditionsPart;
+	public ConditionsPart getConditionsPart() {
+		return conditionsPart;
+	}
+//	public void setConditionsPart(ConditionsPart conditionsPart) {
+//		this.conditionsPart = conditionsPart;
+//	}
+
+	private XPathsPart xPathsPart;
+	public XPathsPart getXPathsPart() {
+		return xPathsPart;
+	}
+//	public void setXPathsPart(XPathsPart xPathsPart) {
+//		this.xPathsPart = xPathsPart;
+//	}
+	
 	
 }

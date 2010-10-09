@@ -22,9 +22,11 @@ public class ConditionsPart extends JaxbCustomXmlDataStoragePart<org.opendope.co
 		init();
 	}
 	
-	public Condition getConditionById(String id) {
+	public static Condition getConditionById(
+			org.opendope.conditions.Conditions conditions,
+			String id) {
 		
-		for (Condition c : this.jaxbElement.getCondition() ) {
+		for (Condition c : conditions.getCondition() ) {
 			
 			if (c.getId().equals(id))
 				return c;
