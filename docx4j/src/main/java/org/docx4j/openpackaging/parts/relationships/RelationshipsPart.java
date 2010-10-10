@@ -57,6 +57,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
@@ -772,12 +773,35 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			e.printStackTrace();
 		}
 		
-		jaxbElement = (Relationships)jaxbElement;		
+//		jaxbElement = (Relationships)jaxbElement;		
 		resetIdAllocator();
 		    	
 		return jaxbElement;
     	
     }
+	
+	@Override // need this so that resetIdAllocator() is called 
+    public Relationships unmarshal(org.w3c.dom.Element el) throws JAXBException {
+
+		try {
+
+			Unmarshaller u = jc.createUnmarshaller();
+						
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			jaxbElement = (Relationships) u.unmarshal( el );
+			
+		} catch (JAXBException e) {
+//			e.printStackTrace();
+			log.error(e);
+			throw e;
+		}
+		
+		resetIdAllocator();
+		return jaxbElement;
+		
+	}
+	
     
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
 		marshal(node, 

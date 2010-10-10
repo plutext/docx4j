@@ -22,6 +22,7 @@ package org.docx4j.openpackaging.parts;
 
 
 import org.docx4j.customXmlProperties.DatastoreItem;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
@@ -47,7 +48,8 @@ public final class CustomXmlDataStoragePropertiesPart extends JaxbXmlPart {
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.CUSTOM_XML_DATA_STORAGE_PROPERTIES);
-		
+	
+		this.setJAXBContext(Context.jcCustomXmlProperties);
 	}
 
 	public String getItemId() {

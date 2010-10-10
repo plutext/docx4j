@@ -22,11 +22,13 @@ package org.docx4j.openpackaging.parts;
 
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -40,12 +42,15 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.customXmlProperties.SchemaRefs;
+import org.docx4j.customXmlProperties.SchemaRefs.SchemaRef;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -186,7 +191,7 @@ public final class CustomXmlDataStoragePart extends Part {
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.CUSTOM_XML_DATA_STORAGE);
-		
+				
 	}
 
 	private CustomXmlDataStorage data;
@@ -972,6 +977,229 @@ public final class CustomXmlDataStoragePart extends Part {
 		}
 	}
 
+
+	
+	public static void main(String[] args) throws Exception {
+		
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_old.docx";
+//		String save_converted = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
+
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions_old.xml";
+		String save_converted = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
+
+		
+		
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
+		
+		// Create an XPathsPart, and a props part
+		XPathsPart xPathsPart = new XPathsPart(new PartName("/customXml/xpaths.xml"));
+		wordMLPackage.getMainDocumentPart().addTargetPart(xPathsPart);
+		
+		xpathsFactory = new org.opendope.xpaths.ObjectFactory();
+		org.opendope.xpaths.Xpaths xpaths = xpathsFactory.createXpaths();
+		xPathsPart.setJaxbElement(xpaths);
+		
+		CustomXmlDataStoragePropertiesPart xPathsPropsPart = new CustomXmlDataStoragePropertiesPart(
+				new PartName("/customXml/xpathsProps.xml")); 
+		
+		/* <ds:datastoreItem ds:itemID="{D08E37B0-BBEF-496D-874B-C21E2168A259}" xmlns:ds="http://schemas.openxmlformats.org/officeDocument/2006/customXml">
+		 * 	<ds:schemaRefs>
+		 * 		<ds:schemaRef ds:uri="http://www.w3.org/2001/XMLSchema"/>
+		 * 		<ds:schemaRef ds:uri="http://opendope.org/xpaths"/><
+			/ds:schemaRefs>
+			 * </ds:datastoreItem> */
+		
+		org.docx4j.customXmlProperties.ObjectFactory dsf = new org.docx4j.customXmlProperties.ObjectFactory();
+		org.docx4j.customXmlProperties.DatastoreItem dsi = dsf.createDatastoreItem();
+		dsi.setItemID("{" + UUID.randomUUID().toString().toUpperCase() + "}");
+		SchemaRefs schemaRefs = dsf.createSchemaRefs();
+		dsi.setSchemaRefs(schemaRefs);
+		SchemaRef schemaRef = dsf.createSchemaRefsSchemaRef();
+		schemaRef.setUri("http://www.w3.org/2001/XMLSchema");
+		schemaRefs.getSchemaRef().add(schemaRef);
+		schemaRef = dsf.createSchemaRefsSchemaRef();
+		schemaRef.setUri("http://opendope.org/xpaths");
+		schemaRefs.getSchemaRef().add(schemaRef);
+		
+		xPathsPropsPart.setJaxbElement(dsi);
+		xPathsPart.addTargetPart(xPathsPropsPart);
+		
+		// Create a ConditionsPart
+		ConditionsPart conditionsPart = new ConditionsPart(new PartName("/customXml/conditions.xml"));		
+		wordMLPackage.getMainDocumentPart().addTargetPart(conditionsPart);
+		
+		conditionsFactory = new org.opendope.conditions.ObjectFactory();
+		org.opendope.conditions.Conditions conditions = conditionsFactory.createConditions();
+		conditionsPart.setJaxbElement(conditions);
+		
+		CustomXmlDataStoragePropertiesPart conditionsPropsPart = new CustomXmlDataStoragePropertiesPart(
+				new PartName("/customXml/conditionsProps.xml")); 
+		
+		/*
+		<ds:datastoreItem ds:itemID="{E8637D7C-41A8-4079-A250-062638BD1ADF}" xmlns:ds="http://schemas.openxmlformats.org/officeDocument/2006/c
+			ustomXml"><ds:schemaRefs><ds:schemaRef ds:uri="http://www.w3.org/2001/XMLSchema"/>
+			<ds:schemaRef ds:uri="http://opendope.org/conditions
+			"/></ds:schemaRefs></ds:datastoreItem>
+*/
+
+		dsi = dsf.createDatastoreItem();
+		dsi.setItemID("{" + UUID.randomUUID().toString().toUpperCase() + "}");
+		schemaRefs = dsf.createSchemaRefs();
+		dsi.setSchemaRefs(schemaRefs);
+		schemaRef = dsf.createSchemaRefsSchemaRef();
+		schemaRef.setUri("http://www.w3.org/2001/XMLSchema");
+		schemaRefs.getSchemaRef().add(schemaRef);
+		schemaRef = dsf.createSchemaRefsSchemaRef();
+		schemaRef.setUri("http://opendope.org/conditions");
+		schemaRefs.getSchemaRef().add(schemaRef);
+		
+		conditionsPropsPart.setJaxbElement(dsi);
+		conditionsPart.addTargetPart(conditionsPropsPart);
+		
+		// Go through all the sdt's
+		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();		
+		String xpathSdt = "//w:sdt";
+		List<Object> list = null;
+		try {
+			list = documentPart.getJAXBNodesViaXPath(xpathSdt, false);
+		} catch (JAXBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		int i = 0;
+		for(Object raw : list) {
+			i++;
+			
+			log.info(raw.getClass().getName() );
+			
+			Object o = XmlUtils.unwrap(raw);
+
+			Method m = o.getClass().getDeclaredMethod("getSdtPr");
+			
+			SdtPr sdtPr = (SdtPr)m.invoke(o);
+			
+			Tag tag = sdtPr.getTag();
+			
+			if (sdtPr.getDataBinding()!=null) {
+
+				// Just want to add this xpath to xpaths part.
+				xpaths.getXpath().add(
+						
+						tmpCreateXPath("x" + i, 
+								sdtPr.getDataBinding().getStoreItemID(),
+								sdtPr.getDataBinding().getXpath(),
+								sdtPr.getDataBinding().getPrefixMappings() )
+
+				);
+				
+				// Write tag
+				if (tag==null) {
+					tag = Context.getWmlObjectFactory().createTag();
+				}
+				HashMap<String, String> map;
+				if (tag.getVal()!=null) {
+					map = QueryString.parseQueryString(tag.getVal(), true);
+				} else {
+					map = new HashMap<String, String>();
+				}
+				
+				map.remove("bindingrole");
+				map.put(BINDING_ROLE_XPATH, "x"+i);					
+				tag.setVal(QueryString.create(map));					
+				
+			} else {
+									
+				if (tag==null) continue;
+				log.info(tag.getVal());
+				
+				HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
+				
+				String bindingrole = map.get("bindingrole");
+				if (bindingrole==null) continue;  // do nothing
+
+				// get the value
+				String storeItemId = map.get("w:storeItemID").toLowerCase();
+				String xpath = map.get("w:xpath");
+				String prefixMappings = map.get("w:prefixMappings");
+
+				map.remove("w:storeItemID");
+				map.remove("w:xpath");
+				map.remove("w:prefixMappings");
+				
+				if (bindingrole.equals("conditional")) {
+
+					log.info("Processing Conditional: " + tag.getVal());
+					
+					// Create xpath
+					xpaths.getXpath().add(
+							
+							tmpCreateXPath("x" + i, 
+									storeItemId,
+									xpath,
+									prefixMappings )
+					);
+					
+					// Create condition
+					Condition c = conditionsFactory.createCondition();
+					c.setId("c"+i);
+					conditions.getCondition().add(c);
+					org.opendope.conditions.Xpath cxp = conditionsFactory.createXpath();
+					c.setXpath(cxp);
+					cxp.setId("x"+i);
+					
+					// Write tag
+					map.remove("bindingrole");
+					map.put(BINDING_ROLE_CONDITIONAL, "c"+i);					
+					tag.setVal(QueryString.create(map));					
+					
+				} else if (bindingrole.equals("repeat")) {
+
+					log.info("Processing Repeat: " + tag.getVal());
+						
+					// Create xpath
+					xpaths.getXpath().add(
+							
+							tmpCreateXPath("x" + i, 
+									storeItemId,
+									xpath,
+									prefixMappings )
+					);
+
+					// Write tag
+					map.remove("bindingrole");
+					map.put(BINDING_ROLE_REPEAT, "x"+i);					
+					tag.setVal(QueryString.create(map));	
+				}
+					
+			}			
+		}
+		
+
+		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
+		saver.save(save_converted);
+		System.out.println("Saved: " + save_converted);
+				
+	}
+	
+		
+	private static org.opendope.xpaths.Xpaths.Xpath tmpCreateXPath(String id, String storeItemId, String xpx, String prefixMappings) {
+		
+		org.opendope.xpaths.Xpaths.Xpath xpath = xpathsFactory.createXpathsXpath();
+		
+		xpath.setId(id);
+		org.opendope.xpaths.Xpaths.Xpath.DataBinding db = xpathsFactory.createXpathsXpathDataBinding();
+		xpath.setDataBinding(db);
+		db.setPrefixMappings( prefixMappings);
+		db.setStoreItemID( storeItemId);
+		db.setXpath( xpx );				
+		
+		return xpath;
+	}
+
+	private static org.opendope.xpaths.ObjectFactory xpathsFactory;
+		
+	private static org.opendope.conditions.ObjectFactory conditionsFactory;
 	
 	
 }
