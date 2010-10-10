@@ -54,11 +54,14 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTDataBinding;
+import org.docx4j.wml.CTSdtCell;
+import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.CTSdtContentRow;
 import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
+import org.docx4j.wml.Tc;
 import org.opendope.conditions.Condition;
 import org.w3c.dom.Node;
 
@@ -286,17 +289,14 @@ public final class CustomXmlDataStoragePart extends Part {
 
 			if (o instanceof org.docx4j.wml.SdtBlock 
 					|| o instanceof org.docx4j.wml.SdtRun
-					|| o instanceof org.docx4j.wml.CTSdtRow ) {
+					|| o instanceof org.docx4j.wml.CTSdtRow 
+					|| o instanceof org.docx4j.wml.CTSdtCell ) {
 				
 				if (getSdtPr(o).getDataBinding()==null) {
 					// a real binding attribute trumps any tag
 					return processBindingRoleIfAny(wordMLPackage, o);
 				}
-				
-			} else if (o instanceof org.docx4j.wml.CTSdtCell ) { // sdt wrapping cell
-				
-				log.warn("Cowardly ignoring bindingrole on SdtCell");
-				
+								
 			} else {
 //				log.warn("TODO: Handle " + o.getClass().getName()  + " (if that's an sdt)");					
 			}
@@ -448,8 +448,22 @@ public final class CustomXmlDataStoragePart extends Part {
 				
 			} else {
 				// Remove it
+				
+				if (sdt instanceof org.docx4j.wml.CTSdtCell) {
+					// Return an empty tc
+					CTSdtContentCell sdtCellContent = ((org.docx4j.wml.CTSdtCell)sdt).getSdtContent();
+					Tc tc = (Tc)XmlUtils.unwrap(sdtCellContent.getEGContentCellContent().get(0));
+					tc.getEGBlockLevelElts().clear();
+					
+					List<Object> newContent = new ArrayList<Object>();
+					newContent.add(tc);
+					return newContent;
+					
+				} else {
+				
 //				log.info("Removed? " + removeSdt(sdtParent, sdt) );
-				return new ArrayList<Object>();  // effectively, delete
+					return new ArrayList<Object>();  // effectively, delete
+				}
 			}
 			
 		} else if ( repeatId!=null
@@ -870,7 +884,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	private static List<Node> xpathGetNodes(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 			String storeItemId, String xpath, String prefixMappings) {
 		
-		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId);
+		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
 		if (part==null) {
 			log.error("Couldn't locate part by storeItemId " + storeItemId);
 			return null;
