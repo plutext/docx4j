@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.transform.Source;
@@ -59,12 +58,8 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTDataBinding;
-import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtContentCell;
-import org.docx4j.wml.CTSdtContentRow;
-import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.P;
-import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
@@ -110,7 +105,7 @@ import org.w3c.dom.Node;
  * XPath.  The part is registered as the document is loaded.
  * 
  * This class supports content control extensions
- * (ie bindingrole="conditional|repeat"). Use the 
+ * (ie od:condition, od:repeat). Use the 
  * preprocess method to process these.
  * 
  * @author jharrop
@@ -124,15 +119,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		
 		log.info(message);
 	}
-	
-	/* TODO:
-	 * 
-	 * - add the new stuff in LoadFromZipNG to other loaders
-	 * - do I need anything new in the savers? 
-	 * 
-	 */
-	
-	//private final static String BINDING_ROLE = "bindingrole";
+		
 	private final static String BINDING_ROLE_REPEAT = "od:repeat";
 	private final static String BINDING_ROLE_CONDITIONAL = "od:condition";
 	private final static String BINDING_ROLE_XPATH = "od:xpath";
@@ -241,10 +228,16 @@ public final class CustomXmlDataStoragePart extends Part {
 	 *  Those things are done by ShallowTraversor, to which control returns,
 	 *  as it continues its traverse.
 	 * 
-	 *  This implementation of 13 Sept 2010 replaces the previous XPath based
+	 *  The implementation of 13 Sept 2010 replaced the previous XPath based
 	 *  implementation, which did not support nested repeats.  I've chosen to
 	 *  build this around TraversalUtil, instead of using XSLT, and this
 	 *  seems to have worked out nicely.
+	 *  
+	 *  The implementation of 10 October 2010 replaced the v1 conventions
+	 *  implementation with a v2 implementation.  The main method in this
+	 *  class can convert v1 documents to v2. The v2 implementation is not yet
+	 *  complete. All v1 features are implemented, but not the new v2
+	 *  stuff (eg complex conditions).
 	 * 
 	 * @param documentPart
 	 * @throws Docx4JException
@@ -322,17 +315,8 @@ public final class CustomXmlDataStoragePart extends Part {
 			// which does
 			
 			return true;
-		
 		}
 		
-//		private boolean hasBindingRole(Tag tag) {
-//			return tag.getVal().contains("bindingrole");
-//		}
-
-//		private boolean isRepeat(Tag tag) {			
-//			return tag.getVal().contains("repeat");			
-//		}
-
 		@Override
 		public List<Object> getChildren(Object o) {
 			return TraversalUtil.getChildrenImpl(o);
@@ -405,7 +389,6 @@ public final class CustomXmlDataStoragePart extends Part {
 		QueryString qs = new QueryString();
 		HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
 		
-		//String bindingrole = map.get(BINDING_ROLE);
 		String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
 		String repeatId = map.get(BINDING_ROLE_REPEAT);
 		//String xp = map.get(BINDING_ROLE_XPATH);
@@ -421,16 +404,8 @@ public final class CustomXmlDataStoragePart extends Part {
 		Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts
 			= wordMLPackage.getCustomXmlDataStorageParts();		
 		
-		// get the value
-//		String storeItemId = map.get("w:storeItemID").toLowerCase();
-//		String xpath = map.get("w:xpath");
-//		String prefixMappings = map.get("w:prefixMappings");
 		
-		
-		
-		if (conditionId!=null
-				//bindingrole.equals(BINDING_ROLE_CONDITIONAL)
-				) {
+		if (conditionId!=null) {
 
 			log.info("Processing Conditional: " + tag.getVal());
 						
@@ -475,9 +450,7 @@ public final class CustomXmlDataStoragePart extends Part {
 				}
 			}
 			
-		} else if ( repeatId!=null
-				//bindingrole.equals(BINDING_ROLE_REPEAT)
-				) {
+		} else if ( repeatId!=null) {
 
 			log.info("Processing Repeat: " + tag.getVal());
 			
@@ -505,10 +478,6 @@ public final class CustomXmlDataStoragePart extends Part {
 		
 		HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 		
-		//String storeItemId = map.get("w:storeItemID").toLowerCase();
-		//String xpath = map.get("w:xpath");
-		//String prefixMappings = map.get("w:prefixMappings");
-
 		String repeatId = map.get(BINDING_ROLE_REPEAT);
 
 		org.opendope.xpaths.Xpaths.Xpath xpathObj = xPathsPart.getXPathById(xPaths, repeatId);
@@ -673,6 +642,8 @@ public final class CustomXmlDataStoragePart extends Part {
 			String xpathBase, int index) {
 		
 		SdtPr sdtPr =  getSdtPr(sdt); 
+		
+		//log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
 		
 		// Give it a unique ID (supersedes above?)
 		sdtPr.setId();
@@ -870,6 +841,14 @@ public final class CustomXmlDataStoragePart extends Part {
 			log.warn("TODO: Handle " + o.getClass().getName() );					
 		}		
 		return null;
+		
+		/* Or could have done:
+		 * 
+		 * 	Object o = XmlUtils.unwrap(raw);
+			Method m = o.getClass().getDeclaredMethod("getSdtPr");
+			SdtPr sdtPr = (SdtPr)m.invoke(o);
+		 * 
+		 */
 	}
 	
 //	public static Object getSdtContent(Object o) {
@@ -1096,6 +1075,7 @@ public final class CustomXmlDataStoragePart extends Part {
 				// Write tag
 				if (tag==null) {
 					tag = Context.getWmlObjectFactory().createTag();
+					sdtPr.setTag(tag);
 				}
 				HashMap<String, String> map;
 				if (tag.getVal()!=null) {

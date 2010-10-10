@@ -76,6 +76,7 @@
         <w:docPart w:val="F75D3CE2CCFB4CBEA9027CD4B09AE699"/>
     </w:placeholder>
     <w:showingPlcHdr/>
+    <w:tag w:val="od:xpath=x2"/>
 </w:sdtPr>
 <w:sdtContent>
     <w:p>
@@ -185,6 +186,7 @@
                             <w:docPart w:val="DefaultPlaceholder_22675703"/>
                         </w:placeholder>
                         <w:showingPlcHdr/>
+                        <w:tag w:val="od:xpath=x4"/>
                     </w:sdtPr>
                     <w:sdtContent>
                         <w:p>
@@ -210,6 +212,7 @@
                             <w:docPart w:val="DefaultPlaceholder_22675703"/>
                         </w:placeholder>
                         <w:showingPlcHdr/>
+                        <w:tag w:val="od:xpath=x5"/>
                     </w:sdtPr>
                     <w:sdtContent>
                         <w:p>
@@ -235,6 +238,7 @@
                             <w:docPart w:val="DefaultPlaceholder_22675703"/>
                         </w:placeholder>
                         <w:showingPlcHdr/>
+                        <w:tag w:val="od:xpath=x6"/>
                     </w:sdtPr>
                     <w:sdtContent>
                         <w:p>
@@ -1399,7 +1403,7 @@
     </pkg:part>
     <pkg:part pkg:contentType="application/vnd.openxmlformats-officedocument.customXmlProperties+xml" pkg:name="/customXml/xpathsProps.xml">
         <pkg:xmlData>
-            <ns1:datastoreItem xmlns:ns1="http://schemas.openxmlformats.org/officeDocument/2006/customXml" ns1:itemID="{7B9D7C2B-19DA-4E1E-9044-DBA6E74D130F}">
+            <ns1:datastoreItem xmlns:ns1="http://schemas.openxmlformats.org/officeDocument/2006/customXml" ns1:itemID="{8086581B-C943-43B7-AF23-F9770D13BB39}">
                 <ns1:schemaRefs>
                     <ns1:schemaRef ns1:uri="http://www.w3.org/2001/XMLSchema"/>
                     <ns1:schemaRef ns1:uri="http://opendope.org/xpaths"/>
@@ -1421,7 +1425,7 @@
     </pkg:part>
     <pkg:part pkg:contentType="application/vnd.openxmlformats-officedocument.customXmlProperties+xml" pkg:name="/customXml/conditionsProps.xml">
         <pkg:xmlData>
-            <ns1:datastoreItem xmlns:ns1="http://schemas.openxmlformats.org/officeDocument/2006/customXml" ns1:itemID="{1E9F77F7-7DB3-423B-8067-EF5D8D594F07}">
+            <ns1:datastoreItem xmlns:ns1="http://schemas.openxmlformats.org/officeDocument/2006/customXml" ns1:itemID="{A2922D38-A49D-438E-9ED9-16A2F8715523}">
                 <ns1:schemaRefs>
                     <ns1:schemaRef ns1:uri="http://www.w3.org/2001/XMLSchema"/>
                     <ns1:schemaRef ns1:uri="http://opendope.org/conditions"/>
