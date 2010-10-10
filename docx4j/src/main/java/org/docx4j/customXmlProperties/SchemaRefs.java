@@ -20,6 +20,8 @@
 
 package org.docx4j.customXmlProperties;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -37,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="schemaRef" minOccurs="0">
+ *         &lt;element name="schemaRef" maxOccurs="unbounded" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -61,30 +63,35 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement(name = "schemaRefs")
 public class SchemaRefs {
 
-    protected SchemaRefs.SchemaRef schemaRef;
+    protected List<SchemaRefs.SchemaRef> schemaRef;
 
     /**
      * Gets the value of the schemaRef property.
      * 
-     * @return
-     *     possible object is
-     *     {@link SchemaRefs.SchemaRef }
-     *     
-     */
-    public SchemaRefs.SchemaRef getSchemaRef() {
-        return schemaRef;
-    }
-
-    /**
-     * Sets the value of the schemaRef property.
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the schemaRef property.
      * 
-     * @param value
-     *     allowed object is
-     *     {@link SchemaRefs.SchemaRef }
-     *     
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getSchemaRef().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link SchemaRefs.SchemaRef }
+     * 
+     * 
      */
-    public void setSchemaRef(SchemaRefs.SchemaRef value) {
-        this.schemaRef = value;
+    public List<SchemaRefs.SchemaRef> getSchemaRef() {
+        if (schemaRef == null) {
+            schemaRef = new ArrayList<SchemaRefs.SchemaRef>();
+        }
+        return this.schemaRef;
     }
 
 

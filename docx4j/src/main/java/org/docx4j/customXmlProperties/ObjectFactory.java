@@ -57,19 +57,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link DatastoreItem }
-     * 
-     */
-    public DatastoreItem createDatastoreItem() {
-        return new DatastoreItem();
-    }
-
-    /**
      * Create an instance of {@link SchemaRefs }
      * 
      */
     public SchemaRefs createSchemaRefs() {
         return new SchemaRefs();
+    }
+
+    /**
+     * Create an instance of {@link DatastoreItem }
+     * 
+     */
+    public DatastoreItem createDatastoreItem() {
+        return new DatastoreItem();
     }
 
 }

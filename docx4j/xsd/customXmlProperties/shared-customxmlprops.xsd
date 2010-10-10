@@ -31,7 +31,7 @@ o generate the classes (from the same directory)
   <xsd:element name="schemaRefs">
   	<xsd:complexType>
   		<xsd:sequence>
-  			<xsd:element name="schemaRef"  minOccurs="0" >
+  			<xsd:element name="schemaRef"  minOccurs="0" maxOccurs="unbounded"> 
   				<xsd:complexType>
   					<xsd:attribute name="uri" type="xsd:string"
   						use="required" />
