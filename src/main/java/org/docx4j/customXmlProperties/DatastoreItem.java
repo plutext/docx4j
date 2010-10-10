@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://schemas.openxmlformats.org/officedocument/2006/2/customXml}schemaRefs" minOccurs="0"/>
+ *         &lt;element ref="{http://schemas.openxmlformats.org/officeDocument/2006/customXml}schemaRefs" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="itemID" use="required">
  *         &lt;simpleType>
