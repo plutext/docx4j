@@ -58,6 +58,7 @@ import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.CTSdtContentRow;
 import org.docx4j.wml.CTSdtContentRun;
+import org.docx4j.wml.P;
 import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
@@ -454,6 +455,9 @@ public final class CustomXmlDataStoragePart extends Part {
 					CTSdtContentCell sdtCellContent = ((org.docx4j.wml.CTSdtCell)sdt).getSdtContent();
 					Tc tc = (Tc)XmlUtils.unwrap(sdtCellContent.getEGContentCellContent().get(0));
 					tc.getEGBlockLevelElts().clear();
+					// Must contain a paragraph though (at least for Word 2007)
+					P p = Context.getWmlObjectFactory().createP();
+					tc.getEGBlockLevelElts().add(p);
 					
 					List<Object> newContent = new ArrayList<Object>();
 					newContent.add(tc);
