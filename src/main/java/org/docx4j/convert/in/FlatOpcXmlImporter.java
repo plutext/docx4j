@@ -57,6 +57,8 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
@@ -456,20 +458,64 @@ public class FlatOpcXmlImporter  {
 					((BinaryPart)part).setBinaryData( pkgPart.getBinaryData() );	
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
-
-					CustomXmlDataStorage data = Load
-							.getCustomXmlDataStorageClass().factory();
-
-					// Copy el into a new document
-					javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					dbf.setNamespaceAware(true);
-					org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
-					XmlUtils.treeCopy(el, doc);
 					
-					data.setDocument(doc); 
+					// Is it a part we know?
+					try {
+						Unmarshaller u = Context.jc.createUnmarshaller();
+						Object o = u.unmarshal( el );						
+						System.out.println(o.getClass().getName());
+						
+						PartName name = part.getPartName();
+						
+						if (o instanceof org.opendope.conditions.Conditions) {
+							
+							part = new ConditionsPart(name);
+							((ConditionsPart)part).setJaxbElement(
+									(org.opendope.conditions.Conditions)o);
+							
+							
+						} else if (o instanceof org.opendope.xpaths.Xpaths) {
+							
+							part = new XPathsPart(name);
+							((XPathsPart)part).setJaxbElement(
+									(org.opendope.xpaths.Xpaths)o);
+														
+						} else {
+							
+							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());
+
+							CustomXmlDataStorage data = Load.getCustomXmlDataStorageClass().factory();
+
+							// Copy el into a new document
+							javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+							dbf.setNamespaceAware(true);
+							org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+							XmlUtils.treeCopy(el, doc);
+							
+							data.setDocument(doc); 
+							
+							((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
+									.setData(data);
+							
+						}
+						
+					} catch (javax.xml.bind.UnmarshalException ue) {
+						
+						// No ...
+						CustomXmlDataStorage data = Load.getCustomXmlDataStorageClass().factory();
+
+						// Copy el into a new document
+						javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+						dbf.setNamespaceAware(true);
+						org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
+						XmlUtils.treeCopy(el, doc);
+						
+						data.setDocument(doc); 
+						
+						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
+								.setData(data);
+					}					
 					
-					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
-							.setData(data);
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
 					

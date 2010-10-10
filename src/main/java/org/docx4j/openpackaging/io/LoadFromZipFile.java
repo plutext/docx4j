@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.xml.bind.Unmarshaller;
+
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
@@ -48,6 +50,8 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
@@ -479,9 +483,46 @@ public class LoadFromZipFile extends Load {
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
 					
-					CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();					
-					data.setDocument(is); // Not necessarily JAXB, that's just our method name
-					((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);
+					// Is it a part we know?
+					try {
+						Unmarshaller u = Context.jc.createUnmarshaller();
+						Object o = u.unmarshal( is );						
+						System.out.println(o.getClass().getName());
+						
+						PartName name = part.getPartName();
+						
+						if (o instanceof org.opendope.conditions.Conditions) {
+							
+							part = new ConditionsPart(name);
+							((ConditionsPart)part).setJaxbElement(
+									(org.opendope.conditions.Conditions)o);
+							
+							
+						} else if (o instanceof org.opendope.xpaths.Xpaths) {
+							
+							part = new XPathsPart(name);
+							((XPathsPart)part).setJaxbElement(
+									(org.opendope.xpaths.Xpaths)o);
+														
+						} else {
+							
+							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());
+
+							CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();					
+							is.reset();
+							data.setDocument(is); // Not necessarily JAXB, that's just our method name
+							((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);						
+							
+						}
+						
+					} catch (javax.xml.bind.UnmarshalException ue) {
+						
+						// No ...
+						CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();	
+						is.reset();
+						data.setDocument(is); // Not necessarily JAXB, that's just our method name
+						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).setData(data);						
+					}					
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
 					
