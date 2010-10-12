@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><head><style><!--
+
+						/*paged media */ 
+						div.header {display: none }
+						div.footer {display: none } 
+						/*@media print { */
+						
+
+						@page { size: A4; margin: 10%; @top-center {
+						content: element(header) } @bottom-center {
+						content: element(footer) } }
+
+
+						/*font definitions*/
+
+						/*element styles*/ del
+						{text-decoration:line-through;color:red;}
+						
+								ins {text-decoration:none;}
+							
+
+						/*class styles*/
+
+						
+						
+						/* Word style definitions */
+						
+ /* TABLE STYLES */ 
+
+ /* PARAGRAPH STYLES */ 
+.DocDefaults {display:block;space-after: 4mm;line-height: 115%;font-family: Calibri;font-size: 11.0pt;}
+.Normal {display:block;}
+.Heading1 {display:block;page-break-after: avoid;space-before: 0.33in;space-after: 0in;font-weight: bold;color: #365F91;font-family: Calibri;font-size: 12.0pt;}
+.ListParagraph {display:block;position: relative; margin-left: 0.5in;}
+.Title {display:block;border-bottom-style: solid;border-bottom-width: 0.35mm;border-bottom-color: #4F81BD;space-after: 0.21in;line-height: 100%;color: #17365D;font-family: Calibri;font-size: 26.0pt;}
+
+ /* CHARACTER STYLES */ .DefaultParagraphFont {display:inline;}
+.Hyperlink {display:inline;color: #0000FF;text-decoration: none;}
+.apple-style-span {display:inline;}
+
+
+						/* TABLE CELL STYLES */
+						--></style></head><body>
+  
+  <p class="Title Normal DocDefaults "><span style="font-size: 14.0pt;">Convention for content control extensions for repeats and conditionals</span><span style="font-size: 14.0pt;"><br clear="all"/>OpenDoPE: Open Document Processing Ecosystem</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">Word's content control data binding provides a natural way to insert text, for example</span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">   <span style="white-space:pre-wrap;">Dear </span></span><span>Click here to enter text.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">That leaves the question of how to handle things like:</span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span class="apple-style-span DefaultParagraphFont " style="font-weight: bold;color: #000000;font-family: Arial;font-size: 8.0pt;">conditional inclusion</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> of paragraphs or other units of content</span></span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span class="apple-style-span DefaultParagraphFont " style="font-weight: bold;color: #000000;font-family: Arial;font-size: 8.0pt;">repeat</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> (eg of list items, table rows, or other units of content)</span></span></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">inclusion of other documents as well (</span><span class="apple-style-span DefaultParagraphFont " style="font-weight: bold;color: #000000;font-family: Arial;font-size: 8.0pt;">altChunk</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">)</span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Conditional Inclusion</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">A content control is said to be conditional if it (and its contents) are included/excluded from the document based on whether some condition is true or false.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Without a way to say that a content control is conditional, an XML file can't control whether paragraphs, tables etc appear in a document.  </span></span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Repeats</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">A content control is a repeat if it designates that its contents are to be included more than once.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">For example, a row of a table for each invoice/order item, or person.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Without a way to say that a content control is to be repeated, an XML file can't contain variable amounts of repetitive content.  </span></span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Problem Statement</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">The problem is that the Open XML specification does not</span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">standardise how conditionals and repeats can be done, and nor does Microsoft give any</span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">guidance or convention.</span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">This is a significant limitation on document generation, which each system typically has to address.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">A standardised way of doing repeats and conditionals would prevent businesses from re-inventing the wheel, and provide for enhanced interoperability. </span></span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">The purpose of this document is to suggest a convention, which various tools could implement.</span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Suggested Convention</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">The suggested convention is to use the Content Control's </span></span><span style="font-weight: bold;color: #000000;font-family: Arial;font-size: 8.0pt;text-decoration: none;">tag</span><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> to indicate that that control is a condition or a repeat.  </span></span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">What we actually put there is a condition ID or repeat ID.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">The actual conditions and repeats are defined in their own XML parts.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">These parts are separate from the user's custom XML part, which is not altered by this convention.</span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Processing model</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">The tag is preprocessed via an appropriate tool, to produce a new docx document.  </span></span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">Any content controls with a condition ID tag evaluated to false will be missing from this new docx document.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Any content controls which had repeat ID tag will have their content appear n times, where n is the number of child nodes </span></span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Example documents</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">An example can be found in </span></span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/sample-docs/databinding/"><span class="Hyperlink DefaultParagraphFont " style="font-size: 9.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j/sample-docs/databinding/</span></a></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">invoice.docx contains examples of conditionals and repeats, using the proposed conventions.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">The custom xml used in the example is:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">invoice</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">customer</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">Joe Bloggs</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">customer</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">items</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">item</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">apples</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">price</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">$20</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">price</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">item</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">item</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">bananas</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">price</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">$30</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">price</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">item</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">item</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">cherries</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">name</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">price</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">$40</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">price</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">item</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">total</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">$90</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">total</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">items</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">misc</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">includeBankDetails</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">true</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">includeBankDetails</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">misc</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">   </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">invoice</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">invoice_preprocessed_OUT.xml is the result of processing invoice.docx, using the docx4j implementation of this convention.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">invoice_bound_OUT.xml is the result of processing all the binding information (ie the equivalent of what Word does when opening invoice_preprocessed_OUT.xml).</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">Notice that Word 2007 can open all 3 documents, and behaves as one would expect.</span></p>
+  
+  <p class="Heading1 Normal DocDefaults ">XPath definitions</p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">There is a Custom XML Part which specifies all the XPath expressions used, in repeats, conditions, and standard bindings.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">For example:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpaths</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">xmlns:od</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">http://opendope.org/xpaths</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x1</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8B049945-9DFE-4726-9DE9-CF5691E53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/customer[1]/name[1]</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x2</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8b049945-9dfe-4726-9de9-cf5691e53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/items</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x3</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8B049945-9DFE-4726-9DE9-CF5691E53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/items/item[1]/name</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpaths</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">Because a repeat tag refers to an ID in this part, the entry in the tag can be kept short (which is important since Word 2007 has a 74 character limit on the tag length).</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">If the document is setup for interactive processing, each entry in this part will also reference a questionID:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x1</span><span style="font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">" </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">questionID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">q1</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">For this reason, content controls which are just standard binds also reference the XPaths part via their tag.</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Heading1 Normal DocDefaults ">od:xpath tag</p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">As explained above, content controls which are just standard binds reference the XPaths part via their tag.  This is so that in interactive mode, their question can also be found by looking in the XPaths part.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">So a plain vanilla bind looks like:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">        &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8B049945-9DFE-4726-9DE9-CF5691E53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/customer[1]/name[1]</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;"><span style="white-space:pre-wrap;">        &lt;</span></span><span style="font-weight: bold;color: #A31515;font-family: Consolas;font-size: 10.0pt;">w:tag</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;"><span style="white-space:pre-wrap;"> </span></span><span style="font-weight: bold;color: #FF0000;font-family: Consolas;font-size: 10.0pt;">w:val</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">=</span><span style="font-weight: bold;font-family: Consolas;font-size: 10.0pt;">"</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">od:xpath=x1</span><span style="font-weight: bold;font-family: Consolas;font-size: 10.0pt;"><span style="white-space:pre-wrap;"> "</span></span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="font-family: Consolas;font-size: 7.5pt;">with the XPaths part containing the same information:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x1</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8B049945-9DFE-4726-9DE9-CF5691E53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/customer[1]/name[1]</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">(It is only really useful if there is a </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">@questionID</span><span style="font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> )</span></span></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Heading1 Normal DocDefaults ">od:condition tag</p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">The content control is included if its condition evaluates to true, and excluded if it is false.</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">If you look at invoice.docx, you'll see it contains an sdt with:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;"><span style="white-space:pre-wrap;">        &lt;</span></span><span style="font-weight: bold;color: #A31515;font-family: Consolas;font-size: 10.0pt;">w:tag</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;"><span style="white-space:pre-wrap;"> </span></span><span style="font-weight: bold;color: #FF0000;font-family: Consolas;font-size: 10.0pt;">w:val</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">=</span><span style="font-weight: bold;font-family: Consolas;font-size: 10.0pt;">"</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">od:condition=c5</span><span style="font-weight: bold;font-family: Consolas;font-size: 10.0pt;">"</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">This refers to the conditions CustomXML part:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:conditions</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">xmlns:od</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">http://opendope.org/conditions</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> &gt;</span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:condition</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">c5</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x5</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:condition</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:condition</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">c6</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x6</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:condition</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:conditions</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">In this example, the condition simply uses the value of </span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x5</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">but boolean expressions are also permitted.</span></p>
+  
+  <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Document Setup</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">The free OpenDoPE Word Add-In is recommended for setting up data bindings as per these conventions.  You can download it from http://dev.plutext.org/opendope/setup.exe</span></p>
+  
+  <p class="Normal DocDefaults "><span style="color: #000000;font-family: Arial;font-size: 8.0pt;">Please note you'll need to first install the full .NET 4.0 framework (the Client profile is not enough).</span></p>
+  
+  <p class="Heading1 Normal DocDefaults ">od:repeat tag</p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">invoice.docx contains the following example:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdt</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">        &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">          &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:alias</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:val</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">Repeat</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;"><span style="white-space:pre-wrap;">        &lt;</span></span><span style="font-weight: bold;color: #A31515;font-family: Consolas;font-size: 10.0pt;">w:tag</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;"><span style="white-space:pre-wrap;"> </span></span><span style="font-weight: bold;color: #FF0000;font-family: Consolas;font-size: 10.0pt;">w:val</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">=</span><span style="font-weight: bold;font-family: Consolas;font-size: 10.0pt;">"</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">od:repeat=x2</span><span style="font-weight: bold;font-family: Consolas;font-size: 10.0pt;">"</span><span style="font-weight: bold;color: #0000FF;font-family: Consolas;font-size: 10.0pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">        &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">        &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtContent</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">          &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">            &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdt</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8B049945-9DFE-4726-9DE9-CF5691E53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/items/item[1]/name</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:alias</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:val</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">Description</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tag</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:val</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">Description=Description</span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">&amp;amp;</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">od:xpath=x3</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:text</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtContent</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tc</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:p</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:r</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:t</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">apples</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:t</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                    &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:r</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:p</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tc</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtContent</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">            &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdt</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">            &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdt</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8B049945-9DFE-4726-9DE9-CF5691E53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/items/item[1]/price</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:alias</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:val</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">Price</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tag</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">w:val</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">price=price</span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">&amp;amp;</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">od:xpath=x4</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtPr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtContent</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tc</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:p</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:r</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                      &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:t</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span><span style="font-family: Consolas;font-size: 7.5pt;">$20</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&lt;/</span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:t</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                    &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:r</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:p</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">                &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tc</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">              &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtContent</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">            &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdt</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">          &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:tr</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">        &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdtContent</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">      &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">w:sdt</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">od:repeat refers to XPath x2, which is:</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">id</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">x2</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">    &lt;</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:dataBinding</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">storeItemID</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">{8b049945-9dfe-4726-9de9-cf5691e53858}</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #FF0000;font-family: Consolas;font-size: 7.5pt;">xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">=</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/items</span><span style="font-family: Consolas;font-size: 7.5pt;">"</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;"><span style="white-space:pre-wrap;">  &lt;/</span></span><span style="color: #A31515;font-family: Consolas;font-size: 7.5pt;">od:xpath</span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">&gt;</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"/>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">So the table row will be duplicated, once for each </span></span><span style="color: #0000FF;font-family: Consolas;font-size: 7.5pt;">/invoice[1]/items/item</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">When the repeat is being processed, any w:dataBinding on any child sdt will need to be altered to point at the nth item.</span></p>
+  
+  <p class="Heading1 Normal DocDefaults ">Implementation</p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">This v2 of this convention is implemented in docx4j v2.x.0.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">Source code can be found at </span></span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/src/main/java/org/docx4j/openpackaging/parts/CustomXmlDataStoragePart.java"><span class="Hyperlink DefaultParagraphFont " style="font-size: 8.0pt;">http://dev.plutext.org/svn/docx4j/trunk/docx4j/src/main/java/org/docx4j/openpackaging/parts/CustomXmlDataStoragePart.java</span></a></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Heading1 Normal DocDefaults ">Namespace</p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">There is an XSD for each of the following:</span></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><span style="white-space:pre-wrap;">the conditions part, </span></span></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">the xpaths part,</span></p>
+  
+  <p class="ListParagraph Normal DocDefaults "><span style="position: relative; margin-left: 0.5in;font-family: Symbol;"> </span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">the questions part.</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">The namespaces can be seen in the example XML above.</span></p>
+  
+  <p class="Normal DocDefaults "/>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">Jason Harrop</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><br clear="all"/>Plutext</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">document version v2</span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;"><br clear="all"/>10 October 2010</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">This version supersedes the previous version 1 (which was implemented in docx4j v2.5.0).  Compared to version 1, there are three main improvements:</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">1. content in the sdt tag is minimised, which is necessary since Word restricts the tag content to 64 characters</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">2. supports conditions made up of boolean expressions</span></p>
+  
+  <p class="Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Arial;font-size: 8.0pt;">3. supports interactive processing (ie user gets asked questions); v1 only supported non-interactive processing</span></p>
+  
+  </body></html>
