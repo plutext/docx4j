@@ -324,6 +324,18 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     			}
     		}    		
     	}
+    	// try using id=style0
+    	if (defaultParagraphStyle==null) {
+    		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+    			if( s.getType().equals("paragraph")
+    					&& s.getStyleId().equals("style0") ) {
+    				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
+    				defaultParagraphStyle=s;
+    				break;
+    			}
+    		}    		
+    	}
+    	
 		return defaultParagraphStyle;
     }
     private Style getDefaultStyle(String type) {
