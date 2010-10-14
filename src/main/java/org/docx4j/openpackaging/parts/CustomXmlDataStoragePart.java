@@ -465,7 +465,7 @@ public final class CustomXmlDataStoragePart extends Part {
 
 	private static org.opendope.xpaths.Xpaths.Xpath getXPathFromCondition(Condition c) {
 		
-		org.opendope.conditions.Xpath xpathRef = c.getXpath();
+		org.opendope.conditions.Xpathref xpathRef = c.getXpathref();
 		// Now get the xpath 
 		return XPathsPart.getXPathById(xPaths, xpathRef.getId()); 					
 	}
@@ -767,7 +767,7 @@ public final class CustomXmlDataStoragePart extends Part {
 							xpathObj, index);
 					
 					// Use it
-					newCondition.getXpath().setId(newXPathObj.getId());					
+					newCondition.getXpathref().setId(newXPathObj.getId());					
 					
 				} else if (repeatId!=null) {			
 			
@@ -1124,8 +1124,8 @@ public final class CustomXmlDataStoragePart extends Part {
 					Condition c = conditionsFactory.createCondition();
 					c.setId("c"+i);
 					conditions.getCondition().add(c);
-					org.opendope.conditions.Xpath cxp = conditionsFactory.createXpath();
-					c.setXpath(cxp);
+					org.opendope.conditions.Xpathref cxp = conditionsFactory.createXpathref();
+					c.setXpathref(cxp);
 					cxp.setId("x"+i);
 					
 					// Write tag

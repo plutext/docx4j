@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;choice>
- *           &lt;element ref="{http://opendope.org/conditions}xpath" minOccurs="0"/>
+ *           &lt;element ref="{http://opendope.org/conditions}xpathref" minOccurs="0"/>
  *           &lt;element ref="{http://opendope.org/conditions}and" minOccurs="0"/>
  *           &lt;element ref="{http://opendope.org/conditions}or" minOccurs="0"/>
  *           &lt;element ref="{http://opendope.org/conditions}not" minOccurs="0"/>
@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "xpath",
+    "xpathref",
     "and",
     "or",
     "not"
@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement(name = "condition")
 public class Condition {
 
-    protected Xpath xpath;
+    protected Xpathref xpathref;
     protected And and;
     protected Or or;
     protected Not not;
@@ -67,27 +67,27 @@ public class Condition {
     protected String comments;
 
     /**
-     * Gets the value of the xpath property.
+     * Gets the value of the xpathref property.
      * 
      * @return
      *     possible object is
-     *     {@link Xpath }
+     *     {@link Xpathref }
      *     
      */
-    public Xpath getXpath() {
-        return xpath;
+    public Xpathref getXpathref() {
+        return xpathref;
     }
 
     /**
-     * Sets the value of the xpath property.
+     * Sets the value of the xpathref property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Xpath }
+     *     {@link Xpathref }
      *     
      */
-    public void setXpath(Xpath value) {
-        this.xpath = value;
+    public void setXpathref(Xpathref value) {
+        this.xpathref = value;
     }
 
     /**

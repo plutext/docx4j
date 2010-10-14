@@ -51,11 +51,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Xpath }
+     * Create an instance of {@link Xpathref }
      * 
      */
-    public Xpath createXpath() {
-        return new Xpath();
+    public Xpathref createXpathref() {
+        return new Xpathref();
     }
 
     /**

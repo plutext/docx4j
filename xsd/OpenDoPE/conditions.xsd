@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:odc="http://opendope.org/conditions" attributeFormDefault="unqualified" 
+elementFormDefault="qualified" targetNamespace="http://opendope.org/conditions" 
+xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1"
+	jaxb:extensionBindingPrefixes="xjc"> 
+
+<!--
+
+JAXB INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+  
+  (I used JAXB 2.1.10 included in JDK 1.6.0_15)
+		
+  To generate the classes (from the same directory)	
+			
+ 	 xjc  conditions.xsd -d ~/workspace/docx4j/src/main/java -no-header -target 2.0 -extension
+
+ 	 xjc  conditions.xsd -d tmp -no-header -target 2.0 -extension
+
+-->
+
+  <xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				
+				<jaxb:package name="org.opendope.conditions"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>    
+  </xs:annotation>
+
+  <xs:element name="conditions">
+    <xs:complexType>
+      <xs:sequence> <!-- must use Array rather than List in Xsd2Code -->
+        <xs:element maxOccurs="unbounded" ref="odc:condition" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="condition">
+    <xs:complexType>
+      <xs:sequence> 
+        <xs:choice  maxOccurs="1">
+          <xs:element minOccurs="0" ref="odc:xpathref" />
+          <xs:element minOccurs="0" ref="odc:and" />
+          <xs:element minOccurs="0" ref="odc:or"  />
+          <xs:element minOccurs="0" ref="odc:not"  />
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:ID" use="required" />
+      <xs:attribute name="name" type="xs:string" />
+      <xs:attribute name="descrption" type="xs:string" />
+      <xs:attribute name="comments" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="true"/>
+  <xs:element name="false"/>
+
+  <xs:element name="and">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice maxOccurs="unbounded">
+          <xs:element minOccurs="0" ref="odc:xpathref" />
+          <xs:element minOccurs="0" ref="odc:and" />
+          <xs:element minOccurs="0" ref="odc:or"  />
+          <xs:element minOccurs="0" ref="odc:not"  />
+          <xs:element minOccurs="0" ref="odc:conditionref"  />
+          <xs:element minOccurs="0" ref="odc:true" />
+          <xs:element minOccurs="0" ref="odc:false"  />
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="or">
+    <xs:complexType>
+      <xs:sequence>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element minOccurs="0" ref="odc:xpathref" />
+        <xs:element minOccurs="0" ref="odc:and" />
+        <xs:element minOccurs="0" ref="odc:or"  />
+        <xs:element minOccurs="0" ref="odc:not"  />
+        <xs:element minOccurs="0" ref="odc:conditionref"  />
+        <xs:element minOccurs="0" ref="odc:true" />
+        <xs:element minOccurs="0" ref="odc:false"  />
+      </xs:choice>
+    </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="not">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice maxOccurs="1">
+          <xs:element minOccurs="0" ref="odc:xpathref" />
+          <xs:element minOccurs="0" ref="odc:and"  />
+          <xs:element minOccurs="0" ref="odc:or"  />
+          <xs:element minOccurs="0" ref="odc:not"  />
+          <xs:element minOccurs="0" ref="odc:conditionref"  />
+          <xs:element minOccurs="0" ref="odc:true" />
+          <xs:element minOccurs="0" ref="odc:false"  />
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="xpathref">
+    <xs:complexType>
+      <xs:attribute name="id" type="xs:NCName" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="conditionref">
+    <xs:complexType>
+      <xs:attribute name="id" type="xs:NCName" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+        </xs:schema>

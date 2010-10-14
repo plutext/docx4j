@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;choice maxOccurs="unbounded">
- *           &lt;element ref="{http://opendope.org/conditions}xpath" minOccurs="0"/>
+ *           &lt;element ref="{http://opendope.org/conditions}xpathref" minOccurs="0"/>
  *           &lt;element ref="{http://opendope.org/conditions}and" minOccurs="0"/>
  *           &lt;element ref="{http://opendope.org/conditions}or" minOccurs="0"/>
  *           &lt;element ref="{http://opendope.org/conditions}not" minOccurs="0"/>
@@ -41,42 +41,42 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "xpathOrAndOrOr"
+    "xpathrefOrAndOrOr"
 })
 @XmlRootElement(name = "and")
 public class And {
 
     @XmlElementRefs({
         @XmlElementRef(name = "and", namespace = "http://opendope.org/conditions", type = And.class),
-        @XmlElementRef(name = "xpath", namespace = "http://opendope.org/conditions", type = Xpath.class),
+        @XmlElementRef(name = "xpathref", namespace = "http://opendope.org/conditions", type = Xpathref.class),
         @XmlElementRef(name = "false", namespace = "http://opendope.org/conditions", type = JAXBElement.class),
         @XmlElementRef(name = "not", namespace = "http://opendope.org/conditions", type = Not.class),
         @XmlElementRef(name = "or", namespace = "http://opendope.org/conditions", type = Or.class),
         @XmlElementRef(name = "true", namespace = "http://opendope.org/conditions", type = JAXBElement.class),
         @XmlElementRef(name = "conditionref", namespace = "http://opendope.org/conditions", type = Conditionref.class)
     })
-    protected List<Object> xpathOrAndOrOr;
+    protected List<Object> xpathrefOrAndOrOr;
 
     /**
-     * Gets the value of the xpathOrAndOrOr property.
+     * Gets the value of the xpathrefOrAndOrOr property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the xpathOrAndOrOr property.
+     * This is why there is not a <CODE>set</CODE> method for the xpathrefOrAndOrOr property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getXpathOrAndOrOr().add(newItem);
+     *    getXpathrefOrAndOrOr().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
      * {@link And }
-     * {@link Xpath }
+     * {@link Xpathref }
      * {@link JAXBElement }{@code <}{@link Object }{@code >}
      * {@link Not }
      * {@link Or }
@@ -85,11 +85,11 @@ public class And {
      * 
      * 
      */
-    public List<Object> getXpathOrAndOrOr() {
-        if (xpathOrAndOrOr == null) {
-            xpathOrAndOrOr = new ArrayList<Object>();
+    public List<Object> getXpathrefOrAndOrOr() {
+        if (xpathrefOrAndOrOr == null) {
+            xpathrefOrAndOrOr = new ArrayList<Object>();
         }
-        return this.xpathOrAndOrOr;
+        return this.xpathrefOrAndOrOr;
     }
 
 }
