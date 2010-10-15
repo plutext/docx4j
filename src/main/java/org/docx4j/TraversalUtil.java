@@ -100,6 +100,8 @@ public class TraversalUtil {
 		} else if (o instanceof org.docx4j.wml.CTSdtRow) {
 			return ((org.docx4j.wml.CTSdtRow) o).getSdtContent()
 					.getEGContentRowContent();
+		} else if (o instanceof org.docx4j.wml.CTSdtCell) {
+			return ((org.docx4j.wml.CTSdtCell) o).getSdtContent().getEGContentCellContent();
 		} else if (o instanceof org.docx4j.wml.Body) {
 			return ((org.docx4j.wml.Body) o).getEGBlockLevelElts();
 		}
