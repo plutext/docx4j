@@ -85,7 +85,7 @@ public class Justification extends AbstractParagraphProperty {
 		if (val.equals("left") || val.equals("center") || val.equals("right")) {			
 			foElement.setAttribute(FO_NAME,  val);
 		} else if (val.equals("both")) {
-			//TP
+			foElement.setAttribute(FO_NAME,  "justify");
 		} // ignore the other possibilities for now
 		
 	}
