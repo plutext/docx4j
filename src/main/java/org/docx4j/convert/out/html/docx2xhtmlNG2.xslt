@@ -120,6 +120,18 @@
 
           </xsl:comment>
         </style>
+        
+		<script type="text/javascript">
+  			<!-- For collapsible content controls -->
+  			function toggleDiv(divid){
+    			if(document.getElementById(divid).style.display == 'none'){
+      				document.getElementById(divid).style.display = 'block';
+    			}else{
+      			document.getElementById(divid).style.display = 'none';
+    			}
+  			}
+  		</script>        
+        
       </head>
 
       <body>
@@ -323,6 +335,26 @@
   				</xsl:otherwise>  				
   			</xsl:choose>
   		
+  		</xsl:when>
+  		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, '@class=collapse')">
+  			<!-- Collapsible -->
+  			<xsl:variable name="id" select="string(w:sdtPr/w:id/@w:val)"/>
+			<p style="padding-left: 30px;"><a onmousedown="toggleDiv('t{$id}');" href="javascript:;">Toggle: <xsl:value-of select="w:sdtPr/w:alias/@w:val"/></a></p>
+			
+			<!-- collapsed or expanded?  Default is collapsed.  -->
+			<xsl:choose>
+		  		<xsl:when test="contains(./w:sdtPr/w:tag/@w:val, 'display=block')">
+					<div id="t{$id}" style="display: block;">     			
+	  					<xsl:apply-templates select="w:sdtContent/*"/>
+					</div> 
+  				</xsl:when>
+		  		<xsl:otherwise>
+					<div id="t{$id}" style="display: none;">     			
+	  					<xsl:apply-templates select="w:sdtContent/*"/>
+					</div> 
+  				</xsl:otherwise>  				
+			</xsl:choose>
+			
   		</xsl:when>
   		<xsl:otherwise>
   			<xsl:apply-templates select="w:sdtContent/*"/>
