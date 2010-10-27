@@ -58,6 +58,7 @@ import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
@@ -479,7 +480,13 @@ public class FlatOpcXmlImporter  {
 							part = new XPathsPart(name);
 							((XPathsPart)part).setJaxbElement(
 									(org.opendope.xpaths.Xpaths)o);
-														
+
+						} else if (o instanceof org.opendope.questions.Questionnaire) {
+							
+							part = new QuestionsPart(name);
+							((QuestionsPart)part).setJaxbElement(
+									(org.opendope.questions.Questionnaire)o);
+							
 						} else {
 							
 							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());

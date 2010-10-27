@@ -36,6 +36,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
+import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
@@ -125,6 +126,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 			return true;	
 		} else if (part instanceof ConditionsPart) {
 			conditionsPart = ((ConditionsPart)part);
+			return true;
+		} else if (part instanceof QuestionsPart) {
+			questionsPart = ((QuestionsPart)part);
 			return true;
 		} else if (part instanceof XPathsPart) {
 			xPathsPart = ((XPathsPart)part);
@@ -269,5 +273,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 //		this.xPathsPart = xPathsPart;
 //	}
 	
+	private QuestionsPart questionsPart;
+	public QuestionsPart getQuestionsPart() {
+		return questionsPart;
+	}
 	
 }
