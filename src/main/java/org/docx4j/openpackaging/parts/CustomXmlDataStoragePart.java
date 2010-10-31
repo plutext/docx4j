@@ -120,9 +120,9 @@ public final class CustomXmlDataStoragePart extends Part {
 		log.info(message);
 	}
 		
-	private final static String BINDING_ROLE_REPEAT = "od:repeat";
-	private final static String BINDING_ROLE_CONDITIONAL = "od:condition";
-	private final static String BINDING_ROLE_XPATH = "od:xpath";
+	public final static String BINDING_ROLE_REPEAT = "od:repeat";
+	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
+	public final static String BINDING_ROLE_XPATH = "od:xpath";
 	
 	
 	static Templates xslt;			
@@ -463,7 +463,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		return null;
 	}
 
-	private static org.opendope.xpaths.Xpaths.Xpath getXPathFromCondition(Condition c) {
+	public static org.opendope.xpaths.Xpaths.Xpath getXPathFromCondition(Condition c) {
 		
 		org.opendope.conditions.Xpathref xpathRef = c.getXpathref();
 		// Now get the xpath 
@@ -488,9 +488,10 @@ public final class CustomXmlDataStoragePart extends Part {
 		
 		// Get the bound XML	
 		String xpathBase;
-		if (xpath.endsWith("/*")) {
-			xpathBase = xpath.substring(0, xpath.length()-2);
-		} else if (xpath.endsWith("/")) {
+//		if (xpath.endsWith("/*")) {
+//			xpathBase = xpath.substring(0, xpath.length()-2);
+//		} else
+			if (xpath.endsWith("/")) {
 			xpathBase = xpath.substring(0, xpath.length()-1);
 		} else {
 			xpathBase = xpath;
@@ -500,10 +501,11 @@ public final class CustomXmlDataStoragePart extends Part {
 //		if (xpathBase.endsWith("]")) 
 //			xpathBase = xpathBase.substring(0, xpathBase.lastIndexOf("["));
 		
-		log.info("/n/n Repeat: using xpath: " + xpathBase+"/*");
+		log.info("/n/n Repeat: using xpath: " + xpathBase);
 		NamespaceContext nsContext = new NamespacePrefixMappings();			
 		List<Node> repeatChildren = xpathGetNodes(customXmlDataStorageParts,
-				storeItemId, xpathBase+"/*", prefixMappings);	
+				storeItemId, xpathBase, prefixMappings);	
+//				storeItemId, xpathBase+"/*", prefixMappings);	
 		
 		// Count children
 		int numRepeats = repeatChildren.size();
@@ -724,8 +726,8 @@ public final class CustomXmlDataStoragePart extends Part {
 		 */
 		if (thisXPath.startsWith(xpathBase)) {
 			log.debug("xpathBase: " + xpathBase);
-			int beginIndex = thisXPath.indexOf("/", xpathBase.length() ); // +1 for good measure	  
-			int endIndex = thisXPath.indexOf("/", beginIndex+1 ); 
+			int beginIndex = thisXPath.indexOf("/", xpathBase.length()-1 ); // +1 for good measure	  
+			int endIndex = thisXPath.indexOf("/", beginIndex ); 
 			
 			String newPath;
 			if (endIndex<0) {
