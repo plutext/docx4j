@@ -19,12 +19,15 @@
               from the definition in an _rels file
               (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
-<!-- 
-  <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
-   -->
-<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" />
+<!--  <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/> -->
+   
+<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" 
+doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+      doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
 <!--  indent="no" gives a better result for things like subscripts, because it stops
       the user-agent from replacing a carriage return in the HTML with a space in the output. -->
+<!-- TODO strict dtd -->
+
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
@@ -54,7 +57,7 @@
 				select="java:org.docx4j.convert.out.html.HtmlExporter.log('/pkg:package')" />
 
 
-    <html>
+    <html xmlns="http://www.w3.org/1999/xhtml">
       <head>
 		
         <style>
