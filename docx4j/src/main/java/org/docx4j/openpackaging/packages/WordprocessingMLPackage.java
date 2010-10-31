@@ -419,7 +419,8 @@ public class WordprocessingMLPackage extends OpcPackage {
 			
 		} catch (Exception e) {
 			// TODO: handle exception
-			e.printStackTrace();			
+			//e.printStackTrace();	
+			log.error(e);
 		}
 		// Return the new package
 		return wmlPack;
