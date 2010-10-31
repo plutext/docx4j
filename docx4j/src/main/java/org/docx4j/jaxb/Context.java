@@ -92,6 +92,7 @@ public class Context {
 			log.info(".. others loaded ..");
 			
 		} catch (Exception ex) {
+			log.error(ex);
 			ex.printStackTrace();
 		}				
 	}
