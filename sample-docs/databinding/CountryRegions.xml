@@ -1374,13 +1374,13 @@
         <pkg:xmlData>
             <ns15:xpaths xmlns:ns15="http://opendope.org/xpaths" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:ns10="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:ns12="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:ns16="http://opendope.org/conditions" xmlns:ns17="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:ns18="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:ns7="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:ns8="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:ns9="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">
                 <ns15:xpath xmlns="" id="x1">
-                    <ns15:dataBinding storeItemID="{d42eb9bd-afc8-4100-9e42-b62bff6817f8}" xpath="/root/countries"/>
+                    <ns15:dataBinding storeItemID="{d42eb9bd-afc8-4100-9e42-b62bff6817f8}" xpath="/root/countries/country"/>
                 </ns15:xpath>
                 <ns15:xpath xmlns="" id="x2">
                     <ns15:dataBinding storeItemID="{D42EB9BD-AFC8-4100-9E42-B62BFF6817F8}" xpath="/root/countries/country/@name"/>
                 </ns15:xpath>
                 <ns15:xpath xmlns="" id="x3">
-                    <ns15:dataBinding storeItemID="{d42eb9bd-afc8-4100-9e42-b62bff6817f8}" xpath="/root/countries/country"/>
+                    <ns15:dataBinding storeItemID="{d42eb9bd-afc8-4100-9e42-b62bff6817f8}" xpath="/root/countries/country/region"/>
                 </ns15:xpath>
                 <ns15:xpath xmlns="" id="x4">
                     <ns15:dataBinding storeItemID="{D42EB9BD-AFC8-4100-9E42-B62BFF6817F8}" xpath="/root/countries/country/region/@name"/>
