@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -57,8 +56,8 @@ import javax.xml.bind.annotation.XmlType;
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                           &lt;all>
- *                             &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}anySimpleType"/>
- *                             &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}anySimpleType"/>
+ *                             &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *                             &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *                           &lt;/all>
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
@@ -154,8 +153,8 @@ public class Response {
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *                 &lt;all>
-     *                   &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}anySimpleType"/>
-     *                   &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}anySimpleType"/>
+     *                   &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string"/>
+     *                   &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string"/>
      *                 &lt;/all>
      *               &lt;/restriction>
      *             &lt;/complexContent>
@@ -272,8 +271,8 @@ public class Response {
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;all>
-         *         &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}anySimpleType"/>
-         *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}anySimpleType"/>
+         *         &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string"/>
+         *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string"/>
          *       &lt;/all>
          *     &lt;/restriction>
          *   &lt;/complexContent>
@@ -289,21 +288,19 @@ public class Response {
         public static class Category {
 
             @XmlElement(required = true)
-            @XmlSchemaType(name = "anySimpleType")
-            protected Object label;
+            protected String label;
             @XmlElement(required = true)
-            @XmlSchemaType(name = "anySimpleType")
-            protected Object value;
+            protected String value;
 
             /**
              * Gets the value of the label property.
              * 
              * @return
              *     possible object is
-             *     {@link Object }
+             *     {@link String }
              *     
              */
-            public Object getLabel() {
+            public String getLabel() {
                 return label;
             }
 
@@ -312,10 +309,10 @@ public class Response {
              * 
              * @param value
              *     allowed object is
-             *     {@link Object }
+             *     {@link String }
              *     
              */
-            public void setLabel(Object value) {
+            public void setLabel(String value) {
                 this.label = value;
             }
 
@@ -324,10 +321,10 @@ public class Response {
              * 
              * @return
              *     possible object is
-             *     {@link Object }
+             *     {@link String }
              *     
              */
-            public Object getValue() {
+            public String getValue() {
                 return value;
             }
 
@@ -336,10 +333,10 @@ public class Response {
              * 
              * @param value
              *     allowed object is
-             *     {@link Object }
+             *     {@link String }
              *     
              */
-            public void setValue(Object value) {
+            public void setValue(String value) {
                 this.value = value;
             }
 
