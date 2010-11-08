@@ -28,7 +28,7 @@ import org.docx4j.wml.CTSdtContentRow;
 public class TraversalUtil {
 
 	private static Logger log = Logger.getLogger(TraversalUtil.class);
-
+	
 	public interface Callback {
 
 		void walkJAXBElements(Object parent);
@@ -54,6 +54,58 @@ public class TraversalUtil {
 		 */
 		boolean shouldTraverse(Object o);
 
+	}	
+
+	public static abstract class CallbackImpl implements Callback {
+
+		// Depth first
+		public void walkJAXBElements(Object parent) {
+			
+			List children = getChildren(parent);
+			if (children != null) {
+
+				for (Object o : children) {
+
+					// if its wrapped in javax.xml.bind.JAXBElement, get its
+					// value; this is ok, provided the results of the Callback
+					// won't be marshalled
+					o = XmlUtils.unwrap(o);
+					
+					this.apply(o);
+
+					if (this.shouldTraverse(o)) {
+						walkJAXBElements(o);
+					}
+
+				}
+			}
+		}
+
+		public List<Object> getChildren(Object o) {
+			return TraversalUtil.getChildrenImpl(o);
+		}
+
+		/**
+		 * Visits a node in pre order (before its children have been visited).
+		 * 
+		 * A node is visited only if all its parents have been traversed (
+		 * {@link #shouldTraverse(Object)}).</p>
+		 * 
+		 * <p>
+		 * Implementations can have side effects.
+		 * </p>
+		 */
+		public abstract List<Object> apply(Object o);
+
+		/**
+		 * Decide whether this node's children should be traversed.
+		 * 
+		 * @return whether the children of this node should be visited
+		 */
+		public boolean shouldTraverse(Object o) {
+			return true;
+		}
+
 	}
 
 	Callback cb;
@@ -73,7 +125,10 @@ public class TraversalUtil {
 		if (o instanceof org.docx4j.wml.Text) return null;
 		
 		// Short circuit for common elements
-		if (o instanceof org.docx4j.wml.R) {
+		if (o instanceof List) {
+			// Handy if you have your own list of objects you wish to process
+			return (List<Object>) o;
+		} else if (o instanceof org.docx4j.wml.R) {
 			return ((org.docx4j.wml.R) o).getRunContent();
 		} else	 if (o instanceof org.docx4j.wml.P) {
 			return ((org.docx4j.wml.P) o).getParagraphContent();
