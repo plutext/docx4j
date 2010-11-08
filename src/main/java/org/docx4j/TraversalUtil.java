@@ -159,10 +159,29 @@ public class TraversalUtil {
 			return ((org.docx4j.wml.CTSdtCell) o).getSdtContent().getEGContentCellContent();
 		} else if (o instanceof org.docx4j.wml.Body) {
 			return ((org.docx4j.wml.Body) o).getEGBlockLevelElts();
+		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+			org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline)o;
+			if (inline.getGraphic()!=null) {
+				log.info("found a:graphic");
+				org.docx4j.dml.Graphic graphic = inline.getGraphic();
+				if (graphic.getGraphicData()!=null) {
+					org.docx4j.dml.GraphicData graphicData = graphic.getGraphicData();
+					// Its not graphicData.getAny() we're typically interested in
+					if (graphicData.getPic()!=null
+						&& graphicData.getPic().getBlipFill()!=null
+						&& graphicData.getPic().getBlipFill().getBlip()!=null) {
+						log.info("found CTBlip");
+						List<Object> artificialList = new ArrayList<Object>();
+						artificialList.add(graphicData.getPic().getBlipFill().getBlip());
+						return artificialList;
+					}
+				}
+			}
 		}
 
 		// OK, what is this? Use reflection ..
-		log.debug("getting children of " + o.getClass().getName() );
+		// This should work for things including w:drawing
+		log.info("getting children of " + o.getClass().getName() );
 		try {
 			Method[] methods = o.getClass().getDeclaredMethods();
 			for (int i = 0; i<methods.length; i++) {
