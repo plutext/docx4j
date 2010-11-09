@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
@@ -570,6 +571,23 @@ public final class PartName implements Comparable<PartName> {
 		return this.partNameURI;
 	}
 
+	public static String generateUniqueName(Base sourcePart, String proposedRelId,
+			String directoryPrefix, String after_, String ext) {
+		
+		// In order to ensure unique part name,
+		// idea is to use the relId, which ought to be unique
+		
+		// Also need partName, since images for different parts are stored in a common dir
+		String sourcepartName = sourcePart.getPartName().getName();
+		int beginIndex = sourcepartName.lastIndexOf("/")+1;
+		int endIndex = sourcepartName.lastIndexOf(".");
+		String partPrefix = sourcepartName.substring(beginIndex, endIndex);
+		
+		
+		return directoryPrefix + partPrefix + "_" + after_ + "_" +  proposedRelId + "." + ext;
+	}
+	
+	
 	/** Return the path of this PartName
 	 * ie up to and including its last '/', 
 	 * but excluding the filename segment.  */

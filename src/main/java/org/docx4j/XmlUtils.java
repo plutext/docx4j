@@ -163,7 +163,7 @@ public class XmlUtils {
 		if (o==null) return null;
 		
 		if (o instanceof javax.xml.bind.JAXBElement) {
-			log.warn("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 			return ((JAXBElement)o).getValue();
 		} else {
 			return o;

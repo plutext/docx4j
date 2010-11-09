@@ -167,4 +167,27 @@ public class BinaryPart extends Part {
         	        
         out.write( bytes );	    
 	}
+	
+    public boolean isContentEqual(BinaryPart other) {
+    	
+    	ByteBuffer thisBB = getBuffer();
+    	ByteBuffer thatBB = other.getBuffer();
+    	
+    	return thisBB.equals(thatBB);
+    	
+//        if (m_ContentType != arg.m_ContentType)
+//            return false;
+        
+//        if (m_Image.GetLongLength(0) != arg.m_Image.GetLongLength(0))
+//            return false;
+//        
+//        // Compare the arrays byte by byte
+//        long length = m_Image.GetLongLength(0);
+//        for (long n = 0; n < length; n++)
+//            if (m_Image[n] != arg.m_Image[n])
+//                return false;
+//        return true;
+    	
+    }
+	
 }
