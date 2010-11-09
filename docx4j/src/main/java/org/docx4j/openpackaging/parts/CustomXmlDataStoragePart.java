@@ -1201,7 +1201,7 @@ public final class CustomXmlDataStoragePart extends Part {
 		org.opendope.xpaths.Xpaths.Xpath.DataBinding db = xpathsFactory.createXpathsXpathDataBinding();
 		xpath.setDataBinding(db);
 		db.setPrefixMappings( prefixMappings);
-		db.setStoreItemID( storeItemId);
+		db.setStoreItemID( storeItemId.toUpperCase() );  // Word writes these in UPPER CASE
 		db.setXpath( xpx );				
 		
 		return xpath;

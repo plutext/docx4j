@@ -48,6 +48,7 @@ import org.docx4j.dml.picture.Pic;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
+import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -155,19 +156,10 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 	}
 	
-	private static String createImageName(Part sourcePart, String proposedRelId ) {
+	public static String createImageName(Base sourcePart, String proposedRelId, String ext ) {
 		
-		// In order to ensure unique part name,
-		// idea is to use the relId, which ought to be unique
-		
-		// Also need partName, since images for different parts are stored in a common dir
-		String sourcepartName = sourcePart.getPartName().getName();
-		int beginIndex = sourcepartName.lastIndexOf("/")+1;
-		int endIndex = sourcepartName.lastIndexOf(".");
-		String partPrefix = sourcepartName.substring(beginIndex, endIndex);
-		
-		return IMAGE_DIR_PREFIX + partPrefix + "_" + IMAGE_NAME_PREFIX +  proposedRelId;
-		
+		return PartName.generateUniqueName(sourcePart, proposedRelId, 
+				IMAGE_DIR_PREFIX, IMAGE_NAME_PREFIX, ext);
 	}
 	
 	/**
@@ -210,9 +202,11 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 				
+		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/"));
+		
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
-				info.getMimeType(), createImageName(sourcePart, proposedRelId)
+				info.getMimeType(), createImageName(sourcePart, proposedRelId, ext)
 				 );
 				
 		log.debug("created part " + imagePart.getClass().getName() +
@@ -360,10 +354,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 		// In order to ensure unique part name,
 		// idea is to use the relId, which ought to be unique
+		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/"));
+		
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
 				info.getMimeType(), 
-				createImageName(sourcePart, proposedRelId) );
+				createImageName(sourcePart, proposedRelId, ext ) );
 				
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());
