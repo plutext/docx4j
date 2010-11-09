@@ -69,43 +69,20 @@
 		    </xsl:copy>  		  			
   </xsl:template>
   
-  <xsl:template match="w:r" mode="bind" priority="2">  
+  <xsl:template match="w:t" mode="bind" priority="2">  
       	<xsl:param name="storeItemID" />
 		<xsl:param name="xpath" />
 		<xsl:param name="prefixMappings" />
   		<!-- >xsl:variable name="dummy" 
   			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:r bind')"/-->
 
-				<!-- TEMP: insert a new w:r, containing result -->
-				<w:r>
 					<w:t><xsl:value-of
 						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.xpathGetString(
 									$customXmlDataStorageParts,
 									$storeItemID,
 									$xpath,
 									$prefixMappings)" /></w:t>
-				</w:r>
-<!-- INSTEAD OF
-		<xsl:choose>
-			<xsl:when test="w:rPr/w:rStyle/@w:val='Entry' or w:rPr/w:rStyle/@w:val='PlaceholderText'">
-				<w:r>
-					<w:rPr>
-						<w:rStyle w:val="Entry"/>
-						<xsl:copy-of select="w:rPr/*[not(self::w:rStyle)]"/>
-					</w:rPr>
-					<w:t><xsl:value-of
-						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.xpathGetString(
-									$customXmlDataStorageParts,
-									$storeItemID,
-									$xpath,
-									$prefixMappings)" /></w:t>
-				</w:r>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:copy-of select="."/>
-			</xsl:otherwise>
-		</xsl:choose>
-		-->
+									
   </xsl:template>
 
   <!-- Remove these, so missing data does not result
