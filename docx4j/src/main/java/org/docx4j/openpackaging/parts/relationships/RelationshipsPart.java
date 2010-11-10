@@ -571,6 +571,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		return rel;
 
 	}
+	
 
 	/**
 	 * Add the specified relationship to the collection.
@@ -664,21 +665,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 					// This method can't be used to remove external resources
 					continue;
 				}
-								
-				URI resolvedTargetURI = null;
-
-				try {
-					resolvedTargetURI = org.docx4j.openpackaging.URIHelper
-							.resolvePartUri(sourceP.partName.getURI(), new URI(
-									rel.getTarget()));
-				} catch (URISyntaxException e) {
-					log.error("Cannot convert " + rel.getTarget()
-							+ " in a valid relationship URI-> ignored", e);
-				}		
-
-				log.debug("Comparing " + resolvedTargetURI + " == " + partName.getName());
-				
-				if (partName.getName().equals(resolvedTargetURI.toString()) ) { 
+							
+				if (isTarget(partName, rel) ) {
 					// was rel.getTargetURI()
 					
 					log.info("True - will delete relationship with id " + rel.getId() 
@@ -712,6 +700,55 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 //		this.isDirty = true;
 	}
+	
+	/**
+	 * Is partname a target of any of these rels?
+	 * @param partName
+	 * @return
+	 */
+	public boolean isATarget(PartName partName) {
+		
+		for (Relationship rel : jaxbElement.getRelationship() ) {
+			
+			// TODO: come back to this
+			if (rel.getTargetMode() !=null
+					&& rel.getTargetMode().equals("External") ) {
+				// This method can't be used to remove external resources
+				continue;
+			}
+						
+			if (isTarget(partName, rel) ) {
+				return true;
+			}
+		}
+		return false;		
+	}	
+	
+	/**
+	 * Is partName the target of the specified rel?
+	 * @param partName
+	 * @param rel
+	 * @return
+	 */
+	public boolean isTarget(PartName partName, Relationship rel) {
+		
+		URI resolvedTargetURI = null;
+
+		try {
+			resolvedTargetURI = org.docx4j.openpackaging.URIHelper
+					.resolvePartUri(sourceP.partName.getURI(), new URI(
+							rel.getTarget()));
+		} catch (URISyntaxException e) {
+			log.error("Cannot convert " + rel.getTarget()
+					+ " in a valid relationship URI-> ignored", e);
+		}		
+
+		log.info("Comparing " + resolvedTargetURI + " == " + partName.getName());
+		
+		return partName.getName().equals(resolvedTargetURI.toString()) ; 
+		
+	}
+	
 
 	/**
 	 * Remove a relationship by its reference.
