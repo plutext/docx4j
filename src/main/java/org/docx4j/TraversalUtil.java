@@ -174,7 +174,11 @@ public class TraversalUtil {
 						List<Object> artificialList = new ArrayList<Object>();
 						artificialList.add(graphicData.getPic().getBlipFill().getBlip());
 						return artificialList;
+					} else {
+						// Chart is in here
+						graphicData.getAny();						
 					}
+					
 				}
 			}
 		}
