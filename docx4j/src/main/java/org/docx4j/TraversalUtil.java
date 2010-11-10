@@ -176,7 +176,7 @@ public class TraversalUtil {
 						return artificialList;
 					} else {
 						// Chart is in here
-						graphicData.getAny();						
+						return graphicData.getAny();						
 					}
 					
 				}
