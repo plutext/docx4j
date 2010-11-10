@@ -12,6 +12,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTSdtContentRow;
+import org.docx4j.wml.Pict;
 
 /**
  * Traverse a list of JAXB objects (eg document.xml's document/body 
@@ -181,6 +182,10 @@ public class TraversalUtil {
 					
 				}
 			}
+		} else if (o instanceof Pict) {
+			return ((Pict)o).getAnyAndAny(); // (why didn't the reflection below find this?)
+		} else if (o instanceof org.docx4j.vml.CTShape) {				
+			return ((org.docx4j.vml.CTShape)o).getAny();
 		}
 
 		// OK, what is this? Use reflection ..
