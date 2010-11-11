@@ -206,7 +206,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
-				info.getMimeType(), createImageName(sourcePart, proposedRelId, ext)
+				info.getMimeType(), createImageName(sourcePart, proposedRelId, ext), null
 				 );
 				
 		log.debug("created part " + imagePart.getClass().getName() +
@@ -359,7 +359,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
 				info.getMimeType(), 
-				createImageName(sourcePart, proposedRelId, ext ) );
+				createImageName(sourcePart, proposedRelId, ext ), null );
 				
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());

@@ -371,7 +371,8 @@ public class LoadFromZipNG extends Load {
 	 * @throws InvalidFormatException
 	 */
 	//private void getPart(ZipFile zf, Package pkg, RelationshipsPart rp, Relationship r)
-	private void getPart(HashMap<String, ByteArray> partByteArrays, OpcPackage pkg, RelationshipsPart rp, Relationship r)
+	private void getPart(HashMap<String, ByteArray> partByteArrays, OpcPackage pkg, RelationshipsPart rp, 
+			Relationship r)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;
@@ -417,7 +418,7 @@ public class LoadFromZipNG extends Load {
 		
 		String relationshipType = r.getType();		
 			
-		Part part = getRawPart(partByteArrays, ctm, resolvedPartUri);
+		Part part = getRawPart(partByteArrays, ctm, resolvedPartUri, r);
 		if (part instanceof BinaryPart
 				|| part instanceof DefaultXmlPart) {
 			// The constructors of other parts should take care of this...
@@ -494,8 +495,9 @@ public class LoadFromZipNG extends Load {
 	 */
 	//public static Part getRawPart(ZipFile zf, ContentTypeManager ctm, String resolvedPartUri)
 	public static Part getRawPart(HashMap<String, ByteArray> partByteArrays,
-			ContentTypeManager ctm, String resolvedPartUri)	
+			ContentTypeManager ctm, String resolvedPartUri, Relationship rel)	
 			throws Docx4JException {
+		
 		Part part = null;
 		
 		InputStream is = null;
@@ -508,7 +510,7 @@ public class LoadFromZipNG extends Load {
 				// This will throw UnrecognisedPartException in the absence of
 				// specific knowledge. Hence it is important to get the is
 				// first, as we do above.
-				part = ctm.getPart("/" + resolvedPartUri);				
+				part = ctm.getPart("/" + resolvedPartUri, rel);				
 
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 

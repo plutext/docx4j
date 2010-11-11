@@ -350,7 +350,7 @@ public class LoadFromZipFile extends Load {
 		
 		String relationshipType = r.getType();		
 			
-		Part part = getRawPart(zf, ctm, resolvedPartUri);
+		Part part = getRawPart(zf, ctm, resolvedPartUri, r);
 		if (part instanceof BinaryPart
 				|| part instanceof DefaultXmlPart) {
 			// The constructors of other parts should take care of this...
@@ -424,7 +424,7 @@ public class LoadFromZipFile extends Load {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	public static Part getRawPart(ZipFile zf, ContentTypeManager ctm, String resolvedPartUri)
+	public static Part getRawPart(ZipFile zf, ContentTypeManager ctm, String resolvedPartUri, Relationship rel)
 			throws Docx4JException {
 		Part part = null;
 		
@@ -438,7 +438,7 @@ public class LoadFromZipFile extends Load {
 				// This will throw UnrecognisedPartException in the absence of
 				// specific knowledge. Hence it is important to get the is
 				// first, as we do above.
-				part = ctm.getPart("/" + resolvedPartUri);				
+				part = ctm.getPart("/" + resolvedPartUri, rel);				
 
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 

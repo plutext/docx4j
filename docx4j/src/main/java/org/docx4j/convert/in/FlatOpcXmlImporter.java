@@ -315,7 +315,7 @@ public class FlatOpcXmlImporter  {
 		
 		String relationshipType = r.getType();		
 			
-		Part part = getRawPart(ctm, resolvedPartUri);
+		Part part = getRawPart(ctm, resolvedPartUri,r);
 		rp.loadPart(part, r);
 		handled.put(resolvedPartUri, resolvedPartUri);
 		
@@ -381,7 +381,7 @@ public class FlatOpcXmlImporter  {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	public Part getRawPart(ContentTypeManager ctm, String resolvedPartUri)
+	public Part getRawPart(ContentTypeManager ctm, String resolvedPartUri, Relationship rel)
 			throws Docx4JException {
 		
 		Part part = null;
@@ -407,7 +407,7 @@ public class FlatOpcXmlImporter  {
 					el = pkgPart.getXmlData().getAny();
 				}
 								
-				 part = ctm.newPartForContentType(contentType, resolvedPartUri);
+				 part = ctm.newPartForContentType(contentType, resolvedPartUri,rel);
 				 part.setContentType( new ContentType(contentType) );
 				 
 				 ctm.addOverrideContentType(new java.net.URI(resolvedPartUri), 
