@@ -107,5 +107,17 @@ public class CTLongHexNumber
     public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
         setParent(parent);
     }
+    
+    public boolean equals(Object obj) {
+    	if (obj instanceof CTLongHexNumber) {
+    		return (this.getVal().equals(((CTLongHexNumber)obj).getVal()));
+    	} else {
+    		return false;
+    	}    	
+    }
+    
+    public int hashCode() {
+    	return this.getVal().hashCode();
+    }
 
 }
