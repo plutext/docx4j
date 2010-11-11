@@ -616,15 +616,18 @@ public final class PartName implements Comparable<PartName> {
 	
 //			log.info("Splitting " + partName );
 	
+			String rightBit = partName; 
+			
 			// Split partName at its last "/"
 			int pos = partName.lastIndexOf("/");
-			String leftBit = partName.substring(0, pos);
-//			log.info("leftBit is " + leftBit );
-			
-			String rightBit = partName.substring(pos);
-//			log.info("rightBit is " + rightBit );
-			
-			return leftBit + "/_rels" + rightBit + ".rels" ;
+			if (pos>0) {
+				String leftBit = partName.substring(0, pos);
+				rightBit = partName.substring(pos);
+				return leftBit + "/_rels" + rightBit + ".rels" ;
+			} else {
+				// eg partname: foo.ext (ie in root)
+				return "_rels/" + rightBit + ".rels" ;				
+			}
 			
 		}
 	
