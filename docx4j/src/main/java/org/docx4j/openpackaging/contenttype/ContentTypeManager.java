@@ -279,6 +279,7 @@ public class ContentTypeManager  {
 			AlternativeFormatInputPart afip = 
 				new AlternativeFormatInputPart(new PartName(partName) );
 			afip.setContentType(new ContentType(contentType));
+			return afip;
 			
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) { 
 			return CreateMainDocumentPartObject(partName);

@@ -207,7 +207,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 	
 	public boolean setPartShortcut(Part part, String relationshipType) {
 		
-		log.info("?? for part " + part.getClass().getName() );
+//		log.info("setPartShortcut for part " + part.getClass().getName() );
 		
 		if (relationshipType.equals(Namespaces.PROPERTIES_CORE)) {
 			docPropsCorePart = (DocPropsCorePart)part;
