@@ -89,6 +89,10 @@ public class BinaryPart extends Part {
 	public void setBinaryData(byte[] bytes) {
 		this.bb = java.nio.ByteBuffer.wrap(bytes);
 	}
+
+	public void setBinaryData(ByteBuffer bb) {
+		this.bb = bb;
+	}
 	
 	private String zipFileName = null;
 	private String resolvedPartUri = null;
