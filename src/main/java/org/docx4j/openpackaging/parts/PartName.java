@@ -623,12 +623,15 @@ public final class PartName implements Comparable<PartName> {
 			if (pos>0) {
 				String leftBit = partName.substring(0, pos);
 				rightBit = partName.substring(pos);
+//				log.info("**" + leftBit + "/_rels" + rightBit + ".rels" );
 				return leftBit + "/_rels" + rightBit + ".rels" ;
 			} else {
 				// eg partname: foo.ext (ie in root)
-				return "_rels/" + rightBit + ".rels" ;				
+				if (!rightBit.startsWith("/"))
+					rightBit="/" + rightBit;
+//				log.info("**" + "/_rels" + rightBit + ".rels" );
+				return "/_rels" + rightBit + ".rels" ;				
 			}
-			
 		}
 	
 	/*
