@@ -72,21 +72,26 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 	
     HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions; 
 	public HashMap<String, AbstractListNumberingDefinition> getAbstractListDefinitions() {
+		if (abstractListDefinitions==null) initialiseMaps();
 		return abstractListDefinitions;
 	}
 
     HashMap<String, ListNumberingDefinition> instanceListDefinitions; 
 	public HashMap<String, ListNumberingDefinition> getInstanceListDefinitions() {
+		
+		if (instanceListDefinitions==null) initialiseMaps();
+		
 		return instanceListDefinitions;
 	}
 	
     public void initialiseMaps()
     {
-    	Numbering numbering = (Numbering)jaxbElement;
+    	Numbering numbering = jaxbElement;
     	
         // count the number of different list numbering schemes
     	if (numbering.getNum().size() == 0)
         {
+    		log.debug("No num defined");
             return;
         }
         
@@ -96,8 +101,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
                 
         // initialize the instance number list
         instanceListDefinitions 
-        	= new HashMap<String, ListNumberingDefinition>( numbering.getAbstractNum().size() );
-        		// Hmm, shouldn't the size be based on the number of instance nums?
+        	= new HashMap<String, ListNumberingDefinition>( numbering.getNum().size() );
 
         // store the abstract list type definitions
         for (Numbering.AbstractNum abstractNumNode : numbering.getAbstractNum() )
@@ -132,6 +136,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
             	= new ListNumberingDefinition(numNode, abstractListDefinitions);
 
             instanceListDefinitions.put(listDef.getListNumberId(), listDef);
+            log.info("Added list: " + listDef.getListNumberId() );
         }
 
     }

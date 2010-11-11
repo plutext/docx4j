@@ -122,9 +122,13 @@ public class ListNumberingDefinition {
 
         //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
         Numbering.Num.AbstractNumId abstractNumNode = numNode.getAbstractNumId();
-        if (abstractNumNode != null)
-        {
+        if (abstractNumNode == null) {
+        	log.warn("No abstractNumId on w:numId=" + listNumberId);
+        } else {
             this.abstractListDefinition = abstractListDefinitions.get(abstractNumNode.getVal().toString() ); //[getAttributeValue(abstractNumNode, ValAttrName)];
+            if (abstractListDefinition==null) {
+            	log.warn("No abstractListDefinition for w:numId=" + listNumberId);            	
+            }
 
             this.levels = new HashMap<String, ListLevel>(this.abstractListDefinition.getLevelCount() );
 
@@ -160,7 +164,11 @@ public class ListNumberingDefinition {
     }
 
     private AbstractListNumberingDefinition abstractListDefinition;
-    private HashMap<String, ListLevel> levels;
+    public AbstractListNumberingDefinition getAbstractListDefinition() {
+		return abstractListDefinition;
+	}
+
+	private HashMap<String, ListLevel> levels;
 	public ListLevel getLevel(String ilvl) {
 		return levels.get(ilvl);
 	}

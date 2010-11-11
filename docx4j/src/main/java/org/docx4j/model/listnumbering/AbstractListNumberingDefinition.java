@@ -103,6 +103,15 @@ public class AbstractListNumberingDefinition {
 	
         private HashMap<String, ListLevel> listLevels;
 
+        private Numbering.AbstractNum abstractNumNode;
+        /**
+         * The underling org.docx4j JAXB object
+         * @return
+         */
+        public Numbering.AbstractNum getAbstractNumNode() {
+        	return abstractNumNode;
+        }
+        
         /// <summary>
         /// constructor
         /// </summary>
@@ -110,6 +119,9 @@ public class AbstractListNumberingDefinition {
         /// <param name="nsm"></param>
         public AbstractListNumberingDefinition(Numbering.AbstractNum abstractNumNode)
         {
+
+        	this.abstractNumNode = abstractNumNode;
+        	
 //            String abstractNumString = getAttributeValue(abstractNumNode, "w:abstractNumId");
             String abstractNumString = abstractNumNode.getAbstractNumId().toString();
 
