@@ -72,7 +72,8 @@ public class ImportForeignPart {
 			String resolvedPartUri, InputStream is) throws Exception{
 		
 		
-		Part foreignPart = Load.getRawPart(is, foreignCtm,  resolvedPartUri);
+		Part foreignPart = Load.getRawPart(is, foreignCtm,  resolvedPartUri, null);
+			// the null means this won't work for an AlternativeFormatInputPart 
 		attachmentPoint.addTargetPart(foreignPart);
 		// Add content type
 		ContentTypeManager packageCtm = wordMLPackage.getContentTypeManager();

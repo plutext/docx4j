@@ -121,7 +121,7 @@ public class Load {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	public static Part getRawPart(InputStream is, ContentTypeManager ctm, String resolvedPartUri)
+	public static Part getRawPart(InputStream is, ContentTypeManager ctm, String resolvedPartUri, Relationship rel)
 			throws Docx4JException {
 		
 		Part part = null;
@@ -130,7 +130,7 @@ public class Load {
 						
 			try {
 				
-				part = ctm.getPart("/" + resolvedPartUri);
+				part = ctm.getPart("/" + resolvedPartUri, rel);
 								
 				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {

@@ -83,6 +83,7 @@ import org.docx4j.openpackaging.parts.DrawingML.Drawing;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
@@ -99,6 +100,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.relationships.Relationship;
 
 
 /**
@@ -230,7 +233,7 @@ public class ContentTypeManager  {
 	}
 	
 	/* Return a part of the appropriate sub class */
-	public  Part getPart(String partName) throws URISyntaxException, PartUnrecognisedException,
+	public  Part getPart(String partName, Relationship rel) throws URISyntaxException, PartUnrecognisedException,
 	 InvalidFormatException {
 		
 		Part p;
@@ -240,7 +243,7 @@ public class ContentTypeManager  {
 		if (overrideCT!=null ) {
 			String contentType = overrideCT.getContentType(); 
 			log.debug("Found content type '" + contentType + "' for " + partName);
-			 p = newPartForContentType(contentType, partName);
+			 p = newPartForContentType(contentType, partName, rel);
 			 p.setContentType( new ContentType(contentType) );
 			 return p;
 		}		
@@ -253,7 +256,7 @@ public class ContentTypeManager  {
 			String contentType = defaultCT.getContentType();
 			log.info("Found content type '" + contentType + "' for "
 							+ partName);
-			p = newPartForContentType(contentType, partName);
+			p = newPartForContentType(contentType, partName, rel);
 			p.setContentType(new ContentType(contentType));
 			return p;
 		}
@@ -264,11 +267,20 @@ public class ContentTypeManager  {
 		
 	}
 	
-	public Part newPartForContentType(String contentType, String partName)
+	public Part newPartForContentType(String contentType, String partName, Relationship rel)
 		throws InvalidFormatException, PartUnrecognisedException {
 		
 		// TODO - a number of WordML parts aren't listed here!
-		if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) { 
+		if (rel!=null && rel.getType().equals(Namespaces.AF) ) {
+			// Could have just passed String relType
+			// Null where used from BPAI, and a FlatOpcXmlImporter case.
+			// Cases where rel is not available can prepare a suitable dummy
+			
+			AlternativeFormatInputPart afip = 
+				new AlternativeFormatInputPart(new PartName(partName) );
+			afip.setContentType(new ContentType(contentType));
+			
+		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) { 
 			return CreateMainDocumentPartObject(partName);
 			// how is the main document distinguished from the glossary document?
 			// Answer:- Main Document is a Package level relationship target,

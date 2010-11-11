@@ -116,7 +116,7 @@ public class Namespaces {
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
 	
 	public final static String AF = 
-		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/afChunk";
 	
 	
 	public final static String VBA_PROJECT = 
