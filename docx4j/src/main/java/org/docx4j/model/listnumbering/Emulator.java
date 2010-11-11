@@ -141,20 +141,26 @@ public class Emulator {
     	// If numId is not provided explicitly, 
     	// is it provided by the style?
     	// (ie does this style have a list associated with it?)
-    	if (numId == null 
-    			|| numId.equals("")) {
-    		log.debug("no explicit numId; looking in styles");
+    	if (numId != null 
+    			&& !numId.equals("")) {
+    		log.info("Using numId: " + numId);    		
+    	} else {
     		
     		org.docx4j.wml.Style style = null;
-    		if (pStyleVal!=null && !pStyleVal.equals("") ) {    		
-    			style = propertyResolver.getStyle(pStyleVal);    			
-	        	// TODO: use propertyResolver to follow <w:basedOn w:val="blagh"/>
+    		if (pStyleVal==null || pStyleVal.equals("") ) {
+        		log.debug("no explicit numId; no style either");
+    			return null;
     		}
+    		
+    		log.debug("no explicit numId; looking in styles");
+			style = propertyResolver.getStyle(pStyleVal);    			
+        	// TODO: use propertyResolver to follow <w:basedOn w:val="blagh"/>
 	    	if (style == null) {
 	    		log.debug("Couldn't find style '" + pStyleVal + "'");
 	    		return null;
-	    	} else
-		    	if (style.getPPr() == null) {
+	    	} 
+	    	
+	    	if (style.getPPr() == null) {
 		    		log.debug("Style '" + pStyleVal + "' has no pPr");
 //		    		System.out.println("Style '" + pStyleVal + "' has no pPr");
 //		        	System.out.println(
@@ -162,99 +168,94 @@ public class Emulator {
 //		        			);
 		        	
 		    		return null;
-	    	} else {
-	    		
-	    		NumPr numPr = style.getPPr().getNumPr();
-	    		
-	    		if (numPr==null) {
-		        	log.warn("Couldn't get NumPr from " +  pStyleVal);
-		        	log.debug(
-		        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
-		        			);
-		        	// So there is no numbering set on the style either
-		        	// That's ok ..
-		        	return null;
-	    		}
-	    		
-	    		if (numPr.getNumId()==null) {
-	    			return null; // Is this the right thing to do? Check!	    			
-	    		}
-	    		
-	    		numId = numPr.getNumId().getVal().toString();
-	    		log.info("numId=" + numId + " (from style)" );
-	        	//System.out.println("numId=" + numId + " (from style)" );
-	    		
-	    		if (levelId == null 
-	    				|| levelId.equals("") ) {
-	    			
-	    			if (numPr.getIlvl() != null ) {
-	    				
-	    				levelId = numPr.getIlvl().getVal().toString();
-	    	    		log.info("levelId=" + numId + " (from style)" );
-	    			} else {
-	    				// default
-	    				levelId = "0";
-	    			}
-	    		}
-	    	}
-    	} else {
-    		log.info("Using numId: " + numId);
-    	}
+	    	} 
+
+	    	
+    		NumPr numPr = style.getPPr().getNumPr();
+    		
+    		if (numPr==null) {
+	        	log.warn("Couldn't get NumPr from " +  pStyleVal);
+	        	log.debug(
+	        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
+	        			);
+	        	// So there is no numbering set on the style either
+	        	// That's ok ..
+	        	return null;
+    		}
+    		
+    		if (numPr.getNumId()==null) {
+    			return null; // Is this the right thing to do? Check!	    			
+    		}
+    		
+    		numId = numPr.getNumId().getVal().toString();
+    		log.info("numId=" + numId + " (from style)" );
+        	//System.out.println("numId=" + numId + " (from style)" );
+    		
+    		if (levelId == null 
+    				|| levelId.equals("") ) {
+    			
+    			if (numPr.getIlvl() != null ) {
+    				
+    				levelId = numPr.getIlvl().getVal().toString();
+    	    		log.info("levelId=" + numId + " (from style)" );
+    			} else {
+    				// default
+    				levelId = "0";
+    			}
+    		}
+    	}	
     	
-		if (levelId != null && !levelId.equals("")) {
+		if (levelId == null || levelId.equals("")) {
 			// String numId = getAttributeValue(numIdNode, ValAttrName);
-
-			if (numId == null || numId.equals("")) {
-
-				log.error("numId was null or empty!");
-				
-			} else {
-
-				if (numberingPart.getInstanceListDefinitions().containsKey(numId)
-						&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
-								levelId)) {
-					// XmlAttribute counterAttr =
-					// mainDoc.CreateAttribute("numString");
-
-					numberingPart.getInstanceListDefinitions().get(numId).IncrementCounter(
-							levelId);
-					triple.numString = numberingPart.getInstanceListDefinitions().get(numId)
-							.GetCurrentNumberString(levelId);
-					
-					log.debug("Got number: " + triple.numString);
-
-					String font = numberingPart.getInstanceListDefinitions().get(numId)
-							.GetFont(levelId);
-
-					if (font != null && !font.equals("")) {
-						triple.numFont = font;
-					}
-
-					if (numberingPart.getInstanceListDefinitions().get(numId).IsBullet(levelId)) {
-						//triple.isBullet = true;
-						triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
-					}
-					
-					PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
-					if (ppr!=null) {
-						triple.ind = ppr.getInd();
-					}
-					
-				} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
-					
-					log.error("Couldn't find list " + numId);
-					
-				} else if (!numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
-						levelId)){
-					
-					log.error("Couldn't find level " + levelId + " in list " + numId);					
-				}
-			}
-		} else {
 			log.warn("No level id?!");
+			return null;
+		}
+
+		if (numId == null || numId.equals("")) {
+			log.error("numId was null or empty!");
+			return null;
+		} 
+
+		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
+				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
+						levelId)) {
+			// XmlAttribute counterAttr =
+			// mainDoc.CreateAttribute("numString");
+
+			numberingPart.getInstanceListDefinitions().get(numId).IncrementCounter(
+					levelId);
+			triple.numString = numberingPart.getInstanceListDefinitions().get(numId)
+					.GetCurrentNumberString(levelId);
+			
+			log.debug("Got number: " + triple.numString);
+
+			String font = numberingPart.getInstanceListDefinitions().get(numId)
+					.GetFont(levelId);
+
+			if (font != null && !font.equals("")) {
+				triple.numFont = font;
+			}
+
+			if (numberingPart.getInstanceListDefinitions().get(numId).IsBullet(levelId)) {
+				//triple.isBullet = true;
+				triple.bullet = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getLevelText();
+			}
+			
+			PPr ppr = numberingPart.getInstanceListDefinitions().get(numId).getLevel(levelId).getJaxbAbstractLvl().getPPr();
+			if (ppr!=null) {
+				triple.ind = ppr.getInd();
+			}
+			
+		} else if (!numberingPart.getInstanceListDefinitions().containsKey(numId)){
+			
+			log.error("Couldn't find list " + numId);
+			
+		} else if (!numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
+				levelId)){
+			
+			log.error("Couldn't find level " + levelId + " in list " + numId);					
 		}
 		return triple;
-
     }
 
     
