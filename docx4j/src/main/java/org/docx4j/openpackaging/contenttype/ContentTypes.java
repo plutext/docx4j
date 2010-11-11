@@ -160,7 +160,11 @@ public class ContentTypes {
 	// "/word/diagrams/quickStyle1.xml"
 	public final static String DRAWINGML_DIAGRAM_STYLE =
 		"application/vnd.openxmlformats-officedocument.drawingml.diagramStyle+xml";
-			
+
+	// embedded presentation
+	public final static String PRESENTATION = 
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	
     // /ppt/presentation.xml
 	public final static String PRESENTATIONML_MAIN = 
 		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";

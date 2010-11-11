@@ -87,6 +87,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPar
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -281,6 +282,12 @@ public class ContentTypeManager  {
 			afip.setContentType(new ContentType(contentType));
 			return afip;
 			
+		} else if (rel!=null && rel.getType().equals(Namespaces.EMBEDDED_PKG) ) {
+			
+			EmbeddedPackagePart epp = new EmbeddedPackagePart(new PartName(partName) );
+			epp.setContentType(new ContentType(contentType));
+			return epp;
+
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)) { 
 			return CreateMainDocumentPartObject(partName);
 			// how is the main document distinguished from the glossary document?
