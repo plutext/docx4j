@@ -11,6 +11,7 @@ import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.CTObject;
 import org.docx4j.wml.CTSdtContentRow;
 import org.docx4j.wml.Pict;
 
@@ -186,6 +187,8 @@ public class TraversalUtil {
 			return ((Pict)o).getAnyAndAny(); // (why didn't the reflection below find this?)
 		} else if (o instanceof org.docx4j.vml.CTShape) {				
 			return ((org.docx4j.vml.CTShape)o).getAny();
+		} else if (o instanceof CTObject) {
+			return ((CTObject)o).getAnyAndAny();
 		}
 
 		// OK, what is this? Use reflection ..
