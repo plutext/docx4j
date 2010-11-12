@@ -24,6 +24,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.docProps.core.CoreProperties;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.w3c.dom.Element;
@@ -70,6 +71,8 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.PROPERTIES_CORE);
+		
+		setJAXBContext(Context.jcDocPropsCore);						
 		
 	}
 

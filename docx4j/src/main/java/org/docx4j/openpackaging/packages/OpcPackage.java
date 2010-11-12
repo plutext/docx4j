@@ -231,6 +231,9 @@ public class OpcPackage extends Base {
 		if (relationshipType.equals(Namespaces.PROPERTIES_CORE)) {
 			docPropsCorePart = (DocPropsCorePart)part;
 			return true;			
+		} else if (relationshipType.equals(Namespaces.PROPERTIES_CUSTOM)) {
+			docPropsCustomPart = (DocPropsCustomPart)part;
+			return true;			
 		} else if (relationshipType.equals(Namespaces.PROPERTIES_EXTENDED)) {
 			docPropsExtendedPart = (DocPropsExtendedPart)part;
 			return true;			
@@ -240,68 +243,68 @@ public class OpcPackage extends Base {
 	}
 
 	public DocPropsCorePart getDocPropsCorePart() {
-		if (docPropsCorePart==null) {
-			try {
-				docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
-				this.addTargetPart(docPropsCorePart);
-				
-				org.docx4j.docProps.core.ObjectFactory factory = 
-					new org.docx4j.docProps.core.ObjectFactory();				
-				org.docx4j.docProps.core.CoreProperties properties = factory.createCoreProperties();
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJaxbElement((Object)properties);
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJAXBContext(Context.jcDocPropsCore);						
-			} catch (InvalidFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
-		}
+//		if (docPropsCorePart==null) {
+//			try {
+//				docPropsCorePart = new org.docx4j.openpackaging.parts.DocPropsCorePart();
+//				this.addTargetPart(docPropsCorePart);
+//				
+//				org.docx4j.docProps.core.ObjectFactory factory = 
+//					new org.docx4j.docProps.core.ObjectFactory();				
+//				org.docx4j.docProps.core.CoreProperties properties = factory.createCoreProperties();
+//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJaxbElement((Object)properties);
+//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCorePart).setJAXBContext(Context.jcDocPropsCore);						
+//			} catch (InvalidFormatException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}			
+//		}
 		return docPropsCorePart;
 	}
 
 	public DocPropsExtendedPart getDocPropsExtendedPart() {
-		if (docPropsExtendedPart==null) {
-			try {
-				docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
-				this.addTargetPart(docPropsExtendedPart);
-				
-				org.docx4j.docProps.extended.ObjectFactory factory = 
-					new org.docx4j.docProps.extended.ObjectFactory();				
-				org.docx4j.docProps.extended.Properties properties = factory.createProperties();
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJaxbElement((Object)properties);
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJAXBContext(Context.jcDocPropsExtended);										
-			} catch (InvalidFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
-		}
+//		if (docPropsExtendedPart==null) {
+//			try {
+//				docPropsExtendedPart = new org.docx4j.openpackaging.parts.DocPropsExtendedPart();
+//				this.addTargetPart(docPropsExtendedPart);
+//				
+//				org.docx4j.docProps.extended.ObjectFactory factory = 
+//					new org.docx4j.docProps.extended.ObjectFactory();				
+//				org.docx4j.docProps.extended.Properties properties = factory.createProperties();
+//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJaxbElement((Object)properties);
+//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsExtendedPart).setJAXBContext(Context.jcDocPropsExtended);										
+//			} catch (InvalidFormatException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}			
+//		}
 		return docPropsExtendedPart;
 	}
 
 	/**
-	 * Get DocPropsCustomPart, creating it if necessary.
+	 * Get DocPropsCustomPart, if any.
 	 * 
 	 * @return
 	 */
 	public DocPropsCustomPart getDocPropsCustomPart() {
 		
-		if (docPropsCustomPart==null) {
-			try {
-				docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
-				this.addTargetPart(docPropsCustomPart);
-				
-				org.docx4j.docProps.custom.ObjectFactory factory = 
-					new org.docx4j.docProps.custom.ObjectFactory();
-				
-				org.docx4j.docProps.custom.Properties properties = factory.createProperties();
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJaxbElement((Object)properties);
-
-				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJAXBContext(Context.jcDocPropsCustom);										
-				
-			} catch (InvalidFormatException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}			
-		}
+//		if (docPropsCustomPart==null) {
+//			try {
+//				docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
+//				this.addTargetPart(docPropsCustomPart);
+//				
+//				org.docx4j.docProps.custom.ObjectFactory factory = 
+//					new org.docx4j.docProps.custom.ObjectFactory();
+//				
+//				org.docx4j.docProps.custom.Properties properties = factory.createProperties();
+//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJaxbElement((Object)properties);
+//
+//				((org.docx4j.openpackaging.parts.JaxbXmlPart)docPropsCustomPart).setJAXBContext(Context.jcDocPropsCustom);										
+//				
+//			} catch (InvalidFormatException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}			
+//		}
 		
 		return docPropsCustomPart;
 	}
