@@ -356,7 +356,13 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		// Relationship part always 
 		// determines the Relationship Id		
 		String id = "rId" + nextId;
-		nextId++;
+		
+    	do {
+    		id = "rId" + nextId;
+    		nextId++;
+    		
+    	} while (isRelIdOccupied(id));
+		
 		return id;
 		
 	}
