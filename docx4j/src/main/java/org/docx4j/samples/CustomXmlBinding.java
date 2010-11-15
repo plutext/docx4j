@@ -32,6 +32,7 @@ import javax.xml.bind.Unmarshaller;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
@@ -126,7 +127,7 @@ public class CustomXmlBinding {
 		System.out.println(XmlUtils.w3CDomNodeToString(customXmlDataStorage.getDocument()));
 		
 		// Apply the bindings
-		customXmlDataStoragePart.applyBindings(wordMLPackage.getMainDocumentPart());
+		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
 		
 		// If you inspect the output, you should see your data in 2 places:
 		// 1. the custom xml part 
