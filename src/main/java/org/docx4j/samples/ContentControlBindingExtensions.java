@@ -32,8 +32,10 @@ import javax.xml.bind.Unmarshaller;
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
+import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -62,15 +64,31 @@ public class ContentControlBindingExtensions {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
-		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_preprocessed.xml";
-		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_bound.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_bound.xml";
+
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions_bound.xml";
+
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/IT inventory.docx";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/IT_inventory_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/IT_inventory_bound.xml";
+		
+//		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/databinding/MedicalChartSample.docx";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/MedicalChartSample_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/MedicalChartSample_bound.xml";
+		
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition.docx";
+		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_preprocessed.xml";
+		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_bound.xml";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
 
 		// Process conditionals and repeats
-		CustomXmlDataStoragePart.preprocess(wordMLPackage);
+		OpenDoPEHandler.preprocess(wordMLPackage);
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);		
@@ -79,7 +97,7 @@ public class ContentControlBindingExtensions {
 		System.out.println("Saved: " + save_preprocessed);
 		
 		// Apply the bindings
-		CustomXmlDataStoragePart.applyBindings(wordMLPackage.getMainDocumentPart());
+		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);
