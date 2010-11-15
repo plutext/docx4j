@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:od="http://opendope.org/xpaths" attributeFormDefault="unqualified" elementFormDefault="qualified" 
+targetNamespace="http://opendope.org/xpaths" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1"
+	jaxb:extensionBindingPrefixes="xjc"> 
+
+<!--
+
+JAXB INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+  
+  (I used JAXB 2.1.10 included in JDK 1.6.0_15)
+		
+  To generate the classes (from the same directory)	
+			
+ 	 xjc  components.xsd -d ~/workspace/docx4j/src/main/java -no-header -target 2.0 -extension
+
+ 	 xjc  components.xsd -d tmp -no-header -target 2.0 -extension
+
+-->
+
+  <xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				
+				<jaxb:package name="org.opendope.components"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>    
+  </xs:annotation>
+
+  <xs:element name="components">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="component">
+          <xs:complexType>
+            <xs:attribute name="id" type="xs:ID" use="required" />
+            <xs:attribute name="iri" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
