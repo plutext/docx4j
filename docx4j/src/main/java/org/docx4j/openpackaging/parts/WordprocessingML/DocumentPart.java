@@ -35,6 +35,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
@@ -276,6 +277,11 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 	private QuestionsPart questionsPart;
 	public QuestionsPart getQuestionsPart() {
 		return questionsPart;
+	}
+	
+	private ComponentsPart componentsPart;
+	public ComponentsPart getComponentsPart() {
+		return componentsPart;
 	}
 	
 }

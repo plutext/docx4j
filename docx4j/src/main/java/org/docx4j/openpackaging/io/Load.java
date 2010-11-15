@@ -41,6 +41,7 @@ import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
@@ -199,6 +200,12 @@ public class Load {
 							((QuestionsPart)part).setJaxbElement(
 									(org.opendope.questions.Questionnaire)o);
 							
+						} else if (o instanceof org.opendope.components.Components) {
+							
+							part = new ComponentsPart(name);
+							((ComponentsPart)part).setJaxbElement(
+									(org.opendope.components.Components)o);
+
 						} else {
 							
 							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());
