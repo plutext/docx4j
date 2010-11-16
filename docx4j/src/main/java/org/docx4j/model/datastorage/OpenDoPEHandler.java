@@ -303,10 +303,15 @@ public class OpenDoPEHandler {
 
 			} catch (ClassNotFoundException e) {
 				extensionMissing(e);
-				throw new Docx4JException("Problem processing w:altChunk", e);
+    			justGotAComponent = false;
+				return srcPackage;
+				//throw new Docx4JException("Problem processing w:altChunk", e);
 			} catch (NoSuchMethodException e) {
+				//Degrade gracefully
 				extensionMissing(e);
-				throw new Docx4JException("Problem processing w:altChunk", e);
+    			justGotAComponent = false;
+				return srcPackage;
+				//throw new Docx4JException("Problem processing w:altChunk", e);
 			} catch (Exception e) {
 				throw new Docx4JException("Problem processing w:altChunk", e);
 			} 
