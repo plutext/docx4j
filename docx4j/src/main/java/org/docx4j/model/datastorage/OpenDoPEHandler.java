@@ -1,5 +1,8 @@
 package org.docx4j.model.datastorage;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -19,16 +22,23 @@ import org.docx4j.customXmlProperties.SchemaRefs.SchemaRef;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.model.sdt.QueryString;
+import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.P;
@@ -97,7 +107,151 @@ public class OpenDoPEHandler {
 		 * @param documentPart
 		 * @throws Docx4JException
 		 */
-		public static void preprocess(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+		public static WordprocessingMLPackage preprocess(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+			
+			do {
+				
+				preprocessRun(wordMLPackage);
+				if (docxFetcher==null) {
+					System.out.println("You need a docxFetcher (and the MergeDocx extension) to fetch components");
+					log.error("You need a docxFetcher (and the MergeDocx extension) to fetch components");
+				} else {
+					wordMLPackage = fetchComponents(wordMLPackage);
+				}
+				
+			} while (justGotAComponent);
+			
+			return wordMLPackage;
+		}
+		
+		private static boolean justGotAComponent = false;
+		
+		private static DocxFetcher docxFetcher;
+		public static DocxFetcher getDocxFetcher() {
+			return docxFetcher;
+		}
+		public static void setDocxFetcher(DocxFetcher docxFetcher) {
+			OpenDoPEHandler.docxFetcher = docxFetcher;
+		}
+
+		private static WordprocessingMLPackage fetchComponents(WordprocessingMLPackage srcPackage) throws Docx4JException {
+			
+			// convert components to altChunk
+			Map<Integer, CTAltChunk> replacements = new HashMap<Integer, CTAltChunk>();
+			Integer index = 0;
+			justGotAComponent = false;			
+	    	for (Object block : srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts() ) {
+	    		
+	    		//Object ublock = XmlUtils.unwrap(block);
+	    		if (block instanceof org.docx4j.wml.SdtBlock) {
+	    			
+	    			org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock)block;
+	    			
+	    			Tag tag = getSdtPr(sdt).getTag();										
+	    			
+	    			if (tag==null) {
+	    				List<Object> newContent = new ArrayList<Object>();
+	    				newContent.add(sdt);
+	    				continue;
+	    			} 
+	    			
+	    			log.info(tag.getVal());
+
+	    			QueryString qs = new QueryString();
+	    			HashMap<String, String> map = qs.parseQueryString(tag.getVal(), true);
+	    			
+	    			String componentId = map.get(BINDING_ROLE_COMPONENT);
+	    			if (componentId==null) continue;
+	    			
+	    			// Convert the sdt to a w:altChunk
+	    			// .. get the IRI
+	    			String iri = ComponentsPart.getComponentById(components, componentId).getIri();
+	    			log.debug("Fetching " + iri);
+	    			
+	    			// .. create the part
+	    			AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(
+	    					getNewPartName("/chunk", ".docx", srcPackage.getMainDocumentPart().getRelationshipsPart()) );
+	    			afiPart.setBinaryData(
+	    					docxFetcher.getDocxFromIRI(iri) );
+	    			
+	    			afiPart.setContentType(new ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")); //docx
+
+	    			Relationship altChunkRel = srcPackage.getMainDocumentPart().addTargetPart(afiPart);
+	    			CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
+	    			ac.setId(altChunkRel.getId());
+
+	    			replacements.put(index, ac);
+	    			
+	    			
+	    			justGotAComponent = true;
+	    		}
+    			index++;
+	    	}			
+			
+	    	// Now replace in list
+	    	for(Integer key : replacements.keySet() ) {
+	    		srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts().set(key, replacements.get(key));	    		
+	    	}
+	    	
+			
+			// process altChunk
+			try {
+				// Use reflection, so docx4j can be built
+				// by users who don't have the MergeDocx utility
+				Class<?> documentBuilder = Class.forName("com.plutext.merge.ProcessAltChunk");			
+				//Method method = documentBuilder.getMethod("merge", wmlPkgList.getClass());			
+				Method[] methods = documentBuilder.getMethods(); 
+				Method method = null;
+				for (int j=0; j<methods.length; j++) {
+					System.out.println(methods[j].getName());
+					if (methods[j].getName().equals("process")) {
+						method = methods[j];
+						break;
+					}
+				}			
+				if (method==null) throw new NoSuchMethodException();
+				
+				return (WordprocessingMLPackage)method.invoke(null, srcPackage);
+
+			} catch (ClassNotFoundException e) {
+				extensionMissing(e);
+				throw new Docx4JException("Problem processing w:altChunk", e);
+			} catch (NoSuchMethodException e) {
+				extensionMissing(e);
+				throw new Docx4JException("Problem processing w:altChunk", e);
+			} catch (Exception e) {
+				throw new Docx4JException("Problem processing w:altChunk", e);
+			} 
+		}
+		
+        private static PartName getNewPartName(String prefix, String suffix, RelationshipsPart rp) throws InvalidFormatException {
+        	
+        	PartName proposed = null;
+        	int i=1;
+        	do {
+        		
+        		if (i>1) {
+        			proposed = new PartName( prefix + i + suffix);
+        		} else {
+        			proposed = new PartName( prefix + suffix);        			
+        		}
+        		i++;
+        		
+        	} while (rp.isATarget(proposed));
+        	
+        	return proposed;
+        	
+        }
+		
+public static void extensionMissing(Exception e) {
+	System.out.println("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
+	System.out.println("* You don't appear to have the MergeDocx paid extension,");
+	System.out.println("* which is necessary to merge docx, or process altChunk.");
+	System.out.println("* Purchases of this extension support the docx4j project.");
+	System.out.println("* Please visit www.plutext.com if you want to buy it.");
+}
+		
+		private static void preprocessRun(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
 			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 			

@@ -134,6 +134,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 		} else if (part instanceof XPathsPart) {
 			xPathsPart = ((XPathsPart)part);
 			return true;
+		} else if (part instanceof ComponentsPart) {
+			componentsPart = ((ComponentsPart)part);
+			return true;
 			
 			// TODO - to be completed.
 		} else {	
