@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,7 +43,9 @@ import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.SdtPr;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
 import org.opendope.conditions.Condition;
@@ -56,6 +59,8 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
 	public final static String BINDING_ROLE_COMPONENT = "od:component";
+	public final static String BINDING_ROLE_COMPONENT_BEFORE = "od:continuousBefore";
+	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
 	
 	
 	/* ---------------------------------------------------------------------------
@@ -139,7 +144,13 @@ public class OpenDoPEHandler {
 			// convert components to altChunk
 			Map<Integer, CTAltChunk> replacements = new HashMap<Integer, CTAltChunk>();
 			Integer index = 0;
-			justGotAComponent = false;			
+			justGotAComponent = false;
+			
+			LinkedList<Integer> continuousBeforeIndex = new LinkedList<Integer>();
+			List<Boolean> continuousBefore = new ArrayList<Boolean>();
+			
+			List<Boolean> continuousAfter = new ArrayList<Boolean>();
+			
 	    	for (Object block : srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts() ) {
 	    		
 	    		//Object ublock = XmlUtils.unwrap(block);
@@ -182,6 +193,24 @@ public class OpenDoPEHandler {
 
 	    			replacements.put(index, ac);
 	    			
+	    			// This is handled in this class
+	    			if (map.get(BINDING_ROLE_COMPONENT_BEFORE)!=null
+	    					&& map.get(BINDING_ROLE_COMPONENT_BEFORE).equals("true") ) {
+	    				continuousBefore.add(Boolean.TRUE);
+	    				continuousBeforeIndex.addFirst(index);
+	    				log.info("ctsBefore index: " + index);
+	    			} else {
+	    				continuousBefore.add(Boolean.FALSE);
+	    				continuousBeforeIndex.addFirst(index);
+	    			}
+	    			
+	    			// The following is handled in ProcessAltChunk
+	    			if (map.get(BINDING_ROLE_COMPONENT_AFTER)!=null
+	    					&& map.get(BINDING_ROLE_COMPONENT_AFTER).equals("true") ) {
+	    				continuousAfter.add(Boolean.TRUE);
+	    			} else {
+	    				continuousAfter.add(Boolean.TRUE);
+	    			}
 	    			
 	    			justGotAComponent = true;
 	    		}
@@ -193,6 +222,62 @@ public class OpenDoPEHandler {
 	    		srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts().set(key, replacements.get(key));	    		
 	    	}
 	    	
+	    	// Go through docx in reverse order 
+	    	List<Object> bodyChildren = srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts(); 
+	    	int i = 0;
+	    	for (Integer indexIntoBody : continuousBeforeIndex ) {
+	    		
+	    		if (continuousBefore.get(i) ) {
+	    			// Element before the w:altChunk
+	    			if (indexIntoBody==0) {
+//	    				// Insert a sectPr right at the beginning of the docx?
+//	    				// TODO check this isn't necessary
+//	    				SectPr newSectPr = Context.getWmlObjectFactory().createSectPr();
+//	    	    		SectPr.Type type = Context.getWmlObjectFactory().createSectPrType();
+//	    	    		type.setVal("continuous");
+//	    	    		newSectPr.setType( type );
+//	    	    		
+//	    	    		bodyChildren.add(0, newSectPr);	    				
+	    				
+	    			} else {
+		    			Object block = bodyChildren.get(indexIntoBody.intValue()-1); 
+		    			if (block  instanceof P
+		    	    		&& ((P)block).getPPr()!=null 
+		    	    				&& ((P) block).getPPr().getSectPr() !=null) {
+		    				makeContinuous(((P) block).getPPr().getSectPr());
+		    			} else if (block  instanceof P) {
+		    				// More likely
+		    				PPr ppr = ((P) block).getPPr();
+		    				if (ppr==null) {
+		    					ppr = Context.getWmlObjectFactory().createPPr();
+		    					((P) block).setPPr(ppr);
+		    				} 
+		    				SectPr newSectPr = Context.getWmlObjectFactory().createSectPr();
+		    	    		SectPr.Type type = Context.getWmlObjectFactory().createSectPrType();
+		    	    		type.setVal("continuous");
+		    	    		newSectPr.setType( type );
+		    				
+		    	    		ppr.setSectPr(newSectPr);
+		    			} else {
+		    				// Equally likely - its a table or something, so add a p
+		    				P newP = Context.getWmlObjectFactory().createP();
+		    				PPr ppr = Context.getWmlObjectFactory().createPPr();
+		    				newP.setPPr(ppr);
+		    				
+		    				SectPr newSectPr = Context.getWmlObjectFactory().createSectPr();
+		    	    		SectPr.Type type = Context.getWmlObjectFactory().createSectPrType();
+		    	    		type.setVal("continuous");
+		    	    		newSectPr.setType( type );
+		    	    		ppr.setSectPr(newSectPr);
+		    	    		
+		    	    		bodyChildren.add(indexIntoBody.intValue(), newP);	// add before altChunk    				
+		    			}
+	    			}
+	    		}
+	    		// else nothing specified, so go with normal MergeDocx behaviour
+	    		
+	    		i++;
+	    	}
 			
 			// process altChunk
 			try {
@@ -201,17 +286,20 @@ public class OpenDoPEHandler {
 				Class<?> documentBuilder = Class.forName("com.plutext.merge.ProcessAltChunk");			
 				//Method method = documentBuilder.getMethod("merge", wmlPkgList.getClass());			
 				Method[] methods = documentBuilder.getMethods(); 
-				Method method = null;
+				Method processMethod = null;
+				Method setEnsureContinuousMethod = null;
 				for (int j=0; j<methods.length; j++) {
 					System.out.println(methods[j].getName());
 					if (methods[j].getName().equals("process")) {
-						method = methods[j];
-						break;
-					}
+						processMethod = methods[j];
+					} else if (methods[j].getName().equals("setEnsureContinuous")) {
+						setEnsureContinuousMethod = methods[j];
+					} 
 				}			
-				if (method==null) throw new NoSuchMethodException();
-				
-				return (WordprocessingMLPackage)method.invoke(null, srcPackage);
+				if (processMethod==null
+						|| setEnsureContinuousMethod == null) throw new NoSuchMethodException();
+				setEnsureContinuousMethod.invoke(null, continuousAfter);
+				return (WordprocessingMLPackage)processMethod.invoke(null, srcPackage);
 
 			} catch (ClassNotFoundException e) {
 				extensionMissing(e);
@@ -223,6 +311,34 @@ public class OpenDoPEHandler {
 				throw new Docx4JException("Problem processing w:altChunk", e);
 			} 
 		}
+	    	
+    	public static void makeContinuous(SectPr sectPr) {
+    		
+    		if (sectPr==null) {
+    			log.warn("sectPr was null");
+    			return;
+    		}
+    		
+    		SectPr.Type type = Context.getWmlObjectFactory().createSectPrType();
+    		type.setVal("continuous");
+    		sectPr.setType( type );
+    		
+    		// columns, endnotes, footnotes, formprot, line numbers are OK
+    		
+    		// null out certain page level section properties
+    		sectPr.setBidi(null);
+    		sectPr.setDocGrid(null);
+    		sectPr.setPaperSrc(null);
+    		sectPr.setPgBorders(null);
+    		sectPr.setPgMar(null);
+    		sectPr.setPgNumType(null);
+    		sectPr.setPgSz(null);
+    		sectPr.setPrinterSettings(null);
+    		sectPr.setSectPrChange(null);
+    		sectPr.setTitlePg(null);
+    		sectPr.setVAlign(null);
+    	}
+	    	
 		
         private static PartName getNewPartName(String prefix, String suffix, RelationshipsPart rp) throws InvalidFormatException {
         	
