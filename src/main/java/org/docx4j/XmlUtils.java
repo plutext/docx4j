@@ -164,6 +164,7 @@ public class XmlUtils {
 		
 		if (o instanceof javax.xml.bind.JAXBElement) {
 			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+			log.debug("name: " + ((JAXBElement)o).getName() );
 			return ((JAXBElement)o).getValue();
 		} else {
 			return o;
@@ -307,6 +308,13 @@ public class XmlUtils {
 	    log.debug("Results of substitution: " + wmlString);
 	    return unmarshalString(wmlString, jc);
 	 }
+	
+	public static Object unmarshallFromTemplate(String wmlTemplateString, 
+			java.util.HashMap<String, String> mappings, JAXBContext jc, Class<?> declaredType) throws JAXBException {
+	      String wmlString = replace(wmlTemplateString, 0, new StringBuilder(), mappings).toString();
+	      return unmarshalString(wmlString, jc, declaredType);
+	   }
+	
 	
 	 private static StringBuilder replace(String s, int offset, StringBuilder b, java.util.HashMap<String, String> mappings) {
 	    int startKey = s.indexOf("${", offset);
