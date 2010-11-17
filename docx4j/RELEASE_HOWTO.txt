@@ -8,21 +8,28 @@ Check jar versions in pom.xml, build.xml
 Update README.txt with release info.
 
     svn log -r 1073:HEAD > tmp_log_2_4_0.txt
+    
+(refer to README.txt to see what rnumber to start at)    
 
 Update pom.xml with target version number
 
 svn ci
 
-Tag the version in svn
+co as new project; check it
 
+Tag the version in svn
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
 
-    Remove the jaxb jars from dist dir
+    (Remove the jaxb jars from dist dir)
 
     Create docx4j-x.x.x.tar.gz (ant dist, rename the jar as well)
 
-Create javadoc (ant javadoc)
+Create javadoc 
+
+    edit doctitle in build.xml
+
+    ant javadoc
 
 Maven upload
 

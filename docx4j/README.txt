@@ -62,17 +62,17 @@ Legal Information
 -----------------
 
 docx4j is published under the Apache License version 2.0. For the license
-text, please see the following files:
+text, please see the following files in the legals directory:
 - LICENSE
 - NOTICE
 
 Legal information on libraries used by docx4j can be found in the 
-"lib/README.txt" file.
+"legals/NOTCIE" file.
 
 Here is a (TODO: non exhaustive?) list of files included in docx4j but not published under Apache
 License version 2.0:
 
-- DocX2Html.xslt
+- DocX2Html.xslt (though docx2xhtmlNG2.xslt is our supported transform, not that) 
 - src/diffx (ARTISTIC LICENCE)
 - xsd/** 
 
@@ -81,6 +81,64 @@ License version 2.0:
 ==============================================================================
   RELEASE NOTES
 ==============================================================================
+
+Version 2.6.0
+=============
+
+Release date
+------------
+
+18 Nov 2010
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+
+
+Major Changes in Version 2.6.0
+------------------------------
+
+OpenDoPE ("Open Document Processing Ecosystem") v2.2 implementation for generating documents using repeats, conditionals and component inclusion.
+Implementation now lives in model/datastorage package.
+
+TraversalUtil class, which makes it easy to find things in the main document part (an alternative to XPath), and optionally, do something to them
+
+Dependency cleanup, now uses FOP 1.0, and standard Xalan 2.7.1
+
+Other Changes (non-exhaustive)
+------------------------------
+
+[1177] PDF output: set margins in layout masters; make room in region body margins for header & footer; set header & footer extents manually
+[1182] Support for page number field <w:fldSimple w:instr=" PAGE   \* MERGEFORMAT ">
+[1196] Ensure docx4j can be built using either ant or maven, with only one of the JAXB implementations (Java 6 or RI) required
+[1212] Basic support for paragraph shading and borders in PDF and HTML output.
+[1217] Bug fix: image part naming
+[1220] If there is w:pPr/w:pStyle, we must honour any rPr in the pStyle (reinstate code commented out months ago)
+[1231] Use official xmlgraphics-commons-1.4
+[1232] Make it possible to run certain samples from the command line.
+[1234] Use FOP 1.0.; Include source code for fop-fonts, as org.docx4j.fonts.fop. Move panose to org.docx4j.fonts.foray
+[1235] Include @sub-font in FOP config; this is required for TTC
+[1238] Use standard Xalan 2.7.1 instead of our patched version; remove references to DTMNodeProxy
+[1262] Use style0 as default para style for docx from OO
+[1270] Support full justification in XSL FO
+[1273] HTML output: when test="contains(./w:sdtPr/w:tag/@w:val, '@class=collapse')" allow the sdt to Collapse.
+[1295] Methods to check whether partname is already in use.
+[1302] Pass Relationship to newPartForContentType so AlternativeFormatInputPart can be detected.
+[1306] EmbeddedPackagePart
+[1307] OpcPackage: don't create props parts, merely because user has asked for one. CorePart: set JAXB context correctly. Rels part: relId generation altered
+
+
+pptx4j changes
+--------------
+
+[1179] Basic support for images in pptx svg in html output
+[1180] Alter slide to html/svg api, to make it more obvious you are processing a slide, and doing so one at a time.
+Only show text box with a red dash border if debug level logging is enabled.
+[1185] Support Word 2003 page numbers in PDF output. ie <w:fldChar w:fldCharType="begin"/> <w:instrText xml:space="preserve">PAGE  </w:instrText>
+<w:fldChar w:fldCharType="end"/>
+[1198] Method for creating a slide; don't do that when creating package.
+
 
 Version 2.5.0
 =============
