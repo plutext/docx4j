@@ -58,6 +58,7 @@ public class HeaderFooter {
 //		mainDocumentPart.marshal(new FileOutputStream(new File(System
 //				.getProperty("user.dir"), "headerfooter.xml")));
 
+		System.out.println("done");
 	}
 
 	public static Relationship createHeaderPart(
@@ -91,7 +92,7 @@ public class HeaderFooter {
 	
 	public static byte[] getBytes() throws Exception {
 		
-		File file = new File("/home/dev/test.png" );
+		File file = new File(System.getProperty("user.dir") + "/tmp/imagex.wmf" );
 				
 		java.io.InputStream is = new java.io.FileInputStream(file );
         long length = file.length();    
