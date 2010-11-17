@@ -190,10 +190,10 @@ public class SaveToZipFile {
 	
 	public void  saveRawXmlPart(ZipOutputStream out, Part part, String zipEntryName) throws Docx4JException {
 		
+		try {
 						
-		if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+			if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
-			try {				
 		        // Add ZIP entry to output stream.
 		        out.putNextEntry(new ZipEntry(zipEntryName));		        
 
@@ -203,31 +203,20 @@ public class SaveToZipFile {
 		        out.closeEntry();
 				log.info( "PUT SUCCESS: " + zipEntryName);		
 		        
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
 
-		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
+			} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
 
-				try {				
-			        // Add ZIP entry to output stream.
-			        out.putNextEntry(new ZipEntry(zipEntryName));		        
+		        // Add ZIP entry to output stream.
+		        out.putNextEntry(new ZipEntry(zipEntryName));		        
 
-			        ((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().writeDocument( out );
-			        
-			        // Complete the entry
-			        out.closeEntry();
-					log.info( "PUT SUCCESS: " + zipEntryName);		
-			        
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
+		        ((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().writeDocument( out );
+		        
+		        // Complete the entry
+		        out.closeEntry();
+				log.info( "PUT SUCCESS: " + zipEntryName);		
 
-		} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
+			} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
 
-			try {				
 		        // Add ZIP entry to output stream.
 		        out.putNextEntry(new ZipEntry(zipEntryName));		        
 
@@ -246,51 +235,28 @@ public class SaveToZipFile {
 						at org.docx4j.model.datastorage.CustomXmlDataStorageImpl.writeDocument(CustomXmlDataStorageImpl.java:174)
 				 * 
 				 */
-				 try {
-					DOMSource source = new DOMSource(doc);
-					 TransformerFactory.newInstance().newTransformer().transform(source, 
-							 new StreamResult(out) );
-				} catch (Exception e) {
-					throw new Docx4JException("Problems saving to OutputStream", e);
-				} 
+				DOMSource source = new DOMSource(doc);
+				 TransformerFactory.newInstance().newTransformer().transform(source, 
+						 new StreamResult(out) );
 		       
 		        
 		        // Complete the entry
 		        out.closeEntry();
 				log.info( "PUT SUCCESS: " + zipEntryName);		
-		        
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
-				
-//		} else if (part instanceof org.docx4j.openpackaging.parts.Dom4jXmlPart) {
-//
-//			try {
-//		        // Add ZIP entry to output stream.
-//		        out.putNextEntry(new ZipEntry(zipEntryName));		        
-//		        
-//		        // Do things the DOM4J way
-//				OutputFormat format = OutputFormat.createPrettyPrint();
-//				format.setEncoding("UTF-8");			
-//			    XMLWriter writer = new XMLWriter( out, format );
-//			    writer.write( ((org.docx4j.openpackaging.parts.Dom4jXmlPart)part).getDocument() );
-//		        // Complete the entry
-//		        out.closeEntry();
-//				log.info( "PUT SUCCESS: " + zipEntryName);		
-//			} catch (Exception e ) {
-//				e.printStackTrace();
-//				throw new Docx4JException("Failed to put " + zipEntryName, e);
-//			}		
 						
-		} else {
-			// Shouldn't happen, since ContentTypeManagerImpl should
-			// return an instance of one of the above, or throw an
-			// Exception.
-			
-			log.error("PROBLEM - No suitable part found for: " + zipEntryName);
-		}		
+			} else {
+				// Shouldn't happen, since ContentTypeManagerImpl should
+				// return an instance of one of the above, or throw an
+				// Exception.
+				
+				log.error("PROBLEM - No suitable part found for: " + zipEntryName);
+			}		
 		
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error(e);
+			throw new Docx4JException("Problem saving part " + zipEntryName, e);
+		} 
 		
 	}
 	
