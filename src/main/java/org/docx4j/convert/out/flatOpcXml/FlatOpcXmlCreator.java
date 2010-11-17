@@ -218,8 +218,9 @@ public class FlatOpcXmlCreator implements Output {
 		        dataResult.setAny( w3cDoc.getDocumentElement() );		        
 				log.info( "PUT SUCCESS: " + partName);		
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				log.error(e);
+				throw new Docx4JException("Problem saving part " + partName, e);
 			} 		        
 		} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
 		        
@@ -228,8 +229,9 @@ public class FlatOpcXmlCreator implements Output {
 						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)part).getData().getDocument().getDocumentElement());
 				log.info("PUT SUCCESS: " + partName);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+				log.error(e);
+				throw new Docx4JException("Problem saving part " + partName, e);
 			} 		        
 							
 		} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
