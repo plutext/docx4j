@@ -58,6 +58,11 @@
         <pathelement location="bin"/>
         <path refid="Maven Dependencies.libraryclasspath"/>
     </path>
+
+    <path id="dist.classpath">
+        <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+        <path refid="docx4j.classpath"/>
+    </path>
 	
 	<path id="jre.libs" description="Java runtime libraries">
 	  <pathelement location="${java.home}\lib" />
