@@ -61,6 +61,8 @@
 
     <path id="dist.classpath">
         <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
+        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+        <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
         <path refid="docx4j.classpath"/>
     </path>
 	
@@ -139,10 +141,10 @@
 		<copy todir="${dist}" flatten="true">
 			<!-- requires Ant 1.7.0 -->
 			<path>
-			    <path refid="docx4j.classpath"/>
+			    <path refid="dist.classpath"/>
 			</path>
 		</copy>		
-					
+    	 <delete file="${dist}/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar" />			
     </target>	
 
 
@@ -169,7 +171,7 @@
 		
         <javadoc access="public" author="false" 
          destdir="javadoc" 
-         doctitle="docx4j 2.5.0" 
+         doctitle="docx4j 2.6.0" 
          nodeprecated="false" 
          nodeprecatedlist="false" 
          noindex="false" 

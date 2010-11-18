@@ -270,6 +270,15 @@
     <groupId>xalan</groupId>
     <artifactId>xalan</artifactId>
     <version>2.7.1</version>
+    <!-- may not be needed, but don't exclude
+				<exclusions>
+					<exclusion>
+					
+						<groupId>xml-apis</groupId>
+						<artifactId>xml-apis</artifactId>
+					</exclusion>
+				</exclusions>			
+     -->
 </dependency>
 
 <!-- These work for basic marshalling/unmarshalling,
