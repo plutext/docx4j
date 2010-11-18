@@ -202,7 +202,9 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 				
-		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/"));
+		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/")+1);
+		
+		System.out.println(ext);
 		
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
