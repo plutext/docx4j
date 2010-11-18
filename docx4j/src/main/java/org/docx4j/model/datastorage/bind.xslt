@@ -77,7 +77,7 @@
   			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:r bind')"/-->
 
 					<w:t><xsl:value-of
-						select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.xpathGetString(
+						select="java:org.docx4j.model.datastorage.BindingHandler.xpathGetString(
 									$customXmlDataStorageParts,
 									$storeItemID,
 									$xpath,
