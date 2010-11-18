@@ -64,9 +64,9 @@ public class ContentControlBindingExtensions {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_bound.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
+		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_preprocessed.xml";
+		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_bound.xml";
 
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
 //		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions_preprocessed.xml";
@@ -80,9 +80,9 @@ public class ContentControlBindingExtensions {
 //		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/MedicalChartSample_preprocessed.xml";
 //		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/MedicalChartSample_bound.xml";
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition.docx";
-		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_preprocessed.xml";
-		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_bound.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition.docx";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_bound.xml";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
