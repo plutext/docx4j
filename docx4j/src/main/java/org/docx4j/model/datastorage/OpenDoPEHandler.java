@@ -44,10 +44,12 @@ import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.R;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.Text;
 import org.opendope.conditions.Condition;
 import org.w3c.dom.Node;
 
@@ -117,13 +119,8 @@ public class OpenDoPEHandler {
 			do {
 				
 				preprocessRun(wordMLPackage);
-				if (docxFetcher==null) {
-					System.out.println("You need a docxFetcher (and the MergeDocx extension) to fetch components");
-					log.error("You need a docxFetcher (and the MergeDocx extension) to fetch components");
-				} else {
-					wordMLPackage = fetchComponents(wordMLPackage);
-				}
-				
+				wordMLPackage = fetchComponents(wordMLPackage);
+			
 			} while (justGotAComponent);
 			
 			return wordMLPackage;
@@ -179,6 +176,12 @@ public class OpenDoPEHandler {
 	    			String iri = ComponentsPart.getComponentById(components, componentId).getIri();
 	    			log.debug("Fetching " + iri);
 	    			
+					if (docxFetcher==null) {
+						System.out.println("You need a docxFetcher (and the MergeDocx extension) to fetch components (if any_");
+						log.error("You need a docxFetcher (and the MergeDocx extension) to fetch components");
+						return srcPackage;
+					} 
+	    			
 	    			// .. create the part
 	    			AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(
 	    					getNewPartName("/chunk", ".docx", srcPackage.getMainDocumentPart().getRelationshipsPart()) );
@@ -217,6 +220,10 @@ public class OpenDoPEHandler {
     			index++;
 	    	}			
 			
+	    	if (!justGotAComponent) {
+	    		return srcPackage;
+	    	}
+	    	
 	    	// Now replace in list
 	    	for(Integer key : replacements.keySet() ) {
 	    		srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts().set(key, replacements.get(key));	    		
@@ -373,6 +380,8 @@ public static void extensionMissing(Exception e) {
 }
 		
 		private static void preprocessRun(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+			
+			log.info("\n\n Preprocess run.. \n\n");
 
 			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 			
@@ -486,7 +495,7 @@ public static void extensionMissing(Exception e) {
 				} else {
 					for (Object o : children) {
 
-						this.apply(o);
+						// *** this.apply(o);
 
 						if (this.shouldTraverse(o)) {
 							walkJAXBElements(o);
@@ -511,7 +520,7 @@ public static void extensionMissing(Exception e) {
 		private static List<Object> processBindingRoleIfAny(WordprocessingMLPackage wordMLPackage,
 				Object sdt) 
 		{
-			
+			log.debug("Processing " + getSdtPr(sdt).getId().getVal() );
 			Tag tag = getSdtPr(sdt).getTag();										
 			
 			if (tag==null) {
@@ -527,10 +536,10 @@ public static void extensionMissing(Exception e) {
 			
 			String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
 			String repeatId = map.get(BINDING_ROLE_REPEAT);
-			//String xp = map.get(BINDING_ROLE_XPATH);
+			String xp = map.get(BINDING_ROLE_XPATH);
 			if (conditionId==null
 					&& repeatId==null
-					//&& xp==null
+					&& xp==null
 					) {
 				List<Object> newContent = new ArrayList<Object>();
 				newContent.add(sdt);
@@ -597,6 +606,74 @@ public static void extensionMissing(Exception e) {
 						customXmlDataStorageParts,
 						wordMLPackage.getMainDocumentPart().getXPathsPart());
 		        	
+			} else if ( xp!=null) {
+				
+				if (getSdtPr(sdt).getDataBinding()!=null) {					
+					// the XPath evaluates to an element, which Word can
+					// handle, so do nothing (shouldn't get here anyway though)
+					List<Object> newContent = new ArrayList<Object>();
+					newContent.add(sdt);
+					return newContent;					
+				}
+				log.info("Processing XPath expression: " + tag.getVal());
+				log.info(XmlUtils.marshaltoString(sdt, true, true));
+				
+				List<Object> contentList = null;
+				if (sdt instanceof org.docx4j.wml.SdtBlock) {
+					contentList =  ((org.docx4j.wml.SdtBlock) sdt).getSdtContent().getEGContentBlockContent();
+				} else if (sdt instanceof org.docx4j.wml.SdtRun) { // sdt in paragraph
+					contentList =  ((org.docx4j.wml.SdtRun) sdt).getSdtContent().getParagraphContent();
+				} 
+				// An CTSdtRow or CTSdtCell shouldn't be bound
+				if (contentList==null || contentList.size()==0 ) {
+					List<Object> newContent = new ArrayList<Object>();
+					newContent.add(sdt);
+					return newContent;										
+				}
+				
+				// Word can't handle an XPath that returns something else
+				// eg string or boolean or number, so work this out.
+				// In principal, we could do this in this pre-processing step,
+				// or via bind.xslt.  But probably slightly better to do it here.
+				org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(xPaths, xp);
+				String value = BindingHandler.xpathGetString(
+												customXmlDataStorageParts, 
+												xpathObj.getDataBinding().getStoreItemID(),
+												xpathObj.getDataBinding().getXpath(),
+												xpathObj.getDataBinding().getPrefixMappings() );					
+				log.info(xpathObj.getDataBinding().getXpath());
+				
+				// Now insert
+				R r = null;
+				Object firstBlock = contentList.get(0);
+				if (firstBlock instanceof P ) {
+					if (((P)firstBlock).getParagraphContent().get(0) instanceof R) {
+						r = (R)((P)firstBlock).getParagraphContent().get(0);						
+					}
+				} else if (firstBlock instanceof R ) {
+						r = ((R)firstBlock);
+				}
+				if (r==null) {
+					// Give up
+					log.warn("Couldn't find a run in which to insert xpath value");
+					List<Object> newContent = new ArrayList<Object>();
+					newContent.add(sdt);
+					return newContent;															
+				}
+				Text  wt = null;
+				Object firstInline = XmlUtils.unwrap(r.getRunContent().get(0));
+				if (firstInline instanceof Text) {
+					wt = (Text)firstInline;
+				} else {
+					log.warn("First was " + firstInline );
+					wt = Context.getWmlObjectFactory().createText();
+					r.getRunContent().add(wt);
+				}
+				wt.setValue(value);
+				// Return the sdt with this value set
+				List<Object> newContent = new ArrayList<Object>();
+				newContent.add(sdt);
+				return newContent;					
 			}	
 			// shouldn't happen
 			return null;
@@ -1015,20 +1092,18 @@ public static void extensionMissing(Exception e) {
 			 */
 		}
 		
-//		public static Object getSdtContent(Object o) {
+//		public static List<Object> getSdtContent(Object o) {
 //			
 //			if (o instanceof org.docx4j.wml.SdtBlock) {
-//				return ((org.docx4j.wml.SdtBlock) o).getSdtContent();
+//				return ((org.docx4j.wml.SdtBlock) o).getSdtContent().getEGContentBlockContent();
 //			} else if (o instanceof org.docx4j.wml.SdtRun) { // sdt in paragraph
-//				return ((org.docx4j.wml.SdtRun) o).getSdtContent();
+//				return ((org.docx4j.wml.SdtRun) o).getSdtContent().getParagraphContent();
 //			} else if (o instanceof org.docx4j.wml.CTSdtRow) { // sdt wrapping row
-//				return ((org.docx4j.wml.CTSdtRow) o).getSdtContent();
+//				return ((org.docx4j.wml.CTSdtRow) o).getSdtContent().getEGContentRowContent();
 //			} else if (o instanceof org.docx4j.wml.CTSdtCell) { // sdt wrapping cell
-//				log.warn("Cowardly ignoring bindingrole on SdtCell");
-//				return null;
+//				return ((org.docx4j.wml.CTSdtCell)o).getSdtContent().getEGContentCellContent();
 //			} else {
-//				// log.warn("TODO: Handle " + o.getClass().getName() +
-//				// " (if that's an sdt)");
+//				log.warn("TODO: Handle " + o.getClass().getName() + " (if that's an sdt)");
 //			}
 //			return null;
 //		}
