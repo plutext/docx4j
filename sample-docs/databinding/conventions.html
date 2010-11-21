@@ -312,7 +312,9 @@
   
   <p class="Normal DocDefaults " />
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">(It is only really useful if there is a </span><span style="color: #FF0000;">@questionID</span><span style="white-space:pre-wrap;"> )</span></p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">This is useful if there is a </span><span style="color: #FF0000;">@questionID</span><span style="white-space:pre-wrap;"> </span></p>
+  
+  <p class="Normal DocDefaults ">The other situation to consider is where the XPath expression does not evaluate to a single element (as required by the OpenXML spec).  Such an XPath expression would result in a databinding which is, in Word, always a "dangling reference". Accordingly, if the user creates such an expression in the Word Add-In, the corresponding databinding is not added (since it would be useless)- just the od:xpath tag is added.  The value of the expression will be inserted into the document in the pre-processing step.  Word can't update it later though.</p>
   
   <p class="Heading1 Normal DocDefaults ">Questions Part</p>
   
@@ -400,13 +402,15 @@
   
   <p class="Normal DocDefaults " />
   
-  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">In this example, the condition simply uses the value of </span></p>
+  <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">In this example, the condition simply uses the string value of </span></p>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">    &lt;</span><span style="color: #A31515;">od:xpath</span><span style="white-space:pre-wrap;"> </span><span style="color: #FF0000;">id</span>="x5"/&gt;</p>
   
-  <p class="Normal DocDefaults " />
+  <p class="Normal DocDefaults ">That XPath expression could point to a text node containing the text 'true', or it could be a boolean, for example:</p>
   
-  <p class="Normal DocDefaults ">but boolean expressions are also permitted.</p>
+  <p class="Normal DocDefaults ">   /invoice/total &gt; 1000</p>
+  
+  <p class="Normal DocDefaults ">The conditions xsd also permits you to construct a condition out of boolean combination of other conditions [TODO: add example].   Sometimes this will be a cleaner approach than a complex XPath expression.</p>
   
   <p class="Heading1 Normal DocDefaults "><span class="apple-style-span DefaultParagraphFont ">Document Setup</span></p>
   
