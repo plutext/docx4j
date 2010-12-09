@@ -17,7 +17,10 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * 
  * The MergeDocx utility is a paid extension to docx4j.
  * Purchases of this extension support the docx4j project.
- * Please visit www.plutext.com if you want to buy it.
+ * @see <a href="http://dev.plutext.org/blog/2010/11/merging-word-documents/">
+ * merging-word-documents blog post</a> for more info, or 
+ * @see <a href="http://www.plutext.com/">www.plutext.com</a>
+ * or email sales@plutext.com if you want to buy it.
  * 
  * To run the utility, you simply pass it a list of the 
  * docx you want to merge; it returns a new pkg containing
