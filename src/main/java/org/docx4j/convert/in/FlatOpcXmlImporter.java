@@ -504,8 +504,9 @@ public class FlatOpcXmlImporter  {
 							javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 							dbf.setNamespaceAware(true);
 							org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
-							XmlUtils.treeCopy(el, doc);
-							
+							//XmlUtils.treeCopy(el, doc);
+							org.w3c.dom.Node copy = doc.importNode(el, true);
+							doc.appendChild(copy);							
 							data.setDocument(doc); 
 							
 							((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
@@ -522,8 +523,9 @@ public class FlatOpcXmlImporter  {
 						javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						dbf.setNamespaceAware(true);
 						org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
-						XmlUtils.treeCopy(el, doc);
-						
+						//XmlUtils.treeCopy(el, doc);
+						org.w3c.dom.Node copy = doc.importNode(el, true);
+						doc.appendChild(copy);							
 						data.setDocument(doc); 
 						
 						((org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) part)
