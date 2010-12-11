@@ -869,7 +869,22 @@ public class XmlUtils {
  	}
      
      
+	/**
+	 * Copy a node from one DOM document to another.  Used
+	 * to avoid relying on an underlying implementation which might 
+	 * not support importNode 
+	 * (eg Xalan's org.apache.xml.dtm.ref.DTMNodeProxy).
+	 * 
+	 * WARNING: doesn't fully support namespaces!
+	 * 
+	 * @param sourceNode
+	 * @param destParent
+	 */
 	public static void treeCopy( Node sourceNode, Node destParent ) {
+		
+		// http://osdir.com/ml/text.xml.xerces-j.devel/2004-04/msg00066.html
+		// suggests the problem has been fixed?
+		
 		// source node maybe org.apache.xml.dtm.ref.DTMNodeProxy
 		// (if its xslt output we are copying)
 		// or com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl
