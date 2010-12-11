@@ -21,6 +21,8 @@
 package org.docx4j;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import org.apache.log4j.Logger;
 
@@ -29,7 +31,8 @@ public class UnitsOfMeasurement {
 	
 	public final static DecimalFormat format2DP;
 	static {
-		format2DP = new DecimalFormat("##.##");
+		format2DP =  new DecimalFormat("##.##", 
+							new DecimalFormatSymbols(Locale.ENGLISH)); 
 	}
 	
 	public static long twipToEMU(double twips) {		
