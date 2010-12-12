@@ -33,11 +33,11 @@ import org.junit.Test;
 
 public class ParagraphDifferencerTest {
 	
-	final static String BASE_DIR = "/home/dev/workspace/docx4j/src/test/java/org/docx4j/diff/";
+	final static String BASE_DIR = "src/test/java/org/docx4j/diff/";
 
 	final static String[] testparagraphs = { "t2R", "t2RR", "t3L", "t3R", "t4"}; // "t1L", "t1R", 
 	
-	
+	@Test
 	public void testDiff() throws Exception {
 		
 		for (int i=0; i<testparagraphs.length-1; i++){
@@ -67,11 +67,11 @@ public class ParagraphDifferencerTest {
 	
 	public static void main(String[] args) throws Exception {
 
-		testDiffDocx();
+		new ParagraphDifferencerTest().testDiffDocx();
 	}
 	
 	@Test
-	public static void testDiffDocx() throws Exception {
+	public void testDiffDocx() throws Exception {
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
@@ -143,7 +143,8 @@ public class ParagraphDifferencerTest {
 		}
 
 		// Now save it 
-		wordMLPackage.save(new java.io.File("/home/dev/diff.docx") );
+		wordMLPackage.save(new java.io.File(System.getProperty("java.io.tmpdir")
+		        + "/diff.docx") );
 		
 		
 	}

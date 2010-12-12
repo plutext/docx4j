@@ -41,7 +41,7 @@ import org.junit.Test;
 
 public class ListNumberIndTest {
 	
-	final static String BASE_DIR = "/home/dev/workspace/docx4j/src/test/java/org/docx4j/listnumbering/ind/";
+	final static String BASE_DIR = "src/test/java/org/docx4j/listnumbering/ind/";
 
 	final static String[] testdocs = { 
 		"abstract_style_with.xml", 
