@@ -240,7 +240,7 @@ public class TextStyles {
 			FontScheme fontScheme) {
 		
 		List<Style> styles = new ArrayList<Style>();
-		
+		if (textStyles == null) return styles;
 		styles.add(TextStyles.convertToWordStyle(textStyles.getLvl1PPr(), "Lvl1" + suffix, "Lvl1" + suffix, "DocDefaults", fontScheme));
 		styles.add(TextStyles.convertToWordStyle(textStyles.getLvl2PPr(), "Lvl2" + suffix, "Lvl2" + suffix, "DocDefaults", fontScheme));
 		styles.add(TextStyles.convertToWordStyle(textStyles.getLvl3PPr(), "Lvl3" + suffix, "Lvl3" + suffix, "DocDefaults", fontScheme));
@@ -259,7 +259,7 @@ public class TextStyles {
 	public static List<Style> generateWordStylesForMaster(CTSlideMasterTextStyles masterTextStyles, int mastern, FontScheme fontScheme) {
 		
 		List<Style> styles = new ArrayList<Style>();
-
+		if (masterTextStyles == null) return styles;
 		// <p:titleStyle>
 		styles.addAll(generateLvlNMasterStyle(masterTextStyles.getTitleStyle(), "Master" + mastern + "Title", fontScheme));
 		// <p:bodyStyle>
@@ -274,7 +274,7 @@ public class TextStyles {
 			FontScheme fontScheme) {
 		
 		List<Style> styles = new ArrayList<Style>();
-		
+		if (textStyles == null) textStyles = new CTTextListStyle();
 		styles.add(TextStyles.convertToWordStyle(textStyles.getLvl1PPr(), "Lvl1" + suffix, "Lvl1" + suffix, "Lvl1", fontScheme));
 		styles.add(TextStyles.convertToWordStyle(textStyles.getLvl2PPr(), "Lvl2" + suffix, "Lvl2" + suffix, "Lvl2", fontScheme));
 		styles.add(TextStyles.convertToWordStyle(textStyles.getLvl3PPr(), "Lvl3" + suffix, "Lvl3" + suffix, "Lvl3", fontScheme));
