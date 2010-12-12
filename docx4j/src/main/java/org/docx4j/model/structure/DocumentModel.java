@@ -72,14 +72,17 @@ public class DocumentModel {
 				
 		Document doc = (Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
 		
+		HeaderFooterPolicy previousHF = null;
+		
 		for (Object o : doc.getBody().getEGBlockLevelElts() ) {
 			if (o instanceof org.docx4j.wml.P) {
 				if (((org.docx4j.wml.P)o).getPPr() != null ) {
 					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
 					if (ppr.getSectPr()!=null) {
-						sections.add(
-								new SectionWrapper(
-										ppr.getSectPr(), rels) );
+						SectionWrapper sw = new SectionWrapper(
+								ppr.getSectPr(), previousHF, rels); 
+						sections.add(sw);
+						previousHF = sw.getHeaderFooterPolicy();
 						log.debug( "registered sectpr");						
 					}
 				}
@@ -90,7 +93,7 @@ public class DocumentModel {
 		SectPr sectPr = doc.getBody().getSectPr();	
 		// There might not be a sectPr, but we still add a SectionWrapper to
 		// represent the body.
-		SectionWrapper sw = new SectionWrapper(sectPr, rels);
+		SectionWrapper sw = new SectionWrapper(sectPr, previousHF, rels);
 		sections.add(sw);
 		
 	}

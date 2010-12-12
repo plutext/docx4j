@@ -27,10 +27,10 @@ import org.docx4j.wml.SectPr;
 
 public class SectionWrapper {
 	
-	protected SectionWrapper(SectPr sectPr, RelationshipsPart rels) {
+	protected SectionWrapper(SectPr sectPr, HeaderFooterPolicy previousHF, RelationshipsPart rels) {
 		// This should work even if sectPr is null
 		this.sectPr = sectPr;
-		this.headerFooterPolicy = new HeaderFooterPolicy(sectPr, rels); 
+		this.headerFooterPolicy = new HeaderFooterPolicy(sectPr, previousHF, rels); 
 		
 		page = new PageDimensions();
 		if (sectPr!=null) {
