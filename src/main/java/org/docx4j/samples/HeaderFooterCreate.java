@@ -38,7 +38,7 @@ import org.docx4j.wml.HeaderReference;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.SectPr;
 
-public class HeaderFooter {
+public class HeaderFooterCreate {
 
 	private static ObjectFactory objectFactory = new ObjectFactory();
 
