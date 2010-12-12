@@ -415,10 +415,8 @@ public class XmlUtils {
  */	
 			
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+                    throw new RuntimeException(e);
 		}
-		return null;				
 	}
 
 	/** Marshal to a String, for object
@@ -450,10 +448,8 @@ public class XmlUtils {
 			return sWriter.toString();
 			
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+                    throw new RuntimeException(e);
 		} 
-		return null;
 	}
 	
 	
@@ -489,10 +485,8 @@ public class XmlUtils {
 			
 			
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-		return null;				
 	}
 
 	
@@ -522,13 +516,10 @@ public class XmlUtils {
 
 			return doc;
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 	/** Marshal to a W3C document, for object
@@ -555,13 +546,10 @@ public class XmlUtils {
 
 			return doc;
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    throw new RuntimeException(e);
 		}
-		return null;
 	}
 	
 	
@@ -650,9 +638,7 @@ public class XmlUtils {
 			dbf.setNamespaceAware(true);
 			return dbf.newDocumentBuilder().newDocument();
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+                    throw new RuntimeException(e);
 		}		
 		
 	}
