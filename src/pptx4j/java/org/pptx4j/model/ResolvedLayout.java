@@ -114,10 +114,12 @@ public class ResolvedLayout implements Cloneable {
 		Map<String, ShapeWrapper> masterPlaceholders = master.getIndexedPlaceHolders();
 		
 		// Assume the slide layout doesn't itself have a bg
-		resolvedLayout.bg = 
-			XmlUtils.deepCopy(
+		if (masterLayout.getBg() != null) {
+		    resolvedLayout.bg = 
+		        XmlUtils.deepCopy(
 					masterLayout.getBg(),
 					Context.jcPML);
+		}
 		
 		// ShapeTree
 		resolvedLayout.shapeTree = 
