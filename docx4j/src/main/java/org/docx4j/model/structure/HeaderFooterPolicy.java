@@ -85,6 +85,7 @@ public class HeaderFooterPolicy {
 	 * 
 	 */
 	
+	private HeaderFooterPolicy() {}
 	
 	/**
 	 * Figures out the policy for the given section,
@@ -99,6 +100,8 @@ public class HeaderFooterPolicy {
 		if (sectPr == null) {
 			return;
 		}
+		
+		if (previousHF==null) previousHF= new HeaderFooterPolicy();
 		
 		List<CTRel> hdrFtrRefs = sectPr.getEGHdrFtrReferences();
 		BooleanDefaultTrue titlePage = sectPr.getTitlePg();
