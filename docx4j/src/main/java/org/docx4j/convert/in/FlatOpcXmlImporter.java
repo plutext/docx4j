@@ -64,6 +64,7 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
+import org.w3c.dom.DOMException;
 
 
 
@@ -506,6 +507,11 @@ public class FlatOpcXmlImporter  {
 							org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
 							//XmlUtils.treeCopy(el, doc);
 							org.w3c.dom.Node copy = doc.importNode(el, true);
+							// Word doesn't like the xml namespace to be bound. At some point in a process 
+							// from docx -> package-> flatopc -> package -> docx, it is added to the custom xml root element.
+							try {
+								copy.getAttributes().removeNamedItemNS("http://www.w3.org/2000/xmlns/","xml");
+							} catch (DOMException e) {}
 							doc.appendChild(copy);							
 							data.setDocument(doc); 
 							
@@ -525,6 +531,9 @@ public class FlatOpcXmlImporter  {
 						org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
 						//XmlUtils.treeCopy(el, doc);
 						org.w3c.dom.Node copy = doc.importNode(el, true);
+						try {
+							copy.getAttributes().removeNamedItemNS("http://www.w3.org/2000/xmlns/","xml");
+						} catch (DOMException e) {}
 						doc.appendChild(copy);							
 						data.setDocument(doc); 
 						
@@ -539,10 +548,15 @@ public class FlatOpcXmlImporter  {
 					javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					dbf.setNamespaceAware(true);
 					org.w3c.dom.Document doc = dbf.newDocumentBuilder().newDocument();
-					XmlUtils.treeCopy(el, doc);
+					//XmlUtils.treeCopy(el, doc);
+					org.w3c.dom.Node copy = doc.importNode(el, true);
+					try {
+						copy.getAttributes().removeNamedItemNS("http://www.w3.org/2000/xmlns/","xml");
+						// May not be required here. Not tested.
+					} catch (DOMException e) {}
+					doc.appendChild(copy);							
 					
 					((XmlPart)part).setDocument(doc); 
-					
 
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
