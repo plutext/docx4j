@@ -62,6 +62,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -250,7 +251,7 @@ public class ContentTypeManager  {
 		}		
 		
 		// if there is no override, get use the file extension
-		String ext = partName.substring(partName.indexOf(".") + 1);
+		String ext = partName.substring(partName.indexOf(".") + 1).toLowerCase();
 		log.info("Looking at extension '" + ext);
 		CTDefault defaultCT = (CTDefault)defaultContentType.get(ext);
 		if (defaultCT!=null ) {
@@ -508,17 +509,17 @@ public class ContentTypeManager  {
 	 */
 	public void addDefaultContentType(String extension, CTDefault contentType) {
 		log.debug("Registered " + extension );
-		defaultContentType.put(extension, contentType);
+		defaultContentType.put(extension.toLowerCase(), contentType);
 	}
 	
 	public void addDefaultContentType(String extension, String contentType) {
 		
 		CTDefault defaultCT = ctFactory.createCTDefault();
-		defaultCT.setExtension(extension);
+		defaultCT.setExtension(extension.toLowerCase());
 		defaultCT.setContentType(contentType);
 		
 		log.debug("Registered " + extension );
-		defaultContentType.put(extension, defaultCT);
+		defaultContentType.put(extension.toLowerCase(), defaultCT);
 	}
 	
 
@@ -543,7 +544,7 @@ public class ContentTypeManager  {
 			return;
 		}
 		// Default content type
-		this.defaultContentType.remove(partName.getExtension());
+		this.defaultContentType.remove(partName.getExtension().toLowerCase());
 	}
 
 	/**
@@ -583,7 +584,7 @@ public class ContentTypeManager  {
 				&& this.overrideContentType.containsKey(partName.getURI()))
 			return this.overrideContentType.get(partName.getURI()).getContentType();
 
-		String extension = partName.getExtension();
+		String extension = partName.getExtension().toLowerCase();
 		if (this.defaultContentType.containsKey(extension))
 			return this.defaultContentType.get(extension).getContentType();
 
@@ -625,7 +626,11 @@ public class ContentTypeManager  {
 			
 			Object res = u.unmarshal( contentTypes );
 			types = (CTTypes)((JAXBElement)res).getValue();				
-			log.debug( types.getClass().getName() + " unmarshalled" );									
+			//log.debug( types.getClass().getName() + " unmarshalled" );
+			
+			if (log.isDebugEnabled()) {
+				XmlUtils.marshaltoString(res, true, true, Context.jcContentTypes );
+			}
 
 			CTDefault defaultCT;
 			CTOverride overrideCT;
