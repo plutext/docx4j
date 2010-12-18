@@ -73,9 +73,10 @@ public class SdtWriter {
 		 * everything on a single div tag.
 		 */
 		
+		SdtTagHandler handler;
 		for( String key : map.keySet() ) {
 			
-			SdtTagHandler handler = handlers.get(key);
+			handler = handlers.get(key);
 			if (handler == null) {
 				log.error("No model registered for sdt tag key " + key + "; ignoring ..");
 				continue;
@@ -91,14 +92,35 @@ public class SdtWriter {
 			}			
 		}
 		
-		// If nothing matched, make sure we still return the contents!
+		// Always apply handler called '**'
+		if (handlers.get("**")!=null) {
+			handler = handlers.get("**");			
+			if (result==null) {
+				result = handler.toNode(sdtId, map, sdtAlias, childResults);
+			} else {
+				result = handler.toNode(sdtId, map, sdtAlias, result);
+			}			
+		}
+		
+		// If nothing matched, make sure we still return something.
+		// If you want to ignore the sdt contents, you need use the null handler
 		if (result==null) {
-			result = identity.toNode(sdtId, map, sdtAlias, childResults);
+			if (handlers.get("*")!=null) {
+				// handler '*' only gets applied if no other one has been				
+				handler = handlers.get("*");			
+				result = handler.toNode(sdtId, map, sdtAlias, childResults);
+			} else {
+				// Just return the contents!
+				result = identity.toNode(sdtId, map, sdtAlias, childResults);
+			}
 		}
 		
 		return result;
 	}
 
+	/**
+	 * Include sdt contents as-is in output.
+	 */	
 	static class IdentityHandler extends SdtTagHandler {
 		
 		@Override
@@ -122,11 +144,54 @@ public class SdtWriter {
 		@Override
 		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
 				Node resultSoFar) throws TransformerException {
-			// Not implemented
-			return null;
+			// Implemented just in case user explicitly invokes IdentityHandler..			
+			try {
+				// Create a DOM builder and parse the fragment
+				DocumentBuilderFactory factory = DocumentBuilderFactory
+						.newInstance();
+				Document document = factory.newDocumentBuilder().newDocument();
+				DocumentFragment docfrag = document.createDocumentFragment();
+				
+				return attachContents(docfrag, docfrag, resultSoFar);
+				
+			} catch (Exception e) {
+				throw new TransformerException(e);
+			}
 		}
 	}
 	
+	/**
+	 * Omit sdt contents from output.
+	 */
+	static class NullHandler extends SdtTagHandler {
+		
+		@Override
+		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+				NodeIterator childResults) throws TransformerException {
+
+			return emptyFragment();
+		}
+
+		@Override
+		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+				Node resultSoFar) throws TransformerException {
+			
+			return emptyFragment();
+		}
+		
+		private DocumentFragment emptyFragment() throws TransformerException {
+			
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			Document document;
+			try {
+				document = factory.newDocumentBuilder().newDocument();
+			} catch (ParserConfigurationException e) {
+				throw new TransformerException(e);
+			}
+			return document.createDocumentFragment();
+			
+		}
+	}
 	
 }
 

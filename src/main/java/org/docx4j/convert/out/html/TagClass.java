@@ -79,7 +79,6 @@ public class TagClass extends SdtTagHandler {
 
 	private Element createDiv(Document document, DocumentFragment docfrag, String sdtId, HashMap<String, String> tagMap, String sdtAlias) throws ParserConfigurationException, IOException, SAXException {
 		
-
 		// log.info("Document: " + document.getClass().getName() );
 
 		String classVal = tagMap.get("@class");
