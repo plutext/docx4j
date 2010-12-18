@@ -37,6 +37,7 @@ import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.Output;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.BestMatchingMapper;
 import org.docx4j.fonts.IdentityPlusMapper;
@@ -44,11 +45,15 @@ import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.listnumbering.Emulator;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.AdHocProperty;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
+import org.docx4j.model.properties.paragraph.PBorderBottom;
+import org.docx4j.model.properties.paragraph.PBorderTop;
+import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.table.BorderBottom;
 import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
@@ -56,9 +61,15 @@ import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
+import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.Body;
+import org.docx4j.wml.CTShd;
+import org.docx4j.wml.CTTblPrBase;
+import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
@@ -67,10 +78,13 @@ import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Tr;
+import org.docx4j.wml.TrPr;
 import org.docx4j.wml.UnderlineEnumeration;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 import org.w3c.dom.traversal.NodeIterator;
 import org.w3c.dom.DOMException;
@@ -119,7 +133,8 @@ import org.xml.sax.InputSource;
  * @author jason
  *
  */
-public class HtmlExporterNG2 extends HtmlExporterNG {
+public class HtmlExporterNG2 // extends HtmlExporterNG {
+							extends  AbstractHtmlExporter {
 	
 	
 	protected static Logger log = Logger.getLogger(HtmlExporterNG2.class);
@@ -129,6 +144,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 		log.info(message);
 	}
 
+	static Templates xslt;		
 	
 	/**
 	 * org/docx4j/convert/out/html/docx2xhtmlNG2.xslt will be used by default
@@ -138,13 +154,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 	 */		
 	public static void setXslt(Templates xslt) {
 		
-		// This method is here, although it appears to duplicate the
-		// method in the superclass, 
-		// to force the class's static initializer to
-		// run now, so it doesn't run later and overwrite
-		// our explicit setting, which could be quite confusing.
-		
-		HtmlExporterNG.xslt = xslt;
+		HtmlExporterNG2.xslt = xslt;
 	}	
 	
 	static {
@@ -160,9 +170,133 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 		}
 	}
 	
+	
+	// Implement the interface.  	
+	
+	public void output(javax.xml.transform.Result result) throws Docx4JException {
+		
+		if (wmlPackage==null) {
+			throw new Docx4JException("Must setWmlPackage");
+		}
+		
+		if (htmlSettings==null) {
+			log.debug("Using empty HtmlSettings");
+			htmlSettings = new HtmlSettings();			
+		}		
+		
+		try {
+			html(wmlPackage, result, htmlSettings);
+		} catch (Exception e) {
+			throw new Docx4JException("Failed to create HTML output", e);
+		}		
+		
+	}
+	
+	// End interface
+	
+	/** Create an html version of the document, using CSS font family
+	 *  stacks.  This is appropriate if the HTML is intended for
+	 *  viewing in a web browser, rather than an intermediate step
+	 *  on the way to generating PDF output. The Microsoft Conditional
+	 *  Comments (supportMisalignedColumns, supportAnnotations,
+	 *  and mso) which are defined in the XSLT are not inserted.
+	 * 
+	 * @param result
+	 *            The javax.xml.transform.Result object to transform into 
+	 * 
+	 * */ 
+	@Deprecated	
+    public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result,
+    		String imageDirPath) throws Exception {
+    	
+    	html(wmlPackage, result, true, imageDirPath);
+    }
+
+	@Deprecated
+    public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, boolean fontFamilyStack,
+    		String imageDirPath) throws Exception {
+
+		// Prep parameters
+    	HtmlSettings htmlSettings = new HtmlSettings();
+    	htmlSettings.setFontFamilyStack(fontFamilyStack);
+    	
+    	if (imageDirPath==null) {
+    		imageDirPath = "";
+    	}
+    	htmlSettings.setImageDirPath(imageDirPath);    	
+    	
+		html(wmlPackage, result, htmlSettings);
+    }
     
+	/** Create an html version of the document. 
+	 * 
+	 * @param result
+	 *            The javax.xml.transform.Result object to transform into 
+	 * 
+	 * */ 
+	@Deprecated	
+    public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, 
+    		HtmlSettings htmlSettings) throws Exception {
+    			
+  	  // Containerization of borders/shading
+  	  MainDocumentPart mdp = wmlPackage.getMainDocumentPart();
+  	  List<Object> newList = Containerization.groupAdjacentBorders(mdp);
+	  // Don't change the user's Document object; create a tmp one
+	  org.docx4j.wml.Document tmpDoc = Context.getWmlObjectFactory().createDocument();
+	  Body newBody = Context.getWmlObjectFactory().createBody();
+	  tmpDoc.setBody(newBody);
+	  newBody.getEGBlockLevelElts().addAll(newList);
+		
+		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
+				tmpDoc ); 	
+		
+		//log.debug( XmlUtils.w3CDomNodeToString(doc));
+			
+		// Prep parameters
+		if (htmlSettings==null) {
+			htmlSettings = new HtmlSettings();
+			// ..Ensure that the font names in the XHTML have been mapped to these matches
+			//     possibly via an extension function in the XSLT
+		}
+		
+		if (htmlSettings.getFontMapper()==null) {			
+			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
+			log.debug("FontMapper set.. ");
+		}
+		
+		htmlSettings.setWmlPackage(wmlPackage);
+		
+		// Allow arbitrary objects to be passed to the converters.
+		// The objects are assumed to be specific to a particular converter (eg table),
+		// so assume there will be one object implementing TransformState per converter.   
+		HashMap<String, TransformState> modelStates  = new HashMap<String, TransformState>();
+		htmlSettings.getSettings().put("modelStates", modelStates );
+		
+		//Converter c = new Converter();
+		Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
+      	Converter.getInstance().registerModelConverter("w:sym", new SymbolWriter() );
+		
+		// By convention, the transform state object is stored by reference to the 
+		// type of element to which its model applies
+		modelStates.put("w:tbl", new TableModelTransformState() );
+		modelStates.put("w:sym", new SymbolModelTransformState() );
+
+		modelStates.put("footnoteNumber", new FootnoteState() );
+		modelStates.put("endnoteNumber", new EndnoteState() );
+		
+		Converter.getInstance().start(wmlPackage);
+		
+		// Now do the transformation
+		log.debug("About to transform...");
+		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
+		
+		log.info("wordDocument transformed to xhtml ..");
+    	
+    }
+        
     /* ---------------Xalan XSLT Extension Functions ---------------- */
 
+	
 	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
 
 		Node n = nodes.nextNode();
@@ -213,226 +347,7 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 	
 	
 	
-    public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {
-    	
-    	StringBuffer result = new StringBuffer();
-    	
-    	StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
-
-		// First iteration - table styles
-		result.append("\n /* TABLE STYLES */ \n");    	
-		Tree<AugmentedStyle> tableTree = styleTree.getTableStylesTree();		
-    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : tableTree.toList() ) {
-    		Style s = n.getData().getStyle();
-
-    		result.append( "."+ s.getStyleId()  + " {display:table;" );
-    		
-    		// TblPr
-    		if (s.getTblPr()==null) {
-    		} else {
-    			log.debug("Applying tblPr..");
-            	createCss(s.getTblPr(), result);
-            	
-    		}
-    		
-    		// TblStylePr - STTblStyleOverrideType stuff
-    		if (s.getTblStylePr()==null) {
-    		} else {
-    			log.debug("Applying tblStylePr.. TODO!");
-    			// Its a list, created automatically
-            	createCss(s.getTblStylePr(), result);
-    		}
-    		
-    		
-    		// TrPr - eg jc, trHeight, wAfter, tblCellSpacing
-    		if (s.getTrPr()==null) {
-    		} else {
-    			log.debug("Applying trPr.. TODO!");
-            	createCss( s.getTrPr(), result);
-    		}
-    		
-    		// TcPr - includes includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
-    		if (s.getTcPr()==null) {
-    		} else {
-    			log.debug("Applying tcPr.. ");
-            	createCss( s.getTcPr(), result);
-    		}
-    		    		
-        	if (s.getPPr()==null) {
-        		log.debug("null pPr for style " + s.getStyleId());
-        	} else {
-        		createCss( s.getPPr(), result, false );
-        	}
-        	if (s.getRPr()==null) {
-        		log.debug("null rPr for style " + s.getStyleId());
-        	} else {
-            	createCss(wmlPackage, s.getRPr(), result);
-        	}
-        	result.append( "}\n" );         	
-    	}
-		
-		// Second iteration - paragraph level pPr *and rPr*
-		result.append("\n /* PARAGRAPH STYLES */ \n");    	
-		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
-    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : pTree.toList() ) {
-    		Style s = n.getData().getStyle();
-
-    		result.append( "."+ s.getStyleId()  + " {display:block;" );
-        	if (s.getPPr()==null) {
-        		log.debug("null pPr for style " + s.getStyleId());
-        	} else {
-        		createCss( s.getPPr(), result, false );
-        	}
-        	if (s.getRPr()==null) {
-        		log.debug("null rPr for style " + s.getStyleId());
-        	} else {
-            	createCss(wmlPackage, s.getRPr(), result);
-        	}
-        	result.append( "}\n" );        	
-    	}
-		    	
-	    // Third iteration, character styles
-		result.append("\n /* CHARACTER STYLES */ ");
-		//result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ \n ");
-		
-		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : cTree.toList() ) {
-    		Style s = n.getData().getStyle();
-
-    		result.append( "."+ s.getStyleId()  + " {display:inline;" );
-        	if (s.getRPr()==null) {
-        		log.error("! null rPr for character style " + s.getStyleId());
-        	} else {
-            	createCss(wmlPackage, s.getRPr(), result);
-        	}
-        	result.append( "}\n" );        	
-    	}	
-    	
-    	if (log.isDebugEnabled()) {
-    		return result.toString();
-    	} else {
-    		String debug = result.toString();
-    		return debug;
-    	}
-    }
     
-    
-    public static String getCssForTableCells(WordprocessingMLPackage wmlPackage, 
-    		NodeIterator tables) {
-    	
-    	// The only way we seem to be able to make rules which
-    	// apply to all the cells in a particular table
-    	
-    	System.out.println("TABLES");
-    	Tbl tbl;
-
-		
-    	StringBuffer result = new StringBuffer();		
-    	
-		//DTMNodeProxy n = (DTMNodeProxy)tables.nextNode();
-    	Element n = (Element)tables.nextNode();
-		if (n==null) {
-			// No tables in this document
-			return "";
-		}    	
-    	int idx = 0;
-		do {
-			if (n.getNodeName().equals("w:tbl" )) {
-				// n.getLocalName() -> tbl
-				// n.getNodeName() -> w:tbl
-
-    			Object jaxb;
-				try {
-					Unmarshaller u = Context.jc.createUnmarshaller();			
-					u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-					jaxb = u.unmarshal(n);
-    				tbl =  (Tbl)jaxb;
-    				
-    				result.append(getCssForTableCells(wmlPackage, tbl,  idx) );
-    				
-				} catch (JAXBException e1) {
-    		    	log.error("JAXB error", e1);
-    			} catch (ClassCastException e) {
-    		    	log.error("Couldn't cast to Tbl!");
-    			}        	        			
-				
-			} else {
-				log.warn("Expected table but encountered: " + n.getNodeName() );
-			}
-			// next 
-			idx++;
-			n = (Element)tables.nextNode();
-			
-		} while ( n !=null ); 
-    	
-		return result.toString();
-    }
-    
-    
-    public static String getCssForTableCells(WordprocessingMLPackage wmlPackage, 
-    		Tbl tbl, int idx) {
-    	
-    	StringBuffer result = new StringBuffer();		
-		PropertyResolver pr;
-		try {
-			pr = new PropertyResolver(wmlPackage);
-		} catch (Docx4JException e) {
-	    	log.error("docx4j error", e);
-	    	return e.getMessage();
-		} 
-		Style s = pr.getEffectiveTableStyle(tbl.getTblPr() );
-		
-		result.append("#" + TableWriter.getId(idx) + " td { ");
-    	List<Property> properties =  new ArrayList<Property>();
-    	if (s.getTblPr()!=null
-    			&& s.getTblPr().getTblBorders()!=null ) {
-    		TblBorders tblBorders = s.getTblPr().getTblBorders();
-    		if (tblBorders.getInsideH()!=null) {
-    			if (tblBorders.getInsideH().getVal()==STBorder.NONE
-    					|| tblBorders.getInsideH().getVal()==STBorder.NIL
-    					|| tblBorders.getInsideH().getSz()==BigInteger.ZERO ) {
-    				properties.add( new AdHocProperty("border-top-style", "none", null, null));
-    				properties.add( new AdHocProperty("border-top-width", "0mm", null, null));
-    				properties.add( new AdHocProperty("border-bottom-style", "none", null, null));
-    				properties.add( new AdHocProperty("border-bottom-width", "0mm", null, null));
-    			} else {
-    				properties.add( new BorderTop(tblBorders.getTop() ));
-    				properties.add( new BorderBottom(tblBorders.getBottom() ));
-    			}
-    		}
-    		if (tblBorders.getInsideV()!=null) { 
-    			if (tblBorders.getInsideV().getVal()==STBorder.NONE
-    					|| tblBorders.getInsideV().getVal()==STBorder.NIL
-    					|| tblBorders.getInsideV().getSz()==BigInteger.ZERO ) {
-    				properties.add( new AdHocProperty("border-left-style", "none", null, null));
-    				properties.add( new AdHocProperty("border-left-width", "0mm", null, null));
-    				properties.add( new AdHocProperty("border-right-style", "none", null, null));
-    				properties.add( new AdHocProperty("border-right-width", "0mm", null, null));
-    			} else {
-    				properties.add( new BorderRight(tblBorders.getRight() ));
-    				properties.add( new BorderLeft(tblBorders.getLeft() ));
-    			}
-    		}
-    	}
-    	if (s.getTcPr()!=null ) {
-    		PropertyFactory.createProperties(properties, s.getTcPr() );
-    	}
-		// Ensure empty cells have a sensible height
-    	// TODO - this is no good with IE8, which doesn't treat this 
-    	// as a minimum; it won't resize if there is more :-(
-    	properties.add(new AdHocProperty("height", "5mm", null, null));
-    	
-    	
-		for( Property p :  properties ) {
-			if (p!=null) {
-				result.append(p.getCssProperty());
-			}
-		}
-		result.append("}\n");
-		return result.toString();
-    	
-    	
-    }
     
     public static DocumentFragment createBlockForSdt( 
     		WordprocessingMLPackage wmlPackage,
@@ -737,4 +652,5 @@ public class HtmlExporterNG2 extends HtmlExporterNG {
 	    }
     }
     
+   
 }

@@ -217,7 +217,7 @@ public class TableWriter extends ModelConverter {
 					// style
 					if (cell.getTcPr()!=null ) {
 						StringBuffer inlineStyle =  new StringBuffer();
-						HtmlExporterNG.createCss(cell.getTcPr(), inlineStyle);				
+						AbstractHtmlExporter.createCss(cell.getTcPr(), inlineStyle);				
 						if (!inlineStyle.toString().equals("") ) {
 							cellNode.setAttribute("style", inlineStyle.toString() );
 						}

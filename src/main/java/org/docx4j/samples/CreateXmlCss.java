@@ -31,7 +31,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.convert.out.html.HtmlExporterNG;
+import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Attr;
@@ -117,7 +117,7 @@ public class CreateXmlCss {
 			serialise(doc, buff, "  " );
 			
 			// Generate CSS   	
-			String css_other = HtmlExporterNG.getCssForStyles(wordMLPackage); 			
+			String css_other = AbstractHtmlExporter.getCssForStyles(wordMLPackage); 			
 			
 			// Join it all together
 			String result = HTML_TOP + CSS_FOR_TABLES + css_other + HTML_MIDDLE + buff.toString() + HTML_TAIL;

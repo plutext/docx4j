@@ -16,7 +16,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.html.HtmlExporterNG;
+import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextParagraphProperties;
@@ -263,7 +263,7 @@ public class SvgExporter {
 						);
 				PPr pPr = TextStyles.getWmlPPr(lvlPPr);
 				if (pPr!=null) {
-					HtmlExporterNG.createCss(pPr, inlineStyle, false);				
+					AbstractHtmlExporter.createCss(pPr, inlineStyle, false);				
 				}
 				// TODO RPR
 			}
@@ -406,7 +406,7 @@ public class SvgExporter {
 
 			// Does our rPr contain anything else?
 			StringBuffer inlineStyle = new StringBuffer();
-			HtmlExporterNG.createCss(pmlPackage, rPr, inlineStyle);
+			AbstractHtmlExporter.createCss(pmlPackage, rPr, inlineStyle);
 			if (!inlineStyle.toString().equals("")) {
 				span.setAttribute("style", inlineStyle.toString());
 			}
@@ -475,12 +475,12 @@ public class SvgExporter {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		HtmlExporterNG.createCss( s.getPPr(), result, false );
+        		AbstractHtmlExporter.createCss( s.getPPr(), result, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
         	} else {
-        		HtmlExporterNG.createCss(pmlPackage, s.getRPr(), result);
+        		AbstractHtmlExporter.createCss(pmlPackage, s.getRPr(), result);
         	}
         	result.append( "}\n" );        	
     	}
