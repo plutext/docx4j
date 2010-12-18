@@ -24,6 +24,8 @@ import java.io.OutputStream;
 
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporterNG2;
+import org.docx4j.convert.out.html.SdtWriter;
+import org.docx4j.convert.out.html.TagClass;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -45,7 +47,10 @@ public class CreateHtml extends AbstractSample {
 				// inputfilepath = System.getProperty("user.dir") + "/tmp/wmf.docx";
 		    	
 //		    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
-		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
+//		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
+		    	
+		    	
+				inputfilepath = System.getProperty("user.dir") + "/sample-docs/decracdiscrim1.docx";
 //		    	 inputfilepath = System.getProperty("user.dir") 
 //	    		+ "/sample-docs/test-docs/endnotes.xml";	    	
 //		    	 inputfilepath = System.getProperty("user.dir") 
@@ -58,7 +63,13 @@ public class CreateHtml extends AbstractSample {
 			// Load .docx or Flat OPC .xml
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 	    	
-			AbstractHtmlExporter exporter = new HtmlExporterNG2(); 			
+			AbstractHtmlExporter exporter = new HtmlExporterNG2(); 		
+			
+			// Sample sdt tag handler (tag handlers insert specific
+			// html depending on the contents of an sdt's tag).  
+			// This will only have an effect if the sdt tag contains
+			// the string @class=XXX
+			SdtWriter.registerTagHandler("@class", new TagClass() );
 			
 			OutputStream os; 
 			if (save) {

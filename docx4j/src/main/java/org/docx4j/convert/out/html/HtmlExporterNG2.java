@@ -1,3 +1,22 @@
+/*
+ *  Copyright 2007-2010, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
 package org.docx4j.convert.out.html;
 
 import java.io.IOException;
@@ -97,7 +116,9 @@ import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
 /**
- * HtmlExporterNG has 2 salient features:
+ * HtmlExporterNG (now removed - see 
+ * http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/convert/out/html/HtmlExporterNG.java?rev=1238
+ * ) had 2 salient features:
  * 
  * 1.  CSS .xx_pPr and .xx_rPr are created / split out for 
  *     each docx paragraph style
@@ -105,7 +126,7 @@ import org.xml.sax.InputSource;
  * 2.  Each docx style is resolved into its effective
  *     style, by the PropertyResolver
  *     
- * When roundtripping HTML content, this has adverse
+ * When roundtripping HTML content, this had adverse
  * consequences (neither too bad, but adding to our work):
  * 
  * (a) It is harder to tell what has been added to the
@@ -133,8 +154,7 @@ import org.xml.sax.InputSource;
  * @author jason
  *
  */
-public class HtmlExporterNG2 // extends HtmlExporterNG {
-							extends  AbstractHtmlExporter {
+public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	
 	
 	protected static Logger log = Logger.getLogger(HtmlExporterNG2.class);
@@ -281,6 +301,7 @@ public class HtmlExporterNG2 // extends HtmlExporterNG {
 		modelStates.put("w:tbl", new TableModelTransformState() );
 		modelStates.put("w:sym", new SymbolModelTransformState() );
 
+		// .. although that convention can be bent ..
 		modelStates.put("footnoteNumber", new FootnoteState() );
 		modelStates.put("endnoteNumber", new EndnoteState() );
 		
