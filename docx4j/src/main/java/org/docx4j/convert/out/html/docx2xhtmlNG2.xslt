@@ -53,8 +53,8 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 <xsl:template match="/w:document">
 
-			<xsl:variable name="dummy" 
-				select="java:org.docx4j.convert.out.html.HtmlExporter.log('/pkg:package')" />
+	<xsl:variable name="dummy"
+		select="java:org.docx4j.convert.out.html.HtmlExporterNG2.log('/pkg:package')" />
 
 
     <html xmlns="http://www.w3.org/1999/xhtml">
@@ -250,7 +250,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 				<xsl:otherwise>
 					<!--  At present, this doesn't use HTML OL|UL and LI;
 					      we'll do that when we have a document model to work from -->								
-					  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporter.getNumberXmlNode( $wmlPackage, 
+					  	<xsl:copy-of select="java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( $wmlPackage, 
 					  			$pStyleVal, $numId, $levelId)" />					
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
@@ -584,7 +584,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
       
 	<xsl:variable name="hTemp" 
-		select="java:org.docx4j.convert.out.html.HtmlExporter.resolveHref(
+		select="java:org.docx4j.convert.out.html.AbstractHtmlExporter.resolveHref(
 		             $wmlPackage, $relId )" />
 		                   
       <xsl:variable name="href">

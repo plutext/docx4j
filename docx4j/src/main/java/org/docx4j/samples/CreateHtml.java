@@ -23,7 +23,6 @@ package org.docx4j.samples;
 import java.io.OutputStream;
 
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
-import org.docx4j.convert.out.html.HtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporterNG2;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -55,20 +54,11 @@ public class CreateHtml extends AbstractSample {
 			System.out.println(inputfilepath);	    	
 	    	
 	    	boolean save = true;	    	
-	    	boolean useHtmlExporterNG = true;
-
-	    	
 			
 			// Load .docx or Flat OPC .xml
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 	    	
-			AbstractHtmlExporter exporter;
-			if (useHtmlExporterNG) {
-				// note the *2* here
-				exporter = new HtmlExporterNG2(); 			
-			} else {
-				exporter = new HtmlExporter();
-			}
+			AbstractHtmlExporter exporter = new HtmlExporterNG2(); 			
 			
 			OutputStream os; 
 			if (save) {

@@ -5,7 +5,6 @@ import java.util.*;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.ModelConverter;
-import org.docx4j.convert.out.html.HtmlExporterNG;
 import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
