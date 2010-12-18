@@ -23,7 +23,9 @@ package org.docx4j;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +41,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.ErrorListener;
@@ -64,6 +67,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class XmlUtils {
 	
@@ -641,6 +646,30 @@ public class XmlUtils {
                     throw new RuntimeException(e);
 		}		
 		
+	}
+	
+	  /**
+	   * @param docBuilder
+	   *          the parser
+	   * @param parent
+	   *          node to add fragment to
+	   * @param fragment
+	   *          a well formed XML fragment
+	 * @throws ParserConfigurationException 
+	   */
+	public static void appendXmlFragment(Document document, Node parent, String fragment)
+			throws IOException, SAXException, ParserConfigurationException {
+
+		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
+				.newDocumentBuilder();
+
+		Node fragmentNode = docBuilder.parse(
+				new InputSource(new StringReader(fragment)))
+				.getDocumentElement();
+		
+		fragmentNode = document.importNode(fragmentNode, true);
+		
+		parent.appendChild(fragmentNode);
 	}
     
     public static void transform(org.w3c.dom.Document doc,

@@ -64,6 +64,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  *  
  */
 public class Converter {
+	
   private final static Logger log = Logger.getLogger(Converter.class);
 
   private static Converter instance;
@@ -148,7 +149,13 @@ public class Converter {
 //	  return toNode(node, null);
 //  }
   
-  public static Node toNode(Node node, NodeList children, 
+  /**
+ * @param node
+ * @param childResults the already transformed node (element) content
+ * @param modelStates
+ * @return
+ */
+public static Node toNode(Node node, NodeList childResults, 
 		  Map<String, TransformState> modelStates) {
 
 		Converter inst = Converter.getInstance();
@@ -164,7 +171,7 @@ public class Converter {
 		try {
 			Model model = (Model) c.newInstance();
 			model.setWordMLPackage(inst.getWmlPackage());
-			model.build(node, children);
+			model.build(node, childResults);
 
 			ModelConverter converter = inst.converters.get(node.getNodeName());
 			if (converter == null) {
