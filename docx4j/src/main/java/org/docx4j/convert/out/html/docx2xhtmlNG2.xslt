@@ -299,21 +299,27 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
   <xsl:template match="w:t">  	
   	<xsl:value-of select="."/>
-  </xsl:template>  	
-  
-  <xsl:template match="w:sdt">
-  
-	<xsl:variable name="childResults">
- 			<xsl:apply-templates select="w:sdtContent/*"/>
-	</xsl:variable>
-  
-  	<xsl:copy-of select="java:org.docx4j.convert.out.html.SdtWriter.toNode( 
-  			string(./w:sdtPr/w:id/@w:val),
-  			string(./w:sdtPr/w:tag/@w:val),
-  			string(./w:sdtPr/w:alias/@w:val),
-  			$childResults)" />
-  
   </xsl:template>
+
+<!-- This is an extension point.
+     You can register your own SdtTagHandlers, which
+     tailor the HTML output based on the content of
+     w:sdtPr/w:tag.
+     See the SdtWriter class for details. -->
+	<xsl:template match="w:sdt">
+
+		<xsl:variable name="childResults">
+			<xsl:apply-templates select="w:sdtContent/*" />
+		</xsl:variable>
+
+		<xsl:variable name="sdtPrNode" select="./w:sdtPr" />
+
+		<xsl:copy-of
+			select="java:org.docx4j.convert.out.html.SdtWriter.toNode(
+  			$wmlPackage, $sdtPrNode, 
+  			$childResults)" />
+
+	</xsl:template>
 
 
   

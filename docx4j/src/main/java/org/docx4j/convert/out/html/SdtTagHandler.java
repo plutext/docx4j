@@ -25,6 +25,8 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.SdtPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -35,11 +37,11 @@ public abstract class SdtTagHandler {
 	
 	private static Logger log = Logger.getLogger(SdtTagHandler.class);
 	
-	public abstract Node toNode(String sdtId, String sdtTag, String sdtAlias,
+	public abstract Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 			HashMap<String, String> tagMap,
 			NodeIterator childResults) throws TransformerException;
 
-	public abstract Node toNode(String sdtId, String sdtTag, String sdtAlias,
+	public abstract Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 			HashMap<String, String> tagMap,
 			Node resultSoFar) throws TransformerException;
 	
@@ -51,6 +53,17 @@ public abstract class SdtTagHandler {
 		
 		return docfrag;
 		
+	}
+	
+	protected SdtPr.Alias getAlias(SdtPr sdtPr) {
+		
+		for (Object o : sdtPr.getRPrOrAliasOrLock() ) {
+			
+			o = XmlUtils.unwrap(o);
+			if (o instanceof SdtPr.Alias) return (SdtPr.Alias)o; 
+			
+		}
+		return null;
 	}
 	
 	protected Node attachContents(DocumentFragment docfrag, Node xhtmlDiv,

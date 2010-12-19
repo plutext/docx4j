@@ -28,6 +28,9 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.Id;
+import org.docx4j.wml.SdtPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -77,12 +80,21 @@ public class TagClass extends SdtTagHandler {
 	 * 
 	 */
 
-	private Element createDiv(Document document, DocumentFragment docfrag, String sdtId, HashMap<String, String> tagMap, String sdtAlias) throws ParserConfigurationException, IOException, SAXException {
+	private Element createDiv(Document document, DocumentFragment docfrag, 
+			SdtPr sdtPr,
+			HashMap<String, String> tagMap) throws ParserConfigurationException, IOException, SAXException {
 		
 		// log.info("Document: " + document.getClass().getName() );
 
 		String classVal = tagMap.get("@class");
+		
+		String sdtId="??";
+		if (sdtPr.getId()!=null) sdtId=sdtPr.getId().getVal().toString();
 
+		String sdtAlias = "??";
+		SdtPr.Alias alias = this.getAlias(sdtPr);
+		if (alias!=null) sdtAlias = alias.getVal();
+		
 		if (classVal.equals("collapse") ) {				
 			XmlUtils.appendXmlFragment(document, docfrag, 
 					"<p style=\"padding-left: 30px;\">"
@@ -109,7 +121,7 @@ public class TagClass extends SdtTagHandler {
 	}
 	
 	@Override
-	public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+	public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 			HashMap<String, String> tagMap,
 			NodeIterator childResults) throws TransformerException {
 
@@ -120,7 +132,7 @@ public class TagClass extends SdtTagHandler {
 			Document document = factory.newDocumentBuilder().newDocument();
 			DocumentFragment docfrag = document.createDocumentFragment();
 			
-			Element xhtmlDiv = this.createDiv(document, docfrag, sdtId, tagMap, sdtAlias);
+			Element xhtmlDiv = this.createDiv(document, docfrag, sdtPr, tagMap);
 			
 			return attachContents(docfrag, xhtmlDiv, childResults);
 			
@@ -134,7 +146,7 @@ public class TagClass extends SdtTagHandler {
 	}
 
 		@Override
-		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+		public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 				HashMap<String, String> tagMap,
 				Node resultSoFar) throws TransformerException {
 			try {
@@ -144,7 +156,7 @@ public class TagClass extends SdtTagHandler {
 				Document document = factory.newDocumentBuilder().newDocument();
 				DocumentFragment docfrag = document.createDocumentFragment();
 				
-				Element xhtmlDiv = this.createDiv(document, docfrag, sdtId, tagMap, sdtAlias);
+				Element xhtmlDiv = this.createDiv(document, docfrag, sdtPr, tagMap);
 				
 				return attachContents(docfrag, xhtmlDiv, resultSoFar);
 				
