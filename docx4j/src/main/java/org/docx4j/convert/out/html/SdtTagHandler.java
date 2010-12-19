@@ -35,10 +35,12 @@ public abstract class SdtTagHandler {
 	
 	private static Logger log = Logger.getLogger(SdtTagHandler.class);
 	
-	public abstract Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+	public abstract Node toNode(String sdtId, String sdtTag, String sdtAlias,
+			HashMap<String, String> tagMap,
 			NodeIterator childResults) throws TransformerException;
 
-	public abstract Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+	public abstract Node toNode(String sdtId, String sdtTag, String sdtAlias,
+			HashMap<String, String> tagMap,
 			Node resultSoFar) throws TransformerException;
 	
 

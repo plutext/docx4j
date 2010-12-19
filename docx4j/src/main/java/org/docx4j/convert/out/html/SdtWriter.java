@@ -86,9 +86,9 @@ public class SdtWriter {
 			}
 			
 			if (result==null) {
-				result = handler.toNode(sdtId, map, sdtAlias, childResults);
+				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
 			} else {
-				result = handler.toNode(sdtId, map, sdtAlias, result);
+				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, result);
 			}			
 		}
 		
@@ -96,9 +96,9 @@ public class SdtWriter {
 		if (handlers.get("**")!=null) {
 			handler = handlers.get("**");			
 			if (result==null) {
-				result = handler.toNode(sdtId, map, sdtAlias, childResults);
+				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
 			} else {
-				result = handler.toNode(sdtId, map, sdtAlias, result);
+				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, result);
 			}			
 		}
 		
@@ -108,10 +108,10 @@ public class SdtWriter {
 			if (handlers.get("*")!=null) {
 				// handler '*' only gets applied if no other one has been				
 				handler = handlers.get("*");			
-				result = handler.toNode(sdtId, map, sdtAlias, childResults);
+				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
 			} else {
 				// Just return the contents!
-				result = identity.toNode(sdtId, map, sdtAlias, childResults);
+				result = identity.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
 			}
 		}
 		
@@ -124,7 +124,8 @@ public class SdtWriter {
 	static class IdentityHandler extends SdtTagHandler {
 		
 		@Override
-		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+				HashMap<String, String> tagMap,
 				NodeIterator childResults) throws TransformerException {
 
 			try {
@@ -142,7 +143,8 @@ public class SdtWriter {
 		}
 
 		@Override
-		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+				HashMap<String, String> tagMap,
 				Node resultSoFar) throws TransformerException {
 			// Implemented just in case user explicitly invokes IdentityHandler..			
 			try {
@@ -166,14 +168,16 @@ public class SdtWriter {
 	static class NullHandler extends SdtTagHandler {
 		
 		@Override
-		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+				HashMap<String, String> tagMap,
 				NodeIterator childResults) throws TransformerException {
 
 			return emptyFragment();
 		}
 
 		@Override
-		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+				HashMap<String, String> tagMap,
 				Node resultSoFar) throws TransformerException {
 			
 			return emptyFragment();

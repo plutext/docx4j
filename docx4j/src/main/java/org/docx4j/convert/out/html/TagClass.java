@@ -109,7 +109,8 @@ public class TagClass extends SdtTagHandler {
 	}
 	
 	@Override
-	public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+	public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+			HashMap<String, String> tagMap,
 			NodeIterator childResults) throws TransformerException {
 
 		try {
@@ -133,7 +134,8 @@ public class TagClass extends SdtTagHandler {
 	}
 
 		@Override
-		public Node toNode(String sdtId, HashMap<String, String> tagMap, String sdtAlias,
+		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+				HashMap<String, String> tagMap,
 				Node resultSoFar) throws TransformerException {
 			try {
 				// Create a DOM builder and parse the fragment
