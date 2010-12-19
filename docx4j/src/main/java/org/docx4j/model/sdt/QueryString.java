@@ -39,6 +39,10 @@ import org.apache.log4j.Logger;
  * To that end, it is recommended you use a namespace
  * (ie somenamespace: ) as part of each of your keys.
  * 
+ * Note that Word 2007 limits the length of an w:sdtPr/w:tag
+ * to 64 characters, so you may wish to keep to that
+ * length.
+ * 
  */
 public class QueryString {
 	
