@@ -23,13 +23,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.SdtPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -50,9 +54,16 @@ public class SdtWriter {
 	
 	static IdentityHandler identity = new IdentityHandler();
 	
-	public static Node toNode(String sdtId, String sdtTag, String sdtAlias,
+//	public static Node toNode(String sdtId, String sdtTag, String sdtAlias,
+//			NodeIterator childResults) throws TransformerException {
+
+	public static Node toNode(WordprocessingMLPackage wmlPackage,
+    		NodeIterator sdtPrNodeIt,
 			NodeIterator childResults) throws TransformerException {
-		
+	
+		Node result = null;
+		SdtTagHandler handler;
+
 		/* We avoid unmarshalling the sdt itself, since 
 		 * it could be one of a number of docx4j classes.
 		 * 
@@ -60,11 +71,36 @@ public class SdtWriter {
 		 * use its parent element as a hint, or try 
 		 * unmarshalling as SdtBlock, then SdtRow, then SdtCell
 		 * etc.
+		 * 
+		 * Still, you have access to all of sdtPr, and the
+		 * transformed w:sdtContent/*. What more could you want ;-)
 		 */
 		
-		HashMap<String, String> map = QueryString.parseQueryString(sdtTag, true);
+		SdtPr sdtPr;
+		try {
+    		Node n = sdtPrNodeIt.nextNode();
+    		sdtPr = (SdtPr)XmlUtils.unmarshal(n, Context.jc, SdtPr.class);
+		} catch (JAXBException e1) {
+			throw new TransformerException("Missing or broken w:sdtPr", e1);
+		}
 		
-		Node result = null;
+		if (sdtPr.getTag()==null) {
+			
+			if (handlers.get("*")!=null) {
+				// handler '*' only gets applied if no other one has been				
+				handler = handlers.get("*");			
+				result = handler.toNode(wmlPackage, null, null, childResults);
+			} else {
+				// Just return the contents!
+				result = identity.toNode(wmlPackage, null, null, childResults);
+			}
+			return result;
+		}
+		
+		
+		HashMap<String, String> map 
+			= QueryString.parseQueryString(sdtPr.getTag().getVal(), true);
+		
 		
 		/*
 		 * This is intended to handle more than one matching key
@@ -73,7 +109,6 @@ public class SdtWriter {
 		 * everything on a single div tag.
 		 */
 		
-		SdtTagHandler handler;
 		for( String key : map.keySet() ) {
 			
 			handler = handlers.get(key);
@@ -86,9 +121,9 @@ public class SdtWriter {
 			}
 			
 			if (result==null) {
-				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
+				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
 			} else {
-				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, result);
+				result = handler.toNode(wmlPackage, sdtPr, map, result);
 			}			
 		}
 		
@@ -96,9 +131,9 @@ public class SdtWriter {
 		if (handlers.get("**")!=null) {
 			handler = handlers.get("**");			
 			if (result==null) {
-				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
+				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
 			} else {
-				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, result);
+				result = handler.toNode(wmlPackage, sdtPr, map, result);
 			}			
 		}
 		
@@ -108,10 +143,10 @@ public class SdtWriter {
 			if (handlers.get("*")!=null) {
 				// handler '*' only gets applied if no other one has been				
 				handler = handlers.get("*");			
-				result = handler.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
+				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
 			} else {
 				// Just return the contents!
-				result = identity.toNode(sdtId, sdtTag, sdtAlias, map, childResults);
+				result = identity.toNode(wmlPackage, sdtPr, map, childResults);
 			}
 		}
 		
@@ -124,7 +159,7 @@ public class SdtWriter {
 	static class IdentityHandler extends SdtTagHandler {
 		
 		@Override
-		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+		public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 				HashMap<String, String> tagMap,
 				NodeIterator childResults) throws TransformerException {
 
@@ -143,7 +178,7 @@ public class SdtWriter {
 		}
 
 		@Override
-		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+		public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 				HashMap<String, String> tagMap,
 				Node resultSoFar) throws TransformerException {
 			// Implemented just in case user explicitly invokes IdentityHandler..			
@@ -168,7 +203,7 @@ public class SdtWriter {
 	static class NullHandler extends SdtTagHandler {
 		
 		@Override
-		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+		public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 				HashMap<String, String> tagMap,
 				NodeIterator childResults) throws TransformerException {
 
@@ -176,7 +211,7 @@ public class SdtWriter {
 		}
 
 		@Override
-		public Node toNode(String sdtId, String sdtTag, String sdtAlias,
+		public Node toNode(WordprocessingMLPackage wmlPackage, SdtPr sdtPr,
 				HashMap<String, String> tagMap,
 				Node resultSoFar) throws TransformerException {
 			
