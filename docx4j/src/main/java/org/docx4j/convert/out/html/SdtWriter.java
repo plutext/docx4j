@@ -19,7 +19,6 @@
  */
 package org.docx4j.convert.out.html;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,10 +35,8 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.SdtPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
-import org.xml.sax.SAXException;
 
 public class SdtWriter {
 	
@@ -54,9 +51,6 @@ public class SdtWriter {
 	
 	static IdentityHandler identity = new IdentityHandler();
 	
-//	public static Node toNode(String sdtId, String sdtTag, String sdtAlias,
-//			NodeIterator childResults) throws TransformerException {
-
 	public static Node toNode(WordprocessingMLPackage wmlPackage,
     		NodeIterator sdtPrNodeIt,
 			NodeIterator childResults) throws TransformerException {
