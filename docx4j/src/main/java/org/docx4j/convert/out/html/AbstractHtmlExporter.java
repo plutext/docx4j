@@ -156,9 +156,7 @@ public abstract class AbstractHtmlExporter implements Output {
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
-    	log.info("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
-    	System.out.println("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);
-    	
+    	log.debug("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);    	
     	
         // Create a DOM builder and parse the fragment
         try {
