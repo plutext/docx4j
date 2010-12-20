@@ -441,6 +441,14 @@
 	  					$wmlPackage, $pPrNode, $pStyleVal, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
   				
   				</xsl:when>
+  				<xsl:when test="./w:sdtPr/w:rPr">
+  				
+					<xsl:variable name="rPrNode" select="./w:sdtPr/w:rPr" />
+
+			  		<xsl:copy-of select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createInlineForSdt( 
+	  					$wmlPackage, $rPrNode, $childResults, string(./w:sdtPr/w:tag/@w:val))" />
+  				
+  				</xsl:when>  				
 		  		<xsl:otherwise>
 		  			<!-- Should not happen. -->
   					<xsl:apply-templates select="w:sdtContent/*"/>
