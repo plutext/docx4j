@@ -260,7 +260,7 @@ public class PhysicalFonts {
 		        // can handle
 		        // .otf, .ttf, .ttc, .pfb
 		        if (lower.endsWith(".otf") || lower.endsWith(".ttf") || lower.endsWith(".ttc") ) {
-		        	pf = new PhysicalFont(triplet.getName(), fontInfo);
+		        	pf = new PhysicalFont(triplet.getName(), fontInfo, fontResolver);
 		        } else if (lower.endsWith(".pfb") ) {
 		        	// See whether we have everything org.xhtmlrenderer.pdf.ITextFontResolver.addFont
 		        	// will need - for a .pfb file, it needs a corresponding .afm or .pfm
@@ -287,7 +287,7 @@ public class PhysicalFonts {
 //							log.error(e);
 //							continue;
 //						}
-			        	pf = new PhysicalFont(triplet.getName(),fontInfo);
+			        	pf = new PhysicalFont(triplet.getName(),fontInfo, fontResolver);
 			        	
 			        	
 			        } else {
@@ -312,7 +312,7 @@ public class PhysicalFonts {
 //								log.error(e);
 //								continue;
 //							}
-				        	pf = new PhysicalFont(triplet.getName(), fontInfo);
+				        	pf = new PhysicalFont(triplet.getName(), fontInfo, fontResolver);
 				        } else {
 				    		log.warn("Skipping " + triplet.getName() + "; couldn't find .afm or .pfm for : " + fontInfo.getEmbedFile());                	                    					        	
 				        }
