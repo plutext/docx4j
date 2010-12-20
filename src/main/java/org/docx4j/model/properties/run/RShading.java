@@ -17,33 +17,27 @@
     limitations under the License.
 
  */
-package org.docx4j.model.properties.paragraph;
+package org.docx4j.model.properties.run;
 
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.CTShd;
-import org.docx4j.wml.CTVerticalJc;
-import org.docx4j.wml.Color;
-import org.docx4j.wml.PPr;
-import org.docx4j.wml.STShd;
-import org.docx4j.wml.STVerticalJc;
-import org.docx4j.wml.TcPr;
-import org.docx4j.wml.PPrBase.TextAlignment;
+import org.docx4j.wml.RPr;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
-public class PShading extends AbstractParagraphProperty {
+public class RShading extends AbstractRunProperty {
 	
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 
 	
 	
-	public PShading(CTShd shading) {
+	public RShading(CTShd shading) {
 		this.setObject(shading);
 	}
 	
-	public PShading(CSSValue value) {	
+	public RShading(CSSValue value) {	
 		
 		CTShd shd = Context.getWmlObjectFactory().createCTShd();
 
@@ -104,14 +98,9 @@ public class PShading extends AbstractParagraphProperty {
 		} 
 	}
 
-//	@Override
-//	public void set(TcPr tcPr) {
-//		tcPr.setShd( (CTShd)this.getObject() );
-//	}
-
 	@Override
-	public void set(PPr pPr) {
-		pPr.setShd((CTShd)this.getObject() );		
+	public void set(RPr rPr) {
+		rPr.setShd((CTShd)this.getObject() );		
 	}
 	
 }
