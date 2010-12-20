@@ -665,7 +665,7 @@
 	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
       
 	<xsl:variable name="hTemp" 
-		select="java:org.docx4j.convert.out.html.HtmlExporter.resolveHref(
+		select="java:org.docx4j.convert.out.html.AbstractHtmlExporter.resolveHref(
 		             $wmlPackage, $relId )" />
 		                   
       <xsl:variable name="href">
