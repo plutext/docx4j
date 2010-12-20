@@ -263,7 +263,7 @@ public class SvgExporter {
 						);
 				PPr pPr = TextStyles.getWmlPPr(lvlPPr);
 				if (pPr!=null) {
-					AbstractHtmlExporter.createCss(pPr, inlineStyle, false);				
+					AbstractHtmlExporter.createCss(pmlPackage, pPr, inlineStyle, false);				
 				}
 				// TODO RPR
 			}
@@ -475,7 +475,7 @@ public class SvgExporter {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		AbstractHtmlExporter.createCss( s.getPPr(), result, false );
+        		AbstractHtmlExporter.createCss(pmlPackage, s.getPPr(), result, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
