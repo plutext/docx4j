@@ -387,7 +387,7 @@ public abstract class AbstractHtmlExporter implements Output {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		createCss( s.getPPr(), result, false );
+        		createCss( wmlPackage, s.getPPr(), result, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -407,7 +407,7 @@ public abstract class AbstractHtmlExporter implements Output {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		createCss( s.getPPr(), result, false );
+        		createCss( wmlPackage, s.getPPr(), result, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
@@ -608,13 +608,13 @@ public abstract class AbstractHtmlExporter implements Output {
     }
     
     
-    public static void createCss(PPr pPr, StringBuffer result, boolean ignoreBorders) {
+    public static void createCss(OpcPackage wmlPackage, PPr pPr, StringBuffer result, boolean ignoreBorders) {
     	
 		if (pPr==null) {
 			return;
 		}
     	
-    	List<Property> properties = PropertyFactory.createProperties(pPr);    	
+    	List<Property> properties = PropertyFactory.createProperties(wmlPackage, pPr);    	
     	for( Property p :  properties ) {
     		
 			if (ignoreBorders &&
