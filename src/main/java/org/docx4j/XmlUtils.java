@@ -329,7 +329,13 @@ public class XmlUtils {
 	       b.append(s.substring(offset, startKey));
 	       int keyEnd = s.indexOf('}', startKey);
 	       String key = s.substring(startKey + 2, keyEnd);
-	       b.append( mappings.get(key) );
+	       String val = mappings.get(key);
+	       if (val==null) {
+	    	   log.warn("Invalid key '" + key + "' or key not mapped to a value");
+	    	   b.append(key );
+	       } else {
+	    	   b.append(val  );
+	       }
 	       return replace(s, keyEnd + 1, b, mappings);
 	    }
 	 }
