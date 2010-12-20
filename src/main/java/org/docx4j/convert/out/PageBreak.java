@@ -44,7 +44,8 @@ public class PageBreak {
 	 * moves the page-breaks to the enclosing block. 
 	 */
 	public static void movePageBreaks(Body body) {
-	List<Object> elts = body.getEGBlockLevelElts();
+		
+		List<Object> elts = body.getEGBlockLevelElts();
 		for (Object o : elts) {
 			if (o instanceof P) {
 				updateParagraph((P)o);
@@ -53,7 +54,8 @@ public class PageBreak {
 	}
 	
 	private static void updateParagraph(P paragraph) {
-	boolean containsPageBreak = checkPageBreak(paragraph.getParagraphContent());
+		
+		boolean containsPageBreak = checkPageBreak(paragraph.getParagraphContent());
 		if (containsPageBreak) {
 			if (paragraph.getPPr() == null) {
 				paragraph.setPPr(new PPr());
@@ -63,8 +65,9 @@ public class PageBreak {
 	}
 
 	private static boolean checkPageBreak(List<Object> content) {
-	int foundIdx = -1;
-	Object ce = null;
+		
+		int foundIdx = -1;
+		Object ce = null;
 		if ((content != null) && (!content.isEmpty())) {
 			for (int i=0; (foundIdx == -1) && (i<content.size()); i++) {
 				ce = content.get(i);
