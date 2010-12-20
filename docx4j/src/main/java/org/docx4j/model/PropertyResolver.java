@@ -2,16 +2,13 @@ package org.docx4j.model;
 
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlElementRef;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -26,37 +23,19 @@ import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.CTBorder;
-import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
-import org.docx4j.wml.CTVerticalJc;
-import org.docx4j.wml.Color;
-import org.docx4j.wml.HpsMeasure;
-import org.docx4j.wml.Jc;
+import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
-import org.docx4j.wml.RFonts;
+import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.Tabs;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblPr;
-import org.docx4j.wml.TcMar;
 import org.docx4j.wml.TcPr;
-import org.docx4j.wml.TcPrInner;
-import org.docx4j.wml.TextDirection;
 import org.docx4j.wml.TrPr;
-import org.docx4j.wml.U;
-import org.docx4j.wml.PPrBase.Ind;
-import org.docx4j.wml.PPrBase.NumPr;
-import org.docx4j.wml.PPrBase.OutlineLvl;
-import org.docx4j.wml.PPrBase.PBdr;
-import org.docx4j.wml.PPrBase.Spacing;
-import org.docx4j.wml.PPrBase.TextAlignment;
-import org.docx4j.wml.DocDefaults;
 
 /**
  * This class works out the actual set of properties (paragraph or run)
@@ -265,13 +244,16 @@ public class PropertyResolver {
 	}
 
 	private void addDefaultParagraphFontToResolvedStyleRPrComponent() {
-		
-		Stack<RPr> rPrStack = new Stack<RPr>();
+	Stack<RPr> rPrStack = new Stack<RPr>();
 
+		fillRPrStack(defaultParagraphStyleId, rPrStack);
+			// Since default font size might be in there.
+		
 		fillRPrStack(defaultCharacterStyleId, rPrStack);
 		rPrStack.push(documentDefaultRPr);
 			
-		RPr effectiveRPr = factory.createRPr();			
+		RPr effectiveRPr = factory.createRPr();
+		
 		// Now, apply the properties starting at the top of the stack
 		while (!rPrStack.empty() ) {
 			RPr rPr = rPrStack.pop();
@@ -739,6 +721,11 @@ public class PropertyResolver {
 					// .. and apply those
 					applyRPr(pPrLevelRunStyle, effectiveRPr);
 				}
+				// Check Paragraph rPr (our special hack of using ParaRPr
+				// to format a fo:block) 
+				if ((expressRPr == null) && (pPr.getRPr() != null) && (hasDirectRPrFormatting(pPr.getRPr())) ) {			
+					applyRPr(pPr.getRPr(), effectiveRPr);
+				} 
 			}
 		//	Next, run properties are applied to each run with a specific character style 
 		//	applied. 		
@@ -923,7 +910,6 @@ public class PropertyResolver {
 		}
 		//PPrBase.DivId divId;
 		//CTCnf cnfStyle;
-		
 		return false;
 		
 	}
@@ -935,7 +921,7 @@ public class PropertyResolver {
 			return;
 		}
 		
-    	List<Property> properties = PropertyFactory.createProperties( pPrToApply); // wmlPackage null
+    	List<Property> properties = PropertyFactory.createProperties(null, pPrToApply); // wmlPackage null
     	
     	for( Property p :  properties ) {
 			if (p!=null) {
@@ -948,6 +934,106 @@ public class PropertyResolver {
 	}
 	
 	private boolean hasDirectRPrFormatting(RPr rPrToApply) {
+		
+		if (rPrToApply==null) {
+			return false;
+		}
+		
+		// Here is where we do the real work.  
+		// There are a lot of run properties
+		// The below list is taken directly from RPr, and so
+		// is comprehensive.
+		
+		//RStyle rStyle;
+		//RFonts rFonts;
+		if (rPrToApply.getRFonts()!=null ) {
+			return true;
+		}
+
+		//BooleanDefaultTrue b;
+		if (rPrToApply.getB()!=null) {
+			return true;			
+		}
+
+		//BooleanDefaultTrue bCs;
+		//BooleanDefaultTrue i;
+		if (rPrToApply.getI()!=null) {
+			return true;			
+		}
+
+		//BooleanDefaultTrue iCs;
+		//BooleanDefaultTrue caps;
+		if (rPrToApply.getCaps()!=null) {
+			return true;			
+		}
+
+		//BooleanDefaultTrue smallCaps;
+		if (rPrToApply.getSmallCaps()!=null) {
+			return true;			
+		}
+
+		//BooleanDefaultTrue strike;
+		if (rPrToApply.getStrike()!=null) {
+			return true;			
+		}
+		//BooleanDefaultTrue dstrike;
+		//BooleanDefaultTrue outline;
+		//BooleanDefaultTrue shadow;
+		//BooleanDefaultTrue emboss;
+		//BooleanDefaultTrue imprint;
+		//BooleanDefaultTrue noProof;
+		//BooleanDefaultTrue snapToGrid;
+		//BooleanDefaultTrue vanish;
+		//BooleanDefaultTrue webHidden;
+		//Color color;
+		if (rPrToApply.getColor()!=null ) {
+			return true;			
+		}
+
+		//CTSignedTwipsMeasure spacing;
+		//CTTextScale w;
+		//HpsMeasure kern;
+		//CTSignedHpsMeasure position;
+		//HpsMeasure sz;
+		if (rPrToApply.getSz()!=null ) {
+			return true;			
+		}
+
+		//HpsMeasure szCs;
+		//Highlight highlight;
+		//if (rPrToApply.getHighlight()!=null ) {
+		//	return true;			
+		//}
+		//U u;
+		if (rPrToApply.getU()!=null ) {
+			return true;			
+		}
+
+		//CTTextEffect effect;
+		//CTBorder bdr;
+		if (rPrToApply.getBdr()!=null ) {
+			return true;			
+		}
+		//CTShd shd;
+		if (rPrToApply.getShd()!=null ) {
+			return true;			
+		}
+		//CTFitText fitText;
+		//CTVerticalAlignRun vertAlign;
+		//BooleanDefaultTrue rtl;
+		//BooleanDefaultTrue cs;
+		//CTEm em;
+		//CTLanguage lang;
+		//CTEastAsianLayout eastAsianLayout;
+		//BooleanDefaultTrue specVanish;
+		//BooleanDefaultTrue oMath;
+		//CTRPrChange rPrChange;
+		
+		// If we got here...
+		return false;
+	}
+	
+	private boolean hasDirectRPrFormatting(ParaRPr rPrToApply) {
 		
 		if (rPrToApply==null) {
 			return false;
@@ -1053,7 +1139,21 @@ public class PropertyResolver {
     	}
 		
 	}	
-
+	
+	protected void applyRPr(ParaRPr rPrToApply, RPr effectiveRPr) {
+		
+		if (rPrToApply==null) {
+			return;
+		}
+		
+    	List<Property> properties = PropertyFactory.createProperties(null, rPrToApply); // wmlPackage null
+    	
+    	for( Property p :  properties ) {
+			if (p!=null) {    		
+				((AbstractRunProperty)p).set(effectiveRPr);  // NB, this new method does not copy. TODO?
+			}
+    	}
+	}	
 	
 	
 	/**

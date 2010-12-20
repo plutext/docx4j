@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
@@ -44,6 +43,8 @@ import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.properties.run.FontColor;
 import org.docx4j.model.properties.run.FontSize;
 import org.docx4j.model.properties.run.Italics;
+import org.docx4j.model.properties.run.RBorder;
+import org.docx4j.model.properties.run.RShading;
 import org.docx4j.model.properties.run.Strike;
 import org.docx4j.model.properties.run.Underline;
 import org.docx4j.model.properties.run.VerticalAlignment;
@@ -53,20 +54,18 @@ import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.wml.CTShd;
-import org.docx4j.wml.CTTblCellMar;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.PBdr;
+import org.docx4j.wml.PPrBase.Spacing;
+import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.TblBorders;
-import org.docx4j.wml.TblPr;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
-import org.docx4j.wml.PPrBase.PBdr;
-import org.docx4j.wml.PPrBase.Spacing;
 import org.w3c.dom.css.CSSValue;
 
 public class PropertyFactory {
@@ -193,8 +192,8 @@ public class PropertyFactory {
 			properties.add(new Bold(rPr.getB()) );
 //		if (rPr.getBCs() != null)
 //			dest.setBCs(rPr.getBCs());
-//		if (rPr.getBdr() != null)
-//			dest.setBdr(rPr.getBdr());
+		if (rPr.getBdr() != null)
+			properties.add(new RBorder(rPr.getBdr()));
 //		if (rPr.getCaps() != null)
 //			dest.setCaps(rPr.getCaps());
 		if (rPr.getColor() != null)
@@ -214,7 +213,95 @@ public class PropertyFactory {
 //		if (rPr.getFitText() != null)
 //			dest.setFitText(rPr.getFitText());
 //		if (rPr.getHighlight() != null)
-//			dest.setHighlight(rPr.getHighlight());
+//			properties.add(new HighlightColor(rPr.getHighlight()));
+		if (rPr.getI() != null)
+			properties.add(new Italics(rPr.getI()) );
+//		if (rPr.getICs() != null)
+//			dest.setICs(rPr.getICs());
+//		if (rPr.getImprint() != null)
+//			dest.setImprint(rPr.getImprint());
+//		if (rPr.getKern() != null)
+//			dest.setKern(rPr.getKern());
+//		if (rPr.getLang() != null)
+//			dest.setLang(rPr.getLang());
+//		if (rPr.getNoProof() != null)
+//			dest.setNoProof(rPr.getNoProof());
+//		if (rPr.getOMath() != null)
+//			dest.setOMath(rPr.getOMath());
+//		if (rPr.getOutline() != null)
+//			dest.setOutline(rPr.getOutline());
+//		if (rPr.getPosition() != null)
+//			dest.setPosition(rPr.getPosition());
+		if (rPr.getRFonts() != null)
+			properties.add(new Font(wmlPackage, rPr.getRFonts() ) );
+//		if (rPr.getRPrChange() != null)
+//			dest.setRPrChange(rPr.getRPrChange());
+//		if (rPr.getRStyle() != null)
+//			dest.setRStyle(rPr.getRStyle());
+//		if (rPr.getRtl() != null)
+//			dest.setRtl(rPr.getRtl());
+//		if (rPr.getShadow() != null)
+//			dest.setShadow(rPr.getShadow());
+		if (rPr.getShd() != null)
+			properties.add(new RShading(rPr.getShd()));
+//		if (rPr.getSmallCaps() != null)
+//			dest.setSmallCaps(rPr.getSmallCaps());
+//		if (rPr.getSnapToGrid() != null)
+//			dest.setSnapToGrid(rPr.getSnapToGrid());
+//		if (rPr.getSpacing() != null)
+//			dest.setSpacing(rPr.getSpacing());
+//		if (rPr.getSpecVanish() != null)
+//			dest.setSpecVanish(rPr.getSpecVanish());
+		if (rPr.getStrike() != null)
+			properties.add(new Strike(rPr.getStrike() ) );
+		if (rPr.getSz() != null)
+			properties.add(new FontSize(rPr.getSz() ) );
+//		if (rPr.getSzCs() != null)
+//			dest.setSzCs(rPr.getSzCs());
+		if (rPr.getU() != null)
+			properties.add(new Underline(rPr.getU() ) );
+//		if (rPr.getVanish() != null)
+//			dest.setVanish(rPr.getVanish());
+		if (rPr.getVertAlign() != null)
+			properties.add(new VerticalAlignment(rPr.getVertAlign()) );
+//		if (rPr.getW() != null)
+//			dest.setW(rPr.getW());
+//		if (rPr.getWebHidden() != null)
+//			dest.setWebHidden(rPr.getWebHidden());
+		
+		return properties;		
+	}
+
+	public static List<Property> createProperties(OpcPackage wmlPackage, ParaRPr rPr) {
+		
+		List<Property> properties = new ArrayList<Property>();
+		
+		if (rPr.getB() != null)
+			properties.add(new Bold(rPr.getB()) );
+//		if (rPr.getBCs() != null)
+//			dest.setBCs(rPr.getBCs());
+//		if (rPr.getBdr() != null)
+//			properties.add(new RBorder(rPr.getBdr()));
+//		if (rPr.getCaps() != null)
+//			dest.setCaps(rPr.getCaps());
+		if (rPr.getColor() != null)
+			properties.add(new FontColor(rPr.getColor()) );
+//		if (rPr.getCs() != null)
+//			dest.setCs(rPr.getCs());
+//		if (rPr.getDstrike() != null)
+//			dest.setDstrike(rPr.getDstrike());
+//		if (rPr.getEastAsianLayout() != null)
+//			dest.setEastAsianLayout(rPr.getEastAsianLayout());
+//		if (rPr.getEffect() != null)
+//			dest.setEffect(rPr.getEffect());
+//		if (rPr.getEm() != null)
+//			dest.setEm(rPr.getEm());
+//		if (rPr.getEmboss() != null)
+//			dest.setEmboss(rPr.getEmboss());
+//		if (rPr.getFitText() != null)
+//			dest.setFitText(rPr.getFitText());
+//		if (rPr.getHighlight() != null)
+//			properties.add(new HighlightColor(rPr.getHighlight()));
 		if (rPr.getI() != null)
 			properties.add(new Italics(rPr.getI()) );
 //		if (rPr.getICs() != null)
@@ -244,7 +331,7 @@ public class PropertyFactory {
 //		if (rPr.getShadow() != null)
 //			dest.setShadow(rPr.getShadow());
 //		if (rPr.getShd() != null)
-//			dest.setShd(rPr.getShd());
+//			properties.add(new RShading(rPr.getShd()));
 //		if (rPr.getSmallCaps() != null)
 //			dest.setSmallCaps(rPr.getSmallCaps());
 //		if (rPr.getSnapToGrid() != null)
@@ -274,7 +361,7 @@ public class PropertyFactory {
 	}
 	
 
-	public static List<Property> createProperties(PPr pPr) {
+	public static List<Property> createProperties(OpcPackage wmlPackage, PPr pPr) {
 		
 		List<Property> properties = new ArrayList<Property>();
 		
@@ -373,11 +460,9 @@ public class PropertyFactory {
 //			dest.setWidowControl(pPr.getWidowControl());
 //		if (pPr.getWordWrap() != null)
 //			dest.setWordWrap(pPr.getWordWrap());
-		
 		return properties;		
 	}
-	
-	
+
 	public static Property createPropertyFromCssName(String name, CSSValue value) {
 		
 		// Run properties
