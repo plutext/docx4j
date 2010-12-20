@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
+import org.docx4j.convert.out.PageBreak;
 import org.docx4j.convert.out.html.HtmlExporterNG2.EndnoteState;
 import org.docx4j.convert.out.html.HtmlExporterNG2.FootnoteState;
 import org.docx4j.fonts.PhysicalFont;
@@ -279,12 +280,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
     	  // Containerization of borders/shading
     	  MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
-    	  List<Object> newList = Containerization.groupAdjacentBorders(mdp);
     	  // Don't change the user's Document object; create a tmp one
     	  org.docx4j.wml.Document tmpDoc = Context.getWmlObjectFactory().createDocument();
-    	  Body newBody = Context.getWmlObjectFactory().createBody();
-    	  tmpDoc.setBody(newBody);
-    	  newBody.getEGBlockLevelElts().addAll(newList);
+    	  Body newBody = XmlUtils.deepCopy(wordMLPackage.getMainDocumentPart().getJaxbElement().getBody());
+    	  
+	    	  Containerization.groupAdjacentBorders(newBody);
+	    	  PageBreak.movePageBreaks(newBody);
+	    	  tmpDoc.setBody(newBody);
     	  
 //    	  mdp.getJaxbElement().getBody().getEGBlockLevelElts().clear();
 //    	  mdp.getJaxbElement().getBody().getEGBlockLevelElts().addAll(newList);
@@ -337,7 +339,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	  			log.debug(fo);
 	  			
 	  			if (saveFO!=null) {
-	  				FileUtils.writeStringToFile(saveFO, fo);	
+	  				FileUtils.writeStringToFile(saveFO, fo, "UTF-8");	
 	  				log.info("Saved " + saveFO.getPath() );
 	  			}
 	  			
@@ -523,6 +525,20 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 //				((Element)foBlock).setAttribute("padding-bottom", "0in");    	    	
     	    }
     	}
+    	    
+    	return docfrag;
+    }	
+
+    public static DocumentFragment createInlineForSdt( 
+    		WordprocessingMLPackage wmlPackage,
+    		NodeIterator rPrNodeIt,
+    		NodeIterator childResults, String tag) {
+    	
+    	DocumentFragment docfrag = createBlockForRPr( 
+        		wmlPackage,
+        		null,
+        		rPrNodeIt,
+        		childResults);
     	    
     	return docfrag;
     }	
@@ -740,7 +756,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				// Ignore paragraph borders once inside the container
 				boolean ignoreBorders = !sdt;
 
-				createFoAttributes(pPr, ((Element)foBlockElement), inlist, ignoreBorders );
+				createFoAttributes(wmlPackage, pPr, ((Element)foBlockElement), inlist, ignoreBorders );
 			}
 
 			
@@ -792,9 +808,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     }
 
-	public static void createFoAttributes(PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
+	public static void createFoAttributes(WordprocessingMLPackage wmlPackage, PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
 		
-    	List<Property> properties = PropertyFactory.createProperties(pPr);
+    	List<Property> properties = PropertyFactory.createProperties(wmlPackage, pPr);
     	
     	for( Property p :  properties ) {
 			if (p!=null) {
@@ -1108,9 +1124,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     	NumberFormat format = pageNumber.getFmt();
     	
-    	log.debug("w:pgNumType/@w:fmt=" + format.toString());
-    	
     	if (format==null) return "1";
+    	
+    	log.debug("w:pgNumType/@w:fmt=" + format.toString());
     	
 //    	 *     &lt;enumeration value="decimal"/>
 //    	 *     &lt;enumeration value="upperRoman"/>
