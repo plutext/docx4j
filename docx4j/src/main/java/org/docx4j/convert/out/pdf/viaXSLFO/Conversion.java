@@ -222,16 +222,16 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	 *            The OutputStream to write the pdf to 
 	 * 
 	 * */     
-    public void output(OutputStream os) throws Docx4JException {
-    	
-    	// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
-    	// (reuse if you plan to render multiple documents!)
-    	FopFactory fopFactory = FopFactory.newInstance();
-    	
-    	try {
-                
-    		if (fopConfig == null) {
-    			
+	public void output(OutputStream os) throws Docx4JException {
+
+		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
+		// (reuse if you plan to render multiple documents!)
+		FopFactory fopFactory = FopFactory.newInstance();
+
+		try {
+
+			if (fopConfig == null) {
+
 				DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
 				String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>"
 						+ "<renderers><renderer mime=\"application/pdf\">"
@@ -261,109 +261,109 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				fopConfig = cfgBuilder.build(new ByteArrayInputStream(myConfig
 						.getBytes()));
 			}
-    		
-    	  fopFactory.setUserConfig(fopConfig);
-    	  
-    	  Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
 
-    	  /*
-    	   * Based on the principle that we'll do all the smarts via
-    	   * extension functions which can take advantage of Java
-    	   * and docx4j's model of the package, all the XSLT
-    	   * needs is the main document part.
-    	   * 
-    	   * This means we can skip the step of generating a
-    	   * Flat OPC XML file.
-    	   */
-    	  //Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
-    	  //Document domDoc = XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
+			fopFactory.setUserConfig(fopConfig);
 
-    	  // Containerization of borders/shading
-    	  MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
-    	  // Don't change the user's Document object; create a tmp one
-    	  org.docx4j.wml.Document tmpDoc = Context.getWmlObjectFactory().createDocument();
-    	  Body newBody = XmlUtils.deepCopy(wordMLPackage.getMainDocumentPart().getJaxbElement().getBody());
-    	  
-	    	  Containerization.groupAdjacentBorders(newBody);
-	    	  PageBreak.movePageBreaks(newBody);
-	    	  tmpDoc.setBody(newBody);
-    	  
-//    	  mdp.getJaxbElement().getBody().getEGBlockLevelElts().clear();
-//    	  mdp.getJaxbElement().getBody().getEGBlockLevelElts().addAll(newList);
+			Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
 
-    	  //log.info(XmlUtils.marshaltoString(mdp.getJaxbElement(), false));
-    	  
-    	  Sections sections = createSectionContainers(
-    			  tmpDoc );
-    	  Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections, Context.jcSectionModel);
-    	  
-    	  java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
+			/*
+			 * Based on the principle that we'll do all the smarts via extension
+			 * functions which can take advantage of Java and docx4j's model of
+			 * the package, all the XSLT needs is the main document part.
+			 * 
+			 * This means we can skip the step of generating a Flat OPC XML
+			 * file.
+			 */
+			// Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
+			// Document domDoc =
+			// XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
+
+			// Containerization of borders/shading
+			MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
+
+			// Don't change the user's Document object; create a tmp one
+			org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(wordMLPackage
+					.getMainDocumentPart().getJaxbElement());
+			Containerization.groupAdjacentBorders(tmpDoc.getBody());
+			PageBreak.movePageBreaks(tmpDoc.getBody());
+
+			// log.info(XmlUtils.marshaltoString(mdp.getJaxbElement(), false));
+
+			Sections sections = createSectionContainers(tmpDoc);
+			Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections,
+					Context.jcSectionModel);
+
+			java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
 			settings.put("wmlPackage", wordMLPackage);
-	        String imageDirPath = System.getProperty("java.io.tmpdir");
+			String imageDirPath = System.getProperty("java.io.tmpdir");
 			settings.put("imageDirPath", imageDirPath);
-			
-	      	  // Resulting SAX events (the generated FO) must be piped through to FOP
-	      	  Result result = new SAXResult(fop.getDefaultHandler());
-	      	  
-	  		// Allow arbitrary objects to be passed to the converters.
-	  		// The objects are assumed to be specific to a particular converter (eg table),
-	  		// so assume there will be one object implementing TransformState per converter.   
-	  		HashMap<String, TransformState> modelStates  = new HashMap<String, TransformState>();
-	  		settings.put("modelStates", modelStates );	      	  
-	      	  
-//	  		Converter c = new Converter();
-	      	Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
-	      	Converter.getInstance().registerModelConverter("w:sym", new SymbolWriter() );
-	      	
-			// By convention, the transform state object is stored by reference to the 
-			// type of element to which its model applies
-			modelStates.put("w:tbl", new TableModelTransformState() );
-			modelStates.put("w:sym", new SymbolModelTransformState() );
-	      	
-			modelStates.put("footnoteNumber", new FootnoteState() );
-			modelStates.put("endnoteNumber", new EndnoteState() );
-			modelStates.put(PART_TRACKER, new PartTracker() );
-			modelStates.put(FIELD_TRACKER, new InField() );
-			
-	      	Converter.getInstance().start(wordMLPackage);
-	      	  
-	    	  
-	  		if (saveFO!=null || log.isDebugEnabled()) {
 
-	  			ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
-	  			Result intermediateResult =  new StreamResult( intermediate );
-	  			
-	  			XmlUtils.transform(domDoc, xslt, settings, intermediateResult);
-	  			
-	  			String fo = intermediate.toString("UTF-8");
-	  			log.debug(fo);
-	  			
-	  			if (saveFO!=null) {
-	  				FileUtils.writeStringToFile(saveFO, fo, "UTF-8");	
-	  				log.info("Saved " + saveFO.getPath() );
-	  			}
-	  			
-	  			Source src = new StreamSource(new StringReader(fo));
-		    	
-	  			Transformer transformer = XmlUtils.tfactory.newTransformer();
-	  			transformer.transform(src, result);
-	  		} else {
-	      	   
-	    	  XmlUtils.transform(domDoc, xslt, settings, result);
-	  			
-	  		}
-    	  
-    	} catch (Exception e) {
-    		throw new Docx4JException("FOP issues", e);
-    	} finally {
-    	  //Clean-up
-    	  try {
-			os.close();
+			// Resulting SAX events (the generated FO) must be piped through to
+			// FOP
+			Result result = new SAXResult(fop.getDefaultHandler());
+
+			// Allow arbitrary objects to be passed to the converters.
+			// The objects are assumed to be specific to a particular converter
+			// (eg table),
+			// so assume there will be one object implementing TransformState
+			// per converter.
+			HashMap<String, TransformState> modelStates = new HashMap<String, TransformState>();
+			settings.put("modelStates", modelStates);
+
+			// Converter c = new Converter();
+			Converter.getInstance().registerModelConverter("w:tbl",
+					new TableWriter());
+			Converter.getInstance().registerModelConverter("w:sym",
+					new SymbolWriter());
+
+			// By convention, the transform state object is stored by reference
+			// to the
+			// type of element to which its model applies
+			modelStates.put("w:tbl", new TableModelTransformState());
+			modelStates.put("w:sym", new SymbolModelTransformState());
+
+			modelStates.put("footnoteNumber", new FootnoteState());
+			modelStates.put("endnoteNumber", new EndnoteState());
+			modelStates.put(PART_TRACKER, new PartTracker());
+			modelStates.put(FIELD_TRACKER, new InField());
+
+			Converter.getInstance().start(wordMLPackage);
+
+			if (saveFO != null || log.isDebugEnabled()) {
+
+				ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
+				Result intermediateResult = new StreamResult(intermediate);
+
+				XmlUtils.transform(domDoc, xslt, settings, intermediateResult);
+
+				String fo = intermediate.toString("UTF-8");
+				log.debug(fo);
+
+				if (saveFO != null) {
+					FileUtils.writeStringToFile(saveFO, fo, "UTF-8");
+					log.info("Saved " + saveFO.getPath());
+				}
+
+				Source src = new StreamSource(new StringReader(fo));
+
+				Transformer transformer = XmlUtils.tfactory.newTransformer();
+				transformer.transform(src, result);
+			} else {
+
+				XmlUtils.transform(domDoc, xslt, settings, result);
+			}
+
+		} catch (Exception e) {
+			throw new Docx4JException("FOP issues", e);
+		} finally {
+			// Clean-up
+			try {
+				os.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-    	}		
-		
+		}
+
 	}
     
 	private Sections createSectionContainers(org.docx4j.wml.Document doc) {

@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
+import org.docx4j.convert.out.PageBreak;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
@@ -159,9 +160,8 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	/** Create an html version of the document, using CSS font family
 	 *  stacks.  This is appropriate if the HTML is intended for
 	 *  viewing in a web browser, rather than an intermediate step
-	 *  on the way to generating PDF output. The Microsoft Conditional
-	 *  Comments (supportMisalignedColumns, supportAnnotations,
-	 *  and mso) which are defined in the XSLT are not inserted.
+	 *  on the way to generating PDF output (not that docx4j
+	 *  supports that approach anymore). 
 	 * 
 	 * @param result
 	 *            The javax.xml.transform.Result object to transform into 
@@ -196,66 +196,71 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
-	@Deprecated	
-    public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, 
-    		HtmlSettings htmlSettings) throws Exception {
-    			
-  	  // Containerization of borders/shading
-  	  MainDocumentPart mdp = wmlPackage.getMainDocumentPart();
-  	  List<Object> newList = Containerization.groupAdjacentBorders(mdp);
-	  // Don't change the user's Document object; create a tmp one
-	  org.docx4j.wml.Document tmpDoc = Context.getWmlObjectFactory().createDocument();
-	  Body newBody = Context.getWmlObjectFactory().createBody();
-	  tmpDoc.setBody(newBody);
-	  newBody.getEGBlockLevelElts().addAll(newList);
-		
-		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
-				tmpDoc ); 	
-		
-		//log.debug( XmlUtils.w3CDomNodeToString(doc));
-			
+	public void html(WordprocessingMLPackage wmlPackage,
+			javax.xml.transform.Result result, HtmlSettings htmlSettings)
+			throws Exception {
+
+		// Containerization of borders/shading
+		MainDocumentPart mdp = wmlPackage.getMainDocumentPart();
+		// Don't change the user's Document object; create a tmp one
+		org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(wmlPackage
+				.getMainDocumentPart().getJaxbElement());
+		Containerization.groupAdjacentBorders(tmpDoc.getBody());
+		PageBreak.movePageBreaks(tmpDoc.getBody());
+
+		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(tmpDoc);
+
+		// log.debug( XmlUtils.w3CDomNodeToString(doc));
+
 		// Prep parameters
-		if (htmlSettings==null) {
+		if (htmlSettings == null) {
 			htmlSettings = new HtmlSettings();
-			// ..Ensure that the font names in the XHTML have been mapped to these matches
-			//     possibly via an extension function in the XSLT
+			// ..Ensure that the font names in the XHTML have been mapped to
+			// these matches
+			// possibly via an extension function in the XSLT
 		}
-		
-		if (htmlSettings.getFontMapper()==null) {			
+
+		if (htmlSettings.getFontMapper() == null) {
 			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
 			log.debug("FontMapper set.. ");
 		}
-		
+
 		htmlSettings.setWmlPackage(wmlPackage);
-		
+
 		// Allow arbitrary objects to be passed to the converters.
-		// The objects are assumed to be specific to a particular converter (eg table),
-		// so assume there will be one object implementing TransformState per converter.   
-		HashMap<String, TransformState> modelStates  = new HashMap<String, TransformState>();
-		htmlSettings.getSettings().put("modelStates", modelStates );
-		
-		//Converter c = new Converter();
-		Converter.getInstance().registerModelConverter("w:tbl", new TableWriter() );
-      	Converter.getInstance().registerModelConverter("w:sym", new SymbolWriter() );
-		
-		// By convention, the transform state object is stored by reference to the 
+		// The objects are assumed to be specific to a particular converter (eg
+		// table),
+		// so assume there will be one object implementing TransformState per
+		// converter.
+		HashMap<String, TransformState> modelStates = new HashMap<String, TransformState>();
+		htmlSettings.getSettings().put("modelStates", modelStates);
+
+		// Converter c = new Converter();
+		Converter.getInstance().registerModelConverter("w:tbl",
+				new TableWriter());
+		Converter.getInstance().registerModelConverter("w:sym",
+				new SymbolWriter());
+
+		// By convention, the transform state object is stored by reference to
+		// the
 		// type of element to which its model applies
-		modelStates.put("w:tbl", new TableModelTransformState() );
-		modelStates.put("w:sym", new SymbolModelTransformState() );
+		modelStates.put("w:tbl", new TableModelTransformState());
+		modelStates.put("w:sym", new SymbolModelTransformState());
 
 		// .. although that convention can be bent ..
-		modelStates.put("footnoteNumber", new FootnoteState() );
-		modelStates.put("endnoteNumber", new EndnoteState() );
-		
+		modelStates.put("footnoteNumber", new FootnoteState());
+		modelStates.put("endnoteNumber", new EndnoteState());
+
 		Converter.getInstance().start(wmlPackage);
-		
+
 		// Now do the transformation
 		log.debug("About to transform...");
-		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
-		
+		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(),
+				result);
+
 		log.info("wordDocument transformed to xhtml ..");
-    	
-    }
+
+	}
         
     /* ---------------Xalan XSLT Extension Functions ---------------- */
 
@@ -409,7 +414,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			boolean ignoreBorders = (htmlElementName.equals("p"));
 			if (pPr!=null) {
 				StringBuffer inlineStyle =  new StringBuffer();
-				createCss(pPr, inlineStyle, ignoreBorders);				
+				createCss(wmlPackage, pPr, inlineStyle, ignoreBorders);				
 				if (!inlineStyle.toString().equals("") ) {
 					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
 				}
