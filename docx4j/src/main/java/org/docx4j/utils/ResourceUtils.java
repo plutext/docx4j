@@ -28,16 +28,20 @@ public class ResourceUtils {
 	
     public static java.io.InputStream getResource(String filename) throws java.io.IOException
     {
-        // Try to load resource from jar
-        java.net.URL url = Thread.currentThread().getContextClassLoader().getResource(filename);
+        // Try to load resource from jar.
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        if (loader == null) {  // IKVM (v.0.44.0.5) doesn't set context classloader 
+            loader = ResourceUtils.class.getClassLoader();
+        }
         
-        
-        if (url == null ) {
+        java.net.URL url = loader.getResource(filename);
+                
+        if (url == null) {
         	log.error("Couldn't get resource: " + filename);
         }
         
         // Get the jar file
-//        JarURLConnection conn = (JarURLConnection) url.openConnection();
+//      JarURLConnection conn = (JarURLConnection) url.openConnection();
         java.io.InputStream is = url.openConnection().getInputStream();
         return is;
     }
