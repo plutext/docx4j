@@ -389,14 +389,12 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
         		}
         	}
         	
-            // Create a DOM builder and parse the fragment			
+            // Create a DOM document to take the results			
         	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
-			
-			//log.info("Document: " + document.getClass().getName() );
-
-			Node xhtmlP = document.createElement(htmlElementName);			
-			document.appendChild(xhtmlP);
+			Document document = factory.newDocumentBuilder().newDocument();			
+				//log.info("Document: " + document.getClass().getName() );
+			Element xhtmlBlock = document.createElement(htmlElementName);			
+			document.appendChild(xhtmlBlock);
 							
 			if (log.isDebugEnabled() && pPr!=null) {					
 				log.debug(XmlUtils.marshaltoString(pPr, true, true));					
@@ -406,7 +404,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			log.debug(pStyleVal);
 			Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
 			org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
-			((Element)xhtmlP).setAttribute("class", 
+			xhtmlBlock.setAttribute("class", 
 					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
 			);
 						
@@ -416,10 +414,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				StringBuffer inlineStyle =  new StringBuffer();
 				createCss(wmlPackage, pPr, inlineStyle, ignoreBorders);				
 				if (!inlineStyle.toString().equals("") ) {
-					((Element)xhtmlP).setAttribute("style", inlineStyle.toString() );
+					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
 				}
 			}
-			
+						
 			// Our fo:block wraps whatever result tree fragment
 			// our style sheet produced when it applied-templates
 			// to the child nodes
@@ -444,7 +442,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	        					// ignore
 	        					log.debug(".. ignoring <span/> ");
 	        				} else {
-	        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlP );	        					
+	        					XmlUtils.treeCopy( (Node)nodes.item(i),  xhtmlBlock );	        					
 	        				}
 	                    }
 	                }					
@@ -462,7 +460,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 					 * 
 					 * So instead of importNode, use 
 					 */
-					XmlUtils.treeCopy( n,  xhtmlP );
+					XmlUtils.treeCopy( n,  xhtmlBlock );
 				}
 				// next 
 				n = childResults.nextNode();

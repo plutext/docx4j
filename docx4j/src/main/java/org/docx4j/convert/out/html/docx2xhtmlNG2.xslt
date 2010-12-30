@@ -250,18 +250,19 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 				<xsl:otherwise>
 					<!--  At present, this doesn't use HTML OL|UL and LI;
 					      we'll do that when we have a document model to work from -->								
-					  	<xsl:copy-of select="java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( $wmlPackage, 
-					  			$pStyleVal, $numId, $levelId)" />					
+					<xsl:copy-of select="
+						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
+					  					$wmlPackage, $pStyleVal, $numId, $levelId)" />					
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  	
-			  		
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
- 				$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
-		
+
+	  	<xsl:copy-of select="
+	  		java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
+ 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
 		
   </xsl:template>
 
@@ -466,6 +467,13 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
       </xsl:if>
     </br>
   </xsl:template>
+
+<!--
+  <xsl:template match="w:br[not(@w:type = 'page')]">
+		<xsl:text disable-output-escaping="yes">
+		</xsl:text>
+  </xsl:template>
+  -->
   
   <xsl:template match="w:cr">
 	<br clear="all" />

@@ -92,6 +92,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.NumberFormat;
@@ -258,6 +259,36 @@ public class Emulator {
 		return triple;
     }
 
+//    public ListLevel getListNumberingDefinition(NumberingDefinitionsPart numberingPart, NumPr numPr) {
+//    	
+//		if (numPr.getNumId()==null) {
+//			return null; 	    			
+//		}
+//		
+//		String numId = null;
+//		if (numPr.getNumId()==null) {
+//			log.error("numId was null or empty!");
+//			return null;
+//		} else {
+//			numId = numPr.getNumId().getVal().toString();
+//		}
+//		
+//		String levelId = "0";
+//		if (numPr.getIlvl() != null ) {
+//			levelId = numPr.getIlvl().getVal().toString();
+//		}
+//	
+//		// Get the list
+//		ListNumberingDefinition listNumberingDefinition
+//			= numberingPart.getInstanceListDefinitions().get(numId);
+//    	
+//		if (listNumberingDefinition==null) {
+//			return null;
+//		} else {
+//			return listNumberingDefinition.getLevel(levelId);
+//		}
+//    }
+    
     
     public class ResultTriple {
     	

@@ -54,10 +54,13 @@ import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.Spacing;
 import org.docx4j.wml.ParaRPr;
@@ -381,8 +384,6 @@ public class PropertyFactory {
 //			dest.setDivId(pPr.getDivId());
 //		if (pPr.getFramePr() != null)
 //			dest.setFramePr(pPr.getFramePr());
-		if (pPr.getInd() != null)
-			properties.add(new Indent(pPr.getInd()));
 		if (pPr.getJc() != null)
 			properties.add(new Justification(pPr.getJc()));
 //		if (pPr.getKeepLines() != null)
@@ -393,8 +394,24 @@ public class PropertyFactory {
 //			dest.setKinsoku(pPr.getKinsoku());
 //		if (pPr.getMirrorIndents() != null)
 //			dest.setMirrorIndents(pPr.getMirrorIndents());
-		if (pPr.getNumPr() != null)
+		Ind ind = null;
+		if (pPr.getNumPr() != null) {
+			// Numbering is mostly handled directly in the HTML & PDF stylesheets			
 			properties.add(new NumberingProperty(pPr.getNumPr()));
+			// but we do want to override w:ind above
+			if (pPr.getNumPr()!=null) {
+				if (wmlPackage instanceof WordprocessingMLPackage) {
+					NumberingDefinitionsPart ndp = ((WordprocessingMLPackage)wmlPackage).getMainDocumentPart().getNumberingDefinitionsPart();
+					ind = ndp.getInd(pPr.getNumPr());
+					properties.add(new Indent(ind));			
+					log.debug("Using w:ind from list level");
+				}
+			}
+		}
+		if (ind==null) {
+			if (pPr.getInd() != null)
+				properties.add(new Indent(pPr.getInd()));			
+		}
 //		if (pPr.getOutlineLvl() != null)
 //			dest.setOutlineLvl(pPr.getOutlineLvl());
 //		if (pPr.getOverflowPunct() != null)

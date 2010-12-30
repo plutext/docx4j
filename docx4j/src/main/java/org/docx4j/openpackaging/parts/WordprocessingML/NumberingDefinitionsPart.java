@@ -46,6 +46,9 @@ import org.docx4j.wml.Numbering.Num.AbstractNumId;
 import org.docx4j.wml.Numbering.Num.LvlOverride;
 import org.docx4j.wml.Numbering.Num.LvlOverride.StartOverride;
 import org.docx4j.wml.PPrBase.Ind;
+import org.docx4j.wml.PPrBase.NumPr;
+import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.docx4j.wml.PPrBase.NumPr.NumId;
 
 
 
@@ -210,11 +213,24 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 		return em;
 	}
 
+	public Ind getInd(NumPr numPr) {
+		
+		String ilvlString = "0";
+		if (numPr.getIlvl()!=null) ilvlString = numPr.getIlvl().getVal().toString();
+		
+		return getInd(numPr.getNumId().getVal().toString(), ilvlString );
+	}
+	
 	public Ind getInd(String numId, String ilvl) {
 
 		// Operating on the docx4j.listnumbering plane,
 		// not the JAXB plane..
-		ListNumberingDefinition lnd = instanceListDefinitions.get(numId);
+		ListNumberingDefinition lnd = instanceListDefinitions.get(numId );
+		if (lnd==null) {
+			log.debug("couldn't find list for numId: " + numId);
+			return null;
+		}
+		if (ilvl==null) ilvl = "0";
 		ListLevel ll = lnd.getLevel(ilvl);
 		
 		// OK, now on the JAXB plane
