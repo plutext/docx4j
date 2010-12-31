@@ -213,10 +213,9 @@ public abstract class JaxbXmlPart<E> extends Part {
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			log.debug("unmarshalling " + this.getClass().getName() );															
+			log.info("unmarshalling " + this.getClass().getName() );									
 			jaxbElement = (E) XmlUtils.unwrap(
 					u.unmarshal( is ));						
-			log.debug( this.getClass().getName() + " unmarshalled" );									
 
 		} catch (JAXBException e ) {
 //			e.printStackTrace();

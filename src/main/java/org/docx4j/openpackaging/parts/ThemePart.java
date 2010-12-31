@@ -96,12 +96,8 @@ public final class ThemePart extends JaxbXmlPart<Theme> {
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
-						
+			log.info("unmarshalling " + this.getClass().getName() );									
 			jaxbElement = (Theme) u.unmarshal( is );
-			
-			
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();

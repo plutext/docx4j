@@ -211,19 +211,19 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		if (relationshipType.equals(Namespaces.PROPERTIES_CORE)) {
 			docPropsCorePart = (DocPropsCorePart)part;
-			log.info("Set shortcut for docPropsCorePart");
+			log.debug("Set shortcut for docPropsCorePart");
 			return true;			
 		} else if (relationshipType.equals(Namespaces.PROPERTIES_EXTENDED)) {
 			docPropsExtendedPart = (DocPropsExtendedPart)part;
-			log.info("Set shortcut for docPropsExtendedPart");
+			log.debug("Set shortcut for docPropsExtendedPart");
 			return true;			
 		} else if (relationshipType.equals(Namespaces.PROPERTIES_CUSTOM)) {
 			docPropsCustomPart = (DocPropsCustomPart)part;
-			log.info("Set shortcut for docPropsCustomPart");
+			log.debug("Set shortcut for docPropsCustomPart");
 			return true;			
 		} else if (relationshipType.equals(Namespaces.DOCUMENT)) {
 			mainDoc = (MainDocumentPart)part;
-			log.info("Set shortcut for mainDoc");
+			log.debug("Set shortcut for mainDoc");
 			return true;
 		} else {	
 			return false;

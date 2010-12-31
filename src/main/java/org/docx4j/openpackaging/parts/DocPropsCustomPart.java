@@ -123,7 +123,7 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
+			log.info("unmarshalling " + this.getClass().getName() );									
 						
 			jaxbElement = (Properties) u.unmarshal( is );
 			

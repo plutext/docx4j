@@ -94,7 +94,7 @@ public class LoadFromZipNG extends Load {
 
 	 // HashMap containing the names of all the zip entries,
 	// so we can tell whether there are any orphans
-	public HashMap unusedZipEntries = new HashMap();
+//	public HashMap unusedZipEntries = new HashMap();
 
 	
 	public LoadFromZipNG() {
@@ -208,7 +208,8 @@ public class LoadFromZipNG extends Load {
 //		Once we've got this, then we can look up the content type for
 //		each PartName, and use it in the Part constructor.
 //		p.setContentTypeManager(ctm); - 20080111 - done by ctm.createPackage();
-		unusedZipEntries.put("[Content_Types].xml", new Boolean(false));
+		
+//		unusedZipEntries.put("[Content_Types].xml", new Boolean(false));
 		
 		// 4. Start with _rels/.rels
 
@@ -221,12 +222,12 @@ public class LoadFromZipNG extends Load {
 		String partName = "_rels/.rels";
 		RelationshipsPart rp = getRelationshipsPartFromZip(p, partByteArrays,  partName);		
 		p.setRelationships(rp);
-		//rp.setPackageRelationshipPart(true);		
-		unusedZipEntries.put(partName, new Boolean(false));
+		//rp.setPackageRelationshipPart(true);
+		
+//		unusedZipEntries.put(partName, new Boolean(false));
 		
 		
-		log.info( "Object created for: " + partName);
-		//log.info( rp.toString());
+		log.debug( "Object created for: " + partName);
 		
 		// 5. Now recursively 
 //		(i) create new Parts for each thing listed
@@ -237,13 +238,13 @@ public class LoadFromZipNG extends Load {
 		
 		
 		// 6. Check unusedZipEntries is empty
-		if (log.isDebugEnabled()) {
-			 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
-			 while(myVeryOwnIterator.hasNext()) {
-			     String key = (String)myVeryOwnIterator.next();
-			     log.info( key + "  " + unusedZipEntries.get(key));
-			 }
-		}
+//		if (log.isDebugEnabled()) {
+//			 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
+//			 while(myVeryOwnIterator.hasNext()) {
+//			     String key = (String)myVeryOwnIterator.next();
+//			     log.info( key + "  " + unusedZipEntries.get(key));
+//			 }
+//		}
 		
 		registerCustomXmlDataStorageParts(p);
 		 
@@ -340,7 +341,7 @@ public class LoadFromZipNG extends Load {
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			log.info("\n For Relationship Id=" + r.getId() 
+			log.debug("\n For Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
 					+ ", Target is " + r.getTarget()
 					+ ", type: " + r.getType() );
@@ -431,12 +432,11 @@ public class LoadFromZipNG extends Load {
 		// The source Part (or Package) might have a convenience
 		// method for this
 		if (source.setPartShortcut(part, relationshipType ) ) {
-			log.info("Convenience method established from " + source.getPartName() 
+			log.debug("Convenience method established from " + source.getPartName() 
 					+ " to " + part.getPartName());
 		}
 		
-		unusedZipEntries.put(resolvedPartUri, new Boolean(false));
-		log.info(".. added." );
+//		unusedZipEntries.put(resolvedPartUri, new Boolean(false));
 		
 		RelationshipsPart rrp = getRelationshipsPart(partByteArrays, part);
 		if (rrp!=null) {
@@ -444,7 +444,7 @@ public class LoadFromZipNG extends Load {
 			addPartsFromRelationships(partByteArrays, part, rrp );
 			String relPart = PartName.getRelationshipsPartName(
 					part.getPartName().getName().substring(1) );
-			unusedZipEntries.put(relPart, new Boolean(false));					
+//			unusedZipEntries.put(relPart, new Boolean(false));					
 		}
 	}
 
@@ -468,12 +468,11 @@ public class LoadFromZipNG extends Load {
 				part.getPartName().getName().substring(1) );
 		
 		if (partByteArrays.get(relPart) !=null ) {
-			log.info("Found relationships " + relPart );
-			log.info("Recursing ... " );
+			log.debug("Found relationships " + relPart );
 			rrp = getRelationshipsPartFromZip(part,  partByteArrays,  relPart);
 			part.setRelationships(rrp);
 		} else {
-			log.info("No relationships " + relPart );	
+			log.debug("No relationships " + relPart );	
 			return null;
 		}
 		return rrp;
