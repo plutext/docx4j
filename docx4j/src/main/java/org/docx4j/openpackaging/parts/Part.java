@@ -129,7 +129,7 @@ public abstract class Part extends Base {
 	 */
 	public Part(PartName partName)
 			throws InvalidFormatException {
-		log.info("Constructing " + partName.getName() );
+		log.info( partName.getName() );
 		this.partName = partName;
 	}
 	

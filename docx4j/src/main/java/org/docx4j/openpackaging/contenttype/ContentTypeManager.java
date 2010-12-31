@@ -192,7 +192,7 @@ public class ContentTypeManager  {
 	 *            Content type of the part.
 	 */
 	public void addOverrideContentType(URI partUri, CTOverride contentType) {
-		log.info("Registered " + partUri.toString() + " of type " + contentType.getContentType() );
+		log.debug("Registered " + partUri.toString() + " of type " + contentType.getContentType() );
 		overrideContentType.put(partUri, contentType);
 	}
 	

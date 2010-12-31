@@ -427,7 +427,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		}
 		
 		PartName partName = part.getPartName();
-		log.info("Loading part " + partName.getName() );
+		log.debug("Loading part " + partName.getName() );
 		
 		part.setOwningRelationshipPart(this);
 		part.setSourceRelationship(sourceRelationship);
@@ -796,27 +796,18 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
     	
 		try {
 			
-//			if (jc==null) {
-//				setJAXBContext(Context.jc);				
-//			}
-		    		    
 			Unmarshaller u = jc.createUnmarshaller();
 			
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
-						
+			if (log.isDebugEnabled()) log.debug("\n");			
+			log.info("unmarshalling " + this.getClass().getName() );									
 			jaxbElement = (Relationships) u.unmarshal( is );
-			
-			
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();
 		}
 		
-//		jaxbElement = (Relationships)jaxbElement;		
 		resetIdAllocator();
 		    	
 		return jaxbElement;

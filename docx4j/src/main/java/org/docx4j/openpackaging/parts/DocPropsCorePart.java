@@ -95,22 +95,15 @@ public class DocPropsCorePart extends JaxbXmlPart<CoreProperties> {
     	
 		try {
 			
-//			if (jc==null) {
-//				setJAXBContext(Context.jc);				
-//			}
-		    		    
 			setJAXBContext(org.docx4j.jaxb.Context.jcDocPropsCore);
 			Unmarshaller u = jc.createUnmarshaller();
 			
 			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
+			log.info("unmarshalling " + this.getClass().getName());									
 						
 			jaxbElement = (CoreProperties) u.unmarshal( is );
-			
-			
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();

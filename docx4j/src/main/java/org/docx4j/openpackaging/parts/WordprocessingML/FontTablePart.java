@@ -60,49 +60,6 @@ public final class FontTablePart extends JaxbXmlPart<Fonts> {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.FONT_TABLE);
 	}
-		
-    /**
-     * Unmarshal XML data from the specified InputStream and return the 
-     * resulting content tree.  Validation event location information may
-     * be incomplete when using this form of the unmarshal API.
-     *
-     * <p>
-     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
-     * 
-     * @param is the InputStream to unmarshal XML data from
-     * @return the newly created root object of the java content tree 
-     *
-     * @throws JAXBException 
-     *     If any unexpected errors occur while unmarshalling
-     */
-	@Override
-    public Fonts unmarshal( java.io.InputStream is ) throws JAXBException {
-    	
-		try {
-			
-//			if (jc==null) {
-//				setJAXBContext(Context.jc);				
-//			}
-		    		    
-			Unmarshaller u = jc.createUnmarshaller();
-			
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
-						
-			jaxbElement = (Fonts) u.unmarshal( is );
-			
-			
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
-
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}
-    	
-		return jaxbElement;
-    	
-    }
     
     /**
      * Unmarshal a default font table, useful when creating this
