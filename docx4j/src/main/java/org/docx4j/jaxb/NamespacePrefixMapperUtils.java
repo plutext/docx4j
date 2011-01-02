@@ -36,7 +36,7 @@ public class NamespacePrefixMapperUtils {
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
     		// Use Java 6 implementation
-    		log.info("JAXB RI (com.sun.xml.bind.marshaller.MinimumEscapeHandler) not present.  Trying Java 6 implementation.");
+    		log.debug("JAXB RI (com.sun.xml.bind.marshaller.MinimumEscapeHandler) not present.  Trying Java 6 implementation.");
         	try {
 				c = Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
 			} catch (ClassNotFoundException e) {
@@ -57,7 +57,7 @@ public class NamespacePrefixMapperUtils {
     		return new NamespacePrefixMapperRelationshipsPart();
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
-    		log.info("JAXB RI (com.sun.xml.bind.marshaller.MinimumEscapeHandler) not present.  Trying Java 6 implementation.");
+    		log.debug("JAXB RI (com.sun.xml.bind.marshaller.MinimumEscapeHandler) not present.  Trying Java 6 implementation.");
         	try {
 				c = Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
 			} catch (ClassNotFoundException e) {
@@ -91,14 +91,14 @@ public class NamespacePrefixMapperUtils {
 						namespacePrefixMapper ); 
 			
 				// Reference implementation appears to be present (in endorsed dir?)
-				log.info("setProperty: com.sun.xml.bind.namespacePrefixMapper");
+				log.debug("setProperty: com.sun.xml.bind.namespacePrefixMapper");
 //				System.out.println("setProperty: com.sun.xml.bind.namespacePrefixMapper");
 				
 			} else {
 				
 				// Use JAXB distributed in Java 6 - note 'internal' 
 				// Switch to other mapper
-				log.info("attempting to setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
+				log.debug("attempting to setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
 				marshaller.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper", namespacePrefixMapper);
 //				System.out.println("setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
 			}

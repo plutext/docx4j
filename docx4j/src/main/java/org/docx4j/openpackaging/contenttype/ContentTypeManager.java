@@ -722,11 +722,8 @@ public class ContentTypeManager  {
 			NamespacePrefixMapperUtils.setProperty(marshaller, 
 					NamespacePrefixMapperUtils.getPrefixMapper() );
 			
-			log.debug("marshalling " + this.getClass().getName() + " ..." );									
-			
+			log.info("marshalling " + this.getClass().getName() + " ..." );									
 			marshaller.marshal(buildTypes(), os);
-			
-			log.info("content types marshalled \n\n" );									
 
 		} catch (JAXBException e) {
 			//e.printStackTrace();

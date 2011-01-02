@@ -201,7 +201,7 @@ public class SaveToZipFile {
 		        
 		        // Complete the entry
 		        out.closeEntry();
-				log.info( "PUT SUCCESS: " + zipEntryName);		
+				log.info( "success writing part: " +  zipEntryName);		
 		        
 
 			} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
@@ -213,7 +213,7 @@ public class SaveToZipFile {
 		        
 		        // Complete the entry
 		        out.closeEntry();
-				log.info( "PUT SUCCESS: " + zipEntryName);		
+				log.info( "success writing part: " +  zipEntryName);		
 
 			} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
 
@@ -242,7 +242,7 @@ public class SaveToZipFile {
 		        
 		        // Complete the entry
 		        out.closeEntry();
-				log.info( "PUT SUCCESS: " + zipEntryName);		
+				log.info( "success writing part: " + zipEntryName);		
 						
 			} else {
 				// Shouldn't happen, since ContentTypeManagerImpl should
@@ -274,7 +274,7 @@ public class SaveToZipFile {
 //			log.info("For Relationship Id=" + r.getId() + " Source is " + r.getSource().getPartName() + ", Target is " + r.getTargetURI() );
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			log.info("For Relationship Id=" + r.getId() 
+			log.debug("For Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
 					+ ", Target is " + r.getTarget() );
 			
@@ -312,14 +312,14 @@ public class SaveToZipFile {
 //				Document contents = getDocumentFromZippedPart( zf,  target);
 				
 				if (!false) {
-					log.info("Getting part /" + resolvedPartUri );
+					log.debug("Getting part /" + resolvedPartUri );
 					
 					Part part = p.getParts().get(new PartName("/" + resolvedPartUri));
 					
 					if (part==null) {
 						log.error("Part " + resolvedPartUri + " not found!");
 					} else {
-						log.info(part.getClass().getName() );
+						log.debug(part.getClass().getName() );
 					}
 					
 					savePart(out, part);
@@ -354,11 +354,11 @@ public class SaveToZipFile {
 		}
 				
 		if (part instanceof BinaryPart ) {
-			log.info(".. saving binary stuff" );
+			log.debug(".. saving binary stuff" );
 			saveRawBinaryPart( out, part );
 			
 		} else {
-			log.info(".. saving " );					
+			log.debug(".. saving " );					
 			saveRawXmlPart( out, part );
 		}
 		handled.put(resolvedPartUri, resolvedPartUri);
@@ -366,9 +366,9 @@ public class SaveToZipFile {
 		// recurse via this parts relationships, if it has any
 		if (part.getRelationshipsPart()!= null ) {
 			RelationshipsPart rrp = part.getRelationshipsPart();
-			log.info("Found relationships " + rrp.getPartName() );
+			log.debug("Found relationships " + rrp.getPartName() );
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
-			log.info("Cf constructed name " + relPart );
+			log.debug("Cf constructed name " + relPart );
 			
 			//deprecatedSaveRawXmlPart(out, relPart, rrp.getDocument() );
 			// 2008 06 12 - try this neater method
@@ -376,7 +376,7 @@ public class SaveToZipFile {
 			
 			addPartsFromRelationships(out, rrp );
 		} else {
-			log.info("No relationships for " + resolvedPartUri );					
+			log.debug("No relationships for " + resolvedPartUri );					
 		}
 	}
 	
@@ -413,7 +413,7 @@ public class SaveToZipFile {
 			throw new Docx4JException("Failed to put binary part", e);			
 		}
 		
-		log.info( "PUT SUCCESS: " + resolvedPartUri);		
+		log.info( "success writing part: " + resolvedPartUri);		
 		
 	}
 	
