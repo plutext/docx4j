@@ -47,7 +47,7 @@ public class MicrosoftFontsRegistry {
 		Unmarshaller u = msFontsContext.createUnmarshaller();		
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-		log.info("unmarshalling fonts.microsoft \n\n" );									
+		log.info("unmarshalling fonts.microsoft" );									
 		// Get the xml file
 		java.io.InputStream is = null;
 		// Works in Eclipse - note absence of leading '/'

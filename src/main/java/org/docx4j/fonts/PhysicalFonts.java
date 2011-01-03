@@ -363,7 +363,7 @@ public class PhysicalFonts {
 		}
 		
 		if (msFont.getBold()==null) {
-			log.info("No bold form for: " + pf.getName());
+			log.debug("No bold form for: " + pf.getName());
 			return null;
 		} else {
 			
@@ -386,7 +386,7 @@ public class PhysicalFonts {
 		}
 		
 		if (msFont.getBolditalic()==null) {
-			log.info("No Bolditalic form for: " + pf.getName());
+			log.debug("No Bolditalic form for: " + pf.getName());
 			return null;
 		} else {
 			
@@ -404,7 +404,7 @@ public class PhysicalFonts {
 		MicrosoftFonts.Font msFont = MicrosoftFontsRegistry.getMsFonts().get(pf.getName() );
 		
 		if (msFont==null) {
-			log.warn("No entry in MicrosoftFontsRegistry for: " + pf.getName());
+			log.debug("No entry in MicrosoftFontsRegistry for: " + pf.getName());
 			return null;
 		}
 		

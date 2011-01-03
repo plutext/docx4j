@@ -614,7 +614,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
         	} else {
         		Node n = pPrNodeIt.nextNode();
         		if (n==null) {
-        			log.warn("pPrNodeIt.nextNode() was null.");
+        			log.debug("pPrNodeIt.nextNode() was null.");
             		pPr = propertyResolver.getEffectivePPr(defaultParagraphStyleId);
             		rPr = propertyResolver.getEffectiveRPr(defaultParagraphStyleId);
             		// TODO - in this case, we should be able to compute once,
@@ -627,9 +627,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     				pPrDirect =  (PPr)jaxb;
     				pPr = propertyResolver.getEffectivePPr(pPrDirect);  
     				if (pPr==null) {
-    					log.warn("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
+    					log.debug("pPr null; obtained from: " + XmlUtils.w3CDomNodeToString(n) );
     				}
-    				log.warn("getting rPr for paragraph style");    				
+    				log.debug("getting rPr for paragraph style");    				
     				rPr = propertyResolver.getEffectiveRPr(null, pPrDirect); 
     					// rPr in pPr direct formatting only applies to paragraph mark, 
     					// so pass null here       				

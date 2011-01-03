@@ -716,7 +716,7 @@ public class PropertyResolver {
 //					log.warn("No pstyle:");
 //					log.debug(XmlUtils.marshaltoString(pPr, true, true));
 				} else {
-					log.info("pstyle:" + pPr.getPStyle().getVal());
+					log.debug("pstyle:" + pPr.getPStyle().getVal());
 					RPr pPrLevelRunStyle = getEffectiveRPr(pPr.getPStyle().getVal());
 					// .. and apply those
 					applyRPr(pPrLevelRunStyle, effectiveRPr);

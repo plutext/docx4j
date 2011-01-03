@@ -243,7 +243,7 @@ public class FlatOpcXmlImporter  {
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
-			log.info("For Relationship Id=" + r.getId() 
+			log.debug("For Relationship Id=" + r.getId() 
 					+ " Source is " + rp.getSourceP().getPartName() 
 					+ ", Target is " + r.getTarget() );
 			try {				
@@ -299,7 +299,7 @@ public class FlatOpcXmlImporter  {
 			 *  location of the package."
 			 */
 
-			log.warn("Encountered external resource " + r.getTarget() 
+			log.info("Encountered external resource " + r.getTarget() 
 					   + " of type " + r.getType() );
 			
 			// As of 1 May 2008, we don't do anything with these yet.
@@ -325,11 +325,11 @@ public class FlatOpcXmlImporter  {
 		// The source Part (or Package) might have a convenience
 		// method for this
 		if (source.setPartShortcut(part, relationshipType ) ) {
-			log.info("Convenience method established from " + source.getPartName() 
+			log.debug("Convenience method established from " + source.getPartName() 
 					+ " to " + part.getPartName());
 		}
 		
-		log.info(".. added." );
+//		log.info(".. added." );
 		
 		RelationshipsPart rrp = getRelationshipsPart( part);
 		if (rrp!=null) {
@@ -362,7 +362,7 @@ public class FlatOpcXmlImporter  {
 		if (rrp!=null) {
 			part.setRelationships(rrp);
 		} else {
-			log.info("No relationships " + relPart );	
+			log.debug("No relationships " + relPart );	
 			return null;
 		}
 		return rrp;
