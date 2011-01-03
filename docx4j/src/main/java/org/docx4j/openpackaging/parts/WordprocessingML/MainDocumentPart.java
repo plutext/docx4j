@@ -36,7 +36,10 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.TraversalUtil.CallbackImpl;
+import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
@@ -337,7 +340,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 
 		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
-		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
+//		traverseMainDocumentRecursive(bodyChildren, fontsDiscovered, stylesInUse); 
+		Finder finder = new Finder(fontsDiscovered, stylesInUse);
+		new TraversalUtil(bodyChildren, finder);
 
 	// Add default font
 		//String defaultFont = PropertyResolver.getDefaultFont(this.getStyleDefinitionsPart(), this.getThemePart());
@@ -396,13 +401,16 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	 */
 	public Map<String, String> getStylesInUse(){
 
-		Map<String, String> stylesInUse = new HashMap<String, String>();
 		
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
 
-		List <Object> bodyChildren = body.getEGBlockLevelElts();		
-		traverseMainDocumentRecursive(bodyChildren, null, stylesInUse);
+		List <Object> bodyChildren = body.getEGBlockLevelElts();
+		
+		Map<String, String> stylesInUse = new HashMap<String, String>();
+//		traverseMainDocumentRecursive(bodyChildren, null, stylesInUse);
+		Finder finder = new Finder(null, stylesInUse);
+		new TraversalUtil(bodyChildren, finder);
 
 		// Styles in headers, footers?
 		RelationshipsPart rp = this.getRelationshipsPart();
@@ -412,13 +420,14 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				if ( part instanceof FooterPart ) {
 					
 					Ftr ftr = ((FooterPart)part).getJaxbElement();
-					traverseMainDocumentRecursive(ftr.getEGBlockLevelElts(), null, stylesInUse);
+//					traverseMainDocumentRecursive(ftr.getEGBlockLevelElts(), null, stylesInUse);
+					finder.walkJAXBElements(ftr);
 					
 				} else if (part instanceof HeaderPart) {
 					
 					Hdr hdr = ((HeaderPart)part).getJaxbElement();
-					traverseMainDocumentRecursive(hdr.getEGBlockLevelElts(), null, stylesInUse);
-				
+//					traverseMainDocumentRecursive(hdr.getEGBlockLevelElts(), null, stylesInUse);
+					finder.walkJAXBElements(hdr);
 				}
 			}
 		}
@@ -427,273 +436,121 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		if (this.getEndNotesPart()!=null) {
 			log.debug("Looking at endnotes");
 			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement();
-			traverseMainDocumentRecursive(endnotes.getEndnote(), null, stylesInUse);			
+//			traverseMainDocumentRecursive(endnotes.getEndnote(), null, stylesInUse);			
+			finder.walkJAXBElements(endnotes);
 		}
 		if (this.getFootnotesPart()!=null) {
 			log.debug("Looking at footnotes");
 			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement();
-			traverseMainDocumentRecursive(footnotes.getFootnote(), null, stylesInUse);			
+//			traverseMainDocumentRecursive(footnotes.getFootnote(), null, stylesInUse);			
+			finder.walkJAXBElements(footnotes);
 		}
 		
 		return stylesInUse;
 	}
     
-	private void traverseMainDocumentRecursive(List children, Map fontsDiscovered, Map<String, String> stylesInUse){
-		
-		for (Object o : children ) {
-						
-			//log.debug("object: " + o.getClass().getName() );
-			
-			if (o instanceof org.docx4j.wml.P) {
-				
-				org.docx4j.wml.P p = (org.docx4j.wml.P) o;
-		
-				if (stylesInUse !=null && p.getPPr() != null && p.getPPr().getPStyle() != null) {
-					// Note this paragraph style
-					log.debug("put style "
-							+ p.getPPr().getPStyle().getVal());
-					stylesInUse.put(p.getPPr().getPStyle().getVal(), p
-							.getPPr().getPStyle().getVal());
-				}
-		
-				if (p.getPPr() != null && p.getPPr().getRPr() != null) {
-					// Inspect RPr
-					inspectRPr(p.getPPr().getRPr(), fontsDiscovered,
-							stylesInUse);
-				}
-		
-				traverseMainDocumentRecursive(p.getParagraphContent(),
-						fontsDiscovered, stylesInUse);
-		
-			} else if (o instanceof org.docx4j.wml.SdtBlock) {
-
-				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) o;
-				
-				// Don't bother looking in SdtPr
-				
-				traverseMainDocumentRecursive(sdt.getSdtContent().getEGContentBlockContent(),
-						fontsDiscovered, stylesInUse);
-				
-//			} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
-//
-//				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) o;
-//				
-//				// Don't bother looking in SdtPr
-//				
-//				traverseMainDocumentRecursive(sdt.getSdtContent().getEGContentBlockContent(),
-//						fontsDiscovered, stylesInUse);
-				
-			} else if (o instanceof org.docx4j.wml.R) {
-
-				org.docx4j.wml.R run = (org.docx4j.wml.R) o;
-				if (run.getRPr() != null) {
-					inspectRPr(run.getRPr(), fontsDiscovered, stylesInUse);
-				}
-
-				// need to traverse run.getRunContent() for w:sym only
-				traverseMainDocumentRecursive(run.getRunContent(),
-						fontsDiscovered, stylesInUse);
-				
-			} else if (o instanceof org.w3c.dom.Node) {
-				
-				// If Xerces is on the path, this will be a org.apache.xerces.dom.NodeImpl;
-				// otherwise, it will be com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
-				
-				// Ignore these, eg w:bookmarkStart
-				
-				log.debug("not traversing into unhandled Node: " + ((org.w3c.dom.Node)o).getNodeName() );
-
-			} else if ( o  instanceof org.docx4j.wml.Tbl) {
-				// A table can be either this or a JAXBElement 
-				// An existing table we have unmarshalled will be 
-				// a JAXBElement; one we have just created
-				// via object factory will be a naked
-				// org.docx4j.wml.Tbl
-				inspectTable( (org.docx4j.wml.Tbl)o, fontsDiscovered, stylesInUse );
-
-			} else if ( o  instanceof org.docx4j.wml.CTFtnEdn) {
-				
-				org.docx4j.wml.CTFtnEdn ftnEdn = (org.docx4j.wml.CTFtnEdn)o;
-				traverseMainDocumentRecursive(ftnEdn.getEGBlockLevelElts(),
-						fontsDiscovered, stylesInUse);				
-				
-			} else if ( o instanceof javax.xml.bind.JAXBElement) {
-
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
-					
-					// Ignore
-					
-				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tbl") ) {
-					
-					org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)((JAXBElement)o).getValue();						
-					inspectTable(tbl, fontsDiscovered, stylesInUse );
-					
-				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P$Hyperlink") ) {
-						
-					org.docx4j.wml.P.Hyperlink hyperlink = (org.docx4j.wml.P.Hyperlink)((JAXBElement)o).getValue();							
-					traverseMainDocumentRecursive(hyperlink.getParagraphContent(),
-							fontsDiscovered, stylesInUse);
-				} else if ( fontsDiscovered !=null && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.R$Sym") ) {
-
-					org.docx4j.wml.R.Sym sym = (org.docx4j.wml.R.Sym)((JAXBElement)o).getValue();
-					fontsDiscovered.put(sym.getFont(), sym.getFont());
-
-				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals(
-						"org.docx4j.wml.CTBookmark") ) {
-					// Ignore					
-				} else if ( log.isDebugEnabled() ){
-					log.debug( XmlUtils.JAXBElementDebug((JAXBElement)o) );
-				}
-					
-					
-					
-//				if (((JAXBElement) o).getDeclaredType().getName().equals(
-//						"org.docx4j.wml.P")) {
-//					org.docx4j.wml.P p = (org.docx4j.wml.P) ((JAXBElement) o)
-//							.getValue();
-//
-//					if (p.getPPr() != null && p.getPPr().getPStyle() != null) {
-//						// Note this paragraph style
-//						log.debug("put style "
-//								+ p.getPPr().getPStyle().getVal());
-//						stylesInUse.put(p.getPPr().getPStyle().getVal(), p
-//								.getPPr().getPStyle().getVal());
-//					}
-//
-//					if (p.getPPr() != null && p.getPPr().getRPr() != null) {
-//						// Inspect RPr
-//						inspectRPr(p.getPPr().getRPr(), fontsDiscovered,
-//								stylesInUse);
-//					}
-//
-//					traverseMainDocumentRecursive(p.getParagraphContent(),
-//							fontsDiscovered, stylesInUse);
-//
-//				}
-				
-			} else if (o instanceof org.docx4j.wml.ProofErr) {
-				// Ignore eg <w:proofErr w:type="spellStart" />
-			} else {
-				log.error( "UNEXPECTED: " + o.getClass().getName() );
-				 log.debug( XmlUtils.marshaltoString(o, true));						 
-			} 
-		}
-	}
 	
-	private void inspectTable( org.docx4j.wml.Tbl tbl, Map fontsDiscovered, Map stylesInUse) {
+    /**
+     * Traverse looking for fonts and/or styles
+     *
+     */
+    static class Finder extends CallbackImpl {
 		
-		// The table could have a table style;
-		// Tables created in Word 2007 default to table style "TableGrid",
-		// which is based on "TableNormal".
-		if (tbl.getTblPr()!=null 
-				&& tbl.getTblPr().getTblStyle()!=null) {
-			log.debug("Adding table style: " + tbl.getTblPr().getTblStyle().getVal() );
-			stylesInUse.put(tbl.getTblPr().getTblStyle().getVal(),
-							tbl.getTblPr().getTblStyle().getVal() );
-		}
-		// There is no such thing as a tr or a tc style,
-		// so we don't need to look for them,
-		// but since a tc can contain w:p or nested table,
-		// we still need to recurse
-
-		// We already looked for a w:tblStyle;
-		 // here, we are looking for styles in the tc.
-		 for (Object o : tbl.getEGContentRowContent() ) {
-			 
-			 org.docx4j.wml.Tr tr = null;
-			 if (o instanceof org.docx4j.wml.Tr) {				 
-				 tr = (org.docx4j.wml.Tr)o;		
-			 } else if (o instanceof javax.xml.bind.JAXBElement
-					 && ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Tr")) {
-				 tr = (org.docx4j.wml.Tr)((JAXBElement)o).getValue();
-			 } else {
-				 // What?
-				 if (o instanceof javax.xml.bind.JAXBElement) {
-					if ( ((JAXBElement)o).getDeclaredType().getName().equals(
-						"org.docx4j.wml.CTMarkupRange") ) { 
-						// Ignore w:bookmarkEnd
-					} else {
-						log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o).getDeclaredType().getName() );
-						 log.debug( XmlUtils.marshaltoString(o, true));						 
-				 	}
-				 } else {
-					 log.warn("TODO - skipping:  " + o.getClass().getName() );
-					 log.debug( XmlUtils.marshaltoString(o, true));						 
-				 }
-				 continue;
-			 }
-			 
-			 for (Object o2 : tr.getEGContentCellContent() ) {	
-				 
-					Tc tc = null;
-					 if (o2 instanceof org.docx4j.wml.Tc) {				 
-						 tc = (org.docx4j.wml.Tc)o2;		
-					 } else if (o2 instanceof javax.xml.bind.JAXBElement
-							 && ((JAXBElement)o2).getDeclaredType().getName().equals("org.docx4j.wml.Tc")) {
-						 tc = (org.docx4j.wml.Tc)((JAXBElement)o2).getValue();
-					 } else {
-						 // What?
-						 if (o2 instanceof javax.xml.bind.JAXBElement) {
-							 log.warn("TODO - skipping JAXBElement:  " + ((JAXBElement)o2).getDeclaredType().getName() );
-						 } else {
-							 log.warn("TODO - skipping:  " + o2.getClass().getName() );
-						 }
-						 log.debug( XmlUtils.marshaltoString(o2, true));						 
-						 continue;
-					 }
-				 
-					traverseMainDocumentRecursive( tc.getEGBlockLevelElts(), 
-							fontsDiscovered, stylesInUse);
-			 }
-			 
-		 }
-		 
-		 
-		
-	}
-	
-	
-    private void inspectRPr(Object rPrObj, Map fontsDiscovered, Map stylesInUse) {
+    	Map fontsDiscovered;
+    	Map<String, String> stylesInUse;
     	
-    	if ( rPrObj instanceof org.docx4j.wml.RPr) {
-
-    		org.docx4j.wml.RPr rPr =  (org.docx4j.wml.RPr)rPrObj;
-    		
-        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
-        		// 	Note the font - just Ascii for now
-        		//log.debug("put font " + rPr.getRFonts().getAscii());
-        		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
-        	}
-        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
-        		// 	Note this run style
-        		//log.debug("put style " + rPr.getRStyle().getVal() );
-        		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
-        	}
-    		
-    		
-    	} else if ( rPrObj instanceof org.docx4j.wml.ParaRPr) {
-
-    		org.docx4j.wml.ParaRPr rPr =  (org.docx4j.wml.ParaRPr)rPrObj;
-    		
-        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
-        		// 	Note the font - just Ascii for now
-        		//log.debug("put font " + rPr.getRFonts().getAscii());
-        		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
-        	}
-        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
-        		// 	Note this run style
-        		//log.debug("put style " + rPr.getRStyle().getVal() );
-        		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
-        	}
-    		
-    		
-    	} else {
-    		
-    		log.error("Expected some kind of rPr, not " + rPrObj.getClass().getName() );    		
+    	Finder(Map fontsDiscovered, Map<String, String> stylesInUse) {
+    		this.fontsDiscovered = fontsDiscovered;
+    		this.stylesInUse = stylesInUse;
     	}
     	
-}
+    	@Override
+		public List<Object> apply(Object o) {
+			
+			if (o instanceof org.docx4j.wml.P
+					&& ((org.docx4j.wml.P)o).getPPr()!=null) {					
+				
+	    		org.docx4j.wml.PPr pPr =  ((org.docx4j.wml.P)o).getPPr();
+				if (stylesInUse !=null && pPr.getPStyle() != null) {
+					// Note this paragraph style
+					log.debug("put style "
+							+ pPr.getPStyle().getVal());
+					stylesInUse.put(pPr.getPStyle().getVal(), 
+							pPr.getPStyle().getVal());
+				}
+				
+				if (pPr.getRPr()!=null) {
+					
+		    		org.docx4j.wml.ParaRPr rPr =  pPr.getRPr();
+		    		
+		        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
+		        		// 	Note the font - just Ascii for now
+		        		//log.debug("put font " + rPr.getRFonts().getAscii());
+		        		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
+		        	}
+		        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
+		        		// 	Note this run style
+		        		//log.debug("put style " + rPr.getRStyle().getVal() );
+		        		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
+		        	}
+				}
+		
+			} else if ( o instanceof org.docx4j.wml.R
+					&& ((org.docx4j.wml.R)o).getRPr()!=null) {
 
+	    		org.docx4j.wml.RPr rPr =  ((org.docx4j.wml.R)o).getRPr();
+	        	if (fontsDiscovered!=null && rPr.getRFonts()!=null) {
+	        		// 	Note the font - just Ascii for now
+	        		//log.debug("put font " + rPr.getRFonts().getAscii());
+	        		fontsDiscovered.put(rPr.getRFonts().getAscii(), rPr.getRFonts().getAscii());
+	        	}
+	        	if (stylesInUse !=null && rPr.getRStyle()!=null) {
+	        		// 	Note this run style
+	        		//log.debug("put style " + rPr.getRStyle().getVal() );
+	        		stylesInUse.put(rPr.getRStyle().getVal(), rPr.getRStyle().getVal());
+	        	}
+		    		
+			} else if (o instanceof org.docx4j.wml.R.Sym ) { 
+				
+				if ( fontsDiscovered !=null ) {
+					org.docx4j.wml.R.Sym sym = (org.docx4j.wml.R.Sym)o;
+					fontsDiscovered.put(sym.getFont(), sym.getFont());
+				}
+				
+			} else if (o instanceof org.docx4j.wml.Tbl ) {
+				// The table could have a table style;
+				// Tables created in Word 2007 default to table style "TableGrid",
+				// which is based on "TableNormal".
+				org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)o;
+				if (stylesInUse !=null && tbl.getTblPr()!=null 
+						&& tbl.getTblPr().getTblStyle()!=null) {
+					log.debug("Adding table style: " + tbl.getTblPr().getTblStyle().getVal() );
+					stylesInUse.put(tbl.getTblPr().getTblStyle().getVal(),
+									tbl.getTblPr().getTblStyle().getVal() );
+				}
+				// There is no such thing as a tr or a tc style,
+				// so we don't need to look for them,
+				// but since a tc can contain w:p or nested table,
+				// we still need to recurse
+				
+			}
+			return null;
+		}
+    	
+    	@Override
+		public boolean shouldTraverse(Object o) {
+    		
+    		if (o instanceof org.docx4j.wml.Br
+    				|| o instanceof org.docx4j.wml.R.Tab
+    				|| o instanceof org.docx4j.wml.R.LastRenderedPageBreak) {
+    			return false;
+    		}
+			return true;
+		}
+    	
+	}	
+	
+	
 
 	/**
 	 * Create a paragraph containing the string simpleText, styled 
@@ -809,7 +666,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		Map fontsDiscovered = new java.util.HashMap(); // method requires this
 		List list = new java.util.ArrayList<Object>();
 		list.add(o);
-		traverseMainDocumentRecursive( list, fontsDiscovered, stylesInUse);
+		
+//		traverseMainDocumentRecursive( list, fontsDiscovered, stylesInUse);
+		Finder finder = new Finder(fontsDiscovered, stylesInUse);
+		finder.walkJAXBElements(list);
+		
 		Iterator it = stylesInUse.entrySet().iterator();
 	    while (it.hasNext()) {
 	        Map.Entry pairs = (Map.Entry)it.next();
@@ -821,19 +682,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 	        	log.warn("Style definitions part was null!");
 	        	
 	        } else if (getPropertyResolver().activateStyle(styleName)) {
-	        
 	        	// Cool
-	        	
 	        } else {
-	        	
 	        	log.warn(styleName + " couldn't be activated!");
 	        }
 	        
 	    }
-		
-		
-		
-		
 	}
 	
 	/**
