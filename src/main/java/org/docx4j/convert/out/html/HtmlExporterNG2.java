@@ -268,7 +268,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
 
 		Node n = nodes.nextNode();
-		log.warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "\n" + message);
+		log.warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "; " + message);
 		
 		if (log.isDebugEnabled() ) {
 			

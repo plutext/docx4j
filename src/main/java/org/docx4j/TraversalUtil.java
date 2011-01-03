@@ -124,6 +124,7 @@ public class TraversalUtil {
 
 	public static List<Object> getChildrenImpl(Object o) {
 
+		log.debug("getting children of " + o.getClass().getName() );
 		if (o instanceof org.docx4j.wml.Text) return null;
 		
 		// Short circuit for common elements
@@ -195,7 +196,7 @@ public class TraversalUtil {
 
 		// OK, what is this? Use reflection ..
 		// This should work for things including w:drawing
-		log.info("getting children of " + o.getClass().getName() );
+		log.debug(".. looking for method which returns list "  );
 		try {
 			Method[] methods = o.getClass().getDeclaredMethods();
 			for (int i = 0; i<methods.length; i++) {

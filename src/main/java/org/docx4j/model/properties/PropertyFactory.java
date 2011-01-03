@@ -147,14 +147,14 @@ public class PropertyFactory {
 	public static List<Property> createProperties(List<CTTblStylePr> tblStylePrList) {
 		
 		List<Property> properties = new ArrayList<Property>();
-		log.warn("TODO - implement!");
+		log.warn("TODO - implement for CTTblStylePr!");
 		return properties;		
 	}
 
 	public static List<Property> createProperties(TrPr trPr) {
 		
 		List<Property> properties = new ArrayList<Property>();
-		log.warn("TODO - implement!");
+		log.warn("TODO - implement for TrPr!");
 		return properties;		
 	}
 

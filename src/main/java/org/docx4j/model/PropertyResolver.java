@@ -1179,7 +1179,7 @@ public class PropertyResolver {
 		
 		// if it is based on, recurse
     	if (style.getBasedOn()==null) {
-			log.error("Style " + styleId + " is a root style.");
+			log.debug("Style " + styleId + " is a root style.");
     	} else if (style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();           	
         	fillPPrStack( basedOnStyleName, pPrStack);
@@ -1212,7 +1212,7 @@ public class PropertyResolver {
 		
 		// if it is based on, recurse
     	if (style.getBasedOn()==null) {
-			log.error("Style " + styleId + " is a root style.");
+			log.debug("Style " + styleId + " is a root style.");
     	} else if (style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();           	
         	fillRPrStack( basedOnStyleName, rPrStack);
@@ -1268,7 +1268,7 @@ public class PropertyResolver {
 								&& fontScheme.getMinorFont().getLatin()!=null) {
 																	
 							org.docx4j.dml.TextFont textFont = fontScheme.getMinorFont().getLatin();
-							log.info("minorFont/latin font is " + textFont.getTypeface() );
+							log.debug("minorFont/latin font is " + textFont.getTypeface() );
 							return textFont.getTypeface(); 
 						} else {
 							// No minorFont/latin in theme part - default to Calibri
@@ -1495,7 +1495,7 @@ public class PropertyResolver {
 					if (fontScheme != null && fontScheme.getMajorFont().getLatin() != null) {
 						fontScheme = theme.getThemeElements().getFontScheme();
 						org.docx4j.dml.TextFont textFont = fontScheme.getMajorFont().getLatin();
-						log.info("majorFont/latin font is " + textFont.getTypeface());
+						log.debug("majorFont/latin font is " + textFont.getTypeface());
 						return (textFont.getTypeface());
 					} else {
 						// No minorFont/latin in theme part - default to Cambria

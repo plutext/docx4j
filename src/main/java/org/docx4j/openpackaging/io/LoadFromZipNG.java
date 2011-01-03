@@ -405,12 +405,12 @@ public class LoadFromZipNG extends Load {
 					r.getType().equals( Namespaces.IMAGE ) ) {
 					// It could instead be, for example, of type hyperlink,
 					// and we don't want to try to fetch that
-				log.warn("Loading external resource " + r.getTarget() 
+				log.info("Loading external resource " + r.getTarget() 
 						   + " of type " + r.getType() );
 				BinaryPart bp = ExternalResourceUtils.getExternalResource(r.getTarget());
 				pkg.getExternalResources().put(bp.getExternalTarget(), bp);			
 			} else {				
-				log.warn("Encountered (but not loading) external resource " + r.getTarget() 
+				log.info("Encountered (but not loading) external resource " + r.getTarget() 
 						   + " of type " + r.getType() );				
 			}						
 			return;
