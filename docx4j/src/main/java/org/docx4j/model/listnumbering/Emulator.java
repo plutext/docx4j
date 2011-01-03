@@ -144,7 +144,7 @@ public class Emulator {
     	// (ie does this style have a list associated with it?)
     	if (numId != null 
     			&& !numId.equals("")) {
-    		log.info("Using numId: " + numId);    		
+    		log.debug("Using numId: " + numId);    		
     	} else {
     		
     		org.docx4j.wml.Style style = null;
@@ -175,10 +175,10 @@ public class Emulator {
     		NumPr numPr = style.getPPr().getNumPr();
     		
     		if (numPr==null) {
-	        	log.warn("Couldn't get NumPr from " +  pStyleVal);
-	        	log.debug(
-	        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
-	        			);
+	        	log.debug("Couldn't get NumPr from " +  pStyleVal);
+//	        	log.debug(
+//	        			org.docx4j.XmlUtils.marshaltoString(style, true, true)
+//	        			);
 	        	// So there is no numbering set on the style either
 	        	// That's ok ..
 	        	return null;

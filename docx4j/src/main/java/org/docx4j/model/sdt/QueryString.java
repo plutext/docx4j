@@ -129,7 +129,7 @@ public class QueryString {
 			if (pos == -1) {
 				
 				if (lax) {
-					log.warn("Suspect parameter: " + pair);
+					log.debug("Suspect parameter: " + pair);
 					map.put(pair, pair);
 				} else {
 					// XXX

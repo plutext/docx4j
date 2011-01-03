@@ -305,7 +305,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 	public Part getPart(Relationship r ) {
 		
-		log.info(" source is  " + sourceP.getPartName().toString() );
+		log.debug(" source is  " + sourceP.getPartName().toString() );
     	// eg rId1 points to fonts/font1.odttf
     		
 		if (r.getTargetMode() == null

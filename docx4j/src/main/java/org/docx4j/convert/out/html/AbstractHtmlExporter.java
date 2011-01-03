@@ -174,7 +174,7 @@ public abstract class AbstractHtmlExporter implements Output {
 			DocumentFragment docfrag = document.createDocumentFragment();
 
 			if (triple==null) {
-        		log.info("computed number ResultTriple was null");
+        		log.debug("computed number ResultTriple was null");
     			Node spanElement = document.createElement("span");
 
     			// It would be nice to include a comment in the
@@ -442,7 +442,7 @@ public abstract class AbstractHtmlExporter implements Output {
 
     		result.append( "."+ s.getStyleId()  + " {display:inline;" );
         	if (s.getRPr()==null) {
-        		log.error("! null rPr for character style " + s.getStyleId());
+        		log.warn("! null rPr for character style " + s.getStyleId());
         	} else {
             	createCss(wmlPackage, s.getRPr(), result);
         	}

@@ -139,7 +139,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
             	= new ListNumberingDefinition(numNode, abstractListDefinitions);
 
             instanceListDefinitions.put(listDef.getListNumberId(), listDef);
-            log.info("Added list: " + listDef.getListNumberId() );
+            log.debug("Added list: " + listDef.getListNumberId() );
         }
 
     }
@@ -294,56 +294,6 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 		return null;		
 		
 	}
-
-	
-    /**
-     * Unmarshal XML data from the specified InputStream and return the 
-     * resulting content tree.  Validation event location information may
-     * be incomplete when using this form of the unmarshal API.
-     *
-     * <p>
-     * Implements <a href="#unmarshalGlobal">Unmarshal Global Root Element</a>.
-     * 
-     * @param is the InputStream to unmarshal XML data from
-     * @return the newly created root object of the java content tree 
-     *
-     * @throws JAXBException 
-     *     If any unexpected errors occur while unmarshalling
-     */
-	@Override
-    public Numbering unmarshal( java.io.InputStream is ) throws JAXBException {
-    	
-		try {
-		    		    
-			Unmarshaller u = jc.createUnmarshaller();
-			
-//			javax.xml.validation.SchemaFactory sf = 
-//				javax.xml.validation.SchemaFactory.newInstance(
-//				      javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI);
-//
-//			javax.xml.validation.Schema schema = sf.newSchema(new java.io.File("/home/jharrop/workspace200711/docx4j-001/src/main/resources/wml-local-subset.xsd"));			
-
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
-			
-			//u.setValidating( false );
-			
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-						
-			jaxbElement = (Numbering) u.unmarshal( is );
-			
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
-
-		} catch (Exception e ) {
-			e.printStackTrace();
-		}
-    	
-		return jaxbElement;
-    	
-    }
-
-
-
-
 	
 	
 }
