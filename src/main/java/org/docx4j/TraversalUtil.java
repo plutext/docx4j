@@ -161,6 +161,8 @@ public class TraversalUtil {
 			return ((org.docx4j.wml.CTSdtCell) o).getSdtContent().getEGContentCellContent();
 		} else if (o instanceof org.docx4j.wml.Body) {
 			return ((org.docx4j.wml.Body) o).getEGBlockLevelElts();
+		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
+			return ((org.docx4j.wml.P.Hyperlink)o).getParagraphContent();
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
 			org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline)o;
 			if (inline.getGraphic()!=null) {
