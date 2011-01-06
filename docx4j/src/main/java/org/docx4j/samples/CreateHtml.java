@@ -22,10 +22,13 @@ package org.docx4j.samples;
 
 import java.io.OutputStream;
 
+import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporterNG2;
 import org.docx4j.convert.out.html.SdtWriter;
 import org.docx4j.convert.out.html.TagClass;
+import org.docx4j.convert.out.html.TagSingleBox;
+import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -44,17 +47,7 @@ public class CreateHtml extends AbstractSample {
 			try {
 				getInputFilePath(args);
 			} catch (IllegalArgumentException e) {
-				// inputfilepath = System.getProperty("user.dir") + "/tmp/wmf.docx";
-		    	
-//		    	String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";	    	
-//		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
-		    	
-		    	
-				inputfilepath = System.getProperty("user.dir") + "/sample-docs/decracdiscrim1.docx";
-//		    	 inputfilepath = System.getProperty("user.dir") 
-//	    		+ "/sample-docs/test-docs/endnotes.xml";	    	
-//		    	 inputfilepath = System.getProperty("user.dir") 
-//	    		+ "/sample-docs/test-docs/header-footer/header_first.xml";	    	
+		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.docx";
 			}
 			System.out.println(inputfilepath);	    	
 	    	
@@ -63,13 +56,21 @@ public class CreateHtml extends AbstractSample {
 			// Load .docx or Flat OPC .xml
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 	    	
-			AbstractHtmlExporter exporter = new HtmlExporterNG2(); 		
+			AbstractHtmlExporter exporter = new HtmlExporterNG2(); 	
+			
+	    	HtmlSettings htmlSettings = new HtmlSettings();
+	    	htmlSettings.setImageDirPath(inputfilepath + "_files");  
+	    	htmlSettings.setUserBodyTop("<H1>TOP!</H1>");
+	    	htmlSettings.setUserBodyTail("<H1>TAIL!</H1>");
 			
 			// Sample sdt tag handler (tag handlers insert specific
 			// html depending on the contents of an sdt's tag).  
 			// This will only have an effect if the sdt tag contains
 			// the string @class=XXX
-			SdtWriter.registerTagHandler("@class", new TagClass() );
+//			SdtWriter.registerTagHandler("@class", new TagClass() );
+			
+			SdtWriter.registerTagHandler(Containerization.TAG_BORDERS, new TagSingleBox() );
+			SdtWriter.registerTagHandler(Containerization.TAG_SHADING, new TagSingleBox() );
 			
 			OutputStream os; 
 			if (save) {
@@ -80,8 +81,7 @@ public class CreateHtml extends AbstractSample {
 			}
 			
 			javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(os);
-			exporter.html(wordMLPackage, result, 
-   					inputfilepath + "_files");
+			exporter.html(wordMLPackage, result, htmlSettings);
 			if (save) {
 				System.out.println("Saved: " + inputfilepath + ".html using " +  exporter.getClass().getName() );
 			}

@@ -38,16 +38,14 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 <xsl:param name="fontFamilyStack"/> <!-- select="'passed in'"-->
 
 <xsl:param name="conditionalComments"/> <!-- select="'passed in'"-->
+
+
+<!-- Allow the user to inject extra stuff into the output HTML --> 		
+<xsl:param name="userCSS"/> 		<!-- select="'passed in'"-->
+<xsl:param name="userScript"/> 		<!-- select="'passed in'"-->
+<xsl:param name="userBodyTop"/> 	<!-- select="'passed in'"-->
+<xsl:param name="userBodyTail"/> 	<!-- select="'passed in'"-->
 	
-
-<xsl:param name="docxWikiMenu"/>		
-<!-- 
-<xsl:param name="docxWiki"/>		
-<xsl:param name="docxWikiSdtID"/>		
-<xsl:param name="docxWikiSdtVersion"/>
- -->		
-<xsl:param name="docID"/>
-
 <!--  Input to this transform is the Main Document Part. -->
 
 
@@ -55,160 +53,159 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 	<xsl:variable name="dummy"
 		select="java:org.docx4j.convert.out.html.HtmlExporterNG2.log('/pkg:package')" />
-
-
-    <html xmlns="http://www.w3.org/1999/xhtml">
-      <head>
 		
-        <style>
-          <xsl:comment>
+		
+	<html>
+		<head>
+			<style>
+				<xsl:comment>
 
-						/*paged media */ 
-						div.header {display: none }
-						div.footer {display: none } 
-						/*@media print { */
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 1)">
-							div.header {display: block; position: running(header) }
-						</xsl:if>
-						<xsl:if
-							test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 1)">
-							div.footer {display: block; position: running(footer) }
-						</xsl:if>
+					/*paged media */ div.header {display: none }
+					div.footer {display: none } /*@media print { */
+					<xsl:if
+						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 1)">
+						div.header {display: block; position: running(header) }
+					</xsl:if>
+					<xsl:if
+						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 1)">
+						div.footer {display: block; position: running(footer) }
+					</xsl:if>
 
-						@page { size: A4; margin: 10%; @top-center {
-						content: element(header) } @bottom-center {
-						content: element(footer) } }
+					@page { size: A4; margin: 10%; @top-center {
+					content: element(header) } @bottom-center {
+					content: element(footer) } }
 
 
-						/*font definitions*/
+					/*font definitions*/
 
-						/*element styles*/ del
-						{text-decoration:line-through;color:red;}
-						<xsl:choose>
-							<xsl:when
-								test="/w:document/w:settings/w:trackRevisions">
-								ins
-								{text-decoration:underline;color:teal;}
-							</xsl:when>
-							<xsl:otherwise>
-								ins {text-decoration:none;}
-							</xsl:otherwise>
-						</xsl:choose>
+					/*element styles*/ del
+					{text-decoration:line-through;color:red;}
+					<xsl:choose>
+						<xsl:when test="/w:document/w:settings/w:trackRevisions">
+							ins
+							{text-decoration:underline;color:teal;}
+						</xsl:when>
+						<xsl:otherwise>
+							ins {text-decoration:none;}
+						</xsl:otherwise>
+					</xsl:choose>
 
-						/*class styles*/
 
-						<xsl:if test="$docxWikiMenu=true()">
-							/*docxwiki*/ .docxwiki-headline { color:
-							black; background: none; font-weight:
-							normal; margin: 0; padding-top: .5em;
-							padding-bottom: .17em; border-bottom: 1px
-							solid #aaa; }
+					/* Word style definitions */
+					<xsl:copy-of
+						select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForStyles( 
+		  											$wmlPackage)" />
 
-							.editsection { font-size: 80%; font-weight:
-							normal; }
+					/* TABLE CELL STYLES */
+					<xsl:variable name="tables" select="./w:body//w:tbl" />
+					<xsl:copy-of
+						select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForTableCells( 
+		  											$wmlPackage, $tables)" />
 
-							div.editsection { float: right; margin-left:
-							5px; }
-						</xsl:if>
-						
-						/* Word style definitions */
-						<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForStyles( 
-		  											$wmlPackage)"/>
+					
+				</xsl:comment>
+			</style>
 
-						/* TABLE CELL STYLES */
-						<xsl:variable name="tables" select="./w:body//w:tbl" />  
-						<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForTableCells( 
-		  											$wmlPackage, $tables)"/>
+			<xsl:value-of select="$userCSS" disable-output-escaping="yes" />
 
-          </xsl:comment>
-        </style>
-        
-		<script type="text/javascript">
-  			<!-- For collapsible content controls -->
-  			function toggleDiv(divid){
-    			if(document.getElementById(divid).style.display == 'none'){
-      				document.getElementById(divid).style.display = 'block';
-    			}else{
-      			document.getElementById(divid).style.display = 'none';
-    			}
-  			}
-  		</script>        
-        
-      </head>
+			<script type="text/javascript">
+				<!-- For collapsible content controls -->
+				function toggleDiv(divid){
+					if(document.getElementById(divid).style.display == 'none'){
+						document.getElementById(divid).style.display = 'block';
+					}else{
+						document.getElementById(divid).style.display = 'none';
+					}
+				}
+								
+			</script>
+			
+			<!-- User script -->
+			<xsl:value-of select="$userScript" disable-output-escaping="yes" />
+			
+		</head>
 
-      <body>
+		<body>
+			<xsl:call-template name="pretty-print-block" />
 
-		<!--  Headers and footers.
-		      Note that only the default is supported (ie if you are using
-		      others they won't appear).  To implement support for others,
-		      you'll need to get the corresponding CSS right.  For that, see
-		         http://www.w3.org/TR/css3-page/#margin-boxes 
-				 http://www.w3.org/TR/2007/WD-css3-gcpm-20070504		         
-		         http://www.w3.org/TR/css3-content/
-		      Appropriate extension functions similar to the below already exist 
-		       -->
-		<xsl:if
-			test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 1)">
-			<div class="header">
-				<xsl:apply-templates
-					select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage, 1)" />
+			<xsl:value-of select="$userBodyTop" disable-output-escaping="yes" />
+
+			<xsl:call-template name="pretty-print-block" />
+
+			<!--
+				Headers and footers. Note that only the default is supported (ie if
+				you are using others they won't appear). To implement support for
+				others, you'll need to get the corresponding CSS right. For that,
+				see http://www.w3.org/TR/css3-page/#margin-boxes
+				http://www.w3.org/TR/2007/WD-css3-gcpm-20070504
+				http://www.w3.org/TR/css3-content/ Appropriate extension functions
+				similar to the below already exist
+			-->
+			<xsl:if
+				test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 1)">
+				<div class="header">
+					<xsl:apply-templates
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage, 1)" />
+				</div>
+			</xsl:if>
+
+			<!--  Info -->
+			<xsl:copy-of
+				select="java:org.docx4j.convert.out.html.HtmlExporterNG2.message( 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.html.HtmlExporterNG2 ' )" />
+
+			<xsl:call-template name="pretty-print-block" />
+
+			<div class="document">
+				<xsl:apply-templates select="w:body|w:cfChunk" />
 			</div>
-		</xsl:if>
-		<xsl:if
-			test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 1)">
-			<div class="footer">
-				<xsl:apply-templates
-					select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage, 1)" />
-			</div>
-		</xsl:if>
-             
-        <xsl:if test="$docxWikiMenu='true'">        
-			<div style="text-align:right">
-				<a href="/alfresco/docxwiki/edit{$docID}">edit</a>, 
-				<a href="{$docID}">download</a>, 
-				<a href="/alfresco/docx2web{$docID}">(ttw)</a> 				
-			</div>        
-        </xsl:if>
 
+			<xsl:call-template name="pretty-print-block" />
 
-		<!--  Info -->
-		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.html.HtmlExporterNG2.message( 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.html.HtmlExporterNG2 ' )" />  	
+			<!--  Footnotes and endnotes -->
+			<xsl:if
+				test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasFootnotesPart($wmlPackage)">
+				<div class="footnotes">
+					<xsl:apply-templates
+						select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getFootnotes($wmlPackage)" />
+				</div>
+			</xsl:if>
 
+			<xsl:call-template name="pretty-print-block" />
 
-		<xsl:apply-templates select="w:body|w:cfChunk"/>
+			<xsl:if
+				test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
+				<div class="endnotes">
+					<xsl:apply-templates
+						select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
+				</div>
+			</xsl:if>
 
-  	<xsl:call-template name="pretty-print-block"/>
-  	
-  		<!--  Footnotes and endnotes -->
-		<xsl:if
-			test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasFootnotesPart($wmlPackage)">
-			<div class="footnotes">
-				<xsl:apply-templates
-					select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getFootnotes($wmlPackage)" />
-			</div>
-		</xsl:if>
-  		
-		<xsl:if
-			test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
-			<div class="endnotes">
-				<xsl:apply-templates
-					select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
-			</div>
-		</xsl:if>
+			<xsl:call-template name="pretty-print-block" />
 
-      </body>
-    </html>
-  </xsl:template>
+			<xsl:if
+				test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 1)">
+				<div class="footer">
+					<xsl:apply-templates
+						select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage, 1)" />
+				</div>
+			</xsl:if>
+			
+			<xsl:call-template name="pretty-print-block" />
 
-  <xsl:template match="/">
-    <xsl:apply-templates select="*"/>
-  </xsl:template>
+			<xsl:value-of select="$userBodyTail" disable-output-escaping="yes" />
+			
+			<xsl:call-template name="pretty-print-block" />
+		</body>
+	</html>
+</xsl:template>
 
-  <xsl:template match="w:body">
-    <xsl:apply-templates select="*"/>
-  </xsl:template>
+	<xsl:template match="/">
+		<xsl:apply-templates select="*" />
+	</xsl:template>
+
+	<xsl:template match="w:body">
+		<xsl:apply-templates select="*" />
+	</xsl:template>
 
 <xsl:template name="pretty-print-block">
   <xsl:text>
