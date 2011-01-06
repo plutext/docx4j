@@ -60,8 +60,9 @@ public abstract class AbstractHtmlExporter implements Output {
 	protected static Logger log = Logger.getLogger(AbstractHtmlExporter.class);
 	
 	
-	// Implement the interface.  Everything in this class was
-	// static, until now.
+	// Implement the interface.  
+	public abstract void output(javax.xml.transform.Result result) throws Docx4JException;
+	// End interface
 	
 	WordprocessingMLPackage wmlPackage;
 	public void setWmlPackage(WordprocessingMLPackage wmlPackage) {
@@ -74,11 +75,6 @@ public abstract class AbstractHtmlExporter implements Output {
 	}
 	
 	
-	public abstract void output(javax.xml.transform.Result result) throws Docx4JException;
-	
-	
-	
-	// End interface
 	
 	/** Create an html version of the document, using CSS font family
 	 *  stacks.  
@@ -87,10 +83,14 @@ public abstract class AbstractHtmlExporter implements Output {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
-    public abstract void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result,
+	@Deprecated	
+    public abstract void html(WordprocessingMLPackage wmlPackage, 
+    		javax.xml.transform.Result result,
     		String imageDirPath) throws Exception;
     
-    public abstract void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, 
+	@Deprecated	
+    public abstract void html(WordprocessingMLPackage wmlPackage, 
+    		javax.xml.transform.Result result, 
     		boolean fontFamilyStack,
     		String imageDirPath) throws Exception; 
     
@@ -100,7 +100,8 @@ public abstract class AbstractHtmlExporter implements Output {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
-    public abstract void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, 
+    public abstract void html(WordprocessingMLPackage wmlPackage, 
+    		javax.xml.transform.Result result, 
     		HtmlSettings htmlSettings) throws Exception;     
 
     /* 
@@ -289,8 +290,10 @@ public abstract class AbstractHtmlExporter implements Output {
 			settings.put("fontFamilyStack",     Boolean.FALSE);
 			settings.put("imageDirPath", "");
 			
-//			settings.put("docxWikiSdtID", docxWikiSdtID);
-//			settings.put("docxWikiSdtVersion", docxWikiSdtVersion);
+			settings.put("userCSS", "");
+			settings.put("userScript", "");
+			settings.put("userBodyTop", "<!-- userBodyTop goes here -->");
+			settings.put("userBodyTail", "<!-- userBodyTail goes here -->");
 			
 		}
 		
@@ -313,28 +316,6 @@ public abstract class AbstractHtmlExporter implements Output {
 			settings.put("fontFamilyStack", new Boolean(val));
 		}
 
-		public void setDocxWikiMenu(String docxWikiMenu) {
-			settings.put("docxWikiMenu", docxWikiMenu);
-		}
-		
-		public void setDocxWiki(String docxWiki) { // edit | open
-			settings.put("docxWiki", docxWiki);
-		}
-
-//		String docxWikiSdtID = null;	
-//		public void setDocxWikiSdtID(String docxWikiSdtID) {
-//			this.docxWikiSdtID = docxWikiSdtID;
-//		}
-//
-//		String docxWikiSdtVersion = null;	
-//		public void setDocxWikiSdtVersion(String docxWikiSdtVersion) {
-//			this.docxWikiSdtVersion = docxWikiSdtVersion;
-//		}		
-		
-		public void setDocID(String docID) {
-			settings.put("docID", docID);
-		}
-				
 		public void setFontMapper(Mapper fontMapper) {
 			settings.put("fontMapper", fontMapper);
 		}
@@ -352,6 +333,22 @@ public abstract class AbstractHtmlExporter implements Output {
 			return (String)settings.get("imageDirPath");
 		}
 				
+		public void setUserCSS(String val) {
+			settings.put("userCSS", val);
+		}
+
+		public void setUserScript(String val) {
+			settings.put("userScript", val);
+		}
+
+		public void setUserBodyTop(String val) {
+			settings.put("userBodyTop", val);
+		}
+
+		public void setUserBodyTail(String val) {
+			settings.put("userBodyTail", val);
+		}		
+		
 	}
 	
     public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {
