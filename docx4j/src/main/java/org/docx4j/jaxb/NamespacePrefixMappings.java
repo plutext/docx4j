@@ -175,6 +175,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "xml";
     	}
     	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/customXml")) {
+    		return "ds";
+    	}
     	
     	return suggestion;
     }
