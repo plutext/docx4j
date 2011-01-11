@@ -397,8 +397,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 					highestId = current;
 				}
 			} catch (Exception e) {
-				log.error("Couldn't process id: " + id);
-				return;
+				// Not a number, not a problem
+				log.warn("Couldn't process id: " + id);
 			}			
 		}
 		nextId = highestId+1;		
