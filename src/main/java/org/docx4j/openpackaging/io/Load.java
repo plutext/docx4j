@@ -292,6 +292,9 @@ public class Load {
 				}
 				String itemId = customXmlProps.getItemId().toLowerCase();
 				log.info("Identified/registered ds:itemId " + itemId);
+				if (pkg.getCustomXmlDataStorageParts().get(itemId.toLowerCase())!=null) {
+					log.warn("Duplicate CustomXML itemId " + itemId + "; check your source docx!");
+				}
 				pkg.getCustomXmlDataStorageParts().put(itemId, 
 						(org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)entry );
 			}
