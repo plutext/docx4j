@@ -313,7 +313,8 @@ public class ContentTypeManager  {
 			return CreateCustomXmlDataStoragePropertiesPartObject(partName );			
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
 			return CreateObfuscatedFontPartObject(partName );
-		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)) {
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_OLE_OBJECT)
+				|| contentType.equals(ContentTypes.OFFICEDOCUMENT_ACTIVEX_OBJECT)) {
 			return new org.docx4j.openpackaging.parts.WordprocessingML.OleObjectBinaryPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_ACTIVEX_XML_OBJECT)) {
 			return new org.docx4j.openpackaging.parts.ActiveXControlXmlPart(new PartName(partName));
