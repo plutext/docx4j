@@ -24,6 +24,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBResult;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -90,6 +91,10 @@ public abstract class JaxbXmlPart<E> extends Part {
 		this.jaxbElement = jaxbElement;
 	}
 	
+	public void setJaxbElement(JAXBResult result) throws JAXBException {
+		
+		setJaxbElement((E)result.getResult());
+	}
 	
 	
     /**

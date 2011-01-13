@@ -15,6 +15,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
 
 public class BindingHandler {
@@ -55,18 +56,15 @@ public class BindingHandler {
 	 *    static method in this class.
 	 */
 		
-		public static void applyBindings(DocumentPart documentPart) throws Docx4JException {
+		public static void applyBindings(JaxbXmlPart part) throws Docx4JException {
 			
-			// TODO: need to be able to apply to other parts eg header|footer
-			
-			// Get the package from documentPart
 			org.docx4j.openpackaging.packages.OpcPackage pkg 
-				= documentPart.getPackage();		
+				= part.getPackage();		
 				// Binding is a concept which applies more broadly
 				// than just Word documents.
 			
 			org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
-					documentPart.getJaxbElement() ); 	
+					part.getJaxbElement() ); 	
 			
 			JAXBContext jc = Context.jc;
 			try {
@@ -74,13 +72,11 @@ public class BindingHandler {
 				
 				Map<String, Object> transformParameters = new HashMap<String, Object>();
 				transformParameters.put("customXmlDataStorageParts", 
-						documentPart.getPackage().getCustomXmlDataStorageParts());			
+						part.getPackage().getCustomXmlDataStorageParts());			
 						
 				org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 				
-				//javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
-				org.docx4j.wml.Document d = (org.docx4j.wml.Document)result.getResult();
-				documentPart.setJaxbElement(d);
+				part.setJaxbElement(result);
 			} catch (Exception e) {
 				throw new Docx4JException("Problems applying bindings", e);			
 			}
