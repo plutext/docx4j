@@ -1,6 +1,7 @@
 package org.docx4j.model.datastorage;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,13 +11,19 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 
 public class BindingHandler {
 	
@@ -73,6 +80,8 @@ public class BindingHandler {
 				Map<String, Object> transformParameters = new HashMap<String, Object>();
 				transformParameters.put("customXmlDataStorageParts", 
 						part.getPackage().getCustomXmlDataStorageParts());			
+				transformParameters.put("wmlPackage", (WordprocessingMLPackage)pkg);			
+				transformParameters.put("sourcePart", part);			
 						
 				org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 				
@@ -112,6 +121,68 @@ public class BindingHandler {
 			}
 		}
 
+		public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
+				JaxbXmlPart sourcePart,
+				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+				String storeItemId, String xpath, String prefixMappings) {
+			
+			// TODO: remove any images in package which are no longer used.
+			// Needs to be done once after BindingHandler has been done
+			// for all parts for which it is to be called (eg mdp, header parts etc).
+			
+			CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+			if (part==null) {
+				log.error("Couldn't locate part by storeItemId " + storeItemId);
+				return null;
+			}
+			try {
+				String r = part.getData().xpathGetString(xpath, prefixMappings);
+				log.debug(xpath + " yielded result " + r);
+				
+				// Base64 decode it
+				byte[] bytes = Base64.decodeBase64( r.getBytes("UTF8") );
+				
+				// Create image part and add it
+		        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);
+				
+		        String filenameHint = null;
+		        String altText = null;
+		        int id1 = 0;
+		        int id2 = 1;		        		
+		        Inline inline = imagePart.createImageInline( filenameHint, altText, 
+		    			id1, id2, false);
+		        
+		        // Now add the inline in w:p/w:r/w:drawing
+				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+				org.docx4j.wml.P  p = factory.createP();
+				org.docx4j.wml.R  run = factory.createR();		
+				p.getParagraphContent().add(run);        
+				org.docx4j.wml.Drawing drawing = factory.createDrawing();		
+				run.getRunContent().add(drawing);		
+				drawing.getAnchorOrInline().add(inline);
+				
+				
+				/* return following node
+				 * 
+				 *     <w:p>
+				          <w:r>
+				            <w:drawing>
+				              <wp:inline distT="0" distB="0" distL="0" distR="0">
+				              	etc
+ 				 */
+				
+				Document document = XmlUtils.marshaltoW3CDomDocument(p);
+				
+				DocumentFragment docfrag = document.createDocumentFragment();
+				docfrag.appendChild(document.getDocumentElement());
+
+				return docfrag;
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			} 
+		}
 
 	
 
