@@ -19,6 +19,8 @@
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="yes" />
 
 <xsl:param name="customXmlDataStorageParts"/> <!-- select="'passed in'"-->	
+<xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
+<xsl:param name="sourcePart"/> <!-- select="'passed in'"-->	
 
   <xsl:template match="/ | @*|node()">
     <xsl:copy>
@@ -28,6 +30,21 @@
 
   <xsl:template match="w:sdt">  
   	<xsl:choose>
+  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
+		    <xsl:copy>
+		      <xsl:apply-templates select="w:sdtPr"/>
+		      <w:sdtContent>
+				<xsl:copy-of
+						select="java:org.docx4j.model.datastorage.BindingHandler.xpathInjectImage(
+									$wmlPackage,
+									$sourcePart,
+									$customXmlDataStorageParts,
+									string(w:sdtPr/w:dataBinding/@w:storeItemID),
+									string(w:sdtPr/w:dataBinding/@w:xpath),
+									string(w:sdtPr/w:dataBinding/@w:prefixMappings)  )" />
+		      </w:sdtContent>
+		    </xsl:copy>  		  			
+  		</xsl:when>
   		<xsl:when test="w:sdtPr/w:dataBinding">
 		    <xsl:copy>
 		      <xsl:apply-templates select="w:sdtPr"/>
