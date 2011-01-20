@@ -1,11 +1,11 @@
 package org.docx4j.model.datastorage;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -21,7 +21,6 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.openpackaging.parts.WordprocessingML.DocumentPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 
@@ -75,7 +74,11 @@ public class BindingHandler {
 			
 			JAXBContext jc = Context.jc;
 			try {
-				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
+				// Use constructor which takes Unmarshaller, rather than JAXBContext,
+				// so we can set JaxbValidationEventHandler
+				Unmarshaller u = jc.createUnmarshaller();
+				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
 				
 				Map<String, Object> transformParameters = new HashMap<String, Object>();
 				transformParameters.put("customXmlDataStorageParts", 
@@ -170,6 +173,8 @@ public class BindingHandler {
 				              <wp:inline distT="0" distB="0" distL="0" distR="0">
 				              	etc
  				 */
+				
+				//System.out.println(XmlUtils.marshaltoString(run, false));
 				
 				Document document = XmlUtils.marshaltoW3CDomDocument(p);
 				
