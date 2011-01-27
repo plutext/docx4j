@@ -127,7 +127,9 @@ public class BindingHandler {
 		public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
 				JaxbXmlPart sourcePart,
 				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-				String storeItemId, String xpath, String prefixMappings) {
+				String storeItemId, String xpath, String prefixMappings, String sdtParent) {
+
+			log.debug("sdt's parent: " + sdtParent);
 			
 			// TODO: remove any images in package which are no longer used.
 			// Needs to be done once after BindingHandler has been done
@@ -157,9 +159,17 @@ public class BindingHandler {
 		        
 		        // Now add the inline in w:p/w:r/w:drawing
 				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
-				org.docx4j.wml.P  p = factory.createP();
+				org.docx4j.wml.Tc tc  = factory.createTc();
+				org.docx4j.wml.P  p   = factory.createP();
+				if (sdtParent.equals("tr")) {
+					tc.getEGBlockLevelElts().add(p);
+				}
 				org.docx4j.wml.R  run = factory.createR();		
-				p.getParagraphContent().add(run);        
+				if (sdtParent.equals("body")
+						|| sdtParent.equals("tr") 
+						|| sdtParent.equals("tc") ) {
+					p.getParagraphContent().add(run);
+				}
 				org.docx4j.wml.Drawing drawing = factory.createDrawing();		
 				run.getRunContent().add(drawing);		
 				drawing.getAnchorOrInline().add(inline);
@@ -176,7 +186,18 @@ public class BindingHandler {
 				
 				//System.out.println(XmlUtils.marshaltoString(run, false));
 				
-				Document document = XmlUtils.marshaltoW3CDomDocument(p);
+				Document document = null;
+				
+				if (sdtParent.equals("body")
+						|| sdtParent.equals("tc") ) {
+					document = XmlUtils.marshaltoW3CDomDocument(p);
+				} else if ( sdtParent.equals("tr") ) {
+					document = XmlUtils.marshaltoW3CDomDocument(tc);
+				} else if ( sdtParent.equals("p") ) {
+					document = XmlUtils.marshaltoW3CDomDocument(run);
+				} else {
+					log.error("how to inject image for unexpected sdt's parent: " + sdtParent);
+				}
 				
 				DocumentFragment docfrag = document.createDocumentFragment();
 				docfrag.appendChild(document.getDocumentElement());
