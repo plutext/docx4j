@@ -41,7 +41,8 @@
 									$customXmlDataStorageParts,
 									string(w:sdtPr/w:dataBinding/@w:storeItemID),
 									string(w:sdtPr/w:dataBinding/@w:xpath),
-									string(w:sdtPr/w:dataBinding/@w:prefixMappings)  )" />
+									string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+									local-name(..) )" />
 		      </w:sdtContent>
 		    </xsl:copy>  		  			
   		</xsl:when>
