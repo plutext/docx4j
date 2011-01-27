@@ -87,8 +87,18 @@ public abstract class XmlPart extends Part {
 		// We've already worked around the problem with setTextContent,
 		// but rather than do the same for writeDocument,
 		// let's just stop using it.
-		System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-			"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+		
+		try {
+			// docx4j is not dependent on Xerces (other than here),
+			// but Websphere (presumably using IBM JDK) doesn't have
+			// Sun's Xerces implementation, so use real Xerces if it is
+			// on the class path
+			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+		} catch (javax.xml.parsers.FactoryConfigurationError fce) {
+			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+				"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+		}
 		
 		xPathFactory = XPathFactory.newInstance();
 		xPath = xPathFactory.newXPath();		
