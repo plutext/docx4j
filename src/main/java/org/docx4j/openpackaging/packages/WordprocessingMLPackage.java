@@ -257,7 +257,13 @@ public class WordprocessingMLPackage extends OpcPackage {
 		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 		marshaller.marshal(pkg, doc);
     			
-		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
+//		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
+		
+		// Use constructor which takes Unmarshaller, rather than JAXBContext,
+		// so we can set JaxbValidationEventHandler
+		Unmarshaller u = jc.createUnmarshaller();
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
 		
 		// Perform the transformation		
 		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
