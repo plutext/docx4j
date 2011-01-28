@@ -95,15 +95,16 @@ public abstract class XmlPart extends Part {
 			// on the class path
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
 				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+			documentFactory = DocumentBuilderFactory.newInstance();
 		} catch (javax.xml.parsers.FactoryConfigurationError fce) {
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
 				"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+			documentFactory = DocumentBuilderFactory.newInstance();
 		}
 		
 		xPathFactory = XPathFactory.newInstance();
 		xPath = xPathFactory.newXPath();		
 		
-		documentFactory = DocumentBuilderFactory.newInstance();
 		documentFactory.setNamespaceAware(true);
 		try {
 			documentBuilder = documentFactory.newDocumentBuilder();
