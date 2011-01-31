@@ -200,7 +200,7 @@ public abstract class AbstractHtmlExporter implements Output {
 			
 			NumberingDefinitionsPart ndp = wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
 			Ind ind = ndp.getInd(numId, levelId);
-			if (ind.getHanging()!=null) {
+			if (ind!=null && ind.getHanging()!=null) {
 				String hanging = UnitsOfMeasurement.twipToBest(ind.getHanging().intValue());
 				styleVal="position: absolute; left:-" + hanging + "; max-width: " + hanging +";";							
 			}
@@ -460,10 +460,7 @@ public abstract class AbstractHtmlExporter implements Output {
     	// The only way we seem to be able to make rules which
     	// apply to all the cells in a particular table
     	
-    	System.out.println("TABLES");
     	Tbl tbl;
-
-		
     	StringBuffer result = new StringBuffer();		
     	
 		//DTMNodeProxy n = (DTMNodeProxy)tables.nextNode();
