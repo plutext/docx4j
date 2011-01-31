@@ -64,6 +64,7 @@ import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
 import org.opendope.conditions.Condition;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 
@@ -173,8 +174,15 @@ public final class CustomXmlDataStoragePart extends Part {
 	}
 
     public boolean isContentEqual(Part other) throws Docx4JException {
+
+    	if (!(other instanceof CustomXmlDataStoragePart))
+    		return false;
     	
-    	throw new Docx4JException("Not implemented");
+    	Document doc1 = data.getDocument();
+    	Document doc2 = ((CustomXmlDataStoragePart)other).data.getDocument();
+    	
+    	return doc1.isEqualNode(doc2);
+
     }
 	
 	

@@ -65,8 +65,11 @@ public class AlteredParts {
 		List<Relationship> missings = thisRP.uniqueToOther(otherRP);
 		
 		// is this rels part itself altered?
-		if (uniques.size()>0 || missings.size()>0) {
-			alteredParts.add(thisRP);
+//		if (uniques.size()>0 || missings.size()>0) {
+//			alteredParts.add(thisRP);
+//		}
+		if (!thisRP.isContentEqual(otherRP)) {
+			alteredParts.add(thisRP);			
 		}
 		
 		log.info("content -------");
