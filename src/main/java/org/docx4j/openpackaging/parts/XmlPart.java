@@ -21,6 +21,7 @@
 package org.docx4j.openpackaging.parts;
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -209,5 +211,16 @@ public abstract class XmlPart extends Part {
 		
 	}
 	
+    public boolean isContentEqual(Part other) throws Docx4JException {
+
+    	if (!(other instanceof XmlPart))
+    		return false;
+    	
+    	Document doc1 = getDocument();
+    	Document doc2 = ((XmlPart)other).getDocument();
+    	
+    	return doc1.isEqualNode(doc2);
+
+    }
 		
 }

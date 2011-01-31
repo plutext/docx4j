@@ -25,6 +25,7 @@ import java.net.URI;
 
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentType;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -222,5 +223,6 @@ public abstract class Part extends Base {
 		this.getPackage().getParts().put(this);
 	}
 
+    public abstract boolean isContentEqual(Part other) throws Docx4JException;
 
 }

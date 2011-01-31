@@ -20,6 +20,11 @@
 package org.docx4j.openpackaging.parts;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -29,7 +34,9 @@ import javax.xml.bind.util.JAXBResult;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
@@ -250,6 +257,50 @@ public abstract class JaxbXmlPart<E> extends Part {
 		}
 	}
 
-	
+    public boolean isContentEqual(Part other) throws Docx4JException {
+    	
+    	if (!(other instanceof JaxbXmlPart))
+    		return false;
+    	
+    	/* Implementation notes: Either we implement
+    	 * a notion of equality for all content trees
+    	 * (ie wml, dml etc), or we marshal to something
+    	 * and compare that.
+    	 * 
+    	 * Let's take the marshal approach.
+    	 * 
+    	 * Question becomes, what is it most efficient
+    	 * to marshal to?
+    	 * 
+    	 * Looking at JAXB, probably SAX or a stream.
+    	 * 
+    	 * Then we want an equality test for one of those,
+    	 * which returns as soon as inequality is established.
+    	 * 
+    	 * diffx contains a method boolean equivalent(InputStream xml1, InputStream xml2)
+    	 * which will do what we want.
+    	 * 
+    	 * We marshal to an output stream, then need a 
+    	 * way to get an input stream from that.
+    	 * 
+    	 * Since for now I'm just going to use a byte array for that
+    	 * (though pipes would be more efficient and possibly worth it for large 
+    	 * MainDocumentPart - calling code could just assume that part is different
+    	 * though?),
+    	 * I'll just test the equality of the byte arrays
+    	 * and be done with it. 
+    	 */
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+    	ByteArrayOutputStream baos2 = new ByteArrayOutputStream(); 
+    	try {
+        	marshal(baos);
+			((JaxbXmlPart)other).marshal(baos2);
+		} catch (JAXBException e) {
+			throw new Docx4JException("Error marshalling parts", e);
+		}
+    	
+    	return java.util.Arrays.equals(baos.toByteArray(), baos2.toByteArray());
+
+    }
 	
 }
