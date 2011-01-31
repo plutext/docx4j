@@ -29,8 +29,10 @@ import java.nio.ByteBuffer;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.io.IOUtils;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.ExternalTarget;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.utils.BufferUtil;
@@ -172,10 +174,13 @@ public class BinaryPart extends Part {
         out.write( bytes );	    
 	}
 	
-    public boolean isContentEqual(BinaryPart other) {
+    public boolean isContentEqual(Part other) throws Docx4JException {
+    	
+    	if (!(other instanceof BinaryPart))
+    		return false;
     	
     	ByteBuffer thisBB = getBuffer();
-    	ByteBuffer thatBB = other.getBuffer();
+    	ByteBuffer thatBB = ((BinaryPart)other).getBuffer();
     	
     	return thisBB.equals(thatBB);
     	

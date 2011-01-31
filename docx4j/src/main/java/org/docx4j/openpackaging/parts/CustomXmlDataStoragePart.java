@@ -172,6 +172,10 @@ public final class CustomXmlDataStoragePart extends Part {
 		this.data = data;
 	}
 
+    public boolean isContentEqual(Part other) throws Docx4JException {
+    	
+    	throw new Docx4JException("Not implemented");
+    }
 	
 	
 }

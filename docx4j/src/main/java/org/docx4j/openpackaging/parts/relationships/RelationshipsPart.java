@@ -52,6 +52,8 @@ package org.docx4j.openpackaging.parts.relationships;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -64,6 +66,7 @@ import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.InvalidOperationException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -71,6 +74,8 @@ import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.XmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
 
@@ -88,7 +93,7 @@ import org.docx4j.relationships.Relationships;
 public final class RelationshipsPart extends JaxbXmlPart<Relationships> { 
 	// implements Iterable<Relationship> {
 
-	private static Logger logger = Logger.getLogger(RelationshipsPart.class);
+	private static Logger log = Logger.getLogger(RelationshipsPart.class);
 	
 	/* Example:
 	 * 
@@ -305,7 +310,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 	public Part getPart(Relationship r ) {
 		
-		log.debug(" source is  " + sourceP.getPartName().toString() );
+//		log.debug(" source is  " + sourceP.getPartName().toString() );
     	// eg rId1 points to fonts/font1.odttf
     		
 		if (r.getTargetMode() == null
@@ -402,7 +407,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			}			
 		}
 		nextId = highestId+1;		
-		logger.debug("nextId reset to : " + nextId);
+		log.debug("nextId reset to : " + nextId);
 		
 	}
 	
@@ -849,5 +854,99 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	}
     
 
+    /**
+     * Identify the rels in this relationships part which aren't
+     * in the other
+     * @param otherRP the other RelationshipsPart
+     */
+    public List<Relationship> uniqueToThis(RelationshipsPart otherRP) {
+    	
+    	List<Relationship> results = new ArrayList<Relationship>();
+    	    	
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
+			if (getRelationshipByTarget(otherRP, r.getTarget())==null ) {
+				log.debug("Unique: " + r.getTarget() );
+				results.add(r);
+			}			
+		}		
+    	return results;
+    }
+
+    /**
+     * Identify the rels in this relationships part which aren't
+     * in the other
+     * @param otherRP the other RelationshipsPart
+     */
+    public List<Relationship> uniqueToOther(RelationshipsPart otherRP) {
+    	
+    	List<Relationship> results = new ArrayList<Relationship>();
+    	    	
+		for ( Relationship r : otherRP.jaxbElement.getRelationship()  ) {
+			if (getRelationshipByTarget(this, r.getTarget())==null ) {
+				results.add(r);
+			}			
+		}		
+    	return results;
+    }
+    
+    /**
+     * Identify rels common to both parts, but where rels have different
+     * content.
+     * @param otherRP
+     * @return
+     */
+    public List<Relationship> differingContent(RelationshipsPart otherRP) throws Docx4JException {
+    	
+    	List<Relationship> results = new ArrayList<Relationship>();
+    	    	
+		for ( Relationship r : jaxbElement.getRelationship()  ) {
+			Relationship otherR = getRelationshipByTarget(otherRP, r.getTarget());
+			if (otherR!=null ) {
+				
+				if (r.getTargetMode() !=null && r.getTargetMode().equals("External") ) {
+					if (otherR.getTargetMode() !=null && otherR.getTargetMode().equals("External")) {
+						// Usual case
+						if (!r.getTarget().equals(otherR.getTarget()) ) {
+							// Should never happen, since we matched on target
+							throw new Docx4JException("broken logic!");
+							//results.add(r);
+							//log.debug("External: " + r.getTarget() );							
+						}
+						
+					} else {
+						// eg an image changed from embedded to linked
+						results.add(r);
+						log.debug("External: " + r.getTarget() );						
+					}
+					continue;
+				}
+				
+				// Compare content
+				Part thisPart = this.getPart(r);
+				Part otherPart = otherRP.getPart(otherR);	
+				if (!thisPart.isContentEqual( otherPart)) {
+					results.add(r);
+					log.debug("Different: " + r.getTarget() );	
+				}
+			}			
+		}		
+    	return results;
+    }    
+    
+	public static Relationship getRelationshipByTarget(RelationshipsPart rp, String relativeTarget) {
+		
+		for ( Relationship r : rp.jaxbElement.getRelationship()  ) {			
+			if (r.getTarget().equals(relativeTarget) ) {
+				return r;
+			}			
+		}		
+		return null;
+	}
+    
+    public boolean isContentEqual(Part other) throws Docx4JException {
+    	
+    	throw new Docx4JException("Not implemented");
+    }
+	
 	
 }
