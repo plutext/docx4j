@@ -403,8 +403,10 @@ public class PropertyFactory {
 				if (wmlPackage instanceof WordprocessingMLPackage) {
 					NumberingDefinitionsPart ndp = ((WordprocessingMLPackage)wmlPackage).getMainDocumentPart().getNumberingDefinitionsPart();
 					ind = ndp.getInd(pPr.getNumPr());
-					properties.add(new Indent(ind));			
-					log.debug("Using w:ind from list level");
+					if (ind!=null) {
+						properties.add(new Indent(ind));			
+						log.debug("Using w:ind from list level");
+					}
 				}
 			}
 		}
