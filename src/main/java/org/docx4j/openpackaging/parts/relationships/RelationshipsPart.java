@@ -59,7 +59,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
@@ -74,8 +73,6 @@ import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.XmlPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
 
@@ -942,11 +939,5 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		}		
 		return null;
 	}
-    
-    public boolean isContentEqual(Part other) throws Docx4JException {
-    	
-    	throw new Docx4JException("Not implemented");
-    }
-	
 	
 }

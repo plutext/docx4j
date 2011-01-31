@@ -21,9 +21,6 @@ package org.docx4j.openpackaging.parts;
 
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -36,7 +33,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
