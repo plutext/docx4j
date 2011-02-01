@@ -17,7 +17,10 @@ public class AlteredPartsTest {
 	protected static Logger log = Logger.getLogger(AlteredPartsTest.class);
 	
 	private static String resourceDir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
-//	private static String resourceDir = System.getProperty("user.dir") + "/sample-docs/";
+	
+	/* All of the docx in resourceDir have had their docprops parts stripped
+	 * (using StripParts).  */
+	
 	
 	/**
 	 * @throws java.lang.Exception
@@ -144,6 +147,8 @@ public class AlteredPartsTest {
 		// a jpg inserted before, so the png's relId is now different
 		// document.xml and rels should be different,
 		// and extra image reported
+		// Because we currently match images on name only, and
+		// png is now called image2.png, that has changed as well.
 
 		log.warn("\ntestImagesDifferentPng\n");
 		
@@ -158,12 +163,15 @@ public class AlteredPartsTest {
 			System.out.println(p.partName.getName() );
 		}
 				
-		assertTrue( alteredParts.size()==3 );
+		assertTrue( alteredParts.size()==4 );
 	}
 
 	@Test
 	public void testImagesOrderSwapped() throws Exception {
-		// document.xml and rels should be different,
+		// document.xml and rels should be different;
+		// Because we currently match images on name only, 
+		// both image names have changed as well.
+		
 
 		log.warn("\ntestImagesOrderSwapped\n");
 		
@@ -178,14 +186,14 @@ public class AlteredPartsTest {
 			System.out.println(p.partName.getName() );
 		}
 				
-		assertTrue( alteredParts.size()==2 );
+		assertTrue( alteredParts.size()==4 );
 	}
 
 	@Test
 	public void testHeaderAdded() throws Exception {
 		// document.xml and rels should be different,
 		// and headers added: Word adds 3 x headers, 3 x footers, endnotes, and footnotes
-		// but 2 props files are as well
+		// plus header style
 
 		log.warn("\ntestHeaderAdded\n");
 		
@@ -200,13 +208,14 @@ public class AlteredPartsTest {
 			System.out.println(p.partName.getName() );
 		}
 				
-		assertTrue( alteredParts.size()==12 );
+		assertTrue( alteredParts.size()==11 );
 	}
 
 	@Test
 	public void testHeaderAddedSection2() throws Exception {
 		// document.xml and rels should be different,
 		// and headers added: doc now contains 2 x headers, 0 x footers, endnotes, and footnotes
+		// Interesting that the number of header parts is reduced (and content of header1.xml changed)
 
 		log.warn("\ntestHeaderAddedSection2\n");
 		
@@ -221,12 +230,12 @@ public class AlteredPartsTest {
 			System.out.println(p.partName.getName() );
 		}
 				
-		assertTrue( alteredParts.size()==3 );
+		assertTrue( alteredParts.size()==4 );
 	}
 
 	@Test
 	public void testHeaderImageAdded() throws Exception {
-		// document.xml and rels should be different,
+		// the affected header should be different,
 		// plus image + header rels
 
 		log.warn("\ntestHeaderImageAdded\n");
@@ -242,12 +251,13 @@ public class AlteredPartsTest {
 			System.out.println(p.partName.getName() );
 		}
 				
-		assertTrue( alteredParts.size()==4 );
+		assertTrue( alteredParts.size()==3 );
 	}
 	
 	@Test
 	public void testComment() throws Exception {
-		// document.xml + rels + comments part should be different
+		// document.xml + rels + added comments part should be different,
+		// also styles
 
 		log.warn("\ntestComment\n");
 		
@@ -262,7 +272,7 @@ public class AlteredPartsTest {
 			System.out.println(p.partName.getName() );
 		}
 				
-		assertTrue( alteredParts.size()==3 );
+		assertTrue( alteredParts.size()==4 );
 	}
 
 	@Test
