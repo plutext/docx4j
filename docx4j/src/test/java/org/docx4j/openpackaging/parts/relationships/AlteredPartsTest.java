@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.relationships.AlteredParts.Alterations;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,9 +56,11 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 		
-		assertTrue( alteredParts.size()==0 );
+		assertTrue( alterations.getPartsAdded().size()==0 );
+		assertTrue( alterations.getPartsModified().size()==0 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
 	}
 
 	@Test
@@ -71,13 +74,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "paragraph-two.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==1 );
+		assertTrue( alterations.getPartsAdded().size()==0 );
+		assertTrue( alterations.getPartsModified().size()==1 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 
 	@Test
@@ -92,13 +96,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "paragraph-single.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==3 );
+		assertTrue( alterations.getPartsAdded().size()==0 );
+		assertTrue( alterations.getPartsModified().size()==3 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 
 	@Test
@@ -112,13 +117,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "image-png1-scaled.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==1 );
+		assertTrue( alterations.getPartsAdded().size()==0 );
+		assertTrue( alterations.getPartsModified().size()==1 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 	
 	@Test
@@ -133,13 +139,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "image-png2.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==2 );
+		assertTrue( alterations.getPartsAdded().size()==0 );
+		assertTrue( alterations.getPartsModified().size()==2 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 
 	@Test
@@ -157,13 +164,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "image-png2.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==4 );
+		assertTrue( alterations.getPartsAdded().size()==2 );
+		assertTrue( alterations.getPartsModified().size()==2 );
+		assertTrue( alterations.getPartsDeleted().size()==1 );
+		
 	}
 
 	@Test
@@ -180,13 +188,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "images-png2 then jpg.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==4 );
+		assertTrue( alterations.getPartsAdded().size()==2 );
+		assertTrue( alterations.getPartsModified().size()==2 );
+		assertTrue( alterations.getPartsDeleted().size()==2 );
+		
 	}
 
 	@Test
@@ -202,13 +211,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "paragraph-single.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==11 );
+		assertTrue( alterations.getPartsAdded().size()==8 );
+		assertTrue( alterations.getPartsModified().size()==3 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 
 	@Test
@@ -224,13 +234,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "header-simple.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==4 );
+		assertTrue( alterations.getPartsAdded().size()==0 ); // one of the existing header parts is re-purposed
+		assertTrue( alterations.getPartsModified().size()==4 );
+		assertTrue( alterations.getPartsDeleted().size()==4 );
+		
 	}
 
 	@Test
@@ -245,13 +256,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "header-simple.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==3 );
+		assertTrue( alterations.getPartsAdded().size()==2 );
+		assertTrue( alterations.getPartsModified().size()==1 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 	
 	@Test
@@ -266,13 +278,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "paragraph-single.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==4 );
+		assertTrue( alterations.getPartsAdded().size()==1 );
+		assertTrue( alterations.getPartsModified().size()==3 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 
 	@Test
@@ -286,13 +299,14 @@ public class AlteredPartsTest {
 		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "comments-one.docx"));
 		
-		List<Part> alteredParts = AlteredParts.start(thisPackage, otherPackage);
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		for (Part p : alteredParts) {
-			System.out.println(p.partName.getName() );
-		}
+		alterations.debug();
 				
-		assertTrue( alteredParts.size()==2 );
+		assertTrue( alterations.getPartsAdded().size()==0 );
+		assertTrue( alterations.getPartsModified().size()==2 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
 	}
 	
 }
