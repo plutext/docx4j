@@ -174,8 +174,18 @@ public class Patcher {
 				Part newPart = FlatOpcXmlImporter.getRawPart(otherPackage.getContentTypeManager(), 
 						a.getPart(), null); 
 				
-				parentPart.addTargetPart(newPart);
+				// There will already be a rel for the new part,
+				// since we will already have modified or added the rels part
+				// so don't do AddTargetPart (which will probably create a new rel id,
+				// which will cause problems)
 				
+				newPart.setOwningRelationshipPart(parentPart.getRelationshipsPart());
+				newPart.setSourceRelationship(
+						parentPart.getRelationshipsPart().getRel(new PartName(a.getPart().getName())));
+				otherPackage.getParts().put(newPart);
+				newPart.setPackage( otherPackage );
+
+				// TODO: add content type if necessary
 			}			
 			
 		}	
