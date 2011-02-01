@@ -137,7 +137,7 @@ public class AlteredParts {
 		if (rp==null) return;
 		
 		for( Relationship r : rp.getJaxbElement().getRelationship() ) {
-			if (r.getTargetMode().equals("External") ) {
+			if (r.getTargetMode() !=null && r.getTargetMode().equals("External") ) {
 				log.debug( r.getTarget() + " is external");
 				// Have everything we need info wise in transmitting the rels part
 			} else {
