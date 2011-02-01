@@ -56,7 +56,7 @@ public class AlteredParts {
 			RelationshipsPart thisRP, RelationshipsPart otherRP)
 			throws Docx4JException {
 		
-		log.info(thisRP.partName.getName() + "#########");
+		log.info("######### @" + thisRP.partName.getName() + "#########");
 
 		log.info("uniques -------");
 		List<Relationship> uniques = thisRP.uniqueToThis(otherRP);
@@ -98,7 +98,8 @@ public class AlteredParts {
 					if (thisPart.getRelationshipsPart()!=null) {
 						
 						if (otherPart.getRelationshipsPart()==null) {
-							// add tree, including any external parts					
+							// add tree, including any external parts	
+							alteredParts.add(thisPart.getRelationshipsPart());												
 							addTree(alteredParts, thisPart.getRelationshipsPart() );
 							
 						} else {

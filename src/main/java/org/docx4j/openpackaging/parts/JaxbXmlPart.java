@@ -28,6 +28,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
 
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -58,6 +59,8 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
  *  @param <E> type of the content tree object
  * */
 public abstract class JaxbXmlPart<E> extends Part {
+	
+	protected static Logger log = Logger.getLogger(JaxbXmlPart.class);
 	
 	// This class is abstract
 	// Most applications ought to be able to instantiate
@@ -254,9 +257,13 @@ public abstract class JaxbXmlPart<E> extends Part {
 	}
 
     public boolean isContentEqual(Part other) throws Docx4JException {
+
+		log.debug("Comparing " + getPartName().getName() + " : " + other.getPartName().getName() );
     	
-    	if (!(other instanceof JaxbXmlPart))
+    	if (!(other instanceof JaxbXmlPart)) {
+    		log.debug(other.getPartName().getName() + " is not a JaxbXmlPart");
     		return false;
+    	}
     	
     	/* Implementation notes: Either we implement
     	 * a notion of equality for all content trees
