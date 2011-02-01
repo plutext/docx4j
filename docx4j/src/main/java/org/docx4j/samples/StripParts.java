@@ -21,6 +21,7 @@
 package org.docx4j.samples;
 
 
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,35 +38,71 @@ import org.docx4j.relationships.Relationship;
 
 public class StripParts {
 	
-	private static Logger log = Logger.getLogger(StripParts.class);						
 
+	static boolean save = true;
+	static boolean flatOpcXmlOutput = false;
+	static boolean overwriteInputFile = true;
+	
+	static String dir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
+	static String file = "blagh";  // set to null to process all docx in dir
+	
+	static boolean stripPropertiesParts = true;
+	static boolean keepStyles = true;
+	static boolean defaultToDelete = false;
+	
+	private static Logger log = Logger.getLogger(StripParts.class);						
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
 
-		// Do we want to save output? 
-		boolean save = true;
-		boolean flatOpcXmlOutput = true;
-		
-		String dir = System.getProperty("user.dir") + "/foo/";
-		
-		String file = "bar";
-		String inputfilepath = dir + file + ".docx";
-				
-		// If so, whereto?
-		String outputfilepath = null;
-		if (save) {
-			if (flatOpcXmlOutput) {
-				outputfilepath = dir + file + "_OUT.xml";
-			} else {
-				outputfilepath = dir + file + "_OUT.docx";				
+		if (file==null) {
+
+			List<File> filesToProcess = new ArrayList<File>();
+			File[] filesAndDirs = new File(dir).listFiles();
+			for (File file : filesAndDirs) {
+				if (file.isFile()
+						&& file.getName().endsWith(".docx") ) {
+					filesToProcess.add(file);
+				}
 			}
+
+			for (File file : filesToProcess) {
+				String outputfilepath = null;
+				if (save && overwriteInputFile) {
+					outputfilepath = file.getAbsolutePath(); 
+				}
+				
+				processFile(file, outputfilepath);
+				
+			}
+			
+		} else {
+			String inputfilepath = dir + file + ".docx";
+	
+			// If so, whereto?
+			String outputfilepath = null;
+			if (save) {
+				if (overwriteInputFile) {
+					outputfilepath = inputfilepath; 
+				} else if (flatOpcXmlOutput) {
+					outputfilepath = dir + file + "_OUT.xml";
+				} else {
+					outputfilepath = dir + file + "_OUT.docx";				
+				}
+			}
+			
+			processFile(new java.io.File(inputfilepath), outputfilepath);
 		}
+	}
+
+	private static void processFile(File inputfile, String outputfilepath)
+			throws Docx4JException {
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(inputfile);		
 		
 		// List the parts by walking the rels tree
 		RelationshipsPart rp = wordMLPackage.getRelationshipsPart();
@@ -79,7 +116,7 @@ public class StripParts {
 			wordMLPackage.save(new java.io.File(outputfilepath));
 			System.out.println("Saved stripped to " + outputfilepath);
 		} else {
-			System.out.println("Stripped parts from " + inputfilepath);
+			System.out.println("Stripped parts from " + inputfile.getName() );
 		}
 	}
 	
@@ -91,11 +128,7 @@ public class StripParts {
 			RelationshipsPart rp, 
 			StringBuilder sb, String indent)
 	 throws Docx4JException {
-		
-		boolean stripPropertiesParts = true;
-		boolean keepStyles = false;
-		boolean defaultToDelete = false;
-		
+				
 		List<Relationship> deletions = new ArrayList<Relationship>();
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
