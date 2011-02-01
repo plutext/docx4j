@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2011, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -24,15 +24,27 @@ package org.docx4j.openpackaging.parts.relationships;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.relationships.Relationship;
 
+/**
+ * Output is Flat OPC XML format:
+ * 
+ * <pkg:part pkg:name="/word/document.xml" pkg:contentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml">
+        <pkg:xmlData>
+            <w:document
+            
+   and
+   
+   <pkg:part pkg:name="/word/_rels/document.xml.rels" pkg:contentType="application/vnd.openxmlformats-package.relationships+xml" pkg:padding="256">
 
+ */
 public class AlteredParts {
 	
 	private static Logger log = Logger.getLogger(AlteredParts.class);
@@ -42,13 +54,14 @@ public class AlteredParts {
 									WordprocessingMLPackage otherPackage)
 			throws Docx4JException {
 
-//		List<Part> alteredParts = new ArrayList<Part>();
 		Alterations alterations = new Alterations();
 		
 		RelationshipsPart packageRels = thisPackage.getRelationshipsPart();
 		RelationshipsPart otherPackageRels = otherPackage.getRelationshipsPart();
 		
 		recurse(alterations, packageRels, otherPackageRels);
+		
+		// TODO: will you send each part as org.docx4j.xmlPackage.Part?
 
 		return alterations;
 	}	
@@ -68,7 +81,8 @@ public class AlteredParts {
 		
 		// is this rels part itself altered?
 		if (!thisRP.isContentEqual(otherRP)) {
-			alterations.getPartsModified().add(thisRP);			
+			alterations.getPartsModified().add( 
+					new Alteration(thisRP, toStorageFormat(thisRP)));			
 		}
 		
 		log.info("content -------");
@@ -100,7 +114,8 @@ public class AlteredParts {
 						
 						if (otherPart.getRelationshipsPart()!=null) {
 							// add tree, including any external parts	
-							alterations.getPartsDeleted().add(thisPart.getRelationshipsPart());												
+							alterations.getPartsDeleted().add( 
+									new Alteration( thisPart.getPartName(), toStorageFormat(thisPart.getRelationshipsPart())));												
 							addTree(alterations.getPartsDeleted(), thisPart.getRelationshipsPart() );
 						}
 						
@@ -108,7 +123,8 @@ public class AlteredParts {
 						
 						if (otherPart.getRelationshipsPart()==null) {
 							// add tree, including any external parts	
-							alterations.getPartsAdded().add(thisPart.getRelationshipsPart());												
+							alterations.getPartsAdded().add( 
+									new Alteration( thisPart.getPartName(), toStorageFormat(thisPart.getRelationshipsPart())));												
 							addTree(alterations.getPartsAdded(), thisPart.getRelationshipsPart() );
 							
 						} else {
@@ -122,13 +138,15 @@ public class AlteredParts {
 		}
 	}
 
-	private static void addPartsForRels(List<Part> list, List<Relationship> rels, RelationshipsPart rp  ) {
+	private static void addPartsForRels(List<Alteration> list, List<Relationship> rels, RelationshipsPart rp  ) throws Docx4JException {
+
 		for( Relationship r : rels) {
 			if (r.getTargetMode() !=null && r.getTargetMode().equals("External") ) {
 				log.debug( r.getTarget() + " is external");
 				// Have everything we need info wise in transmitting the rels part
 			} else {
-				list.add( rp.getPart(r) );
+				list.add( 
+						new Alteration( rp, toStorageFormat(rp.getPart(r)) ));
 				log.debug("added part: " + r.getTarget() );								
 			}
 		}		
@@ -140,7 +158,7 @@ public class AlteredParts {
 	 * @param theseRels
 	 * @throws Docx4JException
 	 */
-	private static void addTree(List<Part> list,
+	private static void addTree(List<Alteration> list,
 			RelationshipsPart rp)
 			throws Docx4JException {
 		
@@ -151,13 +169,16 @@ public class AlteredParts {
 				log.debug( r.getTarget() + " is external");
 				// Have everything we need info wise in transmitting the rels part
 			} else {
-				list.add( rp.getPart(r) );
+				list.add( 
+						new Alteration( rp, toStorageFormat(rp.getPart(r)) ));
 				log.debug("add tree: " + r.getTarget() );				
 				
 				// recurse
-				RelationshipsPart nextRP = rp.getPart(r).getRelationshipsPart();
+				Part nextSourcePart = rp.getPart(r);
+				RelationshipsPart nextRP = nextSourcePart.getRelationshipsPart();
 				if (nextRP!=null) {
-					list.add(nextRP);					
+					list.add( 
+							new Alteration( nextSourcePart.getPartName(), toStorageFormat(nextRP)));												
 					addTree(list, nextRP );
 				}
 			}
@@ -165,51 +186,83 @@ public class AlteredParts {
 		
 	}
 	
-//	/**
-//	 * @param args
-//	 */
-//	public static void main(String[] args) throws Exception {
-//
-//		String thisfilepath = "/home/dev/workspace/docx4j/sample-docs/differencing_newer.docx";
-//		String otherfilepath = "/home/dev/workspace/docx4j/sample-docs/differencing_older.docx";
-//						
-//		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(new java.io.File(thisfilepath));
-//		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(new java.io.File(otherfilepath));
-//		
-//		start(thisPackage, otherPackage);
-//	}
+	private static org.docx4j.xmlPackage.Part toStorageFormat(Part part)  throws Docx4JException { 
+		
+		if (part instanceof BinaryPart ) {
+			log.info(".. saving binary stuff" );
+			return FlatOpcXmlCreator.createRawBinaryPart( part );
+			
+		} else {
+			return FlatOpcXmlCreator.createRawXmlPart(part );
+		}
+	}
+	
 	
 	public static class Alterations {
 
-		private List<Part> partsAdded = new ArrayList<Part>();
-		private List<Part> partsDeleted = new ArrayList<Part>();
-		private List<Part> partsModified = new ArrayList<Part>();
+		private List<Alteration> partsAdded = new ArrayList<Alteration>();
+		private List<Alteration> partsDeleted = new ArrayList<Alteration>();
+		private List<Alteration> partsModified = new ArrayList<Alteration>();
 
-		public List<Part> getPartsAdded() {
+		public List<Alteration> getPartsAdded() {
 			return partsAdded;
 		}
-		public List<Part> getPartsDeleted() {
+		public List<Alteration> getPartsDeleted() {
 			return partsDeleted;
 		}
-		public List<Part> getPartsModified() {
+		public List<Alteration> getPartsModified() {
 			return partsModified;
 		}
 		
 		public void debug() {
 			System.out.println("- Additions -------");
-			for (Part p : partsAdded) {
-				System.out.println(p.partName.getName() );
+			for (Alteration a : partsAdded) {
+				System.out.println(a.getPart().getName() + " @ " + a.getSourcePartName().getName() );
 			}
 
 			System.out.println("- Modifications -------");
-			for (Part p : partsModified) {
-				System.out.println(p.partName.getName() );
+			for (Alteration a : partsModified) {
+				System.out.println(a.getPart().getName() + " @ " + a.getSourcePartName().getName() );
 			}
 			
 			System.out.println("- Deletions -------");
-			for (Part p : partsDeleted) {
-				System.out.println(p.partName.getName() );
+			for (Alteration a : partsDeleted) {
+				System.out.println(a.getPart().getName() + " @ " + a.getSourcePartName().getName() );
 			}
+		}
+		
+		public boolean isEmpty() {
+			
+			return partsAdded.isEmpty() && partsDeleted.isEmpty() && partsModified.isEmpty();
+		}
+	}
+
+	public static class Alteration {
+		
+		// Required in order to apply patch
+		private PartName sourcePartName;
+		public PartName getSourcePartName() {
+			return sourcePartName;
+		}
+
+		private org.docx4j.xmlPackage.Part part;
+		public org.docx4j.xmlPackage.Part getPart() {
+			return part;
+		}
+
+		
+//		public Alteration(String point, org.docx4j.xmlPackage.Part part) {
+//			this.point = point;
+//			this.part = part;
+//		}
+		
+		public Alteration(RelationshipsPart rp, org.docx4j.xmlPackage.Part part) {
+			this.sourcePartName = rp.getSourceP().getPartName();
+			this.part = part;
+		}
+		public Alteration(PartName sourcePartName, org.docx4j.xmlPackage.Part part) {
+			this.sourcePartName = sourcePartName;
+			this.part = part;
 		}
 		
 	}

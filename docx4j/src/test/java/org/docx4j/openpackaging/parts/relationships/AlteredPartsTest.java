@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.AlteredParts.Alterations;
@@ -18,9 +19,11 @@ public class AlteredPartsTest {
 	protected static Logger log = Logger.getLogger(AlteredPartsTest.class);
 	
 	private static String resourceDir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
-	
 	/* All of the docx in resourceDir have had their docprops parts stripped
 	 * (using StripParts).  */
+	
+	static boolean save = true; // so we can check that Word can actually open the result
+	static String DIR_OUT = System.getProperty("user.dir") + "/src/test/";
 	
 	
 	/**
@@ -306,6 +309,67 @@ public class AlteredPartsTest {
 		assertTrue( alterations.getPartsAdded().size()==0 );
 		assertTrue( alterations.getPartsModified().size()==2 );
 		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
+	}
+
+	@Test
+	public void testPatcherModsAndDeletions() throws Exception {
+		// document.xml and rels should be different,
+		// and headers added: doc now contains 2 x headers, 0 x footers, endnotes, and footnotes
+		// Interesting that the number of header parts is reduced (and content of header1.xml changed)
+
+		log.warn("\ntestPatcherDeletions\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "header-section2.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "header-simple.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		alterations.debug();
+				
+		assertTrue( alterations.getPartsAdded().size()==0 ); // one of the existing header parts is re-purposed
+		assertTrue( alterations.getPartsModified().size()==4 );
+		assertTrue( alterations.getPartsDeleted().size()==4 );
+		
+		Patcher.apply(otherPackage, alterations);
+		
+		// How best to test?  For now, by inspection ..
+		if (save) {		
+			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+		}
+		
+	}
+
+	@Test
+	public void testPatcherAdditions() throws Exception {
+		// the affected header should be different,
+		// plus image + header rels
+
+		log.warn("\ntestPatcherAdditions\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "header-simple-plus-image.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "header-simple.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		alterations.debug();
+				
+		assertTrue( alterations.getPartsAdded().size()==2 );
+		assertTrue( alterations.getPartsModified().size()==1 );
+		assertTrue( alterations.getPartsDeleted().size()==0 );
+		
+		Patcher.apply(otherPackage, alterations);
+		
+		// How best to test?  For now, by inspection ..
+		if (save) {		
+			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+			saver.save(DIR_OUT+"patch-producing-header-simple-plus-image.docx");
+		}
 		
 	}
 	

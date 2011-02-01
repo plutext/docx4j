@@ -365,7 +365,7 @@ public class OpenDoPEHandler {
         		}
         		i++;
         		
-        	} while (rp.isATarget(proposed));
+        	} while (rp.getRel(proposed)!=null);
         	
         	return proposed;
         	
