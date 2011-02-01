@@ -31,6 +31,7 @@ import java.util.Iterator;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerFactory;
@@ -199,13 +200,8 @@ public class FlatOpcXmlImporter  {
 				return null;
 			}
 			
-			org.w3c.dom.Element el = part.getXmlData().getAny();
-			
-			rp = new RelationshipsPart(new PartName(partName) );
-			// PartName already starts with a '/', so no need to add it
+			rp = createRelationshipsPart(part);
 			rp.setSourceP(p);
-			
-			rp.setRelationships( (Relationships)rp.unmarshal(el) );
 						
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -216,6 +212,15 @@ public class FlatOpcXmlImporter  {
 		return rp;
 	}
 
+	public static RelationshipsPart createRelationshipsPart(org.docx4j.xmlPackage.Part part) throws InvalidFormatException, JAXBException {
+		
+		RelationshipsPart rp = new RelationshipsPart( new PartName(part.getName() ) );
+		org.w3c.dom.Element el = part.getXmlData().getAny();		
+		rp.setRelationships( (Relationships)rp.unmarshal(el) );
+		
+		return rp;		
+	}
+	
 	/* recursively 
 	(i) create new Parts for each thing listed
 	in the relationships
@@ -369,7 +374,17 @@ public class FlatOpcXmlImporter  {
 	}
 	
 	
-
+	public Part getRawPart(ContentTypeManager ctm, String resolvedPartUri, Relationship rel)
+	throws Docx4JException {
+		
+		org.docx4j.xmlPackage.Part pkgPart = parts.get(resolvedPartUri);
+		if (pkgPart == null) {
+			log.error("Missing part: " + resolvedPartUri);
+			return null;
+		}
+		
+		return getRawPart(ctm, pkgPart, rel);
+	}
 	/**
 	 * Get a Part (except a relationships part), but not its relationships part
 	 * or related parts.  Useful if you need quick access to just this part.
@@ -383,22 +398,15 @@ public class FlatOpcXmlImporter  {
 	 * @throws URISyntaxException
 	 * @throws InvalidFormatException
 	 */
-	public Part getRawPart(ContentTypeManager ctm, String resolvedPartUri, Relationship rel)
+	public static Part getRawPart(ContentTypeManager ctm, org.docx4j.xmlPackage.Part pkgPart, Relationship rel)
 			throws Docx4JException {
 		
 		Part part = null;
 		
 		try {
-			org.docx4j.xmlPackage.Part pkgPart = parts.get(resolvedPartUri);
 			org.w3c.dom.Element el = null; 
 
 			try {
-				
-				
-				if (pkgPart == null) {
-					log.error("Missing part: " + resolvedPartUri);
-					return null;
-				}
 				
 				String contentType = pkgPart.getContentType();
 				log.debug("contentType: " + contentType);
@@ -409,10 +417,12 @@ public class FlatOpcXmlImporter  {
 					el = pkgPart.getXmlData().getAny();
 				}
 								
-				 part = ctm.newPartForContentType(contentType, resolvedPartUri,rel);
+//				 part = ctm.newPartForContentType(contentType, resolvedPartUri,rel);
+				 part = ctm.newPartForContentType(contentType, pkgPart.getName(), rel);
 				 part.setContentType( new ContentType(contentType) );
 				 
-				 ctm.addOverrideContentType(new java.net.URI(resolvedPartUri), 
+//				 ctm.addOverrideContentType(new java.net.URI(resolvedPartUri), 
+				 ctm.addOverrideContentType(new java.net.URI(pkgPart.getName()), 
 						 contentType);
 				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
@@ -563,7 +573,7 @@ public class FlatOpcXmlImporter  {
 					// return an instance of one of the above, or throw an
 					// Exception.
 					
-					log.error("No suitable part found for: " + resolvedPartUri);
+					log.error("No suitable part found for: " + pkgPart.getName());
 					part = null;					
 				}
 			} catch (java.lang.IllegalArgumentException e) {
@@ -577,8 +587,8 @@ public class FlatOpcXmlImporter  {
 			} catch (PartUnrecognisedException e) {
 
 				// Try to get it as a binary part
-				log.error("Part unrecognised: " + resolvedPartUri);
-				part = new BinaryPart( new PartName(resolvedPartUri)); // /?
+				log.error("Part unrecognised: " + pkgPart.getName());
+				part = new BinaryPart( new PartName(pkgPart.getName())); // /?
 				((BinaryPart)part).setBinaryData( pkgPart.getBinaryData() );
 			}
 		} catch (Exception ex) {
