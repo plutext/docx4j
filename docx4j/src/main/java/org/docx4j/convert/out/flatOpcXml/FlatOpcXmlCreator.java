@@ -84,8 +84,6 @@ public class FlatOpcXmlCreator implements Output {
 	public FlatOpcXmlCreator(OpcPackage p) {
 		
 		this.packageIn = p;
-		
-		factory = new org.docx4j.xmlPackage.ObjectFactory(); 
 	}
 		
 	// The package to save
@@ -96,7 +94,7 @@ public class FlatOpcXmlCreator implements Output {
 	 */
 	private HashMap<String, String> handled = new HashMap<String, String>();
 	
-	private static org.docx4j.xmlPackage.ObjectFactory factory;
+	private static org.docx4j.xmlPackage.ObjectFactory factory = new org.docx4j.xmlPackage.ObjectFactory();
 	
 	private org.docx4j.xmlPackage.Package pkgResult;
 	
@@ -122,7 +120,7 @@ public class FlatOpcXmlCreator implements Output {
 			String partName = "_rels/.rels";
 			RelationshipsPart rp = packageIn.getRelationshipsPart();
 			
-			saveRawXmlPart(rp, "/" + partName );  // '/' necessary for Xml Pkg format.
+//			saveRawXmlPart(rp, "/" + partName );  // '/' necessary for Xml Pkg format.
 			
 			
 			// 5. Now recursively 
@@ -144,35 +142,36 @@ public class FlatOpcXmlCreator implements Output {
 	}
 
 
+//	public void  saveRawXmlPart(Part part) throws Docx4JException {
+//		
+//		// This is a neater signature and should be used where possible!
+//		
+//		
+//		// Don't drop leading "/" for XmlPackage representation.
+//		// It is needed if Word is to consume the result.
+//		//String partName = part.getPartName().getName().substring(1);
+//		
+//		saveRawXmlPart(part);
+//	}
+
 	public void  saveRawXmlPart(Part part) throws Docx4JException {
 		
-		// This is a neater signature and should be used where possible!
-		
-		String partName = part.getPartName().getName();
-		
-		// Don't drop leading "/" for XmlPackage representation.
-		// It is needed if Word is to consume the result.
-		//String partName = part.getPartName().getName().substring(1);
-		
-		saveRawXmlPart(part, partName);
-	}
-
-	public void  saveRawXmlPart(Part part, String partName) throws Docx4JException {
-		
-		org.docx4j.xmlPackage.Part partResult = createRawXmlPart(part, partName);
+		org.docx4j.xmlPackage.Part partResult = createRawXmlPart(part);
         pkgResult.getPart().add(partResult);
 		
 	}
 	
-	public static org.docx4j.xmlPackage.Part createRawXmlPart(Part part, String partName) throws Docx4JException {
+	public static org.docx4j.xmlPackage.Part createRawXmlPart(Part part) throws Docx4JException {
 		
+		String partName = part.getPartName().getName();
         org.docx4j.xmlPackage.Part partResult = factory.createPart();
         
         if (partName.startsWith("/")) {       
         	partResult.setName(partName);
         } else {
-        	log.error("@pkg:name must start with '/', or Word 2007 won't open it");
-        	throw new Docx4JException("@pkg:name must start with '/', or Word 2007 won't open it");
+        	partResult.setName("/" + partName);
+//        	log.error("@pkg:name must start with '/', or Word 2007 won't open it");
+//        	throw new Docx4JException("@pkg:name must start with '/', or Word 2007 won't open it");
         }
         String ct = part.getContentType();
         if (ct == null) {
@@ -364,7 +363,8 @@ public class FlatOpcXmlCreator implements Output {
 			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
 			log.info("Cf constructed name " + relPart );
 			
-			saveRawXmlPart( rrp, "/" + relPart );  // '/' necessary for Xml Pkg format.
+			saveRawXmlPart( rrp);
+			//, "/" + relPart );  // '/' necessary for Xml Pkg format.
 			addPartsFromRelationships( rrp );
 		} else {
 			log.info("No relationships for " + resolvedPartUri );					
@@ -373,6 +373,15 @@ public class FlatOpcXmlCreator implements Output {
 	
 	protected void saveRawBinaryPart(Part part) throws Docx4JException {
 
+		
+		org.docx4j.xmlPackage.Part partResult = createRawBinaryPart(part);
+        pkgResult.getPart().add(partResult);
+
+		
+	}
+	
+	public static org.docx4j.xmlPackage.Part createRawBinaryPart(Part part) throws Docx4JException {
+		
 		String resolvedPartUri = part.getPartName().getName();
 		
 		// Don't drop leading "/" for XmlPackage representation.
@@ -384,7 +393,6 @@ public class FlatOpcXmlCreator implements Output {
         org.docx4j.xmlPackage.Part partResult = factory.createPart();
         partResult.setName(resolvedPartUri);
         partResult.setContentType( part.getContentType() );
-        pkgResult.getPart().add(partResult);
 
 		try {
 
@@ -400,10 +408,10 @@ public class FlatOpcXmlCreator implements Output {
 		} catch (Exception e ) {
 			throw new Docx4JException("Failed to put binary part", e);			
 		}
-		
+
 		log.info( "PUT SUCCESS: " + resolvedPartUri);		
-		
-	}
+		return partResult;
+	}	
 	
 	/* It is sometimes useful to wrap a part in an appropriate pkg:part */
 	public static String wrapInXmlPart(String xml, String partName, String contentType) {

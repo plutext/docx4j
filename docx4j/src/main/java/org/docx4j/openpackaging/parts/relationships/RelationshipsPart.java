@@ -154,7 +154,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	// relative targets
 
 	public RelationshipsPart() throws InvalidFormatException {
-		super(new PartName("/rels/.rels"));
+		super(new PartName("/_rels/.rels"));
 		init();
 	}
 	
@@ -613,8 +613,10 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	
 	 /** Remove all parts from this relationships
 	 *   part */ 
-	public void removeParts() {
+	public List<PartName> removeParts() {
 
+		List<PartName> removedParts = new ArrayList<PartName>();
+		
 		// Make a list in order to avoid concurrent modification exception
 		java.util.ArrayList<Relationship> relationshipsToGo = new java.util.ArrayList<Relationship>();
 		for (Relationship r : jaxbElement.getRelationship() ) {
@@ -629,7 +631,9 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 
 				log.info("Removing part: " + resolvedPartUri);
 
-				removePart(new PartName(resolvedPartUri));
+				removedParts.addAll(
+						removePart(new PartName(resolvedPartUri)) );
+				
 			} catch (URISyntaxException e) {
 				log.error("Cannot convert " + r.getTarget()
 						+ " in a valid relationship URI-> ignored", e);
@@ -639,6 +643,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			}
 		}
 	
+		return removedParts;
 	}
 	
 	/**
@@ -651,9 +656,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @param partName
 	 *            The part name of the part to remove.
 	 */
-	public void removePart(PartName partName) {
+	public List<PartName> removePart(PartName partName) {
 		
 		log.info("trying to removePart " + partName.getName() );
+		
+		List<PartName> removedParts = new ArrayList<PartName>();
 		
 		if (partName == null)
 			throw new IllegalArgumentException("partName was null");
@@ -662,39 +669,12 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 		if (part!=null) {
 
-			// Remove the relationship for which it is a target from here
-			// Throw an error if this can't be found!
-			Relationship relToBeRemoved = null;
-//			for (Relationship rel : relationshipsByID.values() ) {
-			for (Relationship rel : jaxbElement.getRelationship() ) {
-				
-				if (rel.getTargetMode() !=null
-						&& rel.getTargetMode().equals("External") ) {
-					// This method can't be used to remove external resources
-					continue;
-				}
-							
-				if (isTarget(partName, rel) ) {
-					// was rel.getTargetURI()
-					
-					log.info("True - will delete relationship with id " + rel.getId() 
-							+ " and target " + rel.getTarget());
-					relToBeRemoved = rel; // Avoid java.util.ConcurrentModificationException
-					break;
-				}
-				
-			}
-			if (relToBeRemoved==null) {
-				// The Part may be in the package somewhere, but its not
-				// a target of this relationships part!
-				throw new IllegalArgumentException(partName + " is not a target of " + this.partName );
-			} else {
-				removeRelationship(relToBeRemoved);				
-			}
-						
+			removeRelationship(partName);
+			
 			// Remove parts it references
 			if (part.getRelationshipsPart()!=null) {
-				part.getRelationshipsPart().removeParts();
+				removedParts.addAll(
+						part.getRelationshipsPart().removeParts() );
 				
 				// part.setRelationships(null);  // Unnecessary
 			}			
@@ -703,9 +683,12 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 				// TODO			
 			
 			// Delete the specified part from the package.
-			getPackage().getParts().remove(partName);						
+			getPackage().getParts().remove(partName);
+			removedParts.add(partName);
 		}
 
+		return removedParts;
+		
 //		this.isDirty = true;
 	}
 	
@@ -714,22 +697,22 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @param partName
 	 * @return
 	 */
-	public boolean isATarget(PartName partName) {
+	public Relationship getRel(PartName partName) {
 		
 		for (Relationship rel : jaxbElement.getRelationship() ) {
 			
-			// TODO: come back to this
-			if (rel.getTargetMode() !=null
-					&& rel.getTargetMode().equals("External") ) {
-				// This method can't be used to remove external resources
-				continue;
-			}
+//			// TODO: come back to this
+//			if (rel.getTargetMode() !=null
+//					&& rel.getTargetMode().equals("External") ) {
+//				// This method can't be used to remove external resources
+//				continue;
+//			}
 						
 			if (isTarget(partName, rel) ) {
-				return true;
+				return rel;
 			}
 		}
-		return false;		
+		return null;		
 	}	
 	
 	/**
@@ -743,15 +726,22 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		URI resolvedTargetURI = null;
 
 		try {
-			resolvedTargetURI = org.docx4j.openpackaging.URIHelper
-					.resolvePartUri(sourceP.partName.getURI(), new URI(
-							rel.getTarget()));
+			if (sourceP==null) {
+				// This rels part isn't attached!
+				resolvedTargetURI = org.docx4j.openpackaging.URIHelper
+				.resolvePartUri(new URI(inferSourcePartName(this.partName.getName())), new URI(
+						rel.getTarget()));				
+			} else {
+				resolvedTargetURI = org.docx4j.openpackaging.URIHelper
+						.resolvePartUri(sourceP.partName.getURI(), new URI(
+								rel.getTarget()));
+			}
 		} catch (URISyntaxException e) {
 			log.error("Cannot convert " + rel.getTarget()
 					+ " in a valid relationship URI-> ignored", e);
 		}		
 
-		log.info("Comparing " + resolvedTargetURI + " == " + partName.getName());
+		log.debug("Comparing " + resolvedTargetURI + " == " + partName.getName());
 		
 		return partName.getName().equals(resolvedTargetURI.toString()) ; 
 		
@@ -770,6 +760,39 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 		jaxbElement.getRelationship().remove(rel);
 
+	}
+	
+	public void removeRelationship(PartName partName) {
+		
+		// Remove the relationship for which it is a target from here
+		// Throw an error if this can't be found!
+		Relationship relToBeRemoved = null;
+		for (Relationship rel : jaxbElement.getRelationship() ) {
+			
+			if (rel.getTargetMode() !=null
+					&& rel.getTargetMode().equals("External") ) {
+				// This method can't be used to remove external resources
+				continue;
+			}
+						
+			if (isTarget(partName, rel) ) {
+				// was rel.getTargetURI()
+				
+				log.info("True - will delete relationship with id " + rel.getId() 
+						+ " and target " + rel.getTarget());
+				relToBeRemoved = rel; // Avoid java.util.ConcurrentModificationException
+				break;
+			}
+			
+		}
+		if (relToBeRemoved==null) {
+			// The Part may be in the package somewhere, but its not
+			// a target of this relationships part!
+			throw new IllegalArgumentException(partName + " is not a target of " + this.partName );
+		} else {
+			removeRelationship(relToBeRemoved);				
+		}
+		
 	}
 	
 	/**
@@ -939,5 +962,32 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		}		
 		return null;
 	}
+	
+	/**
+	 * Infer the source part's name from this rels part name.
+	 * eg word/_rels/document.xml.rels gives word/document.xml 
+	 * and /_rels/.rels gives /
+	 * @param relationshipsPartName
+	 * @return
+	 */
+	static public String inferSourcePartName(String relationshipsPartName) {
+
+		String result = relationshipsPartName;
+		
+		if (result.endsWith(".rels"))
+			result = result.substring(0, result.length()-5);
+		
+		if (result.contains("_rels")) 
+			result = result.substring(0, result.indexOf("_rels")) + result.substring(result.indexOf("_rels")+6);
+		
+		return result;
+
+	}
+	
+//	public static void main(String[] args) throws Exception {
+//		
+//		System.out.println(inferSourcePartName("word/_rels/document.xml.rels"));
+//		System.out.println(inferSourcePartName("/_rels/.rels"));
+//	}
 	
 }
