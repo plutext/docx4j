@@ -37,22 +37,23 @@ public class AlteredParts {
 	
 	private static Logger log = Logger.getLogger(AlteredParts.class);
 		
-	public static List<Part> start(
+	public static Alterations start(
 									WordprocessingMLPackage thisPackage, 
 									WordprocessingMLPackage otherPackage)
 			throws Docx4JException {
 
-		List<Part> alteredParts = new ArrayList<Part>();
+//		List<Part> alteredParts = new ArrayList<Part>();
+		Alterations alterations = new Alterations();
 		
 		RelationshipsPart packageRels = thisPackage.getRelationshipsPart();
 		RelationshipsPart otherPackageRels = otherPackage.getRelationshipsPart();
 		
-		recurse(alteredParts, packageRels, otherPackageRels);
+		recurse(alterations, packageRels, otherPackageRels);
 
-		return alteredParts;
+		return alterations;
 	}	
 
-	public static void recurse(List<Part> alteredParts,
+	public static void recurse(Alterations alterations,
 			RelationshipsPart thisRP, RelationshipsPart otherRP)
 			throws Docx4JException {
 		
@@ -60,21 +61,19 @@ public class AlteredParts {
 
 		log.info("uniques -------");
 		List<Relationship> uniques = thisRP.uniqueToThis(otherRP);
-		addPartsForRels(alteredParts, uniques, thisRP  );		
+		addPartsForRels(alterations.getPartsAdded(), uniques, thisRP  );		
 
 		List<Relationship> missings = thisRP.uniqueToOther(otherRP);
+		addPartsForRels(alterations.getPartsDeleted(), missings, otherRP  );		
 		
 		// is this rels part itself altered?
-//		if (uniques.size()>0 || missings.size()>0) {
-//			alteredParts.add(thisRP);
-//		}
 		if (!thisRP.isContentEqual(otherRP)) {
-			alteredParts.add(thisRP);			
+			alterations.getPartsModified().add(thisRP);			
 		}
 		
 		log.info("content -------");
 		List<Relationship> altered = thisRP.differingContent(otherRP);
-		addPartsForRels(alteredParts, altered, thisRP  );	
+		addPartsForRels(alterations.getPartsModified(), altered, thisRP  );	
 		
 		// Now recurse all rels
 		log.info("recurse ------- ");
@@ -86,8 +85,10 @@ public class AlteredParts {
 				if (uniques.contains(r)) {
 					// add tree, including any external parts	
 					// (we already have the part itself)
-					addTree(alteredParts, thisRP.getPart(r).getRelationshipsPart() );
+					addTree(alterations.getPartsAdded(), thisRP.getPart(r).getRelationshipsPart() );
 										
+				} else if (missings.contains(r)) {
+					addTree(alterations.getPartsDeleted(), thisRP.getPart(r).getRelationshipsPart() );
 				} else {
 					// its present in both trees.
 					// irrespective of whether content of part is the same, content of a rel could still have changed
@@ -95,15 +96,23 @@ public class AlteredParts {
 					Part otherPart = otherRP.getPart( 
 							RelationshipsPart.getRelationshipByTarget(otherRP, r.getTarget()) );
 					
-					if (thisPart.getRelationshipsPart()!=null) {
+					if (thisPart.getRelationshipsPart()==null) {
+						
+						if (otherPart.getRelationshipsPart()!=null) {
+							// add tree, including any external parts	
+							alterations.getPartsDeleted().add(thisPart.getRelationshipsPart());												
+							addTree(alterations.getPartsDeleted(), thisPart.getRelationshipsPart() );
+						}
+						
+					} else {
 						
 						if (otherPart.getRelationshipsPart()==null) {
 							// add tree, including any external parts	
-							alteredParts.add(thisPart.getRelationshipsPart());												
-							addTree(alteredParts, thisPart.getRelationshipsPart() );
+							alterations.getPartsAdded().add(thisPart.getRelationshipsPart());												
+							addTree(alterations.getPartsAdded(), thisPart.getRelationshipsPart() );
 							
 						} else {
-							recurse(alteredParts, thisPart.getRelationshipsPart(), otherPart.getRelationshipsPart());
+							recurse(alterations, thisPart.getRelationshipsPart(), otherPart.getRelationshipsPart());
 						}
 						
 					}
@@ -113,13 +122,13 @@ public class AlteredParts {
 		}
 	}
 
-	private static void addPartsForRels(List<Part> alteredParts, List<Relationship> rels, RelationshipsPart rp  ) {
+	private static void addPartsForRels(List<Part> list, List<Relationship> rels, RelationshipsPart rp  ) {
 		for( Relationship r : rels) {
 			if (r.getTargetMode() !=null && r.getTargetMode().equals("External") ) {
 				log.debug( r.getTarget() + " is external");
 				// Have everything we need info wise in transmitting the rels part
 			} else {
-				alteredParts.add( rp.getPart(r) );
+				list.add( rp.getPart(r) );
 				log.debug("added part: " + r.getTarget() );								
 			}
 		}		
@@ -131,7 +140,7 @@ public class AlteredParts {
 	 * @param theseRels
 	 * @throws Docx4JException
 	 */
-	private static void addTree(List<Part> alteredParts,
+	private static void addTree(List<Part> list,
 			RelationshipsPart rp)
 			throws Docx4JException {
 		
@@ -142,14 +151,14 @@ public class AlteredParts {
 				log.debug( r.getTarget() + " is external");
 				// Have everything we need info wise in transmitting the rels part
 			} else {
-				alteredParts.add( rp.getPart(r) );
+				list.add( rp.getPart(r) );
 				log.debug("add tree: " + r.getTarget() );				
 				
 				// recurse
 				RelationshipsPart nextRP = rp.getPart(r).getRelationshipsPart();
 				if (nextRP!=null) {
-					alteredParts.add(nextRP);					
-					addTree(alteredParts, nextRP );
+					list.add(nextRP);					
+					addTree(list, nextRP );
 				}
 			}
 		}		
@@ -169,5 +178,40 @@ public class AlteredParts {
 //		
 //		start(thisPackage, otherPackage);
 //	}
+	
+	public static class Alterations {
+
+		private List<Part> partsAdded = new ArrayList<Part>();
+		private List<Part> partsDeleted = new ArrayList<Part>();
+		private List<Part> partsModified = new ArrayList<Part>();
+
+		public List<Part> getPartsAdded() {
+			return partsAdded;
+		}
+		public List<Part> getPartsDeleted() {
+			return partsDeleted;
+		}
+		public List<Part> getPartsModified() {
+			return partsModified;
+		}
+		
+		public void debug() {
+			System.out.println("- Additions -------");
+			for (Part p : partsAdded) {
+				System.out.println(p.partName.getName() );
+			}
+
+			System.out.println("- Modifications -------");
+			for (Part p : partsModified) {
+				System.out.println(p.partName.getName() );
+			}
+			
+			System.out.println("- Deletions -------");
+			for (Part p : partsDeleted) {
+				System.out.println(p.partName.getName() );
+			}
+		}
+		
+	}
 	
 }
