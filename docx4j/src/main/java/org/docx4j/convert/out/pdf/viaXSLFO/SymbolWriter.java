@@ -51,29 +51,29 @@ public class SymbolWriter extends ModelConverter {
 		private area. org.apache.fop.fonts.truetype.TTFFile contains a 
 		workaround where it maps those glyphs on the lower ascii:
 		
-		… if (encodingID == 0 && j >= 0xF020 && j <= 0xF0FF) {
+		if (encodingID == 0 && j >= 0xF020 && j <= 0xF0FF) {
 		//Experimental: Mapping 0xF020-0xF0FF to 0x0020-0x00FF
 		//Tested with Wingdings and Symbol TTF fonts which map their
 		//glyphs in the region 0xF020-0xF0FF.
 		int mapped = j - 0xF000;
-		…
+		
 		}
-		…
+		
 		The problem is that this workaround is only used if
-		…
+		
 		if (cmapRangeOffsets[i] != 0 && j != 65535) {
-		…
+		
 		but not if the rangeOffsets are zero. Several fonts (Wingdings2 v1.55, 
-		Wingdings3 v1.55, etc…) do have a rangeOffset of zero and the 
-		workaround isn’t applied (in the example it’s Wingdings3).
+		Wingdings3 v1.55, etc) do have a rangeOffset of zero and the 
+		workaround isn't applied (in the example its Wingdings3).
 				
 		So here we check if there is a glyph in the lower range, and if there 
-		isn’t it will output a glyph in the private area. 
+		isn't it will output a glyph in the private area. 
 		
-		What I don’t like about this solution, is that I haven’t found a way to 
+		What I don't like about this solution, is that I haven't found a way to 
 		output an explicit character reference in DOM (the ampersand
 		will get expanded) and if I output the character itself (like it is now), 
-		it works but the fo-file doesn’t look nice…
+		it works but the fo-file doesn't look nice.
 		
 		We have a patch for org.apache.fop.fonts.truetype.TTFFile 
 		which could be applied instead, but first, see
