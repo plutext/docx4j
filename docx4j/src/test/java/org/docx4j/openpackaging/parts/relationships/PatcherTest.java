@@ -2,10 +2,18 @@ package org.docx4j.openpackaging.parts.relationships;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -45,13 +53,232 @@ public class PatcherTest {
 		Context.getWmlObjectFactory(); 
 	}
 	
+	
 	@Test
-	public void testPatcherModsAndDeletions() throws Exception {
+	public void testSimpleDocx() throws Exception {
+		// Should return no differences
+		
+		log.warn("\ntestSimpleDocx\n");
+		
+		String inputfilepath = resourceDir + "paragraph-single.docx";
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+		
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+			
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+	}
+
+	@Test
+	public void testExtraParagraph() throws Exception {
+		// Only document.xml should be different
+
+		log.warn("\ntestExtraParagraph\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "paragraph-single.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "paragraph-two.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+
+	@Test
+	public void testHyperlink() throws Exception {
+		// document.xml and rels should be different,
+		// and styles, since hyperlink style is now in use
+
+		log.warn("\ntestHyperlink\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "hyperlink.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "paragraph-single.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+
+	@Test
+	public void testImageScaled() throws Exception {
+		// document.xml should be different,
+
+		log.warn("\ntestImageScaled\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "image-png1.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "image-png1-scaled.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+	
+	@Test
+	public void testImagesDifferentPng() throws Exception {
+		// document.xml and image part should be different,
+		// but rels unchanged
+
+		log.warn("\testImagesDifferentPng\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "image-png1.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "image-png2.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+
+	@Test
+	public void testImagesRelId() throws Exception {
+		// a jpg inserted before, so the png's relId is now different
+		// document.xml and rels should be different,
+		// and extra image reported
+		// Because we currently match images on name only, and
+		// png is now called image2.png, that has changed as well.
+
+		log.warn("\ntestImagesDifferentPng\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "images-jpg then png2.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "image-png2.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+
+	@Test
+	public void testImagesOrderSwapped() throws Exception {
+		// document.xml and rels should be different;
+		// Because we currently match images on name only, 
+		// both image names have changed as well.
+		
+
+		log.warn("\ntestImagesOrderSwapped\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "images-jpg then png2.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "images-png2 then jpg.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+
+	@Test
+	public void testHeaderAdded() throws Exception {
+		// document.xml and rels should be different,
+		// and headers added: Word adds 3 x headers, 3 x footers, endnotes, and footnotes
+		// plus header style
+
+		log.warn("\ntestHeaderAdded\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "header-simple.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "paragraph-single.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+
+	@Test
+	public void testHeaderAddedSection2() throws Exception {
 		// document.xml and rels should be different,
 		// and headers added: doc now contains 2 x headers, 0 x footers, endnotes, and footnotes
 		// Interesting that the number of header parts is reduced (and content of header1.xml changed)
 
-		log.warn("\ntestPatcherDeletions\n");
+		log.warn("\ntestHeaderAddedSection2\n");
 		
 		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "header-section2.docx"));
@@ -60,28 +287,25 @@ public class PatcherTest {
 		
 		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		alterations.debug();
-				
-		assertTrue( alterations.getPartsAdded().size()==0 ); // one of the existing header parts is re-purposed
-		assertTrue( alterations.getPartsModified().size()==4 );
-		assertTrue( alterations.getPartsDeleted().size()==4 );
-		
 		Patcher.apply(otherPackage, alterations);
 		
-		// How best to test?  For now, by inspection ..
-		if (save) {		
-			SaveToZipFile saver = new SaveToZipFile(otherPackage);
-			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
-		}
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
 		
 	}
 
 	@Test
-	public void testPatcherAdditions() throws Exception {
+	public void testHeaderImageAdded() throws Exception {
 		// the affected header should be different,
 		// plus image + header rels
 
-		log.warn("\ntestPatcherAdditions\n");
+		log.warn("\ntestHeaderImageAdded\n");
 		
 		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
 				new java.io.File(resourceDir + "header-simple-plus-image.docx"));
@@ -90,20 +314,92 @@ public class PatcherTest {
 		
 		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
 
-		alterations.debug();
-				
-		assertTrue( alterations.getPartsAdded().size()==2 );
-		assertTrue( alterations.getPartsModified().size()==1 );
-		assertTrue( alterations.getPartsDeleted().size()==0 );
-		
 		Patcher.apply(otherPackage, alterations);
 		
-		// How best to test?  For now, by inspection ..
-		// Documents should be identical though (except for [Content_Types.xml - consider that
-		if (save) {		
-			SaveToZipFile saver = new SaveToZipFile(otherPackage);
-			saver.save(DIR_OUT+"patch-producing-header-simple-plus-image.docx");
-		}
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+	
+	@Test
+	public void testComment() throws Exception {
+		// document.xml + rels + added comments part should be different,
+		// also styles
+
+		log.warn("\ntestComment\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "comments-one.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "paragraph-single.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+
+	@Test
+	public void testComment2() throws Exception {
+		// document.xml + comments part should be different
+
+		log.warn("\ntestComment2\n");
+		
+		WordprocessingMLPackage thisPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "comments-two.docx"));
+		WordprocessingMLPackage otherPackage = WordprocessingMLPackage.load(
+				new java.io.File(resourceDir + "comments-one.docx"));
+		
+		Alterations alterations = AlteredParts.start(thisPackage, otherPackage);
+
+		Patcher.apply(otherPackage, alterations);
+		
+//		if (save) {		
+//			SaveToZipFile saver = new SaveToZipFile(otherPackage);
+//			saver.save(DIR_OUT+"patch-producing-header-section2.docx");
+//		}
+		
+		assert(java.util.Arrays.equals(
+				marshallFlatOPC(thisPackage).toByteArray(), 
+				marshallFlatOPC(otherPackage).toByteArray() ));
+		
+	}
+		
+	private ByteArrayOutputStream marshallFlatOPC(WordprocessingMLPackage wmlPkg) throws JAXBException, Docx4JException {
+
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+		
+	   	// Create a org.docx4j.wml.Package object
+		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPkg);
+		org.docx4j.xmlPackage.Package pkg = worker.get();
+    	
+    	// Now marshall it
+		JAXBContext jc = Context.jcXmlPackage;
+		Marshaller marshaller=jc.createMarshaller();
+		
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		NamespacePrefixMapperUtils.setProperty(marshaller, 
+				NamespacePrefixMapperUtils.getPrefixMapper());	
+		
+		marshaller.marshal(pkg, baos);
+//		marshaller.marshal(pkg, System.out);
+		
+		return baos;
 		
 	}
 	

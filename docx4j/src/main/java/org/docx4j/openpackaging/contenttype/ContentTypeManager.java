@@ -48,6 +48,7 @@
 
 package org.docx4j.openpackaging.contenttype;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -65,6 +66,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -76,6 +78,7 @@ import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -808,5 +811,21 @@ public class ContentTypeManager  {
 		return null;
 	}
 */
+	
+    public boolean isContentEqual(ContentTypeManager other) throws Docx4JException {
+    	
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+    	ByteArrayOutputStream baos2 = new ByteArrayOutputStream(); 
+    	try {
+        	marshal(baos);
+			other.marshal(baos2);
+		} catch (JAXBException e) {
+			throw new Docx4JException("Error marshalling parts", e);
+		}
+    	
+    	return java.util.Arrays.equals(baos.toByteArray(), baos2.toByteArray());
+
+    }
+	
 	
 }

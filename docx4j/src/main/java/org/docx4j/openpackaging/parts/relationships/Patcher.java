@@ -19,6 +19,7 @@
  */
 package org.docx4j.openpackaging.parts.relationships;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import javax.xml.bind.JAXBException;
 import org.apache.log4j.Logger;
 import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
@@ -48,6 +50,14 @@ public class Patcher {
 	
 	public static void apply(WordprocessingMLPackage otherPackage, 
 			Alterations alterations) throws Docx4JException, JAXBException {
+		
+		if (alterations.getContentTypes()!=null) {
+			log.info("replacing [Content_Types].xml");
+			ContentTypeManager newCTM = new ContentTypeManager();
+			newCTM.parseContentTypesFile(
+					new ByteArrayInputStream(alterations.getContentTypes()));
+			otherPackage.setContentTypeManager(newCTM);
+		}
 		
 		if (alterations.isEmpty() ) return;
 		
