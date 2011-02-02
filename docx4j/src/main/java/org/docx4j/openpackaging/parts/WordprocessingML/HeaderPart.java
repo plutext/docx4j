@@ -21,15 +21,21 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import java.util.List;
+
+import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Hdr;
+import org.w3c.dom.Node;
 
 
 
@@ -57,6 +63,77 @@ public final class HeaderPart extends JaxbXmlPart<Hdr> {
 		setRelationshipType(Namespaces.HEADER);
 	}
 	
+	private Binder<Node> binder;
+	
+	
+	/**
+	 * Enables synchronization between XML infoset nodes and JAXB objects 
+	 * representing same XML document.
+	 * 
+	 * An instance of this class maintains the association between XML nodes
+	 * of an infoset preserving view and a JAXB representation of an XML document. 
+	 * Navigation between the two views is provided by the methods 
+	 * getXMLNode(Object) and getJAXBNode(Object) .
+	 * 
+	 * In theory, modifications can be made to either the infoset preserving view or 
+	 * the JAXB representation of the document while the other view remains
+	 * unmodified. The binder ought to be able to synchronize the changes made in
+	 * the modified view back into the other view using the appropriate
+	 * Binder update methods, #updateXML(Object, Object) or #updateJAXB(Object).
+	 * 
+	 * But JAXB doesn't currently work as advertised .. access to this
+	 * object is offered for advanced users on an experimental basis only.
+	 */
+	public Binder<Node> getBinder() {
+		
+		return binder;
+	}
+	
+	/**
+	 * Fetch JAXB Nodes matching an XPath (for example "//w:p").
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+	 * 
+	 * @param xpathExpr
+	 * @param refreshXmlFirst
+	 * @return
+	 * @throws JAXBException
+	 */	
+	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
+			throws JAXBException {
+		
+		return XmlUtils.getJAXBNodesViaXPath(binder, jaxbElement, xpathExpr, refreshXmlFirst);
+	}	
+
+	/**
+	 * Fetch JAXB Nodes matching an XPath (for example ".//w:p" - note the dot,
+	 * which is necessary for this sort of relative path).
+	 * 
+	 * If you have modified your JAXB objects (eg added or changed a 
+	 * w:p paragraph), you need to update the association. The problem
+	 * is that this can only be done ONCE, owing to a bug in JAXB:
+	 * see https://jaxb.dev.java.net/issues/show_bug.cgi?id=459
+	 * 
+	 * So this is left for you to choose to do via the refreshXmlFirst parameter.   
+
+	 * @param xpathExpr
+	 * @param someJaxbElement
+	 * @param refreshXmlFirst
+	 * @return
+	 * @throws JAXBException
+	 */
+	public List<Object> getJAXBNodesViaXPath(String xpathExpr, Object someJaxbElement, boolean refreshXmlFirst) 
+		throws JAXBException {
+
+		return XmlUtils.getJAXBNodesViaXPath(binder, someJaxbElement, xpathExpr, refreshXmlFirst);
+	}	
+	
+	
     /**
      * Unmarshal XML data from the specified InputStream and return the 
      * resulting content tree.  Validation event location information may
@@ -76,20 +153,34 @@ public final class HeaderPart extends JaxbXmlPart<Hdr> {
     	
 		try {
 			
-//			if (jc==null) {
-//				setJAXBContext(Context.jc);				
-//			}
-		    		    
-			Unmarshaller u = jc.createUnmarshaller();
-			
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			// InputStream to Document
+			javax.xml.parsers.DocumentBuilderFactory dbf 
+				= DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			org.w3c.dom.Document doc = dbf.newDocumentBuilder().parse(is);
 
-			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
-						
-			jaxbElement = (Hdr) u.unmarshal( is );
-							
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+			// 
+			binder = jc.createBinder();
+			
+			binder.setEventHandler(
+					new org.docx4j.jaxb.JaxbValidationEventHandler());
+			
+			jaxbElement =  (Hdr) binder.unmarshal( doc );
+			
+////			if (jc==null) {
+////				setJAXBContext(Context.jc);				
+////			}
+//		    		    
+//			Unmarshaller u = jc.createUnmarshaller();
+//			
+//			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
+//			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+//
+//			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
+//						
+//			jaxbElement = (Hdr) u.unmarshal( is );
+//							
+//			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
 
 		} catch (Exception e ) {
 			e.printStackTrace();
