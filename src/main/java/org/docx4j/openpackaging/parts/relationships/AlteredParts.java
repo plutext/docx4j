@@ -21,8 +21,11 @@
 package org.docx4j.openpackaging.parts.relationships;
 
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
@@ -56,12 +59,21 @@ public class AlteredParts {
 
 		Alterations alterations = new Alterations();
 		
+		// First, handle [Content_Types].xml
+		if (!thisPackage.getContentTypeManager().isContentEqual(otherPackage.getContentTypeManager())) {
+	    	ByteArrayOutputStream baos = new ByteArrayOutputStream(); 
+	    	try {
+				thisPackage.getContentTypeManager().marshal(baos);
+			} catch (JAXBException e) {
+				// Shouldn't happen
+				throw new Docx4JException("Can't marshall content type", e);
+			}
+		}
+		
+		// Second, handle parts
 		RelationshipsPart packageRels = thisPackage.getRelationshipsPart();
 		RelationshipsPart otherPackageRels = otherPackage.getRelationshipsPart();
-		
 		recurse(alterations, packageRels, otherPackageRels);
-		
-		// TODO: will you send each part as org.docx4j.xmlPackage.Part?
 
 		return alterations;
 	}	
@@ -199,6 +211,16 @@ public class AlteredParts {
 	
 	
 	public static class Alterations {
+		
+		// There is no Flat OPC part for [Content_Types].xml
+		// so its up to us to choose a representation
+		private byte[] contentTypes;
+		public void setContentTypes(ByteArrayOutputStream baos) {
+			contentTypes = baos.toByteArray();
+		}
+		public byte[] getContentTypes() {
+			return contentTypes;
+		}
 
 		private List<Alteration> partsAdded = new ArrayList<Alteration>();
 		private List<Alteration> partsDeleted = new ArrayList<Alteration>();
