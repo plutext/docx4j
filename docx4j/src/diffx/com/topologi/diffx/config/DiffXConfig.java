@@ -55,7 +55,12 @@ public final class DiffXConfig {
   /**
    * Indicates whether difference in prefixes should be reported.
    */
-  private boolean reportPrefixDifferences = false;  
+  private boolean reportPrefixDifferences = false;
+  /**
+   * Whether to tokenize on sentences or entire text blocks
+   */
+  private boolean tokenizeSentences = false;
+  private boolean tokenizeBlocks = false;
 
 // class attributes ---------------------------------------------------------------------------
 
@@ -120,7 +125,15 @@ public final class DiffXConfig {
       this.isNamespaceAware = true;
   }
 
-  /**
+  public void setTokenizeBlocks(boolean tokenizeBlocks) {
+    this.tokenizeBlocks = tokenizeBlocks;
+  }
+
+  public void setTokenizeSentences(boolean tokenizeSentences) {
+    this.tokenizeSentences = tokenizeSentences;
+  }
+
+    /**
    * Indicates whether the differences in white spaces should be ignored or not.
    * 
    * @return <code>true</code> to ignore differences in white spaces;
@@ -160,4 +173,11 @@ public final class DiffXConfig {
     return this.reportPrefixDifferences;
   }
 
+  public boolean isTokenizeSentences() {
+    return tokenizeSentences;
+  }
+
+  public boolean isTokenizeBlocks() {
+    return tokenizeBlocks;
+  }
 }
