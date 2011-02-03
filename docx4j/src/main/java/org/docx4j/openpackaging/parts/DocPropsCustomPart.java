@@ -198,7 +198,7 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
      */
     public int getNextPid() {
     	
-    	int highestSeen = 0;
+    	int highestSeen = 1; // Lowest number Word 2007 seems to like is 2 (!)
     	
     	org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)getJaxbElement();
 		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {			
