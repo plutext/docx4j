@@ -691,13 +691,21 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 //		this.isDirty = true;
 	}
+
+	/**
+	 * @see getRel
+	 */
+	@Deprecated // introduced in 1295, and used in MergeDocx v1.0-1.1
+	public boolean isATarget(PartName partName) {
+		return (getRel(partName)!=null);
+	}
 	
 	/**
 	 * Is partname a target of any of these rels?
 	 * @param partName
 	 * @return
 	 */
-	public Relationship getRel(PartName partName) {
+	public Relationship getRel(PartName partName) { // introduced after 2.6.0
 		
 		for (Relationship rel : jaxbElement.getRelationship() ) {
 			
@@ -721,7 +729,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @param rel
 	 * @return
 	 */
-	public boolean isTarget(PartName partName, Relationship rel) {
+	public boolean isTarget(PartName partName, Relationship rel) { // introduced for 2.6.0, in 1295
 		
 		URI resolvedTargetURI = null;
 
