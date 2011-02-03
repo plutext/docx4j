@@ -57,6 +57,12 @@ public final class TokeniserFactory {
    * @return The open element event from the uri and name given.
    */
   public TextTokeniser makeTokeniser(CharSequence text) {
+
+    if (config.isTokenizeBlocks())
+      return new TextTokeniserSingleBlock(text);
+    if (config.isTokenizeSentences())
+      return new TextTokeniserSentence(text);
+
     switch(tokeniserChoice) {
     case 0: // consider + preserve
       return new TextTokeniserByWord(text);
