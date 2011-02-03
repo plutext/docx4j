@@ -296,19 +296,11 @@ public class LoadFromZipNG extends Load {
 	}
 
 	private static InputStream getInputStreamFromZippedPart(HashMap<String, ByteArray> partByteArrays,
-			String partName) 
-	//private static InputStream getInputStreamFromZippedPart(ZipFile zf, String partName) 
-		throws IOException, NullPointerException {
+			String partName) throws IOException {
 		
-		InputStream in = null;
-		//in = zf.getInputStream( zf.getEntry(partName ) );
-		try {
-			in = partByteArrays.get(partName).getInputStream();
-		} catch (NullPointerException  npe) {
-			log.warn("Part " + partName + " was null");
-			throw npe;
-		}
-		return in;		
+        ByteArray bytes = partByteArrays.get(partName);
+        if (bytes == null) throw new IOException("part '" + partName + "' not found");
+		return bytes.getInputStream();
 	}
 	
 		
