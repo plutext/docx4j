@@ -21,7 +21,9 @@
 package org.xlsx4j.samples;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
@@ -29,14 +31,24 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.SpreadsheetML.SharedStrings;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.xlsx4j.sml.Cell;
+import org.xlsx4j.sml.Row;
+import org.xlsx4j.sml.STCellType;
+import org.xlsx4j.sml.SheetData;
+import org.xlsx4j.sml.Worksheet;
 
 
 public class PartsList {
 	
 	private static Logger log = Logger.getLogger(PartsList.class);						
 
+	private static List<WorksheetPart> worksheets = new ArrayList<WorksheetPart>();
+	
+	private static SharedStrings sharedStrings = null;
 	/**
 	 * @param args
 	 */
@@ -47,15 +59,36 @@ public class PartsList {
 			
 		// Open a document from the file system
 		// 1. Load the Package - .docx or Flat OPC .xml
-		org.docx4j.openpackaging.packages.OpcPackage wordMLPackage = org.docx4j.openpackaging.packages.OpcPackage.load(new java.io.File(inputfilepath));		
+		org.docx4j.openpackaging.packages.OpcPackage xlsxPkg = org.docx4j.openpackaging.packages.OpcPackage.load(new java.io.File(inputfilepath));		
 		
 		// List the parts by walking the rels tree
-		RelationshipsPart rp = wordMLPackage.getRelationshipsPart();
+		RelationshipsPart rp = xlsxPkg.getRelationshipsPart();
 		StringBuilder sb = new StringBuilder();
 		printInfo(rp, sb, "");
-		traverseRelationships(wordMLPackage, rp, sb, "    ");
+		traverseRelationships(xlsxPkg, rp, sb, "    ");
 		
 		System.out.println(sb.toString());
+
+		// Now lets print the cell content
+		for(WorksheetPart sheet: worksheets) {
+			System.out.println(sheet.getPartName().getName() );
+			Worksheet ws = sheet.getJaxbElement();
+			SheetData data = ws.getSheetData();
+			for (Row r : data.getRow() ) {
+				System.out.println("row " + r.getR() );				
+				for (Cell c : r.getC() ) {
+					if (c.getT().equals(STCellType.S)) {
+						System.out.println( "  " + c.getR() + " contains " +
+								sharedStrings.getJaxbElement().getSi().get(Integer.parseInt(c.getV())).getT()
+										);
+					} else {
+						// TODO: handle other cell types
+						System.out.println( "  " + c.getR() + " contains " + c.getV() );
+					}
+				}
+			}
+		}
+		
 	}
 	
 	public static void  printInfo(Part p, StringBuilder sb, String indent) {
@@ -68,6 +101,12 @@ public class PartsList {
 				sb.append(" containing JaxbElement:"  + o.getClass().getName() );
 			}
 		}
+		if (p instanceof WorksheetPart) {
+			worksheets.add((WorksheetPart)p);
+		} else if (p instanceof SharedStrings) {
+			sharedStrings = (SharedStrings)p;
+		}
+		
 	}
 	
 	/**
