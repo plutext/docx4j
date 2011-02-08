@@ -547,7 +547,7 @@ public class LoadFromZipNG extends Load {
 					try {
 						Unmarshaller u = Context.jc.createUnmarshaller();
 						Object o = u.unmarshal( is );						
-						System.out.println(o.getClass().getName());
+						log.debug(o.getClass().getName());
 						
 						PartName name = part.getPartName();
 						
