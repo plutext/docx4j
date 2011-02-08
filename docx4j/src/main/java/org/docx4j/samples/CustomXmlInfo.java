@@ -30,6 +30,7 @@ import javax.xml.bind.JAXBElement;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
@@ -57,8 +58,8 @@ public class CustomXmlInfo extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
+//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
 
 		}
 		
@@ -78,7 +79,7 @@ public class CustomXmlInfo extends AbstractSample {
 	}
 	
 	
-	public static void  printInfo(Part p, StringBuilder sb, String indent) {
+	public static void  printInfo(Part p, StringBuilder sb, String indent) throws Docx4JException {
 		
 		String relationshipType = "";
 		if (p.getSourceRelationship()!=null ) {
@@ -87,8 +88,10 @@ public class CustomXmlInfo extends AbstractSample {
 		
 //		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " + relationshipType );
 				
-		if (p instanceof CustomXmlDataStoragePart
-				|| p instanceof JaxbCustomXmlDataStoragePart) {
+		if (p instanceof CustomXmlDataStoragePart)  {
+			sb.append("\n" + indent + p.getClass().getName() + ": " + indent + p.getPartName().getName()  );	
+			sb.append("\n" + indent + "root element: " + ((CustomXmlDataStoragePart)p).getData().getDocument().getDocumentElement().getLocalName() );
+		} else if ( p instanceof JaxbCustomXmlDataStoragePart) {
 				sb.append("\n" + indent + p.getClass().getName() + ": " + indent + p.getPartName().getName()  );
 		} else if (p instanceof CustomXmlDataStoragePropertiesPart) {	
 			CustomXmlDataStoragePropertiesPart pp = (CustomXmlDataStoragePropertiesPart)p;
@@ -104,7 +107,7 @@ public class CustomXmlInfo extends AbstractSample {
 	
 	public static void traverseRelationships(org.docx4j.openpackaging.packages.OpcPackage wordMLPackage, 
 			RelationshipsPart rp, 
-			StringBuilder sb, String indent) {
+			StringBuilder sb, String indent) throws Docx4JException {
 		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
