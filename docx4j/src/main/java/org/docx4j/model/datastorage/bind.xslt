@@ -30,35 +30,59 @@
 
   <xsl:template match="w:sdt">  
   	<xsl:choose>
-  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
-		    <xsl:copy>
-		      <xsl:apply-templates select="w:sdtPr"/>
-		      <w:sdtContent>
-				<xsl:copy-of
-						select="java:org.docx4j.model.datastorage.BindingHandler.xpathInjectImage(
-									$wmlPackage,
-									$sourcePart,
-									$customXmlDataStorageParts,
-									string(w:sdtPr/w:dataBinding/@w:storeItemID),
-									string(w:sdtPr/w:dataBinding/@w:xpath),
-									string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-									local-name(..) )" />
-		      </w:sdtContent>
-		    </xsl:copy>  		  			
+  		<xsl:when test="w:sdtPr/w:dataBinding and not(w:sdtPr/w:richText) and not(w:sdtPr/w:docPartGallery)">
+  			<!--  honour w:dataBinding -->
+			<xsl:copy>
+			     <xsl:apply-templates select="w:sdtPr"/>
+			     
+			     <w:sdtContent>
+			     	<xsl:variable name="multiLine" select="w:sdtPr/w:text/@w:multiLine='1' or w:sdtPr/w:text/@w:multiLine='true' or w:sdtPr/w:text/@w:multiLine='yes'" /> 
+			     	
+				  	<xsl:choose>
+				  		<xsl:when test="w:sdtPr/w:picture">
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.xpathInjectImage(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										string(w:sdtPr/w:dataBinding/@w:storeItemID),
+										string(w:sdtPr/w:dataBinding/@w:xpath),
+										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..) )" />
+				  		</xsl:when>
+				  		<xsl:when test="w:sdtContent/w:p">
+				  			<w:p>
+				  				<!--  preserve existing w:pPr -->
+				  				<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
+				  				
+				  				<!--  create runs -->
+								<xsl:copy-of
+								select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+											$customXmlDataStorageParts,
+											string(w:sdtPr/w:dataBinding/@w:storeItemID),
+											string(w:sdtPr/w:dataBinding/@w:xpath),
+											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+											w:sdtPr/w:rPr,
+											$multiLine )" />
+							</w:p>
+				  		</xsl:when>
+				  		<xsl:otherwise>  <!--  run level --> 
+				  			<!--  can we insert a fragment ie multiple runs? --> 		
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+										$customXmlDataStorageParts,
+										string(w:sdtPr/w:dataBinding/@w:storeItemID),
+										string(w:sdtPr/w:dataBinding/@w:xpath),
+										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										w:sdtPr/w:rPr,
+										$multiLine )" />
+				  		</xsl:otherwise>  		
+				  	</xsl:choose>    
+			     </w:sdtContent>
+			     
+			</xsl:copy>  		  			
   		</xsl:when>
-  		<xsl:when test="w:sdtPr/w:dataBinding">
-		    <xsl:copy>
-		      <xsl:apply-templates select="w:sdtPr"/>
-	  		<!-- xsl:variable name="dummy" 
-	  			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('Entering bind mode')"/-->
-		      <xsl:apply-templates select="w:sdtContent" mode="bind">		      
-		      	<xsl:with-param name="storeItemID"  select="string(w:sdtPr/w:dataBinding/@w:storeItemID)" />
-	  			<xsl:with-param name="xpath"  select="string(w:sdtPr/w:dataBinding/@w:xpath)" />
-  				<xsl:with-param name="prefixMappings"  select="string(w:sdtPr/w:dataBinding/@w:prefixMappings)" />
-		      </xsl:apply-templates> 
-		    </xsl:copy>  		  			
-  		</xsl:when>
-  		<xsl:otherwise>
+  		<xsl:otherwise> <!--  no w:dataBinding, or one spec says to ignore -->  		
 		    <xsl:copy>
 		      <xsl:apply-templates select="@*|node()"/>
 		    </xsl:copy>  		
@@ -66,42 +90,6 @@
   	</xsl:choose>    
   </xsl:template>
 
-  <xsl:template match="@*"  mode="bind">
-    <xsl:copy>
-      <xsl:apply-templates select="@*"/>
-    </xsl:copy>
-  </xsl:template>
-  
-  <xsl:template match="w:*" mode="bind">  
-      	<xsl:param name="storeItemID" />
-		<xsl:param name="xpath" />
-		<xsl:param name="prefixMappings" />
-  		<!-- >xsl:variable name="dummy" 
-  			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:* bind')"/-->
-		    <xsl:copy>
-		      <xsl:apply-templates select="@*|node()" mode="bind">
-		      	<xsl:with-param name="storeItemID"  select="$storeItemID" />
-	  			<xsl:with-param name="xpath"  select="$xpath" />
-  				<xsl:with-param name="prefixMappings"  select="$prefixMappings" />
-		      </xsl:apply-templates> 
-		    </xsl:copy>  		  			
-  </xsl:template>
-  
-  <xsl:template match="w:t" mode="bind" priority="2">  
-      	<xsl:param name="storeItemID" />
-		<xsl:param name="xpath" />
-		<xsl:param name="prefixMappings" />
-  		<!-- >xsl:variable name="dummy" 
-  			select="java:org.docx4j.openpackaging.parts.CustomXmlDataStoragePart.log('In w:r bind')"/-->
-
-					<w:t><xsl:value-of
-						select="java:org.docx4j.model.datastorage.BindingHandler.xpathGetString(
-									$customXmlDataStorageParts,
-									$storeItemID,
-									$xpath,
-									$prefixMappings)" /></w:t>
-									
-  </xsl:template>
 
   <!-- Remove these, so missing data does not result
        in Click here to enter text in Word -->
