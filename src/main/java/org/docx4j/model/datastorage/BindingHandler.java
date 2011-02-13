@@ -3,8 +3,10 @@ package org.docx4j.model.datastorage;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -21,8 +23,12 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.wml.CTSimpleField;
+import org.docx4j.wml.RPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
 
 public class BindingHandler {
 	
@@ -96,6 +102,9 @@ public class BindingHandler {
 		}
 		
 		/**
+		 * Used by OpenDoPE handler, but not by bind.xslt anymore.
+		 * Not multiLine aware.
+		 * 
 		 * @param customXmlDataStorageParts
 		 * @param storeItemId
 		 * @param xpath
@@ -124,6 +133,118 @@ public class BindingHandler {
 			}
 		}
 
+		
+		/**
+		 */
+		public static DocumentFragment xpathGenerateRuns(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+				String storeItemId, String xpath, String prefixMappings,
+				NodeIterator rPrNodeIt, boolean multiLine) {
+			
+			/**
+			 * TODO test cases:
+			 * 
+			 * - multiline data, including cases which start/end with empty token
+			 * - multiline data with w:multiLine absent or set to 0 ie false
+			 * - cases with and without rPr
+			 * - inline and block level sdt
+			 */
+
+			CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+			if (part==null) {
+				log.error("Couldn't locate part by storeItemId " + storeItemId);
+				return null;
+			}
+
+			DocumentFragment docfrag = null; // = document.createDocumentFragment();
+			Document fragdoc = null;
+			
+			try {
+				String r = part.getData().xpathGetString(xpath, prefixMappings);
+				log.debug(xpath + " yielded result " + r);
+				
+				RPr rPr = null;
+				Node rPrNode = rPrNodeIt.nextNode();
+				if (rPrNode!=null) {
+					rPr = (RPr)XmlUtils.unmarshal(rPrNode);
+				}
+
+				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+				
+				StringTokenizer st = new StringTokenizer(r, "\n\r\f"); // tokenize on the newline character, the carriage-return character, and the form-feed character
+				
+				if (multiLine) {
+					// our docfrag may contain several runs
+					boolean firsttoken = true;
+					while (st.hasMoreTokens()) {						
+						String line = (String) st.nextToken();
+
+						org.docx4j.wml.R  run = factory.createR();		
+						if (rPr!=null) {
+							run.setRPr(rPr);
+						}
+						if (firsttoken) {
+							firsttoken = false;
+						} else {
+							run.getRunContent().add(factory.createBr());
+						}
+						org.docx4j.wml.Text text = factory.createText();
+						run.getRunContent().add(text);
+						if (line.startsWith(" ") || line.endsWith(" ") ) {
+							// TODO: tab character?
+							text.setSpace("preserve");
+						}
+						text.setValue(line);
+						
+						Document document = XmlUtils.marshaltoW3CDomDocument(run);
+						if (docfrag == null) { // will be for first line
+							fragdoc = document;
+							docfrag = document.createDocumentFragment();
+							docfrag.appendChild(document.getDocumentElement());
+						} else {
+							// try to avoid WRONG_DOCUMENT_ERR: A node is used in a different document than the one that created it.
+							// but  NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation. 
+							// at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.importNode
+							// docfrag.appendChild(fragdoc.importNode(document, true));
+							// so:
+							XmlUtils.treeCopy(document.getDocumentElement(), docfrag);
+						}
+					}
+					
+				} else {
+					// not multiline, so remove any CRLF in data;
+					// our docfrag wil contain a single run
+					StringBuilder sb = new StringBuilder();
+					while (st.hasMoreTokens()) {						
+						sb.append( st.nextToken() );
+					}
+					String line = sb.toString();
+					
+					org.docx4j.wml.R  run = factory.createR();		
+					if (rPr!=null) {
+						run.setRPr(rPr);
+					}
+					org.docx4j.wml.Text text = factory.createText();
+					run.getRunContent().add(text);
+					if (line.startsWith(" ") || line.endsWith(" ") ) {
+						// TODO: tab character?
+						text.setSpace("preserve");
+					}
+					text.setValue(line);
+					
+					Document document = XmlUtils.marshaltoW3CDomDocument(run);
+					docfrag = document.createDocumentFragment();
+					docfrag.appendChild(document.getDocumentElement());
+				}
+				
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
+			
+			return docfrag;			
+		}
+		
 		public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
 				JaxbXmlPart sourcePart,
 				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
