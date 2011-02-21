@@ -49,7 +49,7 @@ public interface SdtElement {
     public void setSdtEndPr(CTSdtEndPr value);
 
     
-    public SdtContent getSdtContent();
+    public SdtContent getContent();
     
 //    /**
 //     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.

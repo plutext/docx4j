@@ -123,10 +123,14 @@ public class SdtRun implements Child, SdtElement
      *     {@link CTSdtContentRun }
      *     
      */
-    public SdtContent getSdtContent() {
+    public CTSdtContentRun getSdtContent() {
         return sdtContent;
     }
 
+    public SdtContent getContent() {
+        return sdtContent;
+    }
+    
     /**
      * Sets the value of the sdtContent property.
      * 

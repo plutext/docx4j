@@ -127,6 +127,10 @@ public class CTSdtCell implements Child, SdtElement
         return sdtContent;
     }
 
+    public SdtContent getContent() {
+        return sdtContent;
+    }
+    
     /**
      * Sets the value of the sdtContent property.
      * 
