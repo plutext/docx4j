@@ -130,10 +130,14 @@ public class SdtBlock implements Child, SdtElement
      *     {@link SdtContentBlock }
      *     
      */
-    public SdtContent getSdtContent() {
+    public SdtContentBlock getSdtContent() {
         return sdtContent;
     }
 
+    public SdtContent getContent() {
+        return sdtContent;
+    }
+    
     /**
      * Sets the value of the sdtContent property.
      * 

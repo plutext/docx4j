@@ -124,10 +124,14 @@ public class CTSdtRow
      *     {@link CTSdtContentRow }
      *     
      */
-    public SdtContent getSdtContent() {
+    public CTSdtContentRow getSdtContent() {
         return sdtContent;
     }
 
+    public SdtContent getContent() {
+        return sdtContent;
+    }
+    
     /**
      * Sets the value of the sdtContent property.
      * 
