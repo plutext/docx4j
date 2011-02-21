@@ -388,8 +388,6 @@ public class FlatOpcXmlCreator implements Output {
 		// It is needed if Word is to consume the result.
 		//String resolvedPartUri = part.getPartName().getName().substring(1);
 
-		//InputStream bin = ((BinaryPart)part).getBinaryData();		
-		
         org.docx4j.xmlPackage.Part partResult = factory.createPart();
         partResult.setName(resolvedPartUri);
         partResult.setContentType( part.getContentType() );
@@ -398,10 +396,10 @@ public class FlatOpcXmlCreator implements Output {
 
 			partResult.setCompression("store");
 	        
-	        java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-	        bb.clear();
-	        byte[] bytes = new byte[bb.capacity()];
-	        bb.get(bytes, 0, bytes.length);
+            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
+            byte[] bytes = null;
+            bytes = new byte[bb.limit()];
+            bb.get(bytes);	        
 
 			partResult.setBinaryData( bytes );
 			
