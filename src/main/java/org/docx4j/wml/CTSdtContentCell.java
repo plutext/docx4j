@@ -58,7 +58,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "egContentCellContent"
 })
 public class CTSdtContentCell
-    implements Child
+    implements Child, SdtContent
 {
 
     @XmlElementRefs({
@@ -150,6 +150,11 @@ public class CTSdtContentCell
         }
         return this.egContentCellContent;
     }
+    
+    // implement our SdtContent interface
+    public List<Object> getContent() {
+    	return getEGContentCellContent();
+    }    
 
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
