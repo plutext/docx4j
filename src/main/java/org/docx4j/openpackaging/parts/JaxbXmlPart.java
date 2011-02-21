@@ -80,9 +80,14 @@ public abstract class JaxbXmlPart<E> extends Part {
 	}
 	
 	protected JAXBContext jc;
-	
 	public void setJAXBContext(JAXBContext jc) {
 		this.jc = jc;
+	}
+	/**
+	 * @since 2.7
+	 */
+	public JAXBContext getJAXBContext() {
+		return jc;
 	}
 	
 	
