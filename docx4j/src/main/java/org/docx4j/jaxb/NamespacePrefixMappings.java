@@ -178,6 +178,10 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/customXml")) {
     		return "ds";
     	}
+
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chart")) {
+    		return "c";
+    	}
     	
     	return suggestion;
     }
