@@ -60,7 +60,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "sdtContent")
 public class SdtContentBlock
-    implements Child
+    implements Child, SdtContent
 {
 	private static Logger log = Logger.getLogger(SdtContentBlock.class);	
 	
@@ -156,6 +156,11 @@ public class SdtContentBlock
         return this.egContentBlockContent;
     }
 
+    // implement our SdtContent interface
+    public List<Object> getContent() {
+    	return getEGContentBlockContent();
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 

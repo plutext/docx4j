@@ -59,7 +59,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "sdt")
 public class CTSdtRow
-    implements Child
+    implements Child, SdtElement
 {
 
     protected SdtPr sdtPr;
@@ -124,7 +124,7 @@ public class CTSdtRow
      *     {@link CTSdtContentRow }
      *     
      */
-    public CTSdtContentRow getSdtContent() {
+    public SdtContent getSdtContent() {
         return sdtContent;
     }
 

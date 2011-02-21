@@ -58,7 +58,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "paragraphContent"
 })
 public class CTSdtContentRun
-    implements Child
+    implements Child, SdtContent
 {
 
     @XmlElementRefs({
@@ -159,6 +159,11 @@ public class CTSdtContentRun
         return this.paragraphContent;
     }
 
+    // implement our SdtContent interface
+    public List<Object> getContent() {
+    	return getParagraphContent();
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 

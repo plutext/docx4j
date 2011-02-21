@@ -63,17 +63,17 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "sdtContent"
 })
 @XmlRootElement(name = "sdt")
-public class SdtBlock implements Child
+public class SdtBlock implements Child, SdtElement
 {
 
 	private static Logger log = Logger.getLogger(SdtBlock.class);		
 	
-    protected SdtPr sdtPr;
+	protected SdtPr sdtPr;
     protected CTSdtEndPr sdtEndPr;
     protected SdtContentBlock sdtContent;
     @XmlTransient
     private Object parent;
-
+    
     /**
      * Gets the value of the sdtPr property.
      * 
@@ -130,7 +130,7 @@ public class SdtBlock implements Child
      *     {@link SdtContentBlock }
      *     
      */
-    public SdtContentBlock getSdtContent() {
+    public SdtContent getSdtContent() {
         return sdtContent;
     }
 
@@ -200,7 +200,7 @@ public class SdtBlock implements Child
 	    		
 	    		if (o instanceof SdtBlock) { // A block level SDT - but this doesn't happen
 	    			log.debug("Interesting .. detected BLOCK level nested sdt: " + ((SdtBlock)o).sdtPr.getId().toString() );
-	    			sdtContent.replaceElement(o, ((SdtBlock)o).getSdtContent().getEGContentBlockContent() );
+	    			sdtContent.replaceElement(o, ((SdtBlock)o).getSdtContent().getContent() );
 	    			// need to refresh the list we are iterating
 	    			startAgain = true;
 	    			break;
@@ -247,7 +247,7 @@ public class SdtBlock implements Child
 	    		
 	    		if (o instanceof SdtRun) {  // This code path not used
 	    			log.debug(".. detected nested sdt " );
-	    			p.replaceElement(o, ((SdtRun)o).getSdtContent().getParagraphContent() );
+	    			p.replaceElement(o, ((SdtRun)o).getSdtContent().getContent() );
 	    			// need to refresh the list we are iterating
 	    			startAgain = true;
 	    			break;
@@ -256,7 +256,7 @@ public class SdtBlock implements Child
 	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtRun") ) {
 	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. detected SdtRun");
 	    				org.docx4j.wml.SdtRun sdtRun = (org.docx4j.wml.SdtRun)((JAXBElement)o).getValue();
-	    				p.replaceElement(o, sdtRun.getSdtContent().getParagraphContent() );
+	    				p.replaceElement(o, sdtRun.getSdtContent().getContent() );
 	    			} else {
 	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. not an sdt");	    				
 	    			}
