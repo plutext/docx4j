@@ -385,25 +385,15 @@ public class SaveToZipFile {
 		// Drop the leading '/'
 		String resolvedPartUri = part.getPartName().getName().substring(1);
 
-		//InputStream bin = ((BinaryPart)part).getBinaryData();		
-
 		try {
 	        // Add ZIP entry to output stream.
 	        out.putNextEntry(new ZipEntry(resolvedPartUri));
-			
-			// Copy the input stream to the output stream
-//			byte[] buffer = new byte[8192];
-//			int amount;
-//			while (( amount = bin.read(buffer)) >=0 ) {
-//				log.debug(amount);
-//				out.write(buffer, 0, amount);			
-//			}
-	        
-	        java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-	        bb.clear();
-	        byte[] bytes = new byte[bb.capacity()];
-	        bb.get(bytes, 0, bytes.length);
 	        	        
+            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
+            byte[] bytes = null;
+            bytes = new byte[bb.limit()];
+            bb.get(bytes);	        
+	        
 	        out.write( bytes );
 
 			// Complete the entry
