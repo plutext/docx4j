@@ -22,7 +22,7 @@ public class Chart  extends JaxbDmlPart<CTChartSpace> {
 	}
 
 	public Chart() throws InvalidFormatException {
-		super(new PartName("xl/charts/chart1.xml"));
+		super(new PartName("/word/charts/chart1.xml"));  // In a .xlsx could be "/xl/charts/chart1.xml"?
 		init();
 	}
 	
