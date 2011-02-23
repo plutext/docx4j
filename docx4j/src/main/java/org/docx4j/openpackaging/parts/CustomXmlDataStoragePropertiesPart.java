@@ -27,7 +27,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
 
-public final class CustomXmlDataStoragePropertiesPart extends JaxbXmlPart {
+public final class CustomXmlDataStoragePropertiesPart extends JaxbXmlPart<DatastoreItem> {
 	
 	public CustomXmlDataStoragePropertiesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
