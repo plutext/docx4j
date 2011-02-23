@@ -84,21 +84,26 @@
 package org.docx4j.model.listnumbering;
 
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.NumFmt;
 import org.docx4j.wml.NumberFormat;
-import org.docx4j.wml.Numbering;
-import org.docx4j.wml.PPrBase.NumPr;
 
 public class ListLevel {
 		
+	/* TODO 2011 02 23: in addition to having numbering in the 
+	 * Main document part, you can have numbering in other 
+	 * stories:
+	 *   - headers/footers
+	 *   - comments
+	 *   - footnotes/endnotes
+	 * This means that ListLevel should have independent counters
+	 * for each story, or the there should be a ListLevel defined
+	 * for each story! 
+	 * 
+	 */
+	
 	protected static Logger log = Logger.getLogger(ListLevel.class);
 	
 	private Lvl jaxbAbstractLvl;

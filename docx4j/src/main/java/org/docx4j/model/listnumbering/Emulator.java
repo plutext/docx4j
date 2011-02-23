@@ -106,6 +106,17 @@ public class Emulator {
 	/* There should be only one Emulator object per 
 	 * WordprocessingML package.  It is set on the 
 	 * numbering part.
+	 * 
+	 * TODO 2011 02 23: in addition to having numbering in the 
+	 * Main document part, you can have numbering in other 
+	 * stories:
+	 *   - headers/footers
+	 *   - comments
+	 *   - footnotes/endnotes
+	 * This means that ListLevel should have independent counters
+	 * for each story, or the there should be a ListLevel defined
+	 * for each story! 
+	 * 
 	 */
 	
 	protected static Logger log = Logger.getLogger(Emulator.class);
