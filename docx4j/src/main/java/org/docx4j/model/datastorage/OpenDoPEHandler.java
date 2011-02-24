@@ -371,13 +371,13 @@ public class OpenDoPEHandler {
         	
         }
 		
-public static void extensionMissing(Exception e) {
-	System.out.println("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
-	System.out.println("* You don't appear to have the MergeDocx paid extension,");
-	System.out.println("* which is necessary to merge docx, or process altChunk.");
-	System.out.println("* Purchases of this extension support the docx4j project.");
-	System.out.println("* Please visit www.plutext.com if you want to buy it.");
-}
+		public static void extensionMissing(Exception e) {
+			System.out.println("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
+			System.out.println("* You don't appear to have the MergeDocx paid extension,");
+			System.out.println("* which is necessary to merge docx, or process altChunk.");
+			System.out.println("* Purchases of this extension support the docx4j project.");
+			System.out.println("* Please visit www.plutext.com if you want to buy it.");
+		}
 		
 		private static void preprocessRun(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 			
