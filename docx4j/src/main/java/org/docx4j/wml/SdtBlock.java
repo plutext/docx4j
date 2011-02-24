@@ -63,7 +63,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "sdtContent"
 })
 @XmlRootElement(name = "sdt")
-public class SdtBlock implements Child, SdtElement
+public class SdtBlock implements SdtElement
 {
 
 	private static Logger log = Logger.getLogger(SdtBlock.class);		

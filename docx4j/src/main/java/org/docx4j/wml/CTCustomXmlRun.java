@@ -64,8 +64,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "customXmlPr",
     "paragraphContent"
 })
-public class CTCustomXmlRun
-    implements Child
+public class CTCustomXmlRun implements CTCustomXmlElement
 {
 
     protected CTCustomXmlPr customXmlPr;
@@ -120,7 +119,10 @@ public class CTCustomXmlRun
      *     
      */
     public CTCustomXmlPr getCustomXmlPr() {
-        return customXmlPr;
+        if(this.customXmlPr == null) {
+            this.customXmlPr = new CTCustomXmlPr();
+        }
+        return this.customXmlPr;
     }
 
     /**
@@ -189,6 +191,13 @@ public class CTCustomXmlRun
      * 
      */
     public List<Object> getParagraphContent() {
+        if (paragraphContent == null) {
+            paragraphContent = new ArrayList<Object>();
+        }
+        return this.paragraphContent;
+    }
+    
+    public List<Object> getContent() {
         if (paragraphContent == null) {
             paragraphContent = new ArrayList<Object>();
         }

@@ -1,12 +1,14 @@
 package org.docx4j.wml;
 
+import org.jvnet.jaxb2_commons.ppp.Child;
+
 //import javax.xml.bind.Unmarshaller;
 
 /**
  * @since 2.7
  *
  */
-public interface SdtElement {
+public interface SdtElement extends Child {
 
     /**
      * Gets the value of the sdtPr property.

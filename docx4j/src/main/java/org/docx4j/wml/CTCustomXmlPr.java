@@ -126,6 +126,25 @@ public class CTCustomXmlPr
         }
         return this.attr;
     }
+    
+    /**
+     * Gets an attribut by name.
+     * @param attrName Name of the attribut
+     * @return {@link CTAttr} or {@code null}
+     */
+    public CTAttr getAttr(String attrName) {
+        if (attr == null) {
+            attr = new ArrayList<CTAttr>();
+        }
+        
+        for(CTAttr attr: this.attr) {
+            if(attr.getName().equals(attrName)) {
+                return attr;
+            }
+        }
+        
+        return null;
+    }
 
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
