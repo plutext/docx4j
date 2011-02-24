@@ -197,11 +197,11 @@ public class CTCustomXmlRun implements CTCustomXmlElement
         return this.paragraphContent;
     }
     
+    /**
+     * @since 2.7
+     */
     public List<Object> getContent() {
-        if (paragraphContent == null) {
-            paragraphContent = new ArrayList<Object>();
-        }
-        return this.paragraphContent;
+        return getParagraphContent();
     }
 
     /**

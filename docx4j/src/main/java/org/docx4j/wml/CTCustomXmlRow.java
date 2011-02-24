@@ -189,11 +189,11 @@ public class CTCustomXmlRow implements CTCustomXmlElement
         return this.egContentRowContent;
     }
     
+    /**
+     * @since 2.7
+     */
     public List<Object> getContent() {
-        if (egContentRowContent == null) {
-            egContentRowContent = new ArrayList<Object>();
-        }
-        return this.egContentRowContent;
+        return getEGContentRowContent();
     }
 
     /**
