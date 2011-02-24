@@ -182,18 +182,18 @@ public class CTCustomXmlCell implements CTCustomXmlElement
      * 
      * 
      */
-    public List<Object> getContentCellContent() {
+    public List<Object> getEGContentCellContent() {
         if (egContentCellContent == null) {
             egContentCellContent = new ArrayList<Object>();
         }
         return this.egContentCellContent;
     }
     
+    /**
+     * @since 2.7
+     */
     public List<Object> getContent() {
-        if (egContentCellContent == null) {
-            egContentCellContent = new ArrayList<Object>();
-        }
-        return this.egContentCellContent;
+        return getEGContentCellContent();
     }
 
     /**

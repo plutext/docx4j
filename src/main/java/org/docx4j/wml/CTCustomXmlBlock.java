@@ -191,11 +191,11 @@ public class CTCustomXmlBlock implements CTCustomXmlElement
         return this.egContentBlockContent;
     }
     
+    /**
+     * @since 2.7
+     */
     public List<Object> getContent() {
-        if (egContentBlockContent == null) {
-            egContentBlockContent = new ArrayList<Object>();
-        }
-        return this.egContentBlockContent;
+        return getEGContentBlockContent();
     }
 
     /**

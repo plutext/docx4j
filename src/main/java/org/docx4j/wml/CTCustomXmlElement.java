@@ -6,7 +6,6 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 /**
  * @since 2.7
- *
  */
 public interface CTCustomXmlElement extends Child {
 
