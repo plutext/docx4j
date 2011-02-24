@@ -106,10 +106,8 @@ public class FlatOpcXmlCreator implements Output {
 			pkgResult = factory.createPackage();
 			
 			// In pkg format, we don't save [Content_Types].xml
-//			ContentTypeManager ctm = packageIn.getContentTypeManager();
-//			deprecatedSaveRawXmlPart(out, "[Content_Types].xml", ctm.getDocument() );
-	        
-			// 4. Start with _rels/.rels
+
+			// Start with _rels/.rels
 
 //			<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 //			  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
@@ -117,14 +115,10 @@ public class FlatOpcXmlCreator implements Output {
 //			  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
 //			</Relationships>		
 			
-			String partName = "_rels/.rels";
 			RelationshipsPart rp = packageIn.getRelationshipsPart();
+			saveRawXmlPart(rp ); 			
 			
-//			saveRawXmlPart(rp, "/" + partName );  // '/' necessary for Xml Pkg format.
-			
-			
-			// 5. Now recursively 
-//			addPartsFromRelationships(out, "", rp );
+			// Now recursively 
 			addPartsFromRelationships(rp );
 	    
 	    } catch (Exception e) {
