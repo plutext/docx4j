@@ -64,8 +64,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "customXmlPr",
     "egContentCellContent"
 })
-public class CTCustomXmlCell
-    implements Child
+public class CTCustomXmlCell implements CTCustomXmlElement
 {
 
     protected CTCustomXmlPr customXmlPr;
@@ -116,7 +115,10 @@ public class CTCustomXmlCell
      *     
      */
     public CTCustomXmlPr getCustomXmlPr() {
-        return customXmlPr;
+        if(this.customXmlPr == null) {
+            this.customXmlPr = new CTCustomXmlPr();
+        }
+        return this.customXmlPr;
     }
 
     /**
@@ -180,7 +182,14 @@ public class CTCustomXmlCell
      * 
      * 
      */
-    public List<Object> getEGContentCellContent() {
+    public List<Object> getContentCellContent() {
+        if (egContentCellContent == null) {
+            egContentCellContent = new ArrayList<Object>();
+        }
+        return this.egContentCellContent;
+    }
+    
+    public List<Object> getContent() {
         if (egContentCellContent == null) {
             egContentCellContent = new ArrayList<Object>();
         }
