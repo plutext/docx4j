@@ -248,7 +248,8 @@ public class BindingHandler {
 		public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
 				JaxbXmlPart sourcePart,
 				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-				String storeItemId, String xpath, String prefixMappings, String sdtParent) {
+				String storeItemId, String xpath, String prefixMappings, String sdtParent,
+				String cx, String cy) {
 
 			log.debug("sdt's parent: " + sdtParent);
 			
@@ -275,8 +276,24 @@ public class BindingHandler {
 		        String altText = null;
 		        int id1 = 0;
 		        int id2 = 1;		        		
-		        Inline inline = imagePart.createImageInline( filenameHint, altText, 
-		    			id1, id2, false);
+		        Inline inline = null;
+		        long cxl = 0;
+		        long cyl = 0;
+		        try {
+		        	cxl = Long.parseLong(cx);
+		        	cyl = Long.parseLong(cx);
+		        } catch (Exception e) {}
+		        if (cxl==0 || cxl==0) {
+		        	// Let BPAI work out size
+		        	log.debug("image size - from image");
+			        inline = imagePart.createImageInline( filenameHint, altText, 
+			    			id1, id2, false);
+		        } else {
+		        	// Use existing size
+		        	log.debug("image size - from content control size");
+			        inline = imagePart.createImageInline( filenameHint, altText, 
+			    			id1, id2, cxl, cyl, false);		        	
+		        }
 		        
 		        // Now add the inline in w:p/w:r/w:drawing
 				org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
