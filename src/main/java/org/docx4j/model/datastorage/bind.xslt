@@ -48,7 +48,9 @@
 										string(w:sdtPr/w:dataBinding/@w:storeItemID),
 										string(w:sdtPr/w:dataBinding/@w:xpath),
 										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..) )" />
+										local-name(..),
+										string(w:sdtContent//wp:extent[1]/@cx), 
+										string(w:sdtContent//wp:extent[1]/@cy))" />
 				  		</xsl:when>
 				  		<xsl:when test="w:sdtContent/w:p">
 				  			<w:p>
