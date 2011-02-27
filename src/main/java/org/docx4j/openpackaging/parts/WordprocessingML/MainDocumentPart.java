@@ -56,6 +56,7 @@ import org.docx4j.wml.Body;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTShd;
+import org.docx4j.wml.Comments;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
 import org.docx4j.wml.Lvl;
@@ -408,7 +409,6 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		List <Object> bodyChildren = body.getEGBlockLevelElts();
 		
 		Map<String, String> stylesInUse = new HashMap<String, String>();
-//		traverseMainDocumentRecursive(bodyChildren, null, stylesInUse);
 		Finder finder = new Finder(null, stylesInUse);
 		new TraversalUtil(bodyChildren, finder);
 
@@ -420,13 +420,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 				if ( part instanceof FooterPart ) {
 					
 					Ftr ftr = ((FooterPart)part).getJaxbElement();
-//					traverseMainDocumentRecursive(ftr.getEGBlockLevelElts(), null, stylesInUse);
 					finder.walkJAXBElements(ftr);
 					
 				} else if (part instanceof HeaderPart) {
 					
 					Hdr hdr = ((HeaderPart)part).getJaxbElement();
-//					traverseMainDocumentRecursive(hdr.getEGBlockLevelElts(), null, stylesInUse);
 					finder.walkJAXBElements(hdr);
 				}
 			}
@@ -436,14 +434,19 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		if (this.getEndNotesPart()!=null) {
 			log.debug("Looking at endnotes");
 			CTEndnotes endnotes= this.getEndNotesPart().getJaxbElement();
-//			traverseMainDocumentRecursive(endnotes.getEndnote(), null, stylesInUse);			
 			finder.walkJAXBElements(endnotes);
 		}
 		if (this.getFootnotesPart()!=null) {
 			log.debug("Looking at footnotes");
 			CTFootnotes footnotes= this.getFootnotesPart().getJaxbElement();
-//			traverseMainDocumentRecursive(footnotes.getFootnote(), null, stylesInUse);			
 			finder.walkJAXBElements(footnotes);
+		}
+		
+		// Comments
+		if (this.getCommentsPart()!=null) {
+			log.debug("Looking at comments");			
+			Comments comments = this.getCommentsPart().getJaxbElement();
+			finder.walkJAXBElements(comments);
 		}
 		
 		return stylesInUse;
