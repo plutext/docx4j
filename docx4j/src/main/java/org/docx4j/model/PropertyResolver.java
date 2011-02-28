@@ -516,7 +516,7 @@ public class PropertyResolver {
 		
 		// if it is based on, recurse
     	if (style.getBasedOn()==null) {
-			log.error("Style " + styleId + " is a root style.");
+			log.debug("Style " + styleId + " is a root style.");
     	} else if (style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();           	
         	fillTableStyleStack( basedOnStyleName, tableStyleStack);
