@@ -561,7 +561,8 @@ public class OpenDoPEHandler {
 				}
 				org.opendope.xpaths.Xpaths.Xpath xpath = getXPathFromCondition(c);
 				
-				String val = BindingHandler.xpathGetString(customXmlDataStorageParts,
+				String val = BindingHandler.xpathGetString(wordMLPackage,
+						customXmlDataStorageParts,
 						xpath.getDataBinding().getStoreItemID(),
 						xpath.getDataBinding().getXpath(),
 						xpath.getDataBinding().getPrefixMappings() );					
@@ -637,6 +638,7 @@ public class OpenDoPEHandler {
 				// or via bind.xslt.  But probably slightly better to do it here.
 				org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(xPaths, xp);
 				String value = BindingHandler.xpathGetString(
+												wordMLPackage,
 												customXmlDataStorageParts, 
 												xpathObj.getDataBinding().getStoreItemID(),
 												xpathObj.getDataBinding().getXpath(),

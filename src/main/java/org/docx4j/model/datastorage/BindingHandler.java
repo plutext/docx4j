@@ -8,20 +8,26 @@ import java.util.StringTokenizer;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.RPr;
@@ -35,6 +41,8 @@ public class BindingHandler {
 	private static Logger log = Logger.getLogger(BindingHandler.class);		
 	
 	static Templates xslt;			
+	private static XPathFactory xPathFactory;
+	private static XPath xPath;
 	static {
 		try {
 			Source xsltSource = new StreamSource(
@@ -46,7 +54,11 @@ public class BindingHandler {
 		} catch (TransformerConfigurationException e) {
 			e.printStackTrace();
 		}
+		
+		xPathFactory = XPathFactory.newInstance();
+		xPath = xPathFactory.newXPath();		
 	}
+	
 	
 	public static void log(String message ) {
 		
@@ -100,9 +112,17 @@ public class BindingHandler {
 			}
 					
 		}
+
+		// These Store Item ID's come from Building Blocks.dotx glossary document
+		// Of these, only CoverPageProps is documented as an "Office Well Defined Custom XML Part",
+		// but even then, that documentation does not allocate a store item ID.
+		public static final String CORE_PROPERTIES_STOREITEMID = 		"{6C3C8BC8-F283-45AE-878A-BAB7291924A1}";
+		public static final String EXTENDED_PROPERTIES_STOREITEMID = 	"{6668398D-A668-4E3E-A5EB-62B293D839F1}";
+		public static final String COVERPAGE_PROPERTIES_STOREITEMID = 	"{55AF091B-3C7A-41E3-B477-F2FDAA23CFDA}";
+		
 		
 		/**
-		 * Used by OpenDoPE handler, but not by bind.xslt anymore.
+		 * Used by OpenDoPE handler, but not directly by bind.xslt anymore.
 		 * Not multiLine aware.
 		 * 
 		 * @param customXmlDataStorageParts
@@ -111,15 +131,30 @@ public class BindingHandler {
 		 * @param prefixMappings a string such as "xmlns:ns0='http://schemas.medchart'"
 		 * @return
 		 */
-		public static String xpathGetString(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+		public static String xpathGetString(
+				WordprocessingMLPackage pkg, Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings) {
 			
-			CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
-			if (part==null) {
-				log.error("Couldn't locate part by storeItemId " + storeItemId);
-				return null;
-			}
 			try {
+				
+				if (storeItemId.toUpperCase().equals(CORE_PROPERTIES_STOREITEMID)  ) {
+					
+					return pkg.getDocPropsCorePart().xpathGetString(xpath, prefixMappings);
+					
+				} else if (storeItemId.toUpperCase().equals(EXTENDED_PROPERTIES_STOREITEMID) ) {
+					
+					return pkg.getDocPropsExtendedPart().xpathGetString(xpath, prefixMappings);
+				} 
+				
+				CustomXmlDataStoragePart part  = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+					// Also handles cover page properties (since we've allocated it a store item id)
+					// Note that Word does not create that part until the user provides one or more prop values
+				
+				if (part==null) {
+					log.error("Couldn't locate part by storeItemId " + storeItemId);
+					return null;
+				}
+				
 				if (log.isDebugEnabled() ) {
 					String r = part.getData().xpathGetString(xpath, prefixMappings);
 					log.debug(xpath + " yielded result " + r);
@@ -134,9 +169,11 @@ public class BindingHandler {
 		}
 
 		
+		
 		/**
 		 */
-		public static DocumentFragment xpathGenerateRuns(Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+		public static DocumentFragment xpathGenerateRuns(
+				WordprocessingMLPackage pkg, Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings,
 				NodeIterator rPrNodeIt, boolean multiLine) {
 			
@@ -149,17 +186,13 @@ public class BindingHandler {
 			 * - inline and block level sdt
 			 */
 
-			CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
-			if (part==null) {
-				log.error("Couldn't locate part by storeItemId " + storeItemId);
-				return null;
-			}
+			String r = xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+			if (r==null) return null;
 
 			DocumentFragment docfrag = null; // = document.createDocumentFragment();
 			Document fragdoc = null;
 			
 			try {
-				String r = part.getData().xpathGetString(xpath, prefixMappings);
 				log.debug(xpath + " yielded result " + r);
 				
 				RPr rPr = null;
@@ -347,7 +380,5 @@ public class BindingHandler {
 				return null;
 			} 
 		}
-
-	
 
 }
