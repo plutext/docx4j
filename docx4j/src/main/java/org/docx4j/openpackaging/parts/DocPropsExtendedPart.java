@@ -23,12 +23,18 @@ package org.docx4j.openpackaging.parts;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.docProps.extended.Properties;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.NamespacePrefixMappings;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.w3c.dom.Document;
 
 
 
@@ -56,6 +62,13 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 	
 	
 	private static Logger log = Logger.getLogger(DocPropsExtendedPart.class);
+	
+	private static XPathFactory xPathFactory;
+	private static XPath xPath;
+	static {
+		xPathFactory = XPathFactory.newInstance();
+		xPath = xPathFactory.newXPath();		
+	}
 	
 	 /** 
 	 * @throws InvalidFormatException
@@ -122,6 +135,33 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 		return jaxbElement;
     	
     }
+
+	// Core Props and Extended Props can both be bound as if they
+	// were a custom xml part.  Copied from XmlPart.
+	
+	public String xpathGetString(String xpathString, String prefixMappings)  throws Docx4JException {
+		
+		Document doc = XmlUtils.marshaltoW3CDomDocument(
+				getJaxbElement(), Context.jcDocPropsExtended );
+		
+		try {
+			getNamespaceContext().registerPrefixMappings(prefixMappings);
+			
+			String result = xPath.evaluate(xpathString, doc );
+			log.debug(xpathString + " ---> " + result);
+			return result;
+		} catch (Exception e) {
+			throw new Docx4JException("Problems evaluating xpath '" + xpathString + "'", e);
+		}
+	}
+	private NamespacePrefixMappings nsContext;
+	private NamespacePrefixMappings getNamespaceContext() {
+		if (nsContext==null) {
+			nsContext = new NamespacePrefixMappings();
+			xPath.setNamespaceContext(nsContext);
+		}
+		return nsContext;
+	}
 	
 }
 

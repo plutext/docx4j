@@ -60,6 +60,7 @@
 				  				<!--  create runs -->
 								<xsl:copy-of
 								select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+											$wmlPackage,
 											$customXmlDataStorageParts,
 											string(w:sdtPr/w:dataBinding/@w:storeItemID),
 											string(w:sdtPr/w:dataBinding/@w:xpath),
@@ -72,6 +73,7 @@
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+										$wmlPackage,
 										$customXmlDataStorageParts,
 										string(w:sdtPr/w:dataBinding/@w:storeItemID),
 										string(w:sdtPr/w:dataBinding/@w:xpath),
