@@ -276,7 +276,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			
 			log.debug( XmlUtils.w3CDomNodeToString(n)  );
 
-			// Return something which will show up in the PDF
+			// Return something which will show up in the HTML
 			return message("NOT IMPLEMENTED: support for " + n.getNodeName() + " - " + message);
 		} else {
 			
