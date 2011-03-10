@@ -351,7 +351,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   		<xsl:otherwise>
   		
 			<xsl:copy-of 
-				select="java:org.docx4j.convert.out.html.NtmlExporterNG2.notImplemented(., ' without pic:pic ' )" />  	  		
+				select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., ' without pic:pic ' )" />  	  		
   		</xsl:otherwise>  	
   	</xsl:choose>
     
@@ -373,7 +373,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 			<xsl:otherwise>
 				<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
 			<xsl:copy-of 
-				select="java:org.docx4j.convert.out.html.NtmlExporterNG2.notImplemented(., ' without v:imagedata ' )" />  	  		
+				select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., ' without v:imagedata ' )" />  	  		
 			</xsl:otherwise>
 		</xsl:choose>  			
 	
