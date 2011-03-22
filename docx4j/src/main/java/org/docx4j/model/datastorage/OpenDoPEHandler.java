@@ -726,12 +726,12 @@ public class OpenDoPEHandler {
 			
 			log.info("/n/n Repeat: using xpath: " + xpathBase);
 			NamespaceContext nsContext = new NamespacePrefixMappings();			
-			List<Node> repeatChildren = xpathGetNodes(customXmlDataStorageParts,
+			List<Node> repeatedSiblings = xpathGetNodes(customXmlDataStorageParts,
 					storeItemId, xpathBase, prefixMappings);	
 //					storeItemId, xpathBase+"/*", prefixMappings);	
 			
-			// Count children
-			int numRepeats = repeatChildren.size();
+			// Count siblings
+			int numRepeats = repeatedSiblings.size();
 			log.debug("yields REPEATS: " + numRepeats );
 			
 			if (numRepeats==0) {
@@ -887,6 +887,7 @@ public class OpenDoPEHandler {
 			org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
 
 			Tag tag = sdtPr.getTag();	
+			if (tag==null) return;			
 			HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 			
 			if (binding==null) {
