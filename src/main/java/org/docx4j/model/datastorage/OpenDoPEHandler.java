@@ -473,9 +473,11 @@ public class OpenDoPEHandler {
 
 				List<Object> newChildren = new ArrayList<Object>();
 
-				List children = getChildren(parent);
+				Object parentUnwrapped = XmlUtils.unwrap(parent);
+				List children = getChildren(parentUnwrapped);
 				if (children == null) {
-//					log.warn("no children: " + parent.getClass().getName());
+					log.warn("no children: " + parentUnwrapped.getClass().getName());
+					return;
 				} else {
 					for (Object o : children) {
 
@@ -486,12 +488,12 @@ public class OpenDoPEHandler {
 				}
 				// Replace list, so we'll traverse all the new sdts we've just
 				// created
-				TraversalUtil.replaceChildren(parent, newChildren);
+				TraversalUtil.replaceChildren(parentUnwrapped, newChildren);
 				
 
-				children = getChildren(parent);
+				children = getChildren(parentUnwrapped);
 				if (children == null) {
-//					log.warn("no children: " + parent.getClass().getName());
+					log.warn("no children: " + parentUnwrapped.getClass().getName());
 				} else {
 					for (Object o : children) {
 
