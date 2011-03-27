@@ -190,6 +190,10 @@ public class TraversalUtil {
 			return ((Pict)o).getAnyAndAny(); // (why didn't the reflection below find this?)
 		} else if (o instanceof org.docx4j.vml.CTShape) {				
 			return ((org.docx4j.vml.CTShape)o).getAny();
+		} else if (o instanceof org.docx4j.vml.CTTextbox) {				
+			return ((org.docx4j.vml.CTTextbox)o).getAny();
+		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {				
+			return ((org.docx4j.wml.CTTxbxContent)o).getEGBlockLevelElts();
 		} else if (o instanceof CTObject) {
 			return ((CTObject)o).getAnyAndAny();
 		}
@@ -330,6 +334,8 @@ public class TraversalUtil {
 
 		 */
 
+		log.debug("Clearing " + o.getClass().getName() );
+		
 		if (o instanceof org.docx4j.wml.SdtBlock) {
 
 			((org.docx4j.wml.SdtBlock) o).getSdtContent()
@@ -397,8 +403,15 @@ public class TraversalUtil {
 
 			((org.docx4j.wml.Tc) o).getEGBlockLevelElts().clear();
 			((org.docx4j.wml.Tc) o).getEGBlockLevelElts().addAll(newChildren);
+			
+		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {
+			
+			((org.docx4j.wml.CTTxbxContent) o).getEGBlockLevelElts().clear();
+			((org.docx4j.wml.CTTxbxContent) o).getEGBlockLevelElts().addAll(newChildren);			
 
 		} else {
+			
+			log.warn("Don't know how to replaceChildren in " + o.getClass().getName() ); 
 
 			if (o instanceof org.w3c.dom.Node) {
 				log.warn(" IGNORED " + ((org.w3c.dom.Node) o).getNodeName());
