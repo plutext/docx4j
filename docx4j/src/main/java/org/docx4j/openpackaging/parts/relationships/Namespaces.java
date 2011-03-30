@@ -228,7 +228,11 @@ public class Namespaces {
 	///xl/charts/chart1.xml
 	public final static String SPREADSHEETML_CHART =
 	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
-	
+
+	// /xl/comments1.xml 
+	public final static String SPREADSHEETML_COMMENTS =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments";
+		
 	///xl/pivotTables/pivotTable1.xml
 	public final static String SPREADSHEETML_PIVOT_TABLE =
 	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable";
