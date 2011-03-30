@@ -63,7 +63,13 @@
 					<source>1.6</source>
 					<target>1.6</target>
 					<verbose>false</verbose>
-					<!--<maxmemory>512m</maxmemory>  -->
+					<!--maxmemory>512m</maxmemory
+					
+					 	On Linux, use:
+					 	
+					 	   MAVEN_OPTS="-Xmx512m" mvn install
+					
+					-->  
 					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller: 
 		               <bootclasspath>${java.home}/lib/rt.jar</bootclasspath>
 		               but this doesn't help
@@ -90,7 +96,7 @@
 			<extension>
 				<groupId>org.jvnet.wagon-svn</groupId>
 				<artifactId>wagon-svn</artifactId>
-				<version>1.8</version>
+				<version>1.9</version>
 			</extension>
 		</extensions>
                 <resources>
