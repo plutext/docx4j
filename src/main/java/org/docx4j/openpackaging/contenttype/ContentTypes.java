@@ -256,6 +256,10 @@ public class ContentTypes {
 	// /xl/pivotTables/pivotTable1.xml
 	public final static String SPREADSHEETML_PIVOT_TABLE =
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml";
+
+	// /xl/comments1.xml
+	public final static String SPREADSHEETML_COMMENTS =
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml";
 	
 	
 	// /xl/charts/chart1.xml
