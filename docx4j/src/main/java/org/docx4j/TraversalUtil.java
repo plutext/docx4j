@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.log4j.Logger;
 import org.docx4j.dml.picture.Pic;
 import org.docx4j.dml.wordprocessingDrawing.Anchor;
@@ -189,11 +191,19 @@ public class TraversalUtil {
 		} else if (o instanceof Pict) {
 			return ((Pict)o).getAnyAndAny(); // (why didn't the reflection below find this?)
 		} else if (o instanceof org.docx4j.vml.CTShape) {				
-			return ((org.docx4j.vml.CTShape)o).getAny();
+//			return ((org.docx4j.vml.CTShape)o).getAny();
+			List<Object> artificialList = new ArrayList<Object>();
+			for (JAXBElement<?> j : ((org.docx4j.vml.CTShape)o).getPathOrFormulasOrHandles() ) {
+				artificialList.add(j);				
+			}
+			return artificialList;
 		} else if (o instanceof org.docx4j.vml.CTTextbox) {				
-			return ((org.docx4j.vml.CTTextbox)o).getAny();
-		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {				
-			return ((org.docx4j.wml.CTTxbxContent)o).getEGBlockLevelElts();
+//			return ((org.docx4j.vml.CTTextbox)o).getAny();
+			return ((org.docx4j.vml.CTTextbox)o).getTxbxContent().getEGBlockLevelElts();
+				// grandchildren
+
+//		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {				
+//			return ((org.docx4j.wml.CTTxbxContent)o).getEGBlockLevelElts();
 		} else if (o instanceof CTObject) {
 			return ((CTObject)o).getAnyAndAny();
 		}
