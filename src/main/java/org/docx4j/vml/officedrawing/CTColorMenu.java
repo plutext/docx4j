@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -40,12 +40,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_ColorMenu">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="fillcolor" type="{http://www.w3.org/2001/XMLSchema}string" default="rgb(0,0,255)" />
- *       &lt;attribute name="strokecolor" type="{http://www.w3.org/2001/XMLSchema}string" default="rgb(255,0,0)" />
- *       &lt;attribute name="shadowcolor" type="{http://www.w3.org/2001/XMLSchema}string" default="rgb(128,128,12)" />
- *       &lt;attribute name="extrusioncolor" type="{http://www.w3.org/2001/XMLSchema}string" default="rgb(0,0,0)" />
- *       &lt;attribute name="colors" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
+ *       &lt;attribute name="strokecolor" type="{urn:schemas-microsoft-com:office:office}ST_ColorType" />
+ *       &lt;attribute name="fillcolor" type="{urn:schemas-microsoft-com:office:office}ST_ColorType" />
+ *       &lt;attribute name="shadowcolor" type="{urn:schemas-microsoft-com:office:office}ST_ColorType" />
+ *       &lt;attribute name="extrusioncolor" type="{urn:schemas-microsoft-com:office:office}ST_ColorType" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -59,48 +58,18 @@ public class CTColorMenu
     implements Child
 {
 
-    @XmlAttribute
-    protected String fillcolor;
-    @XmlAttribute
+    @XmlAttribute(name = "strokecolor")
     protected String strokecolor;
-    @XmlAttribute
+    @XmlAttribute(name = "fillcolor")
+    protected String fillcolor;
+    @XmlAttribute(name = "shadowcolor")
     protected String shadowcolor;
-    @XmlAttribute
+    @XmlAttribute(name = "extrusioncolor")
     protected String extrusioncolor;
-    @XmlAttribute
-    protected String colors;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
     @XmlTransient
     private Object parent;
-
-    /**
-     * Gets the value of the fillcolor property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getFillcolor() {
-        if (fillcolor == null) {
-            return "rgb(0,0,255)";
-        } else {
-            return fillcolor;
-        }
-    }
-
-    /**
-     * Sets the value of the fillcolor property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setFillcolor(String value) {
-        this.fillcolor = value;
-    }
 
     /**
      * Gets the value of the strokecolor property.
@@ -111,11 +80,7 @@ public class CTColorMenu
      *     
      */
     public String getStrokecolor() {
-        if (strokecolor == null) {
-            return "rgb(255,0,0)";
-        } else {
-            return strokecolor;
-        }
+        return strokecolor;
     }
 
     /**
@@ -131,6 +96,30 @@ public class CTColorMenu
     }
 
     /**
+     * Gets the value of the fillcolor property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getFillcolor() {
+        return fillcolor;
+    }
+
+    /**
+     * Sets the value of the fillcolor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setFillcolor(String value) {
+        this.fillcolor = value;
+    }
+
+    /**
      * Gets the value of the shadowcolor property.
      * 
      * @return
@@ -139,11 +128,7 @@ public class CTColorMenu
      *     
      */
     public String getShadowcolor() {
-        if (shadowcolor == null) {
-            return "rgb(128,128,12)";
-        } else {
-            return shadowcolor;
-        }
+        return shadowcolor;
     }
 
     /**
@@ -167,11 +152,7 @@ public class CTColorMenu
      *     
      */
     public String getExtrusioncolor() {
-        if (extrusioncolor == null) {
-            return "rgb(0,0,0)";
-        } else {
-            return extrusioncolor;
-        }
+        return extrusioncolor;
     }
 
     /**
@@ -187,30 +168,6 @@ public class CTColorMenu
     }
 
     /**
-     * Gets the value of the colors property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getColors() {
-        return colors;
-    }
-
-    /**
-     * Sets the value of the colors property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setColors(String value) {
-        this.colors = value;
-    }
-
-    /**
      * Gets the value of the ext property.
      * 
      * @return
@@ -219,11 +176,7 @@ public class CTColorMenu
      *     
      */
     public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
+        return ext;
     }
 
     /**

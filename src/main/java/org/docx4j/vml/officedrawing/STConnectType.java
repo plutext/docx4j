@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -47,12 +47,32 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STConnectType {
 
+
+    /**
+     * No
+     * 
+     */
     @XmlEnumValue("none")
     NONE("none"),
+
+    /**
+     * Four Connections
+     * 
+     */
     @XmlEnumValue("rect")
     RECT("rect"),
+
+    /**
+     * Edit Point Connections
+     * 
+     */
     @XmlEnumValue("segments")
     SEGMENTS("segments"),
+
+    /**
+     * Custom Connections
+     * 
+     */
     @XmlEnumValue("custom")
     CUSTOM("custom");
     private final String value;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -46,10 +46,25 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STStrokeArrowLength {
 
+
+    /**
+     * Short Arrowhead
+     * 
+     */
     @XmlEnumValue("short")
     SHORT("short"),
+
+    /**
+     * Medium Arrowhead
+     * 
+     */
     @XmlEnumValue("medium")
     MEDIUM("medium"),
+
+    /**
+     * Long Arrowhead
+     * 
+     */
     @XmlEnumValue("long")
     LONG("long");
     private final String value;

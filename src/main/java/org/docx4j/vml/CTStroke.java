@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -22,19 +22,14 @@
 package org.docx4j.vml;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyAttribute;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
+import org.docx4j.vml.officedrawing.CTStrokeChild;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -48,34 +43,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;any/>
+ *         &lt;element ref="{urn:schemas-microsoft-com:office:office}left" minOccurs="0"/>
+ *         &lt;element ref="{urn:schemas-microsoft-com:office:office}top" minOccurs="0"/>
+ *         &lt;element ref="{urn:schemas-microsoft-com:office:office}right" minOccurs="0"/>
+ *         &lt;element ref="{urn:schemas-microsoft-com:office:office}bottom" minOccurs="0"/>
+ *         &lt;element ref="{urn:schemas-microsoft-com:office:office}column" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="on" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
- *       &lt;attribute name="weight" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="color" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="opacity" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="linestyle" type="{urn:schemas-microsoft-com:vml}ST_StrokeLineStyle" default="single" />
- *       &lt;attribute name="miterlimit" type="{http://www.w3.org/2001/XMLSchema}decimal" />
- *       &lt;attribute name="joinstyle" type="{urn:schemas-microsoft-com:vml}ST_StrokeJoinStyle" default="round" />
- *       &lt;attribute name="endcap" type="{urn:schemas-microsoft-com:vml}ST_StrokeEndCap" default="flat" />
- *       &lt;attribute name="dashstyle" type="{http://www.w3.org/2001/XMLSchema}string" default="solid" />
- *       &lt;attribute name="filltype" type="{urn:schemas-microsoft-com:vml}ST_FillType" default="solid" />
- *       &lt;attribute name="src" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="imageaspect" type="{urn:schemas-microsoft-com:vml}ST_ImageAspect" default="ignore" />
- *       &lt;attribute name="imagesize" type="{http://www.w3.org/2001/XMLSchema}string" default="auto" />
- *       &lt;attribute name="imagealignshape" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
- *       &lt;attribute name="color2" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="startarrow" type="{urn:schemas-microsoft-com:vml}ST_ArrowType" default="none" />
- *       &lt;attribute name="startarrowwidth" type="{urn:schemas-microsoft-com:vml}ST_ArrowWidth" default="medium" />
- *       &lt;attribute name="startarrowlength" type="{urn:schemas-microsoft-com:vml}ST_StrokeArrowLength" default="medium" />
- *       &lt;attribute name="endarrow" type="{urn:schemas-microsoft-com:vml}ST_ArrowType" />
- *       &lt;attribute name="endarrowwidth" type="{urn:schemas-microsoft-com:vml}ST_ArrowWidth" />
- *       &lt;attribute name="endarrowlength" type="{urn:schemas-microsoft-com:vml}ST_StrokeArrowLength" />
- *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}href"/>
- *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}althref"/>
- *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}title"/>
- *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}forcedash"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Id"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_StrokeAttributes"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -85,122 +60,228 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Stroke", propOrder = {
-    "any"
+    "left",
+    "top",
+    "right",
+    "bottom",
+    "column"
 })
-public class CTStroke
-    implements Child
+public class CTStroke implements Child
 {
 
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    @XmlAttribute
-    protected String id;
-    @XmlAttribute
-    protected String on;
-    @XmlAttribute
+    @XmlElement(namespace = "urn:schemas-microsoft-com:office:office")
+    protected CTStrokeChild left;
+    @XmlElement(namespace = "urn:schemas-microsoft-com:office:office")
+    protected CTStrokeChild top;
+    @XmlElement(namespace = "urn:schemas-microsoft-com:office:office")
+    protected CTStrokeChild right;
+    @XmlElement(namespace = "urn:schemas-microsoft-com:office:office")
+    protected CTStrokeChild bottom;
+    @XmlElement(namespace = "urn:schemas-microsoft-com:office:office")
+    protected CTStrokeChild column;
+    @XmlAttribute(name = "id")
+    protected String vmlId;
+    @XmlAttribute(name = "on")
+    protected org.docx4j.vml.STTrueFalse on;
+    @XmlAttribute(name = "weight")
     protected String weight;
-    @XmlAttribute
+    @XmlAttribute(name = "color")
     protected String color;
-    @XmlAttribute
+    @XmlAttribute(name = "opacity")
     protected String opacity;
-    @XmlAttribute
+    @XmlAttribute(name = "linestyle")
     protected STStrokeLineStyle linestyle;
-    @XmlAttribute
+    @XmlAttribute(name = "miterlimit")
     protected BigDecimal miterlimit;
-    @XmlAttribute
+    @XmlAttribute(name = "joinstyle")
     protected STStrokeJoinStyle joinstyle;
-    @XmlAttribute
+    @XmlAttribute(name = "endcap")
     protected STStrokeEndCap endcap;
-    @XmlAttribute
+    @XmlAttribute(name = "dashstyle")
     protected String dashstyle;
-    @XmlAttribute
+    @XmlAttribute(name = "filltype")
     protected STFillType filltype;
-    @XmlAttribute
+    @XmlAttribute(name = "src")
     protected String src;
-    @XmlAttribute
+    @XmlAttribute(name = "imageaspect")
     protected STImageAspect imageaspect;
-    @XmlAttribute
+    @XmlAttribute(name = "imagesize")
     protected String imagesize;
-    @XmlAttribute
-    protected String imagealignshape;
-    @XmlAttribute
+    @XmlAttribute(name = "imagealignshape")
+    protected org.docx4j.vml.STTrueFalse imagealignshape;
+    @XmlAttribute(name = "color2")
     protected String color2;
-    @XmlAttribute
-    protected STArrowType startarrow;
-    @XmlAttribute
-    protected STArrowWidth startarrowwidth;
-    @XmlAttribute
+    @XmlAttribute(name = "startarrow")
+    protected STStrokeArrowType startarrow;
+    @XmlAttribute(name = "startarrowwidth")
+    protected STStrokeArrowWidth startarrowwidth;
+    @XmlAttribute(name = "startarrowlength")
     protected STStrokeArrowLength startarrowlength;
-    @XmlAttribute
-    protected STArrowType endarrow;
-    @XmlAttribute
-    protected STArrowWidth endarrowwidth;
-    @XmlAttribute
+    @XmlAttribute(name = "endarrow")
+    protected STStrokeArrowType endarrow;
+    @XmlAttribute(name = "endarrowwidth")
+    protected STStrokeArrowWidth endarrowwidth;
+    @XmlAttribute(name = "endarrowlength")
     protected STStrokeArrowLength endarrowlength;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
+    @XmlAttribute(name = "href", namespace = "urn:schemas-microsoft-com:office:office")
     protected String href;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
+    @XmlAttribute(name = "althref", namespace = "urn:schemas-microsoft-com:office:office")
     protected String althref;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
+    @XmlAttribute(name = "title", namespace = "urn:schemas-microsoft-com:office:office")
     protected String title;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
-    protected String forcedash;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+    @XmlAttribute(name = "forcedash", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse forcedash;
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    protected String id;
+    @XmlAttribute(name = "insetpen")
+    protected org.docx4j.vml.STTrueFalse insetpen;
+    @XmlAttribute(name = "relid", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String relid;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the any property.
+     * Gets the value of the left property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link CTStrokeChild }
+     *     
      */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
+    public CTStrokeChild getLeft() {
+        return left;
     }
 
     /**
-     * Gets the value of the id property.
+     * Sets the value of the left property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public void setLeft(CTStrokeChild value) {
+        this.left = value;
+    }
+
+    /**
+     * Gets the value of the top property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public CTStrokeChild getTop() {
+        return top;
+    }
+
+    /**
+     * Sets the value of the top property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public void setTop(CTStrokeChild value) {
+        this.top = value;
+    }
+
+    /**
+     * Gets the value of the right property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public CTStrokeChild getRight() {
+        return right;
+    }
+
+    /**
+     * Sets the value of the right property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public void setRight(CTStrokeChild value) {
+        this.right = value;
+    }
+
+    /**
+     * Gets the value of the bottom property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public CTStrokeChild getBottom() {
+        return bottom;
+    }
+
+    /**
+     * Sets the value of the bottom property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public void setBottom(CTStrokeChild value) {
+        this.bottom = value;
+    }
+
+    /**
+     * Gets the value of the column property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public CTStrokeChild getColumn() {
+        return column;
+    }
+
+    /**
+     * Sets the value of the column property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CTStrokeChild }
+     *     
+     */
+    public void setColumn(CTStrokeChild value) {
+        this.column = value;
+    }
+
+    /**
+     * Gets the value of the vmlId property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getId() {
-        return id;
+    public String getVmlId() {
+        return vmlId;
     }
 
     /**
-     * Sets the value of the id property.
+     * Sets the value of the vmlId property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setId(String value) {
-        this.id = value;
+    public void setVmlId(String value) {
+        this.vmlId = value;
     }
 
     /**
@@ -208,10 +289,10 @@ public class CTStroke
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getOn() {
+    public org.docx4j.vml.STTrueFalse getOn() {
         return on;
     }
 
@@ -220,10 +301,10 @@ public class CTStroke
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setOn(String value) {
+    public void setOn(org.docx4j.vml.STTrueFalse value) {
         this.on = value;
     }
 
@@ -308,11 +389,7 @@ public class CTStroke
      *     
      */
     public STStrokeLineStyle getLinestyle() {
-        if (linestyle == null) {
-            return STStrokeLineStyle.SINGLE;
-        } else {
-            return linestyle;
-        }
+        return linestyle;
     }
 
     /**
@@ -360,11 +437,7 @@ public class CTStroke
      *     
      */
     public STStrokeJoinStyle getJoinstyle() {
-        if (joinstyle == null) {
-            return STStrokeJoinStyle.ROUND;
-        } else {
-            return joinstyle;
-        }
+        return joinstyle;
     }
 
     /**
@@ -388,11 +461,7 @@ public class CTStroke
      *     
      */
     public STStrokeEndCap getEndcap() {
-        if (endcap == null) {
-            return STStrokeEndCap.FLAT;
-        } else {
-            return endcap;
-        }
+        return endcap;
     }
 
     /**
@@ -416,11 +485,7 @@ public class CTStroke
      *     
      */
     public String getDashstyle() {
-        if (dashstyle == null) {
-            return "solid";
-        } else {
-            return dashstyle;
-        }
+        return dashstyle;
     }
 
     /**
@@ -444,11 +509,7 @@ public class CTStroke
      *     
      */
     public STFillType getFilltype() {
-        if (filltype == null) {
-            return STFillType.SOLID;
-        } else {
-            return filltype;
-        }
+        return filltype;
     }
 
     /**
@@ -496,11 +557,7 @@ public class CTStroke
      *     
      */
     public STImageAspect getImageaspect() {
-        if (imageaspect == null) {
-            return STImageAspect.IGNORE;
-        } else {
-            return imageaspect;
-        }
+        return imageaspect;
     }
 
     /**
@@ -524,11 +581,7 @@ public class CTStroke
      *     
      */
     public String getImagesize() {
-        if (imagesize == null) {
-            return "auto";
-        } else {
-            return imagesize;
-        }
+        return imagesize;
     }
 
     /**
@@ -548,10 +601,10 @@ public class CTStroke
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getImagealignshape() {
+    public org.docx4j.vml.STTrueFalse getImagealignshape() {
         return imagealignshape;
     }
 
@@ -560,10 +613,10 @@ public class CTStroke
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setImagealignshape(String value) {
+    public void setImagealignshape(org.docx4j.vml.STTrueFalse value) {
         this.imagealignshape = value;
     }
 
@@ -596,15 +649,11 @@ public class CTStroke
      * 
      * @return
      *     possible object is
-     *     {@link STArrowType }
+     *     {@link STStrokeArrowType }
      *     
      */
-    public STArrowType getStartarrow() {
-        if (startarrow == null) {
-            return STArrowType.NONE;
-        } else {
-            return startarrow;
-        }
+    public STStrokeArrowType getStartarrow() {
+        return startarrow;
     }
 
     /**
@@ -612,10 +661,10 @@ public class CTStroke
      * 
      * @param value
      *     allowed object is
-     *     {@link STArrowType }
+     *     {@link STStrokeArrowType }
      *     
      */
-    public void setStartarrow(STArrowType value) {
+    public void setStartarrow(STStrokeArrowType value) {
         this.startarrow = value;
     }
 
@@ -624,15 +673,11 @@ public class CTStroke
      * 
      * @return
      *     possible object is
-     *     {@link STArrowWidth }
+     *     {@link STStrokeArrowWidth }
      *     
      */
-    public STArrowWidth getStartarrowwidth() {
-        if (startarrowwidth == null) {
-            return STArrowWidth.MEDIUM;
-        } else {
-            return startarrowwidth;
-        }
+    public STStrokeArrowWidth getStartarrowwidth() {
+        return startarrowwidth;
     }
 
     /**
@@ -640,10 +685,10 @@ public class CTStroke
      * 
      * @param value
      *     allowed object is
-     *     {@link STArrowWidth }
+     *     {@link STStrokeArrowWidth }
      *     
      */
-    public void setStartarrowwidth(STArrowWidth value) {
+    public void setStartarrowwidth(STStrokeArrowWidth value) {
         this.startarrowwidth = value;
     }
 
@@ -656,11 +701,7 @@ public class CTStroke
      *     
      */
     public STStrokeArrowLength getStartarrowlength() {
-        if (startarrowlength == null) {
-            return STStrokeArrowLength.MEDIUM;
-        } else {
-            return startarrowlength;
-        }
+        return startarrowlength;
     }
 
     /**
@@ -680,10 +721,10 @@ public class CTStroke
      * 
      * @return
      *     possible object is
-     *     {@link STArrowType }
+     *     {@link STStrokeArrowType }
      *     
      */
-    public STArrowType getEndarrow() {
+    public STStrokeArrowType getEndarrow() {
         return endarrow;
     }
 
@@ -692,10 +733,10 @@ public class CTStroke
      * 
      * @param value
      *     allowed object is
-     *     {@link STArrowType }
+     *     {@link STStrokeArrowType }
      *     
      */
-    public void setEndarrow(STArrowType value) {
+    public void setEndarrow(STStrokeArrowType value) {
         this.endarrow = value;
     }
 
@@ -704,10 +745,10 @@ public class CTStroke
      * 
      * @return
      *     possible object is
-     *     {@link STArrowWidth }
+     *     {@link STStrokeArrowWidth }
      *     
      */
-    public STArrowWidth getEndarrowwidth() {
+    public STStrokeArrowWidth getEndarrowwidth() {
         return endarrowwidth;
     }
 
@@ -716,10 +757,10 @@ public class CTStroke
      * 
      * @param value
      *     allowed object is
-     *     {@link STArrowWidth }
+     *     {@link STStrokeArrowWidth }
      *     
      */
-    public void setEndarrowwidth(STArrowWidth value) {
+    public void setEndarrowwidth(STStrokeArrowWidth value) {
         this.endarrowwidth = value;
     }
 
@@ -748,7 +789,7 @@ public class CTStroke
     }
 
     /**
-     * Gets the value of the href property.
+     * Original Image Reference
      * 
      * @return
      *     possible object is
@@ -772,7 +813,7 @@ public class CTStroke
     }
 
     /**
-     * Gets the value of the althref property.
+     * Alternate Image Reference
      * 
      * @return
      *     possible object is
@@ -796,7 +837,7 @@ public class CTStroke
     }
 
     /**
-     * Gets the value of the title property.
+     * Stroke Title
      * 
      * @return
      *     possible object is
@@ -820,14 +861,14 @@ public class CTStroke
     }
 
     /**
-     * Gets the value of the forcedash property.
+     * Force Dashed Outline
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
      *     
      */
-    public String getForcedash() {
+    public org.docx4j.vml.officedrawing.STTrueFalse getForcedash() {
         return forcedash;
     }
 
@@ -836,29 +877,83 @@ public class CTStroke
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
      *     
      */
-    public void setForcedash(String value) {
+    public void setForcedash(org.docx4j.vml.officedrawing.STTrueFalse value) {
         this.forcedash = value;
     }
 
     /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
+     * Relationship
      * 
      * @return
-     *     always non-null
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Gets the value of the insetpen property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.STTrueFalse getInsetpen() {
+        return insetpen;
+    }
+
+    /**
+     * Sets the value of the insetpen property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public void setInsetpen(org.docx4j.vml.STTrueFalse value) {
+        this.insetpen = value;
+    }
+
+    /**
+     * Relationship to Part
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRelid() {
+        return relid;
+    }
+
+    /**
+     * Sets the value of the relid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRelid(String value) {
+        this.relid = value;
     }
 
     /**

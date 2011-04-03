@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -45,7 +45,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;sequence>
  *         &lt;element name="r" type="{urn:schemas-microsoft-com:office:office}CT_R" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -62,7 +62,7 @@ public class CTRules
 {
 
     protected List<CTR> r;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
     @XmlTransient
     private Object parent;
@@ -105,11 +105,7 @@ public class CTRules
      *     
      */
     public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
+        return ext;
     }
 
     /**

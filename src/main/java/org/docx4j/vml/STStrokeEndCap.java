@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -46,10 +46,25 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STStrokeEndCap {
 
+
+    /**
+     * Flat End
+     * 
+     */
     @XmlEnumValue("flat")
     FLAT("flat"),
+
+    /**
+     * Square End
+     * 
+     */
     @XmlEnumValue("square")
     SQUARE("square"),
+
+    /**
+     * Round End
+     * 
+     */
     @XmlEnumValue("round")
     ROUND("round");
     private final String value;

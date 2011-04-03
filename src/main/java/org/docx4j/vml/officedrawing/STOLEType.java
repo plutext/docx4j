@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -19,7 +19,7 @@
  */
 
 
-package org.docx4j.vml;
+package org.docx4j.vml.officedrawing;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
@@ -27,43 +27,41 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for ST_ArrowType.
+ * <p>Java class for ST_OLEType.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_ArrowType">
+ * &lt;simpleType name="ST_OLEType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="none"/>
- *     &lt;enumeration value="block"/>
- *     &lt;enumeration value="classic"/>
- *     &lt;enumeration value="oval"/>
- *     &lt;enumeration value="diamond"/>
- *     &lt;enumeration value="open"/>
+ *     &lt;enumeration value="Embed"/>
+ *     &lt;enumeration value="Link"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "ST_ArrowType")
+@XmlType(name = "ST_OLEType")
 @XmlEnum
-public enum STArrowType {
+public enum STOLEType {
 
-    @XmlEnumValue("none")
-    NONE("none"),
-    @XmlEnumValue("block")
-    BLOCK("block"),
-    @XmlEnumValue("classic")
-    CLASSIC("classic"),
-    @XmlEnumValue("oval")
-    OVAL("oval"),
-    @XmlEnumValue("diamond")
-    DIAMOND("diamond"),
-    @XmlEnumValue("open")
-    OPEN("open");
+
+    /**
+     * Embedded Object
+     * 
+     */
+    @XmlEnumValue("Embed")
+    EMBED("Embed"),
+
+    /**
+     * Linked Object
+     * 
+     */
+    @XmlEnumValue("Link")
+    LINK("Link");
     private final String value;
 
-    STArrowType(String v) {
+    STOLEType(String v) {
         value = v;
     }
 
@@ -71,8 +69,8 @@ public enum STArrowType {
         return value;
     }
 
-    public static STArrowType fromValue(String v) {
-        for (STArrowType c: STArrowType.values()) {
+    public static STOLEType fromValue(String v) {
+        for (STOLEType c: STOLEType.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

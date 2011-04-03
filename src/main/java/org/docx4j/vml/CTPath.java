@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,19 +21,12 @@
 
 package org.docx4j.vml;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyAttribute;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
 import org.docx4j.vml.officedrawing.STConnectType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
@@ -47,10 +40,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_Path">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;any/>
- *       &lt;/sequence>
- *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Id"/>
  *       &lt;attribute name="v" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="limo" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="textboxrect" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -60,6 +50,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;attribute name="arrowok" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
  *       &lt;attribute name="gradientshapeok" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
  *       &lt;attribute name="textpathok" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
+ *       &lt;attribute name="insetpenok" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
  *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}connecttype"/>
  *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}connectlocs"/>
  *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}connectangles"/>
@@ -72,100 +63,42 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_Path", propOrder = {
-    "any"
-})
-public class CTPath
-    implements Child
+@XmlType(name = "CT_Path")
+public class CTPath implements Child
 {
 
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    @XmlAttribute
-    protected String id;
-    @XmlAttribute
+    @XmlAttribute(name = "v")
     protected String v;
-    @XmlAttribute
+    @XmlAttribute(name = "limo")
     protected String limo;
-    @XmlAttribute
+    @XmlAttribute(name = "textboxrect")
     protected String textboxrect;
-    @XmlAttribute
-    protected String fillok;
-    @XmlAttribute
-    protected String strokeok;
-    @XmlAttribute
-    protected String shadowok;
-    @XmlAttribute
-    protected String arrowok;
-    @XmlAttribute
-    protected String gradientshapeok;
-    @XmlAttribute
-    protected String textpathok;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
+    @XmlAttribute(name = "fillok")
+    protected org.docx4j.vml.STTrueFalse fillok;
+    @XmlAttribute(name = "strokeok")
+    protected org.docx4j.vml.STTrueFalse strokeok;
+    @XmlAttribute(name = "shadowok")
+    protected org.docx4j.vml.STTrueFalse shadowok;
+    @XmlAttribute(name = "arrowok")
+    protected org.docx4j.vml.STTrueFalse arrowok;
+    @XmlAttribute(name = "gradientshapeok")
+    protected org.docx4j.vml.STTrueFalse gradientshapeok;
+    @XmlAttribute(name = "textpathok")
+    protected org.docx4j.vml.STTrueFalse textpathok;
+    @XmlAttribute(name = "insetpenok")
+    protected org.docx4j.vml.STTrueFalse insetpenok;
+    @XmlAttribute(name = "connecttype", namespace = "urn:schemas-microsoft-com:office:office")
     protected STConnectType connecttype;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
+    @XmlAttribute(name = "connectlocs", namespace = "urn:schemas-microsoft-com:office:office")
     protected String connectlocs;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
+    @XmlAttribute(name = "connectangles", namespace = "urn:schemas-microsoft-com:office:office")
     protected String connectangles;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
-    protected String extrusionok;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+    @XmlAttribute(name = "extrusionok", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse extrusionok;
+    @XmlAttribute(name = "id")
+    protected String vmlId;
     @XmlTransient
     private Object parent;
-
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
-
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setId(String value) {
-        this.id = value;
-    }
 
     /**
      * Gets the value of the v property.
@@ -244,10 +177,10 @@ public class CTPath
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getFillok() {
+    public org.docx4j.vml.STTrueFalse getFillok() {
         return fillok;
     }
 
@@ -256,10 +189,10 @@ public class CTPath
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setFillok(String value) {
+    public void setFillok(org.docx4j.vml.STTrueFalse value) {
         this.fillok = value;
     }
 
@@ -268,10 +201,10 @@ public class CTPath
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getStrokeok() {
+    public org.docx4j.vml.STTrueFalse getStrokeok() {
         return strokeok;
     }
 
@@ -280,10 +213,10 @@ public class CTPath
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setStrokeok(String value) {
+    public void setStrokeok(org.docx4j.vml.STTrueFalse value) {
         this.strokeok = value;
     }
 
@@ -292,10 +225,10 @@ public class CTPath
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getShadowok() {
+    public org.docx4j.vml.STTrueFalse getShadowok() {
         return shadowok;
     }
 
@@ -304,10 +237,10 @@ public class CTPath
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setShadowok(String value) {
+    public void setShadowok(org.docx4j.vml.STTrueFalse value) {
         this.shadowok = value;
     }
 
@@ -316,10 +249,10 @@ public class CTPath
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getArrowok() {
+    public org.docx4j.vml.STTrueFalse getArrowok() {
         return arrowok;
     }
 
@@ -328,10 +261,10 @@ public class CTPath
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setArrowok(String value) {
+    public void setArrowok(org.docx4j.vml.STTrueFalse value) {
         this.arrowok = value;
     }
 
@@ -340,10 +273,10 @@ public class CTPath
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getGradientshapeok() {
+    public org.docx4j.vml.STTrueFalse getGradientshapeok() {
         return gradientshapeok;
     }
 
@@ -352,10 +285,10 @@ public class CTPath
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setGradientshapeok(String value) {
+    public void setGradientshapeok(org.docx4j.vml.STTrueFalse value) {
         this.gradientshapeok = value;
     }
 
@@ -364,10 +297,10 @@ public class CTPath
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getTextpathok() {
+    public org.docx4j.vml.STTrueFalse getTextpathok() {
         return textpathok;
     }
 
@@ -376,15 +309,39 @@ public class CTPath
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setTextpathok(String value) {
+    public void setTextpathok(org.docx4j.vml.STTrueFalse value) {
         this.textpathok = value;
     }
 
     /**
-     * Gets the value of the connecttype property.
+     * Gets the value of the insetpenok property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.STTrueFalse getInsetpenok() {
+        return insetpenok;
+    }
+
+    /**
+     * Sets the value of the insetpenok property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public void setInsetpenok(org.docx4j.vml.STTrueFalse value) {
+        this.insetpenok = value;
+    }
+
+    /**
+     * Connection Point Type
      * 
      * @return
      *     possible object is
@@ -408,7 +365,7 @@ public class CTPath
     }
 
     /**
-     * Gets the value of the connectlocs property.
+     * Connection Points
      * 
      * @return
      *     possible object is
@@ -432,7 +389,7 @@ public class CTPath
     }
 
     /**
-     * Gets the value of the connectangles property.
+     * Connection Point Connect Angles
      * 
      * @return
      *     possible object is
@@ -456,14 +413,14 @@ public class CTPath
     }
 
     /**
-     * Gets the value of the extrusionok property.
+     * Extrusion Toggle
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
      *     
      */
-    public String getExtrusionok() {
+    public org.docx4j.vml.officedrawing.STTrueFalse getExtrusionok() {
         return extrusionok;
     }
 
@@ -472,29 +429,35 @@ public class CTPath
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
      *     
      */
-    public void setExtrusionok(String value) {
+    public void setExtrusionok(org.docx4j.vml.officedrawing.STTrueFalse value) {
         this.extrusionok = value;
     }
 
     /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
+     * Gets the value of the vmlId property.
      * 
      * @return
-     *     always non-null
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
+    public String getVmlId() {
+        return vmlId;
+    }
+
+    /**
+     * Sets the value of the vmlId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setVmlId(String value) {
+        this.vmlId = value;
     }
 
     /**

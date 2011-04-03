@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -47,12 +47,32 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STCalloutPlacement {
 
+
+    /**
+     * Top placement
+     * 
+     */
     @XmlEnumValue("top")
     TOP("top"),
+
+    /**
+     * Center placement
+     * 
+     */
     @XmlEnumValue("center")
     CENTER("center"),
+
+    /**
+     * Bottom placement
+     * 
+     */
     @XmlEnumValue("bottom")
     BOTTOM("bottom"),
+
+    /**
+     * User-defined placement
+     * 
+     */
     @XmlEnumValue("user")
     USER("user");
     private final String value;

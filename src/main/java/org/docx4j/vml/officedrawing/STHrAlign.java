@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -46,10 +46,25 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STHrAlign {
 
+
+    /**
+     * Left Alignment
+     * 
+     */
     @XmlEnumValue("left")
     LEFT("left"),
+
+    /**
+     * Right Alignment
+     * 
+     */
     @XmlEnumValue("right")
     RIGHT("right"),
+
+    /**
+     * Center Alignment
+     * 
+     */
     @XmlEnumValue("center")
     CENTER("center");
     private final String value;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -39,8 +39,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_Proxy">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="start" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" default="f" />
- *       &lt;attribute name="end" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" default="f" />
+ *       &lt;attribute name="start" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalseBlank" default="false" />
+ *       &lt;attribute name="end" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalseBlank" default="false" />
  *       &lt;attribute name="idref" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="connectloc" type="{http://www.w3.org/2001/XMLSchema}int" />
  *     &lt;/restriction>
@@ -56,13 +56,13 @@ public class CTProxy
     implements Child
 {
 
-    @XmlAttribute
+    @XmlAttribute(name = "start")
     protected String start;
-    @XmlAttribute
+    @XmlAttribute(name = "end")
     protected String end;
-    @XmlAttribute
+    @XmlAttribute(name = "idref")
     protected String idref;
-    @XmlAttribute
+    @XmlAttribute(name = "connectloc")
     protected Integer connectloc;
     @XmlTransient
     private Object parent;
@@ -77,7 +77,7 @@ public class CTProxy
      */
     public String getStart() {
         if (start == null) {
-            return "f";
+            return "false";
         } else {
             return start;
         }
@@ -105,7 +105,7 @@ public class CTProxy
      */
     public String getEnd() {
         if (end == null) {
-            return "f";
+            return "false";
         } else {
             return end;
         }

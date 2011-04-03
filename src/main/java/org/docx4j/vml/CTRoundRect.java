@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,20 +21,33 @@
 
 package org.docx4j.vml;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyAttribute;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
+import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
+import org.docx4j.vml.officedrawing.CTCallout;
+import org.docx4j.vml.officedrawing.CTClipPath;
+import org.docx4j.vml.officedrawing.CTExtrusion;
+import org.docx4j.vml.officedrawing.CTLock;
+import org.docx4j.vml.officedrawing.CTSignatureLine;
+import org.docx4j.vml.officedrawing.CTSkew;
+import org.docx4j.vml.officedrawing.STBWMode;
+import org.docx4j.vml.officedrawing.STConnectorType;
+import org.docx4j.vml.officedrawing.STHrAlign;
+import org.docx4j.vml.officedrawing.STInsetMode;
+import org.docx4j.vml.presentationDrawing.CTRel;
+import org.docx4j.vml.spreadsheetDrawing.CTClientData;
+import org.docx4j.vml.wordprocessingDrawing.CTAnchorLock;
+import org.docx4j.vml.wordprocessingDrawing.CTBorder;
+import org.docx4j.vml.wordprocessingDrawing.CTWrap;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -47,32 +60,12 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_RoundRect">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}path" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}formulas" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}handles" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}fill" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}stroke" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}imagedata" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}shadow" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}textbox" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}textpath" minOccurs="0"/>
- *         &lt;any/>
- *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="style" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="fillcolor" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="strokecolor" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;choice maxOccurs="unbounded">
+ *         &lt;group ref="{urn:schemas-microsoft-com:vml}EG_ShapeElements" maxOccurs="unbounded" minOccurs="0"/>
+ *       &lt;/choice>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_AllShapeAttributes"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_AllCoreAttributes"/>
  *       &lt;attribute name="arcsize" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="hidden" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="href" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="adj" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="path" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="spid" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="strokeweight" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="filled" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
- *       &lt;attribute name="stroked" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -82,405 +75,197 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_RoundRect", propOrder = {
-    "pathElement",
-    "formulas",
-    "handles",
-    "fill",
-    "stroke",
-    "imagedata",
-    "shadow",
-    "textbox",
-    "textpath",
-    "any"
+    "pathOrFormulasOrHandles"
 })
-public class CTRoundRect
-    implements Child
+public class CTRoundRect implements Child
 {
 
-    @XmlElement(name = "path")
-    protected CTPath pathElement;
-    protected CTFormulas formulas;
-    protected CTHandles handles;
-    protected CTFill fill;
-    protected CTStroke stroke;
-    protected CTImageData imagedata;
-    protected CTShadow shadow;
-    protected CTTextbox textbox;
-    protected CTTextPath textpath;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    @XmlAttribute(required = true)
-    protected String id;
-    @XmlAttribute
-    protected String style;
-    @XmlAttribute
-    protected String fillcolor;
-    @XmlAttribute
-    protected String strokecolor;
-    @XmlAttribute
+    @XmlElementRefs({
+        @XmlElementRef(name = "ClientData", namespace = "urn:schemas-microsoft-com:office:excel", type = JAXBElement.class),
+        @XmlElementRef(name = "clippath", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
+        @XmlElementRef(name = "imagedata", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "handles", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "skew", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
+        @XmlElementRef(name = "anchorlock", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class),
+        @XmlElementRef(name = "borderright", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class),
+        @XmlElementRef(name = "fill", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "extrusion", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
+        @XmlElementRef(name = "borderleft", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class),
+        @XmlElementRef(name = "textbox", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "formulas", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "textpath", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "shadow", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "bordertop", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class),
+        @XmlElementRef(name = "signatureline", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
+        @XmlElementRef(name = "stroke", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "borderbottom", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class),
+        @XmlElementRef(name = "path", namespace = "urn:schemas-microsoft-com:vml", type = JAXBElement.class),
+        @XmlElementRef(name = "lock", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
+        @XmlElementRef(name = "textdata", namespace = "urn:schemas-microsoft-com:office:powerpoint", type = JAXBElement.class),
+        @XmlElementRef(name = "callout", namespace = "urn:schemas-microsoft-com:office:office", type = JAXBElement.class),
+        @XmlElementRef(name = "wrap", namespace = "urn:schemas-microsoft-com:office:word", type = JAXBElement.class)
+    })
+    protected List<JAXBElement<?>> pathOrFormulasOrHandles;
+    @XmlAttribute(name = "arcsize")
     protected String arcsize;
-    @XmlAttribute
-    protected String hidden;
-    @XmlAttribute
-    protected String href;
-    @XmlAttribute
-    protected String type;
-    @XmlAttribute
-    protected String adj;
-    @XmlAttribute
-    protected String path;
-    @XmlAttribute
-    protected String spid;
-    @XmlAttribute
+    @XmlAttribute(name = "opacity")
+    protected String opacity;
+    @XmlAttribute(name = "stroked")
+    protected org.docx4j.vml.STTrueFalse stroked;
+    @XmlAttribute(name = "strokecolor")
+    protected String strokecolor;
+    @XmlAttribute(name = "strokeweight")
     protected String strokeweight;
-    @XmlAttribute
-    protected String filled;
-    @XmlAttribute
-    protected String stroked;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+    @XmlAttribute(name = "insetpen")
+    protected org.docx4j.vml.STTrueFalse insetpen;
+    @XmlAttribute(name = "filled")
+    protected org.docx4j.vml.STTrueFalse filled;
+    @XmlAttribute(name = "fillcolor")
+    protected String fillcolor;
+    @XmlAttribute(name = "chromakey")
+    protected String chromakey;
+    @XmlAttribute(name = "spt", namespace = "urn:schemas-microsoft-com:office:office")
+    protected Float spt;
+    @XmlAttribute(name = "connectortype", namespace = "urn:schemas-microsoft-com:office:office")
+    protected STConnectorType connectortype;
+    @XmlAttribute(name = "bwmode", namespace = "urn:schemas-microsoft-com:office:office")
+    protected STBWMode bwmode;
+    @XmlAttribute(name = "bwpure", namespace = "urn:schemas-microsoft-com:office:office")
+    protected STBWMode bwpure;
+    @XmlAttribute(name = "bwnormal", namespace = "urn:schemas-microsoft-com:office:office")
+    protected STBWMode bwnormal;
+    @XmlAttribute(name = "forcedash", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse forcedash;
+    @XmlAttribute(name = "oleicon", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse oleicon;
+    @XmlAttribute(name = "ole", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String ole;
+    @XmlAttribute(name = "preferrelative", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse preferrelative;
+    @XmlAttribute(name = "cliptowrap", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse cliptowrap;
+    @XmlAttribute(name = "clip", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse clip;
+    @XmlAttribute(name = "href")
+    protected String href;
+    @XmlAttribute(name = "target")
+    protected String target;
+    @XmlAttribute(name = "class")
+    protected String clazz;
+    @XmlAttribute(name = "title")
+    protected String title;
+    @XmlAttribute(name = "alt")
+    protected String alt;
+    @XmlAttribute(name = "coordsize")
+    protected String coordsize;
+    @XmlAttribute(name = "coordorigin")
+    protected String coordorigin;
+    @XmlAttribute(name = "wrapcoords")
+    protected String wrapcoords;
+    @XmlAttribute(name = "print")
+    protected org.docx4j.vml.STTrueFalse print;
+    @XmlAttribute(name = "style")
+    protected String style;
+    @XmlAttribute(name = "id")
+    protected String vmlId;
+    @XmlAttribute(name = "spid", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String spid;
+    @XmlAttribute(name = "oned", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse oned;
+    @XmlAttribute(name = "regroupid", namespace = "urn:schemas-microsoft-com:office:office")
+    protected BigInteger regroupid;
+    @XmlAttribute(name = "doubleclicknotify", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse doubleclicknotify;
+    @XmlAttribute(name = "button", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse button;
+    @XmlAttribute(name = "userhidden", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse userhidden;
+    @XmlAttribute(name = "bullet", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse bullet;
+    @XmlAttribute(name = "hr", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse hr;
+    @XmlAttribute(name = "hrstd", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse hrstd;
+    @XmlAttribute(name = "hrnoshade", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse hrnoshade;
+    @XmlAttribute(name = "hrpct", namespace = "urn:schemas-microsoft-com:office:office")
+    protected Float hrpct;
+    @XmlAttribute(name = "hralign", namespace = "urn:schemas-microsoft-com:office:office")
+    protected STHrAlign hralign;
+    @XmlAttribute(name = "allowincell", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse allowincell;
+    @XmlAttribute(name = "allowoverlap", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse allowoverlap;
+    @XmlAttribute(name = "userdrawn", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse userdrawn;
+    @XmlAttribute(name = "bordertopcolor", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String bordertopcolor;
+    @XmlAttribute(name = "borderleftcolor", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String borderleftcolor;
+    @XmlAttribute(name = "borderbottomcolor", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String borderbottomcolor;
+    @XmlAttribute(name = "borderrightcolor", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String borderrightcolor;
+    @XmlAttribute(name = "dgmlayout", namespace = "urn:schemas-microsoft-com:office:office")
+    protected BigInteger dgmlayout;
+    @XmlAttribute(name = "dgmnodekind", namespace = "urn:schemas-microsoft-com:office:office")
+    protected BigInteger dgmnodekind;
+    @XmlAttribute(name = "dgmlayoutmru", namespace = "urn:schemas-microsoft-com:office:office")
+    protected BigInteger dgmlayoutmru;
+    @XmlAttribute(name = "insetmode", namespace = "urn:schemas-microsoft-com:office:office")
+    protected STInsetMode insetmode;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the pathElement property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTPath }
-     *     
-     */
-    public CTPath getPathElement() {
-        return pathElement;
-    }
-
-    /**
-     * Sets the value of the pathElement property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTPath }
-     *     
-     */
-    public void setPathElement(CTPath value) {
-        this.pathElement = value;
-    }
-
-    /**
-     * Gets the value of the formulas property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTFormulas }
-     *     
-     */
-    public CTFormulas getFormulas() {
-        return formulas;
-    }
-
-    /**
-     * Sets the value of the formulas property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTFormulas }
-     *     
-     */
-    public void setFormulas(CTFormulas value) {
-        this.formulas = value;
-    }
-
-    /**
-     * Gets the value of the handles property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTHandles }
-     *     
-     */
-    public CTHandles getHandles() {
-        return handles;
-    }
-
-    /**
-     * Sets the value of the handles property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTHandles }
-     *     
-     */
-    public void setHandles(CTHandles value) {
-        this.handles = value;
-    }
-
-    /**
-     * Gets the value of the fill property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTFill }
-     *     
-     */
-    public CTFill getFill() {
-        return fill;
-    }
-
-    /**
-     * Sets the value of the fill property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTFill }
-     *     
-     */
-    public void setFill(CTFill value) {
-        this.fill = value;
-    }
-
-    /**
-     * Gets the value of the stroke property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTStroke }
-     *     
-     */
-    public CTStroke getStroke() {
-        return stroke;
-    }
-
-    /**
-     * Sets the value of the stroke property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTStroke }
-     *     
-     */
-    public void setStroke(CTStroke value) {
-        this.stroke = value;
-    }
-
-    /**
-     * Gets the value of the imagedata property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTImageData }
-     *     
-     */
-    public CTImageData getImagedata() {
-        return imagedata;
-    }
-
-    /**
-     * Sets the value of the imagedata property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTImageData }
-     *     
-     */
-    public void setImagedata(CTImageData value) {
-        this.imagedata = value;
-    }
-
-    /**
-     * Gets the value of the shadow property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTShadow }
-     *     
-     */
-    public CTShadow getShadow() {
-        return shadow;
-    }
-
-    /**
-     * Sets the value of the shadow property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTShadow }
-     *     
-     */
-    public void setShadow(CTShadow value) {
-        this.shadow = value;
-    }
-
-    /**
-     * Gets the value of the textbox property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTextbox }
-     *     
-     */
-    public CTTextbox getTextbox() {
-        return textbox;
-    }
-
-    /**
-     * Sets the value of the textbox property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTextbox }
-     *     
-     */
-    public void setTextbox(CTTextbox value) {
-        this.textbox = value;
-    }
-
-    /**
-     * Gets the value of the textpath property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTextPath }
-     *     
-     */
-    public CTTextPath getTextpath() {
-        return textpath;
-    }
-
-    /**
-     * Sets the value of the textpath property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTextPath }
-     *     
-     */
-    public void setTextpath(CTTextPath value) {
-        this.textpath = value;
-    }
-
-    /**
-     * Gets the value of the any property.
+     * Gets the value of the pathOrFormulasOrHandles property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
+     * This is why there is not a <CODE>set</CODE> method for the pathOrFormulasOrHandles property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getAny().add(newItem);
+     *    getPathOrFormulasOrHandles().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Object }
+     * {@link JAXBElement }{@code <}{@link CTClientData }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTClipPath }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTImageData }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSkew }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTHandles }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTAnchorLock }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFill }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBorder }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBorder }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTExtrusion }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTextbox }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFormulas }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTextPath }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTShadow }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBorder }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSignatureLine }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBorder }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTStroke }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPath }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTLock }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTWrap }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTCallout }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRel }{@code >}
      * 
      * 
      */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
+    public List<JAXBElement<?>> getPathOrFormulasOrHandles() {
+        if (pathOrFormulasOrHandles == null) {
+            pathOrFormulasOrHandles = new ArrayList<JAXBElement<?>>();
         }
-        return this.any;
-    }
-
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setId(String value) {
-        this.id = value;
-    }
-
-    /**
-     * Gets the value of the style property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getStyle() {
-        return style;
-    }
-
-    /**
-     * Sets the value of the style property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setStyle(String value) {
-        this.style = value;
-    }
-
-    /**
-     * Gets the value of the fillcolor property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getFillcolor() {
-        return fillcolor;
-    }
-
-    /**
-     * Sets the value of the fillcolor property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setFillcolor(String value) {
-        this.fillcolor = value;
-    }
-
-    /**
-     * Gets the value of the strokecolor property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getStrokecolor() {
-        return strokecolor;
-    }
-
-    /**
-     * Sets the value of the strokecolor property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setStrokecolor(String value) {
-        this.strokecolor = value;
+        return this.pathOrFormulasOrHandles;
     }
 
     /**
@@ -508,147 +293,75 @@ public class CTRoundRect
     }
 
     /**
-     * Gets the value of the hidden property.
+     * Gets the value of the opacity property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getHidden() {
-        return hidden;
+    public String getOpacity() {
+        return opacity;
     }
 
     /**
-     * Sets the value of the hidden property.
+     * Sets the value of the opacity property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setHidden(String value) {
-        this.hidden = value;
+    public void setOpacity(String value) {
+        this.opacity = value;
     }
 
     /**
-     * Gets the value of the href property.
+     * Gets the value of the stroked property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.STTrueFalse getStroked() {
+        return stroked;
+    }
+
+    /**
+     * Sets the value of the stroked property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public void setStroked(org.docx4j.vml.STTrueFalse value) {
+        this.stroked = value;
+    }
+
+    /**
+     * Gets the value of the strokecolor property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getHref() {
-        return href;
+    public String getStrokecolor() {
+        return strokecolor;
     }
 
     /**
-     * Sets the value of the href property.
+     * Sets the value of the strokecolor property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setHref(String value) {
-        this.href = value;
-    }
-
-    /**
-     * Gets the value of the type property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getType() {
-        return type;
-    }
-
-    /**
-     * Sets the value of the type property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setType(String value) {
-        this.type = value;
-    }
-
-    /**
-     * Gets the value of the adj property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAdj() {
-        return adj;
-    }
-
-    /**
-     * Sets the value of the adj property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAdj(String value) {
-        this.adj = value;
-    }
-
-    /**
-     * Gets the value of the path property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getPath() {
-        return path;
-    }
-
-    /**
-     * Sets the value of the path property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setPath(String value) {
-        this.path = value;
-    }
-
-    /**
-     * Gets the value of the spid property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSpid() {
-        return spid;
-    }
-
-    /**
-     * Sets the value of the spid property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSpid(String value) {
-        this.spid = value;
+    public void setStrokecolor(String value) {
+        this.strokecolor = value;
     }
 
     /**
@@ -676,14 +389,38 @@ public class CTRoundRect
     }
 
     /**
+     * Gets the value of the insetpen property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.STTrueFalse getInsetpen() {
+        return insetpen;
+    }
+
+    /**
+     * Sets the value of the insetpen property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public void setInsetpen(org.docx4j.vml.STTrueFalse value) {
+        this.insetpen = value;
+    }
+
+    /**
      * Gets the value of the filled property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getFilled() {
+    public org.docx4j.vml.STTrueFalse getFilled() {
         return filled;
     }
 
@@ -692,53 +429,1151 @@ public class CTRoundRect
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setFilled(String value) {
+    public void setFilled(org.docx4j.vml.STTrueFalse value) {
         this.filled = value;
     }
 
     /**
-     * Gets the value of the stroked property.
+     * Gets the value of the fillcolor property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getStroked() {
-        return stroked;
+    public String getFillcolor() {
+        return fillcolor;
     }
 
     /**
-     * Sets the value of the stroked property.
+     * Sets the value of the fillcolor property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setStroked(String value) {
-        this.stroked = value;
+    public void setFillcolor(String value) {
+        this.fillcolor = value;
     }
 
     /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
+     * Gets the value of the chromakey property.
      * 
      * @return
-     *     always non-null
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
+    public String getChromakey() {
+        return chromakey;
+    }
+
+    /**
+     * Sets the value of the chromakey property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setChromakey(String value) {
+        this.chromakey = value;
+    }
+
+    /**
+     * Optional Number
+     * 
+     * @return
+     *     possible object is
+     *     {@link Float }
+     *     
+     */
+    public Float getSpt() {
+        return spt;
+    }
+
+    /**
+     * Sets the value of the spt property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Float }
+     *     
+     */
+    public void setSpt(Float value) {
+        this.spt = value;
+    }
+
+    /**
+     * Shape Connector Type
+     * 
+     * @return
+     *     possible object is
+     *     {@link STConnectorType }
+     *     
+     */
+    public STConnectorType getConnectortype() {
+        if (connectortype == null) {
+            return STConnectorType.STRAIGHT;
+        } else {
+            return connectortype;
+        }
+    }
+
+    /**
+     * Sets the value of the connectortype property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STConnectorType }
+     *     
+     */
+    public void setConnectortype(STConnectorType value) {
+        this.connectortype = value;
+    }
+
+    /**
+     * Black-and-White Mode
+     * 
+     * @return
+     *     possible object is
+     *     {@link STBWMode }
+     *     
+     */
+    public STBWMode getBwmode() {
+        return bwmode;
+    }
+
+    /**
+     * Sets the value of the bwmode property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STBWMode }
+     *     
+     */
+    public void setBwmode(STBWMode value) {
+        this.bwmode = value;
+    }
+
+    /**
+     * Pure Black-and-White Mode
+     * 
+     * @return
+     *     possible object is
+     *     {@link STBWMode }
+     *     
+     */
+    public STBWMode getBwpure() {
+        return bwpure;
+    }
+
+    /**
+     * Sets the value of the bwpure property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STBWMode }
+     *     
+     */
+    public void setBwpure(STBWMode value) {
+        this.bwpure = value;
+    }
+
+    /**
+     * Normal Black-and-White Mode
+     * 
+     * @return
+     *     possible object is
+     *     {@link STBWMode }
+     *     
+     */
+    public STBWMode getBwnormal() {
+        return bwnormal;
+    }
+
+    /**
+     * Sets the value of the bwnormal property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STBWMode }
+     *     
+     */
+    public void setBwnormal(STBWMode value) {
+        this.bwnormal = value;
+    }
+
+    /**
+     * Force Dashed Outline
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getForcedash() {
+        return forcedash;
+    }
+
+    /**
+     * Sets the value of the forcedash property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setForcedash(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.forcedash = value;
+    }
+
+    /**
+     * Embedded Object Icon Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getOleicon() {
+        return oleicon;
+    }
+
+    /**
+     * Sets the value of the oleicon property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setOleicon(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.oleicon = value;
+    }
+
+    /**
+     * Embedded Object Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getOle() {
+        return ole;
+    }
+
+    /**
+     * Sets the value of the ole property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setOle(String value) {
+        this.ole = value;
+    }
+
+    /**
+     * Relative Resize Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getPreferrelative() {
+        return preferrelative;
+    }
+
+    /**
+     * Sets the value of the preferrelative property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setPreferrelative(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.preferrelative = value;
+    }
+
+    /**
+     * Clip to Wrapping Polygon
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getCliptowrap() {
+        return cliptowrap;
+    }
+
+    /**
+     * Sets the value of the cliptowrap property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setCliptowrap(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.cliptowrap = value;
+    }
+
+    /**
+     * Clipping Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getClip() {
+        return clip;
+    }
+
+    /**
+     * Sets the value of the clip property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setClip(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.clip = value;
+    }
+
+    /**
+     * Gets the value of the href property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getHref() {
+        return href;
+    }
+
+    /**
+     * Sets the value of the href property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setHref(String value) {
+        this.href = value;
+    }
+
+    /**
+     * Gets the value of the target property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTarget() {
+        return target;
+    }
+
+    /**
+     * Sets the value of the target property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTarget(String value) {
+        this.target = value;
+    }
+
+    /**
+     * Gets the value of the clazz property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getClazz() {
+        return clazz;
+    }
+
+    /**
+     * Sets the value of the clazz property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setClazz(String value) {
+        this.clazz = value;
+    }
+
+    /**
+     * Gets the value of the title property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Sets the value of the title property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTitle(String value) {
+        this.title = value;
+    }
+
+    /**
+     * Gets the value of the alt property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getAlt() {
+        return alt;
+    }
+
+    /**
+     * Sets the value of the alt property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setAlt(String value) {
+        this.alt = value;
+    }
+
+    /**
+     * Gets the value of the coordsize property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getCoordsize() {
+        return coordsize;
+    }
+
+    /**
+     * Sets the value of the coordsize property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setCoordsize(String value) {
+        this.coordsize = value;
+    }
+
+    /**
+     * Gets the value of the coordorigin property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getCoordorigin() {
+        return coordorigin;
+    }
+
+    /**
+     * Sets the value of the coordorigin property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setCoordorigin(String value) {
+        this.coordorigin = value;
+    }
+
+    /**
+     * Gets the value of the wrapcoords property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getWrapcoords() {
+        return wrapcoords;
+    }
+
+    /**
+     * Sets the value of the wrapcoords property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setWrapcoords(String value) {
+        this.wrapcoords = value;
+    }
+
+    /**
+     * Gets the value of the print property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.STTrueFalse getPrint() {
+        return print;
+    }
+
+    /**
+     * Sets the value of the print property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public void setPrint(org.docx4j.vml.STTrueFalse value) {
+        this.print = value;
+    }
+
+    /**
+     * Gets the value of the style property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStyle() {
+        return style;
+    }
+
+    /**
+     * Sets the value of the style property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStyle(String value) {
+        this.style = value;
+    }
+
+    /**
+     * Gets the value of the vmlId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getVmlId() {
+        return vmlId;
+    }
+
+    /**
+     * Sets the value of the vmlId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setVmlId(String value) {
+        this.vmlId = value;
+    }
+
+    /**
+     * Optional String
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getSpid() {
+        return spid;
+    }
+
+    /**
+     * Sets the value of the spid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setSpid(String value) {
+        this.spid = value;
+    }
+
+    /**
+     * Shape Handle Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getOned() {
+        return oned;
+    }
+
+    /**
+     * Sets the value of the oned property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setOned(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.oned = value;
+    }
+
+    /**
+     * Regroup ID
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getRegroupid() {
+        return regroupid;
+    }
+
+    /**
+     * Sets the value of the regroupid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setRegroupid(BigInteger value) {
+        this.regroupid = value;
+    }
+
+    /**
+     * Double-click Notification Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getDoubleclicknotify() {
+        return doubleclicknotify;
+    }
+
+    /**
+     * Sets the value of the doubleclicknotify property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setDoubleclicknotify(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.doubleclicknotify = value;
+    }
+
+    /**
+     * Button Behavior Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getButton() {
+        return button;
+    }
+
+    /**
+     * Sets the value of the button property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setButton(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.button = value;
+    }
+
+    /**
+     * Hide Script Anchors
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getUserhidden() {
+        return userhidden;
+    }
+
+    /**
+     * Sets the value of the userhidden property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setUserhidden(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.userhidden = value;
+    }
+
+    /**
+     * Graphical Bullet
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getBullet() {
+        return bullet;
+    }
+
+    /**
+     * Sets the value of the bullet property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setBullet(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.bullet = value;
+    }
+
+    /**
+     * Horizontal Rule Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getHr() {
+        return hr;
+    }
+
+    /**
+     * Sets the value of the hr property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setHr(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.hr = value;
+    }
+
+    /**
+     * Horizontal Rule Standard Display Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getHrstd() {
+        return hrstd;
+    }
+
+    /**
+     * Sets the value of the hrstd property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setHrstd(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.hrstd = value;
+    }
+
+    /**
+     * Horizontal Rule 3D Shading Toggle
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getHrnoshade() {
+        return hrnoshade;
+    }
+
+    /**
+     * Sets the value of the hrnoshade property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setHrnoshade(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.hrnoshade = value;
+    }
+
+    /**
+     * Horizontal Rule Length Percentage
+     * 
+     * @return
+     *     possible object is
+     *     {@link Float }
+     *     
+     */
+    public Float getHrpct() {
+        return hrpct;
+    }
+
+    /**
+     * Sets the value of the hrpct property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Float }
+     *     
+     */
+    public void setHrpct(Float value) {
+        this.hrpct = value;
+    }
+
+    /**
+     * Horizontal Rule Alignment
+     * 
+     * @return
+     *     possible object is
+     *     {@link STHrAlign }
+     *     
+     */
+    public STHrAlign getHralign() {
+        if (hralign == null) {
+            return STHrAlign.LEFT;
+        } else {
+            return hralign;
+        }
+    }
+
+    /**
+     * Sets the value of the hralign property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STHrAlign }
+     *     
+     */
+    public void setHralign(STHrAlign value) {
+        this.hralign = value;
+    }
+
+    /**
+     * Allow in Table Cell
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getAllowincell() {
+        return allowincell;
+    }
+
+    /**
+     * Sets the value of the allowincell property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setAllowincell(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.allowincell = value;
+    }
+
+    /**
+     * Allow Shape Overlap
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getAllowoverlap() {
+        return allowoverlap;
+    }
+
+    /**
+     * Sets the value of the allowoverlap property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setAllowoverlap(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.allowoverlap = value;
+    }
+
+    /**
+     * Exists In Master Slide
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.officedrawing.STTrueFalse getUserdrawn() {
+        return userdrawn;
+    }
+
+    /**
+     * Sets the value of the userdrawn property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
+     *     
+     */
+    public void setUserdrawn(org.docx4j.vml.officedrawing.STTrueFalse value) {
+        this.userdrawn = value;
+    }
+
+    /**
+     * Border Top Color
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBordertopcolor() {
+        return bordertopcolor;
+    }
+
+    /**
+     * Sets the value of the bordertopcolor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBordertopcolor(String value) {
+        this.bordertopcolor = value;
+    }
+
+    /**
+     * Border Left Color
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBorderleftcolor() {
+        return borderleftcolor;
+    }
+
+    /**
+     * Sets the value of the borderleftcolor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBorderleftcolor(String value) {
+        this.borderleftcolor = value;
+    }
+
+    /**
+     * Bottom Border Color
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBorderbottomcolor() {
+        return borderbottomcolor;
+    }
+
+    /**
+     * Sets the value of the borderbottomcolor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBorderbottomcolor(String value) {
+        this.borderbottomcolor = value;
+    }
+
+    /**
+     * Border Right Color
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getBorderrightcolor() {
+        return borderrightcolor;
+    }
+
+    /**
+     * Sets the value of the borderrightcolor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setBorderrightcolor(String value) {
+        this.borderrightcolor = value;
+    }
+
+    /**
+     * Diagram Node Layout Identifier
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getDgmlayout() {
+        return dgmlayout;
+    }
+
+    /**
+     * Sets the value of the dgmlayout property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setDgmlayout(BigInteger value) {
+        this.dgmlayout = value;
+    }
+
+    /**
+     * Diagram Node Identifier
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getDgmnodekind() {
+        return dgmnodekind;
+    }
+
+    /**
+     * Sets the value of the dgmnodekind property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setDgmnodekind(BigInteger value) {
+        this.dgmnodekind = value;
+    }
+
+    /**
+     * Diagram Node Recent Layout Identifier
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
+     */
+    public BigInteger getDgmlayoutmru() {
+        return dgmlayoutmru;
+    }
+
+    /**
+     * Sets the value of the dgmlayoutmru property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link BigInteger }
+     *     
+     */
+    public void setDgmlayoutmru(BigInteger value) {
+        this.dgmlayoutmru = value;
+    }
+
+    /**
+     * Text Inset Mode
+     * 
+     * @return
+     *     possible object is
+     *     {@link STInsetMode }
+     *     
+     */
+    public STInsetMode getInsetmode() {
+        if (insetmode == null) {
+            return STInsetMode.CUSTOM;
+        } else {
+            return insetmode;
+        }
+    }
+
+    /**
+     * Sets the value of the insetmode property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STInsetMode }
+     *     
+     */
+    public void setInsetmode(STInsetMode value) {
+        this.insetmode = value;
     }
 
     /**

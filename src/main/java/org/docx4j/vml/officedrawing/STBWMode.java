@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -36,15 +36,14 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="color"/>
  *     &lt;enumeration value="auto"/>
- *     &lt;enumeration value="grayscale"/>
- *     &lt;enumeration value="lightGrayScale"/>
+ *     &lt;enumeration value="grayScale"/>
+ *     &lt;enumeration value="lightGrayscale"/>
  *     &lt;enumeration value="inverseGray"/>
  *     &lt;enumeration value="grayOutline"/>
  *     &lt;enumeration value="highContrast"/>
  *     &lt;enumeration value="black"/>
  *     &lt;enumeration value="white"/>
  *     &lt;enumeration value="hide"/>
- *     &lt;enumeration value="numModes"/>
  *     &lt;enumeration value="undrawn"/>
  *     &lt;enumeration value="blackTextAndLines"/>
  *   &lt;/restriction>
@@ -56,30 +55,88 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STBWMode {
 
+
+    /**
+     * Color
+     * 
+     */
     @XmlEnumValue("color")
     COLOR("color"),
+
+    /**
+     * Automatic
+     * 
+     */
     @XmlEnumValue("auto")
     AUTO("auto"),
-    @XmlEnumValue("grayscale")
-    GRAYSCALE("grayscale"),
-    @XmlEnumValue("lightGrayScale")
-    LIGHT_GRAY_SCALE("lightGrayScale"),
+
+    /**
+     * Grayscale
+     * 
+     */
+    @XmlEnumValue("grayScale")
+    GRAY_SCALE("grayScale"),
+
+    /**
+     * Light grayscale
+     * 
+     */
+    @XmlEnumValue("lightGrayscale")
+    LIGHT_GRAYSCALE("lightGrayscale"),
+
+    /**
+     * Inverse Grayscale
+     * 
+     */
     @XmlEnumValue("inverseGray")
     INVERSE_GRAY("inverseGray"),
+
+    /**
+     * Gray Outlines
+     * 
+     */
     @XmlEnumValue("grayOutline")
     GRAY_OUTLINE("grayOutline"),
+
+    /**
+     * Black And White
+     * 
+     */
     @XmlEnumValue("highContrast")
     HIGH_CONTRAST("highContrast"),
+
+    /**
+     * Black
+     * 
+     */
     @XmlEnumValue("black")
     BLACK("black"),
+
+    /**
+     * White
+     * 
+     */
     @XmlEnumValue("white")
     WHITE("white"),
+
+    /**
+     * Hide Object When Displayed in Black and White
+     * 
+     */
     @XmlEnumValue("hide")
     HIDE("hide"),
-    @XmlEnumValue("numModes")
-    NUM_MODES("numModes"),
+
+    /**
+     * Do Not Show
+     * 
+     */
     @XmlEnumValue("undrawn")
     UNDRAWN("undrawn"),
+
+    /**
+     * Black Text And Lines
+     * 
+     */
     @XmlEnumValue("blackTextAndLines")
     BLACK_TEXT_AND_LINES("blackTextAndLines");
     private final String value;

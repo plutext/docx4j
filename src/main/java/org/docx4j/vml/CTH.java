@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -44,7 +44,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;attribute name="map" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="invx" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
  *       &lt;attribute name="invy" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
- *       &lt;attribute name="switch" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
+ *       &lt;attribute name="switch" type="{urn:schemas-microsoft-com:vml}ST_TrueFalseBlank" />
  *       &lt;attribute name="xrange" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="yrange" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="radiusrange" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -61,23 +61,23 @@ public class CTH
     implements Child
 {
 
-    @XmlAttribute
+    @XmlAttribute(name = "position")
     protected String position;
-    @XmlAttribute
+    @XmlAttribute(name = "polar")
     protected String polar;
-    @XmlAttribute
+    @XmlAttribute(name = "map")
     protected String map;
-    @XmlAttribute
-    protected String invx;
-    @XmlAttribute
-    protected String invy;
+    @XmlAttribute(name = "invx")
+    protected STTrueFalse invx;
+    @XmlAttribute(name = "invy")
+    protected STTrueFalse invy;
     @XmlAttribute(name = "switch")
     protected String _switch;
-    @XmlAttribute
+    @XmlAttribute(name = "xrange")
     protected String xrange;
-    @XmlAttribute
+    @XmlAttribute(name = "yrange")
     protected String yrange;
-    @XmlAttribute
+    @XmlAttribute(name = "radiusrange")
     protected String radiusrange;
     @XmlTransient
     private Object parent;
@@ -159,10 +159,10 @@ public class CTH
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getInvx() {
+    public STTrueFalse getInvx() {
         return invx;
     }
 
@@ -171,10 +171,10 @@ public class CTH
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setInvx(String value) {
+    public void setInvx(STTrueFalse value) {
         this.invx = value;
     }
 
@@ -183,10 +183,10 @@ public class CTH
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getInvy() {
+    public STTrueFalse getInvy() {
         return invy;
     }
 
@@ -195,10 +195,10 @@ public class CTH
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setInvy(String value) {
+    public void setInvy(STTrueFalse value) {
         this.invy = value;
     }
 

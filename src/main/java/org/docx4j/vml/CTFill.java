@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -22,20 +22,13 @@
 package org.docx4j.vml;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyAttribute;
-import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.namespace.QName;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -49,33 +42,35 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;any/>
+ *         &lt;element ref="{urn:schemas-microsoft-com:office:office}fill" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="type" type="{urn:schemas-microsoft-com:vml}ST_FillType" default="solid" />
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Id"/>
+ *       &lt;attribute name="type" type="{urn:schemas-microsoft-com:vml}ST_FillType" />
  *       &lt;attribute name="on" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
- *       &lt;attribute name="color" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="color" type="{urn:schemas-microsoft-com:vml}ST_ColorType" />
  *       &lt;attribute name="opacity" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="color2" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="opacity2" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="color2" type="{urn:schemas-microsoft-com:vml}ST_ColorType" />
  *       &lt;attribute name="src" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="href" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="althref" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="title" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}href"/>
+ *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}althref"/>
  *       &lt;attribute name="size" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="origin" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="position" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="aspect" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="aspect" type="{urn:schemas-microsoft-com:vml}ST_ImageAspect" />
  *       &lt;attribute name="colors" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="angle" type="{http://www.w3.org/2001/XMLSchema}decimal" />
+ *       &lt;attribute name="alignshape" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
  *       &lt;attribute name="focus" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="focussize" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="focusposition" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="method" type="{urn:schemas-microsoft-com:vml}ST_FillMethod" />
  *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}detectmouseclick"/>
  *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}title"/>
- *       &lt;attribute name="alignshape" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
  *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}opacity2"/>
+ *       &lt;attribute name="recolor" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
+ *       &lt;attribute name="rotate" type="{urn:schemas-microsoft-com:vml}ST_TrueFalse" />
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"/>
+ *       &lt;attribute ref="{urn:schemas-microsoft-com:office:office}relid"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -85,120 +80,92 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Fill", propOrder = {
-    "any"
+    "fill"
 })
-public class CTFill
-    implements Child
+public class CTFill implements Child
 {
 
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    @XmlAttribute
-    protected String id;
-    @XmlAttribute
+    @XmlElement(namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.CTFill fill;
+    @XmlAttribute(name = "type")
     protected STFillType type;
-    @XmlAttribute
-    protected String on;
-    @XmlAttribute
+    @XmlAttribute(name = "on")
+    protected org.docx4j.vml.STTrueFalse on;
+    @XmlAttribute(name = "color")
     protected String color;
-    @XmlAttribute
+    @XmlAttribute(name = "opacity")
     protected String opacity;
-    @XmlAttribute
+    @XmlAttribute(name = "color2")
     protected String color2;
-    @XmlAttribute
-    protected String opacity2;
-    @XmlAttribute
+    @XmlAttribute(name = "src")
     protected String src;
-    @XmlAttribute
+    @XmlAttribute(name = "href", namespace = "urn:schemas-microsoft-com:office:office")
     protected String href;
-    @XmlAttribute
+    @XmlAttribute(name = "althref", namespace = "urn:schemas-microsoft-com:office:office")
     protected String althref;
-    @XmlAttribute
-    protected String title;
-    @XmlAttribute
+    @XmlAttribute(name = "size")
     protected String size;
-    @XmlAttribute
+    @XmlAttribute(name = "origin")
     protected String origin;
-    @XmlAttribute
+    @XmlAttribute(name = "position")
     protected String position;
-    @XmlAttribute
-    protected String aspect;
-    @XmlAttribute
+    @XmlAttribute(name = "aspect")
+    protected STImageAspect aspect;
+    @XmlAttribute(name = "colors")
     protected String colors;
-    @XmlAttribute
+    @XmlAttribute(name = "angle")
     protected BigDecimal angle;
-    @XmlAttribute
+    @XmlAttribute(name = "alignshape")
+    protected org.docx4j.vml.STTrueFalse alignshape;
+    @XmlAttribute(name = "focus")
     protected String focus;
-    @XmlAttribute
+    @XmlAttribute(name = "focussize")
     protected String focussize;
-    @XmlAttribute
+    @XmlAttribute(name = "focusposition")
     protected String focusposition;
-    @XmlAttribute
+    @XmlAttribute(name = "method")
     protected STFillMethod method;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:office:office")
-    protected String detectmouseclick;
+    @XmlAttribute(name = "detectmouseclick", namespace = "urn:schemas-microsoft-com:office:office")
+    protected org.docx4j.vml.officedrawing.STTrueFalse detectmouseclick;
     @XmlAttribute(name = "title", namespace = "urn:schemas-microsoft-com:office:office")
-    protected String titleo;
-    @XmlAttribute
-    protected String alignshape;
+    protected String title;
     @XmlAttribute(name = "opacity2", namespace = "urn:schemas-microsoft-com:office:office")
-    protected BigInteger opacity2O;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+    protected String opacity2;
+    @XmlAttribute(name = "recolor")
+    protected org.docx4j.vml.STTrueFalse recolor;
+    @XmlAttribute(name = "rotate")
+    protected org.docx4j.vml.STTrueFalse rotate;
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    protected String id;
+    @XmlAttribute(name = "relid", namespace = "urn:schemas-microsoft-com:office:office")
+    protected String relid;
+    @XmlAttribute(name = "id")
+    protected String vmlId;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
-
-    /**
-     * Gets the value of the id property.
+     * Gets the value of the fill property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.CTFill }
      *     
      */
-    public String getId() {
-        return id;
+    public org.docx4j.vml.officedrawing.CTFill getFill() {
+        return fill;
     }
 
     /**
-     * Sets the value of the id property.
+     * Sets the value of the fill property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.CTFill }
      *     
      */
-    public void setId(String value) {
-        this.id = value;
+    public void setFill(org.docx4j.vml.officedrawing.CTFill value) {
+        this.fill = value;
     }
 
     /**
@@ -210,11 +177,7 @@ public class CTFill
      *     
      */
     public STFillType getType() {
-        if (type == null) {
-            return STFillType.SOLID;
-        } else {
-            return type;
-        }
+        return type;
     }
 
     /**
@@ -234,10 +197,10 @@ public class CTFill
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public String getOn() {
+    public org.docx4j.vml.STTrueFalse getOn() {
         return on;
     }
 
@@ -246,10 +209,10 @@ public class CTFill
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setOn(String value) {
+    public void setOn(org.docx4j.vml.STTrueFalse value) {
         this.on = value;
     }
 
@@ -326,30 +289,6 @@ public class CTFill
     }
 
     /**
-     * Gets the value of the opacity2 property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getOpacity2() {
-        return opacity2;
-    }
-
-    /**
-     * Sets the value of the opacity2 property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setOpacity2(String value) {
-        this.opacity2 = value;
-    }
-
-    /**
      * Gets the value of the src property.
      * 
      * @return
@@ -374,7 +313,7 @@ public class CTFill
     }
 
     /**
-     * Gets the value of the href property.
+     * Hyperlink Target
      * 
      * @return
      *     possible object is
@@ -398,7 +337,7 @@ public class CTFill
     }
 
     /**
-     * Gets the value of the althref property.
+     * Alternate Image Reference Location
      * 
      * @return
      *     possible object is
@@ -419,30 +358,6 @@ public class CTFill
      */
     public void setAlthref(String value) {
         this.althref = value;
-    }
-
-    /**
-     * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTitle(String value) {
-        this.title = value;
     }
 
     /**
@@ -522,10 +437,10 @@ public class CTFill
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STImageAspect }
      *     
      */
-    public String getAspect() {
+    public STImageAspect getAspect() {
         return aspect;
     }
 
@@ -534,10 +449,10 @@ public class CTFill
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STImageAspect }
      *     
      */
-    public void setAspect(String value) {
+    public void setAspect(STImageAspect value) {
         this.aspect = value;
     }
 
@@ -587,6 +502,30 @@ public class CTFill
      */
     public void setAngle(BigDecimal value) {
         this.angle = value;
+    }
+
+    /**
+     * Gets the value of the alignshape property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public org.docx4j.vml.STTrueFalse getAlignshape() {
+        return alignshape;
+    }
+
+    /**
+     * Sets the value of the alignshape property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public void setAlignshape(org.docx4j.vml.STTrueFalse value) {
+        this.alignshape = value;
     }
 
     /**
@@ -686,14 +625,14 @@ public class CTFill
     }
 
     /**
-     * Gets the value of the detectmouseclick property.
+     * Detect Mouse Click
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
      *     
      */
-    public String getDetectmouseclick() {
+    public org.docx4j.vml.officedrawing.STTrueFalse getDetectmouseclick() {
         return detectmouseclick;
     }
 
@@ -702,101 +641,179 @@ public class CTFill
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link org.docx4j.vml.officedrawing.STTrueFalse }
      *     
      */
-    public void setDetectmouseclick(String value) {
+    public void setDetectmouseclick(org.docx4j.vml.officedrawing.STTrueFalse value) {
         this.detectmouseclick = value;
     }
 
     /**
-     * Gets the value of the titleo property.
+     * Title
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTitleo() {
-        return titleo;
+    public String getTitle() {
+        return title;
     }
 
     /**
-     * Sets the value of the titleo property.
+     * Sets the value of the title property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTitleo(String value) {
-        this.titleo = value;
+    public void setTitle(String value) {
+        this.title = value;
     }
 
     /**
-     * Gets the value of the alignshape property.
+     * Secondary Color Opacity
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getAlignshape() {
-        return alignshape;
+    public String getOpacity2() {
+        return opacity2;
     }
 
     /**
-     * Sets the value of the alignshape property.
+     * Sets the value of the opacity2 property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setAlignshape(String value) {
-        this.alignshape = value;
+    public void setOpacity2(String value) {
+        this.opacity2 = value;
     }
 
     /**
-     * Gets the value of the opacity2O property.
+     * Gets the value of the recolor property.
      * 
      * @return
      *     possible object is
-     *     {@link BigInteger }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public BigInteger getOpacity2O() {
-        return opacity2O;
+    public org.docx4j.vml.STTrueFalse getRecolor() {
+        return recolor;
     }
 
     /**
-     * Sets the value of the opacity2O property.
+     * Sets the value of the recolor property.
      * 
      * @param value
      *     allowed object is
-     *     {@link BigInteger }
+     *     {@link org.docx4j.vml.STTrueFalse }
      *     
      */
-    public void setOpacity2O(BigInteger value) {
-        this.opacity2O = value;
+    public void setRecolor(org.docx4j.vml.STTrueFalse value) {
+        this.recolor = value;
     }
 
     /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
+     * Gets the value of the rotate property.
      * 
      * @return
-     *     always non-null
+     *     possible object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
      */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
+    public org.docx4j.vml.STTrueFalse getRotate() {
+        return rotate;
+    }
+
+    /**
+     * Sets the value of the rotate property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link org.docx4j.vml.STTrueFalse }
+     *     
+     */
+    public void setRotate(org.docx4j.vml.STTrueFalse value) {
+        this.rotate = value;
+    }
+
+    /**
+     * Relationship to Part
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setId(String value) {
+        this.id = value;
+    }
+
+    /**
+     * Relationship to Part
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getRelid() {
+        return relid;
+    }
+
+    /**
+     * Sets the value of the relid property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setRelid(String value) {
+        this.relid = value;
+    }
+
+    /**
+     * Gets the value of the vmlId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getVmlId() {
+        return vmlId;
+    }
+
+    /**
+     * Sets the value of the vmlId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setVmlId(String value) {
+        this.vmlId = value;
     }
 
     /**

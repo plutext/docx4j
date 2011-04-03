@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -19,7 +19,7 @@
  */
 
 
-package org.docx4j.vml;
+package org.docx4j.vml.officedrawing;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
@@ -27,34 +27,57 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for ST_ArrowWidth.
+ * <p>Java class for ST_TrueFalse.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_ArrowWidth">
+ * &lt;simpleType name="ST_TrueFalse">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="narrow"/>
- *     &lt;enumeration value="medium"/>
- *     &lt;enumeration value="wide"/>
+ *     &lt;enumeration value="t"/>
+ *     &lt;enumeration value="f"/>
+ *     &lt;enumeration value="true"/>
+ *     &lt;enumeration value="false"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "ST_ArrowWidth")
+@XmlType(name = "ST_TrueFalse")
 @XmlEnum
-public enum STArrowWidth {
+public enum STTrueFalse {
 
-    @XmlEnumValue("narrow")
-    NARROW("narrow"),
-    @XmlEnumValue("medium")
-    MEDIUM("medium"),
-    @XmlEnumValue("wide")
-    WIDE("wide");
+
+    /**
+     * True
+     * 
+     */
+    @XmlEnumValue("t")
+    T("t"),
+
+    /**
+     * False
+     * 
+     */
+    @XmlEnumValue("f")
+    F("f"),
+
+    /**
+     * True
+     * 
+     */
+    @XmlEnumValue("true")
+    TRUE("true"),
+
+    /**
+     * False
+     * 
+     */
+    @XmlEnumValue("false")
+    FALSE("false");
     private final String value;
 
-    STArrowWidth(String v) {
+    STTrueFalse(String v) {
         value = v;
     }
 
@@ -62,8 +85,8 @@ public enum STArrowWidth {
         return value;
     }
 
-    public static STArrowWidth fromValue(String v) {
-        for (STArrowWidth c: STArrowWidth.values()) {
+    public static STTrueFalse fromValue(String v) {
+        for (STTrueFalse c: STTrueFalse.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

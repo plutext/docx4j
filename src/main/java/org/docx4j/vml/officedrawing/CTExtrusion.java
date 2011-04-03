@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -40,7 +40,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_Extrusion">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *       &lt;attribute name="on" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="type" type="{urn:schemas-microsoft-com:office:office}ST_ExtrusionType" default="parallel" />
  *       &lt;attribute name="render" type="{urn:schemas-microsoft-com:office:office}ST_ExtrusionRender" default="solid" />
@@ -49,7 +49,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;attribute name="plane" type="{urn:schemas-microsoft-com:office:office}ST_ExtrusionPlane" default="XY" />
  *       &lt;attribute name="skewangle" type="{http://www.w3.org/2001/XMLSchema}float" />
  *       &lt;attribute name="skewamt" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="foredepth" type="{http://www.w3.org/2001/XMLSchema}float" />
+ *       &lt;attribute name="foredepth" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="backdepth" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="orientation" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="orientationangle" type="{http://www.w3.org/2001/XMLSchema}float" />
@@ -57,8 +57,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;attribute name="autorotationcenter" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="rotationcenter" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="rotationangle" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="colormode" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
- *       &lt;attribute name="color" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="colormode" type="{urn:schemas-microsoft-com:office:office}ST_ColorMode" />
+ *       &lt;attribute name="color" type="{urn:schemas-microsoft-com:office:office}ST_ColorType" />
  *       &lt;attribute name="shininess" type="{http://www.w3.org/2001/XMLSchema}float" />
  *       &lt;attribute name="specularity" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="diffusity" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -82,116 +82,87 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Extrusion")
-public class CTExtrusion
-    implements Child
+public class CTExtrusion implements Child
 {
 
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
-    protected STExt ext;
-    @XmlAttribute
-    protected String on;
-    @XmlAttribute
+    @XmlAttribute(name = "on")
+    protected STTrueFalse on;
+    @XmlAttribute(name = "type")
     protected STExtrusionType type;
-    @XmlAttribute
+    @XmlAttribute(name = "render")
     protected STExtrusionRender render;
-    @XmlAttribute
+    @XmlAttribute(name = "viewpointorigin")
     protected String viewpointorigin;
-    @XmlAttribute
+    @XmlAttribute(name = "viewpoint")
     protected String viewpoint;
-    @XmlAttribute
+    @XmlAttribute(name = "plane")
     protected STExtrusionPlane plane;
-    @XmlAttribute
+    @XmlAttribute(name = "skewangle")
     protected Float skewangle;
-    @XmlAttribute
+    @XmlAttribute(name = "skewamt")
     protected String skewamt;
-    @XmlAttribute
-    protected Float foredepth;
-    @XmlAttribute
+    @XmlAttribute(name = "foredepth")
+    protected String foredepth;
+    @XmlAttribute(name = "backdepth")
     protected String backdepth;
-    @XmlAttribute
+    @XmlAttribute(name = "orientation")
     protected String orientation;
-    @XmlAttribute
+    @XmlAttribute(name = "orientationangle")
     protected Float orientationangle;
-    @XmlAttribute
-    protected String lockrotationcenter;
-    @XmlAttribute
-    protected String autorotationcenter;
-    @XmlAttribute
+    @XmlAttribute(name = "lockrotationcenter")
+    protected STTrueFalse lockrotationcenter;
+    @XmlAttribute(name = "autorotationcenter")
+    protected STTrueFalse autorotationcenter;
+    @XmlAttribute(name = "rotationcenter")
     protected String rotationcenter;
-    @XmlAttribute
+    @XmlAttribute(name = "rotationangle")
     protected String rotationangle;
-    @XmlAttribute
-    protected String colormode;
-    @XmlAttribute
+    @XmlAttribute(name = "colormode")
+    protected STColorMode colormode;
+    @XmlAttribute(name = "color")
     protected String color;
-    @XmlAttribute
+    @XmlAttribute(name = "shininess")
     protected Float shininess;
-    @XmlAttribute
+    @XmlAttribute(name = "specularity")
     protected String specularity;
-    @XmlAttribute
+    @XmlAttribute(name = "diffusity")
     protected String diffusity;
-    @XmlAttribute
-    protected String metal;
-    @XmlAttribute
+    @XmlAttribute(name = "metal")
+    protected STTrueFalse metal;
+    @XmlAttribute(name = "edge")
     protected String edge;
-    @XmlAttribute
+    @XmlAttribute(name = "facet")
     protected String facet;
-    @XmlAttribute
-    protected String lightface;
-    @XmlAttribute
+    @XmlAttribute(name = "lightface")
+    protected STTrueFalse lightface;
+    @XmlAttribute(name = "brightness")
     protected String brightness;
-    @XmlAttribute
+    @XmlAttribute(name = "lightposition")
     protected String lightposition;
-    @XmlAttribute
+    @XmlAttribute(name = "lightlevel")
     protected String lightlevel;
-    @XmlAttribute
-    protected String lightharsh;
-    @XmlAttribute
+    @XmlAttribute(name = "lightharsh")
+    protected STTrueFalse lightharsh;
+    @XmlAttribute(name = "lightposition2")
     protected String lightposition2;
-    @XmlAttribute
+    @XmlAttribute(name = "lightlevel2")
     protected String lightlevel2;
-    @XmlAttribute
-    protected String lightharsh2;
+    @XmlAttribute(name = "lightharsh2")
+    protected STTrueFalse lightharsh2;
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
+    protected STExt ext;
     @XmlTransient
     private Object parent;
-
-    /**
-     * Gets the value of the ext property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link STExt }
-     *     
-     */
-    public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
-    }
-
-    /**
-     * Sets the value of the ext property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link STExt }
-     *     
-     */
-    public void setExt(STExt value) {
-        this.ext = value;
-    }
 
     /**
      * Gets the value of the on property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getOn() {
+    public STTrueFalse getOn() {
         return on;
     }
 
@@ -200,10 +171,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setOn(String value) {
+    public void setOn(STTrueFalse value) {
         this.on = value;
     }
 
@@ -392,10 +363,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link Float }
+     *     {@link String }
      *     
      */
-    public Float getForedepth() {
+    public String getForedepth() {
         return foredepth;
     }
 
@@ -404,10 +375,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link Float }
+     *     {@link String }
      *     
      */
-    public void setForedepth(Float value) {
+    public void setForedepth(String value) {
         this.foredepth = value;
     }
 
@@ -488,10 +459,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getLockrotationcenter() {
+    public STTrueFalse getLockrotationcenter() {
         return lockrotationcenter;
     }
 
@@ -500,10 +471,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setLockrotationcenter(String value) {
+    public void setLockrotationcenter(STTrueFalse value) {
         this.lockrotationcenter = value;
     }
 
@@ -512,10 +483,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getAutorotationcenter() {
+    public STTrueFalse getAutorotationcenter() {
         return autorotationcenter;
     }
 
@@ -524,10 +495,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setAutorotationcenter(String value) {
+    public void setAutorotationcenter(STTrueFalse value) {
         this.autorotationcenter = value;
     }
 
@@ -584,10 +555,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STColorMode }
      *     
      */
-    public String getColormode() {
+    public STColorMode getColormode() {
         return colormode;
     }
 
@@ -596,10 +567,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STColorMode }
      *     
      */
-    public void setColormode(String value) {
+    public void setColormode(STColorMode value) {
         this.colormode = value;
     }
 
@@ -704,10 +675,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getMetal() {
+    public STTrueFalse getMetal() {
         return metal;
     }
 
@@ -716,10 +687,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setMetal(String value) {
+    public void setMetal(STTrueFalse value) {
         this.metal = value;
     }
 
@@ -776,10 +747,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getLightface() {
+    public STTrueFalse getLightface() {
         return lightface;
     }
 
@@ -788,10 +759,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setLightface(String value) {
+    public void setLightface(STTrueFalse value) {
         this.lightface = value;
     }
 
@@ -872,10 +843,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getLightharsh() {
+    public STTrueFalse getLightharsh() {
         return lightharsh;
     }
 
@@ -884,10 +855,10 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setLightharsh(String value) {
+    public void setLightharsh(STTrueFalse value) {
         this.lightharsh = value;
     }
 
@@ -944,10 +915,10 @@ public class CTExtrusion
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getLightharsh2() {
+    public STTrueFalse getLightharsh2() {
         return lightharsh2;
     }
 
@@ -956,11 +927,35 @@ public class CTExtrusion
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setLightharsh2(String value) {
+    public void setLightharsh2(STTrueFalse value) {
         this.lightharsh2 = value;
+    }
+
+    /**
+     * Gets the value of the ext property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STExt }
+     *     
+     */
+    public STExt getExt() {
+        return ext;
+    }
+
+    /**
+     * Sets the value of the ext property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STExt }
+     *     
+     */
+    public void setExt(STExt value) {
+        this.ext = value;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -40,7 +40,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_Callout">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *       &lt;attribute name="on" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="gap" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -49,7 +49,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *       &lt;attribute name="drop" type="{urn:schemas-microsoft-com:office:office}ST_CalloutDrop" />
  *       &lt;attribute name="distance" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="lengthspecified" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" default="f" />
- *       &lt;attribute name="length" type="{http://www.w3.org/2001/XMLSchema}float" />
+ *       &lt;attribute name="length" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="accentbar" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="textborder" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="minusx" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
@@ -63,78 +63,49 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Callout")
-public class CTCallout
-    implements Child
+public class CTCallout implements Child
 {
 
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
-    protected STExt ext;
-    @XmlAttribute
-    protected String on;
-    @XmlAttribute
+    @XmlAttribute(name = "on")
+    protected STTrueFalse on;
+    @XmlAttribute(name = "type")
     protected String type;
-    @XmlAttribute
+    @XmlAttribute(name = "gap")
     protected String gap;
-    @XmlAttribute
+    @XmlAttribute(name = "angle")
     protected String angle;
-    @XmlAttribute
-    protected String dropauto;
-    @XmlAttribute
+    @XmlAttribute(name = "dropauto")
+    protected STTrueFalse dropauto;
+    @XmlAttribute(name = "drop")
     protected String drop;
-    @XmlAttribute
+    @XmlAttribute(name = "distance")
     protected String distance;
-    @XmlAttribute
-    protected String lengthspecified;
-    @XmlAttribute
-    protected Float length;
-    @XmlAttribute
-    protected String accentbar;
-    @XmlAttribute
-    protected String textborder;
-    @XmlAttribute
-    protected String minusx;
-    @XmlAttribute
-    protected String minusy;
+    @XmlAttribute(name = "lengthspecified")
+    protected STTrueFalse lengthspecified;
+    @XmlAttribute(name = "length")
+    protected String length;
+    @XmlAttribute(name = "accentbar")
+    protected STTrueFalse accentbar;
+    @XmlAttribute(name = "textborder")
+    protected STTrueFalse textborder;
+    @XmlAttribute(name = "minusx")
+    protected STTrueFalse minusx;
+    @XmlAttribute(name = "minusy")
+    protected STTrueFalse minusy;
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
+    protected STExt ext;
     @XmlTransient
     private Object parent;
-
-    /**
-     * Gets the value of the ext property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link STExt }
-     *     
-     */
-    public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
-    }
-
-    /**
-     * Sets the value of the ext property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link STExt }
-     *     
-     */
-    public void setExt(STExt value) {
-        this.ext = value;
-    }
 
     /**
      * Gets the value of the on property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getOn() {
+    public STTrueFalse getOn() {
         return on;
     }
 
@@ -143,10 +114,10 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setOn(String value) {
+    public void setOn(STTrueFalse value) {
         this.on = value;
     }
 
@@ -227,10 +198,10 @@ public class CTCallout
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getDropauto() {
+    public STTrueFalse getDropauto() {
         return dropauto;
     }
 
@@ -239,10 +210,10 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setDropauto(String value) {
+    public void setDropauto(STTrueFalse value) {
         this.dropauto = value;
     }
 
@@ -299,12 +270,12 @@ public class CTCallout
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getLengthspecified() {
+    public STTrueFalse getLengthspecified() {
         if (lengthspecified == null) {
-            return "f";
+            return STTrueFalse.F;
         } else {
             return lengthspecified;
         }
@@ -315,10 +286,10 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setLengthspecified(String value) {
+    public void setLengthspecified(STTrueFalse value) {
         this.lengthspecified = value;
     }
 
@@ -327,10 +298,10 @@ public class CTCallout
      * 
      * @return
      *     possible object is
-     *     {@link Float }
+     *     {@link String }
      *     
      */
-    public Float getLength() {
+    public String getLength() {
         return length;
     }
 
@@ -339,10 +310,10 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link Float }
+     *     {@link String }
      *     
      */
-    public void setLength(Float value) {
+    public void setLength(String value) {
         this.length = value;
     }
 
@@ -351,10 +322,10 @@ public class CTCallout
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getAccentbar() {
+    public STTrueFalse getAccentbar() {
         return accentbar;
     }
 
@@ -363,10 +334,10 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setAccentbar(String value) {
+    public void setAccentbar(STTrueFalse value) {
         this.accentbar = value;
     }
 
@@ -375,10 +346,10 @@ public class CTCallout
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getTextborder() {
+    public STTrueFalse getTextborder() {
         return textborder;
     }
 
@@ -387,10 +358,10 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setTextborder(String value) {
+    public void setTextborder(STTrueFalse value) {
         this.textborder = value;
     }
 
@@ -399,10 +370,10 @@ public class CTCallout
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getMinusx() {
+    public STTrueFalse getMinusx() {
         return minusx;
     }
 
@@ -411,10 +382,10 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setMinusx(String value) {
+    public void setMinusx(STTrueFalse value) {
         this.minusx = value;
     }
 
@@ -423,10 +394,10 @@ public class CTCallout
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getMinusy() {
+    public STTrueFalse getMinusy() {
         return minusy;
     }
 
@@ -435,11 +406,35 @@ public class CTCallout
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setMinusy(String value) {
+    public void setMinusy(STTrueFalse value) {
         this.minusy = value;
+    }
+
+    /**
+     * Gets the value of the ext property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STExt }
+     *     
+     */
+    public STExt getExt() {
+        return ext;
+    }
+
+    /**
+     * Sets the value of the ext property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STExt }
+     *     
+     */
+    public void setExt(STExt value) {
+        this.ext = value;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -30,10 +30,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.vml.CTFill;
-import org.docx4j.vml.CTImageData;
 import org.docx4j.vml.CTShadow;
 import org.docx4j.vml.CTStroke;
-import org.docx4j.vml.CTTextPath;
 import org.docx4j.vml.CTTextbox;
 import org.docx4j.vml.STExt;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -48,25 +46,26 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_ShapeDefaults">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
+ *       &lt;all minOccurs="0">
  *         &lt;element ref="{urn:schemas-microsoft-com:vml}fill" minOccurs="0"/>
  *         &lt;element ref="{urn:schemas-microsoft-com:vml}stroke" minOccurs="0"/>
  *         &lt;element ref="{urn:schemas-microsoft-com:vml}textbox" minOccurs="0"/>
  *         &lt;element ref="{urn:schemas-microsoft-com:vml}shadow" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}textpath" minOccurs="0"/>
- *         &lt;element ref="{urn:schemas-microsoft-com:vml}imagedata" minOccurs="0"/>
  *         &lt;element ref="{urn:schemas-microsoft-com:office:office}skew" minOccurs="0"/>
  *         &lt;element ref="{urn:schemas-microsoft-com:office:office}extrusion" minOccurs="0"/>
  *         &lt;element ref="{urn:schemas-microsoft-com:office:office}callout" minOccurs="0"/>
  *         &lt;element ref="{urn:schemas-microsoft-com:office:office}lock" minOccurs="0"/>
- *         &lt;element name="colormru" type="{urn:schemas-microsoft-com:office:office}CT_ColorMRU" minOccurs="0"/>
+ *         &lt;element name="colormru" type="{urn:schemas-microsoft-com:office:office}CT_ColorMru" minOccurs="0"/>
  *         &lt;element name="colormenu" type="{urn:schemas-microsoft-com:office:office}CT_ColorMenu" minOccurs="0"/>
- *       &lt;/sequence>
+ *       &lt;/all>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *       &lt;attribute name="spidmax" type="{http://www.w3.org/2001/XMLSchema}integer" />
  *       &lt;attribute name="style" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="fill" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
- *       &lt;attribute name="fillcolor" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attribute name="fillcolor" type="{urn:schemas-microsoft-com:office:office}ST_ColorType" />
+ *       &lt;attribute name="stroke" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
+ *       &lt;attribute name="strokecolor" type="{urn:schemas-microsoft-com:office:office}ST_ColorType" />
+ *       &lt;attribute name="allowincell" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -75,20 +74,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace = "urn:schemas-microsoft-com:office:office",
-		 name = "CT_ShapeDefaults", propOrder = {
-    "fill",
-    "stroke",
-    "textbox",
-    "shadow",
-    "textpath",
-    "imagedata",
-    "skew",
-    "extrusion",
-    "callout",
-    "lock",
-    "colormru",
-    "colormenu"
+@XmlType(namespace = "urn:schemas-microsoft-com:office:office", name = "CT_ShapeDefaults", propOrder = {
+
 })
 public class CTShapeDefaults
     implements Child
@@ -102,25 +89,27 @@ public class CTShapeDefaults
     protected CTTextbox textbox;
     @XmlElement(namespace = "urn:schemas-microsoft-com:vml")
     protected CTShadow shadow;
-    @XmlElement(namespace = "urn:schemas-microsoft-com:vml")
-    protected CTTextPath textpath;
-    @XmlElement(namespace = "urn:schemas-microsoft-com:vml")
-    protected CTImageData imagedata;
     protected CTSkew skew;
     protected CTExtrusion extrusion;
     protected CTCallout callout;
     protected CTLock lock;
-    protected CTColorMRU colormru;
+    protected CTColorMru colormru;
     protected CTColorMenu colormenu;
-    @XmlAttribute
+    @XmlAttribute(name = "spidmax")
     protected BigInteger spidmax;
-    @XmlAttribute
+    @XmlAttribute(name = "style")
     protected String style;
     @XmlAttribute(name = "fill")
-    protected String fillAttr;
-    @XmlAttribute
+    protected STTrueFalse fillToggle;
+    @XmlAttribute(name = "fillcolor")
     protected String fillcolor;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
+    @XmlAttribute(name = "stroke")
+    protected STTrueFalse strokeToggle;
+    @XmlAttribute(name = "strokecolor")
+    protected String strokecolor;
+    @XmlAttribute(name = "allowincell", namespace = "urn:schemas-microsoft-com:office:office")
+    protected STTrueFalse allowincell;
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
     @XmlTransient
     private Object parent;
@@ -222,54 +211,6 @@ public class CTShapeDefaults
     }
 
     /**
-     * Gets the value of the textpath property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTTextPath }
-     *     
-     */
-    public CTTextPath getTextpath() {
-        return textpath;
-    }
-
-    /**
-     * Sets the value of the textpath property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTTextPath }
-     *     
-     */
-    public void setTextpath(CTTextPath value) {
-        this.textpath = value;
-    }
-
-    /**
-     * Gets the value of the imagedata property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTImageData }
-     *     
-     */
-    public CTImageData getImagedata() {
-        return imagedata;
-    }
-
-    /**
-     * Sets the value of the imagedata property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTImageData }
-     *     
-     */
-    public void setImagedata(CTImageData value) {
-        this.imagedata = value;
-    }
-
-    /**
      * Gets the value of the skew property.
      * 
      * @return
@@ -318,7 +259,7 @@ public class CTShapeDefaults
     }
 
     /**
-     * Gets the value of the callout property.
+     * Callout
      * 
      * @return
      *     possible object is
@@ -342,7 +283,7 @@ public class CTShapeDefaults
     }
 
     /**
-     * Gets the value of the lock property.
+     * Shape Protections
      * 
      * @return
      *     possible object is
@@ -370,10 +311,10 @@ public class CTShapeDefaults
      * 
      * @return
      *     possible object is
-     *     {@link CTColorMRU }
+     *     {@link CTColorMru }
      *     
      */
-    public CTColorMRU getColormru() {
+    public CTColorMru getColormru() {
         return colormru;
     }
 
@@ -382,10 +323,10 @@ public class CTShapeDefaults
      * 
      * @param value
      *     allowed object is
-     *     {@link CTColorMRU }
+     *     {@link CTColorMru }
      *     
      */
-    public void setColormru(CTColorMRU value) {
+    public void setColormru(CTColorMru value) {
         this.colormru = value;
     }
 
@@ -462,27 +403,27 @@ public class CTShapeDefaults
     }
 
     /**
-     * Gets the value of the fillAttr property.
+     * Gets the value of the fillToggle property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getFillAttr() {
-        return fillAttr;
+    public STTrueFalse getFillToggle() {
+        return fillToggle;
     }
 
     /**
-     * Sets the value of the fillAttr property.
+     * Sets the value of the fillToggle property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setFillAttr(String value) {
-        this.fillAttr = value;
+    public void setFillToggle(STTrueFalse value) {
+        this.fillToggle = value;
     }
 
     /**
@@ -510,6 +451,78 @@ public class CTShapeDefaults
     }
 
     /**
+     * Gets the value of the strokeToggle property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getStrokeToggle() {
+        return strokeToggle;
+    }
+
+    /**
+     * Sets the value of the strokeToggle property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setStrokeToggle(STTrueFalse value) {
+        this.strokeToggle = value;
+    }
+
+    /**
+     * Gets the value of the strokecolor property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getStrokecolor() {
+        return strokecolor;
+    }
+
+    /**
+     * Sets the value of the strokecolor property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setStrokecolor(String value) {
+        this.strokecolor = value;
+    }
+
+    /**
+     * Gets the value of the allowincell property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getAllowincell() {
+        return allowincell;
+    }
+
+    /**
+     * Sets the value of the allowincell property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setAllowincell(STTrueFalse value) {
+        this.allowincell = value;
+    }
+
+    /**
      * Gets the value of the ext property.
      * 
      * @return
@@ -518,11 +531,7 @@ public class CTShapeDefaults
      *     
      */
     public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
+        return ext;
     }
 
     /**

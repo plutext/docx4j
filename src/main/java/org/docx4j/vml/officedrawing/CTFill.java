@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,8 +21,6 @@
 
 package org.docx4j.vml.officedrawing;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -34,19 +32,16 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
- * <p>Java class for CT_ColorMRU complex type.
+ * <p>Java class for CT_Fill complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_ColorMRU">
+ * &lt;complexType name="CT_Fill">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="colors" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="8" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
- *       &lt;attribute name="colors" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
+ *       &lt;attribute name="type" type="{urn:schemas-microsoft-com:office:office}ST_FillType" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -55,49 +50,40 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace = "urn:schemas-microsoft-com:office:office",
-		 name = "CT_ColorMRU", propOrder = {
-    "colors"
-})
-public class CTColorMRU
+@XmlType(name = "CT_Fill")
+public class CTFill
     implements Child
 {
 
-    protected List<String> colors;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
+    @XmlAttribute(name = "type")
+    protected STFillType type;
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
-    @XmlAttribute(name = "colors")
-    protected String colorsAttr;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the colors property.
+     * Gets the value of the type property.
      * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the colors property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getColors().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link String }
-     * 
-     * 
+     * @return
+     *     possible object is
+     *     {@link STFillType }
+     *     
      */
-    public List<String> getColors() {
-        if (colors == null) {
-            colors = new ArrayList<String>();
-        }
-        return this.colors;
+    public STFillType getType() {
+        return type;
+    }
+
+    /**
+     * Sets the value of the type property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STFillType }
+     *     
+     */
+    public void setType(STFillType value) {
+        this.type = value;
     }
 
     /**
@@ -109,11 +95,7 @@ public class CTColorMRU
      *     
      */
     public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
+        return ext;
     }
 
     /**
@@ -126,30 +108,6 @@ public class CTColorMRU
      */
     public void setExt(STExt value) {
         this.ext = value;
-    }
-
-    /**
-     * Gets the value of the colorsAttr property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getColorsAttr() {
-        return colorsAttr;
-    }
-
-    /**
-     * Sets the value of the colorsAttr property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setColorsAttr(String value) {
-        this.colorsAttr = value;
     }
 
     /**

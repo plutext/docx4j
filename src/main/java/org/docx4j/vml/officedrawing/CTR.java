@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -56,8 +56,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace = "urn:schemas-microsoft-com:office:office",
-		 name = "CT_R", propOrder = {
+@XmlType(namespace = "urn:schemas-microsoft-com:office:office", name = "CT_R", propOrder = {
     "proxy"
 })
 public class CTR
@@ -65,13 +64,13 @@ public class CTR
 {
 
     protected List<CTProxy> proxy;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "id", required = true)
     protected String id;
-    @XmlAttribute
+    @XmlAttribute(name = "type")
     protected STRType type;
-    @XmlAttribute
+    @XmlAttribute(name = "how")
     protected STHow how;
-    @XmlAttribute
+    @XmlAttribute(name = "idref")
     protected String idref;
     @XmlTransient
     private Object parent;

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -49,16 +49,46 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STHow {
 
+
+    /**
+     * Top Alignment
+     * 
+     */
     @XmlEnumValue("top")
     TOP("top"),
+
+    /**
+     * Middle Alignment
+     * 
+     */
     @XmlEnumValue("middle")
     MIDDLE("middle"),
+
+    /**
+     * Bottom Alignment
+     * 
+     */
     @XmlEnumValue("bottom")
     BOTTOM("bottom"),
+
+    /**
+     * Left Alignment
+     * 
+     */
     @XmlEnumValue("left")
     LEFT("left"),
+
+    /**
+     * Center Alignment
+     * 
+     */
     @XmlEnumValue("center")
     CENTER("center"),
+
+    /**
+     * Right Alignment
+     * 
+     */
     @XmlEnumValue("right")
     RIGHT("right");
     private final String value;
