@@ -82,6 +82,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.VMLPart;
 import org.docx4j.openpackaging.parts.DrawingML.Chart;
 import org.docx4j.openpackaging.parts.DrawingML.Drawing;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
@@ -385,13 +386,15 @@ public class ContentTypeManager  {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.VML_DRAWING)) {
+			return new VMLPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.drawing")) {
 			return JaxbDmlPart.newPartForContentType(contentType, partName);
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
 			return JaxbPmlPart.newPartForContentType(contentType, partName);
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
 			return JaxbSmlPart.newPartForContentType(contentType, partName);
-		}  if (contentType.equals(ContentTypes.APPLICATION_XML)
+		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader

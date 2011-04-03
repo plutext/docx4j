@@ -270,4 +270,5 @@ public class Namespaces {
 	
 	public final static String EMBEDDED_PKG = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package";
 	
+	public final static String VML =  "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
 }
