@@ -1,0 +1,1733 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="urn:schemas-microsoft-com:vml" xmlns="urn:schemas-microsoft-com:vml" xmlns:p="urn:schemas-microsoft-com:office:powerpoint" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wvml="urn:schemas-microsoft-com:office:word" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:x="urn:schemas-microsoft-com:office:excel">
+  <xsd:import namespace="urn:schemas-microsoft-com:office:office" schemaLocation="vml-officeDrawing.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="wml.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:word" schemaLocation="vml-wordprocessingDrawing.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:excel" schemaLocation="vml-spreadsheetDrawing.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:powerpoint" schemaLocation="vml-presentationDrawing.xsd" />
+  <xsd:attributeGroup name="AG_Id">
+    <xsd:attribute name="id" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Unique Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_Style">
+    <xsd:attribute name="style" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Styling Properties</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_Type">
+    <xsd:attribute name="type" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Type Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_Adj">
+    <xsd:attribute name="adj" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Adjustment Parameters</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_Path">
+    <xsd:attribute name="path" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Edge Path</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_Fill">
+    <xsd:attribute name="filled" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Fill Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fillcolor" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_Chromakey">
+    <xsd:attribute name="chromakey" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Transparency Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_Ext">
+    <xsd:attribute name="ext" form="qualified" type="ST_Ext">
+      <xsd:annotation>
+        <xsd:documentation>VML Extension Handling Behavior</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_CoreAttributes">
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attributeGroup ref="AG_Style" />
+    <xsd:attribute name="href" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Hyperlink Target</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="target" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Hyperlink Display Target</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="class" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>CSS Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="title" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Title</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="alt" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Alternate Text</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="coordsize" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Coordinate Space Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="coordorigin" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Coordinate Space Origin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="wrapcoords" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Bounding Polygon</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="print" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Print Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_ShapeAttributes">
+    <xsd:attributeGroup ref="AG_Chromakey" />
+    <xsd:attributeGroup ref="AG_Fill" />
+    <xsd:attribute name="opacity" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Color Opacity</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="stroked" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Stroke Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="strokecolor" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Stroke Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="strokeweight" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Stroke Weight</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="insetpen" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Inset Border From Path</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_OfficeCoreAttributes">
+    <xsd:attribute ref="o:spid">
+      <xsd:annotation>
+        <xsd:documentation>Optional String</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:oned">
+      <xsd:annotation>
+        <xsd:documentation>Shape Handle Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:regroupid">
+      <xsd:annotation>
+        <xsd:documentation>Regroup ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:doubleclicknotify">
+      <xsd:annotation>
+        <xsd:documentation>Double-click Notification Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:button">
+      <xsd:annotation>
+        <xsd:documentation>Button Behavior Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:userhidden">
+      <xsd:annotation>
+        <xsd:documentation>Hide Script Anchors</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:bullet">
+      <xsd:annotation>
+        <xsd:documentation>Graphical Bullet</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:hr">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Rule Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:hrstd">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Rule Standard Display Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:hrnoshade">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Rule 3D Shading Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:hrpct">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Rule Length Percentage</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:hralign">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Rule Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:allowincell">
+      <xsd:annotation>
+        <xsd:documentation>Allow in Table Cell</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:allowoverlap">
+      <xsd:annotation>
+        <xsd:documentation>Allow Shape Overlap</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:userdrawn">
+      <xsd:annotation>
+        <xsd:documentation>Exists In Master Slide</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:bordertopcolor">
+      <xsd:annotation>
+        <xsd:documentation>Border Top Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:borderleftcolor">
+      <xsd:annotation>
+        <xsd:documentation>Border Left Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:borderbottomcolor">
+      <xsd:annotation>
+        <xsd:documentation>Bottom Border Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:borderrightcolor">
+      <xsd:annotation>
+        <xsd:documentation>Border Right Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:dgmlayout">
+      <xsd:annotation>
+        <xsd:documentation>Diagram Node Layout Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:dgmnodekind">
+      <xsd:annotation>
+        <xsd:documentation>Diagram Node Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:dgmlayoutmru">
+      <xsd:annotation>
+        <xsd:documentation>Diagram Node Recent Layout Identifier</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:insetmode">
+      <xsd:annotation>
+        <xsd:documentation>Text Inset Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_OfficeShapeAttributes">
+    <xsd:attribute ref="o:spt">
+      <xsd:annotation>
+        <xsd:documentation>Optional Number</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:connectortype">
+      <xsd:annotation>
+        <xsd:documentation>Shape Connector Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:bwmode">
+      <xsd:annotation>
+        <xsd:documentation>Black-and-White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:bwpure">
+      <xsd:annotation>
+        <xsd:documentation>Pure Black-and-White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:bwnormal">
+      <xsd:annotation>
+        <xsd:documentation>Normal Black-and-White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:forcedash">
+      <xsd:annotation>
+        <xsd:documentation>Force Dashed Outline</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:oleicon">
+      <xsd:annotation>
+        <xsd:documentation>Embedded Object Icon Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:ole">
+      <xsd:annotation>
+        <xsd:documentation>Embedded Object Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:preferrelative">
+      <xsd:annotation>
+        <xsd:documentation>Relative Resize Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:cliptowrap">
+      <xsd:annotation>
+        <xsd:documentation>Clip to Wrapping Polygon</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:clip">
+      <xsd:annotation>
+        <xsd:documentation>Clipping Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_AllCoreAttributes">
+    <xsd:attributeGroup ref="AG_CoreAttributes" />
+    <xsd:attributeGroup ref="AG_OfficeCoreAttributes" />
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_AllShapeAttributes">
+    <xsd:attributeGroup ref="AG_ShapeAttributes" />
+    <xsd:attributeGroup ref="AG_OfficeShapeAttributes" />
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_ImageAttributes">
+    <xsd:attribute name="src" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Source</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cropleft" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Left Crop</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="croptop" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Top Crop</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cropright" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Right Crop</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="cropbottom" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Bottom Crop</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="gain" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Intensity</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="blacklevel" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Brightness</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="gamma" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Gamma Correction</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="grayscale" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Grayscale Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="bilevel" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Bilevel Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:attributeGroup name="AG_StrokeAttributes">
+    <xsd:attribute name="on" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="weight" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Weight</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="color" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="opacity" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Opacity</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="linestyle" type="ST_StrokeLineStyle" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Line Style</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="miterlimit" type="xsd:decimal" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Miter Joint Limit</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="joinstyle" type="ST_StrokeJoinStyle" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line End Join Style</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endcap" type="ST_StrokeEndCap" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line End Cap</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="dashstyle" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Dash Pattern</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="filltype" type="ST_FillType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Image Style</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="src" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Image Location</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="imageaspect" type="ST_ImageAspect" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Image Aspect Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="imagesize" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Image Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="imagealignshape" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stoke Image Alignment</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="color2" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Alternate Pattern Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="startarrow" type="ST_StrokeArrowType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line Start Arrowhead</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="startarrowwidth" type="ST_StrokeArrowWidth" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line Start Arrowhead Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="startarrowlength" type="ST_StrokeArrowLength" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line Start Arrowhead Length</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endarrow" type="ST_StrokeArrowType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line End Arrowhead</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endarrowwidth" type="ST_StrokeArrowWidth" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line End Arrowhead Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endarrowlength" type="ST_StrokeArrowLength" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line End Arrowhead Length</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:href">
+      <xsd:annotation>
+        <xsd:documentation>Original Image Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:althref">
+      <xsd:annotation>
+        <xsd:documentation>Alternate Image Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:title">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Title</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:forcedash">
+      <xsd:annotation>
+        <xsd:documentation>Force Dashed Outline</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:id" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Relationship</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="insetpen" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Inset Border From Path</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:relid">
+      <xsd:annotation>
+        <xsd:documentation>Relationship to Part</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:attributeGroup>
+  <xsd:group name="EG_ShapeElements">
+    <xsd:choice>
+      <xsd:element ref="path" />
+      <xsd:element ref="formulas" />
+      <xsd:element ref="handles" />
+      <xsd:element ref="fill" />
+      <xsd:element ref="stroke" />
+      <xsd:element ref="shadow" />
+      <xsd:element ref="textbox" />
+      <xsd:element ref="textpath" />
+      <xsd:element ref="imagedata" />
+      <xsd:element ref="o:skew" />
+      <xsd:element ref="o:extrusion" />
+      <xsd:element ref="o:callout" />
+      <xsd:element ref="o:lock" />
+      <xsd:element ref="o:clippath" />
+      <xsd:element ref="o:signatureline" />
+      <xsd:element ref="wvml:wrap" />
+      <xsd:element ref="wvml:anchorlock" />
+      <xsd:element ref="wvml:bordertop" />
+      <xsd:element ref="wvml:borderbottom" />
+      <xsd:element ref="wvml:borderleft" />
+      <xsd:element ref="wvml:borderright" />
+      <xsd:element ref="x:ClientData" minOccurs="0" />
+      <xsd:element ref="p:textdata" minOccurs="0" />
+    </xsd:choice>
+  </xsd:group>
+  <xsd:element name="shape" type="CT_Shape">
+    <xsd:annotation>
+      <xsd:documentation>Shape Definition</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="shapetype" type="CT_Shapetype">
+    <xsd:annotation>
+      <xsd:documentation>Shape Template</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="group" type="CT_Group">
+    <xsd:annotation>
+      <xsd:documentation>Shape Group</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="background" type="CT_Background">
+    <xsd:annotation>
+      <xsd:documentation>Document Background</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_Shape">
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:group ref="EG_ShapeElements" />
+      <xsd:element ref="o:ink" />
+      <xsd:element ref="p:iscomment" />
+    </xsd:choice>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attributeGroup ref="AG_Type" />
+    <xsd:attributeGroup ref="AG_Adj" />
+    <xsd:attributeGroup ref="AG_Path" />
+    <xsd:attribute ref="o:gfxdata">
+      <xsd:annotation>
+        <xsd:documentation>Encoded Package</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="equationxml" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Storage for Alternate Math Content</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Shapetype">
+    <xsd:sequence>
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="o:complex" minOccurs="0" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attributeGroup ref="AG_Adj" />
+    <xsd:attributeGroup ref="AG_Path" />
+    <xsd:attribute ref="o:master">
+      <xsd:annotation>
+        <xsd:documentation>Master Element Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Group">
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:group ref="EG_ShapeElements" />
+      <xsd:element ref="group" />
+      <xsd:element ref="shape" />
+      <xsd:element ref="shapetype" />
+      <xsd:element ref="arc" />
+      <xsd:element ref="curve" />
+      <xsd:element ref="image" />
+      <xsd:element ref="line" />
+      <xsd:element ref="oval" />
+      <xsd:element ref="polyline" />
+      <xsd:element ref="rect" />
+      <xsd:element ref="roundrect" />
+      <xsd:element ref="o:diagram" />
+    </xsd:choice>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_Fill" />
+    <xsd:attribute name="editas" type="ST_EditAs" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Group Diagram Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:tableproperties">
+      <xsd:annotation>
+        <xsd:documentation>Table Properties</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:tablelimits">
+      <xsd:annotation>
+        <xsd:documentation>Table Row Height Limits</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Background">
+    <xsd:sequence>
+      <xsd:element ref="fill" minOccurs="0" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attributeGroup ref="AG_Fill" />
+    <xsd:attribute ref="o:bwmode">
+      <xsd:annotation>
+        <xsd:documentation>Black-and-White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:bwpure">
+      <xsd:annotation>
+        <xsd:documentation>Pure Black-and-White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:bwnormal">
+      <xsd:annotation>
+        <xsd:documentation>Normal Black-and-White Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:targetscreensize">
+      <xsd:annotation>
+        <xsd:documentation>Target Screen Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="fill" type="CT_Fill">
+    <xsd:annotation>
+      <xsd:documentation>Shape Fill Properties</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="formulas" type="CT_Formulas">
+    <xsd:annotation>
+      <xsd:documentation>Set of Formulas</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="handles" type="CT_Handles">
+    <xsd:annotation>
+      <xsd:documentation>Set of Handles</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="imagedata" type="CT_ImageData">
+    <xsd:annotation>
+      <xsd:documentation>Image Data</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="path" type="CT_Path">
+    <xsd:annotation>
+      <xsd:documentation>Shape Path</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="textbox" type="CT_Textbox">
+    <xsd:annotation>
+      <xsd:documentation>Text Box</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="shadow" type="CT_Shadow">
+    <xsd:annotation>
+      <xsd:documentation>Shadow Effect</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="stroke" type="CT_Stroke">
+    <xsd:annotation>
+      <xsd:documentation>Line Stroke Settings</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="textpath" type="CT_TextPath">
+    <xsd:annotation>
+      <xsd:documentation>Text Layout Path</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_Fill">
+    <xsd:sequence>
+      <xsd:element ref="o:fill" minOccurs="0" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attribute name="type" type="ST_FillType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="on" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="color" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Primary Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="opacity" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Primary Color Opacity</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="color2" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Secondary Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="src" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Image Source</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:href">
+      <xsd:annotation>
+        <xsd:documentation>Hyperlink Target</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:althref">
+      <xsd:annotation>
+        <xsd:documentation>Alternate Image Reference Location</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="size" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Image Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="origin" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Image Origin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="position" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Fill Image Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="aspect" type="ST_ImageAspect" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Image Aspect Ratio</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="colors" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Intermediate Colors</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="angle" type="xsd:decimal" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Gradient Angle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="alignshape" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Align Image With Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="focus" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Gradient Center</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="focussize" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Radial Gradient Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="focusposition" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Radial Gradient Center</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="method" type="ST_FillMethod" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Gradient Fill Method</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:detectmouseclick">
+      <xsd:annotation>
+        <xsd:documentation>Detect Mouse Click</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:title">
+      <xsd:annotation>
+        <xsd:documentation>Title</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:opacity2">
+      <xsd:annotation>
+        <xsd:documentation>Secondary Color Opacity</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="recolor" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Recolor Fill as Picture</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="rotate" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Rotate Fill with Shape</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:id" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Relationship to Part</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:relid" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Relationship to Part</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Formulas">
+    <xsd:sequence>
+      <xsd:element name="f" type="CT_F" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Single Formula</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_F">
+    <xsd:attribute name="eqn" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Equation</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Handles">
+    <xsd:sequence>
+      <xsd:element name="h" type="CT_H" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Shape Handle</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="CT_H">
+    <xsd:attribute name="position" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Handle Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="polar" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Handle Polar Center</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="map" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Handle Coordinate Mapping</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="invx" type="ST_TrueFalse">
+      <xsd:annotation>
+        <xsd:documentation>Invert Handle's X Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="invy" type="ST_TrueFalse">
+      <xsd:annotation>
+        <xsd:documentation>Invert Handle's Y Position</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="switch" type="ST_TrueFalseBlank">
+      <xsd:annotation>
+        <xsd:documentation>Handle Inversion Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="xrange" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Handle X Position Range</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="yrange" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Handle Y Position Range</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="radiusrange" type="xsd:string">
+      <xsd:annotation>
+        <xsd:documentation>Handle Polar Radius Range</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_ImageData">
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attributeGroup ref="AG_ImageAttributes" />
+    <xsd:attributeGroup ref="AG_Chromakey" />
+    <xsd:attribute name="embosscolor" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Embossed Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="recolortarget" type="ST_ColorType">
+      <xsd:annotation>
+        <xsd:documentation>Black Recoloring Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:href">
+      <xsd:annotation>
+        <xsd:documentation>Original Image Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:althref">
+      <xsd:annotation>
+        <xsd:documentation>Alternate Image Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:title">
+      <xsd:annotation>
+        <xsd:documentation>Image Data Title</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:oleid">
+      <xsd:annotation>
+        <xsd:documentation>Image Embedded Object ID</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:detectmouseclick">
+      <xsd:annotation>
+        <xsd:documentation>Detect Mouse Click</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:movie">
+      <xsd:annotation>
+        <xsd:documentation>Movie Reference</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:relid">
+      <xsd:annotation>
+        <xsd:documentation>Relationship to Part</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:id">
+      <xsd:annotation>
+        <xsd:documentation>Explicit Relationship to Image Data</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:pict">
+      <xsd:annotation>
+        <xsd:documentation>Explicit Relationship to Alternate Image Data</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="r:href">
+      <xsd:annotation>
+        <xsd:documentation>Explicit Relationship to Hyperlink Target</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Path">
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attribute name="v" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Path Definition</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="limo" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Limo Stretch Point</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="textboxrect" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Box Bounding Box</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fillok" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Fill Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="strokeok" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Stroke Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="shadowok" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="arrowok" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Arrowhead Display Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="gradientshapeok" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Gradient Shape Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="textpathok" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Path Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="insetpenok" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Inset Stroke From Path Flag</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:connecttype">
+      <xsd:annotation>
+        <xsd:documentation>Connection Point Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:connectlocs">
+      <xsd:annotation>
+        <xsd:documentation>Connection Points</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:connectangles">
+      <xsd:annotation>
+        <xsd:documentation>Connection Point Connect Angles</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:extrusionok">
+      <xsd:annotation>
+        <xsd:documentation>Extrusion Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Shadow">
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attribute name="on" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="type" type="ST_ShadowType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="obscured" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Transparency</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="color" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Primary Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="opacity" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Opacity</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="offset" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Primary Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="color2" type="ST_ColorType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Secondary Color</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="offset2" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Secondary Offset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="origin" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Origin</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="matrix" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shadow Perspective Matrix</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Stroke">
+    <xsd:sequence>
+      <xsd:element ref="o:left" minOccurs="0" />
+      <xsd:element ref="o:top" minOccurs="0" />
+      <xsd:element ref="o:right" minOccurs="0" />
+      <xsd:element ref="o:bottom" minOccurs="0" />
+      <xsd:element ref="o:column" minOccurs="0" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attributeGroup ref="AG_StrokeAttributes" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_Textbox">
+    <xsd:choice>
+      <xsd:element ref="w:txbxContent" minOccurs="0" />
+      <xsd:any namespace="##local" processContents="skip" />
+    </xsd:choice>
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attributeGroup ref="AG_Style" />
+    <xsd:attribute name="inset" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Box Inset</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:singleclick">
+      <xsd:annotation>
+        <xsd:documentation>Text Box Single-Click Selection Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute ref="o:insetmode">
+      <xsd:annotation>
+        <xsd:documentation>Text Inset Mode</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_TextPath">
+    <xsd:attributeGroup ref="AG_Id" />
+    <xsd:attributeGroup ref="AG_Style" />
+    <xsd:attribute name="on" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Path Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fitshape" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Shape Fit Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="fitpath" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Path Fit Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="trim" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Path Trim Toggle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="xscale" type="ST_TrueFalse" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text X-Scaling</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="string" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Text Path Text</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="arc" type="CT_Arc">
+    <xsd:annotation>
+      <xsd:documentation>Arc Segment</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="curve" type="CT_Curve">
+    <xsd:annotation>
+      <xsd:documentation>Bezier Curve</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="image" type="CT_Image">
+    <xsd:annotation>
+      <xsd:documentation>Image File</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="line" type="CT_Line">
+    <xsd:annotation>
+      <xsd:documentation>Line</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="oval" type="CT_Oval">
+    <xsd:annotation>
+      <xsd:documentation>Oval</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="polyline" type="CT_PolyLine">
+    <xsd:annotation>
+      <xsd:documentation>Multiple Path Line</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="rect" type="CT_Rect">
+    <xsd:annotation>
+      <xsd:documentation>Rectangle</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="roundrect" type="CT_RoundRect">
+    <xsd:annotation>
+      <xsd:documentation>Rounded Rectangle</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_Arc">
+    <xsd:sequence>
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attribute name="startAngle" type="xsd:decimal" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Starting Angle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="endAngle" type="xsd:decimal" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Ending Angle</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Curve">
+    <xsd:sequence>
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attribute name="from" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Curve Starting Point</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="control1" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>First Curve Control Point</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="control2" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Second Curve Control Point</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="to" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Curve Ending Point</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Image">
+    <xsd:sequence>
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attributeGroup ref="AG_ImageAttributes" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_Line">
+    <xsd:sequence>
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attribute name="from" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line Start</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="to" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Line End Point</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Oval">
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:choice>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_PolyLine">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:group ref="EG_ShapeElements" />
+      <xsd:element ref="o:ink" />
+    </xsd:choice>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attribute name="points" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Points for Compound Line</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:complexType name="CT_Rect">
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:choice>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+  </xsd:complexType>
+  <xsd:complexType name="CT_RoundRect">
+    <xsd:choice maxOccurs="unbounded">
+      <xsd:group ref="EG_ShapeElements" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:choice>
+    <xsd:attributeGroup ref="AG_AllCoreAttributes" />
+    <xsd:attributeGroup ref="AG_AllShapeAttributes" />
+    <xsd:attribute name="arcsize" type="xsd:string" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Rounded Corner Arc Size</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:simpleType name="ST_Ext">
+    <xsd:annotation>
+      <xsd:documentation>VML Extension Handling Behaviors</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="view">
+        <xsd:annotation>
+          <xsd:documentation>Not renderable</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="edit">
+        <xsd:annotation>
+          <xsd:documentation>Editable</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="backwardCompatible">
+        <xsd:annotation>
+          <xsd:documentation>Renderable</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TrueFalse">
+    <xsd:annotation>
+      <xsd:documentation>Boolean Value</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>True</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="f">
+        <xsd:annotation>
+          <xsd:documentation>False</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="true">
+        <xsd:annotation>
+          <xsd:documentation>True</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="false">
+        <xsd:annotation>
+          <xsd:documentation>False</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ColorType">
+    <xsd:annotation>
+      <xsd:documentation>Color Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string" />
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FillType">
+    <xsd:annotation>
+      <xsd:documentation>Shape Fill Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="solid">
+        <xsd:annotation>
+          <xsd:documentation>Solid Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gradient">
+        <xsd:annotation>
+          <xsd:documentation>Linear Gradient</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="gradientRadial">
+        <xsd:annotation>
+          <xsd:documentation>Radial Gradient</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tile">
+        <xsd:annotation>
+          <xsd:documentation>Tiled Image</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="pattern">
+        <xsd:annotation>
+          <xsd:documentation>Image Pattern</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="frame">
+        <xsd:annotation>
+          <xsd:documentation>Stretch Image to Fit</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_FillMethod">
+    <xsd:annotation>
+      <xsd:documentation>Gradient Fill Computation Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>No Gradient Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="linear">
+        <xsd:annotation>
+          <xsd:documentation>Linear Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="sigma">
+        <xsd:annotation>
+          <xsd:documentation>Sigma Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="any">
+        <xsd:annotation>
+          <xsd:documentation>Application Default Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="linear sigma">
+        <xsd:annotation>
+          <xsd:documentation>Linear Sigma Fill</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ShadowType">
+    <xsd:annotation>
+      <xsd:documentation>Shadow Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="single">
+        <xsd:annotation>
+          <xsd:documentation>Single Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="double">
+        <xsd:annotation>
+          <xsd:documentation>Double Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="emboss">
+        <xsd:annotation>
+          <xsd:documentation>Embossed Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="perspective">
+        <xsd:annotation>
+          <xsd:documentation>Perspective Shadow</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_StrokeLineStyle">
+    <xsd:annotation>
+      <xsd:documentation>Stroke Line Style</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="single">
+        <xsd:annotation>
+          <xsd:documentation>Single Line</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thinThin">
+        <xsd:annotation>
+          <xsd:documentation>Two Thin Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thinThick">
+        <xsd:annotation>
+          <xsd:documentation>Thin Line Outside Thick Line</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickThin">
+        <xsd:annotation>
+          <xsd:documentation>Thick Line Outside Thin Line</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickBetweenThin">
+        <xsd:annotation>
+          <xsd:documentation>Thck Line Between Thin Lines</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_StrokeJoinStyle">
+    <xsd:annotation>
+      <xsd:documentation>Line Join Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="round">
+        <xsd:annotation>
+          <xsd:documentation>Round Joint</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bevel">
+        <xsd:annotation>
+          <xsd:documentation>Bevel Joint</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="miter">
+        <xsd:annotation>
+          <xsd:documentation>Miter Joint</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_StrokeEndCap">
+    <xsd:annotation>
+      <xsd:documentation>Stroke End Cap Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="flat">
+        <xsd:annotation>
+          <xsd:documentation>Flat End</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="square">
+        <xsd:annotation>
+          <xsd:documentation>Square End</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="round">
+        <xsd:annotation>
+          <xsd:documentation>Round End</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_StrokeArrowLength">
+    <xsd:annotation>
+      <xsd:documentation>Stroke Arrowhead Length</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="short">
+        <xsd:annotation>
+          <xsd:documentation>Short Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medium">
+        <xsd:annotation>
+          <xsd:documentation>Medium Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="long">
+        <xsd:annotation>
+          <xsd:documentation>Long Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_StrokeArrowWidth">
+    <xsd:annotation>
+      <xsd:documentation>Stroke Arrowhead Width</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="narrow">
+        <xsd:annotation>
+          <xsd:documentation>Narrow Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="medium">
+        <xsd:annotation>
+          <xsd:documentation>Medium Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wide">
+        <xsd:annotation>
+          <xsd:documentation>Wide Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_StrokeArrowType">
+    <xsd:annotation>
+      <xsd:documentation>Stroke Arrowhead Type</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>No Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="block">
+        <xsd:annotation>
+          <xsd:documentation>Block Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="classic">
+        <xsd:annotation>
+          <xsd:documentation>Classic Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="oval">
+        <xsd:annotation>
+          <xsd:documentation>Oval Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="diamond">
+        <xsd:annotation>
+          <xsd:documentation>Diamond Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="open">
+        <xsd:annotation>
+          <xsd:documentation>Open Arrowhead</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_ImageAspect">
+    <xsd:annotation>
+      <xsd:documentation>Image Scaling Behavior</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="ignore">
+        <xsd:annotation>
+          <xsd:documentation>Ignore Aspect Ratio</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="atMost">
+        <xsd:annotation>
+          <xsd:documentation>At Most</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="atLeast">
+        <xsd:annotation>
+          <xsd:documentation>At Least</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_TrueFalseBlank">
+    <xsd:annotation>
+      <xsd:documentation>Boolean Value with Blank [False] State</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>Logical True</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="f">
+        <xsd:annotation>
+          <xsd:documentation>Logical False</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="true">
+        <xsd:annotation>
+          <xsd:documentation>Logical True</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="false">
+        <xsd:annotation>
+          <xsd:documentation>Logical False</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="">
+        <xsd:annotation>
+          <xsd:documentation>Blank – Logical False</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ST_EditAs">
+    <xsd:annotation>
+      <xsd:documentation>Shape Grouping Types</xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="canvas">
+        <xsd:annotation>
+          <xsd:documentation>Shape Canvas</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="orgchart">
+        <xsd:annotation>
+          <xsd:documentation>Organization Chart Diagram</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="radial">
+        <xsd:annotation>
+          <xsd:documentation>Radial Diagram</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="cycle">
+        <xsd:annotation>
+          <xsd:documentation>Cycle Diagram</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="stacked">
+        <xsd:annotation>
+          <xsd:documentation>Pyramid Diagram</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="venn">
+        <xsd:annotation>
+          <xsd:documentation>Venn Diagram</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="bullseye">
+        <xsd:annotation>
+          <xsd:documentation>Bullseye Diagram</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>
