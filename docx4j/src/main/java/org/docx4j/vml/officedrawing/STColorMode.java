@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -27,58 +27,41 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for ST_BWModePure.
+ * <p>Java class for ST_ColorMode.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
- * &lt;simpleType name="ST_BWModePure">
+ * &lt;simpleType name="ST_ColorMode">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="color"/>
  *     &lt;enumeration value="auto"/>
- *     &lt;enumeration value="grayscale"/>
- *     &lt;enumeration value="lighGrayscale"/>
- *     &lt;enumeration value="grayOutline"/>
- *     &lt;enumeration value="highContrast"/>
- *     &lt;enumeration value="black"/>
- *     &lt;enumeration value="white"/>
- *     &lt;enumeration value="hide"/>
- *     &lt;enumeration value="numModes"/>
- *     &lt;enumeration value="blackTextAndLines"/>
+ *     &lt;enumeration value="custom"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
  * 
  */
-@XmlType(name = "ST_BWModePure")
+@XmlType(name = "ST_ColorMode")
 @XmlEnum
-public enum STBWModePure {
+public enum STColorMode {
 
-    @XmlEnumValue("color")
-    COLOR("color"),
+
+    /**
+     * Use Shape Fill Color
+     * 
+     */
     @XmlEnumValue("auto")
     AUTO("auto"),
-    @XmlEnumValue("grayscale")
-    GRAYSCALE("grayscale"),
-    @XmlEnumValue("lighGrayscale")
-    LIGH_GRAYSCALE("lighGrayscale"),
-    @XmlEnumValue("grayOutline")
-    GRAY_OUTLINE("grayOutline"),
-    @XmlEnumValue("highContrast")
-    HIGH_CONTRAST("highContrast"),
-    @XmlEnumValue("black")
-    BLACK("black"),
-    @XmlEnumValue("white")
-    WHITE("white"),
-    @XmlEnumValue("hide")
-    HIDE("hide"),
-    @XmlEnumValue("numModes")
-    NUM_MODES("numModes"),
-    @XmlEnumValue("blackTextAndLines")
-    BLACK_TEXT_AND_LINES("blackTextAndLines");
+
+    /**
+     * Use Custom Color
+     * 
+     */
+    @XmlEnumValue("custom")
+    CUSTOM("custom");
     private final String value;
 
-    STBWModePure(String v) {
+    STColorMode(String v) {
         value = v;
     }
 
@@ -86,8 +69,8 @@ public enum STBWModePure {
         return value;
     }
 
-    public static STBWModePure fromValue(String v) {
-        for (STBWModePure c: STBWModePure.values()) {
+    public static STColorMode fromValue(String v) {
+        for (STColorMode c: STColorMode.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -47,12 +47,32 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STRType {
 
+
+    /**
+     * Arc Rule
+     * 
+     */
     @XmlEnumValue("arc")
     ARC("arc"),
+
+    /**
+     * Callout Rule
+     * 
+     */
     @XmlEnumValue("callout")
     CALLOUT("callout"),
+
+    /**
+     * Connector Rule
+     * 
+     */
     @XmlEnumValue("connector")
     CONNECTOR("connector"),
+
+    /**
+     * Alignment Rule
+     * 
+     */
     @XmlEnumValue("align")
     ALIGN("align");
     private final String value;

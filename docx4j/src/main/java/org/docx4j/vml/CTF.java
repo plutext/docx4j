@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -53,7 +53,7 @@ public class CTF
     implements Child
 {
 
-    @XmlAttribute
+    @XmlAttribute(name = "eqn")
     protected String eqn;
     @XmlTransient
     private Object parent;

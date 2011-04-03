@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -45,14 +45,23 @@ import javax.xml.namespace.QName;
 public class ObjectFactory {
 
     private final static QName _Lock_QNAME = new QName("urn:schemas-microsoft-com:office:office", "lock");
-    private final static QName _WordFieldCodes_QNAME = new QName("urn:schemas-microsoft-com:office:office", "WordFieldCodes");
+    private final static QName _Signatureline_QNAME = new QName("urn:schemas-microsoft-com:office:office", "signatureline");
     private final static QName _Callout_QNAME = new QName("urn:schemas-microsoft-com:office:office", "callout");
-    private final static QName _Extrusion_QNAME = new QName("urn:schemas-microsoft-com:office:office", "extrusion");
-    private final static QName _Shapelayout_QNAME = new QName("urn:schemas-microsoft-com:office:office", "shapelayout");
+    private final static QName _Fill_QNAME = new QName("urn:schemas-microsoft-com:office:office", "fill");
     private final static QName _OLEObject_QNAME = new QName("urn:schemas-microsoft-com:office:office", "OLEObject");
     private final static QName _Skew_QNAME = new QName("urn:schemas-microsoft-com:office:office", "skew");
+    private final static QName _Clippath_QNAME = new QName("urn:schemas-microsoft-com:office:office", "clippath");
     private final static QName _Complex_QNAME = new QName("urn:schemas-microsoft-com:office:office", "complex");
+    private final static QName _Left_QNAME = new QName("urn:schemas-microsoft-com:office:office", "left");
     private final static QName _Shapedefaults_QNAME = new QName("urn:schemas-microsoft-com:office:office", "shapedefaults");
+    private final static QName _Top_QNAME = new QName("urn:schemas-microsoft-com:office:office", "top");
+    private final static QName _Ink_QNAME = new QName("urn:schemas-microsoft-com:office:office", "ink");
+    private final static QName _Bottom_QNAME = new QName("urn:schemas-microsoft-com:office:office", "bottom");
+    private final static QName _Column_QNAME = new QName("urn:schemas-microsoft-com:office:office", "column");
+    private final static QName _Extrusion_QNAME = new QName("urn:schemas-microsoft-com:office:office", "extrusion");
+    private final static QName _Diagram_QNAME = new QName("urn:schemas-microsoft-com:office:office", "diagram");
+    private final static QName _Shapelayout_QNAME = new QName("urn:schemas-microsoft-com:office:office", "shapelayout");
+    private final static QName _Right_QNAME = new QName("urn:schemas-microsoft-com:office:office", "right");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.docx4j.vml.officedrawing
@@ -62,35 +71,35 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTShapeLayout }
+     * Create an instance of {@link CTProxy }
      * 
      */
-    public CTShapeLayout createCTShapeLayout() {
-        return new CTShapeLayout();
+    public CTProxy createCTProxy() {
+        return new CTProxy();
     }
 
     /**
-     * Create an instance of {@link CTLock }
+     * Create an instance of {@link CTOLEObject }
      * 
      */
-    public CTLock createCTLock() {
-        return new CTLock();
+    public CTOLEObject createCTOLEObject() {
+        return new CTOLEObject();
     }
 
     /**
-     * Create an instance of {@link CTCallout }
+     * Create an instance of {@link CTRelation }
      * 
      */
-    public CTCallout createCTCallout() {
-        return new CTCallout();
+    public CTRelation createCTRelation() {
+        return new CTRelation();
     }
 
     /**
-     * Create an instance of {@link CTComplex }
+     * Create an instance of {@link CTInk }
      * 
      */
-    public CTComplex createCTComplex() {
-        return new CTComplex();
+    public CTInk createCTInk() {
+        return new CTInk();
     }
 
     /**
@@ -102,11 +111,83 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTExtrusion }
+     * Create an instance of {@link CTRelationTable }
      * 
      */
-    public CTExtrusion createCTExtrusion() {
-        return new CTExtrusion();
+    public CTRelationTable createCTRelationTable() {
+        return new CTRelationTable();
+    }
+
+    /**
+     * Create an instance of {@link CTR }
+     * 
+     */
+    public CTR createCTR() {
+        return new CTR();
+    }
+
+    /**
+     * Create an instance of {@link CTIdMap }
+     * 
+     */
+    public CTIdMap createCTIdMap() {
+        return new CTIdMap();
+    }
+
+    /**
+     * Create an instance of {@link CTColorMenu }
+     * 
+     */
+    public CTColorMenu createCTColorMenu() {
+        return new CTColorMenu();
+    }
+
+    /**
+     * Create an instance of {@link CTColorMru }
+     * 
+     */
+    public CTColorMru createCTColorMru() {
+        return new CTColorMru();
+    }
+
+    /**
+     * Create an instance of {@link CTComplex }
+     * 
+     */
+    public CTComplex createCTComplex() {
+        return new CTComplex();
+    }
+
+    /**
+     * Create an instance of {@link CTSignatureLine }
+     * 
+     */
+    public CTSignatureLine createCTSignatureLine() {
+        return new CTSignatureLine();
+    }
+
+    /**
+     * Create an instance of {@link CTLock }
+     * 
+     */
+    public CTLock createCTLock() {
+        return new CTLock();
+    }
+
+    /**
+     * Create an instance of {@link CTShapeDefaults }
+     * 
+     */
+    public CTShapeDefaults createCTShapeDefaults() {
+        return new CTShapeDefaults();
+    }
+
+    /**
+     * Create an instance of {@link CTClipPath }
+     * 
+     */
+    public CTClipPath createCTClipPath() {
+        return new CTClipPath();
     }
 
     /**
@@ -126,35 +207,43 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTProxy }
+     * Create an instance of {@link CTCallout }
      * 
      */
-    public CTProxy createCTProxy() {
-        return new CTProxy();
+    public CTCallout createCTCallout() {
+        return new CTCallout();
     }
 
     /**
-     * Create an instance of {@link CTR }
+     * Create an instance of {@link CTFill }
      * 
      */
-    public CTR createCTR() {
-        return new CTR();
+    public CTFill createCTFill() {
+        return new CTFill();
     }
 
     /**
-     * Create an instance of {@link CTColorMRU }
+     * Create an instance of {@link CTExtrusion }
      * 
      */
-    public CTColorMRU createCTColorMRU() {
-        return new CTColorMRU();
+    public CTExtrusion createCTExtrusion() {
+        return new CTExtrusion();
     }
 
     /**
-     * Create an instance of {@link CTColorMenu }
+     * Create an instance of {@link CTStrokeChild }
      * 
      */
-    public CTColorMenu createCTColorMenu() {
-        return new CTColorMenu();
+    public CTStrokeChild createCTStrokeChild() {
+        return new CTStrokeChild();
+    }
+
+    /**
+     * Create an instance of {@link CTShapeLayout }
+     * 
+     */
+    public CTShapeLayout createCTShapeLayout() {
+        return new CTShapeLayout();
     }
 
     /**
@@ -166,27 +255,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link CTIdMap }
+     * Create an instance of {@link CTDiagram }
      * 
      */
-    public CTIdMap createCTIdMap() {
-        return new CTIdMap();
-    }
-
-    /**
-     * Create an instance of {@link CTOLEObject }
-     * 
-     */
-    public CTOLEObject createCTOLEObject() {
-        return new CTOLEObject();
-    }
-
-    /**
-     * Create an instance of {@link CTShapeDefaults }
-     * 
-     */
-    public CTShapeDefaults createCTShapeDefaults() {
-        return new CTShapeDefaults();
+    public CTDiagram createCTDiagram() {
+        return new CTDiagram();
     }
 
     /**
@@ -199,12 +272,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTSignatureLine }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "WordFieldCodes")
-    public JAXBElement<String> createWordFieldCodes(String value) {
-        return new JAXBElement<String>(_WordFieldCodes_QNAME, String.class, null, value);
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "signatureline")
+    public JAXBElement<CTSignatureLine> createSignatureline(CTSignatureLine value) {
+        return new JAXBElement<CTSignatureLine>(_Signatureline_QNAME, CTSignatureLine.class, null, value);
     }
 
     /**
@@ -217,21 +290,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTExtrusion }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTFill }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "extrusion")
-    public JAXBElement<CTExtrusion> createExtrusion(CTExtrusion value) {
-        return new JAXBElement<CTExtrusion>(_Extrusion_QNAME, CTExtrusion.class, null, value);
-    }
-
-    /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link CTShapeLayout }{@code >}}
-     * 
-     */
-    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "shapelayout")
-    public JAXBElement<CTShapeLayout> createShapelayout(CTShapeLayout value) {
-        return new JAXBElement<CTShapeLayout>(_Shapelayout_QNAME, CTShapeLayout.class, null, value);
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "fill")
+    public JAXBElement<CTFill> createFill(CTFill value) {
+        return new JAXBElement<CTFill>(_Fill_QNAME, CTFill.class, null, value);
     }
 
     /**
@@ -253,6 +317,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTClipPath }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "clippath")
+    public JAXBElement<CTClipPath> createClippath(CTClipPath value) {
+        return new JAXBElement<CTClipPath>(_Clippath_QNAME, CTClipPath.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CTComplex }{@code >}}
      * 
      */
@@ -262,12 +335,93 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStrokeChild }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "left")
+    public JAXBElement<CTStrokeChild> createLeft(CTStrokeChild value) {
+        return new JAXBElement<CTStrokeChild>(_Left_QNAME, CTStrokeChild.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link CTShapeDefaults }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "shapedefaults")
     public JAXBElement<CTShapeDefaults> createShapedefaults(CTShapeDefaults value) {
         return new JAXBElement<CTShapeDefaults>(_Shapedefaults_QNAME, CTShapeDefaults.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStrokeChild }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "top")
+    public JAXBElement<CTStrokeChild> createTop(CTStrokeChild value) {
+        return new JAXBElement<CTStrokeChild>(_Top_QNAME, CTStrokeChild.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTInk }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "ink")
+    public JAXBElement<CTInk> createInk(CTInk value) {
+        return new JAXBElement<CTInk>(_Ink_QNAME, CTInk.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStrokeChild }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "bottom")
+    public JAXBElement<CTStrokeChild> createBottom(CTStrokeChild value) {
+        return new JAXBElement<CTStrokeChild>(_Bottom_QNAME, CTStrokeChild.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStrokeChild }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "column")
+    public JAXBElement<CTStrokeChild> createColumn(CTStrokeChild value) {
+        return new JAXBElement<CTStrokeChild>(_Column_QNAME, CTStrokeChild.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTExtrusion }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "extrusion")
+    public JAXBElement<CTExtrusion> createExtrusion(CTExtrusion value) {
+        return new JAXBElement<CTExtrusion>(_Extrusion_QNAME, CTExtrusion.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTDiagram }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "diagram")
+    public JAXBElement<CTDiagram> createDiagram(CTDiagram value) {
+        return new JAXBElement<CTDiagram>(_Diagram_QNAME, CTDiagram.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTShapeLayout }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "shapelayout")
+    public JAXBElement<CTShapeLayout> createShapelayout(CTShapeLayout value) {
+        return new JAXBElement<CTShapeLayout>(_Shapelayout_QNAME, CTShapeLayout.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link CTStrokeChild }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:schemas-microsoft-com:office:office", name = "right")
+    public JAXBElement<CTStrokeChild> createRight(CTStrokeChild value) {
+        return new JAXBElement<CTStrokeChild>(_Right_QNAME, CTStrokeChild.class, null, value);
     }
 
 }

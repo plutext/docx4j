@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -56,7 +56,7 @@ public class CTEntry
 
     @XmlAttribute(name = "new")
     protected Integer _new;
-    @XmlAttribute
+    @XmlAttribute(name = "old")
     protected Integer old;
     @XmlTransient
     private Object parent;

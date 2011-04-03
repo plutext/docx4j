@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -40,10 +40,11 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_Lock">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *       &lt;attribute name="position" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="selection" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="grouping" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
+ *       &lt;attribute name="ungrouping" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="rotation" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="cropping" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="verticies" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
@@ -60,34 +61,299 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(namespace = "urn:schemas-microsoft-com:office:office", name = "CT_Lock")
-public class CTLock
-    implements Child
+public class CTLock implements Child
 {
 
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
+    @XmlAttribute(name = "position")
+    protected STTrueFalse position;
+    @XmlAttribute(name = "selection")
+    protected STTrueFalse selection;
+    @XmlAttribute(name = "grouping")
+    protected STTrueFalse grouping;
+    @XmlAttribute(name = "ungrouping")
+    protected STTrueFalse ungrouping;
+    @XmlAttribute(name = "rotation")
+    protected STTrueFalse rotation;
+    @XmlAttribute(name = "cropping")
+    protected STTrueFalse cropping;
+    @XmlAttribute(name = "verticies")
+    protected STTrueFalse verticies;
+    @XmlAttribute(name = "adjusthandles")
+    protected STTrueFalse adjusthandles;
+    @XmlAttribute(name = "text")
+    protected STTrueFalse text;
+    @XmlAttribute(name = "aspectratio")
+    protected STTrueFalse aspectratio;
+    @XmlAttribute(name = "shapetype")
+    protected STTrueFalse shapetype;
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
-    @XmlAttribute
-    protected String position;
-    @XmlAttribute
-    protected String selection;
-    @XmlAttribute
-    protected String grouping;
-    @XmlAttribute
-    protected String rotation;
-    @XmlAttribute
-    protected String cropping;
-    @XmlAttribute
-    protected String verticies;
-    @XmlAttribute
-    protected String adjusthandles;
-    @XmlAttribute
-    protected String text;
-    @XmlAttribute
-    protected String aspectratio;
-    @XmlAttribute
-    protected String shapetype;
     @XmlTransient
     private Object parent;
+
+    /**
+     * Gets the value of the position property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getPosition() {
+        return position;
+    }
+
+    /**
+     * Sets the value of the position property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setPosition(STTrueFalse value) {
+        this.position = value;
+    }
+
+    /**
+     * Gets the value of the selection property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getSelection() {
+        return selection;
+    }
+
+    /**
+     * Sets the value of the selection property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setSelection(STTrueFalse value) {
+        this.selection = value;
+    }
+
+    /**
+     * Gets the value of the grouping property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getGrouping() {
+        return grouping;
+    }
+
+    /**
+     * Sets the value of the grouping property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setGrouping(STTrueFalse value) {
+        this.grouping = value;
+    }
+
+    /**
+     * Gets the value of the ungrouping property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getUngrouping() {
+        return ungrouping;
+    }
+
+    /**
+     * Sets the value of the ungrouping property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setUngrouping(STTrueFalse value) {
+        this.ungrouping = value;
+    }
+
+    /**
+     * Gets the value of the rotation property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getRotation() {
+        return rotation;
+    }
+
+    /**
+     * Sets the value of the rotation property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setRotation(STTrueFalse value) {
+        this.rotation = value;
+    }
+
+    /**
+     * Gets the value of the cropping property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getCropping() {
+        return cropping;
+    }
+
+    /**
+     * Sets the value of the cropping property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setCropping(STTrueFalse value) {
+        this.cropping = value;
+    }
+
+    /**
+     * Gets the value of the verticies property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getVerticies() {
+        return verticies;
+    }
+
+    /**
+     * Sets the value of the verticies property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setVerticies(STTrueFalse value) {
+        this.verticies = value;
+    }
+
+    /**
+     * Gets the value of the adjusthandles property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getAdjusthandles() {
+        return adjusthandles;
+    }
+
+    /**
+     * Sets the value of the adjusthandles property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setAdjusthandles(STTrueFalse value) {
+        this.adjusthandles = value;
+    }
+
+    /**
+     * Gets the value of the text property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getText() {
+        return text;
+    }
+
+    /**
+     * Sets the value of the text property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setText(STTrueFalse value) {
+        this.text = value;
+    }
+
+    /**
+     * Gets the value of the aspectratio property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getAspectratio() {
+        return aspectratio;
+    }
+
+    /**
+     * Sets the value of the aspectratio property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setAspectratio(STTrueFalse value) {
+        this.aspectratio = value;
+    }
+
+    /**
+     * Gets the value of the shapetype property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public STTrueFalse getShapetype() {
+        return shapetype;
+    }
+
+    /**
+     * Sets the value of the shapetype property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STTrueFalse }
+     *     
+     */
+    public void setShapetype(STTrueFalse value) {
+        this.shapetype = value;
+    }
 
     /**
      * Gets the value of the ext property.
@@ -98,11 +364,7 @@ public class CTLock
      *     
      */
     public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
+        return ext;
     }
 
     /**
@@ -115,246 +377,6 @@ public class CTLock
      */
     public void setExt(STExt value) {
         this.ext = value;
-    }
-
-    /**
-     * Gets the value of the position property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getPosition() {
-        return position;
-    }
-
-    /**
-     * Sets the value of the position property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setPosition(String value) {
-        this.position = value;
-    }
-
-    /**
-     * Gets the value of the selection property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSelection() {
-        return selection;
-    }
-
-    /**
-     * Sets the value of the selection property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSelection(String value) {
-        this.selection = value;
-    }
-
-    /**
-     * Gets the value of the grouping property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getGrouping() {
-        return grouping;
-    }
-
-    /**
-     * Sets the value of the grouping property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setGrouping(String value) {
-        this.grouping = value;
-    }
-
-    /**
-     * Gets the value of the rotation property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRotation() {
-        return rotation;
-    }
-
-    /**
-     * Sets the value of the rotation property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRotation(String value) {
-        this.rotation = value;
-    }
-
-    /**
-     * Gets the value of the cropping property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getCropping() {
-        return cropping;
-    }
-
-    /**
-     * Sets the value of the cropping property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setCropping(String value) {
-        this.cropping = value;
-    }
-
-    /**
-     * Gets the value of the verticies property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getVerticies() {
-        return verticies;
-    }
-
-    /**
-     * Sets the value of the verticies property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setVerticies(String value) {
-        this.verticies = value;
-    }
-
-    /**
-     * Gets the value of the adjusthandles property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAdjusthandles() {
-        return adjusthandles;
-    }
-
-    /**
-     * Sets the value of the adjusthandles property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAdjusthandles(String value) {
-        this.adjusthandles = value;
-    }
-
-    /**
-     * Gets the value of the text property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getText() {
-        return text;
-    }
-
-    /**
-     * Sets the value of the text property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setText(String value) {
-        this.text = value;
-    }
-
-    /**
-     * Gets the value of the aspectratio property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAspectratio() {
-        return aspectratio;
-    }
-
-    /**
-     * Sets the value of the aspectratio property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAspectratio(String value) {
-        this.aspectratio = value;
-    }
-
-    /**
-     * Gets the value of the shapetype property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getShapetype() {
-        return shapetype;
-    }
-
-    /**
-     * Sets the value of the shapetype property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setShapetype(String value) {
-        this.shapetype = value;
     }
 
     /**

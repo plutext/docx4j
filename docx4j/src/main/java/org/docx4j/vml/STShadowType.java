@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -47,12 +47,32 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STShadowType {
 
+
+    /**
+     * Single Shadow
+     * 
+     */
     @XmlEnumValue("single")
     SINGLE("single"),
+
+    /**
+     * Double Shadow
+     * 
+     */
     @XmlEnumValue("double")
     DOUBLE("double"),
+
+    /**
+     * Embossed Shadow
+     * 
+     */
     @XmlEnumValue("emboss")
     EMBOSS("emboss"),
+
+    /**
+     * Perspective Shadow
+     * 
+     */
     @XmlEnumValue("perspective")
     PERSPECTIVE("perspective");
     private final String value;

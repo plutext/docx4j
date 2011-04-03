@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -45,7 +45,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="regrouptable" type="{urn:schemas-microsoft-com:office:office}CT_RegroupTable" minOccurs="0"/>
  *         &lt;element name="rules" type="{urn:schemas-microsoft-com:office:office}CT_Rules" minOccurs="0"/>
  *       &lt;/all>
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -64,7 +64,7 @@ public class CTShapeLayout
     protected CTIdMap idmap;
     protected CTRegroupTable regrouptable;
     protected CTRules rules;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
     protected STExt ext;
     @XmlTransient
     private Object parent;
@@ -150,11 +150,7 @@ public class CTShapeLayout
      *     
      */
     public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
+        return ext;
     }
 
     /**

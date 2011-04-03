@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
  *     &lt;enumeration value="solid"/>
  *     &lt;enumeration value="wireFrame"/>
- *     &lt;enumeration value="boundingcube"/>
+ *     &lt;enumeration value="boundingCube"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -46,12 +46,27 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STExtrusionRender {
 
+
+    /**
+     * Solid
+     * 
+     */
     @XmlEnumValue("solid")
     SOLID("solid"),
+
+    /**
+     * Wireframe
+     * 
+     */
     @XmlEnumValue("wireFrame")
     WIRE_FRAME("wireFrame"),
-    @XmlEnumValue("boundingcube")
-    BOUNDINGCUBE("boundingcube");
+
+    /**
+     * Bounding Cube
+     * 
+     */
+    @XmlEnumValue("boundingCube")
+    BOUNDING_CUBE("boundingCube");
     private final String value;
 
     STExtrusionRender(String v) {

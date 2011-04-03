@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -49,16 +49,46 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STFillType {
 
+
+    /**
+     * Solid Fill
+     * 
+     */
     @XmlEnumValue("solid")
     SOLID("solid"),
+
+    /**
+     * Linear Gradient
+     * 
+     */
     @XmlEnumValue("gradient")
     GRADIENT("gradient"),
+
+    /**
+     * Radial Gradient
+     * 
+     */
     @XmlEnumValue("gradientRadial")
     GRADIENT_RADIAL("gradientRadial"),
+
+    /**
+     * Tiled Image
+     * 
+     */
     @XmlEnumValue("tile")
     TILE("tile"),
+
+    /**
+     * Image Pattern
+     * 
+     */
     @XmlEnumValue("pattern")
     PATTERN("pattern"),
+
+    /**
+     * Stretch Image to Fit
+     * 
+     */
     @XmlEnumValue("frame")
     FRAME("frame");
     private final String value;

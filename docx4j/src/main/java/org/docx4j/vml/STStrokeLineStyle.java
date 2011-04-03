@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -48,14 +48,39 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STStrokeLineStyle {
 
+
+    /**
+     * Single Line
+     * 
+     */
     @XmlEnumValue("single")
     SINGLE("single"),
+
+    /**
+     * Two Thin Lines
+     * 
+     */
     @XmlEnumValue("thinThin")
     THIN_THIN("thinThin"),
+
+    /**
+     * Thin Line Outside Thick Line
+     * 
+     */
     @XmlEnumValue("thinThick")
     THIN_THICK("thinThick"),
+
+    /**
+     * Thick Line Outside Thin Line
+     * 
+     */
     @XmlEnumValue("thickThin")
     THICK_THIN("thickThin"),
+
+    /**
+     * Thck Line Between Thin Lines
+     * 
+     */
     @XmlEnumValue("thickBetweenThin")
     THICK_BETWEEN_THIN("thickBetweenThin");
     private final String value;

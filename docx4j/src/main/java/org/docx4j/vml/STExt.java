@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -46,10 +46,25 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STExt {
 
+
+    /**
+     * Not renderable
+     * 
+     */
     @XmlEnumValue("view")
     VIEW("view"),
+
+    /**
+     * Editable
+     * 
+     */
     @XmlEnumValue("edit")
     EDIT("edit"),
+
+    /**
+     * Renderable
+     * 
+     */
     @XmlEnumValue("backwardCompatible")
     BACKWARD_COMPATIBLE("backwardCompatible");
     private final String value;

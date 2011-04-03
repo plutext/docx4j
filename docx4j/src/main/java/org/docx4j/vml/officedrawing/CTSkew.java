@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -40,8 +40,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_Skew">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
  *       &lt;attribute name="on" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalse" />
  *       &lt;attribute name="offset" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="origin" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -55,22 +55,21 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Skew")
-public class CTSkew
-    implements Child
+public class CTSkew implements Child
 {
 
-    @XmlAttribute
+    @XmlAttribute(name = "id")
     protected String id;
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
-    protected STExt ext;
-    @XmlAttribute
-    protected String on;
-    @XmlAttribute
+    @XmlAttribute(name = "on")
+    protected STTrueFalse on;
+    @XmlAttribute(name = "offset")
     protected String offset;
-    @XmlAttribute
+    @XmlAttribute(name = "origin")
     protected String origin;
-    @XmlAttribute
+    @XmlAttribute(name = "matrix")
     protected String matrix;
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
+    protected STExt ext;
     @XmlTransient
     private Object parent;
 
@@ -99,42 +98,14 @@ public class CTSkew
     }
 
     /**
-     * Gets the value of the ext property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link STExt }
-     *     
-     */
-    public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
-    }
-
-    /**
-     * Sets the value of the ext property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link STExt }
-     *     
-     */
-    public void setExt(STExt value) {
-        this.ext = value;
-    }
-
-    /**
      * Gets the value of the on property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public String getOn() {
+    public STTrueFalse getOn() {
         return on;
     }
 
@@ -143,10 +114,10 @@ public class CTSkew
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STTrueFalse }
      *     
      */
-    public void setOn(String value) {
+    public void setOn(STTrueFalse value) {
         this.on = value;
     }
 
@@ -220,6 +191,30 @@ public class CTSkew
      */
     public void setMatrix(String value) {
         this.matrix = value;
+    }
+
+    /**
+     * Gets the value of the ext property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STExt }
+     *     
+     */
+    public STExt getExt() {
+        return ext;
+    }
+
+    /**
+     * Sets the value of the ext property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STExt }
+     *     
+     */
+    public void setExt(STExt value) {
+        this.ext = value;
     }
 
     /**

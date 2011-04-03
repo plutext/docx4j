@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -40,7 +40,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_IdMap">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute ref="{urn:schemas-microsoft-com:vml}ext"/>
+ *       &lt;attGroup ref="{urn:schemas-microsoft-com:vml}AG_Ext"/>
  *       &lt;attribute name="data" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -55,40 +55,12 @@ public class CTIdMap
     implements Child
 {
 
-    @XmlAttribute(namespace = "urn:schemas-microsoft-com:vml")
-    protected STExt ext;
-    @XmlAttribute
+    @XmlAttribute(name = "data")
     protected String data;
+    @XmlAttribute(name = "ext", namespace = "urn:schemas-microsoft-com:vml")
+    protected STExt ext;
     @XmlTransient
     private Object parent;
-
-    /**
-     * Gets the value of the ext property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link STExt }
-     *     
-     */
-    public STExt getExt() {
-        if (ext == null) {
-            return STExt.VIEW;
-        } else {
-            return ext;
-        }
-    }
-
-    /**
-     * Sets the value of the ext property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link STExt }
-     *     
-     */
-    public void setExt(STExt value) {
-        this.ext = value;
-    }
 
     /**
      * Gets the value of the data property.
@@ -112,6 +84,30 @@ public class CTIdMap
      */
     public void setData(String value) {
         this.data = value;
+    }
+
+    /**
+     * Gets the value of the ext property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STExt }
+     *     
+     */
+    public STExt getExt() {
+        return ext;
+    }
+
+    /**
+     * Sets the value of the ext property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STExt }
+     *     
+     */
+    public void setExt(STExt value) {
+        this.ext = value;
     }
 
     /**

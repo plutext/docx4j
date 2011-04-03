@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2009, Plutext Pty Ltd.
+ *  Copyright 2007-2008, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -41,14 +41,17 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{urn:schemas-microsoft-com:office:office}WordFieldCodes" minOccurs="0"/>
+ *         &lt;element name="LinkType" type="{urn:schemas-microsoft-com:office:office}ST_OLELinkType" minOccurs="0"/>
+ *         &lt;element name="LockedField" type="{urn:schemas-microsoft-com:office:office}ST_TrueFalseBlank" minOccurs="0"/>
+ *         &lt;element name="FieldCodes" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="Type" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="Type" type="{urn:schemas-microsoft-com:office:office}ST_OLEType" />
  *       &lt;attribute name="ProgID" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="ShapeID" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="DrawAspect" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="DrawAspect" type="{urn:schemas-microsoft-com:office:office}ST_OLEDrawAspect" />
  *       &lt;attribute name="ObjectID" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"/>
+ *       &lt;attribute name="UpdateMode" type="{urn:schemas-microsoft-com:office:office}ST_OLEUpdateMode" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -58,51 +61,107 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_OLEObject", propOrder = {
-    "wordFieldCodes"
+    "linkType",
+    "lockedField",
+    "fieldCodes"
 })
 public class CTOLEObject
     implements Child
 {
 
-    @XmlElement(name = "WordFieldCodes")
-    protected String wordFieldCodes;
+    @XmlElement(name = "LinkType")
+    protected STOLELinkType linkType;
+    @XmlElement(name = "LockedField")
+    protected String lockedField;
+    @XmlElement(name = "FieldCodes")
+    protected String fieldCodes;
     @XmlAttribute(name = "Type")
-    protected String type;
+    protected STOLEType type;
     @XmlAttribute(name = "ProgID")
     protected String progID;
     @XmlAttribute(name = "ShapeID")
     protected String shapeID;
     @XmlAttribute(name = "DrawAspect")
-    protected String drawAspect;
+    protected STOLEDrawAspect drawAspect;
     @XmlAttribute(name = "ObjectID")
     protected String objectID;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
     protected String id;
+    @XmlAttribute(name = "UpdateMode")
+    protected STOLEUpdateMode updateMode;
     @XmlTransient
     private Object parent;
 
     /**
-     * Gets the value of the wordFieldCodes property.
+     * Gets the value of the linkType property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STOLELinkType }
+     *     
+     */
+    public STOLELinkType getLinkType() {
+        return linkType;
+    }
+
+    /**
+     * Sets the value of the linkType property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STOLELinkType }
+     *     
+     */
+    public void setLinkType(STOLELinkType value) {
+        this.linkType = value;
+    }
+
+    /**
+     * Gets the value of the lockedField property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getWordFieldCodes() {
-        return wordFieldCodes;
+    public String getLockedField() {
+        return lockedField;
     }
 
     /**
-     * Sets the value of the wordFieldCodes property.
+     * Sets the value of the lockedField property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setWordFieldCodes(String value) {
-        this.wordFieldCodes = value;
+    public void setLockedField(String value) {
+        this.lockedField = value;
+    }
+
+    /**
+     * Gets the value of the fieldCodes property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getFieldCodes() {
+        return fieldCodes;
+    }
+
+    /**
+     * Sets the value of the fieldCodes property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setFieldCodes(String value) {
+        this.fieldCodes = value;
     }
 
     /**
@@ -110,10 +169,10 @@ public class CTOLEObject
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STOLEType }
      *     
      */
-    public String getType() {
+    public STOLEType getType() {
         return type;
     }
 
@@ -122,10 +181,10 @@ public class CTOLEObject
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STOLEType }
      *     
      */
-    public void setType(String value) {
+    public void setType(STOLEType value) {
         this.type = value;
     }
 
@@ -182,10 +241,10 @@ public class CTOLEObject
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link STOLEDrawAspect }
      *     
      */
-    public String getDrawAspect() {
+    public STOLEDrawAspect getDrawAspect() {
         return drawAspect;
     }
 
@@ -194,10 +253,10 @@ public class CTOLEObject
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link STOLEDrawAspect }
      *     
      */
-    public void setDrawAspect(String value) {
+    public void setDrawAspect(STOLEDrawAspect value) {
         this.drawAspect = value;
     }
 
@@ -226,7 +285,7 @@ public class CTOLEObject
     }
 
     /**
-     * Gets the value of the id property.
+     * Relationship
      * 
      * @return
      *     possible object is
@@ -247,6 +306,30 @@ public class CTOLEObject
      */
     public void setId(String value) {
         this.id = value;
+    }
+
+    /**
+     * Gets the value of the updateMode property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STOLEUpdateMode }
+     *     
+     */
+    public STOLEUpdateMode getUpdateMode() {
+        return updateMode;
+    }
+
+    /**
+     * Sets the value of the updateMode property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STOLEUpdateMode }
+     *     
+     */
+    public void setUpdateMode(STOLEUpdateMode value) {
+        this.updateMode = value;
     }
 
     /**
