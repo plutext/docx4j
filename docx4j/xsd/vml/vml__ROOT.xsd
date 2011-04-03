@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--   
+
+/home/dev/JAXB_2.1.13/jaxb-ri-20100511/bin/
+
+ 	 sh ~/JAXB_2.1.13/jaxb-ri-20100511/bin/xjc.sh vml__ROOT.xsd -d tmp/ -no-header -target 2.0
+
+ 	 sh ~/JAXB_2.1.13/jaxb-ri-20100511/bin/xjc.sh -classpath ~/workspace/docx4j/m2/org/jvnet/jaxb2_commons/ppp/parent-pointer-plugin/1.0/parent-pointer-plugin-1.0.jar -Xparent-pointer vml.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+	 		
+	You need one schema document per namespace: 
+		
+	http://lists.xml.org/archives/xml-dev/200606/msg00155.html -->
+	
+<xsd:schema targetNamespace="urn:schemas-microsoft-com:vml" 
+xmlns="urn:schemas-microsoft-com:vml" 
+xmlns:p="urn:schemas-microsoft-com:office:powerpoint" 
+xmlns:o="urn:schemas-microsoft-com:office:office" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+elementFormDefault="qualified" 
+attributeFormDefault="unqualified" 
+xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+xmlns:wvml="urn:schemas-microsoft-com:office:word" 
+xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.vml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>  	
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main"
+	  schemaLocation="../dml/dml__ROOT.xsd" />
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	  schemaLocation="../wml/wml.xsd" />
+
+<xsd:include schemaLocation="vml-main.xsd"/>
+
+  <xsd:import namespace="urn:schemas-microsoft-com:office:office" 
+  schemaLocation="vml-officedrawing.xsd" />
+  <!-- xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+  schemaLocation="../wml/wml.xsd" -->
+  <xsd:import namespace="urn:schemas-microsoft-com:office:word" 
+  schemaLocation="vml-wordprocessingdrawing.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
+  schemaLocation="../shared/shared-relationshipReference.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:excel" 
+  schemaLocation="vml-spreadsheetDrawing.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:powerpoint" 
+  schemaLocation="vml-presentationDrawing.xsd" />
+  	
+		
+</xsd:schema>

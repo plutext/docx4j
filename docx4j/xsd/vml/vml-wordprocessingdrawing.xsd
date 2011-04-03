@@ -1,95 +1,373 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="urn:schemas-microsoft-com:office:word" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:schemas-microsoft-com:office:word" xmlns:odoc="http://schemas.microsoft.com/office/internal/2005/internalDocumentation">
-  <xsd:element name="bordertop" type="CT_Border" />
-  <xsd:element name="borderleft" type="CT_Border" />
-  <xsd:element name="borderright" type="CT_Border" />
-  <xsd:element name="borderbottom" type="CT_Border" />
+<xsd:schema targetNamespace="urn:schemas-microsoft-com:office:word" 
+xmlns="urn:schemas-microsoft-com:office:word" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+elementFormDefault="qualified" 
+attributeFormDefault="unqualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+        <xsd:annotation>
+                <xsd:appinfo>
+                        <xsd:appinfo>
+                                <jaxb:globalBindings/>
+                        </xsd:appinfo>
+                        <jaxb:schemaBindings>
+                                <jaxb:package name="org.docx4j.vml.wordprocessingDrawing"/>
+                        </jaxb:schemaBindings>
+                </xsd:appinfo>
+        </xsd:annotation>
+
+  <xsd:element name="bordertop" type="CT_Border">
+    <xsd:annotation>
+      <xsd:documentation>Top Border</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="borderleft" type="CT_Border">
+    <xsd:annotation>
+      <xsd:documentation>Left Border</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="borderright" type="CT_Border">
+    <xsd:annotation>
+      <xsd:documentation>Right Border</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="borderbottom" type="CT_Border">
+    <xsd:annotation>
+      <xsd:documentation>Bottom Border</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
   <xsd:complexType name="CT_Border">
-    <xsd:sequence />
-    <xsd:attribute name="type" type="ST_BorderType" use="optional" />
-    <xsd:attribute name="width" type="xsd:positiveInteger" use="optional" />
-    <xsd:attribute name="shadow" type="ST_BorderShadow" use="optional" />
+    <xsd:attribute name="type" type="ST_BorderType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Border Style</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="width" type="xsd:positiveInteger" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Border Width</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="shadow" type="ST_BorderShadow" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Border shadow</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
   </xsd:complexType>
+  <xsd:element name="wrap" type="CT_Wrap">
+    <xsd:annotation>
+      <xsd:documentation>Text Wrapping</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_Wrap">
+    <xsd:attribute name="type" type="ST_WrapType" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Wrapping type</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="side" type="ST_WrapSide" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Wrapping side</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="anchorx" type="ST_HorizontalAnchor" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Horizontal Positioning Base</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+    <xsd:attribute name="anchory" type="ST_VerticalAnchor" use="optional">
+      <xsd:annotation>
+        <xsd:documentation>Vertical Positioning Base</xsd:documentation>
+      </xsd:annotation>
+    </xsd:attribute>
+  </xsd:complexType>
+  <xsd:element name="anchorlock" type="CT_AnchorLock">
+    <xsd:annotation>
+      <xsd:documentation>Anchor Location Is Locked</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:complexType name="CT_AnchorLock"></xsd:complexType>
   <xsd:simpleType name="ST_BorderType">
+    <xsd:annotation>
+      <xsd:documentation>Border Type</xsd:documentation>
+    </xsd:annotation>
     <xsd:restriction base="xsd:string">
-      <xsd:enumeration value="none" />
-      <xsd:enumeration value="single" />
-      <xsd:enumeration value="thick" />
-      <xsd:enumeration value="double" />
-      <xsd:enumeration value="hairline" />
-      <xsd:enumeration value="dot" />
-      <xsd:enumeration value="dash" />
-      <xsd:enumeration value="dotDash" />
-      <xsd:enumeration value="dashDotDot" />
-      <xsd:enumeration value="triple" />
-      <xsd:enumeration value="thinThickSmall" />
-      <xsd:enumeration value="thickThinSmall" />
-      <xsd:enumeration value="thickBetweenThinSmall" />
-      <xsd:enumeration value="thinThick" />
-      <xsd:enumeration value="thickThin" />
-      <xsd:enumeration value="thickBetweenThin" />
-      <xsd:enumeration value="thinThickLarge" />
-      <xsd:enumeration value="thickThinLarge" />
-      <xsd:enumeration value="thickBetweenThinLarge" />
-      <xsd:enumeration value="wave" />
-      <xsd:enumeration value="doubleWave" />
-      <xsd:enumeration value="dashedSmall" />
-      <xsd:enumeration value="dashDotStroked" />
-      <xsd:enumeration value="threeDEmboss" />
-      <xsd:enumeration value="threeDEngrave" />
-      <xsd:enumeration value="HTMLOutset" />
-      <xsd:enumeration value="HTMLInset" />
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>No Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="single">
+        <xsd:annotation>
+          <xsd:documentation>Single Line Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thick">
+        <xsd:annotation>
+          <xsd:documentation>Thick Line Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="double">
+        <xsd:annotation>
+          <xsd:documentation>Double Line Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="hairline">
+        <xsd:annotation>
+          <xsd:documentation>Hairline Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dot">
+        <xsd:annotation>
+          <xsd:documentation>Dotted Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dash">
+        <xsd:annotation>
+          <xsd:documentation>pecifies a line border consisting of a dashed line around the parent object.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dotDash">
+        <xsd:annotation>
+          <xsd:documentation>Dot Dash Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashDotDot">
+        <xsd:annotation>
+          <xsd:documentation>Dash Dot Dot Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="triple">
+        <xsd:annotation>
+          <xsd:documentation>Triple Line Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thinThickSmall">
+        <xsd:annotation>
+          <xsd:documentation>Thin Thick Small Gap Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickThinSmall">
+        <xsd:annotation>
+          <xsd:documentation>Small thick-thin lines border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickBetweenThinSmall">
+        <xsd:annotation>
+          <xsd:documentation>Small thin-thick-thin Lines Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thinThick">
+        <xsd:annotation>
+          <xsd:documentation>Thin Thick Line Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickThin">
+        <xsd:annotation>
+          <xsd:documentation>Thick Thin Line Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickBetweenThin">
+        <xsd:annotation>
+          <xsd:documentation>Thin-thick-thin Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thinThickLarge">
+        <xsd:annotation>
+          <xsd:documentation>Thin Thick Large Gap Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickThinLarge">
+        <xsd:annotation>
+          <xsd:documentation>Thick Thin Large Gap Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="thickBetweenThinLarge">
+        <xsd:annotation>
+          <xsd:documentation>Large thin-thick-thin Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="wave">
+        <xsd:annotation>
+          <xsd:documentation>Wavy Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="doubleWave">
+        <xsd:annotation>
+          <xsd:documentation>Double Wavy Lines Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashedSmall">
+        <xsd:annotation>
+          <xsd:documentation>Small Dash Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="dashDotStroked">
+        <xsd:annotation>
+          <xsd:documentation>Stroked Dash Dot Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="threeDEmboss">
+        <xsd:annotation>
+          <xsd:documentation>3D Embossed Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="threeDEngrave">
+        <xsd:annotation>
+          <xsd:documentation>3D Engraved Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="HTMLOutset">
+        <xsd:annotation>
+          <xsd:documentation>Outset Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="HTMLInset">
+        <xsd:annotation>
+          <xsd:documentation>Inset Border</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:simpleType name="ST_BorderShadow">
+    <xsd:annotation>
+      <xsd:documentation>Border Shadow Type</xsd:documentation>
+    </xsd:annotation>
     <xsd:restriction base="xsd:string">
-      <xsd:enumeration value="t" />
-      <xsd:enumeration value="f" />
+      <xsd:enumeration value="t">
+        <xsd:annotation>
+          <xsd:documentation>True</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="true">
+        <xsd:annotation>
+          <xsd:documentation>True</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="f">
+        <xsd:annotation>
+          <xsd:documentation>False</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="false">
+        <xsd:annotation>
+          <xsd:documentation>False</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>
-  <xsd:element name="wrap" type="CT_Wrap" />
-  <xsd:complexType name="CT_Wrap">
-    <xsd:sequence />
-    <xsd:attribute name="type" type="ST_WrapType" use="optional" />
-    <xsd:attribute name="side" type="ST_WrapSide" use="optional" />
-    <xsd:attribute name="anchorx" type="ST_HorizontalAnchor" use="optional" />
-    <xsd:attribute name="anchory" type="ST_VerticalAnchor" use="optional" />
-  </xsd:complexType>
   <xsd:simpleType name="ST_WrapType">
+    <xsd:annotation>
+      <xsd:documentation>Text Wrapping Type</xsd:documentation>
+    </xsd:annotation>
     <xsd:restriction base="xsd:string">
-      <xsd:enumeration value="topAndBottom" />
-      <xsd:enumeration value="square" />
-      <xsd:enumeration value="none" />
-      <xsd:enumeration value="tight" />
-      <xsd:enumeration value="through" />
+      <xsd:enumeration value="topAndBottom">
+        <xsd:annotation>
+          <xsd:documentation>Top and bottom wrapping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="square">
+        <xsd:annotation>
+          <xsd:documentation>Square wrapping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="none">
+        <xsd:annotation>
+          <xsd:documentation>No wrapping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="tight">
+        <xsd:annotation>
+          <xsd:documentation>Tight wrapping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="through">
+        <xsd:annotation>
+          <xsd:documentation>Through wrapping</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:simpleType name="ST_WrapSide">
+    <xsd:annotation>
+      <xsd:documentation>Text Wrapping Side</xsd:documentation>
+    </xsd:annotation>
     <xsd:restriction base="xsd:string">
-      <xsd:enumeration value="both" />
-      <xsd:enumeration value="left" />
-      <xsd:enumeration value="right" />
-      <xsd:enumeration value="largest" />
+      <xsd:enumeration value="both">
+        <xsd:annotation>
+          <xsd:documentation>Both sides</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="left">
+        <xsd:annotation>
+          <xsd:documentation>Left side</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="right">
+        <xsd:annotation>
+          <xsd:documentation>Right side</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="largest">
+        <xsd:annotation>
+          <xsd:documentation>Largest side</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:simpleType name="ST_HorizontalAnchor">
+    <xsd:annotation>
+      <xsd:documentation>Horizontal Anchor Type</xsd:documentation>
+    </xsd:annotation>
     <xsd:restriction base="xsd:string">
-      <xsd:enumeration value="margin" />
-      <xsd:enumeration value="page" />
-      <xsd:enumeration value="text" />
-      <xsd:enumeration value="char" />
+      <xsd:enumeration value="margin">
+        <xsd:annotation>
+          <xsd:documentation>Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="page">
+        <xsd:annotation>
+          <xsd:documentation>Page</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="text">
+        <xsd:annotation>
+          <xsd:documentation>Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="char">
+        <xsd:annotation>
+          <xsd:documentation>Character</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:simpleType name="ST_VerticalAnchor">
+    <xsd:annotation>
+      <xsd:documentation>Vertical Anchor Type</xsd:documentation>
+    </xsd:annotation>
     <xsd:restriction base="xsd:string">
-      <xsd:enumeration value="margin" />
-      <xsd:enumeration value="page" />
-      <xsd:enumeration value="text" />
-      <xsd:enumeration value="line" />
+      <xsd:enumeration value="margin">
+        <xsd:annotation>
+          <xsd:documentation>Margin</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="page">
+        <xsd:annotation>
+          <xsd:documentation>Page</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="text">
+        <xsd:annotation>
+          <xsd:documentation>Text</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
+      <xsd:enumeration value="line">
+        <xsd:annotation>
+          <xsd:documentation>Line</xsd:documentation>
+        </xsd:annotation>
+      </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>
-  <xsd:element name="anchorlock" type="CT_AnchorLock" />
-  <xsd:complexType name="CT_AnchorLock">
-    <xsd:sequence />
-  </xsd:complexType>
 </xsd:schema>
