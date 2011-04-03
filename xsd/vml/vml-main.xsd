@@ -1,15 +1,62 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="urn:schemas-microsoft-com:vml" xmlns="urn:schemas-microsoft-com:vml" xmlns:p="urn:schemas-microsoft-com:office:powerpoint" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wvml="urn:schemas-microsoft-com:office:word" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:x="urn:schemas-microsoft-com:office:excel">
-  <xsd:import namespace="urn:schemas-microsoft-com:office:office" schemaLocation="vml-officeDrawing.xsd" />
-  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="wml.xsd" />
-  <xsd:import namespace="urn:schemas-microsoft-com:office:word" schemaLocation="vml-wordprocessingDrawing.xsd" />
-  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd" />
-  <xsd:import namespace="urn:schemas-microsoft-com:office:excel" schemaLocation="vml-spreadsheetDrawing.xsd" />
-  <xsd:import namespace="urn:schemas-microsoft-com:office:powerpoint" schemaLocation="vml-presentationDrawing.xsd" />
+<!--  This schema is from ECMA-376 1st ed 
+
+		To compile with XJC, compile vml__ROOT.xsd instead.	 		
+-->
+<xsd:schema targetNamespace="urn:schemas-microsoft-com:vml" 
+xmlns="urn:schemas-microsoft-com:vml" 
+xmlns:p="urn:schemas-microsoft-com:office:powerpoint" 
+xmlns:o="urn:schemas-microsoft-com:office:office" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+elementFormDefault="qualified" 
+attributeFormDefault="unqualified" 
+xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+xmlns:wvml="urn:schemas-microsoft-com:office:word" 
+xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+
+
+  <xsd:import namespace="urn:schemas-microsoft-com:office:office" 
+  schemaLocation="vml-officedrawing.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
+  schemaLocation="../wml/wml.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:word" 
+  schemaLocation="vml-wordprocessingdrawing.xsd" />
+  <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" 
+  schemaLocation="../shared/shared-relationshipReference.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:excel" 
+  schemaLocation="vml-spreadsheetDrawing.xsd" />
+  <xsd:import namespace="urn:schemas-microsoft-com:office:powerpoint" 
+  schemaLocation="vml-presentationDrawing.xsd" />
+  
+  <!--
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.vml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>  
+  -->
+  
   <xsd:attributeGroup name="AG_Id">
     <xsd:attribute name="id" type="xsd:string" use="optional">
       <xsd:annotation>
         <xsd:documentation>Unique Identifier</xsd:documentation>
+                                <xsd:appinfo>
+                                        <jaxb:property name="vmlId"/>
+                                        <!-- NB can't just use name="ID" here, because
+                                             although that avoids the collision at the 
+                                             parse stage, it results in a hard to debug
+                                             error at the compile stage. -->
+                                </xsd:appinfo>
+        
       </xsd:annotation>
     </xsd:attribute>
   </xsd:attributeGroup>
@@ -936,6 +983,9 @@
     <xsd:attribute ref="o:href">
       <xsd:annotation>
         <xsd:documentation>Original Image Reference</xsd:documentation>
+                                <xsd:appinfo>
+                                        <jaxb:property name="ohref"/>
+                                </xsd:appinfo>        
       </xsd:annotation>
     </xsd:attribute>
     <xsd:attribute ref="o:althref">
