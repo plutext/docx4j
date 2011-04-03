@@ -139,10 +139,10 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	
 	private void findImageData() {
 		
-    	if (shape.getAny()==null) {
+    	if (shape.getPathOrFormulasOrHandles()==null) {
     		log.debug("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
     	} else {
-    		for (Object o : shape.getAny() ) {
+    		for (Object o : shape.getPathOrFormulasOrHandles() ) {
     			if (o instanceof JAXBElement ) {
     				JAXBElement jb = (JAXBElement)o;
     				if (jb.getDeclaredType().getName().equals("org.docx4j.vml.CTImageData")) {
@@ -186,9 +186,10 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		return null;
     	}
     	
-        String imgRelId = converter.imageData.getOtherAttributes().get(
-        		new QName("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));   
-        	//NB r:id is not given by getId()!
+//        String imgRelId = converter.imageData.getOtherAttributes().get(
+//        		new QName("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id"));   
+    	
+    	String imgRelId = converter.imageData.getId();
         if (imgRelId!=null && !imgRelId.equals("")) {
         	log.debug("Handling " + imgRelId);
         	converter.handleImageRel(imgRelId, imageDirPath, sourcePart);
@@ -343,7 +344,9 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	
 	
     private void readStandardAttributes(CTShape shape) {
-        this.id = shape.getId();
+//        this.id = shape.getId();
+        this.id = shape.getVmlId();
+    	
         this.pType = shape.getType(); 
         this.alt = shape.getAlt();
         this.style = shape.getStyle();
