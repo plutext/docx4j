@@ -32,7 +32,6 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
   <xsd:import namespace="urn:schemas-microsoft-com:office:powerpoint" 
   schemaLocation="vml-presentationDrawing.xsd" />
   
-  <!--
 	<xsd:annotation>
 		<xsd:appinfo>
 			<xsd:appinfo>
@@ -43,7 +42,6 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
 	</xsd:annotation>  
-  -->
   
   <xsd:attributeGroup name="AG_Id">
     <xsd:attribute name="id" type="xsd:string" use="optional">
