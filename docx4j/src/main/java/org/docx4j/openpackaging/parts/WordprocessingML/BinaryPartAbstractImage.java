@@ -356,7 +356,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 		// In order to ensure unique part name,
 		// idea is to use the relId, which ought to be unique
-		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/"));
+		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/")+1);
 		
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
@@ -514,8 +514,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 *            be exposed in Word 2007's user interface, but Word won't open
 	 * the document if any of the attributes these go in (except @ desc) aren't
 	 *            present!
-	 * @param cx    Image width in twip
-	 * @param cy    Image height in twip
+	 * @param cx    Image width in EMU
+	 * @param cy    Image height in EMU
 	 * @param link  true if this is to be linked not embedded
 	 * @throws Exception
 	 */
