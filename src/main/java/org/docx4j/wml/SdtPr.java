@@ -401,6 +401,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "alias")
     public static class Alias
         implements Child
     {
@@ -481,6 +482,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "bibliography")
     public static class Bibliography
         implements Child
     {
@@ -535,6 +537,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "citation")
     public static class Citation
         implements Child
     {
@@ -589,6 +592,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "equation")
     public static class Equation
         implements Child
     {
@@ -643,6 +647,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "group")
     public static class Group
         implements Child
     {
@@ -697,6 +702,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "picture")
     public static class Picture
         implements Child
     {
@@ -751,6 +757,7 @@ public class SdtPr
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
+    @XmlRootElement(name = "richText")
     public static class RichText
         implements Child
     {
