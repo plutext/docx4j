@@ -80,7 +80,7 @@ import org.docx4j.relationships.Relationship;
  */
 public class LoadFromZipNG extends Load {
 	
-	public HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();	
+	//public HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();	
 	
 	private static Logger log = Logger.getLogger(LoadFromZipNG.class);
 
@@ -98,12 +98,12 @@ public class LoadFromZipNG extends Load {
 
 	
 	public LoadFromZipNG() {
-		this(new ContentTypeManager() );
+//		this(new ContentTypeManager() );
 	}
 
-	public LoadFromZipNG(ContentTypeManager ctm) {
-		this.ctm = ctm;
-	}
+//	public LoadFromZipNG(ContentTypeManager ctm) {
+//		this.ctm = ctm;
+//	}
 	
 	
 	public OpcPackage get(String filepath) throws Docx4JException {
@@ -142,6 +142,7 @@ public class LoadFromZipNG extends Load {
 			throw new Docx4JException("Couldn't get ZipFile", ioe);
 		}
 				
+		HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();
 		Enumeration entries = zf.entries();
 		while (entries.hasMoreElements()) {
 			ZipEntry entry = (ZipEntry) entries.nextElement();
@@ -162,11 +163,12 @@ public class LoadFromZipNG extends Load {
 		 }
 		 
 		
-		return process();
+		return process(partByteArrays);
 	}
 
 	public OpcPackage get(InputStream is) throws Docx4JException {
 
+		HashMap<String, ByteArray> partByteArrays = new HashMap<String, ByteArray>();	
        try {
             ZipInputStream zis = new ZipInputStream(is);
             ZipEntry entry = null;
@@ -186,14 +188,16 @@ public class LoadFromZipNG extends Load {
         // If performance is ok, LoadFromJCR could be refactored to
         // work the same way
 		
-		return process();
+		return process(partByteArrays);
 	}
 	
-	private OpcPackage process() throws Docx4JException {
+	private OpcPackage process(HashMap<String, ByteArray> partByteArrays) throws Docx4JException {
 
 		// 2. Create a new Package
 		//		Eventually, you'll also be able to create an Excel package etc
 		//		but only the WordML package exists at present
+		
+		ContentTypeManager ctm = new ContentTypeManager();
 
 		try {
 			InputStream is = getInputStreamFromZippedPart( partByteArrays,  "[Content_Types].xml");		
@@ -234,7 +238,7 @@ public class LoadFromZipNG extends Load {
 //		in the relationships
 //		(ii) add the new Part to the package
 //		(iii) cross the PartName off unusedZipEntries
-		addPartsFromRelationships(partByteArrays, p, rp );
+		addPartsFromRelationships(partByteArrays, p, rp, ctm );
 		
 		
 		// 6. Check unusedZipEntries is empty
@@ -312,7 +316,7 @@ public class LoadFromZipNG extends Load {
 	*/
 	//private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp)
 	private void addPartsFromRelationships(HashMap<String, ByteArray> partByteArrays, 
-			Base source, RelationshipsPart rp)
+			Base source, RelationshipsPart rp, ContentTypeManager ctm)
 		throws Docx4JException {
 		
 		OpcPackage pkg = source.getPackage();				
@@ -341,7 +345,7 @@ public class LoadFromZipNG extends Load {
 				// This is usually the first logged comment for
 				// a part, so start with a line break.
 			try {				
-				getPart(partByteArrays, pkg, rp, r);
+				getPart(partByteArrays, pkg, rp, r, ctm);
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
@@ -366,7 +370,7 @@ public class LoadFromZipNG extends Load {
 	 */
 	//private void getPart(ZipFile zf, Package pkg, RelationshipsPart rp, Relationship r)
 	private void getPart(HashMap<String, ByteArray> partByteArrays, OpcPackage pkg, RelationshipsPart rp, 
-			Relationship r)
+			Relationship r, ContentTypeManager ctm)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;
@@ -408,7 +412,7 @@ public class LoadFromZipNG extends Load {
 			return;
 		}
 		
-		if (handled.get(resolvedPartUri)!=null) return;
+		if (pkg.handled.get(resolvedPartUri)!=null) return;
 		
 		String relationshipType = r.getType();		
 			
@@ -419,7 +423,7 @@ public class LoadFromZipNG extends Load {
 			part.setRelationshipType(relationshipType);
 		}
 		rp.loadPart(part, r);
-		handled.put(resolvedPartUri, resolvedPartUri);
+		pkg.handled.put(resolvedPartUri, resolvedPartUri);
 
 		// The source Part (or Package) might have a convenience
 		// method for this
@@ -433,7 +437,7 @@ public class LoadFromZipNG extends Load {
 		RelationshipsPart rrp = getRelationshipsPart(partByteArrays, part);
 		if (rrp!=null) {
 			// recurse via this parts relationships, if it has any
-			addPartsFromRelationships(partByteArrays, part, rrp );
+			addPartsFromRelationships(partByteArrays, part, rrp, ctm );
 			String relPart = PartName.getRelationshipsPartName(
 					part.getPartName().getName().substring(1) );
 //			unusedZipEntries.put(relPart, new Boolean(false));					

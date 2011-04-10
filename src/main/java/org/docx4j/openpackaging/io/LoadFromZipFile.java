@@ -85,15 +85,15 @@ public class LoadFromZipFile extends Load {
 
 	 // HashMap containing the names of all the zip entries,
 	// so we can tell whether there are any orphans
-	public HashMap unusedZipEntries = null;
+//	public HashMap unusedZipEntries = null;
 	
 	public LoadFromZipFile() {
-		this(new ContentTypeManager() );
+//		this(new ContentTypeManager() );
 	}
 
-	public LoadFromZipFile(ContentTypeManager ctm) {
-		this.ctm = ctm;
-	}
+//	public LoadFromZipFile(ContentTypeManager ctm) {
+//		this.ctm = ctm;
+//	}
 	
 	
 	public OpcPackage get(String filepath) throws Docx4JException {
@@ -122,16 +122,17 @@ public class LoadFromZipFile extends Load {
 //		a HashMap containing the names of all the zip file 
 //		entries, so we can tick them off.
 		
-		unusedZipEntries = new HashMap();
+//		unusedZipEntries = new HashMap();
 		Enumeration entries = zf.entries();
 		while (entries.hasMoreElements()) {
 			ZipEntry entry = (ZipEntry) entries.nextElement();
-			unusedZipEntries.put(entry.getName(), new Boolean(true) );	
+//			unusedZipEntries.put(entry.getName(), new Boolean(true) );	
 		}
 		
 		// 2. Create a new Package
 		//		Eventually, you'll also be able to create an Excel package etc
 		//		but only the WordML package exists at present
+		ContentTypeManager ctm = new ContentTypeManager();
 		
 		try {
 			InputStream is = getInputStreamFromZippedPart( zf,  "[Content_Types].xml");
@@ -146,7 +147,7 @@ public class LoadFromZipFile extends Load {
 //		Once we've got this, then we can look up the content type for
 //		each PartName, and use it in the Part constructor.
 //		p.setContentTypeManager(ctm); - 20080111 - done by ctm.createPackage();
-		unusedZipEntries.put("[Content_Types].xml", new Boolean(false));
+//		unusedZipEntries.put("[Content_Types].xml", new Boolean(false));
 		
 		// 4. Start with _rels/.rels
 
@@ -160,7 +161,7 @@ public class LoadFromZipFile extends Load {
 		RelationshipsPart rp = getRelationshipsPartFromZip(p, zf,  partName);		
 		p.setRelationships(rp);
 		//rp.setPackageRelationshipPart(true);		
-		unusedZipEntries.put(partName, new Boolean(false));
+//		unusedZipEntries.put(partName, new Boolean(false));
 		
 		
 		log.info( "Object created for: " + partName);
@@ -171,17 +172,17 @@ public class LoadFromZipFile extends Load {
 //		in the relationships
 //		(ii) add the new Part to the package
 //		(iii) cross the PartName off unusedZipEntries
-		addPartsFromRelationships(zf, p, rp );
+		addPartsFromRelationships(zf, p, rp, ctm );
 		
 		
 		// 6. Check unusedZipEntries is empty
-		if (log.isDebugEnabled()) {		
-			 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
-			 while(myVeryOwnIterator.hasNext()) {
-			     String key = (String)myVeryOwnIterator.next();
-			     log.info( key + "  " + unusedZipEntries.get(key));
-			 }
-		}		 
+//		if (log.isDebugEnabled()) {		
+//			 Iterator myVeryOwnIterator = unusedZipEntries.keySet().iterator();
+//			 while(myVeryOwnIterator.hasNext()) {
+//			     String key = (String)myVeryOwnIterator.next();
+//			     log.info( key + "  " + unusedZipEntries.get(key));
+//			 }
+//		}		 
 		 try {
 			 zf.close();
 		 } catch (IOException exc) {
@@ -253,7 +254,8 @@ public class LoadFromZipFile extends Load {
 	(ii) add the new Part to the package
 	(iii) cross the PartName off unusedZipEntries
 	*/
-	private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp)
+	private void addPartsFromRelationships(ZipFile zf, Base source, RelationshipsPart rp,
+			ContentTypeManager ctm)
 		throws Docx4JException {
 		
 		OpcPackage pkg = source.getPackage();				
@@ -280,7 +282,7 @@ public class LoadFromZipFile extends Load {
 				// This is usually the first logged comment for
 				// a part, so start with a line break.
 			try {				
-				getPart(zf, pkg, rp, r);
+				getPart(zf, pkg, rp, r, ctm);
 			} catch (Exception e) {
 				throw new Docx4JException("Failed to add parts from relationships", e);
 			}
@@ -305,7 +307,8 @@ public class LoadFromZipFile extends Load {
 	 */
 //	private void getPart(ZipFile zf, Base source, 
 //			Package pkg, String resolvedPartUri, String relationshipType)
-	private void getPart(ZipFile zf, OpcPackage pkg, RelationshipsPart rp, Relationship r)
+	private void getPart(ZipFile zf, OpcPackage pkg, RelationshipsPart rp, Relationship r,
+			ContentTypeManager ctm)
 			throws Docx4JException, InvalidFormatException, URISyntaxException {
 		
 		Base source = null;
@@ -347,7 +350,7 @@ public class LoadFromZipFile extends Load {
 			return;
 		}
 		
-		if (handled.get(resolvedPartUri)!=null) return;
+		if (pkg.handled.get(resolvedPartUri)!=null) return;
 		
 		String relationshipType = r.getType();		
 			
@@ -358,7 +361,7 @@ public class LoadFromZipFile extends Load {
 			part.setRelationshipType(relationshipType);
 		}		
 		rp.loadPart(part, r);
-		handled.put(resolvedPartUri, resolvedPartUri);
+		pkg.handled.put(resolvedPartUri, resolvedPartUri);
 		
 
 		// The source Part (or Package) might have a convenience
@@ -368,16 +371,16 @@ public class LoadFromZipFile extends Load {
 					+ " to " + part.getPartName());
 		}
 		
-		unusedZipEntries.put(resolvedPartUri, new Boolean(false));
-		log.info(".. added." );
+//		unusedZipEntries.put(resolvedPartUri, new Boolean(false));
+//		log.info(".. added." );
 		
 		RelationshipsPart rrp = getRelationshipsPart(zf, part);
 		if (rrp!=null) {
 			// recurse via this parts relationships, if it has any
-			addPartsFromRelationships(zf, part, rrp );
+			addPartsFromRelationships(zf, part, rrp, ctm );
 			String relPart = PartName.getRelationshipsPartName(
 					part.getPartName().getName().substring(1) );
-			unusedZipEntries.put(relPart, new Boolean(false));					
+//			unusedZipEntries.put(relPart, new Boolean(false));					
 		}
 	}
 
