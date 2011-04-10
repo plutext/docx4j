@@ -68,10 +68,10 @@ public class LoadFromVFSZipFile extends Load {
 		_loadFromZipFile.loadExternalTargets(loadExternalTargets);
 	}
 
-	public LoadFromVFSZipFile(ContentTypeManager ctm, boolean loadExternalTargets) {
-		_loadFromZipFile = new LoadFromZipFile(ctm);
-		_loadFromZipFile.loadExternalTargets(loadExternalTargets);
-	}
+//	public LoadFromVFSZipFile(ContentTypeManager ctm, boolean loadExternalTargets) {
+//		_loadFromZipFile = new LoadFromZipFile(ctm);
+//		_loadFromZipFile.loadExternalTargets(loadExternalTargets);
+//	}
 	
 	public OpcPackage get(String filepath) throws Docx4JException {
 		OpcPackage thePackage = null;

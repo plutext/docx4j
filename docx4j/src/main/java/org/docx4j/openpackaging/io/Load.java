@@ -61,17 +61,13 @@ public class Load {
 		super();
 	}
 
-	public ContentTypeManager ctm;
+	//public ContentTypeManager ctm;
 
 	protected boolean loadExternalTargets = false; 
 	public void loadExternalTargets(boolean loadExternalTargets) {
 		this.loadExternalTargets = loadExternalTargets;
 	}
 	
-	/**
-	 * This HashMap is intended to prevent loops.
-	 */
-	protected HashMap<String, String> handled = new HashMap<String, String>();
 	
 	/**
 	 * TODO.  I'd prefer this not to be static, but it needs to be,

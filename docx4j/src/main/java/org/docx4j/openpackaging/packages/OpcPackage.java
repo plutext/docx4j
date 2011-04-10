@@ -62,6 +62,16 @@ public class OpcPackage extends Base {
 	private static Logger log = Logger.getLogger(OpcPackage.class);
 
 	/**
+	 * This HashMap is intended to prevent loops during the loading 
+	 * of this package. TODO This doesn't really tell us anything that
+	 * the contents of Parts couldn't also tell us (except that
+	 * that doesn't contain the rels parts), so consider removing.
+	 * At least replace it with a method, so this implementation
+	 * detail is hidden!
+	 */
+	public HashMap<String, String> handled = new HashMap<String, String>();
+	
+	/**
 	 * Package parts collection.  This is a collection of _all_
 	 * parts in the package (_except_ relationship parts), 
 	 * not just those referred to by the package-level relationships.
