@@ -157,7 +157,10 @@ public class SdtContentBlock
         return this.egContentBlockContent;
     }
 
-    // implement our ContentAccessor interface
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */
     public List<Object> getContent() {
         if (egContentBlockContent == null) {
             egContentBlockContent = new ArrayList<Object>();

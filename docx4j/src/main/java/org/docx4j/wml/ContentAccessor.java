@@ -4,7 +4,6 @@ import java.util.List;
 
 /**
  * @since 2.7
- *
  */
 public interface ContentAccessor {
 

@@ -65,7 +65,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "paragraphContent"
 })
 public class CTSmartTagRun
-    implements Child
+    implements Child, ContentAccessor
 {
 
     protected CTSmartTagPr smartTagPr;
@@ -188,6 +188,7 @@ public class CTSmartTagRun
      * 
      * 
      */
+    @Deprecated
     public List<Object> getParagraphContent() {
         if (paragraphContent == null) {
             paragraphContent = new ArrayList<Object>();
@@ -195,6 +196,17 @@ public class CTSmartTagRun
         return this.paragraphContent;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */    
+    public List<Object> getContent() {
+        if (paragraphContent == null) {
+            paragraphContent = new ArrayList<Object>();
+        }
+        return this.paragraphContent;
+    }
+    
     /**
      * Gets the value of the uri property.
      * 

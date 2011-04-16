@@ -160,7 +160,10 @@ public class CTSdtContentRun
         return this.paragraphContent;
     }
 
-    // implement our ContentAccessor interface
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */
     public List<Object> getContent() {
         if (paragraphContent == null) {
             paragraphContent = new ArrayList<Object>();

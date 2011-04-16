@@ -152,7 +152,10 @@ public class CTSdtContentRow
         return this.egContentRowContent;
     }
 
-    // implement our ContentAccessor interface
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */
     public List<Object> getContent() {
         if (egContentRowContent == null) {
             egContentRowContent = new ArrayList<Object>();

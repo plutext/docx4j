@@ -243,7 +243,7 @@ public class SdtBlock implements SdtElement, Child
 		boolean startAgain;
     	do {
         	startAgain = false;
-	    	for (Object o : p.getParagraphContent() ) {
+	    	for (Object o : p.getContent() ) {
 	    		
 	    		if (o instanceof SdtRun) {  // This code path not used
 	    			log.debug(".. detected nested sdt " );

@@ -64,7 +64,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "body")
 public class Body
-    implements Child
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -155,6 +155,7 @@ public class Body
      * 
      * 
      */
+    @Deprecated
     public List<Object> getEGBlockLevelElts() {
         if (egBlockLevelElts == null) {
             egBlockLevelElts = new ArrayList<Object>();
@@ -162,6 +163,17 @@ public class Body
         return this.egBlockLevelElts;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */
+    public List<Object> getContent() {
+        if (egBlockLevelElts == null) {
+            egBlockLevelElts = new ArrayList<Object>();
+        }
+        return this.egBlockLevelElts;
+    }
+    
     /**
      * Gets the value of the sectPr property.
      * 
