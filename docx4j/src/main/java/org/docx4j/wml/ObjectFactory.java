@@ -254,13 +254,6 @@ public class ObjectFactory {
         return new CTDocPartTypes();
     }
 
-    /**
-     * Create an instance of {@link Package.Part }
-     * 
-     */
-    public Package.Part createPackagePart() {
-        return new Package.Part();
-    }
 
     /**
      * Create an instance of {@link SdtPr.Picture }
@@ -1382,13 +1375,6 @@ public class ObjectFactory {
         return new SdtPr();
     }
 
-    /**
-     * Create an instance of {@link Package }
-     * 
-     */
-    public Package createPackage() {
-        return new Package();
-    }
 
     /**
      * Create an instance of {@link CTWebSettings }
@@ -2630,13 +2616,6 @@ public class ObjectFactory {
         return new org.docx4j.wml.Style();
     }
 
-    /**
-     * Create an instance of {@link Package.Part.XmlData }
-     * 
-     */
-    public Package.Part.XmlData createPackagePartXmlData() {
-        return new Package.Part.XmlData();
-    }
 
     /**
      * Create an instance of {@link Comments }
