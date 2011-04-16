@@ -6253,7 +6253,7 @@ PRINCIPLES:
 	<xsd:group name="EG_RunInnerContent">
 		<xsd:annotation>
 			<xsd:appinfo>
-				<jaxb:property name="RunContent"/>
+				<jaxb:property name="Content"/>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:choice>
@@ -7897,6 +7897,11 @@ PRINCIPLES:
 		<xsd:group ref="EG_PContent" minOccurs="0" maxOccurs="unbounded"/>
 	</xsd:complexType>
 	<xsd:group name="EG_ContentBlockContent">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="Content"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:choice>
 			<xsd:element name="customXml" type="CT_CustomXmlBlock">
 				<xsd:annotation>
@@ -7981,6 +7986,11 @@ PRINCIPLES:
 	</xsd:element>
 	
 	<xsd:group name="EG_ContentRowContent">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="Content"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:choice>
 			<xsd:element ref="tr" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element name="customXml" type="CT_CustomXmlRow">
@@ -8004,6 +8014,11 @@ PRINCIPLES:
 	</xsd:complexType>
 	
 	<xsd:group name="EG_ContentCellContent">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:property name="Content"/>
+			</xsd:appinfo>
+		</xsd:annotation>	
 		<xsd:choice>
 			<xsd:element name="tc" type="CT_Tc" minOccurs="0" maxOccurs="unbounded">
 				<xsd:annotation>
@@ -8315,7 +8330,7 @@ PRINCIPLES:
 	<xsd:group name="EG_PContent">
 		<xsd:annotation>
 			<xsd:appinfo>
-				<jaxb:property name="ParagraphContent"/>
+				<jaxb:property name="Content"/>
 			</xsd:appinfo>
 		</xsd:annotation>
 		<xsd:choice>
@@ -12457,12 +12472,11 @@ PRINCIPLES:
 		</xsd:choice>
 	</xsd:group>
 	<xsd:group name="EG_BlockLevelElts">
-		<!-- Doesn't work here.
 		<xsd:annotation>
-		<xsd:appinfo>
-		<jaxb:class name="BlockLevelElements"/>
-		</xsd:appinfo>
-		</xsd:annotation> -->
+			<xsd:appinfo>
+				<jaxb:property name="Content"/>
+			</xsd:appinfo>
+		</xsd:annotation>
 		<xsd:choice>
 			<xsd:group ref="EG_BlockLevelChunkElts" minOccurs="0"
 				maxOccurs="unbounded"/>
