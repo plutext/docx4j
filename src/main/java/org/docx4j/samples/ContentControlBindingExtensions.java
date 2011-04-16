@@ -49,11 +49,16 @@ import org.docx4j.wml.Body;
  * from a custom xml part (based on the xpaths given
  * in the content controls).
  * 
- * Word does this itself automatically, but if you
- * have a Word document containing content controls,
- * this sample demonstrates how you could
- * populate those programmatically.  You might
- * then use docx4j to generate a pdf or an html.
+ * Word does this itself automatically, for if there is
+ * a w:databinding element in the sdtPr.
+ * 
+ * However, out of the box, Word doesn't allow for
+ * repeating things (table rows, paragraphs etc), nor
+ * conditional inclusion/exclusion.
+ * 
+ * The OpenDoPE conventions support that; and this sample 
+ * demonstrates docx4j's implementation of that.
+ *  
  */
 public class ContentControlBindingExtensions {
 	
@@ -64,25 +69,25 @@ public class ContentControlBindingExtensions {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
-		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_preprocessed.xml";
-		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/invoice_bound.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
+		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice_preprocessed.xml";
+		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice_bound.xml";
 
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions_bound.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions_bound.xml";
 
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/IT inventory.docx";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/IT_inventory_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/IT_inventory_bound.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/IT inventory.docx";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/IT_inventory_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/IT_inventory_bound.xml";
 		
-//		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/databinding/MedicalChartSample.docx";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/MedicalChartSample_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/MedicalChartSample_bound.xml";
+//		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/word/databinding/MedicalChartSample.docx";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/MedicalChartSample_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/MedicalChartSample_bound.xml";
 		
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition.docx";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/databinding/repeat-containing-condition_bound.xml";
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/repeat-containing-condition.docx";
+//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/repeat-containing-condition_preprocessed.xml";
+//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/repeat-containing-condition_bound.xml";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
