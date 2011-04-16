@@ -1,33 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><head><style><!--
+<html xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><head><style><!--
 
-						/*paged media */ 
-						div.header {display: none }
-						div.footer {display: none } 
-						/*@media print { */
+					/*paged media */ div.header {display: none }
+					div.footer {display: none } /*@media print { */
+					
+						div.footer {display: block; position: running(footer) }
+					
+
+					@page { size: A4; margin: 10%; @top-center {
+					content: element(header) } @bottom-center {
+					content: element(footer) } }
+
+
+					/*font definitions*/
+
+					/*element styles*/ del
+					{text-decoration:line-through;color:red;}
+					
+							ins {text-decoration:none;}
 						
-							div.footer {display: block; position: running(footer) }
-						
-
-						@page { size: A4; margin: 10%; @top-center {
-						content: element(header) } @bottom-center {
-						content: element(footer) } }
 
 
-						/*font definitions*/
-
-						/*element styles*/ del
-						{text-decoration:line-through;color:red;}
-						
-								ins {text-decoration:none;}
-							
-
-						/*class styles*/
-
-						
-						
-						/* Word style definitions */
-						
+					/* Word style definitions */
+					
  /* TABLE STYLES */ 
 .TableNormal {display:table;position: relative; margin-left: 0in;}
 .TableGrid {display:table;position: relative; margin-left: 0in;border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;space-after: 0in;line-height: 100%;}
@@ -63,24 +58,29 @@
 .xmlmarkupbracket {display:inline;}
 
 
-						/* TABLE CELL STYLES */
-						#docx4j_tbl_0 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
+					/* TABLE CELL STYLES */
+					#docx4j_tbl_0 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
 #docx4j_tbl_1 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
 #docx4j_tbl_2 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
+#docx4j_tbl_3 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
+#docx4j_tbl_4 td { border-top-style: solid;border-top-width: 1px;border-top-color: #000000;border-bottom-style: solid;border-bottom-width: 1px;border-bottom-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-left-style: solid;border-left-width: 1px;border-left-color: #000000;height: 5mm;}
 --></style><script type="text/javascript">
-  			
-  			function toggleDiv(divid){
-    			if(document.getElementById(divid).style.display == 'none'){
-      				document.getElementById(divid).style.display = 'block';
-    			}else{
-      			document.getElementById(divid).style.display = 'none';
-    			}
-  			}
-  		</script></head><body><div class="footer">
+				
+				function toggleDiv(divid){
+					if(document.getElementById(divid).style.display == 'none'){
+						document.getElementById(divid).style.display = 'block';
+					}else{
+						document.getElementById(divid).style.display = 'none';
+					}
+				}
+								
+			</script></head><body>
   
-  <p class="Footer Normal DocDefaults " style="text-align: center;" />
+  <!-- userBodyTop goes here -->
   
-  <p class="Footer Normal DocDefaults " /></div>
+  
+  
+  <div class="document">
   
   <p class="Title Normal DocDefaults ">Docx4j - Getting Started</p>
   
@@ -904,7 +904,7 @@
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">The sample uses TraversalUtil, which is a general approach for traversing the JAXB object tree in the main document part.  It can also be applied to headers, footers etc.   TraversalUtil has an </span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 8.0pt;">interface</span><span style="color: #000000;font-family: Consolas;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> Callback, </span></span>which you use to specify how you want to traverse the nodes, and what you want to do to them.</p>
   
-  <p class="Normal DocDefaults ">As noted in "Adding a paragraph of text<span style="white-space:pre-wrap;">" above,  many objects (eg the document body, a paragraph, a run), have a List containing  their content.  Traversal works by iterating over these lists. </span></p>
+  <p class="Normal DocDefaults ">As noted in "Adding a paragraph of text<span style="white-space:pre-wrap;">" above,  many objects (eg the document body, a paragraph, a run), have a List containing  their content (see </span><span style="font-family: Calibri;">The ContentAccessor interface</span><span style="white-space:pre-wrap;"> further below).  Traversal works by iterating over these lists. </span></p>
   
   <p class="Heading1 Normal DocDefaults "><a name="_Ref273526076" /><span style="font-family: Calibri;">General strategy/approach for creating stuff</span></p>
   
@@ -1070,6 +1070,122 @@
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;"><span style="color: #FFFFFF;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">  </span></span><span style="font-weight: bold;color: #7F0055;font-family: Consolas;font-size: 9.0pt;"><span style="white-space:pre-wrap;">public static </span></span><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Consolas;font-size: 9.0pt;">Object unmarshalString(String str, JAXBContext jc, Class declaredType)</span></p>
   
+  <p class="Heading1 Normal DocDefaults "><a name="_Ref290751180" /><span style="font-family: Calibri;">The ContentAccessor interface</span></p>
+  
+  <p class="Normal DocDefaults ">The forthcoming docx4j 2.7.0 (and current svn and nightly builds) introduces a content accessor interface.</p>
+  
+  <p class="Normal DocDefaults ">This interface contains a single method:</p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;"><span style="color: #000000;font-family: Courier New;font-size: 10.0pt;"><span style="white-space:pre-wrap;">    </span></span><span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 10.0pt;">public</span><span style="color: #000000;font-family: Courier New;font-size: 10.0pt;"><span style="white-space:pre-wrap;"> List&lt;Object&gt; getContent();</span></span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0in;line-height: 100%;" />
+  
+  <p class="Normal DocDefaults ">It is implemented for a number of objects, including the following:</p>
+  
+  <table class="TableGrid TableNormal " id="docx4j_tbl_3" style="position: relative; margin-left: 0.86in;table-layout: fixed;border-collapse: collapse;"><colgroup><col style="width: 1.77in;" /><col style="width: 32mm;" /><col style="width: 55mm;" /></colgroup><tbody><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Body</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:body</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">document body</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">P</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:p</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">paragraph</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">R</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:r</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">run</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Tbl</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Tr</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Tc</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:tbl</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:tr</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:tc</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">table</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">table row</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">table cell</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">SdtBlock</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">SdtRun</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">CTSdtRow</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">CTSdtCell</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:sdt</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:sdt</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:sdt</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">w:sdt</span></p></td><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">content controls; see the method</span><span style="color: #000000;font-family: Courier New;font-size: 10.0pt;"><span style="white-space:pre-wrap;"> getSdtContent()</span></span></p></td></tr></tbody></table>
+  
+  <p class="Normal DocDefaults " />
+  
+  <p class="Normal DocDefaults ">In earlier versions of docx4j (including the current 2.6.0), each of these classes had a different name for the method which returns the list of content objects:</p>
+  
+  <table class="TableGrid TableNormal " id="docx4j_tbl_4" style="position: relative; margin-left: 0.86in;table-layout: fixed;border-collapse: collapse;"><colgroup><col style="width: 1.77in;" /><col style="width: 3.36in;" /></colgroup><tbody><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Body</span></p></td><td>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getEGBlockLevelElts()</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">P</span></p></td><td>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getParagraphContent()</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">R</span></p></td><td>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getRunContent()</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Tbl</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Tr</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">Tc</span></p></td><td>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getEGContentRowContent()</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getEGContentCellContent()</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getEGBlockLevelElts()</span></p></td></tr><tr style="vertical-align: top;"><td>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">SdtBlock</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">SdtRun</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">CTSdtRow</span></p>
+  
+  <p class="Normal DocDefaults "><span style="font-size: 10.0pt;">CTSdtCell</span></p></td><td>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getSdtContent().getEGContentBlockContent()</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getSdtContent().getParagraphContent()</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getSdtContent().getEGContentRowContent()</span></p>
+  
+  <p class="Normal DocDefaults " style="space-after: 0mm;"><span style="color: #000000;font-family: Consolas;font-size: 10.0pt;">getSdtContent().getEGContentCellContent()</span></p></td></tr></tbody></table>
+  
+  <p class="Normal DocDefaults " />
+  
   <p class="Heading1 Normal DocDefaults "><span style="font-family: Calibri;">Creating and adding a table</span></p>
   
   <p class="Normal DocDefaults "><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/model/table/TblFactory.java">org.docx4j.model.table.TblFactory</a><span style="white-space:pre-wrap;"> provides an easy way to create a simple table. For an example of its use, see the </span><a href="http://dev.plutext.org/trac/docx4j/browser/trunk/docx4j/src/main/java/org/docx4j/samples/CreateWordprocessingMLDocument.java">CreateWordprocessingMLDocument sample</a>.</p>
@@ -1154,7 +1270,7 @@
   
   <p class="listparagraph0 Normal DocDefaults " style="position: relative; margin-left: 0.25in;line-height: 75%;"><span style="position: absolute; left:-0.25in; max-width: 0.25in;font-family: Symbol;"> </span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;">one of course is to alter the xslt itself. This should be avoided, unless your objective is to improve the fidelity of the output (in which case, please contribute a patch!)</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /><span style="white-space:pre-wrap;">To substitute your own XSLT, you can use the </span></span><span style="color: #000000;font-family: Courier New;font-size: 9.0pt;"><span style="white-space:pre-wrap;">HtmlExporterNG2 </span></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;">method:</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Courier New;font-size: 8.0pt;">   </span><span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 8.0pt;">public</span><span style="color: #000000;font-family: Courier New;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span><span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 8.0pt;">static</span><span style="color: #000000;font-family: Courier New;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> </span></span><span style="font-weight: bold;color: #7F0055;font-family: Courier New;font-size: 8.0pt;">void</span><span style="color: #000000;font-family: Courier New;font-size: 8.0pt;"><span style="white-space:pre-wrap;"> setXslt(Templates xslt)</span></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><span style="white-space:pre-wrap;"> </span></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span></p>
   
-  <p class="listparagraph0 Normal DocDefaults " style="position: relative; margin-left: 0.25in;line-height: 75%;"><span style="position: absolute; left:-0.25in; max-width: 0.25in;font-family: Symbol;"> </span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><span style="white-space:pre-wrap;">another possibility (currently in svn trunk only) is to register an </span></span><span style="font-weight: bold;color: #000000;font-family: Calibri;font-size: 11.0pt;">SdtTagHandler</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;">.</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" />An SdtTagHandler allows you to wrap SdtContent (Content Control content) in arbitrary HTML (for example, a &lt;div&gt; with a particular class attribute, or style attribute, or associated javascript).</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" />The design envisages different tag handlers being applied depending on the value of w:sdt/w:sdtPr/w:tag (hence the name tag handler). The content of a tag should be name/value pairs delimited like a URL query string.</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" />For further details, please see the SdtWriter class.</span></p>
+  <p class="listparagraph0 Normal DocDefaults " style="position: relative; margin-left: 0.25in;line-height: 75%;"><span style="position: absolute; left:-0.25in; max-width: 0.25in;font-family: Symbol;"> </span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><span style="white-space:pre-wrap;">another possibility (currently in svn trunk only) is to register an </span></span><span style="font-weight: bold;color: #000000;font-family: Calibri;font-size: 11.0pt;">SdtTagHandler</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;">.</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /><span style="white-space:pre-wrap;">An SdtTagHandler allows you to wrap SdtContent (Content Control content) in arbitrary HTML (for </span></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;">example, a &lt;div&gt; with a particular class attribute, or style attribute, or associated javascript).</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" />The design envisages different tag handlers being applied depending on the value of w:sdt/w:sdtPr/w:tag (hence the name tag handler). The content of a tag should be name/value pairs delimited like a URL query string.</span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" /></span><span style="color: #000000;font-family: Calibri;font-size: 11.0pt;"><br clear="all" />For further details, please see the SdtWriter class.</span></p>
   
   <p class="Normal DocDefaults " style="space-before: 0.07in;space-after: 0.07in;line-height: 100%;" />
   
@@ -1612,7 +1728,7 @@
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">docx4j (from 2.5.0) contains a mechanism for processing conditional content controls and repeats.  See </span><a href="http://dev.plutext.org/svn/docx4j/trunk/docx4j/sample-docs/databinding/conventions.docx"><span class="Hyperlink DefaultParagraphFont ">http://dev.plutext.org/svn/docx4j/trunk/docx4j/sample-docs/databinding/conventions.docx</span></a><span style="white-space:pre-wrap;"> for an explanation.</span></p><div style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><div style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;">
   
-  <p class="Normal DocDefaults " style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;">docx4j v2.5.0 implemented v1 of the conventions.  Current svn implements v2 of the conventions.  You are advised to use a v2 implementation.  See forum post for further details.</span></p></div></div>
+  <p class="Normal DocDefaults " style="border-left-style: solid;border-left-width: 1px;border-left-color: #000000;border-right-style: solid;border-right-width: 1px;border-right-color: #000000;border-color: #EEECE1; border-style:solid; border-width:1px;background-color: #EEECE1;"><span class="apple-style-span DefaultParagraphFont " style="color: #000000;font-family: Calibri;">docx4j v2.5.0 implemented v1 of the conventions.  docx4j v2.6.0 implements v2 of the conventions.  You are advised to use a v2 implementation.  See forum post for further details.</span></p></div></div>
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">To set up the bindings, you can use the Word Add-In from </span><a href="http://dev.plutext.org/opendope/setup.exe"><span class="Hyperlink DefaultParagraphFont ">http://dev.plutext.org/opendope/setup.exe</span></a><span style="white-space:pre-wrap;"> Please note that you will need to install .NET Framework 4.0 ("full" - the "client profile" is not enough).</span></p>
   
@@ -1756,7 +1872,7 @@
   
   <p class="Normal DocDefaults "><span style="white-space:pre-wrap;">Plutext can be contacted at either </span><a href="mailto:jason@plutext.org"><span class="Hyperlink DefaultParagraphFont ">jason@plutext.org</span></a><span style="white-space:pre-wrap;">, or </span><a href="mailto:jharrop@plutext.com"><span class="Hyperlink DefaultParagraphFont ">jharrop@plutext.com</span></a></p>
   
-  <p class="Normal DocDefaults " />
+  <p class="Normal DocDefaults " /></div>
   
   <div class="footnotes">
   
@@ -1768,4 +1884,16 @@
   
   <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn3"><a href="#fs3">3</a></a></span></span><span style="white-space:pre-wrap;"> </span><a href="../customXml/item2.xml"><span class="Hyperlink DefaultParagraphFont " style="font-size: 9.0pt;">http://blogs.msdn.com/b/dmahugh/archive/2009/01/16/ecma-376-implementation-notes-for-office-2007-sp2.aspx</span></a></p>
   
-  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn4"><a href="#fs4">4</a></a></span></span><span style="white-space:pre-wrap;"> </span><a href="../customXml/item3.xml"><span class="Hyperlink DefaultParagraphFont " style="font-size: 9.0pt;">http://blogs.msdn.com/b/dmahugh/archive/2010/04/06/office-s-support-for-iso-iec-29500-strict.aspx</span></a></p></div></body></html>
+  <p class="FootnoteText Normal DocDefaults "><span class="FootnoteReference DefaultParagraphFont "><span style="vertical-align: top; font-size: xx-small"><a name="fn4"><a href="#fs4">4</a></a></span></span><span style="white-space:pre-wrap;"> </span><a href="../customXml/item3.xml"><span class="Hyperlink DefaultParagraphFont " style="font-size: 9.0pt;">http://blogs.msdn.com/b/dmahugh/archive/2010/04/06/office-s-support-for-iso-iec-29500-strict.aspx</span></a></p></div>
+  
+  
+  
+  <div class="footer">
+  
+  <p class="Footer Normal DocDefaults " style="text-align: center;" />
+  
+  <p class="Footer Normal DocDefaults " /></div>
+  
+  <!-- userBodyTail goes here -->
+  
+  </body></html>
