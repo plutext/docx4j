@@ -58,7 +58,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "egContentCellContent"
 })
 public class CTSdtContentCell
-    implements Child, SdtContent
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -144,6 +144,7 @@ public class CTSdtContentCell
      * 
      * 
      */
+    @Deprecated
     public List<Object> getEGContentCellContent() {
         if (egContentCellContent == null) {
             egContentCellContent = new ArrayList<Object>();
@@ -151,9 +152,12 @@ public class CTSdtContentCell
         return this.egContentCellContent;
     }
     
-    // implement our SdtContent interface
+    // implement our ContentAccessor interface
     public List<Object> getContent() {
-    	return getEGContentCellContent();
+        if (egContentCellContent == null) {
+            egContentCellContent = new ArrayList<Object>();
+        }
+        return this.egContentCellContent;
     }    
 
     /**

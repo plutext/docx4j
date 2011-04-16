@@ -5,10 +5,14 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 //import javax.xml.bind.Unmarshaller;
 
 /**
+ * This interface is implemented by the 
+ * classes which represent a content
+ * control (ie SdtBlock, SdtRun, CTSdtRow, CTSdtCell). 
+ * 
  * @since 2.7
  *
  */
-public interface SdtElement extends Child {
+public interface SdtElement  {
 
     /**
      * Gets the value of the sdtPr property.
@@ -51,7 +55,7 @@ public interface SdtElement extends Child {
     public void setSdtEndPr(CTSdtEndPr value);
 
     
-    public SdtContent getContent();
+    public ContentAccessor getSdtContent();
     
 //    /**
 //     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.

@@ -58,7 +58,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "sdtContent"
 })
 @XmlRootElement(name = "sdt")
-public class CTSdtCell implements SdtElement
+public class CTSdtCell implements SdtElement, Child
 {
 
     protected SdtPr sdtPr;
@@ -123,13 +123,10 @@ public class CTSdtCell implements SdtElement
      *     {@link CTSdtContentCell }
      *     
      */
-    public CTSdtContentCell getSdtContent() {
+    public ContentAccessor getSdtContent() {
         return sdtContent;
     }
 
-    public SdtContent getContent() {
-        return sdtContent;
-    }
     
     /**
      * Sets the value of the sdtContent property.

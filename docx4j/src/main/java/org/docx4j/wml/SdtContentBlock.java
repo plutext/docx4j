@@ -60,7 +60,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "sdtContent")
 public class SdtContentBlock
-    implements Child, SdtContent
+    implements Child, ContentAccessor
 {
 	private static Logger log = Logger.getLogger(SdtContentBlock.class);	
 	
@@ -149,6 +149,7 @@ public class SdtContentBlock
      * 
      * 
      */
+    @Deprecated
     public List<Object> getEGContentBlockContent() {
         if (egContentBlockContent == null) {
             egContentBlockContent = new ArrayList<Object>();
@@ -156,9 +157,12 @@ public class SdtContentBlock
         return this.egContentBlockContent;
     }
 
-    // implement our SdtContent interface
+    // implement our ContentAccessor interface
     public List<Object> getContent() {
-    	return getEGContentBlockContent();
+        if (egContentBlockContent == null) {
+            egContentBlockContent = new ArrayList<Object>();
+        }
+        return this.egContentBlockContent;
     }
     
     /**
