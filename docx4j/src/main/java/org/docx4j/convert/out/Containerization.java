@@ -164,7 +164,7 @@ public class Containerization {
 						// between paragraphs.  hmm, model.properties.paragraph
 						// won't translate this.  so do it at the fo level
 						if (sdtBorders!=null) {
-							sdtBorders.getSdtContent().getEGContentBlockContent().add(sdtShading);
+							sdtBorders.getSdtContent().getContent().add(sdtShading);
 						}
 						else {
 							resultElts.add(sdtShading);
@@ -176,10 +176,10 @@ public class Containerization {
 				groupTable((Tbl)o);
 			}
 			if (sdtShading!=null) {
-				sdtShading.getSdtContent().getEGContentBlockContent().add(o);
+				sdtShading.getSdtContent().getContent().add(o);
 			}
 			else if (sdtBorders!=null) {
-				sdtBorders.getSdtContent().getEGContentBlockContent().add(o);
+				sdtBorders.getSdtContent().getContent().add(o);
 			}
 			else {
 				resultElts.add(o);
@@ -221,7 +221,7 @@ public class Containerization {
 				}
 			}
 			if (currentBlock!=null) {
-				currentBlock.getSdtContent().getEGContentBlockContent().add(o);
+				currentBlock.getSdtContent().getContent().add(o);
 			}
 			else {
 				resultElts.add(o);
@@ -240,7 +240,7 @@ public class Containerization {
 		R run = null;
 		RPr blockRPr = null;
 		if (currentBlock != null) {
-			blkElements = currentBlock.getSdtContent().getEGContentBlockContent();
+			blkElements = currentBlock.getSdtContent().getContent();
 			if (blkElements.size() == 1) {
 				//If there is only one element, there is no need to use a sdtBlock
 				resultElts.add(blkElements.get(0));

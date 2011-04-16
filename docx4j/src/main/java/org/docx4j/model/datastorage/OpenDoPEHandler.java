@@ -583,7 +583,7 @@ public class OpenDoPEHandler {
 					
 					if (sdt instanceof org.docx4j.wml.CTSdtCell) {
 						// Return an empty tc
-						CTSdtContentCell sdtCellContent = ((org.docx4j.wml.CTSdtCell)sdt).getSdtContent();
+						CTSdtContentCell sdtCellContent = (CTSdtContentCell)((org.docx4j.wml.CTSdtCell)sdt).getSdtContent();
 						Tc tc = (Tc)XmlUtils.unwrap(sdtCellContent.getEGContentCellContent().get(0));
 						tc.getEGBlockLevelElts().clear();
 						// Must contain a paragraph though (at least for Word 2007)
@@ -623,9 +623,9 @@ public class OpenDoPEHandler {
 				
 				List<Object> contentList = null;
 				if (sdt instanceof org.docx4j.wml.SdtBlock) {
-					contentList =  ((org.docx4j.wml.SdtBlock) sdt).getSdtContent().getEGContentBlockContent();
+					contentList =  ((org.docx4j.wml.SdtBlock) sdt).getSdtContent().getContent();
 				} else if (sdt instanceof org.docx4j.wml.SdtRun) { // sdt in paragraph
-					contentList =  ((org.docx4j.wml.SdtRun) sdt).getSdtContent().getParagraphContent();
+					contentList =  ((org.docx4j.wml.SdtRun) sdt).getSdtContent().getContent();
 				} 
 				// An CTSdtRow or CTSdtCell shouldn't be bound
 				if (contentList==null || contentList.size()==0 ) {
