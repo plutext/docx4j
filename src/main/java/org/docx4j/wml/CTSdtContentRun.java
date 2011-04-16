@@ -58,7 +58,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "paragraphContent"
 })
 public class CTSdtContentRun
-    implements Child, SdtContent
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -152,6 +152,7 @@ public class CTSdtContentRun
      * 
      * 
      */
+    @Deprecated
     public List<Object> getParagraphContent() {
         if (paragraphContent == null) {
             paragraphContent = new ArrayList<Object>();
@@ -159,9 +160,12 @@ public class CTSdtContentRun
         return this.paragraphContent;
     }
 
-    // implement our SdtContent interface
+    // implement our ContentAccessor interface
     public List<Object> getContent() {
-    	return getParagraphContent();
+        if (paragraphContent == null) {
+            paragraphContent = new ArrayList<Object>();
+        }
+        return this.paragraphContent;
     }
     
     /**
