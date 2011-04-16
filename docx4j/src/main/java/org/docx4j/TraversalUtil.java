@@ -133,39 +133,10 @@ public class TraversalUtil {
 		if (o instanceof List) {
 			// Handy if you have your own list of objects you wish to process
 			return (List<Object>) o;
-		} else if (o instanceof org.docx4j.wml.R) {
-			return ((org.docx4j.wml.R) o).getRunContent();
-		} else	 if (o instanceof org.docx4j.wml.P) {
-			return ((org.docx4j.wml.P) o).getParagraphContent();
-		} else if (o instanceof org.docx4j.wml.Tc) {
-			return ((org.docx4j.wml.Tc) o).getEGBlockLevelElts();
-		} else if (o instanceof org.docx4j.wml.Tr) {
-			return ((org.docx4j.wml.Tr) o).getEGContentCellContent();
-		} else if (o instanceof org.docx4j.wml.Tbl) {
-			return ((org.docx4j.wml.Tbl) o).getEGContentRowContent();
-		} else if (o instanceof org.docx4j.wml.SdtBlock) {
-			return ((org.docx4j.wml.SdtBlock) o).getSdtContent()
-					.getContent();
-		} else if (o instanceof org.docx4j.wml.CTSdtContentRow) {
-			return ((org.docx4j.wml.CTSdtContentRow) o)
-					.getEGContentRowContent();
-		} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
-			return ((org.docx4j.wml.SdtContentBlock) o)
-					.getEGContentBlockContent();
-		} else if (o instanceof org.docx4j.wml.CTSdtContentRun) {
-			return ((org.docx4j.wml.CTSdtContentRun) o).getParagraphContent();
-		} else if (o instanceof org.docx4j.wml.SdtRun) {
-			return ((org.docx4j.wml.SdtRun) o).getSdtContent()
-					.getContent();
-		} else if (o instanceof org.docx4j.wml.CTSdtRow) {
-			return ((org.docx4j.wml.CTSdtRow) o).getSdtContent()
-					.getContent();
-		} else if (o instanceof org.docx4j.wml.CTSdtCell) {
-			return ((org.docx4j.wml.CTSdtCell) o).getSdtContent().getContent();
-		} else if (o instanceof org.docx4j.wml.Body) {
-			return ((org.docx4j.wml.Body) o).getEGBlockLevelElts();
-		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
-			return ((org.docx4j.wml.P.Hyperlink)o).getParagraphContent();
+		} else if (o instanceof org.docx4j.wml.ContentAccessor) {
+			return ((org.docx4j.wml.ContentAccessor) o).getContent();
+		} else if (o instanceof org.docx4j.wml.SdtElement) {
+			return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
 			org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline)o;
 			if (inline.getGraphic()!=null) {
@@ -346,73 +317,15 @@ public class TraversalUtil {
 
 		log.debug("Clearing " + o.getClass().getName() );
 		
-		if (o instanceof org.docx4j.wml.SdtBlock) {
+		if (o instanceof org.docx4j.wml.ContentAccessor) {
 
-			((org.docx4j.wml.SdtBlock) o).getSdtContent()
-					.getContent().clear();
-			((org.docx4j.wml.SdtBlock) o).getSdtContent()
-					.getContent().addAll(newChildren);
-
-		} else if (o instanceof org.docx4j.wml.Body) {
-
-			((org.docx4j.wml.Body) o).getEGBlockLevelElts().clear();
-			((org.docx4j.wml.Body) o).getEGBlockLevelElts().addAll(newChildren);
+			((org.docx4j.wml.ContentAccessor) o).getContent().clear();
+			((org.docx4j.wml.ContentAccessor) o).getContent().addAll(newChildren);
 			
-		} else if (o instanceof org.docx4j.wml.P) {
-
-			((org.docx4j.wml.P) o).getParagraphContent().clear();
-			((org.docx4j.wml.P) o).getParagraphContent().addAll(newChildren);
-
-		} else if (o instanceof org.docx4j.wml.R) {
-
-			((org.docx4j.wml.R) o).getRunContent().clear();
-			((org.docx4j.wml.R) o).getRunContent().addAll(newChildren);
-
-		} else if (o instanceof org.docx4j.wml.CTSdtContentRow) {
-			((org.docx4j.wml.CTSdtContentRow) o).getEGContentRowContent()
-					.clear();
-			((org.docx4j.wml.CTSdtContentRow) o).getEGContentRowContent()
-					.addAll(newChildren);
-		} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
-			((org.docx4j.wml.SdtContentBlock) o).getEGContentBlockContent()
-					.clear();
-			((org.docx4j.wml.SdtContentBlock) o).getEGContentBlockContent()
-					.addAll(newChildren);
-		} else if (o instanceof org.docx4j.wml.CTSdtContentRun) {
-			((org.docx4j.wml.CTSdtContentRun) o).getParagraphContent().clear();
-			((org.docx4j.wml.CTSdtContentRun) o).getParagraphContent().addAll(
-					newChildren);
-
-		} else if (o instanceof org.docx4j.wml.SdtRun) {
-
-			((org.docx4j.wml.SdtRun) o).getSdtContent().getContent()
-					.clear();
-			((org.docx4j.wml.SdtRun) o).getSdtContent().getContent()
-					.addAll(newChildren);
-
-		} else if (o instanceof org.docx4j.wml.CTSdtRow) {
-
-			((org.docx4j.wml.CTSdtRow) o).getSdtContent()
-					.getContent().clear();
-			((org.docx4j.wml.CTSdtRow) o).getSdtContent()
-					.getContent().addAll(newChildren);
-
-		} else if (o instanceof org.docx4j.wml.Tbl) {
-
-			((org.docx4j.wml.Tbl) o).getEGContentRowContent().clear();
-			((org.docx4j.wml.Tbl) o).getEGContentRowContent().addAll(
-					newChildren);
-
-		} else if (o instanceof org.docx4j.wml.Tr) {
-
-			((org.docx4j.wml.Tr) o).getEGContentCellContent().clear();
-			((org.docx4j.wml.Tr) o).getEGContentCellContent().addAll(
-					newChildren);
-
-		} else if (o instanceof org.docx4j.wml.Tc) {
-
-			((org.docx4j.wml.Tc) o).getEGBlockLevelElts().clear();
-			((org.docx4j.wml.Tc) o).getEGBlockLevelElts().addAll(newChildren);
+		} else if (o instanceof org.docx4j.wml.SdtElement) {
+			
+			((org.docx4j.wml.SdtElement) o).getSdtContent().getContent().clear();
+			((org.docx4j.wml.SdtElement) o).getSdtContent().getContent().addAll(newChildren);
 			
 		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {
 			
