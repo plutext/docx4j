@@ -57,35 +57,9 @@
 		</xsd:appinfo>
 	</xsd:annotation>
 	
+	<!--  2011 04 16  Removed the definition of xmlPackage Package element from here,
+	      since (1) JAXB RI 2.2.3 unmarshalling is broken when this appears in org.docx4j.wml
+	      and   (2) we have org.docx4j.xmlPackage which is what the rest of docx4j uses anyway
+	 -->
 	
-  <xsd:element name="package">
-		<xsd:annotation>
-			<xsd:documentation>Based on Word 2007's ActiveDocument.WordOpenXML.
-				Used for PDF rendering; see
-				org.docx4j.openpackaging.packages.WordprocessingMLPackage.pdf()
-			Also used in docx4all for view source.</xsd:documentation>
-		</xsd:annotation>	  
-    <xsd:complexType>
-      <xsd:sequence>
-        <xsd:element maxOccurs="unbounded" name="part">
-          <xsd:complexType>
-            <xsd:sequence>
-              <xsd:element name="xmlData">
-                <xsd:complexType>
-                  <xsd:sequence>
-                    <xsd:element minOccurs="0" ref="w:styles" />
-                    <xsd:element minOccurs="0" ref="w:document" />
-                  </xsd:sequence>
-                </xsd:complexType>
-              </xsd:element>
-            </xsd:sequence>
-            <xsd:attribute ref="pkg:name" use="required" />
-            <xsd:attribute ref="pkg:contentType" use="required" />
-          </xsd:complexType>
-        </xsd:element>
-      </xsd:sequence>
-    </xsd:complexType>
-  </xsd:element>
-  <xsd:attribute name="name" type="xsd:string" />
-  <xsd:attribute name="contentType" type="xsd:string" />
 </xsd:schema>
