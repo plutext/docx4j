@@ -312,7 +312,7 @@ public class TableModel extends Model {
 
 				CTSdtRow sdt = (org.docx4j.wml.CTSdtRow) ((JAXBElement) o).getValue();
 
-				for (Object content0 : sdt.getSdtContent().getEGContentRowContent()) {
+				for (Object content0 : sdt.getSdtContent().getContent()) {
 
 					if (content0 instanceof org.docx4j.wml.Tr) {
 						startRow();
@@ -369,7 +369,7 @@ public class TableModel extends Model {
 							"org.docx4j.wml.CTSdtCell")) {
 				org.docx4j.wml.CTSdtCell sdtCell = (org.docx4j.wml.CTSdtCell) ((JAXBElement) o2)
 						.getValue();
-				Object o3 = sdtCell.getSdtContent().getEGContentCellContent()
+				Object o3 = sdtCell.getSdtContent().getContent()
 						.get(0);
 				if (o3 instanceof javax.xml.bind.JAXBElement
 						&& ((JAXBElement) o3).getDeclaredType().getName()
@@ -386,7 +386,7 @@ public class TableModel extends Model {
 										+ o3.getClass().getName());
 					}
 				}
-				if (sdtCell.getSdtContent().getEGContentCellContent().size() > 1)
+				if (sdtCell.getSdtContent().getContent().size() > 1)
 					log.warn("w:sdtContent contains more than 1 cell. TODO");
 			} else {
 				// What?

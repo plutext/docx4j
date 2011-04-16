@@ -145,7 +145,7 @@ public class TraversalUtil {
 			return ((org.docx4j.wml.Tbl) o).getEGContentRowContent();
 		} else if (o instanceof org.docx4j.wml.SdtBlock) {
 			return ((org.docx4j.wml.SdtBlock) o).getSdtContent()
-					.getEGContentBlockContent();
+					.getContent();
 		} else if (o instanceof org.docx4j.wml.CTSdtContentRow) {
 			return ((org.docx4j.wml.CTSdtContentRow) o)
 					.getEGContentRowContent();
@@ -156,12 +156,12 @@ public class TraversalUtil {
 			return ((org.docx4j.wml.CTSdtContentRun) o).getParagraphContent();
 		} else if (o instanceof org.docx4j.wml.SdtRun) {
 			return ((org.docx4j.wml.SdtRun) o).getSdtContent()
-					.getParagraphContent();
+					.getContent();
 		} else if (o instanceof org.docx4j.wml.CTSdtRow) {
 			return ((org.docx4j.wml.CTSdtRow) o).getSdtContent()
-					.getEGContentRowContent();
+					.getContent();
 		} else if (o instanceof org.docx4j.wml.CTSdtCell) {
-			return ((org.docx4j.wml.CTSdtCell) o).getSdtContent().getEGContentCellContent();
+			return ((org.docx4j.wml.CTSdtCell) o).getSdtContent().getContent();
 		} else if (o instanceof org.docx4j.wml.Body) {
 			return ((org.docx4j.wml.Body) o).getEGBlockLevelElts();
 		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
@@ -349,9 +349,9 @@ public class TraversalUtil {
 		if (o instanceof org.docx4j.wml.SdtBlock) {
 
 			((org.docx4j.wml.SdtBlock) o).getSdtContent()
-					.getEGContentBlockContent().clear();
+					.getContent().clear();
 			((org.docx4j.wml.SdtBlock) o).getSdtContent()
-					.getEGContentBlockContent().addAll(newChildren);
+					.getContent().addAll(newChildren);
 
 		} else if (o instanceof org.docx4j.wml.Body) {
 
@@ -385,17 +385,17 @@ public class TraversalUtil {
 
 		} else if (o instanceof org.docx4j.wml.SdtRun) {
 
-			((org.docx4j.wml.SdtRun) o).getSdtContent().getParagraphContent()
+			((org.docx4j.wml.SdtRun) o).getSdtContent().getContent()
 					.clear();
-			((org.docx4j.wml.SdtRun) o).getSdtContent().getParagraphContent()
+			((org.docx4j.wml.SdtRun) o).getSdtContent().getContent()
 					.addAll(newChildren);
 
 		} else if (o instanceof org.docx4j.wml.CTSdtRow) {
 
 			((org.docx4j.wml.CTSdtRow) o).getSdtContent()
-					.getEGContentRowContent().clear();
+					.getContent().clear();
 			((org.docx4j.wml.CTSdtRow) o).getSdtContent()
-					.getEGContentRowContent().addAll(newChildren);
+					.getContent().addAll(newChildren);
 
 		} else if (o instanceof org.docx4j.wml.Tbl) {
 
