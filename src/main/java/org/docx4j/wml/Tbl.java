@@ -66,7 +66,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "tbl")
 public class Tbl
-    implements Child
+    implements Child, ContentAccessor
 {
 
     @XmlElement(required = true)
@@ -204,6 +204,7 @@ public class Tbl
      * 
      * 
      */
+    @Deprecated
     public List<Object> getEGContentRowContent() {
         if (egContentRowContent == null) {
             egContentRowContent = new ArrayList<Object>();
@@ -211,6 +212,17 @@ public class Tbl
         return this.egContentRowContent;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */    
+    public List<Object> getContent() {
+        if (egContentRowContent == null) {
+            egContentRowContent = new ArrayList<Object>();
+        }
+        return this.egContentRowContent;
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 

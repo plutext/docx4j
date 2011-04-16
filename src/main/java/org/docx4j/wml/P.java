@@ -70,7 +70,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "paragraphContent"
 })
 @XmlRootElement(name = "p")
-public class P implements Child
+public class P implements Child, ContentAccessor
 {
 	private static Logger log = Logger.getLogger(P.class);	
 
@@ -200,6 +200,7 @@ public class P implements Child
      * 
      * 
      */
+    @Deprecated
     public List<Object> getParagraphContent() {
         if (paragraphContent == null) {
             paragraphContent = new ArrayList<Object>();
@@ -207,6 +208,17 @@ public class P implements Child
         return this.paragraphContent;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */    
+    public List<Object> getContent() {
+        if (paragraphContent == null) {
+            paragraphContent = new ArrayList<Object>();
+        }
+        return this.paragraphContent;
+    }
+    
     /**
      * Gets the value of the rsidRPr property.
      * 
@@ -385,7 +397,7 @@ public class P implements Child
     })
     @XmlRootElement(name = "hyperlink")    
     public static class Hyperlink
-        implements Child
+        implements Child, ContentAccessor
     {
 
         @XmlElementRefs({
@@ -491,6 +503,7 @@ public class P implements Child
          * 
          * 
          */
+        @Deprecated
         public List<Object> getParagraphContent() {
             if (paragraphContent == null) {
                 paragraphContent = new ArrayList<Object>();
@@ -498,6 +511,17 @@ public class P implements Child
             return this.paragraphContent;
         }
 
+        /**
+         * Get the content of this element.
+         * @since 2.7
+         */        
+        public List<Object> getContent() {
+            if (paragraphContent == null) {
+                paragraphContent = new ArrayList<Object>();
+            }
+            return this.paragraphContent;
+        }
+        
         /**
          * Gets the value of the tgtFrame property.
          * 
@@ -693,7 +717,7 @@ public class P implements Child
 			if ( o instanceof org.docx4j.wml.R) {
 //		    	System.out.println("Hit R");
 				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
-		    	List runContent = run.getRunContent();
+		    	List runContent = run.getContent();
 				for (Object o2 : runContent ) {					
 					if ( o2 instanceof javax.xml.bind.JAXBElement) {
 						// TODO - unmarshall directly to Text.

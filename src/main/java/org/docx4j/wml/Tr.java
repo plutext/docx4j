@@ -70,7 +70,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "egContentCellContent"
 })
 @XmlRootElement(name = "tr")
-public class Tr implements Child
+public class Tr implements Child, ContentAccessor
 {
 
     protected CTTblPrEx tblPrEx;
@@ -214,6 +214,7 @@ public class Tr implements Child
      * 
      * 
      */
+    @Deprecated
     public List<Object> getEGContentCellContent() {
         if (egContentCellContent == null) {
             egContentCellContent = new ArrayList<Object>();
@@ -221,6 +222,17 @@ public class Tr implements Child
         return this.egContentCellContent;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */    
+    public List<Object> getContent() {
+        if (egContentCellContent == null) {
+            egContentCellContent = new ArrayList<Object>();
+        }
+        return this.egContentCellContent;
+    }
+    
     /**
      * Gets the value of the rsidRPr property.
      * 

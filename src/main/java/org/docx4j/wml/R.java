@@ -66,7 +66,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "runContent"
 })
 @XmlRootElement(name = "r")
-public class R implements Child
+public class R implements Child, ContentAccessor
 {
 
     protected RPr rPr;
@@ -191,6 +191,7 @@ public class R implements Child
      * 
      * 
      */
+    @Deprecated
     public List<Object> getRunContent() {
         if (runContent == null) {
             runContent = new ArrayList<Object>();
@@ -198,6 +199,17 @@ public class R implements Child
         return this.runContent;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */    
+    public List<Object> getContent() {
+        if (runContent == null) {
+            runContent = new ArrayList<Object>();
+        }
+        return this.runContent;
+    }
+    
     /**
      * Gets the value of the rsidRPr property.
      * 

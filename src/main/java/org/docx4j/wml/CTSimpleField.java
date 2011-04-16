@@ -66,7 +66,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "paragraphContent"
 })
 public class CTSimpleField
-    implements Child
+    implements Child, ContentAccessor
 {
 
     protected Text fldData;
@@ -191,6 +191,7 @@ public class CTSimpleField
      * 
      * 
      */
+    @Deprecated
     public List<Object> getParagraphContent() {
         if (paragraphContent == null) {
             paragraphContent = new ArrayList<Object>();
@@ -198,6 +199,17 @@ public class CTSimpleField
         return this.paragraphContent;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */    
+    public List<Object> getContent() {
+        if (paragraphContent == null) {
+            paragraphContent = new ArrayList<Object>();
+        }
+        return this.paragraphContent;
+    }
+    
     /**
      * Gets the value of the instr property.
      * 
