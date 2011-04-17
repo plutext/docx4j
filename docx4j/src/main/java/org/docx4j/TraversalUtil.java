@@ -1,3 +1,22 @@
+/*
+ *  Copyright 2010-2011, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
 package org.docx4j;
 
 import java.lang.reflect.Method;
@@ -7,15 +26,25 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
-import org.docx4j.dml.picture.Pic;
-import org.docx4j.dml.wordprocessingDrawing.Anchor;
-import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
+import org.docx4j.utils.CompoundTraversalUtilVisitorCallback;
+import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
+import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTObject;
-import org.docx4j.wml.CTSdtContentRow;
 import org.docx4j.wml.Pict;
+import org.docx4j.wml.Comments.Comment;
+
 
 /**
  * Traverse a list of JAXB objects (eg document.xml's document/body 
@@ -26,7 +55,7 @@ import org.docx4j.wml.Pict;
  * not everything will necessarily get traversed here
  * since visitChildren is not (yet) comprehensive.
  * 
- * @author jharrop
+ * @author jharrop, alberto
  *
  */
 public class TraversalUtil {
@@ -344,6 +373,95 @@ public class TraversalUtil {
 
 		}
 	}
+	
+	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, TraversalUtilVisitor visitor) {
+		if (visitor != null) {
+			visit(wmlPackage, bodyOnly, new SingleTraversalUtilVisitorCallback(visitor));
+		}
+	}
+	
+	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, List<TraversalUtilVisitor> visitorList) {
+	CompoundTraversalUtilVisitorCallback callback = null;
+		if ((visitorList != null) && (!visitorList.isEmpty())) {
+			if (visitorList.size() > 1) {
+				visit(wmlPackage, bodyOnly, new CompoundTraversalUtilVisitorCallback(visitorList));
+			}
+			else {
+				visit(wmlPackage, bodyOnly, visitorList.get(0));
+			}
+		}
+	}
+	
+	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, Callback callback) {
+	MainDocumentPart mainDocument = null;
+	RelationshipsPart relPart = null;
+	List<Relationship> relList = null;
+	List<Object> elementList = null;
+		if ((wmlPackage != null) && (callback != null)) {
+			mainDocument = wmlPackage.getMainDocumentPart();
+			callback.walkJAXBElements(mainDocument.getJaxbElement().getBody());
+			if (!bodyOnly) {
+				relPart = mainDocument.getRelationshipsPart();
+				relList = relPart.getRelationships().getRelationship();
+				for (Relationship rs:relList) {
+					elementList = null;
+					if (Namespaces.HEADER.equals(rs.getType())) {
+						elementList = ((HeaderPart)relPart.getPart(rs)).getJaxbElement().getEGBlockLevelElts();
+					}
+					else if (Namespaces.FOOTER.equals(rs.getType())) {
+						elementList = ((FooterPart)relPart.getPart(rs)).getJaxbElement().getEGBlockLevelElts();
+					}
+					else if (Namespaces.ENDNOTES.equals(rs.getType())) {
+						elementList = new ArrayList();
+						for (CTFtnEdn endnote: ((EndnotesPart)relPart.getPart(rs)).getJaxbElement().getEndnote()) {
+							elementList.addAll(endnote.getEGBlockLevelElts());
+						}
+					}
+					else if (Namespaces.FOOTNOTES.equals(rs.getType())) {
+						elementList = new ArrayList();
+						for (CTFtnEdn footnote: ((FootnotesPart)relPart.getPart(rs)).getJaxbElement().getFootnote()) {
+							elementList.addAll(footnote.getEGBlockLevelElts());
+						}
+					}
+					else if (Namespaces.COMMENTS.equals(rs.getType())) {
+						elementList = new ArrayList();
+						for (Comment comment: ((CommentsPart)relPart.getPart(rs)).getJaxbElement().getComment()) {
+							elementList.addAll(comment.getEGBlockLevelElts());
+						}
+					}
+					if ((elementList != null) && (!elementList.isEmpty())) {
+						System.out.println("Processing target: " + rs.getTarget() + ", type: " + rs.getType());
+						callback.walkJAXBElements(elementList);
+					}
+				}
+			}
+		}
+	}
+	
+	public static void visit(Object parent, TraversalUtilVisitor visitor) {
+		if (visitor != null) {
+			visit(parent, new SingleTraversalUtilVisitorCallback(visitor));
+		}
+	}
+	
+	public static void visit(Object parent, List<TraversalUtilVisitor> visitorList) {
+	CompoundTraversalUtilVisitorCallback callback = null;
+		if ((visitorList != null) && (!visitorList.isEmpty())) {
+			if (visitorList.size() > 1) {
+				visit(parent, new CompoundTraversalUtilVisitorCallback(visitorList));
+			}
+			else {
+				visit(parent, visitorList.get(0));
+			}
+		}
+	}
+	
+	public static void visit(Object parent, Callback callback) {
+		if ((parent != null) && (callback != null)) {
+			callback.walkJAXBElements(parent);
+		}
+	}
+
 	// private void describeDrawing( org.docx4j.wml.Drawing d) {
 	//			
 	// log.info("In wml.Drawing" );
