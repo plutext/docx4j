@@ -314,6 +314,12 @@ public class LoadFromZipFile extends Load {
 		Base source = null;
 		String resolvedPartUri = null;
 		
+		if (r.getType().equals(Namespaces.HYPERLINK)) {
+			// Could be Internal or External
+			// Example of Internal is w:drawing/wp:inline/wp:docPr/a:hlinkClick
+			log.info("Encountered (but not loading) hyperlink " + r.getTarget()  );				
+			return;			
+		} else 		
 		if (r.getTargetMode() == null
 				|| !r.getTargetMode().equals("External") ) {
 			
