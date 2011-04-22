@@ -50,6 +50,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.w3c.dom.Document;
@@ -278,7 +279,10 @@ public class SaveToZipFile {
 					+ " Source is " + rp.getSourceP().getPartName() 
 					+ ", Target is " + r.getTarget() );
 			
-//			if (!r.getTargetMode().equals(TargetMode.INTERNAL) ) {
+			if (r.getType().equals(Namespaces.HYPERLINK)) {				
+				continue;  // whether internal or external								
+			}
+			
 			if (r.getTargetMode() != null
 					&& r.getTargetMode().equals("External") ) {
 				
