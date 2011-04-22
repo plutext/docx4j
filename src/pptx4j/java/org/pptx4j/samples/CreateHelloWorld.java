@@ -50,6 +50,9 @@ public class CreateHelloWorld  {
 		PresentationMLPackage presentationMLPackage = PresentationMLPackage.createPackage(); 
 		
 		// Need references to these parts to create a slide
+		// Please note that these parts *already exist* - they are
+		// created by createPackage() above.  See that method
+		// for instruction on how to create and add a part.
 		MainPresentationPart pp = (MainPresentationPart)presentationMLPackage.getParts().getParts().get(
 				new PartName("/ppt/presentation.xml"));		
 		SlideLayoutPart layoutPart = (SlideLayoutPart)presentationMLPackage.getParts().getParts().get(
