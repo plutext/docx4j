@@ -226,6 +226,8 @@ public class Namespaces {
 	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing";
 	
 	///xl/charts/chart1.xml
+	// Should have just called this CHART or RELS_CHART,
+	// since it is also used in PresentationML
 	public final static String SPREADSHEETML_CHART =
 	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
 

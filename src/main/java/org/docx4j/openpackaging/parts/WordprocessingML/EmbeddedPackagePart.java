@@ -1,4 +1,8 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
+// Ideally this part would have been created in the parts 
+// package itself, since it is also used when a 
+// chart is embedded in a pptx.  ie there is nothing
+// about it which is specific to WML.
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
