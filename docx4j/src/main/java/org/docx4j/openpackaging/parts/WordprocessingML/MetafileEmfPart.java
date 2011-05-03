@@ -53,7 +53,7 @@ import org.docx4j.utils.BufferUtil;
 	to import EMF
  *
  */
-public class MetafileEmfPart extends BinaryPartAbstractImage {
+public class MetafileEmfPart extends MetafilePart {
 	
 	public MetafileEmfPart(PartName partName) throws InvalidFormatException {
 		super(partName);
