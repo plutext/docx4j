@@ -3,7 +3,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 
-public abstract class MetafilePart extends BinaryPart {
+public abstract class MetafilePart extends BinaryPartAbstractImage {
 	
 	public MetafilePart(PartName partName) throws InvalidFormatException {
 		super(partName);
