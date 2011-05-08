@@ -115,7 +115,7 @@ public final class PartName implements Comparable<PartName> {
 		}
 		this.partNameURI = uri;
 		this.isRelationship = isRelationshipPartURI(this.partNameURI);
-		log.debug( getName() + " part name created.");
+		//log.debug( getName() + " part name created.");
 	}
 
 	/**
@@ -148,7 +148,7 @@ public final class PartName implements Comparable<PartName> {
 	 */
 	public PartName(String partName, boolean checkConformance)
 			throws InvalidFormatException {
-		log.debug( "Trying to create part name " + partName);
+//		log.debug( "Trying to create part name " + partName);
 		URI partURI;
 		try {
 			partURI = new URI(partName);
@@ -168,7 +168,7 @@ public final class PartName implements Comparable<PartName> {
 		}
 		this.partNameURI = partURI;
 		this.isRelationship = isRelationshipPartURI(this.partNameURI);
-		log.debug( getName() + " part name created.");
+		//log.debug( getName() + " part name created.");
 	}
 
 	/**
