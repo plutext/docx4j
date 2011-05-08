@@ -481,6 +481,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public Relationship addPart(Part part, boolean overwriteExistingTarget, 
 			ContentTypeManager ctm, String relId) {
 		
+		log.info("adding part: " + part.getPartName().getName() );
+		
 		// Now add a new relationship
 
 		URI tobeRelativized = part.getPartName().getURI();
@@ -565,13 +567,16 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 //				TargetMode.INTERNAL, part.getRelationshipType(), id);
 		addRelationship(rel );
 		
+    	String ext = part.getPartName().getExtension();
+		
 		// Add an override to ContentTypeManager
 		if ( part.getContentType().equals( ContentTypes.IMAGE_JPEG) ) {
-			ctm.addDefaultContentType("jpeg",ContentTypes.IMAGE_JPEG );
+			ctm.addDefaultContentType(ext,ContentTypes.IMAGE_JPEG );
 		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_GIF ) ) {
-			ctm.addDefaultContentType("gif", ContentTypes.EXTENSION_GIF);
+			ctm.addDefaultContentType(ext, ContentTypes.EXTENSION_GIF);
 		} else if ( part.getContentType().equals( ContentTypes.EXTENSION_PNG ) ) {
-			ctm.addDefaultContentType("png", ContentTypes.IMAGE_PNG);
+			ctm.addDefaultContentType(ext, ContentTypes.IMAGE_PNG);			
+			// TODO - other content types!
 		} else {
 			ctm.addOverrideContentType(part.getPartName().getURI(), part.getContentType());
 		}
@@ -749,7 +754,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 					+ " in a valid relationship URI-> ignored", e);
 		}		
 
-		log.debug("Comparing " + resolvedTargetURI + " == " + partName.getName());
+		//log.debug("Comparing " + resolvedTargetURI + " == " + partName.getName());
 		
 		return partName.getName().equals(resolvedTargetURI.toString()) ; 
 		
