@@ -26,6 +26,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.docProps.custom.Properties;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
@@ -85,6 +86,9 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 	}
 	
 	public void init() {
+		
+		jc = Context.jcDocPropsCustom;
+		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 
 				org.docx4j.openpackaging.contenttype.ContentTypes.OFFICEDOCUMENT_CUSTOMPROPERTIES));
