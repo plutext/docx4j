@@ -385,10 +385,19 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				if (((org.docx4j.wml.P)o).getPPr() != null ) {
 					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
 					if (ppr.getSectPr()!=null) {
-						section = factory.createSectionsSection();
-						section.setName("s" +i); // name must match fo master
-						sections.getSection().add(section);	
-						i++;
+						
+						if (ppr.getSectPr().getType()==null
+								|| ( ppr.getSectPr().getType()!=null
+								     && ppr.getSectPr().getType().getVal().equals("continuous"))) {
+							// If its continuous, don't add a section
+							// According to the ECMA-376 2ed, if type is not specified, read it as next page
+							// However Word 2007 treats it as continuous, so we do the same here.
+						} else {
+							section = factory.createSectionsSection();
+							section.setName("s" +i); // name must match fo master
+							sections.getSection().add(section);	
+							i++;
+						}
 					}
 				}				
 			} 
