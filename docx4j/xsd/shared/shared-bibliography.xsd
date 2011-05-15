@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" elementFormDefault="qualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+<!-- 
+	From ECMA-376 2ed
+	
+ 	 sh JAXB_2.1.13/jaxb-ri-20100511/bin/xjc.sh shared-bibliography.xsd -d ~/workspace/docx4j/src/main/java/ -no-header -target 2.0
+	
+ -->
+ 
+	<xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+	
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.bibliography"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	
+	
+	<xsd:simpleType name="ST_SourceType">
+		<xsd:annotation>
+			<xsd:documentation>Bibliographic Data Source Types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="s:ST_String">
+			<xsd:enumeration value="ArticleInAPeriodical">
+				<xsd:annotation>
+					<xsd:documentation>Article in a Periodical</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Book">
+				<xsd:annotation>
+					<xsd:documentation>Book</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="BookSection">
+				<xsd:annotation>
+					<xsd:documentation>Book Section</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="JournalArticle">
+				<xsd:annotation>
+					<xsd:documentation>Journal Article</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ConferenceProceedings">
+				<xsd:annotation>
+					<xsd:documentation>Conference Proceedings</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Report">
+				<xsd:annotation>
+					<xsd:documentation>Reporter</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="SoundRecording">
+				<xsd:annotation>
+					<xsd:documentation>Sound Recording</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Performance">
+				<xsd:annotation>
+					<xsd:documentation>Performance</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Art">
+				<xsd:annotation>
+					<xsd:documentation>Art</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="DocumentFromInternetSite">
+				<xsd:annotation>
+					<xsd:documentation>Document from Internet Site</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="InternetSite">
+				<xsd:annotation>
+					<xsd:documentation>Internet Site</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Film">
+				<xsd:annotation>
+					<xsd:documentation>Film</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Interview">
+				<xsd:annotation>
+					<xsd:documentation>Interview</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Patent">
+				<xsd:annotation>
+					<xsd:documentation>Patent</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ElectronicSource">
+				<xsd:annotation>
+					<xsd:documentation>Electronic Source</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Case">
+				<xsd:annotation>
+					<xsd:documentation>Case</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="Misc">
+				<xsd:annotation>
+					<xsd:documentation>Miscellaneous</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_NameListType">
+		<xsd:sequence>
+			<xsd:element name="Person" type="CT_PersonType" minOccurs="1" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Person</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_PersonType">
+		<xsd:sequence>
+			<xsd:element name="Last" type="s:ST_String" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Person's Last, or Family, Name</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="First" type="s:ST_String" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Person's First, or Given, Name</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="Middle" type="s:ST_String" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Person's Middle, or Other, Name</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_NameType">
+		<xsd:sequence>
+			<xsd:element name="NameList" type="CT_NameListType" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Name List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_NameOrCorporateType">
+		<xsd:sequence>
+			<xsd:choice minOccurs="0" maxOccurs="1">
+				<xsd:element name="NameList" type="CT_NameListType" minOccurs="1" maxOccurs="1"/>
+				<xsd:element name="Corporate" minOccurs="1" maxOccurs="1" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Corporate Author</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_AuthorType">
+		<xsd:sequence>
+			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="Artist" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Artist</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Author" type="CT_NameOrCorporateType">
+					<xsd:annotation>
+						<xsd:documentation>Author</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="BookAuthor" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Book Author</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Compiler" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Compiler</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Composer" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Composer</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Conductor" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Conductor</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Counsel" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Counsel</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Director" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Director</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Editor" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Editor</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Interviewee" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Interviewee</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Interviewer" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Interviewer</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Inventor" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Inventor</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Performer" type="CT_NameOrCorporateType">
+					<xsd:annotation>
+						<xsd:documentation>Performer</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="ProducerName" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Producer Name</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Translator" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Translator</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Writer" type="CT_NameType">
+					<xsd:annotation>
+						<xsd:documentation>Writer</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SourceType">
+		<xsd:sequence>
+			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="AbbreviatedCaseNumber" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Abbreviated Case Number</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="AlbumTitle" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Album Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Author" type="CT_AuthorType">
+					<xsd:annotation>
+						<xsd:documentation>Contributors List</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="BookTitle" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Book Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Broadcaster" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Broadcaster</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="BroadcastTitle" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Broadcast Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="CaseNumber" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Case Number</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="ChapterNumber" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Chapter Number</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="City" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>City</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Comments" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Comments</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="ConferenceName" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Conference or Proceedings Name</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="CountryRegion" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Country or Region</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Court" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Court</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Day" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Day</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="DayAccessed" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Day Accessed</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Department" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Department</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Distributor" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Distributor</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Edition" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Editor</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Guid" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>GUID</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Institution" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Institution</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="InternetSiteTitle" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Internet Site Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Issue" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Issue</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="JournalName" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Journal Name</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="LCID" type="s:ST_Lang">
+					<xsd:annotation>
+						<xsd:documentation>Locale ID</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Medium" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Medium</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Month" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Month</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="MonthAccessed" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Month Accessed</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="NumberVolumes" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Number of Volumes</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Pages" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Pages</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="PatentNumber" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Patent Number</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="PeriodicalTitle" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Periodical Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="ProductionCompany" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Production Company</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="PublicationTitle" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Publication Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Publisher" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Publisher</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="RecordingNumber" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Recording Number</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="RefOrder" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Reference Order</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Reporter" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Reporter</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="SourceType" type="ST_SourceType">
+					<xsd:annotation>
+						<xsd:documentation>Source Type</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="ShortTitle" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Short Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="StandardNumber" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Standard Number</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="StateProvince" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>State or Province</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Station" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Station</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Tag" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Tag</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Theater" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Theater</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="ThesisType" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Thesis Type</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Title" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Title</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Type" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Patent Type</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="URL" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>URL</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Version" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Version</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Volume" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Volume</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="Year" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Year</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="YearAccessed" type="s:ST_String">
+					<xsd:annotation>
+						<xsd:documentation>Year Accessed</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="Sources" type="CT_Sources">
+		<xsd:annotation>
+			<xsd:documentation>Sources</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_Sources">
+		<xsd:sequence>
+			<xsd:element name="Source" type="CT_SourceType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Source</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="SelectedStyle" type="s:ST_String">
+			<xsd:annotation>
+				<xsd:documentation>Selected Style</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="StyleName" type="s:ST_String">
+			<xsd:annotation>
+				<xsd:documentation>Documentation Style Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="URI" type="s:ST_String">
+			<xsd:annotation>
+				<xsd:documentation>Uniform Resource Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+</xsd:schema>

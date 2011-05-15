@@ -76,7 +76,8 @@ public class Context {
 					// All VML stuff is here, since compiling it requires WML and DML (and MathML), but not PML or SML
 					"org.docx4j.vml:org.docx4j.vml.officedrawing:org.docx4j.vml.wordprocessingDrawing:org.docx4j.vml.presentationDrawing:org.docx4j.vml.spreadsheetDrawing:org.docx4j.vml.root:" +
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.components:" +
-					"org.docx4j.math",classLoader );
+					"org.docx4j.math:" +
+					"org.docx4j.sharedtypes:org.docx4j.bibliography",classLoader );
 			log.info("loaded " + jc.getClass().getName() + " .. loading others ..");
 			
 			jcThemePart = jc; //JAXBContext.newInstance("org.docx4j.dml",classLoader );

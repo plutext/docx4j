@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" elementFormDefault="qualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.sharedtypes"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>	
+
+	<xsd:simpleType name="ST_Lang">
+		<xsd:annotation>
+			<xsd:documentation>Language Reference</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_HexColorRGB">
+		<xsd:annotation>
+			<xsd:documentation>Hexadecimal Color Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="3" fixed="true"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Panose">
+		<xsd:annotation>
+			<xsd:documentation>Panose-1 Number</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:hexBinary">
+			<xsd:length value="10"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_CalendarType">
+		<xsd:annotation>
+			<xsd:documentation>Calendar Types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="gregorian">
+				<xsd:annotation>
+					<xsd:documentation>Gregorian</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="gregorianUs">
+				<xsd:annotation>
+					<xsd:documentation>Gregorian English Calendar</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="gregorianMeFrench">
+				<xsd:annotation>
+					<xsd:documentation>Gregorian Middle East French Calendar</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="gregorianArabic">
+				<xsd:annotation>
+					<xsd:documentation>Gregorian Arabic Calendar</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="hijri">
+				<xsd:annotation>
+					<xsd:documentation>Hijri</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="hebrew">
+				<xsd:annotation>
+					<xsd:documentation>Hebrew</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="taiwan">
+				<xsd:annotation>
+					<xsd:documentation>Taiwan</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="japan">
+				<xsd:annotation>
+					<xsd:documentation>Japanese Emperor Era</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="thai">
+				<xsd:annotation>
+					<xsd:documentation>Thai</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="korea">
+				<xsd:annotation>
+					<xsd:documentation>Korean Tangun Era</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="saka">
+				<xsd:annotation>
+					<xsd:documentation>Saka Era</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="gregorianXlitEnglish">
+				<xsd:annotation>
+					<xsd:documentation>Gregorian Transliterated English</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="gregorianXlitFrench">
+				<xsd:annotation>
+					<xsd:documentation>Gregorian Transliterated French</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>No Calendar Type</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Guid">
+		<xsd:annotation>
+			<xsd:documentation>128-Bit GUID</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:pattern value="\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_OnOff">
+		<xsd:annotation>
+			<xsd:documentation>On/Off Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:boolean"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_String">
+		<xsd:annotation>
+			<xsd:documentation>String</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_UnsignedDecimalNumber">
+		<xsd:annotation>
+			<xsd:documentation>Unsigned Decimal Number Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:unsignedLong"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TwipsMeasure">
+		<xsd:annotation>
+			<xsd:documentation>Measurement in Twentieths of a Point</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="ST_UnsignedDecimalNumber ST_PositiveUniversalMeasure"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_VerticalAlignRun">
+		<xsd:annotation>
+			<xsd:documentation>Vertical Positioning Location</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="baseline">
+				<xsd:annotation>
+					<xsd:documentation>Regular Vertical Positioning</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="superscript">
+				<xsd:annotation>
+					<xsd:documentation>Superscript</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="subscript">
+				<xsd:annotation>
+					<xsd:documentation>Subscript</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Xstring">
+		<xsd:annotation>
+			<xsd:documentation>Escaped String</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_XAlign">
+		<xsd:annotation>
+			<xsd:documentation>Horizontal Alignment Location</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="left">
+				<xsd:annotation>
+					<xsd:documentation>Left Aligned Horizontally</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="center">
+				<xsd:annotation>
+					<xsd:documentation>Centered Horizontally</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="right">
+				<xsd:annotation>
+					<xsd:documentation>Right Aligned Horizontally</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="inside">
+				<xsd:annotation>
+					<xsd:documentation>Inside</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="outside">
+				<xsd:annotation>
+					<xsd:documentation>Outside</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_YAlign">
+		<xsd:annotation>
+			<xsd:documentation>Vertical Alignment Location</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="inline">
+				<xsd:annotation>
+					<xsd:documentation>In line With Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="top">
+				<xsd:annotation>
+					<xsd:documentation>Top</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="center">
+				<xsd:annotation>
+					<xsd:documentation>Centered Vertically</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="bottom">
+				<xsd:annotation>
+					<xsd:documentation>Bottom</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="inside">
+				<xsd:annotation>
+					<xsd:documentation>Inside Anchor Extents</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="outside">
+				<xsd:annotation>
+					<xsd:documentation>Outside Anchor Extents</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_ConformanceClass">
+		<xsd:annotation>
+			<xsd:documentation>Document Conformance Class Value</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="strict">
+				<xsd:annotation>
+					<xsd:documentation>Office Open XML Strict</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="transitional">
+				<xsd:annotation>
+					<xsd:documentation>Office Open XML Transitional</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_UniversalMeasure">
+		<xsd:annotation>
+			<xsd:documentation>Universal Measurement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="-?[0-9]+(\.[0-9]+)?(mm|cm|in|pt|pc|pi)"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PositiveUniversalMeasure">
+		<xsd:annotation>
+			<xsd:documentation>Positive Universal Measurement</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="ST_UniversalMeasure">
+			<xsd:pattern value="[0-9]+(\.[0-9]+)?(mm|cm|in|pt|pc|pi)"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Percentage">
+		<xsd:annotation>
+			<xsd:documentation>Percentage Value with Sign</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="-?[0-9]+(\.[0-9]+)?%"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_FixedPercentage">
+		<xsd:annotation>
+			<xsd:documentation>Fixed Percentage Value with Sign</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="ST_Percentage">
+			<xsd:pattern value="-?((100)|([0-9][0-9]?))(\.[0-9][0-9]?)?%"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PositivePercentage">
+		<xsd:annotation>
+			<xsd:documentation>Positive Percentage Value with Sign</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="ST_Percentage">
+			<xsd:pattern value="[0-9]+(\.[0-9]+)?%"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PositiveFixedPercentage">
+		<xsd:annotation>
+			<xsd:documentation>Positive Fixed Percentage Value with Sign</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="ST_Percentage">
+			<xsd:pattern value="((100)|([0-9][0-9]?))(\.[0-9][0-9]?)?%"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

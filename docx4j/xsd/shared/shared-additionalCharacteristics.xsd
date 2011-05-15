@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/characteristics" targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/characteristics" elementFormDefault="qualified">
+	<xsd:complexType name="CT_AdditionalCharacteristics">
+		<xsd:sequence>
+			<xsd:element name="characteristic" type="CT_Characteristic" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Single Characteristic</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Characteristic">
+		<xsd:attribute name="name" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Name of Characteristic</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="relation" type="ST_Relation" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship of Value to Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="val" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Characteristic Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="vocabulary" type="xsd:anyURI" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Characteristic Grammar</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_Relation">
+		<xsd:annotation>
+			<xsd:documentation>Characteristic Relationship Types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="ge">
+				<xsd:annotation>
+					<xsd:documentation>Greater Than or Equal to</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="le">
+				<xsd:annotation>
+					<xsd:documentation>Less Than or Equal To</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="gt">
+				<xsd:annotation>
+					<xsd:documentation>Greater Than</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lt">
+				<xsd:annotation>
+					<xsd:documentation>Less Than</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="eq">
+				<xsd:annotation>
+					<xsd:documentation>Equal To</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:element name="additionalCharacteristics" type="CT_AdditionalCharacteristics">
+		<xsd:annotation>
+			<xsd:documentation>Set of Additional Characteristics</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+</xsd:schema>
