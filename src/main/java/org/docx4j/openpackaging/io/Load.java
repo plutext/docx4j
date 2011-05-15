@@ -42,6 +42,7 @@ import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.BibliographyPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
@@ -183,8 +184,7 @@ public class Load {
 							
 							part = new ConditionsPart(name);
 							((ConditionsPart)part).setJaxbElement(
-									(org.opendope.conditions.Conditions)o);
-							
+									(org.opendope.conditions.Conditions)o);							
 							
 						} else if (o instanceof org.opendope.xpaths.Xpaths) {
 							
@@ -204,6 +204,12 @@ public class Load {
 							((ComponentsPart)part).setJaxbElement(
 									(org.opendope.components.Components)o);
 
+						} else if (o instanceof org.docx4j.bibliography.CTSources) {
+							
+							part = new BibliographyPart(name);
+							((BibliographyPart)part).setJaxbElement(
+									(org.docx4j.bibliography.CTSources)o);
+							
 						} else {
 							
 							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());

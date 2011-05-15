@@ -137,6 +137,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 		} else if (part instanceof ComponentsPart) {
 			componentsPart = ((ComponentsPart)part);
 			return true;
+		} else if (part instanceof BibliographyPart) {
+			bibliographyPart = ((BibliographyPart)part);
+			return true;
 			
 			// TODO - to be completed.
 		} else {	
@@ -285,6 +288,11 @@ public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
 	private ComponentsPart componentsPart;
 	public ComponentsPart getComponentsPart() {
 		return componentsPart;
+	}
+	
+	private BibliographyPart bibliographyPart;
+	public BibliographyPart getBibliographyPart() {
+		return bibliographyPart;
 	}
 	
 }

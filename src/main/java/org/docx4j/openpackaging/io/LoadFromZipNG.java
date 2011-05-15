@@ -58,6 +58,7 @@ import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BibliographyPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
@@ -586,6 +587,12 @@ public class LoadFromZipNG extends Load {
 							((ComponentsPart)part).setJaxbElement(
 									(org.opendope.components.Components)o);
 
+						} else if (o instanceof org.docx4j.bibliography.CTSources) {
+							
+							part = new BibliographyPart(name);
+							((BibliographyPart)part).setJaxbElement(
+									(org.docx4j.bibliography.CTSources)o);
+														
 						} else {
 							
 							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());
