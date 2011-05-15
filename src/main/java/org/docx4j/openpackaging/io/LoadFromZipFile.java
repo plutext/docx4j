@@ -33,9 +33,11 @@ import java.util.Iterator;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
@@ -528,11 +530,11 @@ public class LoadFromZipFile extends Load {
 							((ComponentsPart)part).setJaxbElement(
 									(org.opendope.components.Components)o);
 
-						} else if (o instanceof org.docx4j.bibliography.CTSources) {
-							
+						} else if (o instanceof JAXBElement<?> 
+								&& XmlUtils.unwrap(o) instanceof org.docx4j.bibliography.CTSources) {
 							part = new BibliographyPart(name);
 							((BibliographyPart)part).setJaxbElement(
-									(org.docx4j.bibliography.CTSources)o);						
+									(JAXBElement<org.docx4j.bibliography.CTSources>)o);
 
 						} else {
 							
