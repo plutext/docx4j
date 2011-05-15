@@ -26,9 +26,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
@@ -204,12 +206,12 @@ public class Load {
 							((ComponentsPart)part).setJaxbElement(
 									(org.opendope.components.Components)o);
 
-						} else if (o instanceof org.docx4j.bibliography.CTSources) {
-							
+						} else if (o instanceof JAXBElement<?>
+								&& XmlUtils.unwrap(o) instanceof org.docx4j.bibliography.CTSources) {
 							part = new BibliographyPart(name);
-							((BibliographyPart)part).setJaxbElement(
-									(org.docx4j.bibliography.CTSources)o);
-							
+							((BibliographyPart) part)
+									.setJaxbElement((JAXBElement<org.docx4j.bibliography.CTSources>)o);
+
 						} else {
 							
 							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());
