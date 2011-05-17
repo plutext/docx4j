@@ -88,6 +88,7 @@ import org.docx4j.openpackaging.parts.DrawingML.Drawing;
 import org.docx4j.openpackaging.parts.DrawingML.JaxbDmlPart;
 import org.docx4j.openpackaging.parts.PresentationML.JaxbPmlPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.JaxbSmlPart;
+import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
@@ -275,7 +276,7 @@ public class ContentTypeManager  {
 	
 	public Part newPartForContentType(String contentType, String partName, Relationship rel)
 		throws InvalidFormatException, PartUnrecognisedException {
-		
+				
 		// TODO - a number of WordML parts aren't listed here!
 		if (rel!=null && rel.getType().equals(Namespaces.AF) ) {
 			// Could have just passed String relType
@@ -392,6 +393,11 @@ public class ContentTypeManager  {
 			return JaxbDmlPart.newPartForContentType(contentType, partName);
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
 			return JaxbPmlPart.newPartForContentType(contentType, partName);
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE)
+				|| contentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED)) { 
+			return new WorkbookPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
 			return JaxbSmlPart.newPartForContentType(contentType, partName);
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
