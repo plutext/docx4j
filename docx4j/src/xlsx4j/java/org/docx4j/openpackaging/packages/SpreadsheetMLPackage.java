@@ -46,6 +46,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorkbookPart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.xlsx4j.jaxb.Context;
@@ -86,6 +87,10 @@ public class SpreadsheetMLPackage extends OpcPackage {
 	
 	// Workbook part
 	WorkbookPart wb;
+	public WorkbookPart getWorkbookPart() {
+		return wb;
+	}
+	
 	
 	/**
 	 * Convenience method to create a SpreadsheetMLPackage
@@ -112,10 +117,10 @@ public class SpreadsheetMLPackage extends OpcPackage {
 			docPropsCustomPart = (DocPropsCustomPart)part;
 			log.info("Set shortcut for docPropsCustomPart");
 			return true;			
-//		} else if (relationshipType.equals(Namespaces.DOCUMENT)) {
-//			mainDoc = (MainDocumentPart)part;
-//			log.info("Set shortcut for mainDoc");
-//			return true;			
+		} else if (relationshipType.equals(Namespaces.SPREADSHEETML_WORKBOOK)) {
+			wb = (WorkbookPart)part;
+			log.info("Set shortcut for WorkbookPart");
+			return true;			
 		} else {	
 			return false;
 		}

@@ -25,10 +25,8 @@ public abstract class JaxbSmlPart<E>  extends JaxbXmlPart<E> {
 
 	public static Part newPartForContentType(String contentType, String partName)
 	throws InvalidFormatException, PartUnrecognisedException {
-		
-		if (contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK)) {
-			return new WorkbookPart(new PartName(partName));
-		} else if (contentType.equals(ContentTypes.SPREADSHEETML_PRINTER_SETTINGS)) {
+				
+		if (contentType.equals(ContentTypes.SPREADSHEETML_PRINTER_SETTINGS)) {
 			return new PrinterSettings(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_STYLES)) {
 			return new Styles(new PartName(partName));
