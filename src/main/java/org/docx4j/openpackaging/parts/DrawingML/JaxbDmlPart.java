@@ -38,6 +38,8 @@ public abstract class JaxbDmlPart<E>  extends JaxbXmlPart<E> {
 			return new Drawing(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_CHART)) {
 			return new Chart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT_HEADER)) {
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutHeaderPart(new PartName(partName));
 		}
 		else {
 			throw new PartUnrecognisedException("No subclass found for "

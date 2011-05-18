@@ -109,6 +109,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
+import org.glox4j.openpackaging.packages.GloxPackage;
 
 
 /**
@@ -770,6 +771,8 @@ public class ContentTypeManager  {
 // debugPrint(ctmDocument);
 		OpcPackage p;
 		
+		  
+		
 		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
 				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
 				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
@@ -778,6 +781,7 @@ public class ContentTypeManager  {
 			p = new WordprocessingMLPackage(this);
 			return p;
 		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null) {
+			// "potm", "potx", "ppam", "ppsm", "ppsx", "pptm" ?
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
 			return p;
@@ -785,9 +789,14 @@ public class ContentTypeManager  {
 				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) != null
 				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE) != null
 				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) != null) {
+			//  "xlam", "xlsb" ?
 			log.info("Detected SpreadhseetMLPackage package ");
 			p = new SpreadsheetMLPackage(this);
 			return p;			
+		} else if (getPartNameOverridenByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
+			log.info("Detected Glox file ");
+			p = new GloxPackage(this);
+			return p;						
 		} else {
 			throw new InvalidFormatException("Unexpected package (docx4j supports docx/docxm and pptx only");
 //			log.warn("No part in [Content_Types].xml for content type"
