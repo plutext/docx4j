@@ -390,6 +390,8 @@ public class ContentTypeManager  {
 			return new MetafileWmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.VML_DRAWING)) {
 			return new VMLPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
+			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.drawing")) {
 			return JaxbDmlPart.newPartForContentType(contentType, partName);
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {

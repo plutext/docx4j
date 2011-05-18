@@ -21,9 +21,14 @@
 package org.docx4j.openpackaging.parts.DrawingML;
 
 
+import java.io.IOException;
+
+import javax.xml.bind.JAXBException;
+
 import org.apache.log4j.Logger;
 import org.docx4j.dml.diagram.CTColorTransform;
 import org.docx4j.dml.diagram.CTDataModel;
+import org.docx4j.dml.diagram.ObjectFactory;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
@@ -55,5 +60,28 @@ public final class DiagramColorsPart extends JaxbDmlPart<CTColorTransform> {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.DRAWINGML_DIAGRAM_COLORS);
 	}
+
+    public Object unmarshal(String filename) throws JAXBException {
+    	
+		java.io.InputStream is = null;
+		try {
+			is = org.docx4j.utils.ResourceUtils.getResource(
+					"org/docx4j/openpackaging/parts/DrawingML/" + filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}    		
+    	
+    	return unmarshal( is );    // side-effect is to set jaxbElement 	
+    }
+    
+    public void CreateMinimalContent(String uniqueId) {
+
+		ObjectFactory factory = new ObjectFactory(); 
+		
+		CTColorTransform colorsDef = factory.createCTColorTransform();
+		colorsDef.setUniqueId(uniqueId);
+		
+		this.setJaxbElement(colorsDef);    	
+    }
 		
 }

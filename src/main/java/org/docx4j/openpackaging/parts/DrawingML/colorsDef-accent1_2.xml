@@ -1,0 +1,746 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dgm:colorsDef xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" 
+               uniqueId="urn:microsoft.com/office/officeart/2005/8/colors/accent1_2">
+  <dgm:title val=""/>
+  <dgm:desc val=""/>
+  <dgm:catLst>
+    <dgm:cat type="accent1" pri="11200"/>
+  </dgm:catLst>
+  <dgm:styleLbl name="node0">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="alignNode1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="node1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="lnNode1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="vennNode1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:alpha val="50000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="node2">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="node3">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="node4">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgImgPlace1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="50000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="alignImgPlace1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="50000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="bgImgPlace1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="50000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="sibTrans2D1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgSibTrans2D1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="bgSibTrans2D1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="sibTrans1D1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="tx1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="callout">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="50000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="tx1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="asst0">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="asst1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="asst2">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="asst3">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="asst4">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst/>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans2D1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans2D2">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans2D3">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans2D4">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans1D1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:shade val="60000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="tx1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans1D2">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:shade val="60000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="tx1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans1D3">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:shade val="80000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="tx1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="parChTrans1D4">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:shade val="80000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="tx1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="conFgAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="alignAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="trAlignAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="40000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="bgAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="solidFgAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="solidAlignAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="solidBgAcc1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgAccFollowNode1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:alpha val="90000"/>
+        <a:tint val="40000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:alpha val="90000"/>
+        <a:tint val="40000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="alignAccFollowNode1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:alpha val="90000"/>
+        <a:tint val="40000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:alpha val="90000"/>
+        <a:tint val="40000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="bgAccFollowNode1">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:alpha val="90000"/>
+        <a:tint val="40000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:alpha val="90000"/>
+        <a:tint val="40000"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgAcc0">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgAcc2">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgAcc3">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgAcc4">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="90000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="bgShp">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="40000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="dkBgShp">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:shade val="80000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="trBgShp">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="50000"/>
+        <a:alpha val="40000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="accent1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="fgShp">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="accent1">
+        <a:tint val="60000"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="lt1"/>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="dk1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+  <dgm:styleLbl name="revTx">
+    <dgm:fillClrLst meth="repeat">
+      <a:schemeClr val="lt1">
+        <a:alpha val="0"/>
+      </a:schemeClr>
+    </dgm:fillClrLst>
+    <dgm:linClrLst meth="repeat">
+      <a:schemeClr val="dk1">
+        <a:alpha val="0"/>
+      </a:schemeClr>
+    </dgm:linClrLst>
+    <dgm:effectClrLst/>
+    <dgm:txLinClrLst/>
+    <dgm:txFillClrLst meth="repeat">
+      <a:schemeClr val="tx1"/>
+    </dgm:txFillClrLst>
+    <dgm:txEffectClrLst/>
+  </dgm:styleLbl>
+</dgm:colorsDef>
