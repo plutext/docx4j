@@ -34,6 +34,8 @@ public abstract class JaxbDmlPart<E>  extends JaxbXmlPart<E> {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramLayoutPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_STYLE)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart(new PartName(partName)); 
+//		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
+//			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DRAWING)) {
 			return new Drawing(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.DRAWINGML_CHART)) {

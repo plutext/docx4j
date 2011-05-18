@@ -124,18 +124,24 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "r";
     	}
     	
+    	// DrawingML 
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")) {
     		return "wp";
-    	}
-    	
+    	}    	
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chart")) {
+    		return "c";
+    	}    	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/main")) {
     		return "a";
-    	}
-    	
+    	}    	
     	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/picture")) {
     		return "pic";
     	}
-
+		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/diagram")) {
+    		return "dgm";
+		}  
+    	
+    	
     	if (namespaceUri.equals("urn:schemas-microsoft-com:office:office")) {
     		return "o";
     	}
@@ -179,9 +185,41 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "ds";
     	}
 
-    	if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chart")) {
-    		return "c";
-    	}
+    	// OpenDoPE
+    	if (namespaceUri.equals("http://opendope.org/xpaths")) {
+        	return "odx";
+    	} 
+		if (namespaceUri.equals("http://opendope.org/conditions")) {
+    		return "odc";
+		}  
+		if (namespaceUri.equals("http://opendope.org/components")) {
+    		return "odi";
+		}  
+		if (namespaceUri.equals("http://opendope.org/questions")) {
+    		return "odq";
+		}  
+		
+//		if (namespaceUri.equals("urn:schemas-microsoft-com:office:excel")) {
+//    		return "?";
+//		}  
+//		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/compatibility")) {
+//    		return "?";
+//		}  
+//		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas")) {
+//    		return "?";
+//		}  
+//		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/chartDrawing")) {
+//    		return "?";
+//		}  
+//		if (namespaceUri.equals("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing")) {
+//    		return "?";
+//		}  
+//		if (namespaceUri.equals("http://schemas.openxmlformats.org/officeDocument/2006/bibliography")) {
+//    		return "?";
+//		}  
+//		if (namespaceUri.equals("http://schemas.openxmlformats.org/schemaLibrary/2006/main")) {
+//    		return "?";
+//		}  
     	
     	return suggestion;
     }

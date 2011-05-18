@@ -165,6 +165,10 @@ public class ContentTypes {
 	// "/word/diagrams/layout1.xml"
 	public final static String DRAWINGML_DIAGRAM_LAYOUT_HEADER =
 		"application/vnd.openxmlformats-officedocument.drawingml.diagramLayoutHeader+xml";
+
+	// "/word/diagrams/drawing1.xml"
+	public final static String DRAWINGML_DIAGRAM_DRAWING =
+		"application/vnd.ms-office.drawingml.diagramDrawing+xml";
 	
 	// embedded presentation
 	public final static String PRESENTATION = 
