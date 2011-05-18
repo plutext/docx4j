@@ -77,6 +77,8 @@
 	 -->
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"  schemaLocation="dml-diagramColorTransform.xsd" />  <!--  where used? -->
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"  schemaLocation="dml-diagramStyleDefinition.xsd" /> <!--  where used? -->
+
+	<xsd:import namespace="http://schemas.microsoft.com/office/drawing/2008/diagram" schemaLocation="dml-diagramDrawing.xsd" />  <!--  where used? -->
 	 
 	<xsd:include schemaLocation="dml-graphicalObjectAnimation.xsd" />
 	<xsd:include schemaLocation="dml-graphicalObjectFormat.xsd" />

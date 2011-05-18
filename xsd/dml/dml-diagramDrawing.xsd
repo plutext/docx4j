@@ -1,10 +1,46 @@
-<xsd:schema targetNamespace="http://schemas.microsoft.com/office/drawing/2008/diagram" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:d="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns="http://schemas.microsoft.com/office/drawing/2008/diagram">
+<xsd:schema 
+	targetNamespace="http://schemas.microsoft.com/office/drawing/2008/diagram"
+	elementFormDefault="qualified" attributeFormDefault="unqualified"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+	xmlns:d="http://schemas.openxmlformats.org/drawingml/2006/diagram"
+	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+	xmlns="http://schemas.microsoft.com/office/drawing/2008/diagram"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
 <!--  Downloaded from http://msdn.microsoft.com/en-us/library/ee198341(v=office.12).aspx
       2011 05 18 
+      
+      Don't run xjc on this; run it on dml__ROOT.xsd instead:
+      
+       /jdk1.6.0_22/bin/xjc  dml__ROOT.xsd -d ~/workspace-jee/docx4j/xsd/dml/tmp -no-header -target 2.0
+       
  -->
-  <xsd:import schemaLocation="shared-relationshipReference.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+ 
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.dml.diagram2008"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+
+<!--  
+  <xsd:import schemaLocation="../shared/shared-relationshipReference.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
   <xsd:import schemaLocation="dml-diagram.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"/>
   <xsd:import schemaLocation="dml-main.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+   -->
+  <xsd:import schemaLocation="../shared/shared-relationshipReference.xsd" namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+  <xsd:import schemaLocation="dml-diagramDefinition.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram"/>
+  <xsd:import schemaLocation="dml-stylesheet.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main"/>
+   
   <xsd:complexType name="CT_ShapeNonVisual">
     <xsd:sequence>
       <xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1"/>
