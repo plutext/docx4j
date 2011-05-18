@@ -51,6 +51,7 @@
 								<source>src/pptx4j/java</source>
 								<source>src/svg</source>
 								<source>src/xlsx4j/java</source>
+								<source>src/glox4j/java</source>
 								<!--source>src/sun</source-->
 							</sources>
 						</configuration>

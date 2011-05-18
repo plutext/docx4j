@@ -92,6 +92,7 @@
         	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="${src.main.java.dir}"/>
             <src path="src/diffx"/>
+            <src path="src/glox4j/java"/>
             <src path="src/pptx4j/java"/>
             <src path="src/xlsx4j/java"/>
             <src path="src/svg"/>

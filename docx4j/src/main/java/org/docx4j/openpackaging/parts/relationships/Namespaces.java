@@ -146,6 +146,10 @@ public class Namespaces {
 	public final static String DRAWINGML_DIAGRAM_STYLE =
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramQuickStyle";
 	
+	// "/diagrams/layoutheader1.xml"
+	public final static String DRAWINGML_DIAGRAM_LAYOUT_HEADER =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/diagramLayoutHeader";
+
 	
 	// Target="ppt/presentation.xml"
 	public final static String PRESENTATIONML_MAIN = 	
