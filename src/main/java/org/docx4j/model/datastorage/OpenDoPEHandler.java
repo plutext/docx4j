@@ -7,9 +7,11 @@ import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBException;
@@ -30,18 +32,23 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentCell;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
@@ -50,6 +57,7 @@ import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Text;
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.opendope.conditions.Condition;
 import org.w3c.dom.Node;
 
@@ -76,6 +84,8 @@ public class OpenDoPEHandler {
 		
 		/**
 		 * Preprocess content controls which have tag "od:condition|od:repeat|od:component".
+		 * 
+		 * It is "preprocess" in the sense that it is "pre" opening in Word
 		 * 
 		 * The algorithm is as follows:
 		 * 
@@ -115,13 +125,49 @@ public class OpenDoPEHandler {
 		 * @throws Docx4JException
 		 */
 		public static WordprocessingMLPackage preprocess(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+
+			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();			
+			if (wordMLPackage.getMainDocumentPart().getXPathsPart()==null) {
+				throw new Docx4JException("OpenDoPE XPaths part missing");
+			} else {
+				xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
+				log.debug( XmlUtils.marshaltoString(xPaths, true, true));
+			}
+			if (wordMLPackage.getMainDocumentPart().getConditionsPart()!=null) {
+				conditions = wordMLPackage.getMainDocumentPart().getConditionsPart().getJaxbElement();
+				log.debug( XmlUtils.marshaltoString(conditions, true, true));
+			}
+			if (wordMLPackage.getMainDocumentPart().getComponentsPart()!=null) {
+				components = wordMLPackage.getMainDocumentPart().getComponentsPart().getJaxbElement();
+				log.debug( XmlUtils.marshaltoString(components, true, true));
+			}
+
+			shallowTraversor.wordMLPackage = wordMLPackage; 
 			
 			do {
+				// A component can apply in both the main document part,
+				// and in headers/footers. See further http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html 
+				// A component added to the
+				// main document part could add new headers/footers.
+				// So we need to work out what parts to preprocess 
+				// here inside this do loop. 
+				Set<ContentAccessor> partList = getParts(wordMLPackage);
+					
+				// Process repeats and conditionals.
+				for (ContentAccessor part : partList) {					
+					new TraversalUtil(part, shallowTraversor); 
+				}
+			      
+				// Convert any sdt with <w:tag w:val="od:component=comp1"/>
+				// to altChunk, and for MergeDocx users, to 
+				// real WordML.
+				for (ContentAccessor part : partList) {
+					wordMLPackage = fetchComponents(wordMLPackage, part);
+				}
 				
-				preprocessRun(wordMLPackage);
-				wordMLPackage = fetchComponents(wordMLPackage);
 			
 			} while (justGotAComponent);
+			// ie repeat the whole process if you got a component
 			
 			return wordMLPackage;
 		}
@@ -135,8 +181,29 @@ public class OpenDoPEHandler {
 		public static void setDocxFetcher(DocxFetcher docxFetcher) {
 			OpenDoPEHandler.docxFetcher = docxFetcher;
 		}
+		
+		private static Set<ContentAccessor> getParts(WordprocessingMLPackage srcPackage) {
+			
+			Set<ContentAccessor> partList = new HashSet<ContentAccessor>();			
+			
+			partList.add(srcPackage.getMainDocumentPart());
+			
+			// Add headers/footers
+			RelationshipsPart rp = srcPackage.getMainDocumentPart().getRelationshipsPart();
+			for ( Relationship r : rp.getRelationships().getRelationship()  ) {
+				
+				if (r.getType().equals(Namespaces.HEADER)) {
+					partList.add((HeaderPart)rp.getPart(r));					
+				} else if ( r.getType().equals(Namespaces.FOOTER) ) {
+					partList.add((FooterPart)rp.getPart(r));
+				}			
+			}
+			
+			return partList;
+		}
 
-		private static WordprocessingMLPackage fetchComponents(WordprocessingMLPackage srcPackage) throws Docx4JException {
+		private static WordprocessingMLPackage fetchComponents(WordprocessingMLPackage srcPackage,
+				ContentAccessor contentAccessor) throws Docx4JException {
 			
 			// convert components to altChunk
 			Map<Integer, CTAltChunk> replacements = new HashMap<Integer, CTAltChunk>();
@@ -148,7 +215,7 @@ public class OpenDoPEHandler {
 			
 			List<Boolean> continuousAfter = new ArrayList<Boolean>();
 			
-	    	for (Object block : srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts() ) {
+	    	for (Object block : contentAccessor.getContent() ) {
 	    		
 	    		//Object ublock = XmlUtils.unwrap(block);
 	    		if (block instanceof org.docx4j.wml.SdtBlock) {
@@ -226,11 +293,11 @@ public class OpenDoPEHandler {
 	    	
 	    	// Now replace in list
 	    	for(Integer key : replacements.keySet() ) {
-	    		srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts().set(key, replacements.get(key));	    		
+	    		contentAccessor.getContent().set(key, replacements.get(key));	    		
 	    	}
 	    	
 	    	// Go through docx in reverse order 
-	    	List<Object> bodyChildren = srcPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts(); 
+	    	List<Object> bodyChildren = contentAccessor.getContent(); 
 	    	int i = 0;
 	    	for (Integer indexIntoBody : continuousBeforeIndex ) {
 	    		
@@ -379,35 +446,35 @@ public class OpenDoPEHandler {
 			System.out.println("* Please visit www.plutext.com if you want to buy it.");
 		}
 		
-		private static void preprocessRun(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
-			
-			log.info("\n\n Preprocess run.. \n\n");
-
-			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-			
-			if (wordMLPackage.getMainDocumentPart().getXPathsPart()==null) {
-				throw new Docx4JException("OpenDoPE XPaths part missing");
-			} else {
-				xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
-				log.debug( XmlUtils.marshaltoString(xPaths, true, true));
-			}
-			if (wordMLPackage.getMainDocumentPart().getConditionsPart()!=null) {
-				conditions = wordMLPackage.getMainDocumentPart().getConditionsPart().getJaxbElement();
-				log.debug( XmlUtils.marshaltoString(conditions, true, true));
-			}
-			if (wordMLPackage.getMainDocumentPart().getComponentsPart()!=null) {
-				components = wordMLPackage.getMainDocumentPart().getComponentsPart().getJaxbElement();
-				log.debug( XmlUtils.marshaltoString(components, true, true));
-			}
-
-			org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
-			Body body =  wmlDocumentEl.getBody();
-			
-			shallowTraversor.wordMLPackage = wordMLPackage; 
-			
-			new TraversalUtil(body, shallowTraversor); 
-			
-		}
+//		private static void preprocessRun(WordprocessingMLPackage wordMLPackage, ContentAccessor content) throws Docx4JException {
+//			
+//			log.info("\n\n Preprocess run.. \n\n");
+//
+//			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
+//			
+//			if (wordMLPackage.getMainDocumentPart().getXPathsPart()==null) {
+//				throw new Docx4JException("OpenDoPE XPaths part missing");
+//			} else {
+//				xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
+//				log.debug( XmlUtils.marshaltoString(xPaths, true, true));
+//			}
+//			if (wordMLPackage.getMainDocumentPart().getConditionsPart()!=null) {
+//				conditions = wordMLPackage.getMainDocumentPart().getConditionsPart().getJaxbElement();
+//				log.debug( XmlUtils.marshaltoString(conditions, true, true));
+//			}
+//			if (wordMLPackage.getMainDocumentPart().getComponentsPart()!=null) {
+//				components = wordMLPackage.getMainDocumentPart().getComponentsPart().getJaxbElement();
+//				log.debug( XmlUtils.marshaltoString(components, true, true));
+//			}
+//
+//			org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
+//			Body body =  wmlDocumentEl.getBody();
+//			
+//			shallowTraversor.wordMLPackage = wordMLPackage; 
+//			
+//			new TraversalUtil(body, shallowTraversor); 
+//			
+//		}
 		
 		//private static XPathsPart getXPathsPart(WordprocessingMLPackage wordMLPackage) {
 		//	wordMLPackage.getParts().
