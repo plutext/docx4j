@@ -21,6 +21,8 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import java.util.List;
+
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
@@ -29,10 +31,11 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Ftr;
 
 
-public final class FooterPart extends JaxbXmlPart<Ftr> {
+public final class FooterPart extends JaxbXmlPart<Ftr>  implements ContentAccessor {
 	
 	private static Logger log = Logger.getLogger(FooterPart.class);			
 	
@@ -57,4 +60,12 @@ public final class FooterPart extends JaxbXmlPart<Ftr> {
 		setRelationshipType(Namespaces.FOOTER);
 	}
 	
+    /**
+     * Convenience method to getJaxbElement().getBody().getContent()
+     * @since 2.7
+     */
+    public List<Object> getContent() {
+    	return this.getJaxbElement().getContent();
+    }	
+		
 }

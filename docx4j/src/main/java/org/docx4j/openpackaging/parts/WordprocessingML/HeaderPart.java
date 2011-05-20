@@ -34,12 +34,13 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Hdr;
 import org.w3c.dom.Node;
 
 
 
-public final class HeaderPart extends JaxbXmlPart<Hdr> {
+public final class HeaderPart extends JaxbXmlPart<Hdr>  implements ContentAccessor {
 	
 	private static Logger log = Logger.getLogger(HeaderPart.class);			
 	
@@ -62,6 +63,14 @@ public final class HeaderPart extends JaxbXmlPart<Hdr> {
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.HEADER);
 	}
+	
+    /**
+     * Convenience method to getJaxbElement().getBody().getContent()
+     * @since 2.7
+     */
+    public List<Object> getContent() {
+    	return this.getJaxbElement().getContent();
+    }	
 	
 	private Binder<Node> binder;
 	
