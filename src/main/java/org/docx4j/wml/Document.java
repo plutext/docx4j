@@ -21,6 +21,9 @@
 
 package org.docx4j.wml;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -57,7 +60,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "document")
 public class Document
-    implements Child
+    implements Child, ContentAccessor
 {
 
     protected CTBackground background;
@@ -100,6 +103,15 @@ public class Document
     public Body getBody() {
         return body;
     }
+    
+    /**
+     * Convenience method to getBody().getContent()
+     * @since 2.7
+     */
+    public List<Object> getContent() {
+        return getBody().getContent();
+    }
+    
 
     /**
      * Sets the value of the body property.
