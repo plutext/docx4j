@@ -57,6 +57,7 @@ import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Comments;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.Ftr;
 import org.docx4j.wml.Hdr;
 import org.docx4j.wml.Lvl;
@@ -77,7 +78,7 @@ import org.w3c.dom.Node;
  * @author jharrop
  *
  */
-public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
+public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> implements ContentAccessor  {
 	
 	private static Logger log = Logger.getLogger(MainDocumentPart.class);
 		
@@ -100,6 +101,13 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document>  {
 		setRelationshipType(Namespaces.DOCUMENT);
 	}	
 
+    /**
+     * Convenience method to getJaxbElement().getBody().getContent()
+     * @since 2.7
+     */
+    public List<Object> getContent() {
+    	return this.getJaxbElement().getContent();
+    }	
 	
 	private Binder<Node> binder;
 	
