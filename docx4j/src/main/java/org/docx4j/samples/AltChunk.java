@@ -29,6 +29,7 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTAltChunk;
@@ -37,19 +38,26 @@ import org.docx4j.wml.CTAltChunk;
 public class AltChunk {
 	
 	public static void main(String[] args) throws Exception {
-
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/Table.docx";
 		
-		String chunkPath = System.getProperty("user.dir") + "/sample-docs/Word2007-fonts.docx";
+		boolean ADD_TO_HEADER = true;
+		HeaderPart hp = null;
+		
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
+		
+		String chunkPath = System.getProperty("user.dir") + "/sample-docs/word/chunk.docx";
 		
 		boolean save = true;
-		String outputfilepath = System.getProperty("user.dir") + "/tmp/altChunk_out.docx";
+		String outputfilepath = System.getProperty("user.dir") + "/altChunk_out.docx";
 		
 		
 		// Open a document from the file system
 		// 1. Load the Package
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		MainDocumentPart main = wordMLPackage.getMainDocumentPart();
+		
+		if (ADD_TO_HEADER) {
+			hp = wordMLPackage.getDocumentModel().getSections().get(0).getHeaderFooterPolicy().getDefaultHeader();
+		}
 		
 		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(new PartName("/chunk.docx") );
 		afiPart.setBinaryData(
@@ -58,11 +66,21 @@ public class AltChunk {
 		afiPart.setContentType(new ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")); //docx
 		//afiPart.setContentType(new ContentType("application/xhtml+xml")); //xhtml
 
-		Relationship altChunkRel = main.addTargetPart(afiPart);
+		Relationship altChunkRel = null;
+		if (ADD_TO_HEADER) {
+			altChunkRel = hp.addTargetPart(afiPart);
+		} else {
+			altChunkRel = main.addTargetPart(afiPart);			
+		}
+		
 		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
 		ac.setId(altChunkRel.getId());
 
-		main.addObject(ac);		
+		if (ADD_TO_HEADER) {
+			hp.getJaxbElement().getEGBlockLevelElts().add(ac);
+		} else {
+			main.addObject(ac);
+		}
 		
 		// Save it
 		
