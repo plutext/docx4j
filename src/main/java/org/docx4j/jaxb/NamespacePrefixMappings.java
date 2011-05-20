@@ -141,6 +141,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
     		return "dgm";
 		}  
     	
+		if (namespaceUri.equals("http://schemas.microsoft.com/office/drawing/2008/diagram")) {
+    		return "dsp";
+		}  
     	
     	if (namespaceUri.equals("urn:schemas-microsoft-com:office:office")) {
     		return "o";
