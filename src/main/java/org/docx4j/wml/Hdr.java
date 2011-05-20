@@ -62,7 +62,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "hdr")
 public class Hdr
-    implements Child
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -98,6 +98,8 @@ public class Hdr
         @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class)
     })
     protected List<Object> egBlockLevelElts;
+    
+        
     @XmlTransient
     private Object parent;
 
@@ -152,6 +154,7 @@ public class Hdr
      * 
      * 
      */
+    @Deprecated    
     public List<Object> getEGBlockLevelElts() {
         if (egBlockLevelElts == null) {
             egBlockLevelElts = new ArrayList<Object>();
@@ -159,6 +162,17 @@ public class Hdr
         return this.egBlockLevelElts;
     }
 
+    /**
+     * Get the content of this element.
+     * @since 2.7
+     */
+    public List<Object> getContent() {
+        if (egBlockLevelElts == null) {
+            egBlockLevelElts = new ArrayList<Object>();
+        }
+        return this.egBlockLevelElts;
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 

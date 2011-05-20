@@ -62,7 +62,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 })
 @XmlRootElement(name = "ftr")
 public class Ftr
-    implements Child
+    implements Child, ContentAccessor
 {
 
     @XmlElementRefs({
@@ -152,6 +152,7 @@ public class Ftr
      * 
      * 
      */
+    @Deprecated        
     public List<Object> getEGBlockLevelElts() {
         if (egBlockLevelElts == null) {
             egBlockLevelElts = new ArrayList<Object>();
@@ -159,6 +160,13 @@ public class Ftr
         return this.egBlockLevelElts;
     }
 
+    public List<Object> getContent() {
+        if (egBlockLevelElts == null) {
+            egBlockLevelElts = new ArrayList<Object>();
+        }
+        return this.egBlockLevelElts;
+    }
+    
     /**
      * Gets the parent object in the object tree representing the unmarshalled xml document.
      * 
