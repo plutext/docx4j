@@ -52,6 +52,27 @@
 										string(w:sdtContent//wp:extent[1]/@cx), 
 										string(w:sdtContent//wp:extent[1]/@cy))" />
 				  		</xsl:when>
+				  		<xsl:when test="w:sdtContent/w:tc">
+				  			<w:tc>
+				  				<!--  preserve existing w:tcPr -->
+				  				<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
+					  			<w:p>
+					  				<!--  preserve existing w:pPr -->
+					  				<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
+					  				
+					  				<!--  create runs -->
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+												$wmlPackage,
+												$customXmlDataStorageParts,
+												string(w:sdtPr/w:dataBinding/@w:storeItemID),
+												string(w:sdtPr/w:dataBinding/@w:xpath),
+												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+												w:sdtPr/w:rPr,
+												$multiLine )" />
+								</w:p>
+							</w:tc>
+				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:p">
 				  			<w:p>
 				  				<!--  preserve existing w:pPr -->
