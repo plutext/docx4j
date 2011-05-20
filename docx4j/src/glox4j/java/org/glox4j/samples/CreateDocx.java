@@ -89,7 +89,7 @@ public class CreateDocx extends AbstractSample {
 		
 
 		wordMLPackage.save(new java.io.File(
-				System.getProperty("user.dir") + "/glox3.docx" ) );
+				System.getProperty("user.dir") + "/glox5.docx" ) );
 		
 		System.out.println("Done!");
 		

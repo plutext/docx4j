@@ -26,6 +26,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
@@ -197,6 +198,15 @@ public class TraversalUtil {
 				artificialList.add(j);				
 			}
 			return artificialList;
+		} else if (o instanceof CTDataModel) {
+			CTDataModel dataModel = (CTDataModel)o;
+			List<Object> artificialList = new ArrayList<Object>();
+			// We're going to create a list merging two children ..			
+			artificialList.addAll(dataModel.getPtLst().getPt());
+			artificialList.addAll(dataModel.getCxnLst().getCxn());			
+			return artificialList;
+		} else if (o instanceof org.docx4j.dml.diagram2008.CTDrawing) {
+			return ((org.docx4j.dml.diagram2008.CTDrawing)o).getSpTree().getSpOrGrpSp();
 		} else if (o instanceof org.docx4j.vml.CTTextbox) {				
 //			return ((org.docx4j.vml.CTTextbox)o).getAny();
 			return ((org.docx4j.vml.CTTextbox)o).getTxbxContent().getEGBlockLevelElts();

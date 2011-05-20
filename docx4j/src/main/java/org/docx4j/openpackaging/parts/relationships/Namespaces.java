@@ -152,7 +152,7 @@ public class Namespaces {
 
 	// "/word/diagrams/drawing1.xml"
 	public final static String DRAWINGML_DIAGRAM_DRAWING =
-		"http://schemas.openxmlformats.org/officeDocument/2007/relationships/diagramDrawing";
+		"http://schemas.microsoft.com/office/2007/relationships/diagramDrawing";
 	
 	
 	// Target="ppt/presentation.xml"
