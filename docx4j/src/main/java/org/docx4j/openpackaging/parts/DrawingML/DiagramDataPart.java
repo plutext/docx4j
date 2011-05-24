@@ -87,7 +87,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	}
 	
 	HashMap<String, String> map = new HashMap<String, String>();
-	int index = 1;
+	int index = 0;
 	private void generateIdMap() {
 		
 		new TraversalUtil(getJaxbElement(),
@@ -105,7 +105,19 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 						if (o instanceof CTPt) {
 							
 							CTPt pt = (CTPt)o;
+							
+							
 							String from = pt.getModelId();
+							
+							// Everything goes invisible in Word 2007 if you map these,
+							// and images disappear (not shown as broken)
+							if (pt.getType()!=null
+									&& pt.getType().equals(STPtType.PRES)) {
+								map.put(from, generateNiceGuid(index));
+								index++;
+								return null;
+							}
+							
 							String to = null;
 							
 							if (IGNORE_XSD_RESTRICTION) {
@@ -207,6 +219,18 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		
 	}
+	
+	private String generateNiceGuid(int index) {
+		
+		if (index<10) {
+			return "{00000000-0000-0000-0000-00000000000" + index + "}";
+		} else if (index<100) {
+			return "{00000000-0000-0000-0000-0000000000" + index + "}";			
+		} else {
+			return "{00000000-0000-0000-0000-000000000" + index + "}";			
+		}
+		
+	}
 
 	private void ReplaceIds() {
 		
@@ -220,6 +244,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 						if (o instanceof CTPt) {
 							
 							CTPt pt = (CTPt)o;
+														
 							pt.setModelId( 
 									map.get(pt.getModelId() ));
 							
@@ -253,10 +278,10 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 								cxn.setParTransId( 
 										map.get(cxn.getParTransId() ));
 							}
-							if (cxn.getPresId()!=null) {
-								cxn.setPresId( 
-										map.get(cxn.getPresId() ));
-							}							
+//							if (cxn.getPresId()!=null) {
+//								cxn.setPresId( 
+//										map.get(cxn.getPresId() ));
+//							}							
 						}
 						
 						return null;
@@ -309,7 +334,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/glox5.docx"));
+						+ "/SmartArt/org4.docx"));
 		
 		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DATA);
 		
@@ -325,20 +350,19 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		System.out.println( XmlUtils.marshaltoString(thisPart.getJaxbElement(), true, true));
 
 		// Now fix the IDs in the drawing part to match
+		// TODO: just drop this part altogether; we don't need it
 		Relationship r2 = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DRAWING);		
 		if (r2==null) {
 			System.out.println("No DDrawingP!");
-			return;
-		}
-		
-		DiagramDrawingPart drawingPart = (DiagramDrawingPart)wordMLPackage.getMainDocumentPart().getRelationshipsPart().getPart(r2);
-		drawingPart.setFriendlyIds(thisPart.map);
-		
-		System.out.println( XmlUtils.marshaltoString(drawingPart.getJaxbElement(), true, true));
+		} else {
+			DiagramDrawingPart drawingPart = (DiagramDrawingPart)wordMLPackage.getMainDocumentPart().getRelationshipsPart().getPart(r2);
+			drawingPart.setFriendlyIds(thisPart.map);			
+			System.out.println( XmlUtils.marshaltoString(drawingPart.getJaxbElement(), true, true));
+		}		
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(System.getProperty("user.dir")
-				+ "/glox5-OUT.docx");
+				+ "/SmartArt/org4-guid.docx");
 		
 	}	
 		
