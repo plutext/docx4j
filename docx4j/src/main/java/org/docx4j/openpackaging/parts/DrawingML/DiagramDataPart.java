@@ -334,7 +334,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/SmartArt/org4.docx"));
+						+ "/SmartArt/boss-plus212.docx"));
 		
 		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DATA);
 		
@@ -362,7 +362,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(System.getProperty("user.dir")
-				+ "/SmartArt/org4-guid.docx");
+				+ "/SmartArt/boss-plus212-OUT.docx");
 		
 	}	
 		
