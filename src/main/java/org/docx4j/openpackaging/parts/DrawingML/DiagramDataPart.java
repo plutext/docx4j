@@ -70,34 +70,33 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		
 	/**
-	 * This method changes the IDs from GUID to ints,
-	 * so that the contents of the part is easier to understand.
-	 * 
-	 * That's all its for.  Use at your own risk.
+	 * This method ensures generated IDs are
+	 * valid and (subject to that constraint)
+	 * easy-ish to understand.
 	 */
-	@Deprecated
-	public void setFriendlyIds() {
+	protected static void setFriendlyIds(Object jaxbElement) {
+		
+		map = new HashMap<String, String>();
 		
 		// Go through once creating a map of IDs
-		generateIdMap();
+		generateIdMap(jaxbElement);
 		
 		// Go through again, replacing
-		ReplaceIds();
+		ReplaceIds(jaxbElement);
 		
 	}
 	
-	HashMap<String, String> map = new HashMap<String, String>();
-	int index = 0;
-	private void generateIdMap() {
+	static HashMap<String, String> map;
+	static int index = 0;
+	protected static void generateIdMap(Object jaxbElement) {
 		
-		new TraversalUtil(getJaxbElement(),
+		new TraversalUtil(jaxbElement,
 
 				new Callback() {
 			
 					// Unfortunately, the schema says
 					// a model id must be an int or a GUID.
 					// Word 2007 won't open a docx which violates that.
-					final static boolean IGNORE_XSD_RESTRICTION = false;
 
 					@Override
 					public List<Object> apply(Object o) {
@@ -118,30 +117,8 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 								return null;
 							}
 							
-							String to = null;
-							
-							if (IGNORE_XSD_RESTRICTION) {
-							
-								if (pt.getType().equals(STPtType.DOC)) {
-										to = "doc";
-								} else if (pt.getType().equals(STPtType.PAR_TRANS)) {
-									to="parTrans"+index;
-									index++;
-								} else if (pt.getType().equals(STPtType.SIB_TRANS)) {
-									to="sibTrans"+index;
-									index++;
-								} else if (pt.getType().equals(STPtType.PRES)) {
-									to="pres"+index;
-									index++;
-								} else {									
-									to="pt"+index;
-									index++;
-								}
-								
-							} else {
-								to = "" + index;
-								index++;								
-							}
+							String to = "" + index;
+							index++;								
 							map.put(from, to);							
 						}
 
@@ -149,28 +126,8 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 							
 							CTCxn cxn = (CTCxn)o;
 							String from = cxn.getModelId();
-							String to = null;
-							
-							if (IGNORE_XSD_RESTRICTION) {
-								
-								if (cxn.getType().equals(STCxnType.PRES_OF)) {
-									to="presOf"+index;
-									index++;
-								} else if (cxn.getType().equals(STCxnType.PAR_OF)) {
-									to="parOf"+index;
-									index++;
-								} else if (cxn.getType().equals(STCxnType.PRES_PAR_OF)) {
-									to="presParOf"+index;
-									index++;
-								} else {								
-									to="cxn"+index;
-									index++;
-								}
-								
-							} else {
-								to = "" + index;
-								index++;								
-							}
+							String to = "" + index;
+							index++;								
 							
 							map.put(from, to);							
 						}
@@ -186,8 +143,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 					// Depth first
 					@Override
 					public void walkJAXBElements(Object parent) {
-
-
+						
 						List children = getChildren(parent);
 						if (children != null) {
 
@@ -220,7 +176,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 	}
 	
-	private String generateNiceGuid(int index) {
+	private static String generateNiceGuid(int index) {
 		
 		if (index<10) {
 			return "{00000000-0000-0000-0000-00000000000" + index + "}";
@@ -232,9 +188,25 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 	}
 
-	private void ReplaceIds() {
+	private static String mapGet(HashMap<String, String> map, String key) {
 		
-		new TraversalUtil(getJaxbElement(),
+		if (key==null) {
+			System.out.println("Key not found!");
+			return null;
+		}
+		
+		String val = map.get(key);
+		if (val==null) {
+			System.out.println("No val for Key " + key);
+			return key;
+		}
+		
+		return val;
+	}
+	
+	protected static void ReplaceIds(Object jaxbElement) {
+		
+		new TraversalUtil(jaxbElement,
 
 				new Callback() {
 
@@ -256,7 +228,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 								}
 							}
 							
-							if (pt.getCxnId()!=null) {
+							if (!pt.getCxnId().equals("0")) {
 								pt.setCxnId( 
 										map.get(pt.getCxnId() ));
 							}							
@@ -265,16 +237,18 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 						if (o instanceof CTCxn) {
 							
 							CTCxn cxn = (CTCxn)o;
-							cxn.setModelId(map.get(cxn.getModelId()));
+							if (cxn.getModelId()!=null) {
+								cxn.setModelId(map.get(cxn.getModelId()));
+							}
 							
 							cxn.setSrcId(map.get(cxn.getSrcId()));
-							cxn.setDestId(map.get(cxn.getDestId()));
+							cxn.setDestId( mapGet(map,cxn.getDestId() ));
 
-							if (cxn.getSibTransId()!=null) {
+							if (!cxn.getSibTransId().equals("0")) {
 								cxn.setSibTransId( 
 										map.get(cxn.getSibTransId() ));
 							}
-							if (cxn.getParTransId()!=null) {
+							if (!cxn.getParTransId().equals("0")) {
 								cxn.setParTransId( 
 										map.get(cxn.getParTransId() ));
 							}
@@ -334,7 +308,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/SmartArt/boss-plus212.docx"));
+						+ "/SmartArt/root-only.docx"));
 		
 		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DATA);
 		
@@ -345,7 +319,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 		DiagramDataPart thisPart = (DiagramDataPart)wordMLPackage.getMainDocumentPart().getRelationshipsPart().getPart(r);			
 		
-		thisPart.setFriendlyIds();
+		thisPart.setFriendlyIds(thisPart.getJaxbElement());
 		
 		System.out.println( XmlUtils.marshaltoString(thisPart.getJaxbElement(), true, true));
 
@@ -362,7 +336,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(System.getProperty("user.dir")
-				+ "/SmartArt/boss-plus212-OUT.docx");
+				+ "/SmartArt/root-only-OUT.docx");
 		
 	}	
 		
