@@ -38,7 +38,10 @@
       
       <g:graph id="G" edgedefault="directed">
         
-        <xsl:apply-templates select="//dgm:cxnLst/dgm:cxn" mode="nodes"/>
+        
+<!--        <xsl:apply-templates select="//dgm:cxnLst/dgm:cxn" mode="nodes"/> -->
+  
+        <xsl:apply-templates select="//dgm:ptLst/dgm:pt" mode="nodes"/>
         
         <xsl:apply-templates select="//dgm:cxnLst/dgm:cxn" mode="edges"/>
       
@@ -46,40 +49,155 @@
     </g:graphml>
 
   </xsl:template>  
-  
-<xsl:template match="dgm:cxn" mode="nodes" >
+
+<xsl:template match="dgm:pt" mode="nodes" >
   <!-- doesn't seem to matter if there are duplicates, so we can be lazy -->
-  <g:node id="{@srcId}">
+  <g:node id="{@modelId}">
       <g:data key="d5"/>
       <g:data key="d6">
         <y:ShapeNode>
           <y:Geometry height="30.0" width="30.0" x="155.625" y="0.0"/>
-          <y:Fill color="#FFCC00" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" borderDistance="0.0" fontFamily="Dialog" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="19.92626953125" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="23.5" x="3.25" y="5.036865234375"><xsl:value-of select="@srcId"/></y:NodeLabel>
-          <y:Shape type="rectangle"/>
-        </y:ShapeNode>
-      </g:data>
-    </g:node>
-  <g:node id="{@destId}">
-      <g:data key="d5"/>
-      <g:data key="d6">
-        <y:ShapeNode>
-          <y:Geometry height="30.0" width="30.0" x="155.625" y="0.0"/>
-          <y:Fill color="#FFCC00" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" borderDistance="0.0" fontFamily="Dialog" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="19.92626953125" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="23.5" x="3.25" y="5.036865234375"><xsl:value-of select="@destId"/></y:NodeLabel>
-          <y:Shape type="rectangle"/>
+          <xsl:choose>
+              <xsl:when test="@type='pres' and (starts-with(dgm:prSet/@presStyleLbl,'parChTrans'))">
+                <y:BorderStyle color="#000000" type="line" width="1.0"/>
+                <y:Fill color="#FF99CC" transparent="false"/>
+                <y:NodeLabel alignment="center" autoSizePolicy="content" borderDistance="0.0" fontFamily="Dialog" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="19.92626953125" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="23.5" x="3.25" y="5.036865234375"><xsl:value-of select="@modelId"/> <xsl:value-of select="dgm:prSet/@presStyleLbl"/> ] <xsl:value-of select="dgm:prSet/@presAssocID"/></y:NodeLabel>
+                <y:Shape type="rectangle"/>
+              </xsl:when>
+              <xsl:when test="@type='parTrans' or @type='sibTrans'">
+                <y:BorderStyle color="#000000" type="line" width="1.0"/>
+                <y:Fill color="#FF99CC" transparent="false"/>
+                <y:NodeLabel alignment="center" autoSizePolicy="content" borderDistance="0.0" fontFamily="Dialog" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="19.92626953125" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="23.5" x="3.25" y="5.036865234375"><xsl:value-of select="@modelId"/> <xsl:value-of select="@type"/> ] <xsl:value-of select="@cxnId"/></y:NodeLabel>
+                <y:Shape type="rectangle"/>
+              </xsl:when>
+              <xsl:when test="@type='pres'">
+                <y:BorderStyle hasColor="false" type="line" width="1.0"/>
+                <y:Fill color="#FF0000" transparent="true"/>
+                <y:NodeLabel alignment="center" autoSizePolicy="content" borderDistance="0.0" fontFamily="Dialog" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="19.92626953125" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="23.5" x="3.25" y="5.036865234375"><xsl:value-of select="@modelId"/> <xsl:value-of select="dgm:prSet/@presName"/> ] <xsl:value-of select="dgm:prSet/@presAssocID"/></y:NodeLabel>
+                <y:Shape type="rectangle"/>
+              </xsl:when>
+              <xsl:when test="@type">
+                <y:BorderStyle color="#000000" type="line" width="1.0"/>
+                <y:Fill color="#FFCC00" transparent="false"/>
+                <y:NodeLabel alignment="center" autoSizePolicy="content" borderDistance="0.0" fontFamily="Dialog" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="19.92626953125" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="23.5" x="3.25" y="5.036865234375"><xsl:value-of select="@modelId"/> <xsl:value-of select="@type"/></y:NodeLabel>
+                <y:Shape type="rectangle"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <y:BorderStyle color="#000000" type="line" width="1.0"/>
+                <y:Fill color="#FFCC00" transparent="false"/>
+                <y:NodeLabel alignment="center" autoSizePolicy="content" borderDistance="0.0" fontFamily="Dialog" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="19.92626953125" modelName="internal" modelPosition="c" textColor="#000000" visible="true" width="23.5" x="3.25" y="5.036865234375"><xsl:value-of select="@modelId"/></y:NodeLabel>
+                <y:Shape type="rectangle"/>
+              </xsl:otherwise>
+            </xsl:choose>
         </y:ShapeNode>
       </g:data>
     </g:node>
               
 </xsl:template>
 
-<xsl:template match="dgm:cxn" mode="edges" >
+<xsl:template match="dgm:cxn[@parTransId]" mode="edges" >
+    <g:edge source="{@srcId}" target="{@parTransId}">
+      <g:data key="d9">
+        <y:PolyLineEdge>
+          <y:Path sx="-7.5" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="147.49761904761905" y="45.0"/>
+            <y:Point x="54.68690476190476" y="45.0"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <xsl:if test="@type='presOf'">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">presOf</y:EdgeLabel>
+          </xsl:if>
+          <xsl:if test="@sibTransId">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">trans <xsl:value-of select="@modelId"/></y:EdgeLabel>
+          </xsl:if>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </g:data>
+    </g:edge>
+    <g:edge source="{@parTransId}" target="{@destId}">
+      <g:data key="d9">
+        <y:PolyLineEdge>
+          <y:Path sx="-7.5" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="147.49761904761905" y="45.0"/>
+            <y:Point x="54.68690476190476" y="45.0"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <xsl:if test="@type='presOf'">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">presOf</y:EdgeLabel>
+          </xsl:if>
+          <xsl:if test="@sibTransId">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">trans <xsl:value-of select="@modelId"/></y:EdgeLabel>
+          </xsl:if>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </g:data>
+    </g:edge>
+
+    <g:edge source="{@srcId}" target="{@sibTransId}">
+      <g:data key="d9">
+        <y:PolyLineEdge>
+          <y:Path sx="-7.5" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="147.49761904761905" y="45.0"/>
+            <y:Point x="54.68690476190476" y="45.0"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <xsl:if test="@type='presOf'">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">presOf</y:EdgeLabel>
+          </xsl:if>
+          <xsl:if test="@sibTransId">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">trans <xsl:value-of select="@modelId"/></y:EdgeLabel>
+          </xsl:if>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </g:data>
+    </g:edge>
+    <g:edge source="{@sibTransId}" target="{@destId}">
+      <g:data key="d9">
+        <y:PolyLineEdge>
+          <y:Path sx="-7.5" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="147.49761904761905" y="45.0"/>
+            <y:Point x="54.68690476190476" y="45.0"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <xsl:if test="@type='presOf'">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">presOf</y:EdgeLabel>
+          </xsl:if>
+          <xsl:if test="@sibTransId">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">trans <xsl:value-of select="@modelId"/></y:EdgeLabel>
+          </xsl:if>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </g:data>
+    </g:edge>
+
+</xsl:template>
+
+<xsl:template match="dgm:cxn[count(@parTransId)=0]" mode="edges" >
   <!-- doesn't seem to matter if there are duplicates, so we can be lazy -->
-    <g:edge source="{@srcId}" target="{@destId}"/>
+    <g:edge source="{@srcId}" target="{@destId}">
+      <g:data key="d9">
+        <y:PolyLineEdge>
+          <y:Path sx="-7.5" sy="15.0" tx="0.0" ty="-15.0">
+            <y:Point x="147.49761904761905" y="45.0"/>
+            <y:Point x="54.68690476190476" y="45.0"/>
+          </y:Path>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="standard"/>
+          <xsl:if test="@type='presOf'">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">presOf</y:EdgeLabel>
+          </xsl:if>
+          <xsl:if test="@sibTransId">
+            <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.701171875" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" visible="true" width="39.34375" x="-90.81071486700148" y="63.5869140625">trans <xsl:value-of select="@modelId"/></y:EdgeLabel>
+          </xsl:if>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </g:data>
+    </g:edge>
               
 </xsl:template>
-  
+
 </xsl:stylesheet>

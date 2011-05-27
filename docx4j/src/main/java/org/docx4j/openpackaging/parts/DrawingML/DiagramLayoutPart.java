@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
+import javax.xml.bind.util.JAXBResult;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
@@ -92,38 +93,25 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 						+"    <node id=\"3\" val=\"22\">"
 					      +"<node id=\"4\" val=\"221\" >"
 					      +"<node id=\"5\" val=\"2211\" />"
-					      +"<node id=\"6\" val=\"2212\" />"
+//					      +"<node id=\"6\" val=\"2212\" />"  
 					        +"</node>"
 					        +"</node>"
 					        +"</node>"
 						+"</node>")));
 
 		Source myList = new javax.xml.transform.dom.DOMSource(doc);
-		
-//		Source myList = new javax.xml.transform.stream.StreamSource(
-//				new java.io.StringReader("<node id=\"0\">"
-//							+"<node id=\"1\" val=\"1\" />"
-//							+"</node>"));
-
-//		Source myList = new javax.xml.transform.stream.StreamSource(
-//				new java.io.StringReader("<node id=\"0\">"
-//							+"<node id=\"1\" val=\"1\">"
-//							+"    <asst id=\"2\" val=\"21\"/>"
-//							+"</node>"
-//							+"</node>"));
-		
+			
+		// We need a source layout part
+		// Could get it from a docx, or a glox
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/SmartArt/root-only.docx"));
-		
-		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT);
-		
+						+ "/SmartArt/boss-slave.docx"));		
+		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT);		
 		if (r==null) {
 			System.out.println("No DLP!");
 			return;
 		}
-
 		DiagramLayoutPart thisPart = (DiagramLayoutPart)wordMLPackage.getMainDocumentPart().getRelationshipsPart().getPart(r);
 		
 		// Generate XSLT
@@ -187,8 +175,8 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 				xsltGenerateIds, null, layoutResult2);		
 		
 		// What did we generate
-//		tmpXslStr = layoutBAOS2.toString("UTF-8");
-//		System.out.println(tmpXslStr);
+		tmpXslStr = layoutBAOS2.toString("UTF-8");
+		System.out.println(tmpXslStr);
 		
 		// Finally, apply your LT2DD to create DiagramData part
 		System.out.println("Creating DiagramData part..");
@@ -205,26 +193,28 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 				return;
 			} 
 		}
+						
 		ByteArrayOutputStream layoutBAOS3 = new ByteArrayOutputStream();
-		Result layoutResult3 = new StreamResult(layoutBAOS3);
+//		Result result = new StreamResult(layoutBAOS3);
+		JAXBResult result = new JAXBResult(Context.jc );		
 		java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
-		
-
 		
 		settings.put("list", doc);
 		XmlUtils.transform( 
 				new javax.xml.transform.stream.StreamSource(
-						new java.io.StringReader(layoutBAOS2.toString("UTF-8"))), 
-						xsltLT2DD, settings, layoutResult3);		
+						new java.io.StringReader(tmpXslStr)), 
+						xsltLT2DD, settings, result);		
 		
 		// What did we generate
-		tmpXslStr = layoutBAOS3.toString("UTF-8");
-		System.out.println(tmpXslStr);
+//		tmpXslStr = layoutBAOS3.toString("UTF-8");
+//		System.out.println(tmpXslStr);
 		
 		// Finally, inject this into your DiagramData part
 		// .. first, we need to make the IDs Word friendly.
-		System.out.println("Done.");
+		Object ddJaxb = result.getResult();
+		DiagramDataPart.setFriendlyIds(XmlUtils.unwrap(ddJaxb));
 		
+		System.out.println(XmlUtils.marshaltoString(ddJaxb, false));
 		
 	}	
 }
