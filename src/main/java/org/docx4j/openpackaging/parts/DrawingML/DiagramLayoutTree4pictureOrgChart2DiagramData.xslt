@@ -99,7 +99,7 @@
 	          It is required, and magic in the sense that 
 	          it is not specified in the layout! -->
 	     <dgm:pt type="pres" modelId="parChTransID{../@id}-{@id}">
-	       <dgm:prSet presStyleCnt="1" presStyleIdx="{@presStyleIdx}" 
+	       <dgm:prSet presStyleCnt="{count(../node)}" presStyleIdx="{position()-1}" 
 	       				presStyleLbl="parChTrans1D{count(ancestor::*)}" presName="Name37" 
 	       				presAssocID="pT{@id}"/>
 	       				<!--  or Name35? -->
@@ -173,17 +173,44 @@
   </xsl:template>
 
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootText')]">
-    <dgm:pt type="pres" modelId="{@modelId}">
-      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" presStyleLbl="node{@depth}" presName="rootText1" presAssocID="{@presAssocID}">
-        <!--  @presStyleCnt=number of elements on this level
-              @presStyleIdx=index of this elemnet, starting at 0              
-              @styleLbl=node0,node2,node3,node4  -->
-        <dgm:presLayoutVars>
-          <dgm:chPref val="3"/>
-        </dgm:presLayoutVars>
-      </dgm:prSet>
-      <dgm:spPr/>
-    </dgm:pt>
+  
+  	<xsl:choose>
+  		<xsl:when test="@depth='1'"> <!--  special case: force node0 (match Word 2007) -->
+  		
+		    <dgm:pt type="pres" modelId="{@modelId}">
+		      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" 
+		      		presStyleLbl="node0" presName="rootText1" presAssocID="{@presAssocID}">
+		        <!--  @presStyleCnt=number of elements on this level
+		              @presStyleIdx=index of this elemnet, starting at 0              
+		              @styleLbl=node0,node2,node3,node4  -->
+		        <dgm:presLayoutVars>
+		          <dgm:chPref val="3"/>
+		        </dgm:presLayoutVars>
+		      </dgm:prSet>
+		      <dgm:spPr/>
+		    </dgm:pt>
+  		
+  		</xsl:when>
+  		<xsl:otherwise>
+  		
+		    <dgm:pt type="pres" modelId="{@modelId}">
+		      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" 
+		      		presStyleLbl="node{@depth}" presName="rootText" presAssocID="{@presAssocID}">
+		      		<!--  Note @presName="rootText" (ie no trailing 1). -->
+		      		
+		        <!--  @presStyleCnt=number of elements on this level
+		              @presStyleIdx=index of this elemnet, starting at 0              
+		              @styleLbl=node0,node2,node3,node4  -->
+		        <dgm:presLayoutVars>
+		          <dgm:chPref val="3"/>
+		        </dgm:presLayoutVars>
+		      </dgm:prSet>
+		      <dgm:spPr/>
+		    </dgm:pt>
+  		
+  		</xsl:otherwise>  	
+  	</xsl:choose>
+  
   </xsl:template>
   
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootPict')]">
@@ -203,13 +230,34 @@
   </xsl:template>
 
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootConnector')]">
-    <dgm:pt type="pres" modelId="{@modelId}">
-      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" presStyleLbl="node{@depth}" presName="{@name}" presAssocID="{@presAssocID}"/>
-      <!--  @presStyleCnt=number of elements on this level
-              @presStyleIdx=index of this elemnet, starting at 0              
-              @styleLbl=asst0,node2,node3,node4  -->
-      <dgm:spPr/>
-    </dgm:pt>
+    
+  	<xsl:choose>
+  		<xsl:when test="@depth='1'"> <!--  special case: incorrectly force cnt 1 (match Word 2007) -->
+  		
+		    <dgm:pt type="pres" modelId="{@modelId}">
+		      <dgm:prSet presStyleCnt="1" presStyleIdx="{@presStyleIdx}" 
+		      presStyleLbl="node{@depth}" presName="{@name}" presAssocID="{@presAssocID}"/>
+		      <!--  @presStyleCnt=number of elements on this level
+		              @presStyleIdx=index of this elemnet, starting at 0              
+		              @styleLbl=asst0,node2,node3,node4  -->
+		      <dgm:spPr/>
+		    </dgm:pt>
+  		
+  		</xsl:when>
+  		<xsl:otherwise>
+  		
+		    <dgm:pt type="pres" modelId="{@modelId}">
+		      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" 
+		      presStyleLbl="node{@depth}" presName="{@name}" presAssocID="{@presAssocID}"/>
+		      <!--  @presStyleCnt=number of elements on this level
+		              @presStyleIdx=index of this elemnet, starting at 0              
+		              @styleLbl=asst0,node2,node3,node4  -->
+		      <dgm:spPr/>
+		    </dgm:pt>
+  		
+  		</xsl:otherwise>  	
+  	</xsl:choose>
+    
   </xsl:template>
 
 
