@@ -23,6 +23,7 @@ package org.docx4j.openpackaging.parts.DrawingML;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
@@ -75,7 +76,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	 * easy-ish to understand.
 	 */
 	protected static void setFriendlyIds(Object jaxbElement) {
-		
+				
 		map = new HashMap<String, String>();
 		
 		// Go through once creating a map of IDs
@@ -108,7 +109,8 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 							
 							String from = pt.getModelId();
 							
-							// Everything goes invisible in Word 2007 if you map these,
+							// Everything goes invisible in Word 2007 if you map these
+							// to an int (rather than a guid),
 							// and images disappear (not shown as broken)
 							if (pt.getType()!=null
 									&& pt.getType().equals(STPtType.PRES)) {
@@ -117,6 +119,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 								return null;
 							}
 							
+//							String to = generateNiceGuid(index);
 							String to = "" + index;
 							index++;								
 							map.put(from, to);							
@@ -126,6 +129,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 							
 							CTCxn cxn = (CTCxn)o;
 							String from = cxn.getModelId();
+//							String to = generateNiceGuid(index);
 							String to = "" + index;
 							index++;								
 							
@@ -178,13 +182,36 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	
 	private static String generateNiceGuid(int index) {
 		
+		/* It seems that if there are more than about 100
+		 * items, Word won't open a docx with friendly ids
+		 * of the following form:
+		 * 
+			if (index<10) {
+				return "{00000000-0000-0000-0000-00000000000" + index + "}";
+			} else if (index<100) {
+				return "{00000000-0000-0000-0000-0000000000" + index + "}";			
+			} else {
+				return "{00000000-0000-0000-0000-000000000" + index + "}";			
+			}
+
+		 * Speculate that this is because M$ internally
+		 * uses some broken equality test.
+		 * 
+		 * The following works better ...
+		 */
+		
+
 		if (index<10) {
-			return "{00000000-0000-0000-0000-00000000000" + index + "}";
+			return "{0000000" + index + "-0000-0000-0000-000000000000}";
 		} else if (index<100) {
-			return "{00000000-0000-0000-0000-0000000000" + index + "}";			
+			return "{000000" +  index + "-0000-0000-0000-000000000000}";			
 		} else {
-			return "{00000000-0000-0000-0000-000000000" + index + "}";			
+			return "{00000" +   index + "-0000-0000-0000-000000000000}";			
 		}
+		
+		// This works as well...
+//		return "{" + UUID.randomUUID().toString().toUpperCase() + "}";
+		 
 		
 	}
 
@@ -212,25 +239,25 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 					@Override
 					public List<Object> apply(Object o) {
-						
+												
 						if (o instanceof CTPt) {
 							
 							CTPt pt = (CTPt)o;
 														
 							pt.setModelId( 
-									map.get(pt.getModelId() ));
+									mapGet(map, pt.getModelId() ));
 							
 							if (pt.getPrSet()!=null) {
 								CTElemPropSet pr = (CTElemPropSet)pt.getPrSet();
 								if (pr.getPresAssocID()!=null) {
 									pr.setPresAssocID(
-											map.get(pr.getPresAssocID() ));
+											mapGet(map, pr.getPresAssocID() ));
 								}
 							}
 							
 							if (!pt.getCxnId().equals("0")) {
 								pt.setCxnId( 
-										map.get(pt.getCxnId() ));
+										mapGet(map, pt.getCxnId() ));
 							}							
 						}
 
@@ -238,19 +265,19 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 							
 							CTCxn cxn = (CTCxn)o;
 							if (cxn.getModelId()!=null) {
-								cxn.setModelId(map.get(cxn.getModelId()));
+								cxn.setModelId(mapGet(map,cxn.getModelId()));
 							}
 							
-							cxn.setSrcId(map.get(cxn.getSrcId()));
+							cxn.setSrcId(mapGet(map, cxn.getSrcId()));
 							cxn.setDestId( mapGet(map,cxn.getDestId() ));
 
 							if (!cxn.getSibTransId().equals("0")) {
 								cxn.setSibTransId( 
-										map.get(cxn.getSibTransId() ));
+										mapGet(map, cxn.getSibTransId() ));
 							}
 							if (!cxn.getParTransId().equals("0")) {
 								cxn.setParTransId( 
-										map.get(cxn.getParTransId() ));
+										mapGet(map, cxn.getParTransId() ));
 							}
 //							if (cxn.getPresId()!=null) {
 //								cxn.setPresId( 
@@ -308,7 +335,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/SmartArt/root-only.docx"));
+						+ "/SmartArt/complex-nopic.docx"));
 		
 		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DATA);
 		
@@ -336,7 +363,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(System.getProperty("user.dir")
-				+ "/SmartArt/root-only-OUT.docx");
+				+ "/SmartArt/complex-nopic-OUT.docx");
 		
 	}	
 		
