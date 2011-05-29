@@ -99,7 +99,7 @@
 	          It is required, and magic in the sense that 
 	          it is not specified in the layout! -->
 	     <dgm:pt type="pres" modelId="parChTransID{../@id}-{@id}">
-	       <dgm:prSet presStyleCnt="{count(../node)}" presStyleIdx="{position()-1}" 
+	       <dgm:prSet presStyleCnt="{count(../node)}" presStyleIdx="{count(preceding-sibling::node)}" 
 	       				presStyleLbl="parChTrans1D{count(ancestor::*)}" presName="Name37" 
 	       				presAssocID="pT{@id}"/>
 	       				<!--  or Name35? -->
@@ -260,6 +260,14 @@
     
   </xsl:template>
 
+<!--  *********************************************************************** -->
+<!--  ******************  dgm:cxnLst entries  ******************************* -->
+<!--  *********************************************************************** -->
+
+<!--  Note: we make a little bit of effort to have @srcOrd match Word 2007,
+      but not much, since (a) these values don't seem to matter at all,
+      and (b) in some cases Word emits several cxn elements with the
+      same value (for a given @srcId). -->
 
   <xsl:template match="node[@id='0']"  mode="list2cxn">
     <xsl:apply-templates mode="list2cxn"/>
@@ -269,7 +277,7 @@
   </xsl:template>
 
   <xsl:template match="node[not(@id='0')]"  mode="list2cxn">
-    <dgm:cxn sibTransId="sT{@id}" parTransId="pT{@id}" destOrd="0" srcOrd="0" destId="{@id}" srcId="{../@id}" modelId="cxn{../@id}-{@id}"/>
+    <dgm:cxn sibTransId="sT{@id}" parTransId="pT{@id}" destOrd="0" srcOrd="{count(preceding-sibling::node)}" destId="{@id}" srcId="{../@id}" modelId="cxn{../@id}-{@id}"/>
     <xsl:if test="not(@id='1')">
 	    <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
 	                 srcId="pT{@id}" destId="parChTransID{../@id}-{@id}"
@@ -289,7 +297,7 @@
         <!-- connection from real root -->
         <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
                  srcId="0" destId="{@modelId}"
-                 destOrd="0" srcOrd="1"
+                 destOrd="0" srcOrd="0"
                  modelId="{generate-id()}"
                  type="presOf" />
       </xsl:when>
@@ -297,7 +305,8 @@
         <!-- cxn from parent hierRoot-->
         <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart" 
                  srcId="{../@modelId}" destId="{@modelId}" 
-                 destOrd="0" srcOrd="1"  
+                 destOrd="0" 
+                 srcOrd="{count(preceding-sibling::dgm:layoutNode)}"  
                  modelId="{generate-id()}"
                  type="presParOf" />
                  
@@ -322,9 +331,12 @@
     <!-- cxn from parent hierChild-->
     <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
              srcId="{../@modelId}" destId="{@modelId}" 
-             destOrd="0" srcOrd="1"
+             destOrd="0" 
+             srcOrd="{ (count(preceding-sibling::dgm:layoutNode)*2)+1 }"
                  modelId="{generate-id()}a"
              type="presParOf" />
+             <!--  srcOrd="{ (count(preceding-sibling::dgm:layoutNode)*2)+1 }"  -->
+             <!--  srcOrd="{ ((position()-1)*2)+1 }"  -->
              
         <!--  cxn from *hierChild* to.
         	  We do it here rather than on the parent child, 
@@ -333,11 +345,13 @@
 	        
 		    <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
 		                 srcId="{../@modelId}" destId="parChTransID{../../@presAssocID}-{@presAssocID}"
-		                 destOrd="0" srcOrd="0"
+		                 destOrd="0" 
+             srcOrd="{ (count(preceding-sibling::dgm:layoutNode)*2) }"
 		                 modelId="{generate-id()}b"
 		                 type="presParOf" />
 		</xsl:if>
-             
+             <!--  srcOrd="{ (count(preceding-sibling::dgm:layoutNode)*2) }" -->
+             <!--  srcOrd="{ (position()-1)*2 }" -->
              
     <xsl:apply-templates mode="cxn"/>
   </xsl:template>
@@ -346,7 +360,7 @@
     <!-- cxn from parent hierRoot-->
     <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
              srcId="{../@modelId}" destId="{@modelId}"
-             destOrd="0" srcOrd="1"
+             destOrd="0" srcOrd="0"
                  modelId="{generate-id()}"
              type="presParOf" />
     <xsl:apply-templates mode="cxn"/>
@@ -356,7 +370,7 @@
     <!-- cxn from parent rootComposite-->
     <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
              srcId="{../@modelId}" destId="{@modelId}"
-             destOrd="0" srcOrd="1"
+             destOrd="0" srcOrd="0"
                  modelId="{generate-id()}a"
              type="presParOf" /> 
     
@@ -384,7 +398,7 @@
     <!-- cxn from parent rootComposite-->
     <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
              srcId="{../@modelId}" destId="{@modelId}"
-             destOrd="0" srcOrd="1"
+             destOrd="0" srcOrd="2"
                  modelId="{generate-id()}a"
              type="presParOf" />
 
