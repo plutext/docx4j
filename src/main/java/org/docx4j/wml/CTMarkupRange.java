@@ -50,6 +50,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_MarkupRange")
+@XmlRootElement(name = "bookmarkEnd")
 public class CTMarkupRange
     extends CTMarkup
     implements Child
