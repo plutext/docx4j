@@ -111,6 +111,6 @@
 	<xsd:include schemaLocation="dml-text.xsd" />
 	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" schemaLocation="dml-wordprocessingDrawing.xsd" />
 		
-		
+	<xsd:import namespace="http://opendope.org/SmartArt/DataHierarchy" schemaLocation="../OpenDoPE/SmartArtDataHierarchy.xsd" />		
 		
 </xsd:schema>
