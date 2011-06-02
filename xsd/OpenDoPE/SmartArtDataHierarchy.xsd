@@ -104,8 +104,8 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
       <xsd:sequence>
         <xsd:element ref="dh:node" minOccurs="0"  maxOccurs="unbounded" />
       </xsd:sequence>
-      <xsd:attribute name="id" type="xsd:unsignedByte" use="required" />
-      <xsd:attribute name="val" type="xsd:unsignedByte" use="optional" />
+      <xsd:attribute name="id" type="xsd:string" use="required" />
+      <xsd:attribute name="val" type="xsd:string" use="optional" />
       <xsd:attribute name="valRef" type="xsd:string" use="optional" />
       <xsd:attribute name="imageRef" type="xsd:string" use="optional" />
       <xsd:attribute name="sibTransContentRef" type="xsd:string" use="optional" />

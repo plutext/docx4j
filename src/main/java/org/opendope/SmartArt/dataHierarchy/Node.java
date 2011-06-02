@@ -7,7 +7,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -23,8 +22,8 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}node" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedByte" />
- *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}unsignedByte" />
+ *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="val" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="valRef" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="imageRef" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="sibTransContentRef" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -44,11 +43,9 @@ public class Node {
 
     protected List<Node> node;
     @XmlAttribute(required = true)
-    @XmlSchemaType(name = "unsignedByte")
-    protected short id;
+    protected String id;
     @XmlAttribute
-    @XmlSchemaType(name = "unsignedByte")
-    protected Short val;
+    protected String val;
     @XmlAttribute
     protected String valRef;
     @XmlAttribute
@@ -88,16 +85,24 @@ public class Node {
     /**
      * Gets the value of the id property.
      * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public short getId() {
+    public String getId() {
         return id;
     }
 
     /**
      * Sets the value of the id property.
      * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setId(short value) {
+    public void setId(String value) {
         this.id = value;
     }
 
@@ -106,10 +111,10 @@ public class Node {
      * 
      * @return
      *     possible object is
-     *     {@link Short }
+     *     {@link String }
      *     
      */
-    public Short getVal() {
+    public String getVal() {
         return val;
     }
 
@@ -118,10 +123,10 @@ public class Node {
      * 
      * @param value
      *     allowed object is
-     *     {@link Short }
+     *     {@link String }
      *     
      */
-    public void setVal(Short value) {
+    public void setVal(String value) {
         this.val = value;
     }
 

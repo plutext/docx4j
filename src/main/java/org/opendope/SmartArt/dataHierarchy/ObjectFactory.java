@@ -30,11 +30,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SmartArtDataHierarchy.Images }
+     * Create an instance of {@link SmartArtDataHierarchy }
      * 
      */
-    public SmartArtDataHierarchy.Images createSmartArtDataHierarchyImages() {
-        return new SmartArtDataHierarchy.Images();
+    public SmartArtDataHierarchy createSmartArtDataHierarchy() {
+        return new SmartArtDataHierarchy();
     }
 
     /**
@@ -46,19 +46,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SmartArtDataHierarchy }
+     * Create an instance of {@link SmartArtDataHierarchy.Images }
      * 
      */
-    public SmartArtDataHierarchy createSmartArtDataHierarchy() {
-        return new SmartArtDataHierarchy();
+    public SmartArtDataHierarchy.Images createSmartArtDataHierarchyImages() {
+        return new SmartArtDataHierarchy.Images();
     }
 
     /**
-     * Create an instance of {@link SmartArtDataHierarchy.Texts }
+     * Create an instance of {@link Node }
      * 
      */
-    public SmartArtDataHierarchy.Texts createSmartArtDataHierarchyTexts() {
-        return new SmartArtDataHierarchy.Texts();
+    public Node createNode() {
+        return new Node();
     }
 
     /**
@@ -70,11 +70,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Node }
+     * Create an instance of {@link SmartArtDataHierarchy.Texts }
      * 
      */
-    public Node createNode() {
-        return new Node();
+    public SmartArtDataHierarchy.Texts createSmartArtDataHierarchyTexts() {
+        return new SmartArtDataHierarchy.Texts();
     }
 
 }
