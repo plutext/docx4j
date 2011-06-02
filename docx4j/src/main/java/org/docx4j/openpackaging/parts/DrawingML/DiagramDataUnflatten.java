@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTTextBody;
 import org.docx4j.dml.diagram.CTCxn;
 import org.docx4j.dml.diagram.CTCxnList;
@@ -14,9 +15,13 @@ import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTPt;
 import org.docx4j.dml.diagram.CTPtList;
 import org.docx4j.dml.diagram.STPtType;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.relationships.Relationship;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Images;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts;
+import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Images.Image;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts.IdentifiedText;
 
 /**
@@ -40,11 +45,13 @@ public class DiagramDataUnflatten {
 	 * 
 	 */
 	
-	public DiagramDataUnflatten(CTDataModel dataModel) {
+	public DiagramDataUnflatten(DiagramDataPart diagramDataPart) {
 		
 		// Source structures
-		ptList = dataModel.getPtLst();		
-		cxnList = dataModel.getCxnLst();
+		this.diagramDataPart = diagramDataPart;
+		
+		ptList = diagramDataPart.getJaxbElement().getPtLst();		
+		cxnList = diagramDataPart.getJaxbElement().getCxnLst();
 		
 		// Target structures
 		factory = new org.opendope.SmartArt.dataHierarchy.ObjectFactory();		
@@ -54,6 +61,7 @@ public class DiagramDataUnflatten {
 	}
 	
 	// Source structures
+	private DiagramDataPart diagramDataPart;
 	private CTPtList ptList;
 	private CTCxnList cxnList;	
 
@@ -106,7 +114,44 @@ public class DiagramDataUnflatten {
 			}
 			
 			// attach its image
-			// TODO
+			CTPt imgPt = getAssociatedPres(modelId, "rootPict");
+			if (imgPt!=null 
+					&& imgPt.getSpPr()!=null 
+					&& imgPt.getSpPr().getBlipFill()!=null 
+					&& imgPt.getSpPr().getBlipFill().getBlip()!=null) {
+				
+				// Get the relId
+				CTBlip blip = imgPt.getSpPr().getBlipFill().getBlip();				
+				if (blip.getEmbed()!=null) {
+					
+					String relId = blip.getEmbed();
+					//Relationship r = diagramDataPart.getRelationshipsPart().getRelationshipByID(relId);
+					BinaryPartAbstractImage bpai = (BinaryPartAbstractImage)diagramDataPart.getRelationshipsPart().getPart(relId);
+
+					// Add it
+					Image image = factory.createSmartArtDataHierarchyImagesImage();
+					image.setContentType(bpai.getContentType());
+					image.setId(imgPt.getModelId());
+					
+		            java.nio.ByteBuffer bb = bpai.getBuffer();
+		            byte[] bytes = null;
+		            bytes = new byte[bb.limit()];
+		            bb.get(bytes);	        
+					
+					image.setValue(bytes);
+					
+					images.getImage().add(image);
+					
+					thisNode.setImageRef(imgPt.getModelId());
+					
+				} else if  (blip.getLink()!=null) {
+					// TODO
+					// -check a linked image actually works in SmartArt.
+					// -our export format could be extended to support linked images
+					// -and/or we could fetch the image and embed it
+					
+				}
+			}
 			
 			// attach its sibTrans text (if applicable)
 			CTPt sibTrans = getPoint(thisNode.getSibTransContentRef() );
