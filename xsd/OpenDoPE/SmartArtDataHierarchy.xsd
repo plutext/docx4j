@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" 
+xmlns:dh="http://opendope.org/SmartArt/DataHierarchy" 
+xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+attributeFormDefault="unqualified" elementFormDefault="qualified" 
+targetNamespace="http://opendope.org/SmartArt/DataHierarchy" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/diagram" 
+  schemaLocation="../dml/dml-diagramDataModel.xsd"/>
+  
+<!--        
+       Don't run xjc on this; run it on dml__ROOT.xsd instead:
+      
+       /jdk1.6.0_22/bin/xjc  dml__ROOT.xsd -d ~/workspace-jee/docx4j/xsd/dml/tmp -no-header -target 2.0
+ 
+ -->  
+
+<!--   
+	<xsd:import schemaLocation="../dml/dml-text.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+     -->
+
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.opendope.SmartArt.dataHierarchy"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+     
+  <xsd:element name="SmartArtDataHierarchy">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="dh:node" />
+        <xsd:element name="images">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" name="image">
+                <xsd:complexType>
+                  <xsd:simpleContent>
+                    <xsd:extension base="xsd:base64Binary">
+                      <xsd:attribute name="id" type="xsd:string" use="required" />
+                      <xsd:attribute name="contentType">
+                        <xsd:simpleType>
+                                <xsd:restriction base="xsd:string">
+                                        <xsd:pattern value="text/xml" />
+                                        <xsd:pattern value="application/xml" />
+                                        <xsd:pattern value="application/.+\+xml" />
+                                        <xsd:pattern value=".+" />
+                                </xsd:restriction>
+                        </xsd:simpleType>
+                	 </xsd:attribute>
+                   </xsd:extension>
+                  </xsd:simpleContent>
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="texts">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" name="identifiedText">
+                <xsd:complexType>
+                  <xsd:sequence>
+                    <xsd:element ref="dgm:t"  />
+                  </xsd:sequence>
+                  <xsd:attribute name="id" type="xsd:string" use="required" />
+                </xsd:complexType>
+              </xsd:element>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:key name="imagekey">
+    	<xsd:selector xpath="dh:images/dh:image" />
+    	<xsd:field xpath="@id" />
+    </xsd:key>
+    <xsd:keyref name="imagekeyref" refer="dh:imagekey">
+    	<xsd:selector xpath=".//dh:node" />
+    	<xsd:field xpath="@imageRef" />
+    </xsd:keyref>
+    <xsd:key name="textkey">
+    	<xsd:selector xpath="dh:texts/dh:identifiedText" />
+    	<xsd:field xpath="@id" />
+    </xsd:key>
+    <xsd:keyref name="textkeyref" refer="dh:textkey">
+    	<xsd:selector xpath=".//dh:node" />
+    	<xsd:field xpath="@imageRef|@sibTransContentRef" />
+    </xsd:keyref>
+    
+  </xsd:element>
+
+  <xsd:element name="node">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="dh:node" />
+      </xsd:sequence>
+      <xsd:attribute name="id" type="xsd:unsignedByte" use="required" />
+      <xsd:attribute name="val" type="xsd:unsignedByte" use="optional" />
+      <xsd:attribute name="valRef" type="xsd:string" use="optional" />
+      <xsd:attribute name="imageRef" type="xsd:string" use="optional" />
+      <xsd:attribute name="sibTransContentRef" type="xsd:string" use="optional" />
+    </xsd:complexType>
+  </xsd:element>
+
+</xsd:schema>

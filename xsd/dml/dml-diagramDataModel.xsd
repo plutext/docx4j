@@ -42,6 +42,16 @@
       </xsd:enumeration>
     </xsd:restriction>
   </xsd:simpleType>
+  
+  <!--  2011 06 02 extracted this element, so it can be
+        referenced from OpenDoPE/SmartArtDataHierarchy -->
+      <xsd:element name="t" type="a:CT_TextBody">
+        <xsd:annotation>
+          <xsd:documentation>Text Body</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+  
+  
   <xsd:complexType name="CT_Pt">
     <xsd:sequence>
       <xsd:element name="prSet" type="CT_ElemPropSet" minOccurs="0" maxOccurs="1">
@@ -54,11 +64,7 @@
           <xsd:documentation>Shape Properties</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="t" type="a:CT_TextBody" minOccurs="0" maxOccurs="1">
-        <xsd:annotation>
-          <xsd:documentation>Text Body</xsd:documentation>
-        </xsd:annotation>
-      </xsd:element>
+      <xsd:element ref="t" minOccurs="0" maxOccurs="1" />
       <xsd:element name="extLst" type="a:CT_OfficeArtExtensionList" minOccurs="0" maxOccurs="1" />
     </xsd:sequence>
     <xsd:attribute name="modelId" type="ST_ModelId" use="required">
