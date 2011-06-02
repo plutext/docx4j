@@ -83,15 +83,14 @@ public class DiagramDataUnflatten {
 
 	private void processChildrenOf(CTPt pt, org.opendope.SmartArt.dataHierarchy.Node node) {
 				
-		List<String> childModelIds = findChildModelIds(pt);
+		List<org.opendope.SmartArt.dataHierarchy.Node> childModelIds = createNodesForChildren(pt);
 		
-		for (String modelId : childModelIds) {
+		for (org.opendope.SmartArt.dataHierarchy.Node thisNode : childModelIds) {
 			
-			// Create a corresponding node
-			org.opendope.SmartArt.dataHierarchy.Node thisNode = factory.createNode();
-			thisNode.setId(modelId);
 			
 			node.getNode().add(thisNode);
+			
+			String modelId = thisNode.getId();
 			
 			// Find the pt
 			CTPt thisPoint = getPoint(modelId);
@@ -110,6 +109,22 @@ public class DiagramDataUnflatten {
 			// TODO
 			
 			// attach its sibTrans text (if applicable)
+			CTPt sibTrans = getPoint(thisNode.getSibTransContentRef() );
+			// Don't clutter up our export, if it doesn't contain content
+			if (sibTrans.getT()!=null 
+					&& sibTrans.getT().getP() !=null 
+					&& sibTrans.getT().getP().get(0) !=null 
+					&& sibTrans.getT().getP().get(0).getEGTextRun() !=null 
+					&& !sibTrans.getT().getP().get(0).getEGTextRun().isEmpty() ) {
+				
+				IdentifiedText wrapper = factory.createSmartArtDataHierarchyTextsIdentifiedText();
+				wrapper.setId(sibTrans.getModelId()); // = @sibTransContentRef
+				wrapper.setT( sibTrans.getT() );
+				texts.getIdentifiedText().add(wrapper);
+			} else {
+				// remove the reference
+				thisNode.setSibTransContentRef(null);
+			}				
 			
 			// recurse
 			processChildrenOf(thisPoint, thisNode);
@@ -142,9 +157,10 @@ public class DiagramDataUnflatten {
 		return null;
 	}
 	
-	public List<String> findChildModelIds(CTPt parent) {
+	public List<org.opendope.SmartArt.dataHierarchy.Node> createNodesForChildren(CTPt parent) {
 		
-		List<String> childModelIds = new ArrayList<String>();
+		List<org.opendope.SmartArt.dataHierarchy.Node> childNodeList 
+			= new ArrayList<org.opendope.SmartArt.dataHierarchy.Node>();
 		
 		String parentId = parent.getModelId();
 		
@@ -152,14 +168,17 @@ public class DiagramDataUnflatten {
 			
 			if (cxn.getSrcId().equals(parentId) && !cxn.getSibTransId().equals("0") ) {
 				
-				// TODO:later, capture sibTransId
-				
-				//childModelIds.add(cxn.getSibTransId());
-				childModelIds.add(cxn.getDestId() );
+				// Create a corresponding node
+				org.opendope.SmartArt.dataHierarchy.Node thisNode = factory.createNode();
+				thisNode.setId(cxn.getDestId());
+				thisNode.setSibTransContentRef(cxn.getSibTransId()); // we'll manipulate this more later
+
+				childNodeList.add(thisNode);
+				//childModelIds.add(cxn.getDestId() );
 			}
 		}
 		
-		return childModelIds;
+		return childNodeList;
 	}
 	
 	
