@@ -200,6 +200,10 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		}  
 		if (namespaceUri.equals("http://opendope.org/questions")) {
     		return "odq";
+		}
+		
+		if (namespaceUri.equals("http://opendope.org/SmartArt/DataHierarchy")) {
+    		return "odgm";
 		}  
 		
 //		if (namespaceUri.equals("urn:schemas-microsoft-com:office:excel")) {
