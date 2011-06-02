@@ -6,6 +6,8 @@ package org.docx4j.openpackaging.parts.DrawingML;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.log4j.Logger;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTTextBody;
@@ -58,7 +60,14 @@ public class DiagramDataUnflatten {
 		texts = factory.createSmartArtDataHierarchyTexts();
 		images = factory.createSmartArtDataHierarchyImages();
 		
+		textFormats = new ArrayList<JAXBElement<CTTextBody>>();
+		
+		dmlFactory = new org.docx4j.dml.ObjectFactory();
+		diagramFactory = new org.docx4j.dml.diagram.ObjectFactory();
 	}
+	
+	private org.docx4j.dml.ObjectFactory dmlFactory;
+	private org.docx4j.dml.diagram.ObjectFactory diagramFactory;
 	
 	// Source structures
 	private DiagramDataPart diagramDataPart;
@@ -70,12 +79,18 @@ public class DiagramDataUnflatten {
 	private Texts texts;
 	private Images images;
 	
+	private List<JAXBElement<CTTextBody>> textFormats;
+	public List<JAXBElement<CTTextBody>> getTextFormats() {
+		return textFormats;
+	}
+	
 	public SmartArtDataHierarchy convert() {
 		
 		CTPt docPt = ptList.getPt().get(0);
 		
 		org.opendope.SmartArt.dataHierarchy.Node docNode = factory.createNode();
 		docNode.setId(docPt.getModelId());
+		docNode.setDepth(0);
 		
 		processChildrenOf(docPt, docNode);
 		
@@ -98,6 +113,8 @@ public class DiagramDataUnflatten {
 			
 			node.getNode().add(thisNode);
 			
+			thisNode.setDepth(node.getDepth()+1);
+			
 			String modelId = thisNode.getId();
 			
 			// Find the pt
@@ -111,6 +128,21 @@ public class DiagramDataUnflatten {
 				wrapper.setT(textBody);
 				texts.getIdentifiedText().add(wrapper);
 				thisNode.setValRef(modelId);
+			}
+			
+			if (textFormats.size()<thisNode.getDepth() ) {
+				// we don't have a template for this level yet,
+				// so add this one as the template for this level
+				if (textBody==null) {
+					// Add an empty one
+					textFormats.add(
+							diagramFactory.createT(
+									dmlFactory.createCTTextBody()));
+				} else {
+					textFormats.add(
+							diagramFactory.createT(textBody));
+				}
+				
 			}
 			
 			// attach its image

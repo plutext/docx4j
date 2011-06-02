@@ -25,10 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.Callback;
+import org.docx4j.dml.CTTextBody;
 import org.docx4j.dml.diagram.CTCxn;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTElemPropSet;
@@ -335,7 +338,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/SmartArt/complex-nopic.docx"));
+						+ "/SmartArt/SmartArtDataHierarchy.docx"));
 		
 		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DATA);
 		
@@ -350,6 +353,18 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		System.out.println( XmlUtils.marshaltoString(thisPart.getJaxbElement(), true, true));
 
+		// What does it look like in our format?
+		DiagramDataUnflatten diagramDataUnflatten = new DiagramDataUnflatten(thisPart);
+		System.out.println( XmlUtils.marshaltoString(diagramDataUnflatten.convert(), true, true));		
+
+		// Check our format templates
+		List<JAXBElement<CTTextBody>> textFormats = diagramDataUnflatten.getTextFormats();
+		System.out.println("Template list =============== ");
+		for (JAXBElement<CTTextBody> tb : textFormats) {
+			System.out.println( XmlUtils.marshaltoString(tb, true, true));				
+		}
+		System.out.println("============================= ");
+		
 		// Now fix the IDs in the drawing part to match
 		// TODO: just drop this part altogether; we don't need it
 		Relationship r2 = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DRAWING);		
@@ -363,7 +378,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(System.getProperty("user.dir")
-				+ "/SmartArt/complex-nopic-OUT.docx");
+				+ "/SmartArt/SmartArtDataHierarchy-OUT.docx");
 		
 	}	
 		
