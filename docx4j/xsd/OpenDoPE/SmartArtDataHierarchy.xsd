@@ -102,7 +102,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   <xsd:element name="node">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:element ref="dh:node" />
+        <xsd:element ref="dh:node" minOccurs="0"  maxOccurs="unbounded" />
       </xsd:sequence>
       <xsd:attribute name="id" type="xsd:unsignedByte" use="required" />
       <xsd:attribute name="val" type="xsd:unsignedByte" use="optional" />
