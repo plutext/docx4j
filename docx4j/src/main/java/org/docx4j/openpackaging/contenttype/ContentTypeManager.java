@@ -782,8 +782,9 @@ public class ContentTypeManager  {
 			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
 			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null) {
-			// "potm", "potx", "ppam", "ppsm", "ppsx", "pptm" ?
+		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null
+				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_TEMPLATE) != null
+				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_SLIDESHOW) != null) {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
 			return p;

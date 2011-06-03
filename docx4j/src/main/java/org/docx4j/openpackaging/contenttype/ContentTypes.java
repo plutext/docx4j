@@ -176,8 +176,14 @@ public class ContentTypes {
 	
     // /ppt/presentation.xml
 	public final static String PRESENTATIONML_MAIN = 
-		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";
-
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml";	
+	// .potx | 
+	public final static String PRESENTATIONML_TEMPLATE = 
+		"application/vnd.openxmlformats-officedocument.presentationml.template.main+xml";
+	// .ppsx | 
+	public final static String PRESENTATIONML_SLIDESHOW = 
+		"application/vnd.openxmlformats-officedocument.presentationml.slideshow.main+xml";
+	
 	// /ppt/slides/slide1.xml"
 	public final static String PRESENTATIONML_SLIDE = 
 		"application/vnd.openxmlformats-officedocument.presentationml.slide+xml";
