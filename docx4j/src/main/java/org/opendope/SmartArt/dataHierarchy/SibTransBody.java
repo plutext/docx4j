@@ -34,8 +34,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "p"
 })
-@XmlRootElement(name = "textBody")
-public class TextBody {
+@XmlRootElement(name = "sibTransBody")
+public class SibTransBody {
 
     protected List<String> p;
     @XmlAttribute
