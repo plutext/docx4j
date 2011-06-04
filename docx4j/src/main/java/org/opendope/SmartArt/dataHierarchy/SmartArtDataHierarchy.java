@@ -2,7 +2,6 @@
 package org.opendope.SmartArt.dataHierarchy;
 
 import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -23,8 +22,8 @@ import org.docx4j.dml.CTTextBody;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}node"/>
- *         &lt;element name="images">
+ *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}list"/>
+ *         &lt;element name="images" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -44,6 +43,10 @@ import org.docx4j.dml.CTTextBody;
  *                               &lt;/restriction>
  *                             &lt;/simpleType>
  *                           &lt;/attribute>
+ *                           &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *                           &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *                           &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *                           &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" />
  *                         &lt;/extension>
  *                       &lt;/simpleContent>
  *                     &lt;/complexType>
@@ -53,7 +56,7 @@ import org.docx4j.dml.CTTextBody;
  *             &lt;/complexContent>
  *           &lt;/complexType>
  *         &lt;/element>
- *         &lt;element name="texts">
+ *         &lt;element name="texts" minOccurs="0">
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
@@ -76,6 +79,7 @@ import org.docx4j.dml.CTTextBody;
  *           &lt;/complexType>
  *         &lt;/element>
  *       &lt;/sequence>
+ *       &lt;attribute name="loTypeId" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -85,7 +89,7 @@ import org.docx4j.dml.CTTextBody;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "node",
+    "list",
     "images",
     "texts"
 })
@@ -93,34 +97,34 @@ import org.docx4j.dml.CTTextBody;
 public class SmartArtDataHierarchy {
 
     @XmlElement(required = true)
-    protected Node node;
-    @XmlElement(required = true)
+    protected org.opendope.SmartArt.dataHierarchy.List list;
     protected SmartArtDataHierarchy.Images images;
-    @XmlElement(required = true)
     protected SmartArtDataHierarchy.Texts texts;
+    @XmlAttribute(required = true)
+    protected String loTypeId;
 
     /**
-     * Gets the value of the node property.
+     * Gets the value of the list property.
      * 
      * @return
      *     possible object is
-     *     {@link Node }
+     *     {@link org.opendope.SmartArt.dataHierarchy.List }
      *     
      */
-    public Node getNode() {
-        return node;
+    public org.opendope.SmartArt.dataHierarchy.List getList() {
+        return list;
     }
 
     /**
-     * Sets the value of the node property.
+     * Sets the value of the list property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Node }
+     *     {@link org.opendope.SmartArt.dataHierarchy.List }
      *     
      */
-    public void setNode(Node value) {
-        this.node = value;
+    public void setList(org.opendope.SmartArt.dataHierarchy.List value) {
+        this.list = value;
     }
 
     /**
@@ -171,6 +175,30 @@ public class SmartArtDataHierarchy {
         this.texts = value;
     }
 
+    /**
+     * Gets the value of the loTypeId property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLoTypeId() {
+        return loTypeId;
+    }
+
+    /**
+     * Sets the value of the loTypeId property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLoTypeId(String value) {
+        this.loTypeId = value;
+    }
+
 
     /**
      * <p>Java class for anonymous complex type.
@@ -197,6 +225,10 @@ public class SmartArtDataHierarchy {
      *                     &lt;/restriction>
      *                   &lt;/simpleType>
      *                 &lt;/attribute>
+     *                 &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" />
+     *                 &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" />
+     *                 &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" />
+     *                 &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" />
      *               &lt;/extension>
      *             &lt;/simpleContent>
      *           &lt;/complexType>
@@ -216,7 +248,7 @@ public class SmartArtDataHierarchy {
     public static class Images {
 
         @XmlElement(required = true)
-        protected List<SmartArtDataHierarchy.Images.Image> image;
+        protected java.util.List<SmartArtDataHierarchy.Images.Image> image;
 
         /**
          * Gets the value of the image property.
@@ -240,7 +272,7 @@ public class SmartArtDataHierarchy {
          * 
          * 
          */
-        public List<SmartArtDataHierarchy.Images.Image> getImage() {
+        public java.util.List<SmartArtDataHierarchy.Images.Image> getImage() {
             if (image == null) {
                 image = new ArrayList<SmartArtDataHierarchy.Images.Image>();
             }
@@ -268,6 +300,10 @@ public class SmartArtDataHierarchy {
          *           &lt;/restriction>
          *         &lt;/simpleType>
          *       &lt;/attribute>
+         *       &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" />
+         *       &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" />
+         *       &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" />
+         *       &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" />
          *     &lt;/extension>
          *   &lt;/simpleContent>
          * &lt;/complexType>
@@ -287,6 +323,14 @@ public class SmartArtDataHierarchy {
             protected String id;
             @XmlAttribute
             protected String contentType;
+            @XmlAttribute
+            protected Integer custLinFactNeighborX;
+            @XmlAttribute
+            protected Integer custLinFactNeighborY;
+            @XmlAttribute
+            protected Integer custScaleY;
+            @XmlAttribute
+            protected Integer custScaleX;
 
             /**
              * Gets the value of the value property.
@@ -358,6 +402,102 @@ public class SmartArtDataHierarchy {
                 this.contentType = value;
             }
 
+            /**
+             * Gets the value of the custLinFactNeighborX property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Integer }
+             *     
+             */
+            public Integer getCustLinFactNeighborX() {
+                return custLinFactNeighborX;
+            }
+
+            /**
+             * Sets the value of the custLinFactNeighborX property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Integer }
+             *     
+             */
+            public void setCustLinFactNeighborX(Integer value) {
+                this.custLinFactNeighborX = value;
+            }
+
+            /**
+             * Gets the value of the custLinFactNeighborY property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Integer }
+             *     
+             */
+            public Integer getCustLinFactNeighborY() {
+                return custLinFactNeighborY;
+            }
+
+            /**
+             * Sets the value of the custLinFactNeighborY property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Integer }
+             *     
+             */
+            public void setCustLinFactNeighborY(Integer value) {
+                this.custLinFactNeighborY = value;
+            }
+
+            /**
+             * Gets the value of the custScaleY property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Integer }
+             *     
+             */
+            public Integer getCustScaleY() {
+                return custScaleY;
+            }
+
+            /**
+             * Sets the value of the custScaleY property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Integer }
+             *     
+             */
+            public void setCustScaleY(Integer value) {
+                this.custScaleY = value;
+            }
+
+            /**
+             * Gets the value of the custScaleX property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link Integer }
+             *     
+             */
+            public Integer getCustScaleX() {
+                return custScaleX;
+            }
+
+            /**
+             * Sets the value of the custScaleX property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link Integer }
+             *     
+             */
+            public void setCustScaleX(Integer value) {
+                this.custScaleX = value;
+            }
+
         }
 
     }
@@ -400,7 +540,7 @@ public class SmartArtDataHierarchy {
     public static class Texts {
 
         @XmlElement(required = true)
-        protected List<SmartArtDataHierarchy.Texts.IdentifiedText> identifiedText;
+        protected java.util.List<SmartArtDataHierarchy.Texts.IdentifiedText> identifiedText;
 
         /**
          * Gets the value of the identifiedText property.
@@ -424,7 +564,7 @@ public class SmartArtDataHierarchy {
          * 
          * 
          */
-        public List<SmartArtDataHierarchy.Texts.IdentifiedText> getIdentifiedText() {
+        public java.util.List<SmartArtDataHierarchy.Texts.IdentifiedText> getIdentifiedText() {
             if (identifiedText == null) {
                 identifiedText = new ArrayList<SmartArtDataHierarchy.Texts.IdentifiedText>();
             }
