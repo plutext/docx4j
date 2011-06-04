@@ -1,7 +1,10 @@
 
 package org.opendope.SmartArt.dataHierarchy;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
+import javax.xml.namespace.QName;
 
 
 /**
@@ -21,44 +24,13 @@ import javax.xml.bind.annotation.XmlRegistry;
 @XmlRegistry
 public class ObjectFactory {
 
+    private final static QName _P_QNAME = new QName("http://opendope.org/SmartArt/DataHierarchy", "p");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.opendope.SmartArt.dataHierarchy
      * 
      */
     public ObjectFactory() {
-    }
-
-    /**
-     * Create an instance of {@link SmartArtDataHierarchy }
-     * 
-     */
-    public SmartArtDataHierarchy createSmartArtDataHierarchy() {
-        return new SmartArtDataHierarchy();
-    }
-
-    /**
-     * Create an instance of {@link SmartArtDataHierarchy.Texts.IdentifiedText }
-     * 
-     */
-    public SmartArtDataHierarchy.Texts.IdentifiedText createSmartArtDataHierarchyTextsIdentifiedText() {
-        return new SmartArtDataHierarchy.Texts.IdentifiedText();
-    }
-
-    /**
-     * Create an instance of {@link SmartArtDataHierarchy.Images }
-     * 
-     */
-    public SmartArtDataHierarchy.Images createSmartArtDataHierarchyImages() {
-        return new SmartArtDataHierarchy.Images();
-    }
-
-    /**
-     * Create an instance of {@link Node }
-     * 
-     */
-    public Node createNode() {
-        return new Node();
     }
 
     /**
@@ -70,11 +42,68 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link SmartArtDataHierarchy.Images }
+     * 
+     */
+    public SmartArtDataHierarchy.Images createSmartArtDataHierarchyImages() {
+        return new SmartArtDataHierarchy.Images();
+    }
+
+    /**
+     * Create an instance of {@link List }
+     * 
+     */
+    public List createList() {
+        return new List();
+    }
+
+    /**
      * Create an instance of {@link SmartArtDataHierarchy.Texts }
      * 
      */
     public SmartArtDataHierarchy.Texts createSmartArtDataHierarchyTexts() {
         return new SmartArtDataHierarchy.Texts();
+    }
+
+    /**
+     * Create an instance of {@link TextBody }
+     * 
+     */
+    public TextBody createTextBody() {
+        return new TextBody();
+    }
+
+    /**
+     * Create an instance of {@link SmartArtDataHierarchy.Texts.IdentifiedText }
+     * 
+     */
+    public SmartArtDataHierarchy.Texts.IdentifiedText createSmartArtDataHierarchyTextsIdentifiedText() {
+        return new SmartArtDataHierarchy.Texts.IdentifiedText();
+    }
+
+    /**
+     * Create an instance of {@link ListItem }
+     * 
+     */
+    public ListItem createListItem() {
+        return new ListItem();
+    }
+
+    /**
+     * Create an instance of {@link SmartArtDataHierarchy }
+     * 
+     */
+    public SmartArtDataHierarchy createSmartArtDataHierarchy() {
+        return new SmartArtDataHierarchy();
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://opendope.org/SmartArt/DataHierarchy", name = "p")
+    public JAXBElement<String> createP(String value) {
+        return new JAXBElement<String>(_P_QNAME, String.class, null, value);
     }
 
 }

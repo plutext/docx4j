@@ -37,8 +37,10 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
   <xsd:element name="SmartArtDataHierarchy">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:element ref="dh:node" />
-        <xsd:element name="images">
+      
+        <xsd:element ref="dh:list" />
+        
+        <xsd:element name="images" minOccurs="0" maxOccurs="1">
           <xsd:complexType>
             <xsd:sequence>
               <xsd:element maxOccurs="unbounded" name="image">
@@ -54,8 +56,13 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                                         <xsd:pattern value="application/.+\+xml" />
                                         <xsd:pattern value=".+" />
                                 </xsd:restriction>
-                        </xsd:simpleType>
+                        </xsd:simpleType>                                                
                 	 </xsd:attribute>
+                	 <!--  dgm:pt/dgm:prSet[@presName='rootPict'] optional settings -->
+                     <xsd:attribute name="custLinFactNeighborX" type="xsd:int" use="optional"/>
+					 <xsd:attribute name="custLinFactNeighborY" type="xsd:int" use="optional"/>
+					 <xsd:attribute name="custScaleY" type="xsd:int" use="optional"/>
+					 <xsd:attribute name="custScaleX" type="xsd:int" use="optional"/>
                    </xsd:extension>
                   </xsd:simpleContent>
                 </xsd:complexType>
@@ -63,7 +70,8 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             </xsd:sequence>
           </xsd:complexType>
         </xsd:element>
-        <xsd:element name="texts">
+        
+        <xsd:element name="texts" minOccurs="0" maxOccurs="1">
           <xsd:complexType>
             <xsd:sequence>
               <xsd:element maxOccurs="unbounded" name="identifiedText">
@@ -78,6 +86,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
           </xsd:complexType>
         </xsd:element>
       </xsd:sequence>
+      <xsd:attribute name="loTypeId" type="xsd:string" use="required" />      
     </xsd:complexType>
     
     <xsd:key name="imagekey">
@@ -85,7 +94,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     	<xsd:field xpath="@id" />
     </xsd:key>
     <xsd:keyref name="imagekeyref" refer="dh:imagekey">
-    	<xsd:selector xpath=".//dh:node" />
+    	<xsd:selector xpath=".//dh:listItem" />
     	<xsd:field xpath="@imageRef" />
     </xsd:keyref>
     <xsd:key name="textkey">
@@ -93,23 +102,41 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     	<xsd:field xpath="@id" />
     </xsd:key>
     <xsd:keyref name="textkeyref" refer="dh:textkey">
-    	<xsd:selector xpath=".//dh:node" />
-    	<xsd:field xpath="@imageRef|@sibTransContentRef" />
+    	<xsd:selector xpath=".//dh:listItem" />
+    	<xsd:field xpath="@textContentRef|@sibTransContentRef" />
     </xsd:keyref>
     
   </xsd:element>
 
-  <xsd:element name="node">
+  <xsd:element name="list">
     <xsd:complexType>
       <xsd:sequence>
-        <xsd:element ref="dh:node" minOccurs="0"  maxOccurs="unbounded" />
+        <xsd:element ref="dh:listItem" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="listItem">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="dh:textBody" />
+        <xsd:element ref="dh:list" minOccurs="0" />
       </xsd:sequence>
       <xsd:attribute name="id" type="xsd:string" use="required" />
-      <xsd:attribute name="val" type="xsd:string" use="optional" />
-      <xsd:attribute name="valRef" type="xsd:string" use="optional" />
+      <xsd:attribute name="textContentRef" type="xsd:string" use="optional" />
       <xsd:attribute name="imageRef" type="xsd:string" use="optional" />
       <xsd:attribute name="sibTransContentRef" type="xsd:string" use="optional" />
     </xsd:complexType>
   </xsd:element>
+
+  <xsd:element name="textBody">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="dh:p" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="p" type="xsd:string" />
 
 </xsd:schema>
