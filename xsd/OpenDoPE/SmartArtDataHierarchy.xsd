@@ -95,15 +95,15 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     </xsd:key>
     <xsd:keyref name="imagekeyref" refer="dh:imagekey">
     	<xsd:selector xpath=".//dh:listItem" />
-    	<xsd:field xpath="@imageRef" />
+    	<xsd:field xpath="@contentRef" />
     </xsd:keyref>
     <xsd:key name="textkey">
     	<xsd:selector xpath="dh:texts/dh:identifiedText" />
     	<xsd:field xpath="@id" />
     </xsd:key>
     <xsd:keyref name="textkeyref" refer="dh:textkey">
-    	<xsd:selector xpath=".//dh:listItem" />
-    	<xsd:field xpath="@textContentRef|@sibTransContentRef" />
+    	<xsd:selector xpath=".//dh:listItem/dh:textBody|.//dh:listItem/dh:sibTransBody" />
+    	<xsd:field xpath="@contentRef" />
     </xsd:keyref>
     
   </xsd:element>
@@ -120,23 +120,42 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     <xsd:complexType>
       <xsd:sequence>
         <xsd:element ref="dh:textBody" />
-        <xsd:element ref="dh:list" minOccurs="0" />
+        <xsd:element ref="dh:sibTransBody" minOccurs="0" maxOccurs="1" />
+        <xsd:element ref="dh:image" minOccurs="0" maxOccurs="1"/>
+        <xsd:element ref="dh:list" minOccurs="0" maxOccurs="1" />
       </xsd:sequence>
       <xsd:attribute name="id" type="xsd:string" use="required" />
-      <xsd:attribute name="textContentRef" type="xsd:string" use="optional" />
-      <xsd:attribute name="imageRef" type="xsd:string" use="optional" />
-      <xsd:attribute name="sibTransContentRef" type="xsd:string" use="optional" />
     </xsd:complexType>
   </xsd:element>
 
   <xsd:element name="textBody">
     <xsd:complexType>
+    <!--  Strictly, it should have either @contentRef or dh:p, but not both,
+          but we don't attempt to enforce that here. -->
       <xsd:sequence>
         <xsd:element ref="dh:p" minOccurs="0" maxOccurs="unbounded" />
       </xsd:sequence>
+      <xsd:attribute name="contentRef" type="xsd:string" use="optional" />
+    </xsd:complexType>
+  </xsd:element>
+  
+  <xsd:element name="sibTransBody">
+    <xsd:complexType>
+    <!--  Strictly, it should have either @contentRef or dh:p, but not both,
+          but we don't attempt to enforce that here. -->
+      <xsd:sequence>
+        <xsd:element ref="dh:p" minOccurs="0" maxOccurs="unbounded" />
+      </xsd:sequence>
+      <xsd:attribute name="contentRef" type="xsd:string" use="optional" />
     </xsd:complexType>
   </xsd:element>
 
   <xsd:element name="p" type="xsd:string" />
+
+  <xsd:element name="image">
+    <xsd:complexType>
+      <xsd:attribute name="contentRef" type="xsd:string" use="optional" />
+    </xsd:complexType>
+  </xsd:element>
 
 </xsd:schema>

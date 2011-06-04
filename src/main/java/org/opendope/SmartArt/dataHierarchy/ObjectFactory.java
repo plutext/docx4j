@@ -34,14 +34,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SmartArtDataHierarchy.Images.Image }
-     * 
-     */
-    public SmartArtDataHierarchy.Images.Image createSmartArtDataHierarchyImagesImage() {
-        return new SmartArtDataHierarchy.Images.Image();
-    }
-
-    /**
      * Create an instance of {@link SmartArtDataHierarchy.Images }
      * 
      */
@@ -66,14 +58,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link TextBody }
-     * 
-     */
-    public TextBody createTextBody() {
-        return new TextBody();
-    }
-
-    /**
      * Create an instance of {@link SmartArtDataHierarchy.Texts.IdentifiedText }
      * 
      */
@@ -82,11 +66,43 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link TextBody }
+     * 
+     */
+    public TextBody createTextBody() {
+        return new TextBody();
+    }
+
+    /**
      * Create an instance of {@link ListItem }
      * 
      */
     public ListItem createListItem() {
         return new ListItem();
+    }
+
+    /**
+     * Create an instance of {@link org.opendope.SmartArt.dataHierarchy.Image }
+     * 
+     */
+    public org.opendope.SmartArt.dataHierarchy.Image createImage() {
+        return new org.opendope.SmartArt.dataHierarchy.Image();
+    }
+
+    /**
+     * Create an instance of {@link SmartArtDataHierarchy.Images.Image }
+     * 
+     */
+    public SmartArtDataHierarchy.Images.Image createSmartArtDataHierarchyImagesImage() {
+        return new SmartArtDataHierarchy.Images.Image();
+    }
+
+    /**
+     * Create an instance of {@link SibTransBody }
+     * 
+     */
+    public SibTransBody createSibTransBody() {
+        return new SibTransBody();
     }
 
     /**
