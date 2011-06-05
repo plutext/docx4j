@@ -28,9 +28,7 @@
     
     <gen:template match="/">
       <!-- Don't apply to the root of our list -->
-      <!--  <gen:for-each select="/dh:SmartArtDataHierarchy/dh:list/dh:listItem/dh:list"> -->
-      <!--  something weird when we use namespaces here, so don't -->
-      <gen:for-each select="*/*[local-name()='list']/*/*[local-name()='list']">
+      <gen:for-each select="/dh:SmartArtDataHierarchy/dh:list/dh:listItem/dh:list">
         <gen:comment> <gen:value-of select="name()" /></gen:comment>
 	    <xsl:apply-templates select="/dgm:layoutDef/dgm:layoutNode"/>
       </gen:for-each>
@@ -95,17 +93,17 @@
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
           <xsl:attribute name="presStyleCnt">{count(//*)-1}</xsl:attribute><!--  FIXME when image rep is finalised -->
-          <xsl:attribute name="presStyleIdx">{count(preceding::*[local-name='listItem']) + count(ancestor::*[local-name='listItem'])}</xsl:attribute>
-          <xsl:attribute name="depth">{count(ancestor::*[local-name='listItem'])}</xsl:attribute> <!--  not needed -->
+          <xsl:attribute name="presStyleIdx">{count(preceding::dh:listItem) + count(ancestor::dh:listItem)}</xsl:attribute>
+          <xsl:attribute name="depth">{count(ancestor::dh:listItem)}</xsl:attribute> <!--  not needed -->
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
       </xsl:when>
       <xsl:when test="starts-with(string(@name), 'rootConnector')">
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
-          <xsl:attribute name="presStyleCnt">{count(../*[local-name='listItem'])}</xsl:attribute>
+          <xsl:attribute name="presStyleCnt">{count(../dh:listItem)}</xsl:attribute>
           <xsl:attribute name="presStyleIdx">{position()-1}</xsl:attribute>
-          <xsl:attribute name="depth">{count(ancestor::*[local-name='listItem'])}</xsl:attribute>
+          <xsl:attribute name="depth">{count(ancestor::dh:listItem)}</xsl:attribute>
           <!-- TODO special case for level 1 -->
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
@@ -180,8 +178,7 @@
         </xsl:when>
         <xsl:when test="@ptType='nonAsst'">
           <gen:template name="{@name}">        
-          <gen:for-each select="*/*[local-name()='listItem']">
-            <!-- <gen:for-each select="dh:list/dh:listItem"> -->          
+          <gen:for-each select="dh:list/dh:listItem">
             <!-- <gen:for-each select="*[local-name()!='asst']"> -->
               <xsl:apply-templates/>
             </gen:for-each>
