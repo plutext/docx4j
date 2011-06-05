@@ -22,8 +22,10 @@ package org.docx4j.openpackaging.parts.DrawingML;
 
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.parsers.DocumentBuilder;
@@ -78,83 +80,9 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 		setRelationshipType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT);
 	}
 
-	
-	
-	public static void main(String[] args) throws Exception {
+	static Templates xsltGenerateIds;	
+	static {
 		
-		// Need the source doc as a DOM for later, and also
-		// as XSLT input
-		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
-										.newDocumentBuilder();
-		Document doc = docBuilder.parse(
-				new InputSource(new java.io.StringReader("<node id=\"0\">"
-						+"<node id=\"1\" val=\"1\">"
-						+"    <node id=\"2\" val=\"21\"/>"
-						+"    <node id=\"3\" val=\"22\">"
-					      +"<node id=\"4\" val=\"221\" >"
-					      +"<node id=\"5\" val=\"2211\" />"
-//					      +"<node id=\"6\" val=\"2212\" />"  
-					        +"</node>"
-					        +"</node>"
-					        +"</node>"
-						+"</node>")));
-
-		Source myList = new javax.xml.transform.dom.DOMSource(doc);
-			
-		// We need a source layout part
-		// Could get it from a docx, or a glox
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
-				.load(new java.io.File(
-						System.getProperty("user.dir")
-						+ "/SmartArt/boss-slave.docx"));		
-		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT);		
-		if (r==null) {
-			System.out.println("No DLP!");
-			return;
-		}
-		DiagramLayoutPart thisPart = (DiagramLayoutPart)wordMLPackage.getMainDocumentPart().getRelationshipsPart().getPart(r);
-		
-		// Generate XSLT
-		System.out.println("Generating xslt..");
-		Templates xsltMeta;	
-		{
-			try {
-				Source xsltSource  = new StreamSource(
-						org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/openpackaging/parts/DrawingML/DiagramLayoutMeta.xslt"));
-				xsltMeta = XmlUtils.getTransformerTemplate(xsltSource);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return;
-			} 
-		}
-
-		Document source = XmlUtils.marshaltoW3CDomDocument(thisPart.getJaxbElement(),
-				Context.jc);
-		ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
-		Result intermediateResult = new StreamResult(intermediate);
-		XmlUtils.transform(source, xsltMeta, null, intermediateResult);
-
-		// What did we generate
-		String tmpXslStr = intermediate.toString("UTF-8");
-		System.out.println(tmpXslStr);
-
-		Source tmpXslSource = new StreamSource(new StringReader(tmpXslStr));
-		
-		// Generate hierarchical layout tree
-		System.out.println("Generating layout tree..");
-		Templates xslLayoutNodeTree;	
-		try {
-			xslLayoutNodeTree = XmlUtils.getTransformerTemplate(tmpXslSource);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		} 
-		ByteArrayOutputStream layoutBAOS = new ByteArrayOutputStream();
-		Result layoutResult = new StreamResult(layoutBAOS);
-		XmlUtils.transform(myList, xslLayoutNodeTree, null, layoutResult);
-
-		Templates xsltGenerateIds;	
 		{
 			try {
 				
@@ -164,9 +92,45 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 								"org/docx4j/openpackaging/parts/DrawingML/GenerateIds.xslt")));
 			} catch (Exception e) {
 				e.printStackTrace();
-				return;
 			} 
 		}
+	}
+		
+		
+	public static Templates generateLayoutTreeXSLT(CTDiagramDefinition pictureLayout) throws Exception {
+		
+		System.out.println(XmlUtils.marshaltoString(pictureLayout, true));
+		
+//			System.out.println("Generating xslt..");
+		Source xsltSource  = new StreamSource(
+				org.docx4j.utils.ResourceUtils.getResource(
+						"org/docx4j/openpackaging/parts/DrawingML/DiagramLayoutMeta.xslt"));
+		Templates xsltMeta = XmlUtils.getTransformerTemplate(xsltSource);
+
+		Document source = XmlUtils.marshaltoW3CDomDocument(pictureLayout,
+				Context.jc);
+		ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
+		Result intermediateResult = new StreamResult(intermediate);
+		XmlUtils.transform(source, xsltMeta, null, intermediateResult);
+
+		String tmpXslStr = intermediate.toString("UTF-8");
+			System.out.println(tmpXslStr);
+		
+		return XmlUtils.getTransformerTemplate(
+					new StreamSource(new StringReader(tmpXslStr)));
+	}
+	
+	public static String generateLayoutTree(Source myList, Templates layoutTreeCreatorXslt) throws Exception {
+		
+		// Generate hierarchical layout tree
+		System.out.println("Generating layout tree..");
+		ByteArrayOutputStream layoutBAOS = new ByteArrayOutputStream();
+		Result layoutResult = new StreamResult(layoutBAOS);
+		XmlUtils.transform(myList, layoutTreeCreatorXslt, null, layoutResult);
+
+//		tmpXslStr = layoutBAOS.toString("UTF-8");
+//		System.out.println(tmpXslStr);
+		
 		ByteArrayOutputStream layoutBAOS2 = new ByteArrayOutputStream();
 		Result layoutResult2 = new StreamResult(layoutBAOS2);
 		XmlUtils.transform( 
@@ -174,27 +138,61 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 						new java.io.StringReader(layoutBAOS.toString("UTF-8"))), 
 				xsltGenerateIds, null, layoutResult2);		
 		
-		// What did we generate
-		tmpXslStr = layoutBAOS2.toString("UTF-8");
+		return layoutBAOS2.toString("UTF-8");
+	}
+	
+	
+	public static void main(String[] args) throws Exception {
+		
+		// Need the source doc as a DOM for later, and also
+		// as XSLT input
+		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		dbf.setNamespaceAware(true);
+		DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+		
+		Document doc = docBuilder.parse(
+				new File(System.getProperty("user.dir")+ "/SmartArt/12hi.xml"  ) );		
+		
+		Source myList = new javax.xml.transform.dom.DOMSource(doc);
+			
+		// We need a source layout part
+		// Could get it from a docx, or a glox
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
+				.load(new java.io.File(
+						System.getProperty("user.dir")
+//						+ "/SmartArt/hier-nopic.docx"));
+						+ "/SmartArt/12.docx"));
+		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT);		
+		if (r==null) {
+			System.out.println("No DLP!");
+			return;
+		}
+		DiagramLayoutPart thisPart = (DiagramLayoutPart)wordMLPackage.getMainDocumentPart().getRelationshipsPart().getPart(r);
+		
+		// Generate XSLT
+		System.out.println("Generating xslt..");
+		Templates xslLayoutNodeTree = generateLayoutTreeXSLT(thisPart.getJaxbElement());	
+		
+		// Generate hierarchical layout tree
+		String tmpXslStr =  generateLayoutTree(myList, xslLayoutNodeTree);
 		System.out.println(tmpXslStr);
 		
 		// Finally, apply your LT2DD to create DiagramData part
 		System.out.println("Creating DiagramData part..");
-		Templates xsltLT2DD;	
-		{
-			try {
-				
-				xsltLT2DD = XmlUtils.getTransformerTemplate(
-						new StreamSource(
-							org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/openpackaging/parts/DrawingML/DiagramLayoutTree4pictureOrgChart2DiagramData.xslt")));
-			} catch (Exception e) {
-				e.printStackTrace();
-				return;
-			} 
+		Templates xsltLT2DD;
+		try {
+
+			xsltLT2DD = XmlUtils.getTransformerTemplate(
+					new StreamSource(
+						org.docx4j.utils.ResourceUtils.getResource(
+							"org/docx4j/openpackaging/parts/DrawingML/DiagramLayoutTree4pictureOrgChart2DiagramData.xslt")));
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
 		}
 						
-		ByteArrayOutputStream layoutBAOS3 = new ByteArrayOutputStream();
+//		ByteArrayOutputStream layoutBAOS3 = new ByteArrayOutputStream();
 //		Result result = new StreamResult(layoutBAOS3);
 		JAXBResult result = new JAXBResult(Context.jc );		
 		java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
@@ -208,13 +206,12 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 		// What did we generate
 //		tmpXslStr = layoutBAOS3.toString("UTF-8");
 //		System.out.println(tmpXslStr);
-		
+
 		// Finally, inject this into your DiagramData part
 		// .. first, we need to make the IDs Word friendly.
 		Object ddJaxb = result.getResult();
 		DiagramDataPart.setFriendlyIds(XmlUtils.unwrap(ddJaxb));
 		
 		System.out.println(XmlUtils.marshaltoString(ddJaxb, false));
-		
 	}	
 }
