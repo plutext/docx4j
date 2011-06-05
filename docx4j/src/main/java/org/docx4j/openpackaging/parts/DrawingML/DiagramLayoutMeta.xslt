@@ -2,7 +2,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:gen="dummy-namespace-for-the-generated-xslt"                
                 xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" 
->
+                xmlns:dh="http://opendope.org/SmartArt/DataHierarchy">
 
 <!--  apply this xslt to a layout part, 
       in order to create an xslt which can be applied to an ordered list,
@@ -20,19 +20,32 @@
 
   <xsl:template match="/">
     <gen:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:msxsl="urn:schemas-microsoft-com:xslt" exclude-result-prefixes="msxsl">
+    xmlns:msxsl="urn:schemas-microsoft-com:xslt" exclude-result-prefixes="msxsl"
+    xmlns:dh="http://opendope.org/SmartArt/DataHierarchy">
     <xsl:for-each select="//dgm:forEach[@axis='ch']">
       <xsl:apply-templates select="." mode="create-named"/>
     </xsl:for-each>
     
     <gen:template match="/">
       <!-- Don't apply to the root of our list -->
-      <gen:for-each select="*">
+      <!--  <gen:for-each select="/dh:SmartArtDataHierarchy/dh:list/dh:listItem/dh:list"> -->
+      <!--  something weird when we use namespaces here, so don't -->
+      <gen:for-each select="*/*[local-name()='list']/*/*[local-name()='list']">
+        <gen:comment> <gen:value-of select="name()" /></gen:comment>
 	    <xsl:apply-templates select="/dgm:layoutDef/dgm:layoutNode"/>
-      </gen:for-each>    
+      </gen:for-each>
     </gen:template>
 
-
+<!-- 
+	  <gen:template match="dh:list">
+	  	<gen:apply-templates />
+	  </gen:template>
+	  
+	  <gen:template match="dh:textBody" />	  
+	  <gen:template match="dh:sibTransBody" />	  
+	  <gen:template match="dh:image" />
+ -->
+ 
     </gen:stylesheet>
   </xsl:template>
 
@@ -47,7 +60,8 @@
 </xsl:template>
 
   <xsl:template match="dgm:forEach[@axis='self']">
-    <gen:if test="local-name()='{@ptType}'">
+  	<gen:if test="local-name()='listItem'">
+    <!-- <gen:if test="local-name()='{@ptType}'"> -->
     <xsl:apply-templates/>
     </gen:if>
   </xsl:template>
@@ -71,9 +85,9 @@
       <xsl:when test="starts-with(string(@name), 'rootText')">
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
-          <xsl:attribute name="presStyleCnt">{count(../node)}</xsl:attribute>
+          <xsl:attribute name="presStyleCnt">{count(../dh:listItem)}</xsl:attribute>
           <xsl:attribute name="presStyleIdx">{position()-1}</xsl:attribute>
-          <xsl:attribute name="depth">{count(ancestor::*)}</xsl:attribute>
+          <xsl:attribute name="depth">{count(ancestor::dh:listItem)}</xsl:attribute>
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
       </xsl:when>
@@ -81,18 +95,28 @@
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
           <xsl:attribute name="presStyleCnt">{count(//*)-1}</xsl:attribute><!--  FIXME when image rep is finalised -->
-          <xsl:attribute name="presStyleIdx">{count(preceding::node) + count(ancestor::node) -1}</xsl:attribute>
-          <xsl:attribute name="depth">{count(ancestor::*)}</xsl:attribute> <!--  not needed -->
+          <xsl:attribute name="presStyleIdx">{count(preceding::*[local-name='listItem']) + count(ancestor::*[local-name='listItem'])}</xsl:attribute>
+          <xsl:attribute name="depth">{count(ancestor::*[local-name='listItem'])}</xsl:attribute> <!--  not needed -->
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
       </xsl:when>
       <xsl:when test="starts-with(string(@name), 'rootConnector')">
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
-          <xsl:attribute name="presStyleCnt">{count(../node)}</xsl:attribute>
+          <xsl:attribute name="presStyleCnt">{count(../*[local-name='listItem'])}</xsl:attribute>
           <xsl:attribute name="presStyleIdx">{position()-1}</xsl:attribute>
-          <xsl:attribute name="depth">{count(ancestor::*)}</xsl:attribute>
+          <xsl:attribute name="depth">{count(ancestor::*[local-name='listItem'])}</xsl:attribute>
           <!-- TODO special case for level 1 -->
+          <xsl:apply-templates select="@* | node()"/>
+        </xsl:copy>
+      </xsl:when>
+      <!--  Special case for "/" template where match is
+            on odgm:list, rather than odgm:listItem;  
+            odgm:list does not have @id.
+            TODO Avoid hardcoded 0 somehow. -->
+      <xsl:when test="starts-with(string(@name), 'hierChild') and count(@id)=0">
+        <xsl:copy>
+          <xsl:attribute name="presAssocID">0</xsl:attribute>
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
       </xsl:when>
@@ -155,8 +179,10 @@
           </gen:template>
         </xsl:when>
         <xsl:when test="@ptType='nonAsst'">
-          <gen:template name="{@name}">
-            <gen:for-each select="*[local-name()!='asst']">
+          <gen:template name="{@name}">        
+          <gen:for-each select="*/*[local-name()='listItem']">
+            <!-- <gen:for-each select="dh:list/dh:listItem"> -->          
+            <!-- <gen:for-each select="*[local-name()!='asst']"> -->
               <xsl:apply-templates/>
             </gen:for-each>
           </gen:template>
