@@ -34,6 +34,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link TextBody }
+     * 
+     */
+    public TextBody createTextBody() {
+        return new TextBody();
+    }
+
+    /**
      * Create an instance of {@link SmartArtDataHierarchy.Images }
      * 
      */
@@ -42,11 +50,27 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link List }
+     * Create an instance of {@link SmartArtDataHierarchy }
      * 
      */
-    public List createList() {
-        return new List();
+    public SmartArtDataHierarchy createSmartArtDataHierarchy() {
+        return new SmartArtDataHierarchy();
+    }
+
+    /**
+     * Create an instance of {@link SibTransBody }
+     * 
+     */
+    public SibTransBody createSibTransBody() {
+        return new SibTransBody();
+    }
+
+    /**
+     * Create an instance of {@link ImageRef }
+     * 
+     */
+    public ImageRef createImageRef() {
+        return new ImageRef();
     }
 
     /**
@@ -66,27 +90,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link TextBody }
+     * Create an instance of {@link List }
      * 
      */
-    public TextBody createTextBody() {
-        return new TextBody();
-    }
-
-    /**
-     * Create an instance of {@link ListItem }
-     * 
-     */
-    public ListItem createListItem() {
-        return new ListItem();
-    }
-
-    /**
-     * Create an instance of {@link org.opendope.SmartArt.dataHierarchy.Image }
-     * 
-     */
-    public org.opendope.SmartArt.dataHierarchy.Image createImage() {
-        return new org.opendope.SmartArt.dataHierarchy.Image();
+    public List createList() {
+        return new List();
     }
 
     /**
@@ -98,19 +106,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link SibTransBody }
+     * Create an instance of {@link ListItem }
      * 
      */
-    public SibTransBody createSibTransBody() {
-        return new SibTransBody();
-    }
-
-    /**
-     * Create an instance of {@link SmartArtDataHierarchy }
-     * 
-     */
-    public SmartArtDataHierarchy createSmartArtDataHierarchy() {
-        return new SmartArtDataHierarchy();
+    public ListItem createListItem() {
+        return new ListItem();
     }
 
     /**

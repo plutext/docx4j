@@ -21,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}textBody"/>
  *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}sibTransBody" minOccurs="0"/>
- *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}image" minOccurs="0"/>
+ *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}imageRef" minOccurs="0"/>
  *         &lt;element ref="{http://opendope.org/SmartArt/DataHierarchy}list" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "textBody",
     "sibTransBody",
-    "image",
+    "imageRef",
     "list"
 })
 @XmlRootElement(name = "listItem")
@@ -45,7 +45,7 @@ public class ListItem {
     @XmlElement(required = true)
     protected TextBody textBody;
     protected SibTransBody sibTransBody;
-    protected Image image;
+    protected ImageRef imageRef;
     protected List list;
     @XmlAttribute(required = true)
     protected String id;
@@ -99,27 +99,27 @@ public class ListItem {
     }
 
     /**
-     * Gets the value of the image property.
+     * Gets the value of the imageRef property.
      * 
      * @return
      *     possible object is
-     *     {@link Image }
+     *     {@link ImageRef }
      *     
      */
-    public Image getImage() {
-        return image;
+    public ImageRef getImageRef() {
+        return imageRef;
     }
 
     /**
-     * Sets the value of the image property.
+     * Sets the value of the imageRef property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Image }
+     *     {@link ImageRef }
      *     
      */
-    public void setImage(Image value) {
-        this.image = value;
+    public void setImageRef(ImageRef value) {
+        this.imageRef = value;
     }
 
     /**
