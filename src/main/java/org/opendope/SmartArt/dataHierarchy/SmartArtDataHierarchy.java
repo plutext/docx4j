@@ -43,10 +43,6 @@ import org.docx4j.dml.CTTextBody;
  *                               &lt;/restriction>
  *                             &lt;/simpleType>
  *                           &lt;/attribute>
- *                           &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" />
- *                           &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" />
- *                           &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" />
- *                           &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" />
  *                         &lt;/extension>
  *                       &lt;/simpleContent>
  *                     &lt;/complexType>
@@ -225,10 +221,6 @@ public class SmartArtDataHierarchy {
      *                     &lt;/restriction>
      *                   &lt;/simpleType>
      *                 &lt;/attribute>
-     *                 &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" />
-     *                 &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" />
-     *                 &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" />
-     *                 &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" />
      *               &lt;/extension>
      *             &lt;/simpleContent>
      *           &lt;/complexType>
@@ -300,10 +292,6 @@ public class SmartArtDataHierarchy {
          *           &lt;/restriction>
          *         &lt;/simpleType>
          *       &lt;/attribute>
-         *       &lt;attribute name="custLinFactNeighborX" type="{http://www.w3.org/2001/XMLSchema}int" />
-         *       &lt;attribute name="custLinFactNeighborY" type="{http://www.w3.org/2001/XMLSchema}int" />
-         *       &lt;attribute name="custScaleY" type="{http://www.w3.org/2001/XMLSchema}int" />
-         *       &lt;attribute name="custScaleX" type="{http://www.w3.org/2001/XMLSchema}int" />
          *     &lt;/extension>
          *   &lt;/simpleContent>
          * &lt;/complexType>
@@ -323,14 +311,6 @@ public class SmartArtDataHierarchy {
             protected String id;
             @XmlAttribute
             protected String contentType;
-            @XmlAttribute
-            protected Integer custLinFactNeighborX;
-            @XmlAttribute
-            protected Integer custLinFactNeighborY;
-            @XmlAttribute
-            protected Integer custScaleY;
-            @XmlAttribute
-            protected Integer custScaleX;
 
             /**
              * Gets the value of the value property.
@@ -400,102 +380,6 @@ public class SmartArtDataHierarchy {
              */
             public void setContentType(String value) {
                 this.contentType = value;
-            }
-
-            /**
-             * Gets the value of the custLinFactNeighborX property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Integer }
-             *     
-             */
-            public Integer getCustLinFactNeighborX() {
-                return custLinFactNeighborX;
-            }
-
-            /**
-             * Sets the value of the custLinFactNeighborX property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Integer }
-             *     
-             */
-            public void setCustLinFactNeighborX(Integer value) {
-                this.custLinFactNeighborX = value;
-            }
-
-            /**
-             * Gets the value of the custLinFactNeighborY property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Integer }
-             *     
-             */
-            public Integer getCustLinFactNeighborY() {
-                return custLinFactNeighborY;
-            }
-
-            /**
-             * Sets the value of the custLinFactNeighborY property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Integer }
-             *     
-             */
-            public void setCustLinFactNeighborY(Integer value) {
-                this.custLinFactNeighborY = value;
-            }
-
-            /**
-             * Gets the value of the custScaleY property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Integer }
-             *     
-             */
-            public Integer getCustScaleY() {
-                return custScaleY;
-            }
-
-            /**
-             * Sets the value of the custScaleY property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Integer }
-             *     
-             */
-            public void setCustScaleY(Integer value) {
-                this.custScaleY = value;
-            }
-
-            /**
-             * Gets the value of the custScaleX property.
-             * 
-             * @return
-             *     possible object is
-             *     {@link Integer }
-             *     
-             */
-            public Integer getCustScaleX() {
-                return custScaleX;
-            }
-
-            /**
-             * Sets the value of the custScaleX property.
-             * 
-             * @param value
-             *     allowed object is
-             *     {@link Integer }
-             *     
-             */
-            public void setCustScaleX(Integer value) {
-                this.custScaleX = value;
             }
 
         }

@@ -58,11 +58,6 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                                 </xsd:restriction>
                         </xsd:simpleType>                                                
                 	 </xsd:attribute>
-                	 <!--  dgm:pt/dgm:prSet[@presName='rootPict'] optional settings -->
-                     <xsd:attribute name="custLinFactNeighborX" type="xsd:int" use="optional"/>
-					 <xsd:attribute name="custLinFactNeighborY" type="xsd:int" use="optional"/>
-					 <xsd:attribute name="custScaleY" type="xsd:int" use="optional"/>
-					 <xsd:attribute name="custScaleX" type="xsd:int" use="optional"/>
                    </xsd:extension>
                   </xsd:simpleContent>
                 </xsd:complexType>
@@ -121,7 +116,7 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
       <xsd:sequence>
         <xsd:element ref="dh:textBody" />
         <xsd:element ref="dh:sibTransBody" minOccurs="0" maxOccurs="1" />
-        <xsd:element ref="dh:image" minOccurs="0" maxOccurs="1"/>
+        <xsd:element ref="dh:imageRef" minOccurs="0" maxOccurs="1"/>
         <xsd:element ref="dh:list" minOccurs="0" maxOccurs="1" />
       </xsd:sequence>
       <xsd:attribute name="id" type="xsd:string" use="required" />
@@ -152,9 +147,14 @@ xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 
   <xsd:element name="p" type="xsd:string" />
 
-  <xsd:element name="image">
+  <xsd:element name="imageRef">
     <xsd:complexType>
       <xsd:attribute name="contentRef" type="xsd:string" use="optional" />
+   	  <!--  dgm:pt/dgm:prSet[@presName='rootPict'] optional settings -->
+      <xsd:attribute name="custLinFactNeighborX" type="xsd:int" use="optional"/>
+	  <xsd:attribute name="custLinFactNeighborY" type="xsd:int" use="optional"/>
+	  <xsd:attribute name="custScaleY" type="xsd:int" use="optional"/>
+	  <xsd:attribute name="custScaleX" type="xsd:int" use="optional"/>      
     </xsd:complexType>
   </xsd:element>
 
