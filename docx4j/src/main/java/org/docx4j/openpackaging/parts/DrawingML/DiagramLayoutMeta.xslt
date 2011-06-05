@@ -19,9 +19,11 @@
     </xsl:template>
 
   <xsl:template match="/">
+  
     <gen:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:msxsl="urn:schemas-microsoft-com:xslt" exclude-result-prefixes="msxsl"
     xmlns:dh="http://opendope.org/SmartArt/DataHierarchy">
+    
     <xsl:for-each select="//dgm:forEach[@axis='ch']">
       <xsl:apply-templates select="." mode="create-named"/>
     </xsl:for-each>
@@ -49,7 +51,15 @@
 
 
   <xsl:template match="dgm:forEach[@axis='ch']">
-    <gen:call-template name="{@name}" />
+  	<!--  SmartArt emited by Word 2007 contains @name; glox layout might not. -->
+  	<xsl:variable name="name">
+  		<xsl:choose>
+  			<xsl:when test="@name"><xsl:value-of select="string(@name)"/></xsl:when>
+	  		<xsl:otherwise><xsl:value-of select="generate-id(.)"/></xsl:otherwise>
+  		</xsl:choose>  	
+  	</xsl:variable>
+  
+    <gen:call-template name="{$name}" />
 </xsl:template>
 
 
@@ -167,17 +177,25 @@
   <xsl:template match="dgm:alg"/>
 
   <xsl:template match="dgm:forEach[@axis='ch']"  mode="create-named">
+  
+  	<!--  SmartArt emited by Word 2007 contains @name; glox layout might not. -->
+  	<xsl:variable name="name">
+  		<xsl:choose>
+  			<xsl:when test="@name"><xsl:value-of select="string(@name)"/></xsl:when>
+	  		<xsl:otherwise><xsl:value-of select="generate-id(.)"/></xsl:otherwise>
+  		</xsl:choose>  	
+  	</xsl:variable>
     
       <xsl:choose>
         <xsl:when test="@ptType='asst'">
-          <gen:template name="{@name}">
+          <gen:template name="{$name}">
             <gen:for-each select="{@ptType}">
             <xsl:apply-templates/>
           </gen:for-each>
           </gen:template>
         </xsl:when>
         <xsl:when test="@ptType='nonAsst'">
-          <gen:template name="{@name}">        
+          <gen:template name="{$name}">        
           <gen:for-each select="dh:list/dh:listItem">
             <!-- <gen:for-each select="*[local-name()!='asst']"> -->
               <xsl:apply-templates/>
@@ -185,7 +203,7 @@
           </gen:template>
         </xsl:when>
         <xsl:otherwise>
-          <gen:template name="{@name}">
+          <gen:template name="{$name}">
             <gen:for-each select="*">
             <xsl:apply-templates/>
           </gen:for-each>
