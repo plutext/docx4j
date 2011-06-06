@@ -21,12 +21,15 @@
 package org.docx4j.openpackaging.parts.DrawingML;
 
 
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBElement;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -38,11 +41,13 @@ import org.docx4j.dml.diagram.CTElemPropSet;
 import org.docx4j.dml.diagram.CTPt;
 import org.docx4j.dml.diagram.STCxnType;
 import org.docx4j.dml.diagram.STPtType;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 
@@ -78,7 +83,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	 * valid and (subject to that constraint)
 	 * easy-ish to understand.
 	 */
-	protected static void setFriendlyIds(Object jaxbElement) {
+	public static void setFriendlyIds(Object jaxbElement) {
 				
 		map = new HashMap<String, String>();
 		
@@ -333,12 +338,36 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 	}
 	
+	public static String addImage(DiagramDataPart ddp, String base64) {
+		// No need to pass content type.
+				
+		BinaryPartAbstractImage imagePart = null;
+		try {
+			// Base64 decode it
+			byte[] bytes = Base64.decodeBase64( base64.getBytes("UTF8") );
+			
+			// Create image part and add it
+			imagePart = BinaryPartAbstractImage.createImagePart(
+					(WordprocessingMLPackage)ddp.getPackage(), ddp, bytes);
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error(e);
+		}
+		
+        return imagePart.getSourceRelationship().getId();
+	}
+	
+	public static void debug(String message) {
+		
+		System.out.println(message);
+	}
+	
 	public static void main(String[] args) throws Exception {
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/SmartArt/SmartArtDataHierarchy.docx"));
+						+ "/SmartArt/12.docx"));
 		
 		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DATA);
 		
@@ -355,7 +384,13 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 		// What does it look like in our format?
 		DiagramDataUnflatten diagramDataUnflatten = new DiagramDataUnflatten(thisPart);
-		System.out.println( XmlUtils.marshaltoString(diagramDataUnflatten.convert(), true, true));		
+		String exchange= XmlUtils.marshaltoString(diagramDataUnflatten.convert(), true, true);
+		System.out.println( exchange );		
+		PrintWriter out = new PrintWriter(System.getProperty("user.dir")
+				+ "/SmartArt/12hi.xml");
+		out.println(exchange);
+		out.flush();
+		out.close();
 
 		// Check our format templates
 		List<JAXBElement<CTTextBody>> textFormats = diagramDataUnflatten.getTextFormats();
@@ -378,7 +413,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(System.getProperty("user.dir")
-				+ "/SmartArt/SmartArtDataHierarchy-OUT.docx");
+				+ "/SmartArt/12-OUT.docx");
 		
 	}	
 		
