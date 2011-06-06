@@ -11,16 +11,20 @@ import javax.xml.bind.JAXBElement;
 import org.apache.log4j.Logger;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTTextBody;
+import org.docx4j.dml.CTTextParagraph;
 import org.docx4j.dml.diagram.CTCxn;
 import org.docx4j.dml.diagram.CTCxnList;
 import org.docx4j.dml.diagram.CTDataModel;
+import org.docx4j.dml.diagram.CTElemPropSet;
 import org.docx4j.dml.diagram.CTPt;
 import org.docx4j.dml.diagram.CTPtList;
 import org.docx4j.dml.diagram.STPtType;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.relationships.Relationship;
+import org.opendope.SmartArt.dataHierarchy.SibTransBody;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy;
+import org.opendope.SmartArt.dataHierarchy.TextBody;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Images;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Images.Image;
@@ -76,7 +80,14 @@ public class DiagramDataUnflatten {
 
 	// Target structures
 	private org.opendope.SmartArt.dataHierarchy.ObjectFactory factory;
+	public org.opendope.SmartArt.dataHierarchy.ObjectFactory getDataHierarchyObjectFactory() {
+		return factory;
+	}
+
 	private Texts texts;
+	public Texts getTexts() {
+		return texts;
+	}
 	private Images images;
 	
 	private List<JAXBElement<CTTextBody>> textFormats;
@@ -88,49 +99,79 @@ public class DiagramDataUnflatten {
 		
 		CTPt docPt = ptList.getPt().get(0);
 		
-		org.opendope.SmartArt.dataHierarchy.Node docNode = factory.createNode();
-		docNode.setId(docPt.getModelId());
-		docNode.setDepth(0);
+		org.opendope.SmartArt.dataHierarchy.List docList = factory.createList();
+		// dgm:pt[@type="doc" and @modelId="0"]
+		org.opendope.SmartArt.dataHierarchy.ListItem listItem = factory.createListItem();
+		docList.getListItem().add(listItem);
 		
-		processChildrenOf(docPt, docNode);
+		listItem.setId(docPt.getModelId());
+		listItem.setDepth(0);
+		
+		processChildrenOf(docPt, listItem);
 		
 		SmartArtDataHierarchy smartArtDataHierarchy 
 			= factory.createSmartArtDataHierarchy();
 		
-		smartArtDataHierarchy.setNode(docNode);
+		smartArtDataHierarchy.setList(docList);
 		smartArtDataHierarchy.setImages(images);
 		smartArtDataHierarchy.setTexts(texts);
 		
 		return smartArtDataHierarchy;
 	}
 
-	private void processChildrenOf(CTPt pt, org.opendope.SmartArt.dataHierarchy.Node node) {
-				
-		List<org.opendope.SmartArt.dataHierarchy.Node> childModelIds = createNodesForChildren(pt);
+	public CTTextBody processText(org.opendope.SmartArt.dataHierarchy.ListItem thisListItem,
+			CTPt thisPoint) {
 		
-		for (org.opendope.SmartArt.dataHierarchy.Node thisNode : childModelIds) {
+		CTTextBody textBody = thisPoint.getT();
+		if (textBody!=null) {
+			
+			TextBody tb = getDataHierarchyObjectFactory().createTextBody();
+			thisListItem.setTextBody(tb);
+			
+			for(CTTextParagraph p : textBody.getP() ) {
+				
+				if (!p.getEGTextRun().isEmpty()
+						&& p.getEGTextRun().get(0) instanceof org.docx4j.dml.CTRegularTextRun 
+						) {
+					// TODO; assumes a single r child, which is
+					// all we handle.  ie this model doesn't support
+					// multiple runs, some of which formatted
+					
+					org.docx4j.dml.CTRegularTextRun run = (org.docx4j.dml.CTRegularTextRun)p.getEGTextRun().get(0);
+					
+					tb.getP().add( run.getT() );					
+				}
+			}
+			
+		}
+		return textBody;
+	}
+	
+	private void processChildrenOf(CTPt pt, org.opendope.SmartArt.dataHierarchy.ListItem listItem) {
+				
+		List<org.opendope.SmartArt.dataHierarchy.ListItem> childModelIds = createListItemsForChildren(pt);
+		
+		if (childModelIds.isEmpty()) return;
+		
+		org.opendope.SmartArt.dataHierarchy.List list = factory.createList();
+		listItem.setList(list);		
+		
+		for (org.opendope.SmartArt.dataHierarchy.ListItem thisListItem : childModelIds) {
 			
 			
-			node.getNode().add(thisNode);
+			list.getListItem().add(thisListItem);
 			
-			thisNode.setDepth(node.getDepth()+1);
+			thisListItem.setDepth(listItem.getDepth()+1);
 			
-			String modelId = thisNode.getId();
+			String modelId = thisListItem.getId();
 			
 			// Find the pt
 			CTPt thisPoint = getPoint(modelId);
 			
 			// attach its text
-			CTTextBody textBody = thisPoint.getT();
-			if (textBody!=null) {
-				IdentifiedText wrapper = factory.createSmartArtDataHierarchyTextsIdentifiedText();
-				wrapper.setId(modelId); // just use that?
-				wrapper.setT(textBody);
-				texts.getIdentifiedText().add(wrapper);
-				thisNode.setValRef(modelId);
-			}
+			CTTextBody textBody = processText(thisListItem, thisPoint);
 			
-			if (textFormats.size()<thisNode.getDepth() ) {
+			if (textFormats.size()<thisListItem.getDepth() ) {
 				// we don't have a template for this level yet,
 				// so add this one as the template for this level
 				if (textBody==null) {
@@ -174,7 +215,27 @@ public class DiagramDataUnflatten {
 					
 					images.getImage().add(image);
 					
-					thisNode.setImageRef(imgPt.getModelId());
+					// reference
+					org.opendope.SmartArt.dataHierarchy.ImageRef imageRef = factory.createImageRef();
+					imageRef.setContentRef(imgPt.getModelId());
+					// Other attributes
+					if (imgPt.getPrSet()!=null ) {
+						CTElemPropSet props = imgPt.getPrSet();
+						if (props.getCustLinFactNeighborX()!=null) {
+							imageRef.setCustLinFactNeighborX(props.getCustLinFactNeighborX());
+						}
+						if (props.getCustLinFactNeighborY()!=null) {
+							imageRef.setCustLinFactNeighborY(props.getCustLinFactNeighborY());
+						}
+						if (props.getCustScaleX()!=null) {
+							imageRef.setCustScaleX(props.getCustScaleX());
+						}
+						if (props.getCustScaleY()!=null) {
+							imageRef.setCustScaleY(props.getCustScaleY());
+						}
+					}
+					
+					thisListItem.setImageRef(imageRef);
 					
 				} else if  (blip.getLink()!=null) {
 					// TODO
@@ -186,7 +247,7 @@ public class DiagramDataUnflatten {
 			}
 			
 			// attach its sibTrans text (if applicable)
-			CTPt sibTrans = getPoint(thisNode.getSibTransContentRef() );
+			CTPt sibTrans = getPoint(thisListItem.getSibTransBody().getContentRef() );
 			// Don't clutter up our export, if it doesn't contain content
 			if (sibTrans.getT()!=null 
 					&& sibTrans.getT().getP() !=null 
@@ -200,11 +261,11 @@ public class DiagramDataUnflatten {
 				texts.getIdentifiedText().add(wrapper);
 			} else {
 				// remove the reference
-				thisNode.setSibTransContentRef(null);
+				thisListItem.setSibTransBody(null);
 			}				
 			
 			// recurse
-			processChildrenOf(thisPoint, thisNode);
+			processChildrenOf(thisPoint, thisListItem);
 		}
 	}
 
@@ -234,10 +295,10 @@ public class DiagramDataUnflatten {
 		return null;
 	}
 	
-	public List<org.opendope.SmartArt.dataHierarchy.Node> createNodesForChildren(CTPt parent) {
+	public List<org.opendope.SmartArt.dataHierarchy.ListItem> createListItemsForChildren(CTPt parent) {
 		
-		List<org.opendope.SmartArt.dataHierarchy.Node> childNodeList 
-			= new ArrayList<org.opendope.SmartArt.dataHierarchy.Node>();
+		List<org.opendope.SmartArt.dataHierarchy.ListItem> childListItemList 
+			= new ArrayList<org.opendope.SmartArt.dataHierarchy.ListItem>();
 		
 		String parentId = parent.getModelId();
 		
@@ -245,17 +306,21 @@ public class DiagramDataUnflatten {
 			
 			if (cxn.getSrcId().equals(parentId) && !cxn.getSibTransId().equals("0") ) {
 				
-				// Create a corresponding node
-				org.opendope.SmartArt.dataHierarchy.Node thisNode = factory.createNode();
-				thisNode.setId(cxn.getDestId());
-				thisNode.setSibTransContentRef(cxn.getSibTransId()); // we'll manipulate this more later
+				// Create a corresponding ListItem
+				org.opendope.SmartArt.dataHierarchy.ListItem thisListItem = factory.createListItem();
+				thisListItem.setId(cxn.getDestId());
+				
+				// we'll manipulate this more later
+				SibTransBody sibTransBody = factory.createSibTransBody();
+				sibTransBody.setContentRef(cxn.getSibTransId());				
+				thisListItem.setSibTransBody(sibTransBody); 
 
-				childNodeList.add(thisNode);
+				childListItemList.add(thisListItem);
 				//childModelIds.add(cxn.getDestId() );
 			}
 		}
 		
-		return childNodeList;
+		return childListItemList;
 	}
 	
 	

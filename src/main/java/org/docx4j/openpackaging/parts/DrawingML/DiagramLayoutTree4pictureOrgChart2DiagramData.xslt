@@ -1,11 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+				xmlns:java="http://xml.apache.org/xalan/java" 
                 xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram"
                 xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" 
-                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+                xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+                xmlns:odgm="http://opendope.org/SmartArt/DataHierarchy"
+                exclude-result-prefixes="java">
+                
     <xsl:output method="xml" indent="yes"/>
 
 	<xsl:param name="list" />
+	<xsl:param name="DiagramDataPart"/>
 	  
     <xsl:template match="@* | node()">
         <xsl:copy>
@@ -15,12 +20,13 @@
 
   <xsl:template match="/">
 
+
     <dgm:dataModel xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:ns6="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:ns8="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:ns11="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:ns15="urn:schemas-microsoft-com:office:excel" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:ns17="urn:schemas-microsoft-com:office:powerpoint" xmlns:odx="http://opendope.org/xpaths" xmlns:odc="http://opendope.org/conditions" xmlns:odq="http://opendope.org/questions" xmlns:odi="http://opendope.org/components" xmlns:ns23="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" xmlns:ns24="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:ns25="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas">
       <!--  xsl:variable name="list" select="document('sample-list-boss-plus-212.xml')" /-->
       <dgm:ptLst>
         
         <!-- read the list again to create basic nodes-->
-          <xsl:apply-templates select="$list" mode="list2pt"/>
+          <xsl:apply-templates select="$list/odgm:SmartArtDataHierarchy/odgm:list" mode="list2pt"/>
 
         <xsl:for-each select="//dgm:layoutNode">
           <xsl:apply-templates select="." />
@@ -29,7 +35,7 @@
       </dgm:ptLst>
       <dgm:cxnLst>
         <xsl:comment>list2cxn</xsl:comment>
-        <xsl:apply-templates select="$list" mode="list2cxn"/>
+        <xsl:apply-templates select="$list/odgm:SmartArtDataHierarchy/odgm:list" mode="list2cxn"/>
         
         <xsl:comment>cxn</xsl:comment>
         <xsl:apply-templates select="dgm:layoutNode" mode="cxn"/>
@@ -40,7 +46,10 @@
     
   </xsl:template>
 
-  <xsl:template match="node[@id='0']" mode="list2pt">
+
+  <xsl:template match="odgm:listItem[@id='0']" mode="list2pt" priority="5"> 
+  <!-- <xsl:template match="*[local-name()='listItem' and @id='0']" mode="list2pt" priority="5">--> 
+  	<xsl:comment>Bingo! <xsl:value-of select="name()"/></xsl:comment>
     <dgm:pt type="doc" modelId="0">
       <dgm:prSet phldr="true" csCatId="accent1" csTypeId="urn:microsoft.com/office/officeart/2005/8/colors/accent1_2" 
                  qsCatId="simple" qsTypeId="urn:microsoft.com/office/officeart/2005/8/quickstyle/simple1" 
@@ -59,29 +68,37 @@
 
   </xsl:template>
 
+  <xsl:template match="*" mode="list2pt">
+  	<xsl:comment>list2pt Matched <xsl:value-of select="name()"/></xsl:comment>
+  	<xsl:apply-templates mode="list2pt" />
+  	</xsl:template>
+  <xsl:template match="odgm:textBody" mode="list2pt" />
+  <xsl:template match="odgm:sibTransBody" mode="list2pt" />
+  <xsl:template match="odgm:image" mode="list2pt" />
 
-
-  <xsl:template match="node[not(@id='0')]" mode="list2pt">
+<xsl:template match="odgm:listItem[not(@id='0')]" mode="list2pt"> 
+	<xsl:variable name="thisID" select="string(@id)"/>
+<!--  <xsl:template match="*[local-name()='listItem' and not(@id='0')]" mode="list2pt"  priority="5"> --> 
+  	<xsl:comment><xsl:value-of select="name()"/> for <xsl:value-of select="@id"/></xsl:comment>
     <dgm:pt modelId="{@id}">
       <dgm:prSet phldrT="21"/> <!-- ?? -->
       <dgm:spPr/>
-      <dgm:t>
-        <a:bodyPr/>
-        <a:lstStyle/>
-        <a:p>
-          <a:r>
-            <a:rPr lang="en-AU"/>
-            <a:t>
-              <xsl:value-of select="@val"/>
-            </a:t>
-          </a:r>
-        </a:p>
-      </dgm:t>
+      <xsl:copy-of select="$list/odgm:SmartArtDataHierarchy/odgm:texts/odgm:identifiedText[@id=$thisID]/dgm:t"/> 
+      <!-- <xsl:copy-of select="$list//*[local-name()='identifiedText' and @id=$thisID]/*"/>-->
     </dgm:pt>
 
     <xsl:apply-templates mode="list2pt"/>
+    
+    <!--  Creation of parTrans and sibTrans is hardcoded here.
+    
+          A more correct approach would be to generate 
+          
+          	<dgm:layoutNode ??="parTrans">
+          	
+          as we parse layout.xml, and then from this, generate
+          sibTrans and parChTrans.   -->
 
-    <dgm:pt cxnId="cxn{../@id}-{@id}" type="parTrans" modelId="pT{@id}">  <!-- invent naming conventions -->
+    <dgm:pt cxnId="cxn{../../@id}-{@id}" type="parTrans" modelId="pT{@id}">  <!-- invent naming conventions -->
       <dgm:prSet/>
       <dgm:spPr/>
       <dgm:t>
@@ -97,17 +114,25 @@
     	<xsl:comment>@id was <xsl:value-of select="@id"/></xsl:comment>
 	    <!--  Make one of these for each parTrans.
 	          It is required, and magic in the sense that 
-	          it is not specified in the layout! -->
-	     <dgm:pt type="pres" modelId="parChTransID{../@id}-{@id}">
-	       <dgm:prSet presStyleCnt="{count(../node)}" presStyleIdx="{count(preceding-sibling::node)}" 
-	       				presStyleLbl="parChTrans1D{count(ancestor::*)}" presName="Name37" 
+	          it is not specified in the layout! 
+	          (Nor is sibTrans below..) -->
+	     <dgm:pt type="pres" modelId="parChTransID{../../@id}-{@id}">
+	       <dgm:prSet presStyleCnt="{count(../odgm:listItem)}" 
+	       				presStyleIdx="{count(preceding-sibling::odgm:listItem)}" 
+	       				presStyleLbl="parChTrans1D{count(ancestor::odgm:listItem)}" 
+	       				presName="Name37" 
 	       				presAssocID="pT{@id}"/>
 	       				<!--  or Name35? -->
+	       				
+	       				<!--  TODO @presStyleCnt should be the number of nodes on this level;
+	       						   presStyleIdx should be the position of this one...
+	       				      but incorrect values do not stop the SmartArt from generating.
+	       				-->
 	       <dgm:spPr/>
 	     </dgm:pt>    
 	</xsl:if>
 
-    <dgm:pt cxnId="cxn{../@id}-{@id}" type="sibTrans" modelId="sT{@id}">
+    <dgm:pt cxnId="cxn{../../@id}-{@id}" type="sibTrans" modelId="sT{@id}">
       <dgm:prSet/>
       <dgm:spPr/>
       <dgm:t>
@@ -214,13 +239,44 @@
   </xsl:template>
   
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootPict')]">
+
+	<xsl:variable name="presAssocID" select="string(@presAssocID)"/>
+	
+	<xsl:variable name="listItemParent" select="$list/odgm:SmartArtDataHierarchy/odgm:list//odgm:listItem[@id=$presAssocID]"/>
+  
+	<xsl:variable name="imageRef" select="$listItemParent/odgm:imageRef"/>
+		<!--  can get @custScaleX etc from that -->
+
+<!--           
+          <xsl:if test="dh:imageRef/@custScaleX">
+	          <xsl:attribute name="custScaleX"><xsl:value-of select="dh:imageRef/@custScaleX"/></xsl:attribute>
+	      </xsl:if>
+          <xsl:if test="dh:imageRef/@custScaleY">
+	          <xsl:attribute name="custScaleY"><xsl:value-of select="dh:imageRef/@custScaleY"/></xsl:attribute>
+	      </xsl:if>
+          <xsl:if test="dh:imageRef/@custLinFactNeighborX">
+	          <xsl:attribute name="custLinFactNeighborX"><xsl:value-of select="dh:imageRef/@custLinFactNeighborX"/></xsl:attribute>
+	      </xsl:if>
+          <xsl:if test="dh:imageRef/@custLinFactNeighborY">
+	          <xsl:attribute name="custLinFactNeighborY"><xsl:value-of select="dh:imageRef/@custLinFactNeighborY"/></xsl:attribute>
+	      </xsl:if>
+ -->	      
+
+	<xsl:variable name="imageId" select="string($imageRef/@contentRef)"/>
+		
+	<xsl:variable name="image" 
+			select="$list/odgm:SmartArtDataHierarchy/odgm:images/odgm:image[@id=$imageId]"/>
+			
+	<xsl:variable name="relId" 
+		select="java:org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart.addImage($DiagramDataPart, string($image))" />
+			  
     <dgm:pt type="pres" modelId="{@modelId}">
       <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" presStyleLbl="alignImgPlace1" presName="{@name}" presAssocID="{@presAssocID}"/>
       <!--  @presStyleCnt=number of pictures in total in diagram
             @presStyleIdx=index of this picture, starting at 0   -->
       <dgm:spPr>
         <a:blipFill rotWithShape="false">
-          <a:blip r:embed="rId1"/>
+          <a:blip r:embed="{$relId}"/>
           <a:stretch>
             <a:fillRect/>
           </a:stretch>
@@ -269,18 +325,20 @@
       and (b) in some cases Word emits several cxn elements with the
       same value (for a given @srcId). -->
 
-  <xsl:template match="node[@id='0']"  mode="list2cxn">
+  <xsl:template match="odgm:listItem[@id='0']"  mode="list2cxn" priority="5">
     <xsl:apply-templates mode="list2cxn"/>
     <!--
     <dgm:cxn sibTransId="sT0" parTransId="pT0" destOrd="0" srcOrd="0" destId="1" srcId="0" modelId="cxn0-1"/>
      -->
   </xsl:template>
 
-  <xsl:template match="node[not(@id='0')]"  mode="list2cxn">
-    <dgm:cxn sibTransId="sT{@id}" parTransId="pT{@id}" destOrd="0" srcOrd="{count(preceding-sibling::node)}" destId="{@id}" srcId="{../@id}" modelId="cxn{../@id}-{@id}"/>
+  <xsl:template match="odgm:listItem[not(@id='0')]"  mode="list2cxn" priority="5">
+    <dgm:cxn sibTransId="sT{@id}" parTransId="pT{@id}" destOrd="0" 
+    srcOrd="{count(preceding-sibling::odgm:listItem)}" destId="{@id}" srcId="{../../@id}" 
+    modelId="cxn{../../@id}-{@id}"/>
     <xsl:if test="not(@id='1')">
 	    <dgm:cxn presId="urn:microsoft.com/office/officeart/2005/8/layout/pictureOrgChart"
-	                 srcId="pT{@id}" destId="parChTransID{../@id}-{@id}"
+	                 srcId="pT{@id}" destId="parChTransID{../../@id}-{@id}"
 	                 destOrd="0" srcOrd="1"
 	                 modelId="{generate-id()}"
 	                 type="presOf" />
@@ -289,6 +347,12 @@
     <xsl:apply-templates mode="list2cxn"/>
   </xsl:template>
   
+  <xsl:template match="*" mode="list2cxn">
+  	<xsl:apply-templates mode="list2cxn" />
+  	</xsl:template>
+  <xsl:template match="odgm:textBody" mode="list2cxn" />
+  <xsl:template match="odgm:sibTransBody" mode="list2cxn" />  
+  <xsl:template match="odgm:image" mode="list2cxn" />
   
   
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'hierChild')]" mode="cxn">
