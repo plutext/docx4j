@@ -23,6 +23,7 @@ package org.docx4j.model.structure;
 import java.math.BigInteger;
 
 import org.docx4j.jaxb.Context;
+import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SectPr.PgMar;
 import org.docx4j.wml.SectPr.PgSz;
 
@@ -40,7 +41,7 @@ public class PageDimensions {
 	// margins to Normal, Narrow, Office 2003 default
 	
 	int pageWidth = DEFAULT_PAGE_WIDTH_TWIPS;
-	int pageHeight = 15840;
+	int pageHeight = 15840;  // Letter
 	
 	int marginTop = 1440;
 	int marginBottom = 1440;
@@ -51,24 +52,25 @@ public class PageDimensions {
 	int marginFooter = 708;
 	int marginGutter = 0;		
 	
-	public void setA4Defaults() {
-		/* Mimic
-			<w:pgSz w:w="12240" w:h="15840"/>^M
-            <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" 
-            		 w:header="708" w:footer="708" w:gutter="0"/>
-		 */
-		pageWidth = DEFAULT_PAGE_WIDTH_TWIPS;
-		pageHeight = 15840;
-		
-		marginTop = 1440;
-		marginBottom = 1440;
-		marginLeft = DEFAULT_LEFT_MARGIN_TWIPS;
-		marginRight = DEFAULT_RIGHT_MARGIN_TWIPS;
-
-		marginHeader = 708;
-		marginFooter = 708;
-		marginGutter = 0;		
-	}
+//	@Deprecated
+//	public void setA4Defaults() {
+//		/* Mimic
+//			<w:pgSz w:w="12240" w:h="15840"/>^M
+//            <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" 
+//            		 w:header="708" w:footer="708" w:gutter="0"/>
+//		 */
+//		pageWidth = DEFAULT_PAGE_WIDTH_TWIPS;
+//		pageHeight = 15840;
+//		
+//		marginTop = 1440;
+//		marginBottom = 1440;
+//		marginLeft = DEFAULT_LEFT_MARGIN_TWIPS;
+//		marginRight = DEFAULT_RIGHT_MARGIN_TWIPS;
+//
+//		marginHeader = 708;
+//		marginFooter = 708;
+//		marginGutter = 0;		
+//	}
 	
 	public void setPageSize(PgSz pgSz ) {
 		
@@ -82,12 +84,87 @@ public class PageDimensions {
 		}		
 	}
 	
+	/**
+	 * @since 2.7
+	 */
+	public static PgSz createPgSize(PageSizePaper sz, boolean landscape ) {
+		
+		PgSz pgSz = Context.getWmlObjectFactory().createSectPrPgSz();
+		
+		if (sz.equals(PageSizePaper.LETTER)) {
+			pgSz.setCode(BigInteger.valueOf(1));
+			if (landscape) {
+				pgSz.setOrient(STPageOrientation.LANDSCAPE);
+				pgSz.setW(BigInteger.valueOf(15840));
+				pgSz.setH(BigInteger.valueOf(12240));
+			} else {
+				pgSz.setW(BigInteger.valueOf(12240));
+				pgSz.setH(BigInteger.valueOf(15840));
+
+			}
+		}
+
+		else if (sz.equals(PageSizePaper.LEGAL)) {
+			pgSz.setCode(BigInteger.valueOf(5));
+			if (landscape) {
+				pgSz.setOrient(STPageOrientation.LANDSCAPE);
+				pgSz.setW(BigInteger.valueOf(20160));
+				pgSz.setH(BigInteger.valueOf(12240));
+			} else {
+				pgSz.setW(BigInteger.valueOf(12240));
+				pgSz.setH(BigInteger.valueOf(20160));
+
+			}
+		}
+
+		else if (sz.equals(PageSizePaper.A3)) {
+			pgSz.setCode(BigInteger.valueOf(8));
+			if (landscape) {
+				pgSz.setOrient(STPageOrientation.LANDSCAPE);
+				pgSz.setW(BigInteger.valueOf(23814));
+				pgSz.setH(BigInteger.valueOf(16839));
+			} else {
+				pgSz.setW(BigInteger.valueOf(16839));
+				pgSz.setH(BigInteger.valueOf(23814));
+
+			}
+		}
+
+		else if (sz.equals(PageSizePaper.A4)) {
+			pgSz.setCode(BigInteger.valueOf(9));
+			if (landscape) {
+				pgSz.setOrient(STPageOrientation.LANDSCAPE);
+				pgSz.setW(BigInteger.valueOf(16839));
+				pgSz.setH(BigInteger.valueOf(11907));
+			} else {
+				pgSz.setW(BigInteger.valueOf(11907));
+				pgSz.setH(BigInteger.valueOf(16839));
+
+			}
+		}
+
+		else if (sz.equals(PageSizePaper.B4JIS)) {
+			pgSz.setCode(BigInteger.valueOf(12));
+			if (landscape) {
+				pgSz.setOrient(STPageOrientation.LANDSCAPE);
+				pgSz.setW(BigInteger.valueOf(20639));
+				pgSz.setH(BigInteger.valueOf(14572));
+			} else {
+				pgSz.setW(BigInteger.valueOf(14572));
+				pgSz.setH(BigInteger.valueOf(20639));
+
+			}
+		}
+		return pgSz;
+	}	
+	
 	public PgSz createPgSize() {
 		
 		PgSz pgSz = Context.getWmlObjectFactory().createSectPrPgSz();
 		
 		pgSz.setW( BigInteger.valueOf(pageWidth) );
 		pgSz.setH( BigInteger.valueOf(pageHeight) );
+		
 		
 		return pgSz;		
 	}

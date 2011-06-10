@@ -50,6 +50,7 @@ import org.docx4j.model.TransformState;
 import org.docx4j.model.structure.DocumentModel;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
@@ -384,6 +385,11 @@ public class WordprocessingMLPackage extends OpcPackage {
     	
 
 	public static WordprocessingMLPackage createPackage() throws InvalidFormatException {
+
+		return createPackage(PageSizePaper.A4, false); 
+	}
+	
+	public static WordprocessingMLPackage createPackage(PageSizePaper sz, boolean landscape ) throws InvalidFormatException {
 		
 				
 		// Create a package
@@ -403,7 +409,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		PageDimensions page = new PageDimensions();
 		SectPr sectPr = factory.createSectPr();
 		body.setSectPr(sectPr);
-		sectPr.setPgSz(page.createPgSize() );
+		sectPr.setPgSz(PageDimensions.createPgSize(sz, landscape) );
 		sectPr.setPgMar(page.createPgMar());
 				
 		// Put the content in the part
