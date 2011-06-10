@@ -30,16 +30,13 @@ import org.docx4j.wml.SectPr.PgSz;
 public class PageDimensions {
 	
 	// Defaults - if values aren't defined in sectPr 
-	// TODO - replace this with convenience methods
-	// to set defaults for A4, Letter etc
+	// TODO - defaults page size and margins in a .properties file	
+
 	public static int DEFAULT_PAGE_WIDTH_TWIPS = 12240;  // Letter; A4 would be 11907  
 	public static int DEFAULT_LEFT_MARGIN_TWIPS = 1440;  // 1 inch
 	public static int DEFAULT_RIGHT_MARGIN_TWIPS = 1440;
 	// TODO - defaults for the other fields
-	
-	// TODO - and independently, to set
-	// margins to Normal, Narrow, Office 2003 default
-	
+		
 	int pageWidth = DEFAULT_PAGE_WIDTH_TWIPS;
 	int pageHeight = 15840;  // Letter
 	
@@ -71,6 +68,49 @@ public class PageDimensions {
 //		marginFooter = 708;
 //		marginGutter = 0;		
 //	}
+	
+	/**
+	 * @since 2.7
+	 */
+	public void setMargins(MarginsWellKnown m ) {
+		
+//	    NORMAL("normal"),     // <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+		if (m.equals(MarginsWellKnown.NORMAL)) {
+			marginTop = 1440;
+			marginBottom = 1440;
+			marginLeft = 1440;
+			marginRight = 1440;
+			return;			
+		}
+		
+//	    NARROW("narrow"),     // <w:pgMar w:top="720"  w:right="720"  w:bottom="720"  w:left="720" w:header="708" w:footer="708" w:gutter="0"/>
+		if (m.equals(MarginsWellKnown.NARROW)) {
+			marginTop = 720;
+			marginBottom = 720;
+			marginLeft = 720;
+			marginRight = 720;
+			return;			
+		}
+		
+//	    MODERATE("moderate"), // <w:pgMar w:top="1440" w:right="1080" w:bottom="1440" w:left="1080" w:header="708" w:footer="708" w:gutter="0"/>
+		if (m.equals(MarginsWellKnown.MODERATE)) {
+			marginTop = 1440;
+			marginBottom = 1440;
+			marginLeft = 1080;
+			marginRight = 1080;
+			return;			
+		}
+		
+//	    WIDE("wide");         // <w:pgMar w:top="1440" w:right="2880" w:bottom="1440" w:left="2880" w:header="708" w:footer="708" w:gutter="0"/>
+		if (m.equals(MarginsWellKnown.WIDE)) {
+			marginTop = 1440;
+			marginBottom = 1440;
+			marginLeft = 2880;
+			marginRight = 2880;
+			return;			
+		}
+		
+	}
 	
 	public void setPageSize(PgSz pgSz ) {
 		
