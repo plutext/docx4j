@@ -53,6 +53,7 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
@@ -140,7 +141,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 	/**
 	 * Create an image part from the provided byte array, attach it to the 
-	 * main document part, and return it.
+	 * docx main document part, and return it.
 	 * 
 	 * @param wordMLPackage
 	 * @param sourcePart
@@ -166,14 +167,16 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * Create an image part from the provided byte array, attach it to the source part
 	 * (eg the main document part, a header part etc), and return it.
 	 * 
-	 * @param wordMLPackage
+	 * Works for both docx and pptx.
+	 * 
+	 * @param opcPackage
 	 * @param sourcePart
 	 * @param bytes
 	 * @return
 	 * @throws Exception
 	 */
 	public static BinaryPartAbstractImage createImagePart(
-			WordprocessingMLPackage wordMLPackage,
+			OpcPackage opcPackage,
 			Part sourcePart, byte[] bytes) throws Exception {
 				
 		// Whatever image type this is, we're going to need 
@@ -194,7 +197,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		// In the absence of an exception, tmpImageFile now contains an image 
 		// Word will accept
 		
-		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
+		ContentTypeManager ctm = opcPackage.getContentTypeManager();
 		
 		// Ensure the relationships part exists
 		if (sourcePart.getRelationshipsPart()==null) 
@@ -324,7 +327,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
 
 	/**
-	 * Create a linked image part, and attach it as a rel of the main document part
+	 * Create a linked image part, and attach it as a rel of the docx main document part
 	 * @param wordMLPackage
 	 * @param fileurl
 	 * @return
