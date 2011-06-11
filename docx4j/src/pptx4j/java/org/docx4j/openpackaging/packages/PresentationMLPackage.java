@@ -30,7 +30,6 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -47,14 +46,12 @@ import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
+import org.docx4j.openpackaging.parts.PresentationML.SlideSizesWellKnown;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Style;
 import org.pptx4j.convert.out.svginhtml.SvgExporter;
-import org.pptx4j.jaxb.Context;
-import org.pptx4j.model.ResolvedLayout;
 import org.pptx4j.model.ShapeWrapper;
 import org.pptx4j.model.TextStyles;
-import org.pptx4j.pml.GroupShape;
 import org.pptx4j.pml.SldLayout;
 
 
@@ -123,7 +120,6 @@ public class PresentationMLPackage  extends OpcPackage {
 	}
 	
 
-	
 	/**
 	 * Create an empty presentation.
 	 * 
@@ -131,6 +127,18 @@ public class PresentationMLPackage  extends OpcPackage {
 	 * @throws InvalidFormatException
 	 */
 	public static PresentationMLPackage createPackage() throws InvalidFormatException {
+
+		return createPackage(null, true);
+	}
+	
+	/**
+	 * Create an empty presentation.
+	 * 
+	 * @return
+	 * @throws InvalidFormatException
+	 * @since 2.7
+	 */
+	public static PresentationMLPackage createPackage(SlideSizesWellKnown sz, boolean landscape) throws InvalidFormatException {
 		
 		
 		// Create a package
@@ -141,7 +149,8 @@ public class PresentationMLPackage  extends OpcPackage {
 		try {
 			
 			pp = new MainPresentationPart();
-			pp.setJaxbElement(MainPresentationPart.createJaxbPresentationElement() );
+			pp.setJaxbElement(
+					MainPresentationPart.createJaxbPresentationElement(sz, landscape) );
 			pmlPack.addTargetPart(pp);		
 			
 //			// Slide part
