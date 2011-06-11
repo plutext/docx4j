@@ -20,19 +20,18 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTPositiveSize2D;
-import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
+import org.pptx4j.jaxb.Context;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Presentation;
-import org.pptx4j.pml.SldMaster;
 
 
 
@@ -65,8 +64,173 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 	private final static String DEFAULT_NOTES_SIZE = "<p:notesSz xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\" " +
 			"cx=\"6858000\" cy=\"9144000\"/>";
 
-	
+	/**
+	 * @since 2.7
+	 */
+	public static Presentation.SldSz createSlideSize(SlideSizesWellKnown sz,
+			boolean landscape) {
+
+		Presentation.SldSz sldSz = Context.getpmlObjectFactory()
+				.createPresentationSldSz();
+
+		if (sz.equals(SlideSizesWellKnown.LETTER)) {
+			sldSz.setType("letter");
+			if (landscape) {
+				sldSz.setCx(9144000);
+				sldSz.setCy(6858000);
+			} else {
+				sldSz.setCx(6858000);
+				sldSz.setCy(9144000);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.A3)) {
+			sldSz.setType("A3");
+			if (landscape) {
+				sldSz.setCx(12801600);
+				sldSz.setCy(9601200);
+			} else {
+				sldSz.setCx(9601200);
+				sldSz.setCy(12801600);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.A4)) {
+			sldSz.setType("A4");
+			if (landscape) {
+				sldSz.setCx(9906000);
+				sldSz.setCy(6858000);
+			} else {
+				sldSz.setCx(6858000);
+				sldSz.setCy(9906000);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.SCREEN4x3)) {
+			sldSz.setType("screen4x3");
+			if (landscape) {
+				sldSz.setCx(9144000);
+				sldSz.setCy(6858000);
+			} else {
+				sldSz.setCx(6858000);
+				sldSz.setCy(9144000);
+
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.SCREEN16x9)) {
+			sldSz.setType("screen16x9");
+			if (landscape) {
+				sldSz.setCx(9144000);
+				sldSz.setCy(5143500);
+			} else {
+				sldSz.setCx(5143500);
+				sldSz.setCy(9144000);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.SCREEN16x10)) {
+			sldSz.setType("screen16x10");
+			if (landscape) {
+				sldSz.setCx(9144000);
+				sldSz.setCy(5715000);
+			} else {
+				sldSz.setCx(5715000);
+				sldSz.setCy(9144000);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.LEDGER)) {
+			sldSz.setType("ledger");
+			if (landscape) {
+				sldSz.setCx(12179300);
+				sldSz.setCy(9134475);
+			} else {
+				sldSz.setCx(9134475);
+				sldSz.setCy(12179300);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.B4ISO)) {
+			sldSz.setType("B4ISO");
+			if (landscape) {
+				sldSz.setCx(10826750);
+				sldSz.setCy(8120063);
+			} else {
+				sldSz.setCx(8120063);
+				sldSz.setCy(10826750);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.B5ISO)) {
+			sldSz.setType("B5ISO");
+			if (landscape) {
+				sldSz.setCx(7169150);
+				sldSz.setCy(5376863);
+			} else {
+				sldSz.setCx(5376863);
+				sldSz.setCy(7169150);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.MM35)) {
+			sldSz.setType("35mm");
+			if (landscape) {
+				sldSz.setCx(10287000);
+				sldSz.setCy(6858000);
+			} else {
+				sldSz.setCx(6858000);
+				sldSz.setCy(10287000);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.OVERHEAD)) {
+			sldSz.setType("overhead");
+			if (landscape) {
+				sldSz.setCx(9144000);
+				sldSz.setCy(6858000);
+			} else {
+				sldSz.setCx(6858000);
+				sldSz.setCy(9144000);
+			}
+			return sldSz;
+		}
+
+		if (sz.equals(SlideSizesWellKnown.BANNER)) {
+			sldSz.setType("banner");
+			if (landscape) {
+				sldSz.setCx(7315200);
+				sldSz.setCy(914400);
+			} else {
+				sldSz.setCx(914400);
+				sldSz.setCy(7315200);
+			}
+			return sldSz;
+		}
+
+		throw new NotImplementedException("No support for slide size "
+				+ sz.value());
+	}
+
 	public static Presentation createJaxbPresentationElement() throws JAXBException {
+		
+		return createJaxbPresentationElement(null, true);
+	}
+	
+	/**
+	 * @since 2.7
+	 */	
+	public static Presentation createJaxbPresentationElement(SlideSizesWellKnown sz, boolean landscape) throws JAXBException {
 
 		ObjectFactory factory = Context.getpmlObjectFactory(); 
 		Presentation presentation = factory.createPresentation();
@@ -79,9 +243,13 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		
 		presentation.setNotesSz( 
 				(CTPositiveSize2D)XmlUtils.unmarshalString(DEFAULT_NOTES_SIZE, Context.jcPML, CTPositiveSize2D.class) );
-		presentation.setSldSz(
-				(Presentation.SldSz)XmlUtils.unmarshalString(DEFAULT_SLIDE_SIZE, Context.jcPML, Presentation.SldSz.class));
 		
+		if (sz==null) {
+			presentation.setSldSz(
+					(Presentation.SldSz)XmlUtils.unmarshalString(DEFAULT_SLIDE_SIZE, Context.jcPML, Presentation.SldSz.class));
+		} else {
+			presentation.setSldSz(	MainPresentationPart.createSlideSize(sz, landscape) );		
+		}
 		return presentation;
 	}
 
