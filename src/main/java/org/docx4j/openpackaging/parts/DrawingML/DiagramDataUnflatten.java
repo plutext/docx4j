@@ -97,7 +97,19 @@ public class DiagramDataUnflatten {
 	
 	public SmartArtDataHierarchy convert() {
 		
+		SmartArtDataHierarchy smartArtDataHierarchy 
+		= factory.createSmartArtDataHierarchy();
+
 		CTPt docPt = ptList.getPt().get(0);
+		
+		if (docPt.getPrSet()!=null
+				&& docPt.getPrSet().getLoTypeId()!=null) {
+
+			smartArtDataHierarchy.setLoTypeId(
+					docPt.getPrSet().getLoTypeId() );			
+		} else {
+			log.error("Couldn't read @loTypeId");
+		}
 		
 		org.opendope.SmartArt.dataHierarchy.List docList = factory.createList();
 		// dgm:pt[@type="doc" and @modelId="0"]
@@ -109,12 +121,11 @@ public class DiagramDataUnflatten {
 		
 		processChildrenOf(docPt, listItem);
 		
-		SmartArtDataHierarchy smartArtDataHierarchy 
-			= factory.createSmartArtDataHierarchy();
 		
 		smartArtDataHierarchy.setList(docList);
 		smartArtDataHierarchy.setImages(images);
 		smartArtDataHierarchy.setTexts(texts);
+		
 		
 		return smartArtDataHierarchy;
 	}
