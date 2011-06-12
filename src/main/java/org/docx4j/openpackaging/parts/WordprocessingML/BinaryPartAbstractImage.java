@@ -54,6 +54,8 @@ import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.packages.PresentationMLPackage;
+import org.docx4j.openpackaging.packages.SpreadsheetMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
@@ -157,11 +159,40 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 	}
 	
+	/**
+	 * This method assumes your package is a docx (not a pptx or xlsx).
+	 * 
+	 * @param sourcePart
+	 * @param proposedRelId
+	 * @param ext
+	 * @return
+	 */
+	@Deprecated
 	public static String createImageName(Base sourcePart, String proposedRelId, String ext ) {
 		
 		return PartName.generateUniqueName(sourcePart, proposedRelId, 
 				IMAGE_DIR_PREFIX, IMAGE_NAME_PREFIX, ext);
 	}
+
+	public static String createImageName(OpcPackage opcPackage, Base sourcePart, String proposedRelId, String ext ) {
+		
+		if (opcPackage instanceof WordprocessingMLPackage) {		
+			return PartName.generateUniqueName(sourcePart, proposedRelId, 
+					IMAGE_DIR_PREFIX, IMAGE_NAME_PREFIX, ext);
+		} else if (opcPackage instanceof PresentationMLPackage) {		
+			return PartName.generateUniqueName(sourcePart, proposedRelId, 
+					"/ppt/media/", IMAGE_NAME_PREFIX, ext);
+		} else if (opcPackage instanceof SpreadsheetMLPackage) {		
+			return PartName.generateUniqueName(sourcePart, proposedRelId, 
+					"/xl/media/", IMAGE_NAME_PREFIX, ext);
+		} else {
+			// Shouldn't happen
+			return PartName.generateUniqueName(sourcePart, proposedRelId, 
+					IMAGE_DIR_PREFIX, IMAGE_NAME_PREFIX, ext);			
+		}
+	}
+	
+	
 	
 	/**
 	 * Create an image part from the provided byte array, attach it to the source part
@@ -211,7 +242,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
-				info.getMimeType(), createImageName(sourcePart, proposedRelId, ext), null
+				info.getMimeType(), 
+				createImageName(opcPackage, sourcePart, proposedRelId, ext), null
 				 );
 				
 		log.debug("created part " + imagePart.getClass().getName() +
@@ -350,12 +382,12 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @return
 	 * @throws Exception
 	 */
-	public static BinaryPartAbstractImage createLinkedImagePart(WordprocessingMLPackage wordMLPackage, 
+	public static BinaryPartAbstractImage createLinkedImagePart(OpcPackage opcPackage, 
 			Part sourcePart, String fileurl) throws Exception {
 		
 		ImageInfo info = ensureFormatIsSupported(fileurl, null,null);
 
-		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
+		ContentTypeManager ctm = opcPackage.getContentTypeManager();
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 		// In order to ensure unique part name,
 		// idea is to use the relId, which ought to be unique
@@ -364,7 +396,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
 				info.getMimeType(), 
-				createImageName(sourcePart, proposedRelId, ext ), null );
+				createImageName(opcPackage, sourcePart, proposedRelId, ext ), null );
 				
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());
@@ -372,7 +404,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		imagePart.rel = sourcePart.addTargetPart(imagePart);
 		imagePart.rel.setTargetMode("External");
 
-		wordMLPackage.getExternalResources().put(imagePart.getExternalTarget(), 
+		opcPackage.getExternalResources().put(imagePart.getExternalTarget(), 
 				imagePart);			
 		
 		if (!fileurl.startsWith("file:///") && new File(fileurl).isFile()) {
