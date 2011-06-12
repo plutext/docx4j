@@ -182,7 +182,7 @@
       <dgm:prSet presStyleCnt="0" presName="{@name}" presAssocID="{@presAssocID}">
         <!--  @presStyleCnt="0" always -->
         <dgm:presLayoutVars>
-          <dgm:hierBranch val="init"/>
+          <dgm:hierBranch /> <!--  val="init" can cause right hanging layout  -->
         </dgm:presLayoutVars>
       </dgm:prSet>
       <dgm:spPr/>
@@ -247,20 +247,6 @@
 	<xsl:variable name="imageRef" select="$listItemParent/odgm:imageRef"/>
 		<!--  can get @custScaleX etc from that -->
 
-<!--           
-          <xsl:if test="dh:imageRef/@custScaleX">
-	          <xsl:attribute name="custScaleX"><xsl:value-of select="dh:imageRef/@custScaleX"/></xsl:attribute>
-	      </xsl:if>
-          <xsl:if test="dh:imageRef/@custScaleY">
-	          <xsl:attribute name="custScaleY"><xsl:value-of select="dh:imageRef/@custScaleY"/></xsl:attribute>
-	      </xsl:if>
-          <xsl:if test="dh:imageRef/@custLinFactNeighborX">
-	          <xsl:attribute name="custLinFactNeighborX"><xsl:value-of select="dh:imageRef/@custLinFactNeighborX"/></xsl:attribute>
-	      </xsl:if>
-          <xsl:if test="dh:imageRef/@custLinFactNeighborY">
-	          <xsl:attribute name="custLinFactNeighborY"><xsl:value-of select="dh:imageRef/@custLinFactNeighborY"/></xsl:attribute>
-	      </xsl:if>
- -->	      
 
 	<xsl:variable name="imageId" select="string($imageRef/@contentRef)"/>
 		
@@ -271,9 +257,23 @@
 		select="java:org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart.addImage($DiagramDataPart, string($image))" />
 			  
     <dgm:pt type="pres" modelId="{@modelId}">
-      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" presStyleLbl="alignImgPlace1" presName="{@name}" presAssocID="{@presAssocID}"/>
+      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" presStyleLbl="alignImgPlace1" presName="{@name}" presAssocID="{@presAssocID}">
       <!--  @presStyleCnt=number of pictures in total in diagram
             @presStyleIdx=index of this picture, starting at 0   -->
+            
+	      <xsl:if test="$imageRef/@custScaleX">
+	          <xsl:attribute name="custScaleX"><xsl:value-of select="$imageRef/@custScaleX"/></xsl:attribute>
+	      </xsl:if>
+	         <xsl:if test="$imageRef/@custScaleY">
+	          <xsl:attribute name="custScaleY"><xsl:value-of select="$imageRef/@custScaleY"/></xsl:attribute>
+	      </xsl:if>
+	         <xsl:if test="$imageRef/@custLinFactNeighborX">
+	          <xsl:attribute name="custLinFactNeighborX"><xsl:value-of select="$imageRef/@custLinFactNeighborX"/></xsl:attribute>
+	      </xsl:if>
+	         <xsl:if test="$imageRef/@custLinFactNeighborY">
+	          <xsl:attribute name="custLinFactNeighborY"><xsl:value-of select="$imageRef/@custLinFactNeighborY"/></xsl:attribute>
+	      </xsl:if>
+      </dgm:prSet>
       <dgm:spPr>
         <a:blipFill rotWithShape="false">
           <a:blip r:embed="{$relId}"/>
