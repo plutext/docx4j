@@ -60,7 +60,7 @@ public final class DiagramLayoutHeaderPart extends JaxbDmlPart<CTDiagramDefiniti
 				org.docx4j.openpackaging.contenttype.ContentTypes.DRAWINGML_DIAGRAM_LAYOUT_HEADER));
 
 		// Used when this Part is added to a rels 
-		setRelationshipType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT);
+		setRelationshipType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT_HEADER);
 	}
 		
 }
