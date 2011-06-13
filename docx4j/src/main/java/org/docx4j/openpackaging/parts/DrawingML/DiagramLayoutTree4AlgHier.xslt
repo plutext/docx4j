@@ -1,4 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+ *
+ *  Copyright 2011, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */ -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 				xmlns:java="http://xml.apache.org/xalan/java" 
                 xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram"
@@ -6,6 +26,7 @@
                 xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
                 xmlns:odgm="http://opendope.org/SmartArt/DataHierarchy"
                 exclude-result-prefixes="java">
+
                 
     <xsl:output method="xml" indent="yes"/>
 
@@ -22,7 +43,6 @@
 
 
     <dgm:dataModel xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:ns6="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:ns8="http://schemas.openxmlformats.org/drawingml/2006/chartDrawing" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:ns11="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:dsp="http://schemas.microsoft.com/office/drawing/2008/diagram" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:ns15="urn:schemas-microsoft-com:office:excel" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:ns17="urn:schemas-microsoft-com:office:powerpoint" xmlns:odx="http://opendope.org/xpaths" xmlns:odc="http://opendope.org/conditions" xmlns:odq="http://opendope.org/questions" xmlns:odi="http://opendope.org/components" xmlns:ns23="http://schemas.openxmlformats.org/officeDocument/2006/bibliography" xmlns:ns24="http://schemas.openxmlformats.org/drawingml/2006/compatibility" xmlns:ns25="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas">
-      <!--  xsl:variable name="list" select="document('sample-list-boss-plus-212.xml')" /-->
       <dgm:ptLst>
         
         <!-- read the list again to create basic nodes-->
@@ -83,6 +103,24 @@
     <dgm:pt modelId="{@id}">
       <dgm:prSet phldrT="21"/> <!-- ?? -->
       <dgm:spPr/>
+      
+      <dgm:t>
+        <a:bodyPr/>
+        <a:lstStyle/>
+        <xsl:for-each select="odgm:textBody/odgm:p">
+        
+	        <a:p>
+	          <a:r>
+	            <a:rPr sz="800" lang="en-AU"/>
+	            <a:t><xsl:value-of select="."/></a:t>
+	          </a:r>
+	        </a:p>
+
+        </xsl:for-each>
+      </dgm:t>
+      
+      
+      
       <xsl:copy-of select="$list/odgm:SmartArtDataHierarchy/odgm:texts/odgm:identifiedText[@id=$thisID]/dgm:t"/> 
       <!-- <xsl:copy-of select="$list//*[local-name()='identifiedText' and @id=$thisID]/*"/>-->
     </dgm:pt>
@@ -135,13 +173,21 @@
     <dgm:pt cxnId="cxn{../../@id}-{@id}" type="sibTrans" modelId="sT{@id}">
       <dgm:prSet/>
       <dgm:spPr/>
-      <dgm:t>
-        <a:bodyPr/>
-        <a:lstStyle/>
-        <a:p>
-          <a:endParaRPr lang="en-AU"/>
-        </a:p>
-      </dgm:t>
+      <xsl:choose>
+      	<xsl:when test="odgm:sibTransBody">
+			<xsl:variable name="stIDREF" select="string(odgm:sibTransBody/@contentRef)"/>      		
+	        <xsl:copy-of select="$list/odgm:SmartArtDataHierarchy/odgm:texts/odgm:identifiedText[@id=$stIDREF]/dgm:t"/> 
+      	</xsl:when>
+      	<xsl:otherwise>
+	      <dgm:t>
+	        <a:bodyPr/>
+	        <a:lstStyle/>
+	        <a:p>
+	          <a:endParaRPr lang="en-AU"/>
+	        </a:p>
+	      </dgm:t>      	
+      	</xsl:otherwise>      
+      </xsl:choose>
     </dgm:pt>
 
   </xsl:template>
@@ -189,13 +235,15 @@
     </dgm:pt>
   </xsl:template>
 
-  <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootComposite')]">
+  <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootComposite')
+  	or starts-with(string(@name), 'composite')]">
     <dgm:pt type="pres" modelId="{@modelId}">
       <dgm:prSet presStyleCnt="0" presName="{@name}" presAssocID="{@presAssocID}"/>
       <!--  @presStyleCnt="0" always -->
       <dgm:spPr/>
     </dgm:pt>
   </xsl:template>
+
 
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootText')]">
   
@@ -238,7 +286,7 @@
   
   </xsl:template>
   
-  <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootPict')]">
+  <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootPict')  or starts-with(string(@name), 'image')]">
 
 	<xsl:variable name="presAssocID" select="string(@presAssocID)"/>
 	
@@ -457,6 +505,8 @@
              type="presParOf" />
     <xsl:apply-templates mode="cxn"/>
   </xsl:template>
+
+  <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'image')]" mode="cxn" />
 
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootConnector')]" mode="cxn">
     <!-- cxn from parent rootComposite-->

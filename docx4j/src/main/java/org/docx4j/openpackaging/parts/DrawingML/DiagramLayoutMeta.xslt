@@ -1,4 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+
+/*
+ *  Copyright 2010, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
+
+ -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:gen="dummy-namespace-for-the-generated-xslt"                
                 xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" 
@@ -24,17 +47,22 @@
     xmlns:msxsl="urn:schemas-microsoft-com:xslt" exclude-result-prefixes="msxsl"
     xmlns:dh="http://opendope.org/SmartArt/DataHierarchy">
     
-    <xsl:for-each select="//dgm:forEach[@axis='ch']">
-      <xsl:apply-templates select="." mode="create-named"/>
-    </xsl:for-each>
-    
     <gen:template match="/">
       <!-- Don't apply to the root of our list -->
-      <gen:for-each select="/dh:SmartArtDataHierarchy/dh:list/dh:listItem/dh:list">
+      <gen:for-each select="/dh:SmartArtDataHierarchy/dh:list/dh:listItem">
         <gen:comment> <gen:value-of select="name()" /></gen:comment>
 	    <xsl:apply-templates select="/dgm:layoutDef/dgm:layoutNode"/>
       </gen:for-each>
     </gen:template>
+
+    <xsl:for-each select="//dgm:forEach[@axis='ch']">
+      <xsl:apply-templates select="." mode="create-named"/>
+      
+      <xsl:text>
+      
+      </xsl:text>
+    </xsl:for-each>
+    
 
 <!-- 
 	  <gen:template match="dh:list">
@@ -90,7 +118,7 @@
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
       </xsl:when>
-      <xsl:when test="starts-with(string(@name), 'rootText')">
+      <xsl:when test="starts-with(string(@name), 'rootText') or starts-with(string(@name), 'text')">
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
           <xsl:attribute name="presStyleCnt">{count(../dh:listItem)}</xsl:attribute>
@@ -99,7 +127,7 @@
           <xsl:apply-templates select="@* | node()"/>
         </xsl:copy>
       </xsl:when>
-      <xsl:when test="starts-with(string(@name), 'rootPict')">
+      <xsl:when test="starts-with(string(@name), 'rootPict') or starts-with(string(@name), 'image')">
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
           <xsl:attribute name="presStyleCnt">{count(//*)-1}</xsl:attribute><!--  FIXME when image rep is finalised -->
@@ -135,7 +163,7 @@
         </xsl:copy>
       </xsl:when>
       <xsl:otherwise> <!--  unexpected -->
-      	<xsl:comment>Unexpected @name </xsl:comment>
+      	<xsl:comment>Unexpected @name <xsl:value-of select="@name"/></xsl:comment>
         <xsl:copy>
           <xsl:attribute name="presAssocID">{@id}</xsl:attribute>
           <xsl:apply-templates select="@* | node()"/>
@@ -202,9 +230,17 @@
             </gen:for-each>
           </gen:template>
         </xsl:when>
+        <xsl:when test="@ptType='parTrans'">
+          <gen:template name="{$name}">        
+          <gen:for-each select="dh:list/dh:listItem">
+            <!-- <gen:for-each select="*[local-name()!='asst']"> -->
+              <xsl:apply-templates/>
+            </gen:for-each>
+          </gen:template>
+        </xsl:when>
         <xsl:otherwise>
           <gen:template name="{$name}">
-            <gen:for-each select="*">
+          <gen:for-each select="dh:list/dh:listItem">
             <xsl:apply-templates/>
           </gen:for-each>
           </gen:template>

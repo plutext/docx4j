@@ -1,27 +1,46 @@
-/**
- * 
+/*
+ *  Copyright 2010, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
  */
 package org.docx4j.openpackaging.parts.DrawingML;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTTextBody;
 import org.docx4j.dml.CTTextParagraph;
 import org.docx4j.dml.diagram.CTCxn;
 import org.docx4j.dml.diagram.CTCxnList;
-import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTElemPropSet;
 import org.docx4j.dml.diagram.CTPt;
 import org.docx4j.dml.diagram.CTPtList;
 import org.docx4j.dml.diagram.STPtType;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
+import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.relationships.Relationship;
 import org.opendope.SmartArt.dataHierarchy.SibTransBody;
 import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy;
 import org.opendope.SmartArt.dataHierarchy.TextBody;
@@ -334,5 +353,41 @@ public class DiagramDataUnflatten {
 		return childListItemList;
 	}
 	
+	public static void main(String[] args) throws Exception {
+
+		OpcPackage pkg = OpcPackage
+				.load(new java.io.File(
+						System.getProperty("user.dir")
+						+ "/OUT.docx"));
+		
+
+		DiagramDataPart thisPart = null;
+		for (Entry<PartName,Part> entry : pkg.getParts().getParts().entrySet() ) {
+			
+			if (entry.getValue().getContentType().equals( ContentTypes.DRAWINGML_DIAGRAM_DATA )) {
+				thisPart = (DiagramDataPart)entry.getValue();
+				break;
+			}
+		}
+		if (thisPart==null) {
+			System.out.println("No SmartArt found in this docx.");
+			return;	
+		}
+		
+		thisPart.setFriendlyIds(thisPart.getJaxbElement());
+		
+//		System.out.println( XmlUtils.marshaltoString(thisPart.getJaxbElement(), true, true));
+
+		// What does it look like in our format?
+		DiagramDataUnflatten diagramDataUnflatten = new DiagramDataUnflatten(thisPart);
+		String exchange= XmlUtils.marshaltoString(diagramDataUnflatten.convert(), true, true);
+		System.out.println( exchange );		
+//		PrintWriter out = new PrintWriter(System.getProperty("user.dir")
+//				+ "/SmartArt/12hi.xml");
+//		out.println(exchange);
+//		out.flush();
+//		out.close();
+		
+	}	
 	
 }
