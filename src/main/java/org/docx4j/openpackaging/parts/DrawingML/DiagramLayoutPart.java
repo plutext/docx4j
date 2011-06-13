@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2011, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.util.Map.Entry;
 
 import javax.xml.bind.util.JAXBResult;
 import javax.xml.parsers.DocumentBuilder;
@@ -43,9 +44,12 @@ import org.docx4j.XmlUtils;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.dml.diagram.CTDiagramDefinition;
 import org.docx4j.jaxb.Context;
+import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
@@ -157,19 +161,25 @@ public final class DiagramLayoutPart extends JaxbDmlPart<CTDiagramDefinition> {
 			
 		// We need a source layout part
 		// Could get it from a docx, or a glox
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
-				.load(new java.io.File(
-						System.getProperty("user.dir")
-//						+ "/SmartArt/hier-nopic.docx"));
-						+ "/SmartArt/12.docx"));
-		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_LAYOUT);		
-		if (r==null) {
-			System.out.println("No DLP!");
-			return;
-		}
-		DiagramLayoutPart thisPart = (DiagramLayoutPart)wordMLPackage.getMainDocumentPart().getRelationshipsPart().getPart(r);
+		String layoutSrcFilePath = System.getProperty("user.dir")
+		+ "/sample-docs/glox/extracted/chevron1.glox";
 		
-		// Generate XSLT
+		OpcPackage opcPackage = OpcPackage.load(new java.io.File(layoutSrcFilePath));
+		DiagramLayoutPart thisPart = null;
+		for (Entry<PartName,Part> entry : opcPackage.getParts().getParts().entrySet() ) {
+			
+			if (entry.getValue().getContentType().equals( 
+					ContentTypes.DRAWINGML_DIAGRAM_LAYOUT )) {
+				thisPart = (DiagramLayoutPart)entry.getValue();
+				break;
+			}
+		}
+		if (thisPart==null) {
+			System.out.println("No SmartArt found in " + layoutSrcFilePath);
+			return;	
+		}
+		
+		// Generate XSLT .. can save this for reuse
 		System.out.println("Generating xslt..");
 		Templates xslLayoutNodeTree = generateLayoutTreeXSLT(thisPart.getJaxbElement());	
 		

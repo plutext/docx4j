@@ -341,6 +341,8 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	public static String addImage(DiagramDataPart ddp, String base64) {
 		// No need to pass content type.
 				
+		System.out.println("Adding image");
+		
 		BinaryPartAbstractImage imagePart = null;
 		try {
 			// Base64 decode it
@@ -348,7 +350,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 			
 			// Create image part and add it
 			imagePart = BinaryPartAbstractImage.createImagePart(
-					(WordprocessingMLPackage)ddp.getPackage(), ddp, bytes);
+					ddp.getPackage(), ddp, bytes);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e);
@@ -367,7 +369,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/SmartArt/12.docx"));
+						+ "/SmartArt/OUT-xx.docx"));
 		
 		Relationship r = wordMLPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByType(Namespaces.DRAWINGML_DIAGRAM_DATA);
 		
@@ -413,7 +415,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		saver.save(System.getProperty("user.dir")
-				+ "/SmartArt/12-OUT.docx");
+				+ "/SmartArt/OUT-clean.docx");
 		
 	}	
 		
