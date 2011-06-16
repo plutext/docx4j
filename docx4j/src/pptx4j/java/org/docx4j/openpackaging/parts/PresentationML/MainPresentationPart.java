@@ -30,6 +30,7 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
 import org.pptx4j.jaxb.Context;
+import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.pml.ObjectFactory;
 import org.pptx4j.pml.Presentation;
 

@@ -46,11 +46,11 @@ import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
-import org.docx4j.openpackaging.parts.PresentationML.SlideSizesWellKnown;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.Style;
 import org.pptx4j.convert.out.svginhtml.SvgExporter;
 import org.pptx4j.model.ShapeWrapper;
+import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.model.TextStyles;
 import org.pptx4j.pml.SldLayout;
 

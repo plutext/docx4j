@@ -1,4 +1,4 @@
-package org.docx4j.openpackaging.parts.PresentationML;
+package org.pptx4j.model;
 
 public enum SlideSizesWellKnown {
 
