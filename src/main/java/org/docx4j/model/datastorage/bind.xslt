@@ -35,6 +35,10 @@
 			<xsl:copy>
 			     <xsl:apply-templates select="w:sdtPr"/>
 			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
 			     <w:sdtContent>
 			     	<xsl:variable name="multiLine" select="w:sdtPr/w:text/@w:multiLine='1' or w:sdtPr/w:text/@w:multiLine='true' or w:sdtPr/w:text/@w:multiLine='yes'" /> 
 			     	
@@ -52,13 +56,59 @@
 										string(w:sdtContent//wp:extent[1]/@cx), 
 										string(w:sdtContent//wp:extent[1]/@cy))" />
 				  		</xsl:when>
+				  		<xsl:when test="w:sdtContent/w:tbl">
+				  			<w:tbl>
+				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblPr"/>
+				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblGrid"/>
+					  			<w:tr>
+					  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr"/>
+						  			<w:tc>
+						  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr/w:tc/w:tcPr"/>
+							  			<w:p>
+							  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:tc/w:p/w:pPr"/>
+							  				
+											<xsl:copy-of
+											select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+														$wmlPackage,
+														$customXmlDataStorageParts,
+														string(w:sdtPr/w:dataBinding/@w:storeItemID),
+														string(w:sdtPr/w:dataBinding/@w:xpath),
+														string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+														w:sdtPr/w:rPr,
+														$multiLine )" />
+										</w:p>
+									</w:tc>
+								</w:tr>
+							</w:tbl>
+				  		</xsl:when>				  		
+				  		<xsl:when test="w:sdtContent/w:tr">
+				  			<w:tr>
+				  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr"/>
+					  			<w:tc>
+					  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr/w:tc/w:tcPr"/>
+						  			<w:p>
+						  				<xsl:copy-of select="w:sdtContent/w:tr/w:tc/w:p/w:pPr"/>
+						  				
+										<xsl:copy-of
+										select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+													$wmlPackage,
+													$customXmlDataStorageParts,
+													string(w:sdtPr/w:dataBinding/@w:storeItemID),
+													string(w:sdtPr/w:dataBinding/@w:xpath),
+													string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+													w:sdtPr/w:rPr,
+													$multiLine )" />
+									</w:p>
+								</w:tc>
+							</w:tr>
+				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tc">
 				  			<w:tc>
 				  				<!--  preserve existing w:tcPr -->
 				  				<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
 					  			<w:p>
 					  				<!--  preserve existing w:pPr -->
-					  				<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
+					  				<xsl:copy-of select="w:sdtContent/w:tc/w:p/w:pPr"/>
 					  				
 					  				<!--  create runs -->
 									<xsl:copy-of
