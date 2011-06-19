@@ -1,8 +1,7 @@
 package org.docx4j.model.datastorage;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
+import static org.docx4j.model.datastorage.XPathEnhancerParser.enhanceXPath;
+
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -13,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.NamespaceContext;
@@ -32,7 +33,6 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -44,7 +44,6 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.Body;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentCell;
@@ -57,7 +56,6 @@ import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.Text;
-import org.jvnet.jaxb2_commons.ppp.Child;
 import org.opendope.conditions.Condition;
 import org.w3c.dom.Node;
 
@@ -244,7 +242,6 @@ public class OpenDoPEHandler {
 	    			log.debug("Fetching " + iri);
 	    			
 					if (docxFetcher==null) {
-						System.out.println("You need a docxFetcher (and the MergeDocx extension) to fetch components (if any_");
 						log.error("You need a docxFetcher (and the MergeDocx extension) to fetch components");
 						return srcPackage;
 					} 
@@ -363,7 +360,7 @@ public class OpenDoPEHandler {
 				Method processMethod = null;
 				Method setEnsureContinuousMethod = null;
 				for (int j=0; j<methods.length; j++) {
-					System.out.println(methods[j].getName());
+					log.debug(methods[j].getName());
 					if (methods[j].getName().equals("process")) {
 						processMethod = methods[j];
 					} else if (methods[j].getName().equals("setEnsureContinuous")) {
@@ -439,11 +436,11 @@ public class OpenDoPEHandler {
         }
 		
 		public static void extensionMissing(Exception e) {
-			System.out.println("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
-			System.out.println("* You don't appear to have the MergeDocx paid extension,");
-			System.out.println("* which is necessary to merge docx, or process altChunk.");
-			System.out.println("* Purchases of this extension support the docx4j project.");
-			System.out.println("* Please visit www.plutext.com if you want to buy it.");
+			log.error("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
+			log.error("* You don't appear to have the MergeDocx paid extension,");
+			log.error("* which is necessary to merge docx, or process altChunk.");
+			log.error("* Purchases of this extension support the docx4j project.");
+			log.error("* Please visit www.plutext.com if you want to buy it.");
 		}
 		
 //		private static void preprocessRun(WordprocessingMLPackage wordMLPackage, ContentAccessor content) throws Docx4JException {
@@ -1004,63 +1001,11 @@ public class OpenDoPEHandler {
 				}
 			}
 					
-			log.debug("existing xpath: " + thisXPath);
+			final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
 			
-			
-			if (!thisXPath.startsWith(xpathBase)) {
-				log.debug("DOESNT START WITH xpathBase: '" + xpathBase + "'");
-				return;
+			if (log.isDebugEnabled() && ! thisXPath.equals(newPath)) {
+			  log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);
 			}
-			
-			/* The tricky part: replace path segment
-			 * 
-			 * For xpathBase=/invoice[1]/items
-			 * 
-			 *  eg1 
-			 *  
-				/invoice[1]/items/item[1]/name becomes
-				/invoice[1]/items/   *[n]/name
-				
-			 * eg2
-			 * 	
-				/invoice[1]/items[1]/item[1]/name becomes
-				/invoice[1]/items   /   *[n]/name
-			 */
-
-			log.debug("xpathBase: " + xpathBase);
-			int beginIndex = thisXPath.indexOf("/", xpathBase.length()-1 ); // +1 for good measure
-			
-			int endIndex = -2;
-			if (beginIndex>0) {
-				endIndex = thisXPath.indexOf("/", beginIndex );
-			}
-
-			log.debug("beginIndex: " + beginIndex);
-			log.debug("endIndex: " + endIndex);
-			
-			String newPath;
-			if (endIndex<beginIndex) {
-
-				// Remove any trailing [ ]; aim to allow user to leave [1]
-				// in their bindings
-				String startBit = thisXPath; 
-				if (startBit.endsWith("]")) 
-					startBit = startBit.substring(0, startBit.lastIndexOf("["));
-
-				newPath = startBit + "[" + (index+1) + "]";			
-				
-			} else {
-				
-				// Remove any trailing [ ]; aim to allow user to leave [1]
-				// in their bindings
-				String startBit = thisXPath.substring(0, endIndex); 
-				if (startBit.endsWith("]")) 
-					startBit = startBit.substring(0, startBit.lastIndexOf("["));
-
-				newPath = startBit + "[" + (index+1) + "]/" + thisXPath.substring(endIndex+1);
-			}
-			log.debug("newPath: " + newPath + "\n");
-
 			
 			if (binding==null) {
 								
@@ -1111,7 +1056,7 @@ public class OpenDoPEHandler {
 				
 		}
 		
-		private static org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(String newPath, 
+    private static org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(String newPath, 
 				org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
 			
 			org.opendope.xpaths.Xpaths.Xpath newXPathObj = XmlUtils.deepCopy(xpathObj);
