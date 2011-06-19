@@ -34,6 +34,9 @@ tokens {
 /*
 Based on the XPath 1.0 (http://www.w3.org/TR/1999/REC-xpath-19991116) grammar by Jan-Willem van den Broek, 
 version 1.0, downloaded on 2011-06-18 from http://blog.jwbroek.com/2010/07/antlr-grammar-for-parsing-xpath-10.html
+
+That page said "Do with this code as you will."
+
 */
 package com.tinnefeld.xpathextend.grammar;
 }
