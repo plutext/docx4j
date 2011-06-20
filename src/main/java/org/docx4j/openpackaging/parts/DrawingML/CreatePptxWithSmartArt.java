@@ -41,9 +41,9 @@ import org.docx4j.openpackaging.parts.DrawingML.DiagramStylePart;
 import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
-import org.docx4j.openpackaging.parts.PresentationML.SlideSizesWellKnown;
 import org.glox4j.openpackaging.packages.GloxPackage;
 import org.pptx4j.jaxb.Context;
+import org.pptx4j.model.SlideSizesWellKnown;
 import org.pptx4j.pml.CTGraphicalObjectFrame;
 import org.pptx4j.pml.Presentation;
 import org.w3c.dom.Document;
@@ -102,7 +102,7 @@ public class CreatePptxWithSmartArt extends CreateWithSmartArtAbstract {
 		String styleRelId = slidePart.addTargetPart(style).getId();
 		
 		// Create and add graphicFrame for SmartArt
-		Presentation.SldSz tmpSldSz = MainPresentationPart.createSlideSize(sz, landscape);
+		Presentation.SldSz tmpSldSz = pMLPackage.getMainPresentationPart().getJaxbElement().getSldSz();
 		
 		CTGraphicalObjectFrame graphicFrame = createSmartArt( layoutRelId,  dataRelId, colorsRelId,  styleRelId,
 				""+(tmpSldSz.getCx()-200000), ""+(tmpSldSz.getCy()-1000000) );
