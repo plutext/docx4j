@@ -53,7 +53,7 @@ public class ExtractGloxFromExemplar extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/SmartArt-BasicChevronProcess.pptx";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/CirclePictureHierarchy.docx";
 		}
 		String outputdir = inputfilepath.substring(0, inputfilepath.lastIndexOf("/")+1);
 		String outputfilename = inputfilepath.substring(inputfilepath.lastIndexOf("/"))+ ".glox";
