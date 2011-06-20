@@ -289,48 +289,88 @@
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootPict')  or starts-with(string(@name), 'image')]">
 
 	<xsl:variable name="presAssocID" select="string(@presAssocID)"/>
-	
 	<xsl:variable name="listItemParent" select="$list/odgm:SmartArtDataHierarchy/odgm:list//odgm:listItem[@id=$presAssocID]"/>
-  
 	<xsl:variable name="imageRef" select="$listItemParent/odgm:imageRef"/>
-		<!--  can get @custScaleX etc from that -->
-
-
 	<xsl:variable name="imageId" select="string($imageRef/@contentRef)"/>
+
+	<xsl:choose>
+		<xsl:when test="string($imageId)=''">
+			<!--  no image ref-->
+			<dgm:pt type="pres" modelId="{@modelId}">
+				<dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}"
+					presStyleLbl="alignImgPlace1" presName="{@name}" presAssocID="{@presAssocID}" />
+				<!--  no image -->
+				<dgm:spPr />
+				<dgm:t>
+					<a:bodyPr />
+					<a:lstStyle />
+					<a:p>
+						<a:endParaRPr lang="en-AU" />
+					</a:p>
+				</dgm:t>
+			</dgm:pt>
+		</xsl:when>
+		<xsl:otherwise>
+			<!--  image should be good -->
+			<xsl:variable name="image"
+				select="$list/odgm:SmartArtDataHierarchy/odgm:images/odgm:image[@id=$imageId]" />
+
+			<xsl:variable name="relId"
+				select="java:org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart.addImage($DiagramDataPart, string($image))" />
+
+			<dgm:pt type="pres" modelId="{@modelId}">
+				<dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}"
+					presStyleLbl="alignImgPlace1" presName="{@name}" presAssocID="{@presAssocID}">
+					<!--
+						@presStyleCnt=number of pictures in total in diagram
+						@presStyleIdx=index of this picture, starting at 0
+					-->
+
+					<xsl:if test="$imageRef/@custScaleX">
+						<xsl:attribute name="custScaleX"><xsl:value-of
+							select="$imageRef/@custScaleX" /></xsl:attribute>
+					</xsl:if>
+					<xsl:if test="$imageRef/@custScaleY">
+						<xsl:attribute name="custScaleY"><xsl:value-of
+							select="$imageRef/@custScaleY" /></xsl:attribute>
+					</xsl:if>
+					<xsl:if test="$imageRef/@custLinFactNeighborX">
+						<xsl:attribute name="custLinFactNeighborX"><xsl:value-of
+							select="$imageRef/@custLinFactNeighborX" /></xsl:attribute>
+					</xsl:if>
+					<xsl:if test="$imageRef/@custLinFactNeighborY">
+						<xsl:attribute name="custLinFactNeighborY"><xsl:value-of
+							select="$imageRef/@custLinFactNeighborY" /></xsl:attribute>
+					</xsl:if>
+				</dgm:prSet>
+				<xsl:choose>
+					<xsl:when test="string($relId)=''">
+						<!--  we couldn't event get a broken image icon back -->
+						<dgm:spPr />
+						<dgm:t>
+							<a:bodyPr />
+							<a:lstStyle />
+							<a:p>
+								<a:endParaRPr lang="en-AU" />
+							</a:p>
+						</dgm:t>
+					</xsl:when>
+					<xsl:otherwise>
+						<!--  image should be good -->
+						<dgm:spPr>
+							<a:blipFill rotWithShape="false">
+								<a:blip r:embed="{$relId}" />
+								<a:stretch>
+									<a:fillRect />
+								</a:stretch>
+							</a:blipFill>
+						</dgm:spPr>
+					</xsl:otherwise>
+				</xsl:choose>
+			</dgm:pt>
+		</xsl:otherwise>
+	</xsl:choose>
 		
-	<xsl:variable name="image" 
-			select="$list/odgm:SmartArtDataHierarchy/odgm:images/odgm:image[@id=$imageId]"/>
-			
-	<xsl:variable name="relId" 
-		select="java:org.docx4j.openpackaging.parts.DrawingML.DiagramDataPart.addImage($DiagramDataPart, string($image))" />
-			  
-    <dgm:pt type="pres" modelId="{@modelId}">
-      <dgm:prSet presStyleCnt="{@presStyleCnt}" presStyleIdx="{@presStyleIdx}" presStyleLbl="alignImgPlace1" presName="{@name}" presAssocID="{@presAssocID}">
-      <!--  @presStyleCnt=number of pictures in total in diagram
-            @presStyleIdx=index of this picture, starting at 0   -->
-            
-	      <xsl:if test="$imageRef/@custScaleX">
-	          <xsl:attribute name="custScaleX"><xsl:value-of select="$imageRef/@custScaleX"/></xsl:attribute>
-	      </xsl:if>
-	         <xsl:if test="$imageRef/@custScaleY">
-	          <xsl:attribute name="custScaleY"><xsl:value-of select="$imageRef/@custScaleY"/></xsl:attribute>
-	      </xsl:if>
-	         <xsl:if test="$imageRef/@custLinFactNeighborX">
-	          <xsl:attribute name="custLinFactNeighborX"><xsl:value-of select="$imageRef/@custLinFactNeighborX"/></xsl:attribute>
-	      </xsl:if>
-	         <xsl:if test="$imageRef/@custLinFactNeighborY">
-	          <xsl:attribute name="custLinFactNeighborY"><xsl:value-of select="$imageRef/@custLinFactNeighborY"/></xsl:attribute>
-	      </xsl:if>
-      </dgm:prSet>
-      <dgm:spPr>
-        <a:blipFill rotWithShape="false">
-          <a:blip r:embed="{$relId}"/>
-          <a:stretch>
-            <a:fillRect/>
-          </a:stretch>
-        </a:blipFill>
-      </dgm:spPr>
-    </dgm:pt>
   </xsl:template>
 
   <xsl:template match="dgm:layoutNode[starts-with(string(@name), 'rootConnector')]">
