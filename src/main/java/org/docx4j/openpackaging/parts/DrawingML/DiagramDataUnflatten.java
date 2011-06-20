@@ -58,6 +58,8 @@ import org.opendope.SmartArt.dataHierarchy.SmartArtDataHierarchy.Texts.Identifie
 public class DiagramDataUnflatten {
 	
 	private static Logger log = Logger.getLogger(DiagramDataUnflatten.class);	
+	
+	protected static String PRESNAME_FOR_IMAGE = "image"; 
 
 	/* Generating SmartArtDataHierarchy xml from
 	 * a real SmartArt drawing is an easy way for
@@ -217,7 +219,7 @@ public class DiagramDataUnflatten {
 			}
 			
 			// attach its image
-			CTPt imgPt = getAssociatedPres(modelId, "rootPict");
+			CTPt imgPt = getAssociatedPres(modelId, PRESNAME_FOR_IMAGE);
 			if (imgPt!=null 
 					&& imgPt.getSpPr()!=null 
 					&& imgPt.getSpPr().getBlipFill()!=null 
@@ -358,7 +360,7 @@ public class DiagramDataUnflatten {
 		OpcPackage pkg = OpcPackage
 				.load(new java.io.File(
 						System.getProperty("user.dir")
-						+ "/OUT.docx"));
+						+ "/sample-docs/glox/extracted/apes.pptx"));
 		
 
 		DiagramDataPart thisPart = null;
