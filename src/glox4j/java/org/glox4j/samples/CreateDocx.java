@@ -20,6 +20,14 @@ import org.docx4j.samples.AbstractSample;
 import org.docx4j.wml.P;
 import org.glox4j.openpackaging.packages.GloxPackage;
 
+/**
+ * Create a docx containing SmartArt
+ * based on the sample data in the
+ * specified glox file.
+ * 
+ * @author jharrop
+ *
+ */
 public class CreateDocx extends AbstractSample {
 	
 	private static Logger log = Logger.getLogger(CreateDocx.class);						
@@ -32,7 +40,9 @@ public class CreateDocx extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
+//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/extracted/SmartArt-BasicChevronProcess.pptx.glox";
+
 		}
 		
 		// Make a basic docx
@@ -61,7 +71,19 @@ public class CreateDocx extends AbstractSample {
 		
 		// DiagramDataPart
 		DiagramDataPart data = new DiagramDataPart();
+		
+		// Get the sample data from dgm:sampData
 		CTDataModel sampleDataModel = gloxPackage.getDiagramLayoutPart().getJaxbElement().getSampData().getDataModel();
+		
+		// If there is none, this sample won't work
+		if (sampleDataModel==null
+				|| sampleDataModel.getPtLst()==null
+				|| sampleDataModel.getPtLst().getPt().size()==0) {
+			System.out.println("No sample data in this glox, so can't create demo docx");
+			return;
+			// TODO: in this case, try generating our own sample data? 
+		}
+				
 		CTDataModel clonedDataModel = XmlUtils.deepCopy((CTDataModel)sampleDataModel);
 		data.setJaxbElement( clonedDataModel );
 		
@@ -89,7 +111,7 @@ public class CreateDocx extends AbstractSample {
 		
 
 		wordMLPackage.save(new java.io.File(
-				System.getProperty("user.dir") + "/glox5.docx" ) );
+				System.getProperty("user.dir") + "/glox-p1.docx" ) );
 		
 		System.out.println("Done!");
 		

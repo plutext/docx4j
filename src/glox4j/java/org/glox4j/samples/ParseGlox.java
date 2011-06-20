@@ -17,7 +17,8 @@ public class ParseGlox extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
+//			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Hier2Level.glox";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/glox/Picture Organization Chart.glox";
 		}
 		
 		GloxPackage gloxPackage = GloxPackage.load(new java.io.File(inputfilepath));
@@ -34,3 +35,4 @@ public class ParseGlox extends AbstractSample {
 
 	}
 }
+
