@@ -110,16 +110,20 @@ public class PresentationMLPackage  extends OpcPackage {
 			docPropsCustomPart = (DocPropsCustomPart)part;
 			log.info("Set shortcut for docPropsCustomPart");
 			return true;			
-//		} else if (relationshipType.equals(Namespaces.DOCUMENT)) {
-//			mainDoc = (MainDocumentPart)part;
-//			log.info("Set shortcut for mainDoc");
-//			return true;			
+		} else if (relationshipType.equals(Namespaces.PRESENTATIONML_MAIN)) {
+			mainPresentationPart = (MainPresentationPart)part;
+			log.info("Set shortcut for mainPresentationPart");
+			return true;			
 		} else {	
 			return false;
 		}
 	}
 	
-
+	private MainPresentationPart mainPresentationPart;	
+	public MainPresentationPart getMainPresentationPart() {
+		return mainPresentationPart;
+	}
+	
 	/**
 	 * Create an empty presentation.
 	 * 
