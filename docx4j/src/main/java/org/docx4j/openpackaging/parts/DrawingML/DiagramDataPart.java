@@ -21,6 +21,8 @@
 package org.docx4j.openpackaging.parts.DrawingML;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -30,6 +32,7 @@ import java.util.UUID;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -341,7 +344,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 	public static String addImage(DiagramDataPart ddp, String base64) {
 		// No need to pass content type.
 				
-		System.out.println("Adding image");
+		log.debug("Adding image: " + base64);
 		
 		BinaryPartAbstractImage imagePart = null;
 		try {
@@ -354,6 +357,22 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e);
+
+			// Can't use this image, so insert a placeholder
+			log.info(".. attempting to use broken image placeholder");
+			try {
+				byte[] bytes = IOUtils.toByteArray(org.docx4j.utils.ResourceUtils.getResource(
+						"image_broken.gif"));
+				
+				imagePart = BinaryPartAbstractImage.createImagePart(
+						ddp.getPackage(), ddp, bytes);
+
+				log.info(".. used broken image placeholder");
+				
+			} catch (Exception e1) {
+				e1.printStackTrace();
+				return "";
+			}
 		}
 		
         return imagePart.getSourceRelationship().getId();
