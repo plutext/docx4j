@@ -38,11 +38,12 @@ version 1.0, downloaded on 2011-06-18 from http://blog.jwbroek.com/2010/07/antlr
 That page said "Do with this code as you will."
 
 */
-package com.tinnefeld.xpathextend.grammar;
+package org.docx4j.model.datastorage;
+
 }
 
 @lexer::header {
-package com.tinnefeld.xpathextend.grammar;
+package org.docx4j.model.datastorage;
 }
 
 @members {
