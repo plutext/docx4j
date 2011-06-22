@@ -390,7 +390,7 @@ public class ContentTypeManager  {
 				partName = partName + "." + ContentTypes.EXTENSION_BMP;
 			}			
 			
-			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageGifPart(new PartName(partName));
+			return new org.docx4j.openpackaging.parts.WordprocessingML.ImageBmpPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_EMF) || contentType.equals(ContentTypes.IMAGE_EMF2)) {
 			return new MetafileEmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
