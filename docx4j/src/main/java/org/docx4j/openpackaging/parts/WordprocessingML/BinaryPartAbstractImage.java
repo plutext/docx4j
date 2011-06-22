@@ -316,6 +316,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 					|| info.getMimeType().equals(ContentTypes.IMAGE_JPEG) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_GIF) 
 //					 || info.getMimeType().equals(ContentTypes.IMAGE_EPS)
+					|| info.getMimeType().equals(ContentTypes.IMAGE_BMP) 
 					)) {
 					// TODO: add other supported formats
 				
