@@ -1,6 +1,6 @@
 package org.docx4j.xpathextend.grammar;
 
-public class TestConfiguration {
+public class XPathConfiguration {
 
 	private String prefix;
 	private int index;
@@ -13,7 +13,7 @@ public class TestConfiguration {
 		return index;
 	}
 
-	public TestConfiguration(String prefix, int index) {
+	public XPathConfiguration(String prefix, int index) {
 		super();
 		this.prefix = prefix;
 		this.index = index;
