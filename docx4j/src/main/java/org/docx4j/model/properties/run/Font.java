@@ -56,7 +56,7 @@ public class Font extends AbstractRunProperty {
 		if (font!=null) {					
 			return composeCss(CSS_NAME, font );
 		} else {
-			log.error("No mapping from " + font);
+			log.warn("No mapping from " + font);
 			return CSS_NULL;
 		}
 		

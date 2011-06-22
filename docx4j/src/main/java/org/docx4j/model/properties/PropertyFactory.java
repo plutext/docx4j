@@ -402,11 +402,13 @@ public class PropertyFactory {
 			if (pPr.getNumPr()!=null) {
 				if (wmlPackage instanceof WordprocessingMLPackage) {
 					NumberingDefinitionsPart ndp = ((WordprocessingMLPackage)wmlPackage).getMainDocumentPart().getNumberingDefinitionsPart();
+                    if (ndp != null) {
 					ind = ndp.getInd(pPr.getNumPr());
 					if (ind!=null) {
 						properties.add(new Indent(ind));			
 						log.debug("Using w:ind from list level");
 					}
+                    }
 				}
 			}
 		}

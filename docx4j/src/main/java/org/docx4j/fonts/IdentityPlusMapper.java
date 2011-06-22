@@ -58,7 +58,7 @@ public class IdentityPlusMapper extends Mapper {
 		//log.debug(System.getProperty("os.arch")); // eg i386
 		
 		if (System.getProperty("os.name").toLowerCase().indexOf("windows")<0) {
-			log.error("WARNING! SubstituterWindowsPlatformImpl works best " +
+			log.warn("WARNING! SubstituterWindowsPlatformImpl works best " +
 					"on Windows.  To get good results on other platforms, you'll probably  " +
 					"need to have installed Windows fonts.");
 		}

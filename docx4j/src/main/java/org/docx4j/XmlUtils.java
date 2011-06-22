@@ -58,6 +58,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.log4j.Logger;
+import org.apache.xalan.trace.PrintTraceListener;
+import org.apache.xalan.trace.TraceManager;
+import org.apache.xalan.transformer.TransformerImpl;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
@@ -80,7 +83,7 @@ public class XmlUtils {
 	public static String TRANSFORMER_FACTORY_PROCESSOR_XALAN = "org.apache.xalan.processor.TransformerFactoryImpl";
 	// TRANSFORMER_FACTORY_PROCESSOR_SUN .. JDK/JRE does not include anything like com.sun.org.apache.xalan.TransformerFactoryImpl
 	
-	//public static String TRANSFORMER_FACTORY_SAXON = "net.sf.saxon.TransformerFactoryImpl";
+//	public static String TRANSFORMER_FACTORY_SAXON = "net.sf.saxon.TransformerFactoryImpl";
 
 	// *.xsltc.trax.TransformerImpl don't
 	// work with our extension functions in their current form.
@@ -125,6 +128,7 @@ public class XmlUtils {
 		try {
 			System.setProperty("javax.xml.transform.TransformerFactory",
 					TRANSFORMER_FACTORY_PROCESSOR_XALAN);
+//					TRANSFORMER_FACTORY_SAXON);
 			
 			tfactory = javax.xml.transform.TransformerFactory
 					.newInstance();
@@ -702,7 +706,7 @@ public class XmlUtils {
     	    
     	return tfactory.newTemplates(xsltSource);
     }    
-    
+
     /**
      * 
      * Transform an input document using XSLT
@@ -761,12 +765,41 @@ public class XmlUtils {
 			}
 		}
 
+        /* SUPER DEBUGGING
+            // http://xml.apache.org/xalan-j/usagepatterns.html#debugging
+            // debugging
+            // Set up a PrintTraceListener object to print to a file.
+            java.io.FileWriter fw = new java.io.FileWriter("/tmp/xslt-events" + xsltCount++ + ".log");
+            java.io.PrintWriter pw = new java.io.PrintWriter(fw);
+            PrintTraceListener ptl = new PrintTraceListener(pw);
+
+            // Print information as each node is 'executed' in the stylesheet.
+            ptl.m_traceElements = true;
+            // Print information after each result-tree generation event.
+            ptl.m_traceGeneration = true;
+            // Print information after each selection event.
+            ptl.m_traceSelection = true;
+            // Print information whenever a template is invoked.
+            ptl.m_traceTemplates = true;
+            // Print information whenever an extension is called.
+            ptl.m_traceExtension = true;
+            TransformerImpl transformerImpl = (TransformerImpl)xformer;
+
+              // Register the TraceListener with the TraceManager associated
+              // with the TransformerImpl.
+              TraceManager trMgr = transformerImpl.getTraceManager();
+              trMgr.addTraceListener(ptl);
+
+*/
 		// DEBUGGING
 		// use the identity transform if you want to send wordDocument;
 		// otherwise you'll get the XHTML
 		// javax.xml.transform.Transformer xformer = tfactory.newTransformer();
-
-		xformer.transform(source, result);
+        try {
+            xformer.transform(source, result);
+        } finally {
+            //pw.flush();
+        }
     	
     }
    
@@ -831,7 +864,7 @@ public class XmlUtils {
             return result;
         } catch (XPathExpressionException e) {
             e.printStackTrace();
-            return Collections.emptyList();
+            throw new RuntimeException(e);
         }
     }	
 

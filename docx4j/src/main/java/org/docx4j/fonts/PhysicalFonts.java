@@ -159,7 +159,7 @@ public class PhysicalFonts {
 		if (embedFontInfoList==null) {
 			// Quite a few fonts exist that we can't seem to get
 			// EmbedFontInfo for. To be investigated.
-			log.error("Aborting: " + fontUrl.toString() +  " (can't get EmbedFontInfo[] .. try deleting fop-fonts.cache?)");
+			log.warn("Aborting: " + fontUrl.toString() +  " (can't get EmbedFontInfo[] .. try deleting fop-fonts.cache?)");
 			return;
 		}
 		
