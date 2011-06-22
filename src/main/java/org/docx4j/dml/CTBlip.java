@@ -21,14 +21,12 @@
 
 package org.docx4j.dml;
 
+import org.jvnet.jaxb2_commons.ppp.Child;
+
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.*;
 
 
 /**
@@ -76,7 +74,7 @@ import javax.xml.bind.annotation.XmlType;
     "alphaBiLevelOrAlphaCeilingOrAlphaFloor",
     "extLst"
 })
-public class CTBlip {
+public class CTBlip implements Child {
 
     @XmlElements({
         @XmlElement(name = "fillOverlay", type = CTFillOverlayEffect.class),
@@ -105,6 +103,8 @@ public class CTBlip {
     protected String embed;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
     protected String link;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the alphaBiLevelOrAlphaCeilingOrAlphaFloor property.
@@ -258,5 +258,29 @@ public class CTBlip {
     public void setLink(String value) {
         this.link = value;
     }
+   /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     *
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
 
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     *
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
+    }
 }

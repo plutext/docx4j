@@ -424,7 +424,8 @@ public class LoadFromZipNG extends Load {
 		
 		String relationshipType = r.getType();		
 			
-		Part part = getRawPart(partByteArrays, ctm, resolvedPartUri, r);
+		Part part = getRawPart(partByteArrays, ctm, resolvedPartUri, r); // will throw exception if null
+
 		if (part instanceof BinaryPart
 				|| part instanceof DefaultXmlPart) {
 			// The constructors of other parts should take care of this...
@@ -491,13 +492,13 @@ public class LoadFromZipNG extends Load {
 	 * the Part will not be owned by a Package until the calling code makes it so.  
 	 * @see  To get a Part and all its related parts, and add all to a package, use
 	 * getPart.
-	 * @param zf
+	 * @param partByteArrays
+	 * @param ctm
 	 * @param resolvedPartUri
+	 * @param rel
 	 * @return
-	 * @throws URISyntaxException
-	 * @throws InvalidFormatException
+	 * @throws Docx4JException including if result is null
 	 */
-	//public static Part getRawPart(ZipFile zf, ContentTypeManager ctm, String resolvedPartUri)
 	public static Part getRawPart(HashMap<String, ByteArray> partByteArrays,
 			ContentTypeManager ctm, String resolvedPartUri, Relationship rel)	
 			throws Docx4JException {
@@ -616,17 +617,20 @@ public class LoadFromZipNG extends Load {
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
 					
-					try {
+//					try {
 						((XmlPart)part).setDocument(is);
-					} catch (Docx4JException d) {
-						// This isn't an XML part after all,
-						// even though ContentTypeManager detected it as such
-						// So get it as a binary part
-						part = getBinaryPart(partByteArrays, ctm, resolvedPartUri);
-						log.warn("Could not parse as XML, so using BinaryPart for " 
-								+ resolvedPartUri);						
-						((BinaryPart)part).setBinaryData(is);
-					}
+						
+					// Experimental 22/6/2011; don't fall back to binary (which we used to) 
+						
+//					} catch (Docx4JException d) {
+//						// This isn't an XML part after all,
+//						// even though ContentTypeManager detected it as such
+//						// So get it as a binary part
+//						part = getBinaryPart(partByteArrays, ctm, resolvedPartUri);
+//						log.warn("Could not parse as XML, so using BinaryPart for " 
+//								+ resolvedPartUri);						
+//						((BinaryPart)part).setBinaryData(is);
+//					}
 					
 				} else {
 					// Shouldn't happen, since ContentTypeManagerImpl should
@@ -638,7 +642,7 @@ public class LoadFromZipNG extends Load {
 				}
 			
 			} catch (PartUnrecognisedException e) {
-				log.warn("PartUnrecognisedException shouldn't happen anymore!");
+				log.error("PartUnrecognisedException shouldn't happen anymore!", e);
 				// Try to get it as a binary part
 				part = getBinaryPart(partByteArrays, ctm, resolvedPartUri);
 				log.warn("Using BinaryPart for " + resolvedPartUri);
@@ -659,6 +663,11 @@ public class LoadFromZipNG extends Load {
 				}
 			}
 		}
+		
+        if (part == null) {
+            throw new Docx4JException("cannot find part " + resolvedPartUri + " from rel "+ rel.getId() + "=" + rel.getTarget());
+        }
+		
 		return part;
 	}
 	

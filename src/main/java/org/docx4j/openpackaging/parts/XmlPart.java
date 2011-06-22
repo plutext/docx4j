@@ -69,7 +69,7 @@ public abstract class XmlPart extends Part {
 	public XmlPart() throws InvalidFormatException {
 		super();
 	}
-	
+
 	/**
 	 * This part's XML contents.  Not guaranteed to be up to date.
 	 * Whether it is or not will depend on how the class which extends
@@ -79,9 +79,9 @@ public abstract class XmlPart extends Part {
 	protected Document doc;
 	private static XPathFactory xPathFactory;
 	private static XPath xPath;
-	
+
 	private static DocumentBuilderFactory documentFactory;
-	private static DocumentBuilder documentBuilder;
+
 	
 	static {
 		
@@ -108,12 +108,7 @@ public abstract class XmlPart extends Part {
 		xPath = xPathFactory.newXPath();		
 		
 		documentFactory.setNamespaceAware(true);
-		try {
-			documentBuilder = documentFactory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		}		
-		
+
 	}
 	
 	
@@ -128,7 +123,8 @@ public abstract class XmlPart extends Part {
 
 	public void setDocument(InputStream is) throws Docx4JException {
 		try {
-			doc = documentBuilder.parse(is);
+            DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder(); // DocumentBuilder is not thread safe, so it needs to be local 
+            doc = documentBuilder.parse(is);
 		} catch (Exception e) {
 			throw new Docx4JException("Problems parsing InputStream for part " + this.partName.getName(), e);
 		} 

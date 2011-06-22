@@ -78,15 +78,14 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 					/*font definitions*/
 
-					/*element styles*/ del
+					/*element styles*/ .del
 					{text-decoration:line-through;color:red;}
 					<xsl:choose>
 						<xsl:when test="/w:document/w:settings/w:trackRevisions">
-							ins
-							{text-decoration:underline;color:teal;}
+  					          .ins {text-decoration:none;background:#c0ffc0;padding:1px;}
 						</xsl:when>
 						<xsl:otherwise>
-							ins {text-decoration:none;}
+						  .ins {text-decoration:none;background:#c0ffc0;padding:1px;}
 						</xsl:otherwise>
 					</xsl:choose>
 
@@ -591,7 +590,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 <xsl:template match="w:bookmarkEnd" />
 
   <xsl:template match="w:ins">
-  	<span style="color:blue; text-decoration:underline">
+  	<span class="ins">
   		<xsl:apply-templates/>
   	</span>
   </xsl:template>  	
@@ -601,7 +600,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   </xsl:template>  	
 
   <xsl:template match="w:delText">
-  	<span style="color:red; text-decoration:line-through">
+  	<span class="del">
   		<xsl:apply-templates/>
   	</span>
   </xsl:template>  	
