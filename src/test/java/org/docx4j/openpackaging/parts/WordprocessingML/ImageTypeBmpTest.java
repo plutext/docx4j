@@ -7,7 +7,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
-public class ImageTypeBmp {
+public class ImageTypeBmpTest {
 	
 	@Test
 	public void testExtensions() throws Exception {
