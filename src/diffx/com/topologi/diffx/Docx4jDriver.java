@@ -128,7 +128,7 @@ public class Docx4jDriver {
 	
 	// no logger in this class, to minimise external dependencies.
 	// Instead:
-	public static final boolean debug = true;
+	public static final boolean debug = false;
 	public static void log(String message, boolean force) {		
 		if (debug || force) {
 			System.out.println(message);
