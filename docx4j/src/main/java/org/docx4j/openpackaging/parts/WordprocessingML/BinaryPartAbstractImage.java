@@ -238,7 +238,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				
 		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/")+1);
 		
-		System.out.println(ext);
+//		System.out.println(ext);
 		
 		BinaryPartAbstractImage imagePart = 
 			(BinaryPartAbstractImage)ctm.newPartForContentType(
