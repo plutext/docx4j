@@ -112,7 +112,7 @@ public final class DiagramDrawingPart extends JaxbDmlPart<CTDataModel> {
 
 			new Callback() {
 
-				@Override
+//				@Override
 				public List<Object> apply(Object o) {
 					
 					if (o instanceof org.docx4j.dml.diagram2008.CTShape) {
@@ -127,13 +127,13 @@ public final class DiagramDrawingPart extends JaxbDmlPart<CTDataModel> {
 					return null;
 				}
 
-				@Override
+//				@Override
 				public boolean shouldTraverse(Object o) {
 					return true;
 				}
 
 				// Depth first
-				@Override
+//				@Override
 				public void walkJAXBElements(Object parent) {
 
 
@@ -157,7 +157,7 @@ public final class DiagramDrawingPart extends JaxbDmlPart<CTDataModel> {
 
 				}
 
-				@Override
+//				@Override
 				public List<Object> getChildren(Object o) {
 					return TraversalUtil.getChildrenImpl(o);
 				}

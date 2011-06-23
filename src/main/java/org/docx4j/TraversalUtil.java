@@ -258,7 +258,7 @@ public class TraversalUtil {
 
 			String indent = "";
 			
-			@Override
+//			@Override
 			public List<Object> apply(Object o) {
 				
 				String text = "";
@@ -269,13 +269,13 @@ public class TraversalUtil {
 				return null;
 			}
 
-			@Override
+//			@Override
 			public boolean shouldTraverse(Object o) {
 				return true;
 			}
 
 			// Depth first
-			@Override
+//			@Override
 			public void walkJAXBElements(Object parent) {
 
 				indent += "    ";
@@ -302,7 +302,7 @@ public class TraversalUtil {
 				indent = indent.substring(0, indent.length()-4);
 			}
 
-			@Override
+//			@Override
 			public List<Object> getChildren(Object o) {
 				return TraversalUtil.getChildrenImpl(o);
 			}

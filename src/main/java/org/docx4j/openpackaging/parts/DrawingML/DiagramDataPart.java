@@ -110,7 +110,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 					// a model id must be an int or a GUID.
 					// Word 2007 won't open a docx which violates that.
 
-					@Override
+//					@Override
 					public List<Object> apply(Object o) {
 						
 						if (o instanceof CTPt) {
@@ -150,13 +150,13 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 						return null;
 					}
 
-					@Override
+//					@Override
 					public boolean shouldTraverse(Object o) {
 						return true;
 					}
 
 					// Depth first
-					@Override
+//					@Override
 					public void walkJAXBElements(Object parent) {
 						
 						List children = getChildren(parent);
@@ -179,7 +179,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 					}
 
-					@Override
+//					@Override
 					public List<Object> getChildren(Object o) {
 						return TraversalUtil.getChildrenImpl(o);
 					}
@@ -248,7 +248,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 				new Callback() {
 
-					@Override
+//					@Override
 					public List<Object> apply(Object o) {
 												
 						if (o instanceof CTPt) {
@@ -299,13 +299,13 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 						return null;
 					}
 
-					@Override
+//					@Override
 					public boolean shouldTraverse(Object o) {
 						return true;
 					}
 
 					// Depth first
-					@Override
+//					@Override
 					public void walkJAXBElements(Object parent) {
 
 
@@ -329,7 +329,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 					}
 
-					@Override
+//					@Override
 					public List<Object> getChildren(Object o) {
 						return TraversalUtil.getChildrenImpl(o);
 					}
