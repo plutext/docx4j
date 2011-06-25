@@ -93,7 +93,8 @@
         <echo message="${ant.java.version}"/>
         
         <javac  bootclasspathref="jre.libs" includeJavaRuntime="yes" 
-        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+        	debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" 
+        	target="${target}">
             <src path="${src.main.java.dir}"/>
             <src path="src/diffx"/>
             <src path="src/glox4j/java"/>
@@ -101,7 +102,15 @@
             <src path="src/xlsx4j/java"/>
             <src path="src/svg"/>
             <src path="src/xslfo"/>
-            <classpath refid="docx4j.classpath"/>
+            <!-- <classpath refid="docx4j.classpath"/> -->
+            <!--  build with 
+
+					java version "1.6.0_19"
+					Java(TM) SE Runtime Environment (build 1.6.0_19-b04)
+					Java HotSpot(TM) 64-Bit Server VM (build 16.2-b04, mixed mode)
+
+				 requires  Xalan 2.7.1, so -->
+			<classpath refid="dist.classpath"/>				 
         </javac>
         
         <!--  Force ant to compile package-info.java.
