@@ -62,7 +62,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<source>1.6</source>
-					<target>1.6</target>
+					<target>1.5</target>
 					<verbose>false</verbose>
 					<!--maxmemory>512m</maxmemory
 					
@@ -170,36 +170,6 @@
 			</plugin>
 		</plugins>
 	</reporting>
-	<repositories>
-		<repository>
-			<id>Maven Snapshots</id>
-			<url>
-				http://people.apache.org/repo/m2-snapshot-repository
-			</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>docx4j</id>
-			<name>docx4j Maven 2 repository</name>
-			<url>http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2</url>
-		</repository>
-		<repository>
-			<id>webdavclient4j</id>
-			<name>webdavclient4j Maven 2 repository</name>
-			<url>https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2</url>
-		</repository>
-
-		<repository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net Repository for Maven</name>
-      <url>http://download.java.net/maven/2/</url>
-    </repository>		
-	</repositories>
 	<dependencies>
 	
 		  <!--  Uncomment this if you are using Java 5.  
@@ -525,6 +495,59 @@
 			<url>svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2</url>
 		</repository>
 	</distributionManagement>
+
+<!--  a by-default active profile.
+     This 'maven pattern' avoids some issues when one is behind a http proxy 
+     or using a maven proxy. 
+     
+	The trick is the auto activation: when included as a dependency in another 
+	project, the profile is not active (and therefore will not slow down the 
+	other project as Maven will in this case not fetch from the remote docx4j repo). It will only active by default for docx4j development.
+
+	In other words, maven projects using docx4j can control which repo they'll 
+	use for fetching docx4j and can use a maven proxy.     
+     -->
+<profiles>
+  <profile>
+    <id>docx4j-repositories</id>
+	<repositories>
+		<repository>
+			<id>Maven Snapshots</id>
+			<url>
+				http://people.apache.org/repo/m2-snapshot-repository
+			</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>docx4j</id>
+			<name>docx4j Maven 2 repository</name>
+			<url>http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2</url>
+		</repository>
+		<repository>
+			<id>webdavclient4j</id>
+			<name>webdavclient4j Maven 2 repository</name>
+			<url>https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2</url>
+		</repository>
+
+		<repository>
+      <id>maven2-repository.dev.java.net</id>
+      <name>Java.net Repository for Maven</name>
+      <url>http://download.java.net/maven/2/</url>
+    </repository>		
+	</repositories>
+    <!-- <pluginRepositories>...</pluginRepositories> -->
+    <activation>
+      <file>
+        <missing>AFileWhichDoesNotExist.WeNeedThisProfileAlways</missing>
+      </file>
+    </activation>
+  </profile>
+</profiles>
 
    		<!--  comment this out, until the Windows path issues below are fixed in m2eclipse
 	
