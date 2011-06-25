@@ -39,19 +39,19 @@ public class TextTokeniserSingleBlock implements TextTokeniser {
     public TextTokeniserSingleBlock(CharSequence seq) {
         this.seq = seq;
     }
-//    @Override
+    @Override
     public int countTokens() {
         return 1;
     }
 
-//    @Override
+    @Override
     public TextEvent nextToken() throws NoSuchElementException {
         if (gotToken) throw new NoSuchElementException("already got all tokens");
         gotToken = true;
         return new CharactersEvent(seq);
     }
 
-//    @Override
+    @Override
     public void useRepertory(Repertory repertory) {
 
     }

@@ -73,9 +73,7 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 			inputfilepath = System.getProperty("user.dir")
-					//+ "/sample-docs/sample-docx.xml";
-			+ "/werther3.docx";
-			
+					+ "/sample-docs/sample-docx.xml";
 		}
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
@@ -92,7 +90,7 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 
 			String indent = "";
 
-//			@Override
+			@Override
 			public List<Object> apply(Object o) {
 
 				String text = "";
@@ -104,13 +102,13 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 				return null;
 			}
 
-//			@Override
+			@Override
 			public boolean shouldTraverse(Object o) {
 				return true;
 			}
 
 			// Depth first
-//			@Override
+			@Override
 			public void walkJAXBElements(Object parent) {
 
 				indent += "    ";
@@ -136,7 +134,7 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 				indent = indent.substring(0, indent.length() - 4);
 			}
 
-//			@Override
+			@Override
 			public List<Object> getChildren(Object o) {
 				return TraversalUtil.getChildrenImpl(o);
 			}

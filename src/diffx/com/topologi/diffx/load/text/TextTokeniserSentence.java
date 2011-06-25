@@ -65,19 +65,19 @@ public class TextTokeniserSentence implements TextTokeniser {
         char c = s.charAt(0);
         return c == '.' || c == '?' || c == '!';
     }
-//    @Override
+    @Override
     public int countTokens() {
         return tokens.size();
     }
 
-//    @Override
+    @Override
     public TextEvent nextToken() throws NoSuchElementException {
         if (index >= countTokens())
             throw new NoSuchElementException("all tokens passed");
         return new CharactersEvent(tokens.get(index++));
     }
 
-//    @Override
+    @Override
     public void useRepertory(Repertory repertory) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
