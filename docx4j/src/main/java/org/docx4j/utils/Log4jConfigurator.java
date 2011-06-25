@@ -3,6 +3,7 @@ package org.docx4j.utils;
 import java.util.Enumeration;
 
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -15,6 +16,8 @@ public class Log4jConfigurator {
         }
         
         // So now we should have a ConsoleAppender
+        // we don't want debug level logging.
+        Logger.getRootLogger().setLevel(Level.INFO);
         Logger log = Logger.getLogger(Log4jConfigurator.class);
         log.info("Since your log4j configuration (if any) was not found, docx4j has configured log4j automatically.");        
     }
