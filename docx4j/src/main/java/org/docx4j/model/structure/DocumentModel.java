@@ -53,11 +53,8 @@ public class DocumentModel {
 	
 	protected static Logger log = Logger.getLogger(DocumentModel.class);		
 	
-	private List<SectionWrapper> sections = new ArrayList<SectionWrapper>(); 
-	
-	// Consider whether this class should store a reference to the
-	// org.docx4j.wml.Document?  Not until there is a demonstrable
-	// need.
+	private List<SectionWrapper> sections; 	
+	private WordprocessingMLPackage wordMLPackage;
 	
 	// At present, objects (eg w:p, w:tbl) don't know which
 	// section they are in, and nor does a SectionWrapper
@@ -68,13 +65,25 @@ public class DocumentModel {
 	
 	public DocumentModel(WordprocessingMLPackage wordMLPackage) {
 		
+		this.wordMLPackage = wordMLPackage;
+		refresh();
+	}
+	
+	/**
+	 * If you have added/deleted sections from your WordprocessingMLPackage,
+	 * you'll need to call this method in order for the changes to be
+	 * reflected in the DocumentModel.
+	 */
+	public void refresh() {
+		
 		RelationshipsPart rels = wordMLPackage.getMainDocumentPart().getRelationshipsPart();
 				
 		Document doc = (Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
 		
 		HeaderFooterPolicy previousHF = null;
 		
-		for (Object o : doc.getBody().getEGBlockLevelElts() ) {
+		sections = new ArrayList<SectionWrapper>();
+		for (Object o : doc.getBody().getContent() ) {
 			if (o instanceof org.docx4j.wml.P) {
 				if (((org.docx4j.wml.P)o).getPPr() != null ) {
 					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();

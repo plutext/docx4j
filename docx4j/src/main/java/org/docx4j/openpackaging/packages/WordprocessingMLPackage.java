@@ -407,10 +407,12 @@ public class WordprocessingMLPackage extends OpcPackage {
 		
 		// Create a basic sectPr using our Page model
 		PageDimensions page = new PageDimensions();
+		page.setPgSize(sz, landscape);
+		
 		SectPr sectPr = factory.createSectPr();
 		body.setSectPr(sectPr);
-		sectPr.setPgSz(PageDimensions.createPgSize(sz, landscape) );
-		sectPr.setPgMar(page.createPgMar());
+		sectPr.setPgSz(  page.getPgSz() );
+		sectPr.setPgMar( page.getPgMar() );
 				
 		// Put the content in the part
 		wordDocumentPart.setJaxbElement(wmlDocumentEl);

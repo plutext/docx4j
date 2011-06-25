@@ -93,6 +93,9 @@ public class TableModel extends Model {
 		resetIndexes();
 		cells = new Vector<List<Cell>>();
 	}
+
+	// TODO, retire this
+	private final static int DEFAULT_PAGE_WIDTH_TWIPS = 12240;  // LETTER; A4 would be 11907
 	
 	/**
 	 * A list of rows
@@ -426,7 +429,8 @@ public class TableModel extends Model {
 			
 			// Default to page width
 			TblWidth tblWidth = factory.createTblWidth();
-			tblWidth.setW(BigInteger.valueOf(PageDimensions.DEFAULT_PAGE_WIDTH_TWIPS));
+			tblWidth.setW(BigInteger.valueOf(DEFAULT_PAGE_WIDTH_TWIPS));
+				// TODO: shouldn't hard code that.  Pass it in?
 			tblWidth.setType("dxa"); // twips
 			tblPr.setTblW(tblWidth);			
 		} 
