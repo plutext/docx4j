@@ -19,8 +19,6 @@
  */
 package org.docx4j.model.structure;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.SectPr;
@@ -32,15 +30,7 @@ public class SectionWrapper {
 		this.sectPr = sectPr;
 		this.headerFooterPolicy = new HeaderFooterPolicy(sectPr, previousHF, rels); 
 		
-		page = new PageDimensions();
-		if (sectPr!=null) {
-			if (sectPr.getPgSz()!=null) {
-				page.setPageSize(sectPr.getPgSz());
-			}
-			if (sectPr.getPgMar()!=null) {
-				page.setMargins(sectPr.getPgMar());
-			}
-		}
+		page = new PageDimensions(sectPr);
 		
 	}
 	

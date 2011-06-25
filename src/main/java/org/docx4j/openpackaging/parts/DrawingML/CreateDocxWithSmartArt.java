@@ -66,10 +66,7 @@ public class CreateDocxWithSmartArt extends CreateWithSmartArtAbstract {
 			PageSizePaper sz, boolean landscape,
 			MarginsWellKnown margins, 
 			Document xml) throws Exception {
-		
-		// TODO: pass in page size and orientation,
-		// and scale the SmartArt to fill the page.
-				
+						
 		// Make a basic docx
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage(sz, landscape);		
 				
@@ -96,11 +93,14 @@ public class CreateDocxWithSmartArt extends CreateWithSmartArtAbstract {
 		String styleRelId = wordMLPackage.getMainDocumentPart().addTargetPart(style).getId();
 
 		// Occupy entire page, less margins
-		PgSz pgSz = PageDimensions.createPgSize(sz, landscape );
 		PageDimensions pd = new PageDimensions();
+		pd.setPgSize(sz, landscape );
+		PgSz pgSz = pd.getPgSz(); 
 		pd.setMargins(margins);
-		String cx =  ""+UnitsOfMeasurement.twipToEMU(pgSz.getW().intValue() - (pd.getMarginLeft()+pd.getMarginRight() ) );  //"5486400";
-		String cy = ""+UnitsOfMeasurement.twipToEMU(pgSz.getH().intValue() - (pd.getMarginTop()+pd.getMarginBottom() ));   //"3200400";
+		String cx =  ""+UnitsOfMeasurement.twipToEMU(pgSz.getW().intValue() 
+				- (pd.getPgMar().getLeft().intValue()+pd.getPgMar().getRight().intValue() ) );  //"5486400";
+		String cy = ""+UnitsOfMeasurement.twipToEMU(pgSz.getH().intValue() 
+				- (pd.getPgMar().getTop().intValue()+pd.getPgMar().getBottom().intValue() ));   //"3200400";
 		
 		// Now use it in the docx
 		wordMLPackage.getMainDocumentPart().addObject(

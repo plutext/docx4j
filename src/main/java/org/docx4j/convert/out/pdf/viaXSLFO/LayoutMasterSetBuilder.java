@@ -186,11 +186,11 @@ public class LayoutMasterSetBuilder {
 		//   <w:pgSz w:w="12240" w:h="15840"/>
         //   <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
 
-		spm.setPageHeight( UnitsOfMeasurement.twipToBest(page.getPageHeight()));
-		spm.setPageWidth(  UnitsOfMeasurement.twipToBest(page.getPageWidth()));
+		spm.setPageHeight( UnitsOfMeasurement.twipToBest(page.getPgSz().getH().intValue() ));
+		spm.setPageWidth(  UnitsOfMeasurement.twipToBest(page.getPgSz().getW().intValue() ));
 		
-		spm.setMarginLeft( UnitsOfMeasurement.twipToBest(page.getMarginLeft()) );
-		spm.setMarginRight( UnitsOfMeasurement.twipToBest(page.getMarginRight()) );
+		spm.setMarginLeft( UnitsOfMeasurement.twipToBest(page.getPgMar().getLeft().intValue() ) );
+		spm.setMarginRight( UnitsOfMeasurement.twipToBest(page.getPgMar().getRight().intValue()) );
 		
 		/* 
 		 * Region before & after live in region body margins:
@@ -226,8 +226,8 @@ public class LayoutMasterSetBuilder {
 
 			// Make margin smaller, because header takes up space it would otherwise occupy  
 			int marginTopTwips 
-				= page.getMarginTop() 
-					- (HEADER_PADDING_TWIP + page.getHeaderExtent() + page.getMarginHeader());
+				= page.getPgMar().getTop().intValue() 
+					- (HEADER_PADDING_TWIP + page.getHeaderExtent() + page.getPgMar().getHeader().intValue());
 			if (marginTopTwips<MIN_PAGE_MARGIN) marginTopTwips=MIN_PAGE_MARGIN;				
 			spm.setMarginTop( UnitsOfMeasurement.twipToBest(marginTopTwips ) );
 			
@@ -239,7 +239,7 @@ public class LayoutMasterSetBuilder {
 			
 		} else {
 			// No header
-			spm.setMarginTop( UnitsOfMeasurement.twipToBest(page.getMarginTop() ) );
+			spm.setMarginTop( UnitsOfMeasurement.twipToBest(page.getPgMar().getTop().intValue() ) );
 		}
 
 		if (needAfter) {
@@ -250,8 +250,8 @@ public class LayoutMasterSetBuilder {
 			
 			// Make margin smaller, because footer takes up space it would otherwise occupy  
 			int marginBottomTwips
-					= page.getMarginBottom()
-						- (FOOTER_PADDING_TWIP + page.getFooterExtent() + page.getMarginFooter() );
+					= page.getPgMar().getBottom().intValue()
+						- (FOOTER_PADDING_TWIP + page.getFooterExtent() + page.getPgMar().getFooter().intValue() );
 			if (marginBottomTwips<MIN_PAGE_MARGIN) marginBottomTwips=MIN_PAGE_MARGIN;			
 			log.debug("marginBottomTwips: " + marginBottomTwips );
 			spm.setMarginBottom( UnitsOfMeasurement.twipToBest(marginBottomTwips) );
@@ -264,7 +264,7 @@ public class LayoutMasterSetBuilder {
 			
 		} else {
 			// No footer
-			spm.setMarginBottom( UnitsOfMeasurement.twipToBest(page.getMarginBottom()) );
+			spm.setMarginBottom( UnitsOfMeasurement.twipToBest(page.getPgMar().getBottom().intValue()) );
 		}
 		
 		return spm;
