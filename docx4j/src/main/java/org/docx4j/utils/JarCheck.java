@@ -40,6 +40,20 @@ TODO: check class minor version as well.
  * @author Roedy Green, Canadian Mind Products
  * @version 1.3 2008-04-21 display version number of each class file checked.
  * @since 2006-01-16
+ * 
+ * Modified by Jason Harrop 2011 06 25
+ * Note re Java 1.5, 1.6 behaviour.
+ * In 1.5, you can't put @Override on something which merely
+ * implements an interface
+ * Eclipse will give an error if you do (and have source set to 1.5).
+ * Maven and ant won't give an error, and if you have target=1.5
+ * (as we do for docx4j), will correctly produce 1.5 code.
+ * This class allows us to check that all our dependencies are
+ * also 1.5.
+ * An alternative way of doing it would be to use clirr.sourceforge.net
+ * which can run as an ant task, or from a command line, but I haven't 
+ * tried that.
+ * 
  */
 public final class JarCheck
     {
@@ -120,14 +134,21 @@ public final class JarCheck
         boolean success = true;
         FileInputStream fis;
         ZipInputStream zip = null;
+        
+        int lowest = 1000;
+        int highest = 0;
+        
         try
             {
             try
                 {
                 fis = new FileInputStream( jarFilename );
                 zip = new ZipInputStream( fis );
+
                 // loop for each jar entry
                 entryLoop:
+                	
+                	
                 while ( true )
                     {
                     ZipEntry entry = zip.getNextEntry();
@@ -173,25 +194,31 @@ public final class JarCheck
                                     chunk[ chunkLength - 1 ]
                                     & 0xff );
                     /* F I N A L L Y. All this has been leading up to this TEST */
+                    
+                    if (major>highest) highest=major;
+                    if (major<lowest) {
+                    	lowest=major;
+                    }
+                    
                     if ( low <= major && major <= high )
                         {
-                        out.print( "   OK " );
-                        out.println( convertMachineToHuman.get( major )
-                                     + " ("
-                                     + major
-                                     + ") "
-                                     + elementName );
+//                        out.print( "   OK " );
+//                        out.println( convertMachineToHuman.get( major )
+//                                     + " ("
+//                                     + major
+//                                     + ") "
+//                                     + elementName );
                         // leave success set as previously
                         }
                     else
                         {
-                        err.println( ">> Wrong Version " );
-                        err.println( convertMachineToHuman.get( major )
-                                     + " ("
-                                     + major
-                                     + ") "
-                                     + elementName );
-                        success = false;
+//                        err.println( ">> Wrong Version " );
+//                        err.println( convertMachineToHuman.get( major )
+//                                     + " ("
+//                                     + major
+//                                     + ") "
+//                                     + elementName );
+//                        success = false;
                         }
                     }
                 // end while
@@ -199,8 +226,17 @@ public final class JarCheck
             catch ( EOFException e )
                 {
                 // normal exit
+            	
                 }
             zip.close();
+            
+        	if (lowest==highest) {
+        		System.out.println( convertMachineToHuman.get( highest ));
+        	} else {
+        		System.out.println( convertMachineToHuman.get( lowest ) + "-" + convertMachineToHuman.get( highest ));
+        		
+        	}
+            
             return success;
             }
         catch ( IOException e )
@@ -229,10 +265,10 @@ public final class JarCheck
 //          int low = convertHumanToMachine.get( args[ 1 ] );
 //          int high = convertHumanToMachine.get( args[ 2 ] );
           
-        int low  = convertHumanToMachine.get( "1.2" );
+        int low  = convertHumanToMachine.get( "1.3" );
         int high = convertHumanToMachine.get( "1.5" );
             
-            String dirPath = System.getProperty("user.dir") + "/../docx4j_3/target/";
+            String dirPath = System.getProperty("user.dir") + "/dist/";
             
             File dir = new File(dirPath);
             
