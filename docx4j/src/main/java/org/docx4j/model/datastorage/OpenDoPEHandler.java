@@ -489,7 +489,7 @@ public class OpenDoPEHandler {
 			
 			WordprocessingMLPackage wordMLPackage;
 			
-//			@Override
+			@Override
 			public List<Object> apply(Object o) {
 				
 				// apply processSdt to any sdt
@@ -516,7 +516,7 @@ public class OpenDoPEHandler {
 				
 			}
 
-//			@Override
+			@Override
 			public boolean shouldTraverse(Object o) {
 				
 				// we want to traverse all sdts, since an sdt which
@@ -526,12 +526,12 @@ public class OpenDoPEHandler {
 				return true;
 			}
 			
-//			@Override
+			@Override
 			public List<Object> getChildren(Object o) {
 				return TraversalUtil.getChildrenImpl(o);
 			}
 
-//			@Override
+			@Override
 			public void walkJAXBElements(Object parent) {
 				// Breadth first
 
@@ -876,7 +876,7 @@ public class OpenDoPEHandler {
 			int index = 0;
 			String xpathBase = null;
 
-//			@Override
+			@Override
 			public List<Object> apply(Object o) {
 
 //				log.debug("apply for " + o.getClass().getName());
@@ -897,7 +897,7 @@ public class OpenDoPEHandler {
 				return null; // doesn't matter in this implementation
 			}
 
-//			@Override
+			@Override
 			public void walkJAXBElements(Object parent) {
 
 				List children = getChildren(parent);
@@ -916,13 +916,13 @@ public class OpenDoPEHandler {
 				}
 			}
 
-//			@Override
+			@Override
 			public List<Object> getChildren(Object o) {
 //				log.debug("getChildren for " + o.getClass().getName());
 				return TraversalUtil.getChildrenImpl(o);
 			}
 
-//			@Override
+			@Override
 			public boolean shouldTraverse(Object o) {
 				return true;
 			}
