@@ -24,6 +24,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.utils.Log4jConfigurator;
 
 public class Context {
 	
@@ -45,20 +46,22 @@ public class Context {
 	
 	static {
 
+		Log4jConfigurator.configure();
+		
 		// Display diagnostic info about version of JAXB being used.
     	Class c;
     	try {
     		c = Class.forName("com.sun.xml.bind.marshaller.MinimumEscapeHandler");
-    		System.out.println("JAXB: Using RI");
+    		log.info("JAXB: Using RI");
     		
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
-    		System.out.println("JAXB: RI not present.  Trying Java 6 implementation.");
+    	  log.info("JAXB: RI not present.  Trying Java 6 implementation.");
         	try {
 				c = Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
-	    		System.out.println("JAXB: Using Java 6 implementation.");
+				log.info("JAXB: Using Java 6 implementation.");
 			} catch (ClassNotFoundException e) {
-				System.out.println("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+			  log.info("JAXB: neither Reference Implementation nor Java 6 implementation present?");
 			}
     	}
 		
@@ -94,8 +97,7 @@ public class Context {
 			log.info(".. others loaded ..");
 			
 		} catch (Exception ex) {
-			log.error(ex);
-			ex.printStackTrace();
+			log.error("Cannot initialize context", ex);
 		}				
 	}
 	
@@ -119,7 +121,7 @@ public class Context {
 				jcXslFo = JAXBContext.newInstance("org.plutext.jaxb.xslfo",classLoader );
 				
 			} catch (Exception ex) {
-				ex.printStackTrace();
+	      log.error("Cannot determine XSL-FO context", ex);
 			}						
 		}
 		return jcXslFo;		
