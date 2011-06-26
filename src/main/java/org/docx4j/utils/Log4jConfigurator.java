@@ -13,13 +13,15 @@ public class Log4jConfigurator {
     public synchronized static void configure() {
         if (!isConfigured()) {
             BasicConfigurator.configure();
-        }
         
-        // So now we should have a ConsoleAppender
-        // we don't want debug level logging.
-        Logger.getRootLogger().setLevel(Level.INFO);
-        Logger log = Logger.getLogger(Log4jConfigurator.class);
-        log.info("Since your log4j configuration (if any) was not found, docx4j has configured log4j automatically.");        
+	        // So now we should have a ConsoleAppender
+	        // we don't want debug level logging.
+	        Logger.getRootLogger().setLevel(Level.INFO);
+	        Logger log = Logger.getLogger(Log4jConfigurator.class);
+	        log.info("Since your log4j configuration (if any) was not found, docx4j has configured log4j automatically.");
+	        
+	        org.docx4j.convert.out.pdf.viaXSLFO.Conversion.log.setLevel(Level.DEBUG);
+        }
     }
 
     /**

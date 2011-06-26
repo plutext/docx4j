@@ -80,7 +80,7 @@ import org.xml.sax.InputSource;
 
 public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	
-	protected static Logger log = Logger.getLogger(Conversion.class);	
+	public static Logger log = Logger.getLogger(Conversion.class);	
 	
 	public static boolean isLoggingEnabled() {
 		return log.isDebugEnabled();
