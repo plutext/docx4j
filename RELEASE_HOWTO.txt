@@ -24,6 +24,8 @@ ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
     (Remove the jaxb jars from dist dir)
 
     Create docx4j-x.x.x.tar.gz (ant dist, rename the jar as well)
+    
+Check all jars match target (eg Java 1.5)    
 
 Create javadoc 
 
