@@ -67,7 +67,7 @@ text, please see the following files in the legals directory:
 - NOTICE
 
 Legal information on libraries used by docx4j can be found in the 
-"legals/NOTCIE" file.
+"legals/NOTICE" file.
 
 Here is a (TODO: non exhaustive?) list of files included in docx4j but not published under Apache
 License version 2.0:
@@ -81,6 +81,128 @@ License version 2.0:
 ==============================================================================
   RELEASE NOTES
 ==============================================================================
+
+Version 2.7.0 (release candidate)
+=============
+
+Release date
+------------
+
+xx July 2011
+
+Contributors to this release
+----------------------------
+
+alberto
+amdonov
+azeloro
+Dave Brown
+Jason Harrop
+Marcel
+Patrick Linskey
+ppa_waw
+Richard
+Tinne
+
+
+Major Changes in Version 2.7.0
+------------------------------
+
+ContentAccessor interface
+
+AlteredParts: identify parts in this pkg which are new or altered; Patcher 
+which adds new or altered parts.
+
+Support for .glox SmartArt package (/src/glox/) 
+
+OpenDoPE changes
+----------------
+
+[1339] OpenDoPEHandler: Pre-processing step evaluates an od:xpath which doesn't have a corresponding w:databinding.  
+This is designed to handle an XPath expression which evaluates to a boolean or number, rather than a node.
+
+[1389] Generalise applyBindings, so that it should work on not just a DocumentPart, but also a header or footer part.
+
+[1390] Act on databinding for content controls of type picture.
+
+[1423] Support w:multiLine data binding.
+
+[1441] scale image based on content control size
+
+[1449] Handle a databinding which points to Core or Extended Properties, or CoverPage props.
+
+[1453] Traverse into text box.  Handle content control in text box.  
+
+[1506] Process Header and Footer parts as well.
+
+[1547] Tinne's patch of 20 June, which takes the Jan-Willem van den Broeks XPath grammar and builds it into a rewriting parser that enhances xpath expressions just the way that is needed. Thus, all xpath 1.0 expressions can be used.
+
+xlsx4j
+------
+
+[1455] Support for Spreadsheet Comments.
+
+[1494] Detect /xl/workbook.xml as WorkbookPart, rather than DefaultXmlPart.  
+Add convenience method getWorkbookPart
+
+pptx4j
+------
+
+[1539] Better support for slide size.
+[1549] Convenience method to get MainPresentationPart
+
+Other Changes (non-exhaustive)
+------------------------------
+
+Various PDF & HTML output improvements
+
+Tuning of log levels; removal of some System.out.println
+
+[1333] Fix for image part naming.
+
+[1344] UnitsOfMeasurement, fix for Germany, where they use a comma as decimal separator instead of a point.  Solves issue in FOP
+
+[1352] Rework header/footer model to take account of "same as previous" and whether first page header/footer is active or not.
+
+[1356] Code cleanup: remove old approaches to HTML generation.
+
+[1358] Allow for user-defined handlers to prepare HTML output depending on the value of an sdt tag.
+
+[1396] docx4j is not dependent on Xerces (other than in XmlPart), but Websphere (presumably using IBM JDK) doesn't have Sun's Xerces implementation, so use real Xerces if it is on the class path
+
+[1412] Add XPath support to header part.
+
+[1416] coarser grained ways to tokenize text when
+diffx turns XML into a stream of events. The current diffx stuff creates
+a token for every word, and on large documents, the diff algorithms become
+unwieldy in terms of memory usage/time. Coarser text splitting makes fewer
+events.
+
+[1432] interface to getSdtPr
+[1437] SdtElement interface; CTCustomXmlElement interface
+
+[1461] VML generated classes, based on ECMA 376 1ed (rather than earlier draft).  
+
+[1470] Make docx4j compatible with JAXB RI 2.2.3 unmarshalling
+
+[1479] extension to TraversalUtil, which allows you to define the tag you are interested in as a generic of the visitor class.
+
+[1480] StyleUtil: styles areEqual, isEmpty, apply
+
+[1481] Bugfix: Handle internal HYPERLINK 
+
+[1487] MetafilePart to extend BPAI, so WMF images can be added.
+
+[1492] Support for http://schemas.openxmlformats.org/officeDocument/2006/bibliography
+
+[1536] Support for common paper sizes.
+
+[1537] Knowledge of "well known" margin settings.
+
+[1556] Native support for bitmap (bmp) images
+
+[1569] Configure log4j automatically if necessary; paves the way for all System.out.println to be removed.
+
 
 Version 2.6.0
 =============
