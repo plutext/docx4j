@@ -105,8 +105,10 @@ Richard
 Tinne
 
 
-Major Changes in Version 2.7.0
-------------------------------
+Notable Changes in Version 2.7.0
+---------------------------------
+
+Improvements to Maven build
 
 ContentAccessor interface
 
@@ -114,6 +116,22 @@ AlteredParts: identify parts in this pkg which are new or altered; Patcher
 which adds new or altered parts.
 
 Support for .glox SmartArt package (/src/glox/) 
+
+JAXB RI 2.2.3 compatibilty 
+
+xlsx4j
+------
+
+[1455] Support for Spreadsheet Comments.
+
+[1494] Detect /xl/workbook.xml as WorkbookPart, rather than DefaultXmlPart.  
+Add convenience method getWorkbookPart
+
+pptx4j
+------
+
+[1539] Better support for slide size.
+[1549] Convenience method to get MainPresentationPart
 
 OpenDoPE changes
 ----------------
@@ -137,19 +155,6 @@ This is designed to handle an XPath expression which evaluates to a boolean or n
 
 [1547] Tinne's patch of 20 June, which takes the Jan-Willem van den Broeks XPath grammar and builds it into a rewriting parser that enhances xpath expressions just the way that is needed. Thus, all xpath 1.0 expressions can be used.
 
-xlsx4j
-------
-
-[1455] Support for Spreadsheet Comments.
-
-[1494] Detect /xl/workbook.xml as WorkbookPart, rather than DefaultXmlPart.  
-Add convenience method getWorkbookPart
-
-pptx4j
-------
-
-[1539] Better support for slide size.
-[1549] Convenience method to get MainPresentationPart
 
 Other Changes (non-exhaustive)
 ------------------------------
