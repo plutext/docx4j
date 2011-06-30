@@ -39,12 +39,14 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBResult;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -62,6 +64,7 @@ import org.apache.xalan.trace.PrintTraceListener;
 import org.apache.xalan.trace.TraceManager;
 import org.apache.xalan.transformer.TransformerImpl;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
@@ -681,11 +684,32 @@ public class XmlUtils {
 		
 		parent.appendChild(fragmentNode);
 	}
+	
+	/**
+	 * Prepare a JAXB transformation result for some given context.
+	 * @param context The JAXB context.
+	 * @return The result data structure created.
+	 * @throws Docx4JException In case of configuration errors.
+	 */
+	public static JAXBResult prepareJAXBResult(final JAXBContext context)
+			throws Docx4JException {
+
+		final JAXBResult result;
+		try {
+			final Unmarshaller unmarshaller = context.createUnmarshaller();
+			unmarshaller.setEventHandler(new JaxbValidationEventHandler());
+			result = new JAXBResult(unmarshaller);
+
+		} catch (JAXBException e) {
+			throw new Docx4JException("Error preparing empty JAXB result", e);
+		}
+		return result;
+	}
     
     public static void transform(org.w3c.dom.Document doc,
     		javax.xml.transform.Templates template, 
 			  Map<String, Object> transformParameters, 
-			  javax.xml.transform.Result result) throws Exception {
+			  javax.xml.transform.Result result) throws Docx4JException {
 
     	if (doc == null ) {
     		Throwable t = new Throwable();
@@ -715,12 +739,12 @@ public class XmlUtils {
      * @param xslt
      * @param transformParameters
      * @param result
-     * @throws Exception
+     * @throws Docx4JException In case serious transformation errors occur
      */
     public static void transform(javax.xml.transform.Source source,
     					  javax.xml.transform.Templates template, 
     					  Map<String, Object> transformParameters, 
-    					  javax.xml.transform.Result result) throws Exception {
+    					  javax.xml.transform.Result result) throws Docx4JException {
     	
     	if (source == null ) {
     		Throwable t = new Throwable();
@@ -732,7 +756,12 @@ public class XmlUtils {
 		// Different Transformers may be used concurrently by different threads.
 		// A Transformer may be used multiple times. Parameters and output properties 
 		// are preserved across transformations.		
-		javax.xml.transform.Transformer xformer = template.newTransformer();
+		javax.xml.transform.Transformer xformer;
+    try {
+      xformer = template.newTransformer();
+    } catch (TransformerConfigurationException e) {
+      throw new Docx4JException("The Transformer is ill-configured", e);
+    }
 		if (!xformer.getClass().getName().equals(
 				"org.apache.xalan.transformer.TransformerImpl")) {
 			log
@@ -797,6 +826,8 @@ public class XmlUtils {
 		// javax.xml.transform.Transformer xformer = tfactory.newTransformer();
         try {
             xformer.transform(source, result);
+        } catch (TransformerException e) {
+          throw new Docx4JException("Cannot perform the transformation", e);
         } finally {
             //pw.flush();
         }
