@@ -99,6 +99,10 @@ public class PageDimensions {
 	public void setPgSz(PgSz pgSz) {
 		this.pgSz = pgSz;
 	}
+	@Deprecated
+	public PgSz createPgSize() {				
+		return pgSz;		
+	}
 
 	private PgMar pgMar;
 	/**
@@ -112,7 +116,11 @@ public class PageDimensions {
 	 */
 	public void setPgMar(PgMar pgMar) {
 		this.pgMar = pgMar;
-	}
+	}			
+	@Deprecated
+	public PgMar createPgMar() {
+		return pgMar;		
+	}	
 
 		
 	/**
@@ -228,6 +236,7 @@ public class PageDimensions {
 			}
 		}
 	}	
+	
 		
 	public int getWritableWidthTwips() {		
 		return pgSz.getW().intValue() - (pgMar.getLeft().intValue() + pgMar.getRight().intValue());
