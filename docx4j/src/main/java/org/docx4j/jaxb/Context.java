@@ -45,27 +45,26 @@ public class Context {
 	private static Logger log = Logger.getLogger(Context.class);
 	
 	static {
-
+	  
 		Log4jConfigurator.configure();
 		
 		// Display diagnostic info about version of JAXB being used.
-    	Class c;
     	try {
-    		c = Class.forName("com.sun.xml.bind.marshaller.MinimumEscapeHandler");
+    		Class.forName("com.sun.xml.bind.marshaller.MinimumEscapeHandler");
     		log.info("JAXB: Using RI");
-    		
+
     	} catch (ClassNotFoundException cnfe) {
     		// JAXB Reference Implementation not present
     	  log.info("JAXB: RI not present.  Trying Java 6 implementation.");
         	try {
-				c = Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
-				log.info("JAXB: Using Java 6 implementation.");
-			} catch (ClassNotFoundException e) {
-			  log.info("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-			}
-    	}
-		
-		try {	
+				Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
+        log.info("JAXB: Using Java 6 implementation.");
+          } catch (ClassNotFoundException e) {
+            log.info("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+          }
+      }
+      
+      try { 
 			
 			// JBOSS might use a different class loader to load JAXBContext, which causes problems,
 			// so explicitly specify our class loader.
@@ -120,11 +119,10 @@ public class Context {
 
 				jcXslFo = JAXBContext.newInstance("org.plutext.jaxb.xslfo",classLoader );
 				
-			} catch (Exception ex) {
+			} catch (JAXBException ex) {
 	      log.error("Cannot determine XSL-FO context", ex);
 			}						
 		}
 		return jcXslFo;		
 	}
-	
 }

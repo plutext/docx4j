@@ -3,8 +3,9 @@ package org.docx4j.model.datastorage;
 import static org.docx4j.model.datastorage.XPathEnhancerParser.enhanceXPath;
 
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -18,6 +19,7 @@ import java.util.regex.Pattern;
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.NamespaceContext;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -46,6 +48,7 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.CTDataBinding;
+import org.docx4j.wml.CTSdtCell;
 import org.docx4j.wml.CTSdtContentCell;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
@@ -55,7 +58,9 @@ import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
 import org.docx4j.wml.Text;
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.opendope.conditions.Condition;
 import org.w3c.dom.Node;
 
@@ -79,6 +84,24 @@ public class OpenDoPEHandler {
 		private static org.opendope.conditions.Conditions conditions;
 		private static org.opendope.xpaths.Xpaths xPaths;
 		private static org.opendope.components.Components components;
+    private static boolean removeSdtCellsOnFailedCondition;
+
+  /**
+   * Configure, how the preprocessor handles conditions on table cells.
+   * 
+   * If set to <code>false</code>, conditional SDT cells are replaced by empty cells. This is the default behavior.
+   * 
+   * If set to <code>true</code>, conditional SDT cells are removed entirely. Note that the table geometry is not
+   * changed; hence this works better without dynamic table widths / no global width settings.
+   * 
+   * Due to the architecture of this class, this is a static flag changing the behavior of all following calls to
+   * {@link #preprocess}.
+   * 
+   * @param removeSdtCellsOnFailedCondition The new value for the cell removal flag.
+   */
+    public static void setRemoveSdtCellsOnFailedCondition(boolean removeSdtCellsOnFailedCondition) {
+      OpenDoPEHandler.removeSdtCellsOnFailedCondition = removeSdtCellsOnFailedCondition;
+    }
 		
 		/**
 		 * Preprocess content controls which have tag "od:condition|od:repeat|od:component".
@@ -645,18 +668,33 @@ public class OpenDoPEHandler {
 				} else {
 					// Remove it
 					
-					if (sdt instanceof org.docx4j.wml.CTSdtCell) {
+				  final boolean sdtIsCell = sdt instanceof CTSdtCell;
+				  
+				  final Object parent = obtainParent(sdt);
+				  final int contentChildCount = countContentChildren(parent);
+				  final boolean sdtIsSingleCellChild = parent instanceof Tc && contentChildCount == 1;
+				  
+				  
+					if (sdtIsCell && ! removeSdtCellsOnFailedCondition) {
 						// Return an empty tc
 						CTSdtContentCell sdtCellContent = (CTSdtContentCell)((org.docx4j.wml.CTSdtCell)sdt).getSdtContent();
 						Tc tc = (Tc)XmlUtils.unwrap(sdtCellContent.getEGContentCellContent().get(0));
 						tc.getEGBlockLevelElts().clear();
-						// Must contain a paragraph though (at least for Word 2007)
+						// Must contain a paragraph though (at least for Word 2007 and Word 2010)
 						P p = Context.getWmlObjectFactory().createP();
 						tc.getEGBlockLevelElts().add(p);
 						
 						List<Object> newContent = new ArrayList<Object>();
 						newContent.add(tc);
 						return newContent;
+						
+					} else if (sdtIsSingleCellChild) {
+					  
+					  // Must contain a paragraph (see above)
+					  final Object p = Context.getWmlObjectFactory().createP();
+					  final List<Object> newContent = Arrays.asList(p);
+            
+            return newContent;
 						
 					} else {
 					
@@ -746,6 +784,30 @@ public class OpenDoPEHandler {
 			// shouldn't happen
 			return null;
 		}
+		
+    private static Object obtainParent(Object sdt) {
+      if (! (sdt instanceof Child )) 
+        throw new IllegalArgumentException("Object of class "+ sdt.getClass().getName() + " is not a Child");
+
+      return ((Child) sdt).getParent();
+    }
+    
+    private static int countContentChildren(final Object tc) {
+      final List<Object> selfAndSiblings = obtainChildren(tc);
+      int contentChildCount = 0;
+      for (final Object child: selfAndSiblings)
+        if (! (child instanceof TcPr))
+          contentChildCount ++;
+      return contentChildCount;
+    }
+    
+    private static List<Object> obtainChildren(Object element) {
+      if (element instanceof ContentAccessor )
+        return ((ContentAccessor) element).getContent();
+      
+      log.warn("Don't know how to access the children of " + element.getClass().getName());
+      return Collections.emptyList();
+    }
 
 		public static org.opendope.xpaths.Xpaths.Xpath getXPathFromCondition(Condition c) {
 			
@@ -768,23 +830,32 @@ public class OpenDoPEHandler {
 			HashMap<String, String> map = QueryString.parseQueryString(tag.getVal(), true);
 			
 			String repeatId = map.get(BINDING_ROLE_REPEAT);
+			
+			// Check, whether we are in an old repeat case. These can be removed.
+			if (StringUtils.isEmpty(repeatId))
+			    return new ArrayList<Object>();
 
-			org.opendope.xpaths.Xpaths.Xpath xpathObj = xPathsPart.getXPathById(xPaths, repeatId);
+			org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
 
 			String storeItemId = xpathObj.getDataBinding().getStoreItemID();
 			String xpath = xpathObj.getDataBinding().getXpath();
 			String prefixMappings = xpathObj.getDataBinding().getPrefixMappings();
 			
-			// Get the bound XML	
-			String xpathBase;
-//			if (xpath.endsWith("/*")) {
-//				xpathBase = xpath.substring(0, xpath.length()-2);
-//			} else
-				if (xpath.endsWith("/")) {
-				xpathBase = xpath.substring(0, xpath.length()-1);
-			} else {
-				xpathBase = xpath;
-			}
+      // Get the bound XML  
+      String xpathBase;
+//      if (xpath.endsWith("/*")) {
+//        xpathBase = xpath.substring(0, xpath.length()-2);
+//      } else
+        if (xpath.endsWith("/")) {
+        xpathBase = xpath.substring(0, xpath.length()-1);
+  
+        // Check, whether the xpath ends with a [1]. If so, guess it comes from a round-tripped path and strip it
+      } else if (xpath.endsWith("[1]")) {
+        xpathBase = xpath.substring(0, xpath.length() - 3);
+        
+      } else {
+        xpathBase = xpath;
+      }
 			
 	// DON'T Drop any trailing position! That breaks nested repeats 
 //			if (xpathBase.endsWith("]")) 
@@ -833,41 +904,50 @@ public class OpenDoPEHandler {
 			
 			log.debug(XmlUtils.marshaltoString(sdtPr, true, true));
 			
-			// but keep a copy so we can restore state
-			BigInteger initialId = sdtPr.getId().getVal();
-			Tag initialTag = sdtPr.getTag();
 //			CTDataBinding binding = (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
 			CTDataBinding binding = sdtPr.getDataBinding();
 			
-			if (initialTag!=null) {
-				sdtPr.getRPrOrAliasOrLock().remove(initialTag);			
-			}
-			if (binding!=null) {
-				sdtPr.getRPrOrAliasOrLock().remove(binding);
-			}
 			
-			
-	        for (int i=0; i<numRepeats; i++) {
-			
-				// Change ID
-	    		sdtPr.setId();
-//				BigInteger bi = sdtPr.getId().getVal();
-//				long longid = 10*bi.longValue()+i;
-//				sdtPr.getId().setVal( BigInteger.valueOf(longid)  );
-				
-				// Clone
-				newContent.add(
-						XmlUtils.deepCopy(sdt)	        	        	
-		    	);
-				
-				// Unmangle, ready for next iteration
-				sdtPr.getId().setVal(initialId);
-					
-	        } 
-					
+      for (int i = 0; i < numRepeats; i++) {
+  
+        // the first sdt is just copied to the output, the rest has a removed repeat value and no binding
+        if (i > 0) {
+  
+          // This needs to be done only once, as we're operating on this same object tree.
+          if (i == 1) {
+  
+            emptyRepeatTagValue(sdtPr.getTag());
+  
+            if (binding != null) {
+              sdtPr.getRPrOrAliasOrLock().remove(binding);
+            }
+  
+            // Change ID
+            sdtPr.setId();
+          }
+        }
+  
+        // Clone
+        newContent.add(
+            XmlUtils.deepCopy(sdt)                      
+          );
+      } 
+      
 	        return newContent;
 		}
 		
+		private static void emptyRepeatTagValue(final Tag tag)  {
+		  
+		  final String tagVal = tag.getVal();
+      final Pattern stripRepeatArgPattern = Pattern.compile("(.*od:repeat=)([^&]*)(.*)");
+      final Matcher stripPatternMatcher = stripRepeatArgPattern.matcher(tagVal);
+      if (! stripPatternMatcher.matches()) {
+        log.fatal("Cannot find repeat tag in sdtPr/tag while processing repeat, sth's very wrong with " + tagVal);
+        return;
+      }
+      final String emptyRepeatValue = stripPatternMatcher.group(1) + stripPatternMatcher.group(3);
+      tag.setVal(emptyRepeatValue);
+		}
 		
 		static class DeepTraversor implements TraversalUtil.Callback {
 
