@@ -71,17 +71,23 @@
 					
 					When I played around with this, I found that both maven and ant would 
 					happily compile to target 1.5 with the pesky @Override annotations 
-					present (irrespective of whether source was set to 1.5 or 1.6 iirc).
+					present (irrespective of whether source was set to 1.5 or 1.6).
+										
+					You are not allowed source=1.6, target=1.5; this results in:
 					
-					Eclipse, however, requires that target be not less than source. 
-					(Not sure why; I think its semantics are just different) 
-					So in Eclipse, source must be 1.6 if you are to have @Override annotations 
-					on methods which merely implement an interface.
+						Failure executing javac, but could not parse the error
+						javac: source release 1.6 requires target release 1.6
+						
+					So we need source=1.5, target=1.5
 					
-					That is, unless m2eclipse is setting those properties. I found m2eclipse 
-					could set source=1.6, target=1.5				
+					The downside is that m2eclipse mirrors this in Eclipse's 
+					compiler settings, and Eclipse then complains about the
+					@Override annotations :-(
+					
+					So you must manually change the Eclipse compiler setting back to 1.6.
+																				
 				 -->
-				<source>1.6</source>
+				<source>1.5</source>
 				<target>1.5</target>
 				
 				<verbose>false</verbose>
