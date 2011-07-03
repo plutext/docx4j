@@ -80,6 +80,8 @@ public class XmlUtils {
 	
 	private static Logger log = Logger.getLogger(XmlUtils.class);	
 		
+	// See http://www.edankert.com/jaxpimplementations.html for
+	// a helpful list.
 	
 	public static String TRANSFORMER_FACTORY_ORIGINAL;
 	
@@ -863,9 +865,16 @@ public class XmlUtils {
         List<Object> resultList = new ArrayList<Object>();
         for( Node n : xpath(node, xpathExpr) ) {
         	Object o = binder.getJAXBNode(n);
-        	if (o==null) 
-        		System.out.println("no association");
-        	else resultList.add(o);
+        	if (o==null) {
+        		log.warn("no object association for xpath result!");
+        	} else {
+        		if (o instanceof javax.xml.bind.JAXBElement) {
+        			log.warn("added " + JAXBElementDebug((JAXBElement)o) );
+        		} else {
+        			log.warn("added " + o.getClass().getName() );        			
+        		}
+        		resultList.add(o);        		
+        	}
         }
         return resultList;
     }
@@ -881,6 +890,12 @@ public class XmlUtils {
     }	
 
     public static List<Node> xpath(Node node, String xpathExpression, NamespaceContext nsContext) {
+    	
+//    	log.info("Using XPathFactory: " + XPathFactory.DEFAULT_PROPERTY_NAME + ": " 
+//    			+ System.getProperty(XPathFactory.DEFAULT_PROPERTY_NAME));    
+//        System.setProperty(XPathFactory.DEFAULT_PROPERTY_NAME, 
+//        		"org.apache.xpath.jaxp.XPathFactoryImpl");
+        
         // create XPath
         XPathFactory xpf = XPathFactory.newInstance();
         XPath xpath = xpf.newXPath();
@@ -890,8 +905,10 @@ public class XmlUtils {
         try {
             List<Node> result = new ArrayList<Node>();
             NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
-            for( int i=0; i<nl.getLength(); i++ )
+            log.warn("evaluate returned " + nl.getLength() );
+            for( int i=0; i<nl.getLength(); i++ ) {
                 result.add(nl.item(i));
+            }
             return result;
         } catch (XPathExpressionException e) {
             e.printStackTrace();
