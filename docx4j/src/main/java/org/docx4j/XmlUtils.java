@@ -869,9 +869,9 @@ public class XmlUtils {
         		log.warn("no object association for xpath result!");
         	} else {
         		if (o instanceof javax.xml.bind.JAXBElement) {
-        			log.warn("added " + JAXBElementDebug((JAXBElement)o) );
+        			log.debug("added " + JAXBElementDebug((JAXBElement)o) );
         		} else {
-        			log.warn("added " + o.getClass().getName() );        			
+        			log.debug("added " + o.getClass().getName() );        			
         		}
         		resultList.add(o);        		
         	}
@@ -905,13 +905,13 @@ public class XmlUtils {
         try {
             List<Node> result = new ArrayList<Node>();
             NodeList nl = (NodeList) xpath.evaluate(xpathExpression, node, XPathConstants.NODESET);
-            log.warn("evaluate returned " + nl.getLength() );
+            log.debug("evaluate returned " + nl.getLength() );
             for( int i=0; i<nl.getLength(); i++ ) {
                 result.add(nl.item(i));
             }
             return result;
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
+            log.error(e);
             throw new RuntimeException(e);
         }
     }	
