@@ -47,7 +47,7 @@ public class CreateHtml extends AbstractSample {
 			try {
 				getInputFilePath(args);
 			} catch (IllegalArgumentException e) {
-		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.docx";
+		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
 			}
 			System.out.println(inputfilepath);	    	
 	    	
