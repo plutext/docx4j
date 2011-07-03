@@ -571,6 +571,11 @@ public class OpenDoPEHandler {
 						newChildren.addAll(
 											this.apply(
 												XmlUtils.unwrap(o)));
+						// TODO: Post 2.7.0, review use of XmlUtils.unwrap(o) here;
+						// it can result in MarshalException for
+						// things which don't have @XmlRootElement.
+						// We really need some unit tests to be confident
+						// that making this change would be ok.
 					}
 				}
 				// Replace list, so we'll traverse all the new sdts we've just
