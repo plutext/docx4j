@@ -670,51 +670,24 @@ public class OpenDoPEHandler {
 					newContent.add(sdt);
 					return newContent;
 					
-				} else {
-					// Remove it
-					
-				  final boolean sdtIsCell = sdt instanceof CTSdtCell;
-				  
-				  final Object parent = obtainParent(sdt);
-				  final int contentChildCount = countContentChildren(parent);
-				  final boolean sdtIsSingleCellChild = parent instanceof Tc && contentChildCount == 1;
-				  
-				  
-					if (sdtIsCell && ! removeSdtCellsOnFailedCondition) {
-						// Return an empty tc
-						CTSdtContentCell sdtCellContent = (CTSdtContentCell)((org.docx4j.wml.CTSdtCell)sdt).getSdtContent();
-						Tc tc = (Tc)XmlUtils.unwrap(sdtCellContent.getEGContentCellContent().get(0));
-						tc.getEGBlockLevelElts().clear();
-						// Must contain a paragraph though (at least for Word 2007 and Word 2010)
-						P p = Context.getWmlObjectFactory().createP();
-						tc.getEGBlockLevelElts().add(p);
-						
-						List<Object> newContent = new ArrayList<Object>();
-						newContent.add(tc);
-						return newContent;
-						
-					} else if (sdtIsSingleCellChild) {
-					  
-					  // Must contain a paragraph (see above)
-					  final Object p = Context.getWmlObjectFactory().createP();
-					  final List<Object> newContent = Arrays.asList(p);
-            
-            return newContent;
-						
-					} else {
-					
-//					log.info("Removed? " + removeSdt(sdtParent, sdt) );
-						return new ArrayList<Object>();  // effectively, delete
-					}
+        } else {
+				  return eventuallyEmptyList(sdt);
 				}
 				
 			} else if ( repeatId!=null) {
 
 				log.info("Processing Repeat: " + tag.getVal());
 				
-				return processRepeat(sdt,
+				final List<Object> repeatResult = processRepeat(sdt,
 						customXmlDataStorageParts,
 						wordMLPackage.getMainDocumentPart().getXPathsPart());
+				
+				if (repeatResult.isEmpty()) {
+				  return eventuallyEmptyList(sdt);
+				  
+				} else {
+				  return repeatResult;
+				}
 		        	
 			} else if ( xp!=null) {
 				
@@ -789,6 +762,48 @@ public class OpenDoPEHandler {
 			// shouldn't happen
 			return null;
 		}
+		
+  /**
+   * Under normal instances, return an empty list in order to remove content.
+   * 
+   * If, however, this would produce a table cell without a content, add an empty content node to this table cell.
+   * 
+   * For backward reasons, also replace a cell to be removed upon a condition or due to a zero item repeat with an empty
+   * cell according to this condition, unless the global flag {@link #removeSdtCellsOnFailedCondition} is set.
+   * 
+   * @param sdt The SDT node currently being processed.
+   * @return The "eventually empty" node list to replace the content of <code>sdt</code>.
+   */
+  private static List<Object> eventuallyEmptyList(final Object sdt) {
+
+    final boolean sdtIsCell = sdt instanceof CTSdtCell;
+
+    final Object parent = obtainParent(sdt);
+    final int contentChildCount = countContentChildren(parent);
+    final boolean sdtIsSingleCellChild = parent instanceof Tc && contentChildCount == 1;
+
+    final List<Object> newContent;
+
+    if (sdtIsCell && !removeSdtCellsOnFailedCondition) {
+
+      final CTSdtContentCell sdtCellContent = (CTSdtContentCell) ((org.docx4j.wml.CTSdtCell) sdt).getSdtContent();
+      final Tc tc = (Tc) XmlUtils.unwrap(sdtCellContent.getContent().get(0));
+      tc.getContent().clear();
+      final P p = Context.getWmlObjectFactory().createP();
+      tc.getContent().add(p);
+      newContent = Arrays.asList((Object) tc);
+
+    } else if (sdtIsSingleCellChild) {
+
+      final Object p = Context.getWmlObjectFactory().createP();
+      newContent = Arrays.asList(p);
+
+    } else {
+      newContent = Arrays.asList();
+    }
+
+    return newContent;
+  }
 		
     private static Object obtainParent(Object sdt) {
       if (! (sdt instanceof Child )) 
