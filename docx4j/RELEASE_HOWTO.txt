@@ -1,6 +1,10 @@
 docx4j release process
 ----------------------
 
+[Do this process for a release candidate first]
+
+Check everything is committed
+
 Update Getting Started as necessary (inc HTML and PDF versions)
 
 Check jar versions in pom.xml, build.xml
@@ -17,7 +21,9 @@ svn ci
 
 co as new project; check it
 
-Tag the version in svn
+to run tests:
+   ant test 
+or mvn install
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
 
@@ -25,7 +31,14 @@ ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
 
     Create docx4j-x.x.x.tar.gz (ant dist, rename the jar as well)
     
+
+Check Mvn build works
+- it creates an 18MB -javadoc, but don't upload that
+
+
 Check all jars match target (eg Java 1.5)    
+
+Tag the version in svn
 
 Create javadoc 
 
@@ -38,7 +51,3 @@ Maven upload
    mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
 
 Announce release in docx4j forum
-
-
-
- 

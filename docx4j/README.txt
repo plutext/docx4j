@@ -24,13 +24,13 @@ It uses JAXB to create the Java representation.
 - Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS)
 - Create new docx
 - Programmatically manipulate the docx document (of course)
-- Template substitution; CustomXML binding
+- CustomXML binding (with OpenDoPE extensions for repeats & conditionals) 
+- Export as HTML or PDF
+- Diff/compare documents, paragraphs or sdt (content controls)
 - Import a binary doc (uses Apache POI's HWPF)
 - Produce/consume Word 2007's xmlPackage (pkg) format
 - Save docx to filesystem as a docx (ie zipped), or to JCR (unzipped)
 - Apply transforms, including common filters
-- Export as HTML or PDF
-- Diff/compare documents, paragraphs or sdt (content controls)
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
 
@@ -55,7 +55,12 @@ http://dev.plutext.org/forums
 How do I build docx4j?
 ----------------------
 
-http://dev.plutext.org/trac/docx4j/wiki/DevEnv
+Get it from svn, at http://dev.plutext.org/svn/docx4j/trunk
+
+If you are using eclipse and m2eclipse plugin, enable dependency management.
+
+For more details, see the Getting Started guide.
+
 
 
 Legal Information
@@ -82,13 +87,13 @@ License version 2.0:
   RELEASE NOTES
 ==============================================================================
 
-Version 2.7.0 (release candidate)
+Version 2.7.0 
 =============
 
 Release date
 ------------
 
-xx July 2011
+8 July 2011
 
 Contributors to this release
 ----------------------------
@@ -117,7 +122,9 @@ which adds new or altered parts.
 
 Support for .glox SmartArt package (/src/glox/) 
 
-JAXB RI 2.2.3 compatibilty 
+JAXB RI 2.2.3 compatibilty
+
+OpenDoPE improvements (see below) 
 
 xlsx4j
 ------
@@ -131,6 +138,7 @@ pptx4j
 ------
 
 [1539] Better support for slide size.
+
 [1549] Convenience method to get MainPresentationPart
 
 OpenDoPE changes
