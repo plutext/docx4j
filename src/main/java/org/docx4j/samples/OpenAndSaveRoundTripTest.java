@@ -35,7 +35,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.Body;
 
 
-public class OpenAndSaveRoundTripTest {
+public class OpenAndSaveRoundTripTest extends AbstractSample {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
 
@@ -44,12 +44,15 @@ public class OpenAndSaveRoundTripTest {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/jpeg.docx";
-		String inputfilepath = "/home/dev/simple-out.docx";
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
-		
+		try {
+			getInputFilePath(args);
+		} catch (IllegalArgumentException e) {
+	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/2010/2010-sample1.docx";
+		}
+		System.out.println(inputfilepath);	    	
+				
 		boolean save = true;
-		String outputfilepath = "/home/dev/simple-out-rtt2.docx";		
+		String outputfilepath = System.getProperty("user.dir") + "/OUT-roundtrip.docx";		
 		
 		
 		// Open a document from the file system
