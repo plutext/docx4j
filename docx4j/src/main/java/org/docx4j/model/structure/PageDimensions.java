@@ -22,6 +22,7 @@ package org.docx4j.model.structure;
 
 import java.math.BigInteger;
 
+import org.apache.log4j.Logger;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SectPr;
@@ -42,6 +43,8 @@ import org.docx4j.wml.SectPr.PgSz;
  *
  */
 public class PageDimensions {
+	
+	protected static Logger log = Logger.getLogger(PageDimensions.class);
 	
 	// TODO - defaults page size and margins in a .properties file?	
 	
@@ -74,13 +77,17 @@ public class PageDimensions {
 	private void init(PgSz pgSz, PgMar pgMar) {
 		
 		if (pgSz == null) {
+			log.warn("No pgSz in this section; defaulting.");
 			pgSz = Context.getWmlObjectFactory().createSectPrPgSz();			
+			setPgSize(PageSizePaper.A4, false );
 		} else {
 			this.pgSz = pgSz;			
 		}
 		
 		if (pgMar ==null) {
+			log.warn("No pgMar in this section; defaulting.");
 			pgMar = Context.getWmlObjectFactory().createSectPrPgMar();			
+			setMargins(MarginsWellKnown.NORMAL);
 		} else {
 			this.pgMar = pgMar;				
 		}
@@ -260,9 +267,18 @@ public class PageDimensions {
 	 * set as required (in TWIPS).  In due course (when we have an algorithm for amount of 
 	 * space occupied), it may be possible to do this automatically.   
 	 * 
+	 * ------------------
+	 * 
+	 * pgMar.header  is the distance from the top edge of the paper to the top edge of the header
+	 * 
+	 * in XSL FO, extent is  the inline-progression-dimension of the region-start or region-end 
+	 * or the block-progression-dimension of the region-before or region-after.
 	 */
 	
-	public int getHeaderExtent() {
+	/**
+	 * Get the distance from the top edge of the paper to the top edge of the header
+	 */
+	public int getHeaderMargin() {
 		if (pgMar.getHeader()==null 
 				|| pgMar.getHeader().intValue() ==0 ) {
 			return 708;
@@ -271,13 +287,40 @@ public class PageDimensions {
 		}
 	}
 
-	public int getFooterExtent() {
+	/**
+	 * Get the distance from the bottom edge of the paper to the bottom edge of the footer
+	 */
+	public int getFooterMargin() {
 		if (pgMar.getFooter()==null 
 				|| pgMar.getFooter().intValue() ==0 ) {
 			return 1440;
 		} else {
 			return pgMar.getFooter().intValue();
 		}
+	}
+	
+	int headerExtent = 708;
+	/**
+	 * Get the height of the header. In Word, the size of header and footer areas can change dynamically;
+	 * for PDF output, you need to set this appropriately.  It defaults to 708 TWIPs 
+	 */
+	public int getHeaderExtent() {
+		return headerExtent;
+	}
+	public void setHeaderExtent(int headerExtent) {
+		this.headerExtent = headerExtent;
+	}
+
+	int footerExtent = 708;
+	/**
+	 * Get the height of the footer. In Word, the size of header and footer areas can change dynamically;
+	 * for PDF output, you need to set this appropriately.  It defaults to 708 TWIPs 
+	 */
+	public int getFooterExtent() {
+		return footerExtent;
+	}
+	public void setFooterExtent(int footerExtent) {
+		this.footerExtent = footerExtent;
 	}
 	
 }

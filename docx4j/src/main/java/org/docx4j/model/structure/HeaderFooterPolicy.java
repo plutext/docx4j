@@ -98,6 +98,7 @@ public class HeaderFooterPolicy {
 		{
 		// Grab what headers and footers have been defined		
 		if (sectPr == null) {
+			log.debug("No headers/footers in this sectPr");
 			return;
 		}
 		
