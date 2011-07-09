@@ -259,13 +259,9 @@
         <junit fork="yes" printsummary="on" haltonfailure="on">
             <formatter type="xml"/>
         	  <batchtest fork="yes" todir="${junit.output.dir}">
-        	       <fileset dir="testing">
-        	            <include name="**/*Test.class"/>
-        	        </fileset>
-        	  	<!-- How to do read the class names from the zip file?
         	  	<resources>
-        	  		<zipentry zipfile="docx4j-tests-only.jar" name="**/*Test.class"/>
-        	  	</resources> -->
+        	  		<zipfileset src="docx4j-tests-only.jar" includes="**/*Test.class"/>
+        	  	</resources> 
         	 </batchtest>
         	
             <classpath refid="testsplus.classpath"/>
