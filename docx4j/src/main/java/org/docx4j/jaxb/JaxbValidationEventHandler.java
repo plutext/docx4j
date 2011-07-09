@@ -20,11 +20,18 @@
 
 package org.docx4j.jaxb;
 
+import java.io.IOException;
+
 import javax.xml.bind.ValidationEvent;
 import javax.xml.bind.ValidationEventHandler;
 import javax.xml.bind.ValidationEventLocator;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 
 
 public class JaxbValidationEventHandler implements 
@@ -32,6 +39,35 @@ ValidationEventHandler{
     
 	private static Logger log = Logger.getLogger(JaxbValidationEventHandler.class);		
 	
+	private boolean shouldContinue = true;
+	public void setContinue(boolean val) {
+		shouldContinue = val;
+	}
+	
+	public final static String UNEXPECTED_MC_ALTERNATE_CONTENT = "unexpected element (uri:\"http://schemas.openxmlformats.org/markup-compatibility/2006\", local:\"AlternateContent\")";
+	
+	static Templates mcPreprocessorXslt;	
+	
+	public static Templates getMcPreprocessor() throws IOException, TransformerConfigurationException {
+		
+		if (mcPreprocessorXslt==null) {
+			try {
+				Source xsltSource  = new StreamSource(
+						org.docx4j.utils.ResourceUtils.getResource(
+								"org/docx4j/jaxb/mc-preprocessor.xslt"));
+				mcPreprocessorXslt = XmlUtils.getTransformerTemplate(xsltSource);
+			} catch (IOException e) {
+				log.error(e);
+				throw(e);
+			} catch (TransformerConfigurationException e) {
+				log.error(e);
+				throw(e);
+			}
+		}
+		
+		return mcPreprocessorXslt;
+		
+	}
 	
     public boolean handleEvent(ValidationEvent ve) {            
       if (ve.getSeverity()==ValidationEvent.FATAL_ERROR 
@@ -68,7 +104,7 @@ ValidationEventHandler{
       // JAXB provider should attempt to continue its current operation. 
       // (Marshalling, Unmarshalling, Validating)
       log.info("continuing (with possible element/attribute loss)");
-       return true;
+       return shouldContinue;
              
      }
     

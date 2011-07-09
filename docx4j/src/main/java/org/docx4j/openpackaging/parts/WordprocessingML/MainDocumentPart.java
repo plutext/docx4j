@@ -32,8 +32,13 @@ import java.util.Stack;
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBResult;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Result;
+import javax.xml.transform.Templates;
+import javax.xml.transform.dom.DOMResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
@@ -41,6 +46,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.AbstractListNumberingDefinition;
 import org.docx4j.model.styles.StyleTree;
@@ -268,10 +274,37 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			// 
 			binder = jc.createBinder();
 			
-			binder.setEventHandler(
-					new org.docx4j.jaxb.JaxbValidationEventHandler());
+			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+			eventHandler.setContinue(false);
+			binder.setEventHandler(eventHandler);
 			
-			jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );
+			try {
+				jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );
+			} catch (UnmarshalException ue) {
+
+				// mimic docx4j 2.7.0 and earlier behaviour
+				eventHandler.setContinue(true);
+				
+				if (ue.getMessage().contains(JaxbValidationEventHandler.UNEXPECTED_MC_ALTERNATE_CONTENT)) {
+					// Try our preprocessor
+					log.info("encountered mc:AlternateContent; pre-processing");
+					
+					// There is no JAXBResult(binder),
+					// so use a 
+					DOMResult result = new DOMResult();
+					
+					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					
+					doc = (org.w3c.dom.Document)result.getNode();
+					
+				} else {
+					log.error(ue);
+					log.info("trying again; likely attribute/element loss");					
+				}
+				jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );					
+				
+			}
 			
 			return jaxbElement;
 /*		    		    
