@@ -1,5 +1,6 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -121,7 +122,8 @@ public class LayoutMasterSetBuilder {
 		return lms;
 	}
 	
-	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf, String sectionName ) {
+	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf, 
+			String sectionName ) {
 		
 		PageSequenceMaster psm = factory.createPageSequenceMaster();
 		psm.setMasterName(sectionName);
@@ -177,7 +179,8 @@ public class LayoutMasterSetBuilder {
 	private static final int MIN_PAGE_MARGIN = 360;
 	
 	private static SimplePageMaster createSimplePageMaster( 
-			String masterName, PageDimensions page, String appendRegionName, boolean needBefore, boolean needAfter) {
+			String masterName, PageDimensions page, String appendRegionName, 
+			boolean needBefore, boolean needAfter) {
 		
 		SimplePageMaster spm = factory.createSimplePageMaster();
 		spm.setMasterName(masterName);
@@ -224,10 +227,10 @@ public class LayoutMasterSetBuilder {
 			rBefore.setRegionName("xsl-region-before-"+appendRegionName);
 			spm.setRegionBefore(rBefore);
 
-			// Make margin smaller, because header takes up space it would otherwise occupy  
+			// Make margin smaller, because header takes up space it would otherwise occupy			
 			int marginTopTwips 
 				= page.getPgMar().getTop().intValue() 
-					- (HEADER_PADDING_TWIP + page.getHeaderExtent() + page.getPgMar().getHeader().intValue());
+					- (HEADER_PADDING_TWIP + page.getHeaderExtent() + page.getHeaderMargin() );
 			if (marginTopTwips<MIN_PAGE_MARGIN) marginTopTwips=MIN_PAGE_MARGIN;				
 			spm.setMarginTop( UnitsOfMeasurement.twipToBest(marginTopTwips ) );
 			
@@ -251,7 +254,7 @@ public class LayoutMasterSetBuilder {
 			// Make margin smaller, because footer takes up space it would otherwise occupy  
 			int marginBottomTwips
 					= page.getPgMar().getBottom().intValue()
-						- (FOOTER_PADDING_TWIP + page.getFooterExtent() + page.getPgMar().getFooter().intValue() );
+						- (FOOTER_PADDING_TWIP + page.getFooterExtent() + page.getFooterMargin() );
 			if (marginBottomTwips<MIN_PAGE_MARGIN) marginBottomTwips=MIN_PAGE_MARGIN;			
 			log.debug("marginBottomTwips: " + marginBottomTwips );
 			spm.setMarginBottom( UnitsOfMeasurement.twipToBest(marginBottomTwips) );
