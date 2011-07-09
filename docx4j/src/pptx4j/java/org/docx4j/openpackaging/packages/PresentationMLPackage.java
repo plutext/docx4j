@@ -30,6 +30,8 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.Docx4jProperties;
+import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
@@ -132,7 +134,16 @@ public class PresentationMLPackage  extends OpcPackage {
 	 */
 	public static PresentationMLPackage createPackage() throws InvalidFormatException {
 
-		return createPackage(null, true);
+		String slideSize= Docx4jProperties.getProperties().getProperty("pptx4j.PageSize", "A4");
+		log.info("Using paper size: " + slideSize);
+		
+		String landscapeString = Docx4jProperties.getProperties().getProperty("pptx4j.PageOrientationLandscape", "false");
+		boolean landscape= Boolean.parseBoolean(landscapeString);
+		log.info("Landscape orientation: " + landscape);
+		
+		return createPackage(
+				SlideSizesWellKnown.valueOf(slideSize), landscape); 
+		
 	}
 	
 	/**
@@ -142,7 +153,8 @@ public class PresentationMLPackage  extends OpcPackage {
 	 * @throws InvalidFormatException
 	 * @since 2.7
 	 */
-	public static PresentationMLPackage createPackage(SlideSizesWellKnown sz, boolean landscape) throws InvalidFormatException {
+	public static PresentationMLPackage createPackage(SlideSizesWellKnown sz, 
+			boolean landscape) throws InvalidFormatException {
 		
 		
 		// Create a package

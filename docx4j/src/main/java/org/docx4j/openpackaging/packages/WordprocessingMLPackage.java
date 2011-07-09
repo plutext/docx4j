@@ -38,6 +38,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.convert.out.pdf.viaXSLFO.Conversion;
@@ -384,9 +385,22 @@ public class WordprocessingMLPackage extends OpcPackage {
 	}
     	
 
+	/**
+	 * Creates a WordprocessingMLPackage, using default page size and orientation.
+	 * From 2.7.1, these are read from docx4j.properties, or if not found, default
+	 * to A4 portrait.
+	 */
 	public static WordprocessingMLPackage createPackage() throws InvalidFormatException {
-
-		return createPackage(PageSizePaper.A4, false); 
+		
+		String papersize= Docx4jProperties.getProperties().getProperty("docx4j.PageSize", "A4");
+		log.info("Using paper size: " + papersize);
+		
+		String landscapeString = Docx4jProperties.getProperties().getProperty("docx4j.PageOrientationLandscape", "false");
+		boolean landscape= Boolean.parseBoolean(landscapeString);
+		log.info("Landscape orientation: " + landscape);
+		
+		return createPackage(
+				PageSizePaper.valueOf(papersize), landscape); 
 	}
 	
 	public static WordprocessingMLPackage createPackage(PageSizePaper sz, boolean landscape ) throws InvalidFormatException {
@@ -436,6 +450,18 @@ public class WordprocessingMLPackage extends OpcPackage {
 			//e.printStackTrace();	
 			log.error(e);
 		}
+		
+		// Metadata: docx4j 2.7.1 can populate some of this from docx4j.properties
+		DocPropsCorePart core = new DocPropsCorePart();
+		org.docx4j.docProps.core.ObjectFactory coreFactory = new org.docx4j.docProps.core.ObjectFactory();
+		core.setJaxbElement(coreFactory.createCoreProperties() );
+		wmlPack.addTargetPart(core);
+		
+		DocPropsExtendedPart app = new DocPropsExtendedPart();
+		org.docx4j.docProps.extended.ObjectFactory extFactory = new org.docx4j.docProps.extended.ObjectFactory();
+		app.setJaxbElement(extFactory.createProperties() );
+		wmlPack.addTargetPart(app);		
+		
 		// Return the new package
 		return wmlPack;
 		

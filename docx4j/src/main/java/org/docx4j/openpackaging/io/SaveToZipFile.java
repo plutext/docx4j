@@ -40,13 +40,18 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.docProps.core.CoreProperties;
+import org.docx4j.docProps.extended.Properties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
+import org.docx4j.openpackaging.parts.DocPropsCorePart;
+import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -194,6 +199,45 @@ public class SaveToZipFile {
 		try {
 						
 			if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
+				
+				// From docx4j 2.7.1, support setting some basic metadata
+				// from docx4j.properties
+				if (part instanceof DocPropsCorePart) {
+					
+					boolean dcWrite= Boolean.parseBoolean(
+							Docx4jProperties.getProperties().getProperty("docx4j.dc.write", "false"));
+					if (dcWrite) {					
+						CoreProperties cp = ((DocPropsCorePart)part).getJaxbElement();
+						
+						// Only set creator if not already present
+						String creator= Docx4jProperties.getProperties().getProperty("docx4j.dc.creator.value", "docx4j");
+						if (cp.getCreator()==null) {
+							org.docx4j.docProps.core.dc.elements.ObjectFactory of = new org.docx4j.docProps.core.dc.elements.ObjectFactory(); 
+							cp.setCreator(of.createSimpleLiteral() );
+							cp.getCreator().getContent().add(creator);
+						} 
+						
+						String modifier= Docx4jProperties.getProperties().getProperty("docx4j.dc.lastModifiedBy.value", "docx4j");
+						cp.setLastModifiedBy(modifier);
+					}
+				}				
+				if (part instanceof DocPropsExtendedPart) {
+					boolean appWrite= Boolean.parseBoolean(
+							Docx4jProperties.getProperties().getProperty("docx4j.App.write", "false"));
+					if (appWrite) {
+						Properties cp = ((DocPropsExtendedPart)part).getJaxbElement();
+						
+						cp.setApplication( 
+								Docx4jProperties.getProperties().getProperty("docx4j.Application", "docx4j")
+								);
+						
+						String version = Docx4jProperties.getProperties().getProperty("docx4j.AppVersion");
+						if ( version!=null ) {
+							cp.setAppVersion(version);
+						}
+						
+					}
+				}
 
 		        // Add ZIP entry to output stream.
 		        out.putNextEntry(new ZipEntry(zipEntryName));		        
@@ -217,7 +261,7 @@ public class SaveToZipFile {
 				log.info( "success writing part: " +  zipEntryName);		
 
 			} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
-
+				
 		        // Add ZIP entry to output stream.
 		        out.putNextEntry(new ZipEntry(zipEntryName));		        
 
