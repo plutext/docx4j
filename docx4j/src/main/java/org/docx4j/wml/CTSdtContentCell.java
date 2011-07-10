@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import org.docx4j.math.CTOMath;
@@ -57,6 +58,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 @XmlType(name = "CT_SdtContentCell", propOrder = {
     "egContentCellContent"
 })
+@XmlRootElement(name = "sdtContent")
 public class CTSdtContentCell
     implements Child, ContentAccessor
 {
