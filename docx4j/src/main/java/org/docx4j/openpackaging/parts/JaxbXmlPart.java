@@ -25,15 +25,20 @@ import java.io.ByteArrayOutputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBResult;
+import javax.xml.transform.Templates;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.wml.Numbering;
 
 /** OPC Parts are either XML, or binary (or text) documents.
  * 
@@ -216,19 +221,47 @@ public abstract class JaxbXmlPart<E> extends Part {
     public E unmarshal( java.io.InputStream is ) throws JAXBException {
     	
 		try {
-			
-//			if (jc==null) {
-//				setJAXBContext(Context.jc);				
-//			}
-		    		    
+		    
 			Unmarshaller u = jc.createUnmarshaller();
 			
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			log.info("unmarshalling " + this.getClass().getName() );									
-			jaxbElement = (E) XmlUtils.unwrap(
-					u.unmarshal( is ));						
+			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+			if (is.markSupported()) {
+				// Only fail hard if we know we can restart
+				eventHandler.setContinue(false);
+			}
+			u.setEventHandler(eventHandler);
+			
+			try {
+				jaxbElement = (E) XmlUtils.unwrap(
+						u.unmarshal( is ));						
+			} catch (UnmarshalException ue) {
+				
+				if (is.markSupported() ) {
+					// When reading from zip, we use a ByteArrayInputStream,
+					// which does support this.
+				
+					log.info("encountered unexpected content; pre-processing");
+					eventHandler.setContinue(true);
+										
+					try {
+						Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+						is.reset();
+						JAXBResult result = XmlUtils.prepareJAXBResult(Context.jc);
+						XmlUtils.transform(new StreamSource(is), 
+								mcPreprocessorXslt, null, result);
+						jaxbElement = (E) XmlUtils.unwrap(
+								result.getResult() );	
+					} catch (Exception e) {
+						throw new JAXBException("Preprocessing exception", e);
+					}
+											
+				} else {
+					log.error(ue);
+					log.error(".. and mark not supported");
+					throw ue;
+				}
+			}
+			
 
 		} catch (JAXBException e ) {
 			log.error(e);
@@ -238,26 +271,50 @@ public abstract class JaxbXmlPart<E> extends Part {
 		return jaxbElement;
     	
     }	
-
+    
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
 		try {
 
 			Unmarshaller u = jc.createUnmarshaller();
-						
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-			jaxbElement = (E) XmlUtils.unwrap(
-					u.unmarshal( el ) );
-
+			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+			eventHandler.setContinue(false);
+			u.setEventHandler(eventHandler);
+			
+			try {
+				jaxbElement = (E) XmlUtils.unwrap(
+						u.unmarshal( el ) );
+			} catch (UnmarshalException ue) {
+				log.info("encountered unexpected content; pre-processing");
+				try {
+					org.w3c.dom.Document doc;
+					if (el instanceof org.w3c.dom.Document) {
+						doc = (org.w3c.dom.Document) el;
+					} else {
+						// Hope for the best. Dodgy though; what if this is
+						// being used on something deep in the tree?
+						// TODO: revisit
+						doc = el.getOwnerDocument();
+					}
+					eventHandler.setContinue(true);
+					JAXBResult result = XmlUtils.prepareJAXBResult(Context.jc);
+					Templates mcPreprocessorXslt = JaxbValidationEventHandler
+							.getMcPreprocessor();
+					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					jaxbElement = (E) XmlUtils.unwrap(
+							result.getResult() );	
+				} catch (Exception e) {
+					throw new JAXBException("Preprocessing exception", e);
+				}
+			}
 			return jaxbElement;
 			
 		} catch (JAXBException e) {
-//			e.printStackTrace();
 			log.error(e);
 			throw e;
 		}
-	}
+	}	
+    
 
     public boolean isContentEqual(Part other) throws Docx4JException {
 
