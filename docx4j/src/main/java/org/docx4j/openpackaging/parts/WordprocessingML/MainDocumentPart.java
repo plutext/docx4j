@@ -281,46 +281,39 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			try {
 				jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );
 			} catch (UnmarshalException ue) {
+				log.info("encountered unexpected content; pre-processing");
+				/* Always try our preprocessor, since if what is first encountered is
+				 * eg:
+				 * 
+			          <w14:glow w14:rad="101600"> ...
+				 *
+				 * the error would be:
+				 *  
+				 *    unexpected element (uri:"http://schemas.microsoft.com/office/word/2010/wordml", local:"glow")
+				 *
+				 * but there could well be mc:AlternateContent somewhere 
+				 * further down in the document.
+				 */
 
-				// mimic docx4j 2.7.0 and earlier behaviour
+				// mimic docx4j 2.7.0 and earlier behaviour; this will 
+				// drop w14:glow etc; the preprocessor doesn't need to 
+				// do that
 				eventHandler.setContinue(true);
 				
-				if (ue.getMessage().contains(JaxbValidationEventHandler.UNEXPECTED_MC_ALTERNATE_CONTENT)) {
-					// Try our preprocessor
-					log.info("encountered mc:AlternateContent; pre-processing");
+				// There is no JAXBResult(binder),
+				// so use a 
+				DOMResult result = new DOMResult();
+				
+				Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+				XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+				
+				doc = (org.w3c.dom.Document)result.getNode();
 					
-					// There is no JAXBResult(binder),
-					// so use a 
-					DOMResult result = new DOMResult();
-					
-					Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
-					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
-					
-					doc = (org.w3c.dom.Document)result.getNode();
-					
-				} else {
-					log.error(ue);
-					log.info("trying again; likely attribute/element loss");					
-				}
 				jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );					
 				
 			}
 			
 			return jaxbElement;
-/*		    		    
-			Unmarshaller u = jc.createUnmarshaller();
-
-			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);			
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			
-//			JAXBElement<?> root = (JAXBElement<?>)u.unmarshal( is );			
-//			jaxbElement = (org.docx4j.wml.Document)root.getValue();
-			
-			jaxbElement =  (org.docx4j.wml.Document) u.unmarshal( is );
-			return jaxbElement;
-			
-			//System.out.println("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
-*/
 			
 		} catch (Exception e ) {
 			e.printStackTrace();
@@ -333,14 +326,39 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		try {
 
 			binder = jc.createBinder();
-			binder.setEventHandler(
-					new org.docx4j.jaxb.JaxbValidationEventHandler());			
-			jaxbElement = (org.docx4j.wml.Document) binder.unmarshal( el );
-
+			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+			eventHandler.setContinue(false);
+			binder.setEventHandler(eventHandler);
+			
+			try {
+				jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( el );
+			} catch (UnmarshalException ue) {
+				log.info("encountered unexpected content; pre-processing");
+				try {
+					org.w3c.dom.Document doc;
+					if (el instanceof org.w3c.dom.Document) {
+						doc = (org.w3c.dom.Document) el;
+					} else {
+						// Hope for the best. Dodgy though; what if this is
+						// being used on something deep in the tree?
+						// TODO: revisit
+						doc = el.getOwnerDocument();
+					}
+					eventHandler.setContinue(true);
+					DOMResult result = new DOMResult();
+					Templates mcPreprocessorXslt = JaxbValidationEventHandler
+							.getMcPreprocessor();
+					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					doc = (org.w3c.dom.Document) result.getNode();
+					jaxbElement = (org.docx4j.wml.Document) binder
+							.unmarshal(doc);
+				} catch (Exception e) {
+					throw new JAXBException("Preprocessing exception", e);
+				}
+			}
 			return jaxbElement;
 			
 		} catch (JAXBException e) {
-//			e.printStackTrace();
 			log.error(e);
 			throw e;
 		}
