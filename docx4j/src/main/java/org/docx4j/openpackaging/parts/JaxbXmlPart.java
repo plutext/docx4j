@@ -231,7 +231,6 @@ public abstract class JaxbXmlPart<E> extends Part {
 					u.unmarshal( is ));						
 
 		} catch (JAXBException e ) {
-//			e.printStackTrace();
 			log.error(e);
 			throw e;
 		}
@@ -239,7 +238,6 @@ public abstract class JaxbXmlPart<E> extends Part {
 		return jaxbElement;
     	
     }	
-//    public abstract Object unmarshal( java.io.InputStream is ) throws JAXBException;
 
     public E unmarshal(org.w3c.dom.Element el) throws JAXBException {
 
