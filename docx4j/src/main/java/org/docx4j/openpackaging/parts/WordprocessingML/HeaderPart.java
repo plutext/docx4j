@@ -25,11 +25,15 @@ import java.util.List;
 
 import javax.xml.bind.Binder;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.UnmarshalException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Templates;
+import javax.xml.transform.dom.DOMResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
@@ -159,9 +163,9 @@ public final class HeaderPart extends JaxbXmlPart<Hdr>  implements ContentAccess
      */
 	@Override
     public Hdr unmarshal( java.io.InputStream is ) throws JAXBException {
-    	
 		try {
 			
+			log.info("For MDP, unmarshall via binder");
 			// InputStream to Document
 			javax.xml.parsers.DocumentBuilderFactory dbf 
 				= DocumentBuilderFactory.newInstance();
@@ -171,32 +175,77 @@ public final class HeaderPart extends JaxbXmlPart<Hdr>  implements ContentAccess
 			// 
 			binder = jc.createBinder();
 			
-			binder.setEventHandler(
-					new org.docx4j.jaxb.JaxbValidationEventHandler());
+			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+			eventHandler.setContinue(false);
+			binder.setEventHandler(eventHandler);
 			
-			jaxbElement =  (Hdr) binder.unmarshal( doc );
+			try {
+				jaxbElement =  (Hdr) binder.unmarshal( doc );
+			} catch (UnmarshalException ue) {
+				log.info("encountered unexpected content; pre-processing");
+				eventHandler.setContinue(true);
+				DOMResult result = new DOMResult();
+				Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
+				XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+				doc = (org.w3c.dom.Document)result.getNode();
+				jaxbElement =  (Hdr) binder.unmarshal( doc );					
+			}
 			
-////			if (jc==null) {
-////				setJAXBContext(Context.jc);				
-////			}
-//		    		    
-//			Unmarshaller u = jc.createUnmarshaller();
-//			
-//			//u.setSchema(org.docx4j.jaxb.WmlSchema.schema);
-//			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-//
-//			log.info("unmarshalling " + this.getClass().getName() + " \n\n" );									
-//						
-//			jaxbElement = (Hdr) u.unmarshal( is );
-//							
-//			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
-
+			return jaxbElement;
+			
 		} catch (Exception e ) {
 			e.printStackTrace();
+			return null;
 		}
-    	
-		return jaxbElement;
-    	
     }
+
+    /**
+     * @since 2.7.1
+     */		
+	@Override
+    public Hdr unmarshal(org.w3c.dom.Element el) throws JAXBException {
+
+		try {
+
+			binder = jc.createBinder();
+			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
+			eventHandler.setContinue(false);
+			binder.setEventHandler(eventHandler);
+			
+			try {
+				jaxbElement =  (Hdr) binder.unmarshal( el );
+			} catch (UnmarshalException ue) {
+				log.info("encountered unexpected content; pre-processing");
+				try {
+					org.w3c.dom.Document doc;
+					if (el instanceof org.w3c.dom.Document) {
+						doc = (org.w3c.dom.Document) el;
+					} else {
+						// Hope for the best. Dodgy though; what if this is
+						// being used on something deep in the tree?
+						// TODO: revisit
+						doc = el.getOwnerDocument();
+					}
+					eventHandler.setContinue(true);
+					DOMResult result = new DOMResult();
+					Templates mcPreprocessorXslt = JaxbValidationEventHandler
+							.getMcPreprocessor();
+					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+					doc = (org.w3c.dom.Document) result.getNode();
+					jaxbElement = (Hdr) binder
+							.unmarshal(doc);
+				} catch (Exception e) {
+					throw new JAXBException("Preprocessing exception", e);
+				}
+			}
+			return jaxbElement;
+			
+		} catch (JAXBException e) {
+			log.error(e);
+			throw e;
+		}
+	}
+	
+	
 	
 }
