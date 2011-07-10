@@ -5,15 +5,30 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<name>docx4j</name>
 	<version>2.7.0</version>
+	<packaging>jar</packaging>
+	<name>docx4j</name>
 	<description>
 		docx4j is a library which helps you to work with the Office Open
 		XML file format, including WordprocessingML and DrawingML, as used in docx
 		documents and pptx presentations.
 	</description>
 	<url>http://dev.plutext.org/</url>
-	<prerequisites />
+	<licenses>
+	  <license>
+	    <name>Apache 2</name>
+	    <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+	    <distribution>repo</distribution>
+	    <comments>A business-friendly OSS license</comments>
+	  </license>
+  	</licenses>
+	<!-- <prerequisites /> -->
+	<scm>
+	    <connection>scm:svn:http://dev.plutext.org/svn/docx4j/trunk</connection>
+	    <!-- <developerConnection>scm:svn:https://127.0.0.1/svn/my-project</developerConnection>
+	         <tag>HEAD</tag>  -->
+	    <url>http://dev.plutext.org/svn/docx4j/trunk</url>
+    </scm>
 	<inceptionYear>2007</inceptionYear>
 	<developers>
 		<developer>
@@ -27,6 +42,53 @@
 			<timezone>+10</timezone>
 		</developer>
 	</developers>
+	<contributors>
+		<contributor>
+			<name>Adam Schmideg</name>
+		</contributor>
+		<contributor>
+			<name>alberto</name>
+		</contributor>
+		<contributor>
+			<name>amdonov</name>
+		</contributor>
+		<contributor>
+			<name>azeloro</name>
+		</contributor>
+		<contributor>
+			<name>Dave Brown</name>
+		</contributor>
+		<contributor>
+			<name>Holger Schlegel</name>
+		</contributor>
+		<contributor>
+			<name>Jojada Tirtowidjojo</name>
+		</contributor>
+		<contributor>
+			<name>Leigh</name>
+		</contributor>
+		<contributor>
+			<name>Manimala Kumar</name>
+		</contributor>
+		<contributor>
+			<name>Marcel</name>
+		</contributor>
+		<contributor>
+			<name>Patrick Linskey</name>
+		</contributor>
+		<contributor>
+			<name>ppa_waw</name>
+		</contributor>
+		<contributor>
+			<name>Richard</name>
+		</contributor>
+		<contributor>
+			<name>Serge Grachov</name>
+		</contributor>
+		<contributor>
+			<name>Tinne</name>
+		</contributor>
+	</contributors>	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
@@ -128,6 +190,10 @@
 				</execution>
 			</executions>
 		</plugin>
+		<!--  maven-javadoc-plugin seems to require large -Xmx  
+			  so comment this out if your  build is failing
+			  because you don't have enough.
+		-->
 		<plugin>
 			<artifactId>maven-javadoc-plugin</artifactId>
 			<configuration>
@@ -489,15 +555,23 @@
 			(stuff not available in public repositories)                                 
   -->
  
+		<!-- This patched version of VFS is required for WebDAV
+		
+		     In the meantime, this may be found in 
+		     https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2/org/apache/commons/commons-vfs-patched/
+		      			
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-vfs-patched</artifactId>
+				<version>1.9.1</version> 
+			</dependency>
+		-->
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-vfs-patched</artifactId>
-			<version>1.9.1</version> 
-			<!-- TO BE REVIEWED.
-			     In the meantime, this may be found in 
-			     https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2/org/apache/commons/commons-vfs-patched/ -->			
-		</dependency>
-
+		    <groupId>commons-vfs</groupId>
+		    <artifactId>commons-vfs</artifactId>
+		    <version>1.0</version>
+		</dependency>		
+		
 		<!-- Ensure both the Java 6 and RI interfaces are present,
 		     even if the user has just one.
 		     NB: this (or an added source location containing them) is
