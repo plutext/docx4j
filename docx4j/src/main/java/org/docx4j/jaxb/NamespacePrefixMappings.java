@@ -245,12 +245,95 @@ public class NamespacePrefixMappings implements NamespaceContext {
 	protected static String getNamespaceURIStatic(String prefix) {
 
 		// Pre-defined prefixes
-		if (prefix.equals("w"))  
+		if (prefix.equals("w"))
 			return Namespaces.NS_WORD12;
-		else if (prefix.equals("r"))
+		if (prefix.equals("r"))
 			return Namespaces.RELATIONSHIPS_OFFICEDOC;
-		else if (prefix.equals("pkg"))
+		if (prefix.equals("pkg"))
 			return Namespaces.PKG_XML;
+
+		if (prefix.equals("p"))
+			return "http://schemas.openxmlformats.org/presentationml/2006/main";
+
+		if (prefix.equals("prop"))
+			return "http://schemas.openxmlformats.org/officeDocument/2006/custom-properties";
+
+		if (prefix.equals("properties"))
+			return "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties";
+
+		if (prefix.equals("cp"))
+			return "http://schemas.openxmlformats.org/package/2006/metadata/core-properties";
+
+		if (prefix.equals("vt"))
+			return "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes";
+
+		if (prefix.equals("rel"))
+			return "http://schemas.openxmlformats.org/package/2006/relationships";
+
+		// DrawingML
+		if (prefix.equals("wp"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
+
+		if (prefix.equals("c"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/chart";
+
+		if (prefix.equals("a"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/main";
+
+		if (prefix.equals("pic"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/picture";
+
+		if (prefix.equals("dgm"))
+			return "http://schemas.openxmlformats.org/drawingml/2006/diagram";
+
+		if (prefix.equals("dsp"))
+			return "http://schemas.microsoft.com/office/drawing/2008/diagram";
+
+		if (prefix.equals("o"))
+			return "urn:schemas-microsoft-com:office:office";
+
+		if (prefix.equals("v"))
+			return "urn:schemas-microsoft-com:vml";
+
+		if (prefix.equals("WX"))
+			return "http://schemas.microsoft.com/office/word/2003/auxHint";
+
+		if (prefix.equals("aml"))
+			return "http://schemas.microsoft.com/aml/2001/core";
+
+		if (prefix.equals("w10"))
+			return "urn:schemas-microsoft-com:office:word";
+
+		if (prefix.equals("m"))
+			return "http://schemas.openxmlformats.org/officeDocument/2006/math";
+
+		if (prefix.equals("xsi"))
+			return "http://www.w3.org/2001/XMLSchema-instance";
+
+		if (prefix.equals("dc"))
+			return "http://purl.org/dc/elements/1.1/";
+
+		if (prefix.equals("dcterms"))
+			return "http://purl.org/dc/terms/";
+
+		if (prefix.equals("xml"))
+			return "http://www.w3.org/XML/1998/namespace";
+
+		if (prefix.equals("ds"))
+			return "http://schemas.openxmlformats.org/officeDocument/2006/customXml";
+
+		// OpenDoPE
+		if (prefix.equals("odx"))
+			return "http://opendope.org/xpaths";
+		if (prefix.equals("odc"))
+			return "http://opendope.org/conditions";
+		if (prefix.equals("odi"))
+			return "http://opendope.org/components";
+		if (prefix.equals("odq"))
+			return "http://opendope.org/questions";
+		if (prefix.equals("odgm"))
+			return "http://opendope.org/SmartArt/DataHierarchy";		
+		
 		
 		// Registered prefixes
 		String result = namespaces.get(prefix);
