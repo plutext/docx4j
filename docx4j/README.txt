@@ -17,11 +17,12 @@ Contents of this file:
 What is docx4j?
 ---------------
 
-docx4j is an open source (Apache v2) library for creating, editing, and saving docx "packages". 
+docx4j is an open source (Apache v2) library for creating, editing, and saving OpenXML "packages",
+including docx, pptx, and xslx. 
 
 It uses JAXB to create the Java representation.
 
-- Open existing docx (from filesystem, SMB/CIFS, WebDAV using VFS)
+- Open existing docx/pptx/xlsx (from filesystem, SMB/CIFS, WebDAV using VFS)
 - Create new docx
 - Programmatically manipulate the docx document (of course)
 - CustomXML binding (with OpenDoPE extensions for repeats & conditionals) 
