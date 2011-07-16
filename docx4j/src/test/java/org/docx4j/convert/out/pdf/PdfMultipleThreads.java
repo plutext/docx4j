@@ -36,9 +36,9 @@ import org.docx4j.samples.AbstractSample;
  */
 public class PdfMultipleThreads extends AbstractSample {
 	
-	final static int TOTAL=12; // <---- number of threads
+	final static int TOTAL=6; // <---- number of threads
 
-	final static int REPS=20; // repeat the test, so enable JIT compilation
+	final static int REPS=5; // repeat the test, so enable JIT compilation
 	
 	public static boolean abort = false;
     
@@ -169,7 +169,9 @@ public class PdfMultipleThreads extends AbstractSample {
 	        	
     	boolean save = true;
     	
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
+    	inputfilepath = System.getProperty("user.dir") 
+//    		+ "/sample-docs/word/sample-docx.xml";
+    		+ "/docs/Docx4j_GettingStarted.xml";	    	
     	
     	
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
