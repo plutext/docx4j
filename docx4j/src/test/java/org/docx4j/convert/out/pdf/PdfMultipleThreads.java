@@ -1,5 +1,6 @@
 package org.docx4j.convert.out.pdf;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import javax.xml.bind.JAXBContext;
@@ -28,17 +29,25 @@ import org.docx4j.samples.AbstractSample;
  * Be sure to use VM args:
  * 
  * -Dlog4j.configuration=log4j.xml -Xmx512m
+ * 
+ * Win 7 x64 can do 18 threads with extra perm gen:
+ * 
+ * -Xmx1G -XX:MaxPermSize=128m
  *
  */
 public class PdfMultipleThreads extends AbstractSample {
 	
 	final static int TOTAL=6; // <---- number of threads
+
+	final static int REPS=5; // repeat the test, so enable JIT compilation
 	
 	public static boolean abort = false;
     
 	// Set up font mapper, this can be shared between
 	// threads
 	static Mapper fontMapper = new IdentityPlusMapper();
+	
+	static DecimalFormat df = new DecimalFormat("#.##");
 	
     public static void main(String[] args) 
             throws Exception {
@@ -53,55 +62,62 @@ public class PdfMultipleThreads extends AbstractSample {
     	
 		// OK, initial overhead done; let's start the test
 		
-    	long startTime = System.currentTimeMillis();
+    	for (int r=1; r<=REPS; r++) {
+    		
+        	long startTime = System.currentTimeMillis();
     	
-    	for (int i=1; i<=TOTAL; i++) {
-	        t[i] = new Thread(new CreatePdf());
-	        t[i].setName("fo"+i);
-	        t[i].start();
-    	}
-    		        
-        boolean alive = true;
-        
-        while(alive) {
-
-        	alive = false;
 	    	for (int i=1; i<=TOTAL; i++) {
-		        if (t[i].isAlive() ) {
-		        	alive = true;
-			    	if (abort) {
-			        	System.out.println(i + " is alive; trying to interrupt");
-			        	//t[i].interrupt();
-			        	t[i].stop();
-			    	} else {
-			        	System.out.println(i + " is alive");				    		
-			    	}
-		        	
-		        } else {
-		        	System.out.println(i + " is finished");			        	
-		        }
-		        
+		        t[i] = new Thread(new CreatePdf());
+		        t[i].setName("fo"+i);
+		        t[i].start();
 	    	}
+	    		        
+	        boolean alive = true;
+	        
+	        while(alive) {
+	
+	        	alive = false;
+		    	for (int i=1; i<=TOTAL; i++) {
+			        if (t[i].isAlive() ) {
+			        	alive = true;
+				    	if (abort) {
+				        	System.out.println(i + " is alive; trying to interrupt");
+				        	//t[i].interrupt();
+				        	t[i].stop();
+				    	} else {
+				        	System.out.println(i + " is alive");				    		
+				    	}
+			        	
+			        } else {
+			        	System.out.println(i + " is finished");			        	
+			        }
+			        
+		    	}
+		    	
+		    	if (alive) {
+			        System.out.println( reportMemory() );
+			    	Thread.sleep(1000);
+		    	}
+	        }	
+	        long timeElapsed = System.currentTimeMillis() - startTime;
+	        int elapsedSec = Math.round(timeElapsed/ 1000 );
+	        float sec = timeElapsed/ (TOTAL*1000);
+	    	System.out.println("Iteration " + r + " of  " + REPS 
+	    			+ " took " + elapsedSec + "sec");
+	    	System.out.println("Average " + df.format(sec) + "sec per thread");
 	    	
+	    	System.out.println( reportMemory() );
 	    	
-	        System.out.println( reportMemory() );
-	    	Thread.sleep(4000);
+	    	System.out.println( "gc..");
+	    	System.gc();        	
+	    	System.out.println( reportMemory() );
 	    	
-        }	
-        long timeElapsed = System.currentTimeMillis() - startTime;
-        int sec = Math.round(timeElapsed/ (TOTAL*1000) );
-    	System.out.println("All done!  " + timeElapsed);
-    	System.out.println("Average " + sec + "sec per thread");
-    	
-    	System.out.println( reportMemory() );
-    	
-    	System.out.println( "gc..");
-    	System.gc();        	
-    	System.out.println( reportMemory() );
-    	
-    	System.out.println( "gc..");
-    	System.gc();        	
-    	System.out.println( reportMemory() );
+	    	System.out.println( "gc..");
+	    	System.gc();        	
+	    	System.out.println( reportMemory() );
+	    	
+    	}
+    	System.out.println( "All done!" );
     	
     }
     
