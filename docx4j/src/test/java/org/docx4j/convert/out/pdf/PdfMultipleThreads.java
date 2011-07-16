@@ -46,9 +46,7 @@ public class PdfMultipleThreads extends AbstractSample {
 	// Set up font mapper, this can be shared between
 	// threads
 	static Mapper fontMapper = new IdentityPlusMapper();
-	
-	static DecimalFormat df = new DecimalFormat("#.##");
-	
+		
     public static void main(String[] args) 
             throws Exception {
     	    	
@@ -101,10 +99,10 @@ public class PdfMultipleThreads extends AbstractSample {
 	        }	
 	        long timeElapsed = System.currentTimeMillis() - startTime;
 	        int elapsedSec = Math.round(timeElapsed/ 1000 );
-	        float sec = timeElapsed/ (TOTAL*1000);
+	        double sec = (double)Math.round(100* timeElapsed/ (TOTAL*1000) )/100;
 	    	System.out.println("Iteration " + r + " of  " + REPS 
 	    			+ " took " + elapsedSec + "sec");
-	    	System.out.println("Average " + df.format(sec) + "sec per thread");
+	    	System.out.println("Average " + sec + "sec per thread");
 	    	
 	    	System.out.println( reportMemory() );
 	    	
