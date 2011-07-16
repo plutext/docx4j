@@ -1,6 +1,5 @@
 package org.docx4j.convert.out.pdf;
 import java.io.OutputStream;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import javax.xml.bind.JAXBContext;
@@ -37,9 +36,9 @@ import org.docx4j.samples.AbstractSample;
  */
 public class PdfMultipleThreads extends AbstractSample {
 	
-	final static int TOTAL=6; // <---- number of threads
+	final static int TOTAL=12; // <---- number of threads
 
-	final static int REPS=5; // repeat the test, so enable JIT compilation
+	final static int REPS=20; // repeat the test, so enable JIT compilation
 	
 	public static boolean abort = false;
     
@@ -72,9 +71,20 @@ public class PdfMultipleThreads extends AbstractSample {
 	    		        
 	        boolean alive = true;
 	        
-	        while(alive) {
+	        while(alive && !abort) {
 	
 	        	alive = false;
+	        	
+	        	
+	        	boolean anyDead=false;
+		    	for (int i=1; i<=TOTAL; i++) {
+			        if (!t[i].isAlive() ) {
+			        	anyDead=true;
+			        	break;
+			        }
+		    	}
+	        	
+	        	
 		    	for (int i=1; i<=TOTAL; i++) {
 			        if (t[i].isAlive() ) {
 			        	alive = true;
@@ -82,7 +92,8 @@ public class PdfMultipleThreads extends AbstractSample {
 				        	System.out.println(i + " is alive; trying to interrupt");
 				        	//t[i].interrupt();
 				        	t[i].stop();
-				    	} else {
+				    	} else if (anyDead){
+				    		// Only print alive message as we're nearing the end
 				        	System.out.println(i + " is alive");				    		
 				    	}
 			        	
@@ -93,12 +104,19 @@ public class PdfMultipleThreads extends AbstractSample {
 		    	}
 		    	
 		    	if (alive) {
-			        System.out.println( reportMemory() );
-			    	Thread.sleep(1000);
+			        //System.out.println( reportMemory() );
+			    	Thread.sleep(500);
 		    	}
-	        }	
+		    	
+		    	if (abort) { 
+		        	System.out.println("ABORTING: iteration " + r);			        	
+		    		break;
+		    	}
+	        }
+	    	if (abort) break;
+
 	        long timeElapsed = System.currentTimeMillis() - startTime;
-	        int elapsedSec = Math.round(timeElapsed/ 1000 );
+	        double elapsedSec = (double)Math.round(10*timeElapsed/ 1000 )/10;
 	        double sec = (double)Math.round(100* timeElapsed/ (TOTAL*1000) )/100;
 	    	System.out.println("Iteration " + r + " of  " + REPS 
 	    			+ " took " + elapsedSec + "sec");
@@ -115,7 +133,11 @@ public class PdfMultipleThreads extends AbstractSample {
 	    	System.out.println( reportMemory() );
 	    	
     	}
-    	System.out.println( "All done!" );
+    	if (abort) {
+    		System.out.println( "## ABORTED.  See logs" );    		
+    	} else {
+    		System.out.println( "All done!" );
+    	}
     	
     }
     
@@ -152,22 +174,15 @@ public class PdfMultipleThreads extends AbstractSample {
     	
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
-//			// Set up font mapper
-//			Mapper fontMapper = new IdentityPlusMapper();
 		wordMLPackage.setFontMapper(fontMapper);
-//			
-//			// Example of mapping missing font Algerian to installed font Comic Sans MS
-//			PhysicalFont font 
-//					= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
-//			fontMapper.getFontMappings().put("Calibri", font);
 					
 		org.docx4j.convert.out.pdf.PdfConversion c 
 			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 		
 		if (save) {
-			((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
-					new java.io.File(
-								inputfilepath + Thread.currentThread().getName() + ".fo"));
+//			((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
+//					new java.io.File(
+//								inputfilepath + Thread.currentThread().getName() + ".fo"));
 			OutputStream os = new java.io.FileOutputStream(
 								inputfilepath + Thread.currentThread().getName() + ".pdf");			
 			c.output(os);
