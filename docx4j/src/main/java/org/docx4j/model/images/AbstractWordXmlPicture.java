@@ -313,6 +313,13 @@ public abstract class AbstractWordXmlPicture {
 				String partname = part.getPartName().toString();
 				String filename = partname.substring(partname
 						.lastIndexOf("/") + 1);
+				
+				// Don't want multiple threads using the same file
+				if (Thread.currentThread().getName()!=null) {
+					filename = Thread.currentThread().getName() + filename; 
+				}
+				
+				
 				log.debug("image file name: " + filename);
 
 				FileObject fo = folder.resolveFile(filename);
