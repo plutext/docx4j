@@ -9,7 +9,6 @@ import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.samples.AbstractSample;
 
 
 /**
@@ -34,13 +33,17 @@ import org.docx4j.samples.AbstractSample;
  * -Xmx1G -XX:MaxPermSize=128m
  *
  */
-public class PdfMultipleThreads extends AbstractSample {
+public class PdfMultipleThreads  {
 	
-	final static int TOTAL=6; // <---- number of threads
+	final static int TOTAL=3; // <---- number of threads
 
-	final static int REPS=5; // repeat the test, so enable JIT compilation
+	final static int REPS=10; // repeat the test, so enable JIT compilation
+	
+	final static boolean LONGER_DOCX = false;
 	
 	public static boolean abort = false;
+	
+	static String inputfilepath; 	    		
     
 	// Set up font mapper, this can be shared between
 	// threads
@@ -48,6 +51,15 @@ public class PdfMultipleThreads extends AbstractSample {
 		
     public static void main(String[] args) 
             throws Exception {
+    	
+    	if (LONGER_DOCX) {
+    		// 27 pages
+    		inputfilepath = System.getProperty("user.dir") 
+    			+ "/docs/Docx4j_GettingStarted.xml";    		
+    	} else {    		
+    		inputfilepath = System.getProperty("user.dir") 
+    			+ "/sample-docs/word/sample-docx.xml";
+    	}
     	    	
     	Thread[] t = new Thread[TOTAL+1];
     	
@@ -166,22 +178,14 @@ public class PdfMultipleThreads extends AbstractSample {
 	 public void run() {	 
 		 
 		 try {
-	        	
-    	boolean save = true;
-    	
-    	inputfilepath = System.getProperty("user.dir") 
-//    		+ "/sample-docs/word/sample-docx.xml";
-    		+ "/docs/Docx4j_GettingStarted.xml";	    	
-    	
-    	
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+	        	    	
+			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+			
+			wordMLPackage.setFontMapper(fontMapper);
+						
+			org.docx4j.convert.out.pdf.PdfConversion c 
+				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 		
-		wordMLPackage.setFontMapper(fontMapper);
-					
-		org.docx4j.convert.out.pdf.PdfConversion c 
-			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
-		
-		if (save) {
 //			((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
 //					new java.io.File(
 //								inputfilepath + Thread.currentThread().getName() + ".fo"));
@@ -189,7 +193,7 @@ public class PdfMultipleThreads extends AbstractSample {
 								inputfilepath + Thread.currentThread().getName() + ".pdf");			
 			c.output(os);
 			System.out.println("Saved " + inputfilepath + Thread.currentThread().getName() + ".pdf");
-		} 
+
 		 } catch (InterruptedException e) {
 			 e.printStackTrace();
 		 } catch (Exception e) {
