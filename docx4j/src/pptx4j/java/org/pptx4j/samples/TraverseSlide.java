@@ -27,6 +27,8 @@ import javax.xml.bind.JAXBContext;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.TraversalUtil.Callback;
+import org.docx4j.dml.CTTextBody;
+import org.docx4j.dml.CTTextParagraph;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -98,6 +100,19 @@ public class TraverseSlide extends AbstractSample {
 				String text = "";
 
 				System.out.println(indent + o.getClass().getName() + "\n\n" + XmlUtils.marshaltoString(o, true, org.pptx4j.jaxb.Context.jcPML));
+				
+				if (o instanceof org.pptx4j.pml.Shape) {
+					CTTextBody txBody = ((org.pptx4j.pml.Shape)o).getTxBody();
+					if (txBody!=null) {
+						for (CTTextParagraph tp : txBody.getP() ) {
+							
+							System.out.println(indent + tp.getClass().getName() + "\n\n" + XmlUtils.marshaltoString(tp, true, true, org.pptx4j.jaxb.Context.jcPML,
+									"http://schemas.openxmlformats.org/presentationml/2006/main", "txBody", CTTextParagraph.class));
+							
+						}
+					}
+				}
+				
 				return null;
 			}
 
