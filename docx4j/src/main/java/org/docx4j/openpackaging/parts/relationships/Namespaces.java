@@ -117,6 +117,9 @@ public class Namespaces {
 	
 	public final static String AF = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk";
+
+	public final static String SUBDOCUMENT  = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/subDocument";
 	
 	
 	public final static String VBA_PROJECT = 
