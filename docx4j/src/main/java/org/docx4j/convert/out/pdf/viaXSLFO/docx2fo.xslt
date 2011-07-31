@@ -62,7 +62,7 @@
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
-<xsl:param name="imageDirPath"/>
+<xsl:param name="imageHandler"/>
    
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="substituterInstance"/> <!-- select="'passed in'"-->	
@@ -486,7 +486,7 @@
   		<xsl:when test="./a:graphic/a:graphicData/pic:pic">
   		
 		   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createXslFoImgE20( 
-		   			$wmlPackage, string($imageDirPath),
+		   			$wmlPackage, $imageHandler,
 		  			$wpinline, $modelStates)" />  		
   		</xsl:when>
   		<xsl:otherwise>
@@ -508,7 +508,7 @@
 	  	<xsl:variable name="wpict" select="."/>
 		  	
 		  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createXslFoImgE10( 
-		  	$wmlPackage, string($imageDirPath),
+		  	$wmlPackage, $imageHandler,
   			$wpict, $modelStates)" />
 		</xsl:when>
 		<xsl:otherwise>

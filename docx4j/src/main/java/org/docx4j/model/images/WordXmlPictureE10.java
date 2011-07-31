@@ -21,7 +21,8 @@ package org.docx4j.model.images;
 
 import java.util.HashMap;
 
-import javax.xml.namespace.QName;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -32,20 +33,13 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.relationships.Relationship;
 import org.docx4j.vml.CTImageData;
 import org.docx4j.vml.CTShape;
-import org.docx4j.vml.CTShapetype;
 import org.docx4j.wml.Pict;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 /**
  * Generate HTML/XSLFO from 
@@ -163,7 +157,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	
     private static WordXmlPictureE10 createWordXmlPictureFromE10(
     		WordprocessingMLPackage wmlPackage,
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator wpict,
     		Part sourcePart) {
 
@@ -192,7 +186,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	String imgRelId = converter.imageData.getId();
         if (imgRelId!=null && !imgRelId.equals("")) {
         	log.debug("Handling " + imgRelId);
-        	converter.handleImageRel(imgRelId, imageDirPath, sourcePart);
+        	converter.handleImageRel(imageHandler, imgRelId, sourcePart);
         } else {
         	log.error("No relId?!");
         }
@@ -212,12 +206,12 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
      */
     public static DocumentFragment createHtmlImgE10(
     		WordprocessingMLPackage wmlPackage,
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator wpict) {
     	
 
     	WordXmlPictureE10 converter = createWordXmlPictureFromE10( wmlPackage,
-        		 imageDirPath,
+        		 imageHandler,
         		 wpict, wmlPackage.getMainDocumentPart());
     	
     	return getHtmlDocumentFragment(converter);
@@ -235,7 +229,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
      */
     public static DocumentFragment createXslFoImgE10(
     		WordprocessingMLPackage wmlPackage,
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator wpict,
     		HashMap<String, TransformState> modelStates) {
     	
@@ -243,10 +237,10 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	Part sourcePart = PartTracker.getPartTrackerState(modelStates);
     	
     	WordXmlPictureE10 converter = createWordXmlPictureFromE10( wmlPackage,
-        		 imageDirPath,
+        		 imageHandler,
         		 wpict, sourcePart);
     	
-    	log.debug("imageDirPath: " + imageDirPath);
+    	//log.debug("imageDirPath: " + imageDirPath);
     	
     	if (converter==null) {
     		
@@ -296,51 +290,6 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 //	public void setData(byte[] value) {
 //		this.data = value;
 //	}
-
-
-
-	
-	private void handleImageRel(String imgRelId, String imageDirPath, Part sourcePart) {
-
-		setID(imgRelId);            			
-
-		//Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
-		Relationship rel = sourcePart.getRelationshipsPart().getRelationshipByID(imgRelId);
-    	
-        // if the relationship isn't found, produce a warning
-        //if (String.IsNullOrEmpty(picture.Src))
-        //{
-        //    this.embeddedPicturesDropped++;
-        //}
-    	
-    	if (rel.getTargetMode() == null
-    			|| rel.getTargetMode().equals("Internal") ) {
-    		
-//    		BinaryPartAbstractImage part = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
-//				.getRelationshipsPart().getPart(rel);
-    		BinaryPartAbstractImage part = (BinaryPartAbstractImage)sourcePart
-			.getRelationshipsPart().getPart(rel);
-			String uri = handlePart(imageDirPath, this, part);
-			
-			// Scale it?  Shouldn't be necessary, since Word should
-			// be providing the height/width
-//			try {
-//				ImageInfo imageInfo = BinaryPartAbstractImage.getImageInfo(uri);
-//				
-//				List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
-//				PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
-//				
-//				picture.ensureFitsPage(imageInfo, page );
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-			
-    		
-    	} else {
-            this.setSrc( rel.getTarget() );            	
-    	}
-		
-	}
 	
 	
     private void readStandardAttributes(CTShape shape) {

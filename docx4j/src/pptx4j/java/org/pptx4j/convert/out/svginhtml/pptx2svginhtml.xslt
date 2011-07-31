@@ -63,7 +63,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 	<xsl:param name="wmlPackage"/> <!--  really, its pml -->
 	<xsl:param name="resolvedLayout"/>
-	<xsl:param name="imageDirPath"/>
+	<xsl:param name="imageHandler"/>
 	
 
 
@@ -197,7 +197,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
     		
   	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.PictureExporter.createHtmlImg( 
   			$wmlPackage, $resolvedLayout,
-  			string($imageDirPath),
+  			$imageHandler,
   			.)" />
     
   </xsl:template>

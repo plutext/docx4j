@@ -20,13 +20,21 @@
 
 package org.docx4j.utils;
 
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.apache.commons.vfs.CacheStrategy;
 import org.apache.commons.vfs.FileSystemException;
+import org.apache.commons.vfs.FileSystemManager;
+import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.commons.vfs.provider.UriParser;
 
 /**
  *	@author Jojada Tirtowidjojo - 28/03/2008
  */
 public class VFSUtils {
+	private static FileSystemManager fileSystemManager;
+	private static ReadWriteLock aLock = new ReentrantReadWriteLock(true);
 	
 	/**
 	 * Returns the absolute path of Apache Commons-VFS FileObject if its uri scheme is 'file://'
@@ -65,6 +73,29 @@ public class VFSUtils {
 		;//uninstantiable
 	}
 
+	public static FileSystemManager getFileSystemManager() {
+		aLock.readLock().lock();
+
+		try {
+			if (fileSystemManager == null) {
+				try {
+					StandardFileSystemManager fm = new StandardFileSystemManager();
+					fm.setCacheStrategy(CacheStrategy.MANUAL);
+					fm.init();
+					fileSystemManager = fm;
+				} catch (Exception exc) {
+					throw new RuntimeException(exc);
+				}
+			}
+
+			return fileSystemManager;
+		}
+        finally
+        {
+            aLock.readLock().unlock();
+        }
+    }
+	
 } // VFSUtils class
 
 

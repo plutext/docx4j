@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.Output;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
@@ -19,7 +20,6 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.AdHocProperty;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
-import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
@@ -29,8 +29,8 @@ import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -39,6 +39,7 @@ import org.docx4j.wml.CTShd;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
@@ -46,7 +47,6 @@ import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
-import org.docx4j.wml.PPrBase.Ind;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -280,32 +280,24 @@ public abstract class AbstractHtmlExporter implements Output {
 //        }
 //    }    
     
-	public static class HtmlSettings {
-
-		private Map<String, Object> settings;
+	public static class HtmlSettings extends AbstractConversionSettings {
+		
+		public static final String CONDITIONAL_COMMENTS = "conditionalComments";
+		public static final String FONT_FAMILY_STACK = "fontFamilyStack";
+		public static final String USER_CSS = "userCSS";
+		public static final String USER_SCRIPT = "userScript";
+		public static final String USER_BODY_TOP = "userBodyTop";
+		public static final String USER_BODY_TAIL = "userBodyTail";
 		
 		public HtmlSettings() {
-			settings = new java.util.HashMap<String, Object>();
-			settings.put("conditionalComments", Boolean.FALSE);
-			settings.put("fontFamilyStack",     Boolean.FALSE);
-			settings.put("imageDirPath", "");
+			settings.put(CONDITIONAL_COMMENTS, Boolean.FALSE);
+			settings.put(FONT_FAMILY_STACK,     Boolean.FALSE);
 			
-			settings.put("userCSS", "");
-			settings.put("userScript", "");
-			settings.put("userBodyTop", "<!-- userBodyTop goes here -->");
-			settings.put("userBodyTail", "<!-- userBodyTail goes here -->");
+			settings.put(USER_CSS, "");
+			settings.put(USER_SCRIPT, "");
+			settings.put(USER_BODY_TOP, "<!-- userBodyTop goes here -->");
+			settings.put(USER_BODY_TAIL, "<!-- userBodyTail goes here -->");
 			
-		}
-		
-		public Map<String, Object> getSettings() {
-			return settings;
-		}
-		
-		public void setWmlPackage(OpcPackage wmlPackage) {
-			settings.put("wmlPackage", wmlPackage);
-		}
-		public OpcPackage getWmlPackage() {
-			return (OpcPackage)settings.get("wmlPackage");
 		}
 		
 		public void setConditionalComments(Boolean conditionalComments) {
@@ -321,16 +313,6 @@ public abstract class AbstractHtmlExporter implements Output {
 		}
 		public Mapper getFontMapper() {
 			return (Mapper)settings.get("fontMapper");
-		}
-		
-		// If this is set to something, images in
-		// internal binary parts will be saved to this directory;
-		// otherwise they won't
-		public void setImageDirPath(String imageDirPath) {
-			settings.put("imageDirPath", imageDirPath);
-		}
-		public String getImageDirPath() {
-			return (String)settings.get("imageDirPath");
 		}
 				
 		public void setUserCSS(String val) {

@@ -1,9 +1,9 @@
 package org.docx4j.convert.out.pdf;
 
-import java.io.File;
 import java.io.OutputStream;
 
 import org.apache.log4j.Logger;
+import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
@@ -24,10 +24,10 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  *
  */
 public abstract class PdfConversion  {
-	
+		
 	// can't implement Output interface, because PDF output isn't XML
 	// so instead, have something similar:	
-	public abstract void output(OutputStream os) throws Docx4JException;
+	public abstract void output(OutputStream os, PdfSettings settings) throws Docx4JException;
 		
 	protected static Logger log = Logger.getLogger(PdfConversion.class);	
 	

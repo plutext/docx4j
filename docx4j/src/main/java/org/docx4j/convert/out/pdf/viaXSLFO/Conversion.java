@@ -42,8 +42,9 @@ import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.TransformState;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
+import org.docx4j.model.TransformState;
+import org.docx4j.model.images.DefaultConversionImageHandler;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -60,15 +61,14 @@ import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
-import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -220,9 +220,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	 * 
 	 * @param os
 	 *            The OutputStream to write the pdf to 
+	 * @param settings
+	 *            The configuration for the conversion 
 	 * 
 	 * */     
-	public void output(OutputStream os) throws Docx4JException {
+	@Override
+	public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
 
 		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
 		// (reuse if you plan to render multiple documents!)
@@ -293,10 +296,18 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections,
 					Context.jcSectionModel);
 
-			java.util.HashMap<String, Object> settings = new java.util.HashMap<String, Object>();
-			settings.put("wmlPackage", wordMLPackage);
-			String imageDirPath = System.getProperty("java.io.tmpdir");
-			settings.put("imageDirPath", imageDirPath);
+			if (settings == null) {
+				settings = new PdfSettings();
+			}
+			settings.setWmlPackage(wordMLPackage);
+			boolean privateImageHandler = false;
+			if (settings.getImageHandler() == null) {
+				settings.setImageHandler(settings.getImageDirPath() != null ? 
+						new DefaultConversionImageHandler(settings.getImageDirPath()) : 
+						new DefaultConversionImageHandler());
+				privateImageHandler = true;
+			}
+			
 
 			// Resulting SAX events (the generated FO) must be piped through to
 			// FOP
@@ -308,7 +319,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			// so assume there will be one object implementing TransformState
 			// per converter.
 			HashMap<String, TransformState> modelStates = new HashMap<String, TransformState>();
-			settings.put("modelStates", modelStates);
+			settings.getSettings().put("modelStates", modelStates);
 
 			// Converter c = new Converter();
 			Converter.getInstance().registerModelConverter("w:tbl",
@@ -334,7 +345,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
 				Result intermediateResult = new StreamResult(intermediate);
 
-				XmlUtils.transform(domDoc, xslt, settings, intermediateResult);
+				XmlUtils.transform(domDoc, xslt, settings.getSettings(), intermediateResult);
 
 				String fo = intermediate.toString("UTF-8");
 				log.debug(fo);
@@ -350,7 +361,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				transformer.transform(src, result);
 			} else {
 
-				XmlUtils.transform(domDoc, xslt, settings, result);
+				XmlUtils.transform(domDoc, xslt, settings.getSettings(), result);
+			}
+			
+			if (privateImageHandler) {
+				//remove a locally created imageHandler in case the HtmlSettings get reused
+				settings.getSettings().remove(PdfSettings.IMAGE_HANDLER);
 			}
 
 		} catch (Exception e) {

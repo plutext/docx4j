@@ -21,6 +21,10 @@ package org.docx4j.model.images;
 
 import java.util.HashMap;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.pdf.viaXSLFO.PartTracker;
@@ -32,19 +36,13 @@ import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.TransformState;
-import org.docx4j.model.images.AbstractWordXmlPicture.Dimensions;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.relationships.Relationship;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 /**
  * Generate HTML/XSLFO from 
@@ -226,7 +224,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @return
      */
     public static WordXmlPictureE20 createWordXmlPictureFromE20(WordprocessingMLPackage wmlPackage,
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator anchorOrInline,
     		Part sourcePart) {
 
@@ -253,9 +251,9 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	
     	String imgRelId = blip.getEmbed();    	
     	if (imgRelId!=null) {
-    		converter.handleImageRel(imgRelId, imageDirPath, sourcePart);
+    		converter.handleImageRel(imageHandler, imgRelId, sourcePart);
     	} else if (blip.getLink()!=null) {
-    		converter.handleImageRel(blip.getLink(), imageDirPath, sourcePart);
+    		converter.handleImageRel(imageHandler, blip.getLink(), sourcePart);
     	} else {
     		log.error("not linked or embedded?!");
     	}
@@ -304,11 +302,11 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @return
      */
     public static DocumentFragment createHtmlImgE20(WordprocessingMLPackage wmlPackage,
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator wpInline) {
 
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
-        		 imageDirPath, wpInline, wmlPackage.getMainDocumentPart() );
+        		 imageHandler, wpInline, wmlPackage.getMainDocumentPart() );
     	
     	return getHtmlDocumentFragment(converter);
     }
@@ -326,14 +324,14 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @return
      */
     public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator wpInline, 
     		HashMap<String, TransformState> modelStates) {
 
     	Part sourcePart = PartTracker.getPartTrackerState(modelStates);
     	
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
-        		 imageDirPath, wpInline, sourcePart);
+        		 imageHandler, wpInline, sourcePart);
     	
         Document d = converter.createXslFoImageElement();
 
@@ -423,51 +421,6 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	log.error("Anchor and inline both null!");
     	return null;
     }
-    
-    
-	private void handleImageRel(String imgRelId, String imageDirPath, Part sourcePart) {
-		
-		setID(imgRelId);            	
-		//Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(imgRelId);
-		Relationship rel = sourcePart.getRelationshipsPart().getRelationshipByID(imgRelId);
-		
-		if (rel.getTargetMode() == null
-				|| rel.getTargetMode().equals("Internal")) {
-	
-//			Part p = (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
-//					.getRelationshipsPart().getPart(rel);
-			Part p = (BinaryPartAbstractImage)sourcePart
-						.getRelationshipsPart().getPart(rel);
-			
-			BinaryPartAbstractImage part = null;
-			if (p instanceof BinaryPartAbstractImage) {
-//				part= (BinaryPartAbstractImage)wmlPackage.getMainDocumentPart()
-//						.getRelationshipsPart().getPart(rel);
-				part= (BinaryPartAbstractImage)sourcePart
-						.getRelationshipsPart().getPart(rel);
-			} else {
-				// Could be a MetafileEmfPart or WMF
-				log.error("TODO: Add support for " + p.getClass().getName() );
-					// TODO
-			}
-			String uri = handlePart(imageDirPath, this, part);
-			// Scale it?  Shouldn't be necessary, since Word should
-			// be providing the height/width
-	//		try {
-	//			ImageInfo imageInfo = BinaryPartAbstractImage.getImageInfo(uri);
-	//			
-	//			List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
-	//			PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
-	//			
-	//			picture.ensureFitsPage(imageInfo, page );
-	//		} catch (Exception e) {
-	//			e.printStackTrace();
-	//		}
-	
-		} else { // External
-			this.setSrc(rel.getTarget());
-		}	
-	}
     
 
 //    private byte[] data;

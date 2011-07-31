@@ -31,7 +31,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 <xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
 <xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
-<xsl:param name="imageDirPath"/>
+<xsl:param name="imageHandler"/>
    
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="fontMapper"/> <!-- select="'passed in'"-->	
@@ -344,7 +344,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   		
   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createHtmlImgE20( 
   			$wmlPackage, 
-  			string($imageDirPath),
+  			$imageHandler,
   			$wpinline)" />
   		</xsl:when>
   		<xsl:otherwise>
@@ -366,7 +366,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 			  	
 			  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createHtmlImgE10( 
 			  			$wmlPackage, 
-			  			string($imageDirPath),
+			  			$imageHandler,
 			  			$wpict)" />
 			</xsl:when>
 			<xsl:otherwise>

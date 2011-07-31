@@ -1,28 +1,16 @@
 package org.pptx4j.convert.out.svginhtml;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTPoint2D;
 import org.docx4j.dml.CTPositiveSize2D;
-import org.docx4j.dml.CTTransform2D;
-import org.docx4j.dml.picture.Pic;
-import org.docx4j.dml.wordprocessingDrawing.Anchor;
-import org.docx4j.dml.wordprocessingDrawing.Inline;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.images.AbstractWordXmlPicture;
-import org.docx4j.model.images.WordXmlPictureE20;
-import org.docx4j.model.images.AbstractWordXmlPicture.Dimensions;
+import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
-import org.docx4j.relationships.Relationship;
-import org.pptx4j.Box;
 import org.pptx4j.model.ResolvedLayout;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -74,11 +62,11 @@ public class PictureExporter extends AbstractWordXmlPicture {
 	public static DocumentFragment createHtmlImg(
     		PresentationMLPackage pmlPackage,
     		ResolvedLayout rl,    		
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator wpInline) {
 
     	PictureExporter converter = createPicture( pmlPackage,
-        		 imageDirPath, wpInline, rl );
+        		 imageHandler, wpInline, rl );
     	
     	DocumentFragment df = getHtmlDocumentFragment(converter);
     	
@@ -131,7 +119,7 @@ public class PictureExporter extends AbstractWordXmlPicture {
 	org.pptx4j.pml.Pic pic=null;
 	
     public static PictureExporter createPicture(PresentationMLPackage pmlPackage,
-    		String imageDirPath,
+    		ConversionImageHandler imageHandler,
     		NodeIterator anchorOrInline,
     		ResolvedLayout rl) {
     	
@@ -159,9 +147,9 @@ public class PictureExporter extends AbstractWordXmlPicture {
     	
     	String imgRelId = blip.getEmbed();    	
     	if (imgRelId!=null) {
-    		converter.handleImageRel(imgRelId, imageDirPath, (Part)rl.relationships.getSourceP());
+    		converter.handleImageRel(imageHandler, imgRelId, (Part)rl.relationships.getSourceP());
     	} else if (blip.getLink()!=null) {
-    		converter.handleImageRel(blip.getLink(), imageDirPath, (Part)rl.relationships.getSourceP());
+    		converter.handleImageRel(imageHandler, blip.getLink(), (Part)rl.relationships.getSourceP());
     	} else {
     		log.error("not linked or embedded?!");
     	}
@@ -171,35 +159,6 @@ public class PictureExporter extends AbstractWordXmlPicture {
     		// TODO: <a:off x="1357290" y="3643314"/>
     	
 		return converter;
-	}
-
-	private void handleImageRel(String imgRelId, String imageDirPath, Part sourcePart) {
-		
-		setID(imgRelId);            	
-		Relationship rel = sourcePart.getRelationshipsPart().getRelationshipByID(imgRelId);
-		
-		if (rel.getTargetMode() == null
-				|| rel.getTargetMode().equals("Internal")) {
-	
-			Part p = (BinaryPartAbstractImage)sourcePart
-						.getRelationshipsPart().getPart(rel);
-			
-			BinaryPartAbstractImage part = null;
-			if (p instanceof BinaryPartAbstractImage) {
-				part= (BinaryPartAbstractImage)sourcePart
-						.getRelationshipsPart().getPart(rel);
-			} else {
-				// Could be a MetafileEmfPart or WMF
-				log.error("TODO: Add support for " + p.getClass().getName() );
-					// TODO
-			}
-			String uri = handlePart(imageDirPath, this, part);
-			// Scale it?  Shouldn't be necessary, since Word should
-			// be providing the height/width
-	
-		} else { // External
-			this.setSrc(rel.getTarget());
-		}	
 	}
 
     private final int extentToPixelConversionFactor = 9525; //12700;	

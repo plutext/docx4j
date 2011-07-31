@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -91,7 +92,7 @@ public class CreatePdf extends AbstractSample {
 				((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
 						new java.io.File(inputfilepath + ".fo"));
 				OutputStream os = new java.io.FileOutputStream(inputfilepath + ".pdf");			
-				c.output(os);
+				c.output(os, new PdfSettings() );
 				System.out.println("Saved " + inputfilepath + ".pdf");
 			}  
 	    }

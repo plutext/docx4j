@@ -1,26 +1,13 @@
 package org.docx4j.model.images;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.vfs.CacheStrategy;
-import org.apache.commons.vfs.FileObject;
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileSystemManager;
-import org.apache.commons.vfs.impl.StandardFileSystemManager;
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileEmfPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MetafilePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart.SvgDocument;
 import org.docx4j.relationships.Relationship;
@@ -262,203 +249,38 @@ public abstract class AbstractWordXmlPicture {
         
     }
 	
+	protected void handleImageRel(ConversionImageHandler imageHandler, String imgRelId, Part sourcePart) {
+	Relationship rel = sourcePart.getRelationshipsPart().getRelationshipByID(imgRelId);
+	Part part = null;
+	String uri = null;
+	boolean ignoreImage = false;
+		setID(imgRelId);            	
+		
+		if (rel.getTargetMode() == null || rel.getTargetMode().equals("Internal")) {
+			part = sourcePart.getRelationshipsPart().getPart(rel);
+			if (!(part instanceof BinaryPart)) {
+				log.error("Invalid part type id: " + imgRelId + ", class = " + part.getClass().getName());
+				ignoreImage = true;
+			}
+		}
+		if (!ignoreImage) {
+			uri = handlePart(imageHandler, this, rel, (BinaryPart)part);
+			if (uri != null) {
+				this.setSrc(uri);
+			}
+		}
+	}
 
 	/**
-	 * @param imageDirPath
+	 * @param imageHandler
 	 * @param picture
+	 * @param relationship
 	 * @param part
 	 * @return uri for the image we've saved, or null
 	 */
-	protected static String handlePart(String imageDirPath, AbstractWordXmlPicture picture,
-			Part part) {
-		try {
-
-			if (imageDirPath.equals("")) {
-				
-				// TODO: this isn't going to work for XSL FO!
-				// So for XSL FO, you always need an imageDirPath! 
-
-				// <img
-				// src="data:image/gif;base64,R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub/
-				//
-				// which is nice, except it doesn't work in IE7,
-				// and is limited to 32KB in IE8!
-
-				java.nio.ByteBuffer bb = ((BinaryPart) part)
-						.getBuffer();
-				bb.clear();
-				byte[] bytes = new byte[bb.capacity()];
-				bb.get(bytes, 0, bytes.length);
-				
-				byte[] encoded = Base64.encodeBase64(bytes, true);
-
-				picture
-						.setSrc("data:" + part.getContentType()
-								+ ";base64,"
-								+ (new String(encoded, "UTF-8")));
-				
-				return null;
-
-			} else {
-				// Need to save the image
-
-				// To create directory:
-				FileObject folder = getFileSystemManager()
-						.resolveFile(imageDirPath);
-				if (!folder.exists()) {
-					folder.createFolder();
-				}
-
-				// Construct a file name from the part name
-				String partname = part.getPartName().toString();
-				String filename = partname.substring(partname
-						.lastIndexOf("/") + 1);
-				
-				// Don't want multiple threads using the same file
-				if (Thread.currentThread().getName()!=null) {
-					filename = Thread.currentThread().getName() + filename; 
-				}
-				
-				
-				log.debug("image file name: " + filename);
-
-				FileObject fo = folder.resolveFile(filename);
-				if (fo.exists()) {
-
-					log.warn("Overwriting (!) existing file!");
-
-				} else {
-					fo.createFile();
-				}
-				// System.out.println("URL: " +
-				// fo.getURL().toExternalForm() );
-				// System.out.println("String: " + fo.toString() );
-
-				// Save the file
-				OutputStream out = fo.getContent()
-						.getOutputStream();
-				// instance of org.apache.commons.vfs.provider.DefaultFileContent$FileContentOutputStream
-				// which extends MonitorOutputStream
-			    // which in turn extends BufferedOutputStream
-			    // which in turn extends FilterOutputStream.
-				
-				String src;
-				try {
-					java.nio.ByteBuffer bb = ((BinaryPart) part)
-							.getBuffer();
-					bb.clear();
-					byte[] bytes = new byte[bb.capacity()];
-					bb.get(bytes, 0, bytes.length);
-
-					out.write(bytes);
-					
-					// Set the attribute
-					src = fixImgSrcURL(fo);
-					picture.setSrc(src);
-					log.info("Wrote @src='" + src);
-					return src;
-				} finally {
-					try {
-						fo.close();
-						// That Closes this file, and its content.
-						// Closing the content in turn
-						// closes any open stream.
-						// out.flush() is unnecessary, since 
-						// FilterOutputStream's close() does do flush() first.
-					} catch (IOException ioe) {
-						ioe.printStackTrace();
-					}					
-				}
-
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.error(e);
-		}
-		return null;
+	protected String handlePart(ConversionImageHandler imageHandler, AbstractWordXmlPicture picture, Relationship relationship, BinaryPart binaryPart) {
+		return imageHandler.handleImage(picture, relationship, binaryPart);
 	}
-
-	private static FileSystemManager fileSystemManager;
-	private static ReadWriteLock aLock = new ReentrantReadWriteLock(true);
-
-	public static FileSystemManager getFileSystemManager() {
-		aLock.readLock().lock();
-
-		try {
-			if (fileSystemManager == null) {
-				try {
-					StandardFileSystemManager fm = new StandardFileSystemManager();
-					fm.setCacheStrategy(CacheStrategy.MANUAL);
-					fm.init();
-					fileSystemManager = fm;
-				} catch (Exception exc) {
-					throw new RuntimeException(exc);
-				}
-			}
-
-			return fileSystemManager;
-		}
-        finally
-        {
-            aLock.readLock().unlock();
-        }
-    }
-    
-	/**
-	 * imageDirPath is anything VFSJFileChooser can resolve into a FileObject. 
-	 * That's enough for saving the image. In order for a web browser to
-	 * display it, the URI Scheme has to be something a web browser can
-	 * understand. So at that point, webdav:// will have to become http://, 
-	 * and smb:// become file:// ...
-	 */
-    static String fixImgSrcURL( FileObject fo)
-    {   	
-    	String itemUrl = null;
-		try {
-			itemUrl = fo.getURL().toExternalForm();
-			log.debug(itemUrl);
-
-			String itemUrlLower = itemUrl.toLowerCase();			
-	        if (itemUrlLower.startsWith("http://") 
-	        		 || itemUrlLower.startsWith("https://")) {
-				return itemUrl;
-			} else if (itemUrlLower.startsWith("file://")) {
-				// we'll convert file protocol to relative reference
-				// if this is html output
-				
-				if (fo.getParent() == null) {
-					return itemUrl;					
-				} else if (fo.getParent().getURL().toExternalForm().equalsIgnoreCase(
-						    getFileSystemManager().resolveFile(System.getProperty("java.io.tmpdir")).getURL().toExternalForm() )) {
-					
-					// The image is being stored in the system temp directory,
-					// so assume this is a pdf export, and preserve the absolute
-					// file path
-
-					// org.apache.commons.vfs.provider.local.LocalFile has a
-					// method doIsSameFile, but the point of using FileObject is
-					// that it won't necessarily be a local file. 
-					
-					return itemUrl;						
-				} else {
-		             // Otherwise, assume it is an html export and return a relative path
-					return  fo.getParent().getName().getBaseName() 
-								+ "/" + fo.getName().getBaseName();
-				}
-				
-			} else if (itemUrlLower.startsWith("webdav://")) {
-				// TODO - convert to http:, dropping username / password
-				return itemUrl;
-			} 			
-	        log.warn("How to handle scheme: " + itemUrl );        
-		} catch (FileSystemException e) {
-			log.error("Problem fixing Img Src URL", e);
-		}		    	
-    	return itemUrl;        
-    }
-    
-    
 	
 //	void setAttribute(Node imageElement, String name, String value) {
 //		

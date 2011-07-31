@@ -39,6 +39,7 @@ import org.docx4j.convert.out.PageBreak;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
+import org.docx4j.model.images.DefaultConversionImageHandler;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
@@ -167,6 +168,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
+	@Override
 	@Deprecated	
     public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result,
     		String imageDirPath) throws Exception {
@@ -174,6 +176,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     	html(wmlPackage, result, true, imageDirPath);
     }
 
+	@Override
 	@Deprecated
     public void html(WordprocessingMLPackage wmlPackage, javax.xml.transform.Result result, boolean fontFamilyStack,
     		String imageDirPath) throws Exception {
@@ -196,6 +199,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	 *            The javax.xml.transform.Result object to transform into 
 	 * 
 	 * */ 
+	@Override
 	public void html(WordprocessingMLPackage wmlPackage,
 			javax.xml.transform.Result result, HtmlSettings htmlSettings)
 			throws Exception {
@@ -220,6 +224,15 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			// possibly via an extension function in the XSLT
 		}
 
+		// Ensure that the imageHandler is set up
+		boolean privateImageHandler = false;
+		if (htmlSettings.getImageHandler() == null) {
+			htmlSettings.setImageHandler(htmlSettings.getImageDirPath() != null ? 
+					new DefaultConversionImageHandler(htmlSettings.getImageDirPath()) : 
+					new DefaultConversionImageHandler());
+			privateImageHandler = true;
+		}
+		
 		if (htmlSettings.getFontMapper() == null) {
 			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
 			log.debug("FontMapper set.. ");
@@ -258,6 +271,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(),
 				result);
 
+		if (privateImageHandler) {
+			//remove a locally created imageHandler in case the HtmlSettings get reused
+			htmlSettings.getSettings().remove(HtmlSettings.IMAGE_HANDLER);
+		}
 		log.info("wordDocument transformed to xhtml ..");
 
 	}

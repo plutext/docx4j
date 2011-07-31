@@ -16,11 +16,13 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.CTTransform2D;
+import org.docx4j.model.images.DefaultConversionImageHandler;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
@@ -51,6 +53,10 @@ import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
 
 public class SvgExporter {
+	
+	public static class SvgSettings extends AbstractConversionSettings {
+		
+	}
 	
 	// NB: file suffix must end with .xhtml in order to see the SVG in a browser
 	
@@ -89,13 +95,26 @@ public class SvgExporter {
 	 */
 	public static String svg(PresentationMLPackage presentationMLPackage,
 			SlidePart slide) throws Exception {
+		return svg(presentationMLPackage, slide, null);
+	}
+	
+	/**
+	 * Create an HTML (with SVG) page representing the slide.
+	 * @param presentationMLPackage
+	 * @param slide
+	 * @param settings
+	 * @return
+	 * @throws Exception
+	 */
+	public static String svg(PresentationMLPackage presentationMLPackage,
+			SlidePart slide, SvgSettings settings) throws Exception {
 		
     	ResolvedLayout rl = ((SlidePart)slide).getResolvedLayout();	
 
 //    	System.out.println( XmlUtils.marshaltoString(rl.getShapeTree(), false, true, Context.jcPML,
 //		"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class) );
     	
-    	return SvgExporter.svg(presentationMLPackage, rl);
+    	return SvgExporter.svg(presentationMLPackage, rl, settings);
 	}
 	
 	/**
@@ -105,12 +124,12 @@ public class SvgExporter {
 	 * @throws Exception
 	 */
 	private static String svg(PresentationMLPackage presentationMLPackage,
-			ResolvedLayout layout) throws Exception {
+			ResolvedLayout layout, SvgSettings settings) throws Exception {
 	
 		ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
 		Result intermediateResult =  new StreamResult( intermediate );
 			
-		svg(presentationMLPackage, layout, intermediateResult);
+		svg(presentationMLPackage, layout, intermediateResult, settings);
 			
 		return intermediate.toString("UTF-8");
 		//log.info(svg);
@@ -118,20 +137,34 @@ public class SvgExporter {
 	
 	
 	private static void svg(PresentationMLPackage presentationMLPackage,
-			ResolvedLayout layout, javax.xml.transform.Result result
-			) throws Exception {
+			ResolvedLayout layout, javax.xml.transform.Result result,
+			SvgSettings settings) throws Exception {
     			
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
 				layout.getShapeTree(),
 				Context.jcPML,
 				"http://schemas.openxmlformats.org/presentationml/2006/main", "spTree", GroupShape.class); 	
 
-    	HtmlSettings htmlSettings = new HtmlSettings();
-		htmlSettings.setWmlPackage(presentationMLPackage);
-		htmlSettings.getSettings().put("resolvedLayout", layout);
-    	htmlSettings.getSettings().put("imageDirPath", imageDirPath);
-		
-		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(), result);
+		if (settings == null) {
+			settings = new SvgSettings();
+		}
+		settings.setWmlPackage(presentationMLPackage);
+		settings.getSettings().put("resolvedLayout", layout);
+		if ((settings.getImageDirPath() == null) && (imageDirPath != null)) {
+			settings.setImageDirPath(imageDirPath);
+		}
+		boolean privateImageHandler = false;
+		if (settings.getImageHandler() == null) {
+			settings.setImageHandler(settings.getImageDirPath() != null ? 
+					new DefaultConversionImageHandler(settings.getImageDirPath()) : 
+					new DefaultConversionImageHandler());
+			privateImageHandler = true;
+		}
+		org.docx4j.XmlUtils.transform(doc, xslt, settings.getSettings(), result);
+		if (privateImageHandler) {
+			//remove a locally created imageHandler in case the SvgSettings get reused
+			settings.getSettings().remove(HtmlSettings.IMAGE_HANDLER);
+		}
 	}
 
 	public static boolean isDebugEnabled() {
