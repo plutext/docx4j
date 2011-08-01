@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
+import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
@@ -314,9 +315,9 @@ public class BindingHandler {
 		        long cyl = 0;
 		        try {
 		        	cxl = Long.parseLong(cx);
-		        	cyl = Long.parseLong(cx);
+		        	cyl = Long.parseLong(cy);
 		        } catch (Exception e) {}
-		        if (cxl==0 || cxl==0) {
+		        if (cxl==0 || cyl==0) {
 		        	// Let BPAI work out size
 		        	log.debug("image size - from image");
 			        inline = imagePart.createImageInline( filenameHint, altText, 
@@ -324,6 +325,15 @@ public class BindingHandler {
 		        } else {
 		        	// Use existing size
 		        	log.debug("image size - from content control size");
+                    // Respect aspect ratio of injected image
+                    ImageSize size = imagePart.getImageInfo().getSize();
+                    double ratio = (double) size.getHeightPx() / (double) size.getWidthPx();
+                    log.debug("fit ratio: " + ratio);
+                    if (ratio > 1) {
+                        cxl =  (long)((double) cyl / ratio);
+                    } else {
+                        cyl =  (long)((double) cxl * ratio);
+                    }
 			        inline = imagePart.createImageInline( filenameHint, altText, 
 			    			id1, id2, cxl, cyl, false);		        	
 		        }
