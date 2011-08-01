@@ -154,6 +154,20 @@ public class TraversalUtil {
 
 	}
 
+	private static List<Object> handleGraphicData(org.docx4j.dml.GraphicData graphicData) {
+		// Its not graphicData.getAny() we're typically interested in
+		if (graphicData.getPic()!=null
+			&& graphicData.getPic().getBlipFill()!=null
+			&& graphicData.getPic().getBlipFill().getBlip()!=null) {
+			log.info("found CTBlip");
+			List<Object> artificialList = new ArrayList<Object>();
+			artificialList.add(graphicData.getPic().getBlipFill().getBlip());
+			return artificialList;
+		} else {
+			// Chart is in here
+			return graphicData.getAny();						
+		}		
+	}
 	public static List<Object> getChildrenImpl(Object o) {
 
 		log.debug("getting children of " + o.getClass().getName() );
@@ -167,26 +181,23 @@ public class TraversalUtil {
 			return ((org.docx4j.wml.ContentAccessor) o).getContent();
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
 			return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
+		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+			org.docx4j.dml.wordprocessingDrawing.Anchor anchor = 
+				(org.docx4j.dml.wordprocessingDrawing.Anchor)o;
+			if (anchor.getGraphic()!=null) {
+				log.info("found a:graphic");
+				org.docx4j.dml.Graphic graphic = anchor.getGraphic();
+				if (graphic.getGraphicData()!=null) {
+					return handleGraphicData(graphic.getGraphicData());
+				}
+			}			
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
 			org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline)o;
 			if (inline.getGraphic()!=null) {
 				log.info("found a:graphic");
 				org.docx4j.dml.Graphic graphic = inline.getGraphic();
 				if (graphic.getGraphicData()!=null) {
-					org.docx4j.dml.GraphicData graphicData = graphic.getGraphicData();
-					// Its not graphicData.getAny() we're typically interested in
-					if (graphicData.getPic()!=null
-						&& graphicData.getPic().getBlipFill()!=null
-						&& graphicData.getPic().getBlipFill().getBlip()!=null) {
-						log.info("found CTBlip");
-						List<Object> artificialList = new ArrayList<Object>();
-						artificialList.add(graphicData.getPic().getBlipFill().getBlip());
-						return artificialList;
-					} else {
-						// Chart is in here
-						return graphicData.getAny();						
-					}
-					
+					return handleGraphicData(graphic.getGraphicData());
 				}
 			}
 		} else if (o instanceof Pict) {
@@ -216,7 +227,7 @@ public class TraversalUtil {
 //			return ((org.docx4j.wml.CTTxbxContent)o).getEGBlockLevelElts();
 		} else if (o instanceof CTObject) {
 			return ((CTObject)o).getAnyAndAny();
-		}
+		} 
 
 		// OK, what is this? Use reflection ..
 		// This should work for things including w:drawing
