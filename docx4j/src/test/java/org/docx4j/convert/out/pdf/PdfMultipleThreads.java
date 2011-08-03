@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 
 import javax.xml.bind.JAXBContext;
 
+import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -31,15 +32,24 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * Win 7 x64 can do 18 threads with extra perm gen:
  * 
  * -Xmx1G -XX:MaxPermSize=128m
- *
+ * 
+ * In log4j config, to get pages per second stats, you can use 
+ * 
+    <logger name="org.apache.fop.area.AreaTreeHandler">
+  		<level value="debug"/> 
+	</logger>
+ * 
  */
 public class PdfMultipleThreads  {
 	
-	final static int TOTAL=3; // <---- number of threads
+	final static int TOTAL=4; // <---- number of threads
 
-	final static int REPS=10; // repeat the test, so enable JIT compilation
+	final static int REPS=5; // repeat the test, so enable JIT compilation
 	
 	final static boolean LONGER_DOCX = false;
+	
+	final static int NUM_PAGES_SHORTER = 5;  
+	final static int NUM_PAGES_LONGER = 27; 
 	
 	public static boolean abort = false;
 	
@@ -63,7 +73,11 @@ public class PdfMultipleThreads  {
     	    	
     	Thread[] t = new Thread[TOTAL+1];
     	
+    	long contextStartTime = System.currentTimeMillis();
     	JAXBContext blgh = org.docx4j.jaxb.Context.jc;
+        long contextStartupTime = System.currentTimeMillis() - contextStartTime;
+    	System.out.println( contextStartupTime + " ms to initialise JAXB context");
+        
 
 		PhysicalFont font 
 				= PhysicalFonts.getPhysicalFonts().get("Comic Sans MS");
@@ -134,6 +148,27 @@ public class PdfMultipleThreads  {
 	    			+ " took " + elapsedSec + "sec");
 	    	System.out.println("Average " + sec + "sec per thread");
 	    	
+	    	double ratebase = TOTAL/elapsedSec;
+	    	if (LONGER_DOCX) {
+		    	System.out.println((ratebase * NUM_PAGES_LONGER) + " pages/sec "); 	    		
+	    	} else {
+		    	System.out.println((ratebase * NUM_PAGES_SHORTER) + " pages/sec "); 	    			    		
+	    	}
+	    	/*
+	    	 * 
+03.08.2011 22:04:30 *DEBUG* AreaTreeHandler: Last page-sequence produced 5 pages. (AreaTreeHandler.java, line 276)
+03.08.2011 22:04:30 *DEBUG* AreaTreeHandler: Initial heap size: 118040KB (AreaTreeHandler.java, line 478)
+03.08.2011 22:04:30 *DEBUG* AreaTreeHandler: Current heap size: 97812KB (AreaTreeHandler.java, line 479)
+03.08.2011 22:04:30 *DEBUG* AreaTreeHandler: Total memory used: -20227KB (AreaTreeHandler.java, line 480)
+03.08.2011 22:04:30 *DEBUG* AreaTreeHandler: Total time used: 5473ms (AreaTreeHandler.java, line 481)
+03.08.2011 22:04:30 *DEBUG* AreaTreeHandler: Pages rendered: 5 (AreaTreeHandler.java, line 482)
+03.08.2011 22:04:30 *DEBUG* AreaTreeHandler: Avg render time: 1094ms/page (55pages/min) (AreaTreeHandler.java, line 487)
+	    	 */
+
+	    	System.out.println("Also of interest: " 
+	    			+  contextStartupTime + " ms to initialise JAXB context (not counted in above times)");
+	    	
+	    	
 	    	System.out.println( reportMemory() );
 	    	
 	    	System.out.println( "gc..");
@@ -191,7 +226,7 @@ public class PdfMultipleThreads  {
 //								inputfilepath + Thread.currentThread().getName() + ".fo"));
 			OutputStream os = new java.io.FileOutputStream(
 								inputfilepath + Thread.currentThread().getName() + ".pdf");			
-			c.output(os);
+			c.output(os, new PdfSettings() );
 			System.out.println("Saved " + inputfilepath + Thread.currentThread().getName() + ".pdf");
 
 		 } catch (InterruptedException e) {
