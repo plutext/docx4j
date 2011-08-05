@@ -137,16 +137,11 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     		log.debug("Shape had no any: " + XmlUtils.marshaltoString(shape, true));
     	} else {
     		for (Object o : shape.getPathOrFormulasOrHandles() ) {
-    			if (o instanceof JAXBElement ) {
-    				JAXBElement jb = (JAXBElement)o;
-    				if (jb.getDeclaredType().getName().equals("org.docx4j.vml.CTImageData")) {
-    					imageData = (CTImageData)jb.getValue();
-    					break;
-    				} else {
-	    				log.debug("Skipping " +
-	    						XmlUtils.JAXBElementDebug((JAXBElement)o)
-	    						);
-    				}
+    			
+    			Object o2 = XmlUtils.unwrap(o);
+    			if (o2 instanceof org.docx4j.vml.CTImageData) {
+					imageData = (CTImageData)o2;
+					break;
     			} else {
     				log.error( o.getClass().getName() );
     			}
