@@ -13,7 +13,7 @@
 		XML file format, including WordprocessingML and DrawingML, as used in docx
 		documents and pptx presentations.
 	</description>
-	<url>http://dev.plutext.org/</url>
+	<url>http://www.docx4java.org/</url>
 	<licenses>
 	  <license>
 	    <name>Apache 2</name>
@@ -24,10 +24,10 @@
   	</licenses>
 	<!-- <prerequisites /> -->
 	<scm>
-	    <connection>scm:svn:http://dev.plutext.org/svn/docx4j/trunk</connection>
+	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk</connection>
 	    <!-- <developerConnection>scm:svn:https://127.0.0.1/svn/my-project</developerConnection>
 	         <tag>HEAD</tag>  -->
-	    <url>http://dev.plutext.org/svn/docx4j/trunk</url>
+	    <url>http://www.docx4java.org/svn/docx4j/trunk</url>
     </scm>
 	<inceptionYear>2007</inceptionYear>
 	<developers>
