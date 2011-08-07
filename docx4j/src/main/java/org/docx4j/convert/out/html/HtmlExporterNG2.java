@@ -22,7 +22,6 @@ package org.docx4j.convert.out.html;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
-import java.util.List;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,17 +36,15 @@ import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.PageBreak;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.TransformState;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
-import org.docx4j.model.images.DefaultConversionImageHandler;
+import org.docx4j.model.TransformState;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Document;
@@ -227,9 +224,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		// Ensure that the imageHandler is set up
 		boolean privateImageHandler = false;
 		if (htmlSettings.getImageHandler() == null) {
-			htmlSettings.setImageHandler(htmlSettings.getImageDirPath() != null ? 
-					new DefaultConversionImageHandler(htmlSettings.getImageDirPath()) : 
-					new DefaultConversionImageHandler());
+			htmlSettings.setImageHandler(
+				new HTMLConversionImageHandler(htmlSettings.getImageDirPath(), 
+											   htmlSettings.getImageTargetUri(), 
+											   htmlSettings.isImageIncludeUUID()));
 			privateImageHandler = true;
 		}
 		

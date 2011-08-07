@@ -249,12 +249,14 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
     	
     	CTBlip blip = pic.getBlipFill().getBlip();
     	
-    	String imgRelId = blip.getEmbed();    	
-    	if (imgRelId!=null) {
+    	String imgRelId = blip.getEmbed();
+    	if ((imgRelId == null) || (imgRelId.length() == 0)) {
+    		imgRelId = blip.getLink();
+    	}
+    	if ((imgRelId != null) && (imgRelId.length() > 0)) {
     		converter.handleImageRel(imageHandler, imgRelId, sourcePart);
-    	} else if (blip.getLink()!=null) {
-    		converter.handleImageRel(imageHandler, blip.getLink(), sourcePart);
-    	} else {
+    	}
+    	else {
     		log.error("not linked or embedded?!");
     	}
 

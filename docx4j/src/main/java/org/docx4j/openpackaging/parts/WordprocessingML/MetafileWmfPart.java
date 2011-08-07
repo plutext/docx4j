@@ -1,23 +1,12 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import net.arnx.wmf2svg.gdi.svg.SvgGdi;
 import net.arnx.wmf2svg.gdi.wmf.WmfParser;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.utils.BufferUtil;
@@ -62,6 +51,11 @@ public class MetafileWmfPart extends MetafilePart {
 		super(partName);
 		init();
 	}
+	
+	public MetafileWmfPart(ExternalTarget externalTarget) {
+		super(externalTarget);
+		init();
+	}	
 	
 	public void init() {
 		// Used if this Part is added to [Content_Types].xml 

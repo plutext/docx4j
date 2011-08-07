@@ -44,7 +44,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.TransformState;
-import org.docx4j.model.images.DefaultConversionImageHandler;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -303,8 +302,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			boolean privateImageHandler = false;
 			if (settings.getImageHandler() == null) {
 				settings.setImageHandler(settings.getImageDirPath() != null ? 
-						new DefaultConversionImageHandler(settings.getImageDirPath()) : 
-						new DefaultConversionImageHandler());
+						new PDFConversionImageHandler(settings.getImageDirPath(), true) : 
+						new PDFConversionImageHandler());
 				privateImageHandler = true;
 			}
 			

@@ -8,6 +8,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 
 public abstract class AbstractConversionSettings {
 	
+	public static final String IMAGE_INCLUDE_UUID = "imageIncludeUUID";
 	public static final String IMAGE_DIR_PATH = "imageDirPath";
 	public static final String IMAGE_HANDLER = "imageHandler";
 	public static final String WML_PACKAGE = "wmlPackage";
@@ -26,6 +27,18 @@ public abstract class AbstractConversionSettings {
 	}
 	public String getImageDirPath() {
 		return (String)settings.get(IMAGE_DIR_PATH);
+	}
+
+	/** Should the image names be prefixed with an UUID to differentiate runs? Default: true
+	 */
+	public void setImageIncludeUUID(boolean imageIncludeUUID) {
+		settings.put(IMAGE_INCLUDE_UUID, Boolean.valueOf(imageIncludeUUID));
+	}
+	
+	public boolean isImageIncludeUUID() {
+		return (settings.containsKey(IMAGE_INCLUDE_UUID) ? 
+				(Boolean)settings.get(IMAGE_INCLUDE_UUID) : 
+				true);
 	}
 
 	public void setImageHandler(ConversionImageHandler imageHandler) {

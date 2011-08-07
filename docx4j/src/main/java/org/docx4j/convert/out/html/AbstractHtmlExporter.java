@@ -282,6 +282,7 @@ public abstract class AbstractHtmlExporter implements Output {
     
 	public static class HtmlSettings extends AbstractConversionSettings {
 		
+		public static final String IMAGE_TARGET_URI = "imageTargetUri";
 		public static final String CONDITIONAL_COMMENTS = "conditionalComments";
 		public static final String FONT_FAMILY_STACK = "fontFamilyStack";
 		public static final String USER_CSS = "userCSS";
@@ -301,11 +302,11 @@ public abstract class AbstractHtmlExporter implements Output {
 		}
 		
 		public void setConditionalComments(Boolean conditionalComments) {
-			settings.put("conditionalComments", conditionalComments);
+			settings.put(CONDITIONAL_COMMENTS, conditionalComments);
 		}
 		
 		public void setFontFamilyStack(boolean val) {
-			settings.put("fontFamilyStack", new Boolean(val));
+			settings.put(FONT_FAMILY_STACK, new Boolean(val));
 		}
 
 		public void setFontMapper(Mapper fontMapper) {
@@ -316,21 +317,28 @@ public abstract class AbstractHtmlExporter implements Output {
 		}
 				
 		public void setUserCSS(String val) {
-			settings.put("userCSS", val);
+			settings.put(USER_CSS, val);
 		}
 
 		public void setUserScript(String val) {
-			settings.put("userScript", val);
+			settings.put(USER_SCRIPT, val);
 		}
 
 		public void setUserBodyTop(String val) {
-			settings.put("userBodyTop", val);
+			settings.put(USER_BODY_TOP, val);
 		}
 
 		public void setUserBodyTail(String val) {
-			settings.put("userBodyTail", val);
+			settings.put(USER_BODY_TAIL, val);
 		}		
 		
+		public void setImageTargetUri(String imageTargetUri) {
+			settings.put(IMAGE_TARGET_URI, imageTargetUri);
+		}
+		
+		public String getImageTargetUri() {
+			return (String)settings.get(IMAGE_TARGET_URI);
+		}
 	}
 	
     public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {

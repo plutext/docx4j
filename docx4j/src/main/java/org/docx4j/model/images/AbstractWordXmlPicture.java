@@ -4,6 +4,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -256,12 +257,15 @@ public abstract class AbstractWordXmlPicture {
 	boolean ignoreImage = false;
 		setID(imgRelId);            	
 		
-		if (rel.getTargetMode() == null || rel.getTargetMode().equals("Internal")) {
-			part = sourcePart.getRelationshipsPart().getPart(rel);
-			if (!(part instanceof BinaryPart)) {
-				log.error("Invalid part type id: " + imgRelId + ", class = " + part.getClass().getName());
-				ignoreImage = true;
-			}
+		part = sourcePart.getRelationshipsPart().getPart(rel);
+		/* a part == null is ok if it is an external image, 
+		 * and hasn't been loaded (loadExternalTargets == false)
+		 * but the relationship can be external, 
+		 * but the part avaiable (loadExternalTargets == true)
+		 */
+		if ((part != null) && (!(part instanceof BinaryPart))) {
+			log.error("Invalid part type id: " + imgRelId + ", class = " + part.getClass().getName());
+			ignoreImage = true;
 		}
 		if (!ignoreImage) {
 			uri = handlePart(imageHandler, this, rel, (BinaryPart)part);
@@ -279,7 +283,19 @@ public abstract class AbstractWordXmlPicture {
 	 * @return uri for the image we've saved, or null
 	 */
 	protected String handlePart(ConversionImageHandler imageHandler, AbstractWordXmlPicture picture, Relationship relationship, BinaryPart binaryPart) {
-		return imageHandler.handleImage(picture, relationship, binaryPart);
+	String uri = null;
+		try {
+			uri = imageHandler.handleImage(picture, relationship, binaryPart);
+		}
+		catch (Docx4JException de) {
+			if (relationship != null) {
+				log.error("Exception handling image id: " + relationship.getId() + ", target '" + relationship.getTarget() + "': " + de.toString(), de);
+			}
+			else {
+				log.error("Exception handling image: " + de.toString(), de);
+			}
+		}
+		return uri;
 	}
 	
 //	void setAttribute(Node imageElement, String name, String value) {

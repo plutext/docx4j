@@ -23,19 +23,18 @@ package org.docx4j.convert.in;
 
 import java.io.FileInputStream;
 
-import org.apache.commons.vfs.FileSystemException;
-import org.apache.commons.vfs.FileType;
-import org.apache.commons.vfs.FileTypeSelector;
-import org.apache.commons.vfs.VFS;
-import org.apache.commons.vfs.provider.local.LocalFile;
 import org.apache.log4j.Logger;
 import org.apache.poi.hwpf.HWPFDocument;
-import org.apache.poi.hwpf.usermodel.*;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.apache.poi.hwpf.usermodel.CharacterRun;
+import org.apache.poi.hwpf.usermodel.Paragraph;
+import org.apache.poi.hwpf.usermodel.Range;
+import org.apache.poi.hwpf.usermodel.Section;
+import org.apache.poi.hwpf.usermodel.Table;
+import org.apache.poi.hwpf.usermodel.TableCell;
+import org.apache.poi.hwpf.usermodel.TableRow;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.utils.VFSUtils;
 
 /**
  * @author jason
@@ -71,59 +70,6 @@ public class Doc {
 	
 //	public static boolean convert(org.apache.commons.vfs.FileObject in,
 //	WordprocessingMLPackage out) throws Exception {
-	
-	/**
-	 * @param in
-	 * @return
-	 * @throws Exception
-	 */
-	public static WordprocessingMLPackage convert(
-			org.apache.commons.vfs.FileObject in) throws Exception {
-
-		LocalFile localCopy = null;
-		if (!(in instanceof LocalFile)) {
-
-			StringBuffer sb = new StringBuffer("file:///");
-			sb.append(System.getProperty("user.home"));
-			sb.append("/.docx4j/tmp/");
-			sb.append(in.getName().getBaseName());
-			String tmpPath = sb.toString().replace('\\', '/');
-
-			try {
-				localCopy = (LocalFile) VFS.getManager().resolveFile(tmpPath);
-				localCopy.copyFrom(in, new FileTypeSelector(FileType.FILE));
-				localCopy.close();
-			} catch (FileSystemException exc) {
-				exc.printStackTrace();
-				throw new Docx4JException(
-						"Could not create a temporary local copy", exc);
-			} finally {
-				if (localCopy != null) {
-					try {
-						localCopy.delete();
-					} catch (FileSystemException exc) {
-						exc.printStackTrace();
-						log.warn("Couldn't delete temporary file " + tmpPath);
-					}
-				}
-			}
-		} else {
-			localCopy = (LocalFile) in;
-		}
-
-		String localPath = VFSUtils.getLocalFilePath(in);
-		if (localPath == null) {
-			throw new Docx4JException("Couldn't get local path");
-		}
-
-		HWPFDocument doc = new HWPFDocument(new FileInputStream(localPath));
-
-		WordprocessingMLPackage out = WordprocessingMLPackage.createPackage();
-		
-		convert(doc, out);
-		
-		return out;
-	}
 
 	/**
 	 * This method is private, since the fact that conversion is (currently)

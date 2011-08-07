@@ -18,11 +18,11 @@ import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
+import org.docx4j.convert.out.html.HTMLConversionImageHandler;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.CTTransform2D;
-import org.docx4j.model.images.DefaultConversionImageHandler;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
@@ -55,7 +55,15 @@ import org.xml.sax.InputSource;
 public class SvgExporter {
 	
 	public static class SvgSettings extends AbstractConversionSettings {
+		public static final String IMAGE_TARGET_URI = "imageTargetUri";
 		
+		public void setImageTargetUri(String imageTargetUri) {
+			settings.put(IMAGE_TARGET_URI, imageTargetUri);
+		}
+		
+		public String getImageTargetUri() {
+			return (String)settings.get(IMAGE_TARGET_URI);
+		}
 	}
 	
 	// NB: file suffix must end with .xhtml in order to see the SVG in a browser
@@ -155,9 +163,10 @@ public class SvgExporter {
 		}
 		boolean privateImageHandler = false;
 		if (settings.getImageHandler() == null) {
-			settings.setImageHandler(settings.getImageDirPath() != null ? 
-					new DefaultConversionImageHandler(settings.getImageDirPath()) : 
-					new DefaultConversionImageHandler());
+			settings.setImageHandler(
+				new HTMLConversionImageHandler(settings.getImageDirPath(), 
+						   settings.getImageTargetUri(), 
+						   settings.isImageIncludeUUID()));
 			privateImageHandler = true;
 		}
 		org.docx4j.XmlUtils.transform(doc, xslt, settings.getSettings(), result);
