@@ -168,8 +168,7 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-dependency-plugin</artifactId>
-			<version>2.0</version>
-		</plugin>
+			</plugin>
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
@@ -369,15 +368,8 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.3</version>
-		</dependency>		
-		<dependency>
-			<!-- required by commons-vfs
-				 TODO that POM should declare this.  -->
-			<groupId>jdom</groupId>
-			<artifactId>jdom</artifactId>
-			<version>1.0</version>
 		</dependency>
-
+				
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>xmlgraphics-commons</artifactId>
@@ -555,7 +547,24 @@
 			(stuff not available in public repositories)                                 
   -->
  
-		<!-- This patched version of VFS is required for WebDAV
+		<!-- if you want to use the vfs stuff in docx4j-extras, you'll need commons-vfs
+		     (one of the two versions below), and jdom.
+		
+ 			 required by commons-vfs; 
+			 TODO that POM should declare this.  
+			<dependency>
+				<groupId>jdom</groupId>
+				<artifactId>jdom</artifactId>
+				<version>1.0</version>
+			</dependency>		
+		
+			<dependency>
+			    <groupId>commons-vfs</groupId>
+			    <artifactId>commons-vfs</artifactId>
+			    <version>1.0</version>
+			</dependency>		
+		
+			This patched version of VFS is required for WebDAV
 		
 		     In the meantime, this may be found in 
 		     https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2/org/apache/commons/commons-vfs-patched/
@@ -566,11 +575,6 @@
 				<version>1.9.1</version> 
 			</dependency>
 		-->
-		<dependency>
-		    <groupId>commons-vfs</groupId>
-		    <artifactId>commons-vfs</artifactId>
-		    <version>1.0</version>
-		</dependency>		
 		
 		<!-- Ensure both the Java 6 and RI interfaces are present,
 		     even if the user has just one.
