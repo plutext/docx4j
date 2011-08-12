@@ -93,7 +93,8 @@ public class ContentControlBindingExtensions {
 		
 
 		// Process conditionals and repeats
-		OpenDoPEHandler.preprocess(wordMLPackage);
+		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
+		odh.preprocess();
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);		

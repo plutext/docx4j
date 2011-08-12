@@ -59,7 +59,8 @@ public class EndToEndTest {
 //				wordMLPackage.getMainDocumentPart().getJaxbElement(), true) );
 		
 		// Process conditionals and repeats
-		OpenDoPEHandler.preprocess(wordMLPackage);
+		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
+		odh.preprocess();
 
 		// Since the JAXB binding stuff seems to remember
 		// old artifacts, we'll first create a 'clean' object here
@@ -172,7 +173,8 @@ public class EndToEndTest {
 //				wordMLPackage.getMainDocumentPart().getJaxbElement(), true) );
 		
 		// Process conditionals and repeats
-		OpenDoPEHandler.preprocess(wordMLPackage);
+		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
+		odh.preprocess();
 
 		// Since the JAXB binding stuff seems to remember
 		// old artifacts, we'll first create a 'clean' object here
