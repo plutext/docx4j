@@ -191,7 +191,6 @@ public class BindingHandler {
 			if (r==null) return null;
 
 			DocumentFragment docfrag = null; // = document.createDocumentFragment();
-			Document fragdoc = null;
 			
 			try {
 				log.debug(xpath + " yielded result " + r);
@@ -231,7 +230,6 @@ public class BindingHandler {
 						
 						Document document = XmlUtils.marshaltoW3CDomDocument(run);
 						if (docfrag == null) { // will be for first line
-							fragdoc = document;
 							docfrag = document.createDocumentFragment();
 							docfrag.appendChild(document.getDocumentElement());
 						} else {
