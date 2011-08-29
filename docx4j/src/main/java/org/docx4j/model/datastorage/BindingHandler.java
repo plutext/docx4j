@@ -30,8 +30,10 @@ import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.P.Hyperlink;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -174,7 +176,9 @@ public class BindingHandler {
 		/**
 		 */
 		public static DocumentFragment xpathGenerateRuns(
-				WordprocessingMLPackage pkg, Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+				WordprocessingMLPackage pkg, 
+				JaxbXmlPart sourcePart,				
+				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings,
 				NodeIterator rPrNodeIt, boolean multiLine) {
 			
@@ -190,7 +194,8 @@ public class BindingHandler {
 			String r = xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
 			if (r==null) return null;
 
-			DocumentFragment docfrag = null; // = document.createDocumentFragment();
+			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
+			DocumentFragment docfrag = docContainer.createDocumentFragment();
 			
 			try {
 				log.debug(xpath + " yielded result " + r);
@@ -210,36 +215,14 @@ public class BindingHandler {
 					boolean firsttoken = true;
 					while (st.hasMoreTokens()) {						
 						String line = (String) st.nextToken();
-
-						org.docx4j.wml.R  run = factory.createR();		
-						if (rPr!=null) {
-							run.setRPr(rPr);
-						}
+						
 						if (firsttoken) {
 							firsttoken = false;
 						} else {
-							run.getRunContent().add(factory.createBr());
+							addBrRunToDocFrag(docfrag, rPr);
 						}
-						org.docx4j.wml.Text text = factory.createText();
-						run.getRunContent().add(text);
-						if (line.startsWith(" ") || line.endsWith(" ") ) {
-							// TODO: tab character?
-							text.setSpace("preserve");
-						}
-						text.setValue(line);
 						
-						Document document = XmlUtils.marshaltoW3CDomDocument(run);
-						if (docfrag == null) { // will be for first line
-							docfrag = document.createDocumentFragment();
-							docfrag.appendChild(document.getDocumentElement());
-						} else {
-							// try to avoid WRONG_DOCUMENT_ERR: A node is used in a different document than the one that created it.
-							// but  NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation. 
-							// at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.importNode
-							// docfrag.appendChild(fragdoc.importNode(document, true));
-							// so:
-							XmlUtils.treeCopy(document.getDocumentElement(), docfrag);
-						}
+						processString(sourcePart, docfrag, line, rPr);						
 					}
 					
 				} else {
@@ -249,33 +232,125 @@ public class BindingHandler {
 					while (st.hasMoreTokens()) {						
 						sb.append( st.nextToken() );
 					}
-					String line = sb.toString();
 					
-					org.docx4j.wml.R  run = factory.createR();		
-					if (rPr!=null) {
-						run.setRPr(rPr);
-					}
-					org.docx4j.wml.Text text = factory.createText();
-					run.getRunContent().add(text);
-					if (line.startsWith(" ") || line.endsWith(" ") ) {
-						// TODO: tab character?
-						text.setSpace("preserve");
-					}
-					text.setValue(line);
-					
-					Document document = XmlUtils.marshaltoW3CDomDocument(run);
-					docfrag = document.createDocumentFragment();
-					docfrag.appendChild(document.getDocumentElement());
-				}
-				
+					processString(sourcePart, docfrag, sb.toString(), rPr);
+				}				
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error(e);
 				return null;
 			}
 			
 			return docfrag;			
 		}
+
+		private static void addBrRunToDocFrag(DocumentFragment docfrag, RPr rPr) throws JAXBException {
+			
+			// Not sure whether there is ever anything of interest in the rPr, 
+			// but add it anyway
+			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
+			if (rPr!=null) {
+				run.setRPr(rPr);
+			}
+			run.getRunContent().add(Context.getWmlObjectFactory().createBr());
+			
+			Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
+			XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
+		}
+		
+		private static void processString(JaxbXmlPart sourcePart, DocumentFragment docfrag, String text, RPr rPr) throws JAXBException {
+			
+			int pos = text.indexOf("http://");
+
+			if (pos==-1) {				
+				addRunToDocFrag(sourcePart, docfrag,  text,  rPr);
+				return;
+			} 
+			
+			// There is a hyperlink to deal with
+			
+			if (pos==0) {
+				int spacePos = text.indexOf(" ");
+				if (spacePos==-1) {
+					addHyperlinkToDocFrag(sourcePart, docfrag,  text);
+					return;					
+				}
+				
+				// Could contain more than one hyperlink, so process recursively					
+				String first = text.substring(0, spacePos);
+				String rest = text.substring(spacePos);
+				
+				addHyperlinkToDocFrag( sourcePart,  docfrag,  first);
+				// .. now the recursive bit ..
+				processString(sourcePart,  docfrag,  rest,  rPr);	
+				return;
+			}
+			
+			String first = text.substring(0, pos);
+			String rest = text.substring(pos);
+			
+			addRunToDocFrag( sourcePart,  docfrag,  first, rPr);
+			// .. now the recursive bit ..
+			processString(sourcePart,  docfrag,  rest,  rPr);				
+		}
+		
+		private static void addRunToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String string, RPr rPr) {
+			
+			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
+			if (rPr!=null) {
+				run.setRPr(rPr);
+			}
+			org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
+			run.getRunContent().add(text);
+			if (string.startsWith(" ") || string.endsWith(" ") ) {
+				// TODO: tab character?
+				text.setSpace("preserve");
+			}
+			text.setValue(string);
+						
+			Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(run);
+			
+			// avoid WRONG_DOCUMENT_ERR: A node is used in a different document than the one that created it.
+			// but  NOT_SUPPORTED_ERR: The implementation does not support the requested type of object or operation. 
+			// at com.sun.org.apache.xerces.internal.dom.CoreDocumentImpl.importNode
+			// docfrag.appendChild(fragdoc.importNode(document, true));
+			// so:			
+			XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
+		}
+		
+		private static void addHyperlinkToDocFrag(JaxbXmlPart sourcePart, DocumentFragment docfrag, String url) throws JAXBException {
+			
+			// We need to add a relationship to word/_rels/document.xml.rels
+			// but since its external, we don't use the 
+			// usual wordMLPackage.getMainDocumentPart().addTargetPart
+			// mechanism
+			org.docx4j.relationships.ObjectFactory factory =
+				new org.docx4j.relationships.ObjectFactory();
+			
+			org.docx4j.relationships.Relationship rel = factory.createRelationship();
+			rel.setType( Namespaces.HYPERLINK  );
+			rel.setTarget(url);
+			rel.setTargetMode("External");  
+									
+			sourcePart.getRelationshipsPart().addRelationship(rel);
+			
+			// addRelationship sets the rel's @Id
+			
+			String hpl = "<w:hyperlink r:id=\"" + rel.getId() + "\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" " +
+            "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" >" +
+            "<w:r>" +
+            "<w:rPr>" +
+            "<w:rStyle w:val=\"Hyperlink\" />" +  // TODO: enable this style in the document!
+            "</w:rPr>" +
+            "<w:t>" + url + "</w:t>" +
+            "</w:r>" +
+            "</w:hyperlink>";
+
+			Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(
+					(Hyperlink)XmlUtils.unmarshalString(hpl));
+			XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
+		}
+		
 		
 		public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
 				JaxbXmlPart sourcePart,
@@ -388,5 +463,6 @@ public class BindingHandler {
 				return null;
 			} 
 		}
+		
 
 }
