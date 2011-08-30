@@ -8,7 +8,6 @@ import java.util.StringTokenizer;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -22,18 +21,18 @@ import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.XmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.wml.CTSimpleField;
-import org.docx4j.wml.RPr;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.P.Hyperlink;
+import org.docx4j.wml.RPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -61,6 +60,32 @@ public class BindingHandler {
 		xPathFactory = XPathFactory.newInstance();
 		xPath = xPathFactory.newXPath();		
 	}
+
+
+	/**
+	 * Configure, how the handler handles links found in Custom XML.
+	 * 
+	 * If set to <code>null</code>, strings containing 'http://'
+	 * are not converted to w:hyperlink. This is the default behavior.
+	 * 
+	 * If set to <code>true</code>, strings containing 'http://'
+	 * are converted to w:hyperlink.  If you do this, you will
+	 * need to post-process with RemovalHandler, since a
+	 * content control with SdtPr w:dataBinding and w:text
+	 * which contains a w:hyperlink will prevent Word 2007 from
+	 * opening the docx.
+	 * 
+	 * Due to the architecture of this class, this is a static flag changing the
+	 * behavior of all following calls to {@link #applyBindings}.
+	 * 
+	 * @param hyperlinkStyle
+	 *            The style to use for hyperlinks (eg Hyperlink)
+	 */
+	public static void setHyperlinkStyle (
+			String hyperlinkStyleID) {
+		hyperlinkStyleId = hyperlinkStyleID;
+	}
+	private static String hyperlinkStyleId = null;
 	
 	
 	public static void log(String message ) {
@@ -83,6 +108,31 @@ public class BindingHandler {
 	 *    static method in this class.
 	 */
 		
+		public static void applyBindings(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
+
+			// A component can apply in both the main document part,
+			// and in headers/footers. See further
+			// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
+			
+			if (hyperlinkStyleId !=null 
+					&& wordMLPackage.getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId)) {
+			}			
+
+			applyBindings(wordMLPackage.getMainDocumentPart());
+	
+			// Add headers/footers
+			RelationshipsPart rp = wordMLPackage.getMainDocumentPart()
+					.getRelationshipsPart();
+			for (Relationship r : rp.getRelationships().getRelationship()) {
+	
+				if (r.getType().equals(Namespaces.HEADER)) {
+					applyBindings((HeaderPart) rp.getPart(r));
+				} else if (r.getType().equals(Namespaces.FOOTER)) {
+					applyBindings((FooterPart) rp.getPart(r));
+				}
+			}
+		}
+	
 		public static void applyBindings(JaxbXmlPart part) throws Docx4JException {
 			
 			org.docx4j.openpackaging.packages.OpcPackage pkg 
@@ -340,7 +390,7 @@ public class BindingHandler {
             "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" >" +
             "<w:r>" +
             "<w:rPr>" +
-            "<w:rStyle w:val=\"Hyperlink\" />" +  // TODO: enable this style in the document!
+            "<w:rStyle w:val=\"" + hyperlinkStyleId + "\" />" +  // TODO: enable this style in the document!
             "</w:rPr>" +
             "<w:t>" + url + "</w:t>" +
             "</w:r>" +

@@ -36,7 +36,13 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.lang.ArrayUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.relationships.Relationship;
 import org.w3c.dom.Document;
 
 /**
@@ -90,6 +96,29 @@ public class RemovalHandler {
 		}
 	}
 
+	public void removeSDTs(WordprocessingMLPackage wordMLPackage,
+			final Quantifier quantifier, final String... keys) throws Docx4JException {
+
+		// A component can apply in both the main document part,
+		// and in headers/footers. See further
+		// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
+		
+
+		removeSDTs(wordMLPackage.getMainDocumentPart(), quantifier, keys);
+
+		// Add headers/footers
+		RelationshipsPart rp = wordMLPackage.getMainDocumentPart()
+				.getRelationshipsPart();
+		for (Relationship r : rp.getRelationships().getRelationship()) {
+
+			if (r.getType().equals(Namespaces.HEADER)) {
+				removeSDTs((HeaderPart) rp.getPart(r), quantifier, keys);
+			} else if (r.getType().equals(Namespaces.FOOTER)) {
+				removeSDTs((FooterPart) rp.getPart(r), quantifier, keys);
+			}
+		}
+	}
+	
 	/**
 	 * Removes Structured Document Tags from a document part, preserving their
 	 * contents.

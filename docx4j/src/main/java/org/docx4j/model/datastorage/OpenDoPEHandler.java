@@ -218,7 +218,7 @@ public class OpenDoPEHandler {
 		OpenDoPEHandler.docxFetcher = docxFetcher;
 	}
 
-	private Set<ContentAccessor> getParts(WordprocessingMLPackage srcPackage) {
+	protected static Set<ContentAccessor> getParts(WordprocessingMLPackage srcPackage) {
 
 		Set<ContentAccessor> partList = new HashSet<ContentAccessor>();
 
