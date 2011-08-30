@@ -259,8 +259,8 @@ public class AlteredPartsTest {
 
 		alterations.debug();
 				
-		assertTrue( alterations.getPartsAdded().size()==2 );
-		assertTrue( alterations.getPartsModified().size()==1 );
+		assertTrue( alterations.getPartsAdded().size()==1 );
+		assertTrue( alterations.getPartsModified().size()==2 );
 		assertTrue( alterations.getPartsDeleted().size()==0 );
 		
 	}
