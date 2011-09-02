@@ -33,6 +33,7 @@ import javax.xml.transform.dom.DOMResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
@@ -73,6 +74,11 @@ public final class HeaderPart extends JaxbXmlPart<Hdr>  implements ContentAccess
      * @since 2.7
      */
     public List<Object> getContent() {
+    	
+    	if (this.getJaxbElement()==null) {    		
+    		this.setJaxbElement( Context.getWmlObjectFactory().createHdr() );
+    	}
+    	
     	return this.getJaxbElement().getContent();
     }	
 	

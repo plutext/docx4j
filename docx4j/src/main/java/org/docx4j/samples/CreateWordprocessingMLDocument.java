@@ -83,9 +83,9 @@ public class CreateWordprocessingMLDocument extends AbstractSample {
 		t.setValue("text");
 
 		org.docx4j.wml.R  run = factory.createR();
-		run.getRunContent().add(t);		
+		run.getContent().add(t);		
 		
-		p.getParagraphContent().add(run);
+		p.getContent().add(run);
 		
 		
 		org.docx4j.wml.RPr rpr = factory.createRPr();		

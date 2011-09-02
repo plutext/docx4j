@@ -112,6 +112,15 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
      * @since 2.7
      */
     public List<Object> getContent() {
+    	
+    	if (this.getJaxbElement()==null) {    		
+    		this.setJaxbElement( Context.getWmlObjectFactory().createDocument() );
+    	}
+    	if (this.getJaxbElement().getBody()==null) {
+    		this.getJaxbElement().setBody(
+    				Context.getWmlObjectFactory().createBody() );
+    	}
+    	
     	return this.getJaxbElement().getContent();
     }	
 	
@@ -719,8 +728,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	 */
 	public void addObject(Object o) {
 		
-		Body body =  this.jaxbElement.getBody();
-		body.getEGBlockLevelElts().add(o);
+		this.getContent().add( o );
 		
 		// If this object contains paragraphs, make sure any style used
 		// is activated
@@ -762,10 +770,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	 */
 	public org.docx4j.wml.P addParagraph(String pXml) throws JAXBException {
 		
-		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)this.getJaxbElement();
-		Body body =  wmlDocumentEl.getBody();
-		org.docx4j.wml.P  para = (org.docx4j.wml.P)org.docx4j.XmlUtils.unmarshalString(pXml); 
-		body.getEGBlockLevelElts().add( para );
+		org.docx4j.wml.P  para = (org.docx4j.wml.P)org.docx4j.XmlUtils.unmarshalString(pXml);
+		this.getContent().add( para );
 		return para;
 	}
 	
