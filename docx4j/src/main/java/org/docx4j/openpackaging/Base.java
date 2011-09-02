@@ -26,11 +26,13 @@ import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.contenttype.CTDefault;
 import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.contenttype.ObjectFactory;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
 
 
@@ -170,6 +172,23 @@ public abstract class Base {
 //		this.isDirty = isDirty;
 //	}
 
+	/**
+	 * Convenience method to add a part to this Part's
+	 * relationships.  The package must be set on this
+	 * part in order for this to work.
+	 * 
+	 * @since 2.7.1
+	 * 
+	 * @param targetpart The part to add to this part's relationships
+	 * @param mode whether to overwrite, rename or abort if the part name already exists
+	 * @param proposedRelId
+	 * @return
+	 * @throws InvalidFormatException
+	 */	
+	public Relationship addTargetPart(Part targetpart, AddPartBehaviour mode
+			) throws InvalidFormatException {
+		return addTargetPart(targetpart, mode, null);
+	}
 	
 	/**
 	 * Convenience method to add a part to this Part's
@@ -186,9 +205,9 @@ public abstract class Base {
 	 *            The part to add to this part's relationships
 	 */
 	public Relationship addTargetPart(Part targetpart) throws InvalidFormatException {
-		return this.addTargetPart(targetpart, null);
+		return this.addTargetPart(targetpart, AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS, null);
 	}
-	
+
 	/**
 	 * Convenience method to add a part to this Part's
 	 * relationships.  The package must be set on this
@@ -206,6 +225,32 @@ public abstract class Base {
 	public Relationship addTargetPart(Part targetpart, String proposedRelId
 			) throws InvalidFormatException {
 		
+		return addTargetPart( targetpart, AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS, proposedRelId);
+	}
+	
+	
+	/**
+	 * Convenience method to add a part to this Part's
+	 * relationships.  The package must be set on this
+	 * part in order for this to work.
+	 * 
+	 * The added part will replace any existing part
+	 * with the same name (ie same target in the rels 
+	 * part).  In other words, if you want to use the
+	 * one image as the target of 2 rels, don't use
+	 * this method. 
+	 * 
+	 * @since 2.7.1
+	 * 
+	 * @param targetpart The part to add to this part's relationships
+	 * @param mode whether to overwrite, rename or abort if the part name already exists
+	 * @param proposedRelId
+	 * @return
+	 * @throws InvalidFormatException
+	 */
+	public Relationship addTargetPart(Part targetpart, AddPartBehaviour mode, String proposedRelId
+			) throws InvalidFormatException {
+		
 		if ( this.getPackage()==null ) {						
 			throw new InvalidFormatException("Package not set; if you are adding part2 to part1, make sure part1 is added first.");
 		}
@@ -214,7 +259,7 @@ public abstract class Base {
 		}
 		
 		// Now add the targetpart to the relationships
-		Relationship rel = this.getRelationshipsPart().addPart(targetpart, true, 
+		Relationship rel = this.getRelationshipsPart().addPart(targetpart, mode, 
 				getPackage().getContentTypeManager(), proposedRelId);
 		
 		// Finally, set part shortcut if there is one to set
@@ -226,7 +271,5 @@ public abstract class Base {
 		return rel;
 		
 	}
-
-	
 	
 }

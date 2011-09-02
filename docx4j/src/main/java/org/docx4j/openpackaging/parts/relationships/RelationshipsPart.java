@@ -53,6 +53,7 @@ package org.docx4j.openpackaging.parts.relationships;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.bind.JAXBException;
@@ -77,68 +78,13 @@ import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
 
 
-
-
-
 /**
  * Represents a Relationship Part, which contains the relationships for a 
  * given PackagePart or the Package.
- * 
- * @author Julien Chable, CDubettier
- * @version 0.1
  */
 public final class RelationshipsPart extends JaxbXmlPart<Relationships> { 
-	// implements Iterable<Relationship> {
 
 	private static Logger log = Logger.getLogger(RelationshipsPart.class);
-	
-	/* Example:
-	 * 
-	 * Package relationships:
-	 * 
-	 * <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-		<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-			<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
-			<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"   Target="docProps/core.xml"/>
-			<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"      Target="word/document.xml"/>
-		</Relationships>
-
-
-		 word/_rels/document.xml.rels:
-		 
-		<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-		<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-			<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings" Target="webSettings.xml"/>
-			<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/>
-			<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
-			<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
-			<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable" Target="fontTable.xml"/>
-		</Relationships>
-		
-		More complex version:
-		
-<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Target="customXml/item1.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml"/>
-  <Relationship Id="rId10" Target="header2.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"/>
-  <Relationship Id="rId11" Target="footer1.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"/>
-  <Relationship Id="rId12" Target="footer2.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"/>
-  <Relationship Id="rId13" Target="header3.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"/>
-  <Relationship Id="rId14" Target="footer3.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer"/>
-  <Relationship Id="rId15" Target="fontTable.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable"/>
-  <Relationship Id="rId16" Target="glossary/document.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/glossaryDocument"/>
-  <Relationship Id="rId17" Target="theme/theme1.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme"/>
-  <Relationship Id="rId2" Target="numbering.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering"/>
-  <Relationship Id="rId3" Target="styles.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles"/>
-  <Relationship Id="rId4" Target="settings.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings"/>
-  <Relationship Id="rId5" Target="webSettings.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings"/>
-  <Relationship Id="rId6" Target="footnotes.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes"/>
-  <Relationship Id="rId7" Target="endnotes.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes"/>
-  <Relationship Id="rId8" Target="comments.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments"/>
-  <Relationship Id="rId9" Target="header1.xml" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header"/>
-</Relationships>		
-		
-
-	 */
 	
 
 	/**
@@ -430,7 +376,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		log.debug("Loading part " + partName.getName() );
 		
 		part.setOwningRelationshipPart(this);
-		part.setSourceRelationship(sourceRelationship);
+		part.setSourceRelationship(sourceRelationship);  
 
 		// All (non-relationship) parts are stored in a collection
 		// in the package, even though conceptually this loadPart
@@ -457,9 +403,9 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 *            Content type manager
 	 * @return The Relationship
 	 */
-	public Relationship addPart(Part part, boolean overwriteExistingTarget, 
-			ContentTypeManager ctm) {
-		return this.addPart(part, overwriteExistingTarget, ctm, null);
+	public Relationship addPart(Part part, AddPartBehaviour mode, 
+			ContentTypeManager ctm) throws InvalidFormatException {
+		return this.addPart(part, mode, ctm, null);
 	}
 	
 	/**
@@ -476,12 +422,48 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 *            
 	 * @return The Relationship
 	 */
-	public Relationship addPart(Part part, boolean overwriteExistingTarget, 
-			ContentTypeManager ctm, String relId) {
+	public Relationship addPart(Part part, AddPartBehaviour mode, 
+			ContentTypeManager ctm, String relId) throws InvalidFormatException {
 		
-		log.info("adding part: " + part.getPartName().getName() );
+		PartName newPartName = part.getPartName(); 
+		log.info("adding part with proposed name: " + newPartName.getName());
 		
-		// Now add a new relationship
+		if (this.getPackage().getParts().get( newPartName )!=null) {
+			
+			if (mode.equals(AddPartBehaviour.REUSE_EXISTING)) {
+				
+				part = this.getPackage().getParts().get( newPartName );
+				
+				// if rel already exists, return that				
+				// if rel doesn't exist (the part does), create a rel to it				
+			}
+			
+			if (mode.equals(AddPartBehaviour.RENAME_IF_NAME_EXISTS)) {
+
+				// it is not enough to be unique in just the rp (eg media parts)
+
+				String proposedName = part.getPartName().getName();
+				log.debug("Detected duplicate partname: " + proposedName );
+				if (proposedName.indexOf(".")>0) {
+					// TODO: strip trailing numerals off prefix
+					// eg footer1 should become footer
+					newPartName = getNewPartName( proposedName.substring(0, proposedName.indexOf(".")-1), 
+							"." + part.getPartName().getExtension(), 
+							this.getPackage().getParts().getParts() );				
+				} else {
+					newPartName = getNewPartName( proposedName, 
+							"." , 
+							this.getPackage().getParts().getParts() );										
+				}
+				part.partName = newPartName; // access directly
+				
+				// this partname is globally unique in the docx
+				// so rel won't exist
+								
+			}				
+		}
+				
+		// First work out what the target would be
 
 		URI tobeRelativized = part.getPartName().getURI();
 		URI relativizeAgainst = sourceP.getPartName().getURI();
@@ -489,11 +471,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		log.debug("Relativising target " + tobeRelativized 
 				+ " against source " + relativizeAgainst);
 		
-		String result = URIHelper.relativizeURI(relativizeAgainst, 
+		String target = URIHelper.relativizeURI(relativizeAgainst, 
 				tobeRelativized).toString(); 
 		
 		if (relativizeAgainst.getPath().equals("/")
-				&& result.startsWith("/")) {
+				&& target.startsWith("/")) {
 			
 			/*
 			 * Relativising target /word/document.xml against source / 
@@ -502,67 +484,69 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			 * but we want word/document.xml
 			 */		
 			
-			result = result.substring(1);
+			target = target.substring(1);
 		}
 				
-		log.debug("Result " + result); 
+		log.debug("Result " + target); 
+		
+		// Check whether we already have a rel with this target
+		// This code is a bit more efficient than getRel, since it
+		// doesn't unrelativise each existing rel!
+		Relationship existsAlready = null;
+		for (Relationship rel : jaxbElement.getRelationship() ) {
+			if (rel.getTarget().equals(target)) {
+				existsAlready = rel;
+				break;  // Assumes at most 1 existing rel with this target
+			}
+		}
+
+		if (existsAlready!=null
+				&& mode.equals(AddPartBehaviour.REUSE_EXISTING)) {
+			log.debug("Returning preexisting rel");
+			return existsAlready;
+		}
+		
+		// sanity check
+		if (existsAlready!=null && mode.equals(AddPartBehaviour.RENAME_IF_NAME_EXISTS)) {
+			// Shouldn't happen
+			throw new InvalidFormatException("Found existing rel, and yet constructed part name should be globally unique!");
+		}
+		
+		if (this.getPackage().getParts().get( newPartName )!=null
+				&& mode.equals(AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS)) {
+			
+			// ie we have the same part in the package already, not
+			// necessarily referenced by a rel in this rp.
+			
+			// overwrite the part
+			if (existsAlready!=null) {
+				
+				// we reuse it. can't assume its the same type, though, so
+				existsAlready.setType( part.getRelationshipType() );				
+				
+				loadPart(part, existsAlready);
+				return existsAlready;
+			}
+						
+			// case where rel doesn't exist (it might not in this rp), create a rel to it
+			// is handled below
+		}		
+		
+		// OK, create the new rel
 		
 		org.docx4j.relationships.ObjectFactory factory =
 			new org.docx4j.relationships.ObjectFactory();
 		
 		Relationship rel = factory.createRelationship();
 		
-		rel.setTarget(result.toString() );
+		rel.setTarget(target );
 		//rel.setTargetMode( TargetMode.INTERNAL );
 		rel.setType( part.getRelationshipType() );
 		
 		if (relId!=null) {
 			rel.setId( relId );			
 		}
-
-		loadPart(part, rel);
 		
-		if (overwriteExistingTarget) {
-			// Is more than one rel with the same target 
-			// ever permitted. For example, an image?
-			// ECMA-376 Part 2 8.3 only says that
-			// Id must be unique.
-			// (But we don't test for that here; the id
-			//  is only assigned in addRelationship further
-			//  below)			
-			
-			// Word fails to load a document if it has 2 copies of the styles part
-			// (each with a separate rels entry).
-			
-			// We ensure there is just a single entry
-			// iff overwriteExistingTarget is set
-			// NB, this does not recursively remove parts
-			// (compare removePart method below)
-			// In fact, it only removes the rel, it leaves the
-			// part in the Parts hashmap, but that's ok
-			// since the docx is constructed by walking the
-			// rels tree. And loadPart above will overwrite
-			// any existing part which has the same name.
-			
-			
-			Relationship relToBeRemoved = null;
-			for (Relationship relic : jaxbElement.getRelationship() ) {
-				
-				if (relic.getTarget().equals( rel.getTarget() )) {
-					
-					log.info("True - will delete relationship with target " + rel.getTarget());
-					relToBeRemoved = relic; // Avoid java.util.ConcurrentModificationException
-					break;
-				}
-				
-			}
-			if (relToBeRemoved!=null) {
-				removeRelationship(relToBeRemoved);				
-			}		
-		}
-		
-//		Relationship rel = new Relationship(sourceP, result, 
-//				TargetMode.INTERNAL, part.getRelationshipType(), id);
 		addRelationship(rel );
 		
     	String ext = part.getPartName().getExtension();
@@ -579,8 +563,35 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 			ctm.addOverrideContentType(part.getPartName().getURI(), part.getContentType());
 		}
 		
-		return rel;
+		if (this.getPackage().getParts().get( newPartName )!=null) {
 
+			if (mode.equals(AddPartBehaviour.REUSE_EXISTING)) {
+				// just return rel;
+			}		
+			
+			if (mode.equals(AddPartBehaviour.RENAME_IF_NAME_EXISTS)) {
+				loadPart(part, rel);
+			}			
+			
+			if (mode.equals(AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS)) {
+				loadPart(part, rel);
+			}
+			return rel;	
+			
+		} else {
+			// Usual case
+			
+			loadPart(part, rel);
+			return rel;				
+			
+		}
+		
+		// Is more than one rel with the same target 
+		// ever permitted. For example, an image? YES
+				
+		// Word fails to load a document if it has 2 copies of the styles part
+		// (each with a separate rels entry).
+		
 	}
 	
 
@@ -593,6 +604,8 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public boolean addRelationship(Relationship rel) 
 		throws InvalidOperationException {
 
+		// ECMA-376 Part 2 8.3 says that Id must be unique.
+		
 		if ( rel.getId()==null) {
 			String id = getNextId();
 			rel.setId( id );
@@ -709,6 +722,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	 * @return
 	 */
 	public Relationship getRel(PartName partName) { // introduced after 2.6.0
+
 		
 		for (Relationship rel : jaxbElement.getRelationship() ) {
 			
@@ -718,7 +732,11 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 //				// This method can't be used to remove external resources
 //				continue;
 //			}
-						
+				
+			// TODO 20110902: it would be more efficient to relativise the partName
+			// just once, and compare using that (see addPart, which
+			// works this way).
+			
 			if (isTarget(partName, rel) ) {
 				return rel;
 			}
@@ -728,6 +746,9 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	
 	/**
 	 * Is partName the target of the specified rel?
+	 * 
+	 * @since 2.6.0
+	 * 
 	 * @param partName
 	 * @param rel
 	 * @return
@@ -994,6 +1015,45 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		return result;
 
 	}
+	
+	
+    private PartName getNewPartName(String prefix, String suffix, 
+    		HashMap<PartName, Part> parts) throws InvalidFormatException {
+    	
+    	PartName proposed = null;
+    	int i=1;
+    	do {
+    		
+    		if (i>1) {
+    			proposed = new PartName( prefix + i + suffix);
+    		} else {
+    			proposed = new PartName( prefix + suffix);        			
+    		}
+    		i++;
+    		
+    	} while (parts.get(proposed)!=null);
+    	
+    	return proposed;
+    	
+    }
+	
+
+	  public enum AddPartBehaviour {
+
+		    OVERWRITE_IF_NAME_EXISTS("overwrite"),
+		    REUSE_EXISTING("reuse"), 
+		    RENAME_IF_NAME_EXISTS("rename");
+		    
+		    private final String value;
+
+		    AddPartBehaviour(String v) {
+		        value = v;
+		    }
+
+		    public String value() {
+		        return value;
+		    }
+	  } 	
 	
 //	public static void main(String[] args) throws Exception {
 //		

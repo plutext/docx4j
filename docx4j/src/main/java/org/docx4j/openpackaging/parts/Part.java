@@ -66,6 +66,9 @@ public abstract class Part extends Base {
 		return sourceRelationship;
 	}
 	/**
+	 * NB a media part could be referenced from multiple
+	 * source parts, but this method can only record one!
+	 * 
 	 * @param sourceRelationship the sourceRelationship to set
 	 */
 	public void setSourceRelationship(Relationship sourceRelationship) {
