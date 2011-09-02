@@ -199,19 +199,17 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 	public static RelationshipsPart createRelationshipsPartForPart(
 			Base sourcePart) {
 
-		if (sourcePart.getRelationshipsPart() != null)
-			return sourcePart.getRelationshipsPart();
+		if (sourcePart.relationships != null)
+			return sourcePart.relationships;
 
 		RelationshipsPart rp = null;
 		try {
 			rp = new RelationshipsPart(sourcePart);
 		} catch (InvalidFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// shouldn't happen
+			log.error(e);
 		}
 		rp.setPackage(sourcePart.getPackage());
-
-		// sourcePart.setRelationships(rp);
 
 		// Make sure content manager knows how to handle .rels
 		sourcePart

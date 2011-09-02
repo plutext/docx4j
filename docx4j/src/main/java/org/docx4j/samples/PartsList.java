@@ -28,6 +28,7 @@ import javax.xml.bind.JAXBElement;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
+import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
@@ -52,7 +53,7 @@ public class PartsList extends AbstractSample {
 //			 inputfilepath = System.getProperty("user.dir") 
 //			+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
 //	 inputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/pivot.xlsm";
-		inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
 	// inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/lines.pptx";
 		}
 		
@@ -70,6 +71,10 @@ public class PartsList extends AbstractSample {
 		traverseRelationships(opcPackage, rp, sb, "    ");
 		
 		System.out.println(sb.toString());
+		
+//		SaveToZipFile saver = new SaveToZipFile(opcPackage);
+//		saver.save(System.getProperty("user.dir") + "/out.docx");
+		
 	}
 	
 	public static void printContentTypes(org.docx4j.openpackaging.packages.OpcPackage p) {
@@ -114,6 +119,10 @@ public class PartsList extends AbstractSample {
 		
 		// TODO: order by rel id
 		
+//		if (rp.getRelationships().getRelationship().size()==0) {
+//			System.out.println("In rels part .. empty");
+//		}
+		
 		for ( Relationship r : rp.getRelationships().getRelationship() ) {
 			
 			log.info("\nFor Relationship Id=" + r.getId() 
@@ -138,10 +147,10 @@ public class PartsList extends AbstractSample {
 				continue;
 			}
 			handled.put(part, part);
-			if (part.getRelationshipsPart()==null) {
+			if (part.getRelationshipsPart(false)==null) {
 				// sb.append(".. no rels" );						
 			} else {
-				traverseRelationships(wordMLPackage, part.getRelationshipsPart(), sb, indent + "    ");
+				traverseRelationships(wordMLPackage, part.getRelationshipsPart(false), sb, indent + "    ");
 			}
 					
 		}

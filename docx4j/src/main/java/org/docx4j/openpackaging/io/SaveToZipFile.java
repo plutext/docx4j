@@ -412,20 +412,25 @@ public class SaveToZipFile {
 		handled.put(resolvedPartUri, resolvedPartUri);
 		
 		// recurse via this parts relationships, if it has any
-		if (part.getRelationshipsPart()!= null ) {
-			RelationshipsPart rrp = part.getRelationshipsPart();
-			log.debug("Found relationships " + rrp.getPartName() );
-			String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
-			log.debug("Cf constructed name " + relPart );
+		RelationshipsPart rrp = part.getRelationshipsPart(false); //don't create
+		if (rrp!= null ) {
 			
-			//deprecatedSaveRawXmlPart(out, relPart, rrp.getDocument() );
-			// 2008 06 12 - try this neater method
-			saveRawXmlPart(out, rrp, relPart );
+			//log.debug("Found relationships " + rrp.getPartName() );
 			
-			addPartsFromRelationships(out, rrp );
-		} else {
-			log.debug("No relationships for " + resolvedPartUri );					
-		}
+			// Only save it if it actually has rels in it
+			if (rrp.getRelationships().getRelationship().size()>0) {
+				
+				String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
+				//log.debug("Cf constructed name " + relPart );
+				
+				saveRawXmlPart(out, rrp, relPart );
+				
+				addPartsFromRelationships(out, rrp );
+			}
+		} 
+//		else {
+//			log.debug("No relationships for " + resolvedPartUri );					
+//		}
 	}
 	
 	protected void saveRawBinaryPart(ZipOutputStream out, Part part) throws Docx4JException {

@@ -48,23 +48,42 @@ public abstract class Base {
 	 * (Each Part is also the _target_ of a RelationshipPart,
 	 * so see Part for definition of a corresponding field.)
 	 */
-	protected RelationshipsPart relationships;
+	public RelationshipsPart relationships;
 
 	/**
-	 * Get the relationship part
+	 * Get the relationship part.
+	 * From 2.7.1, the part will be created if it
+	 * doesn't exist.  (SaveToZipFile will only
+	 * save it if it contains rels) 
 	 * 
 	 * @return The relationship part name.
 	 */
 	public RelationshipsPart getRelationshipsPart() {
+		return getRelationshipsPart(true);
+	}
+	
+	/**
+	 * Get the relationship part.
+	 * @since 2.7.1
+	 * 
+	 * @param create  whether to create it if it doesn't exist
+	 * @return
+	 */
+	public RelationshipsPart getRelationshipsPart(boolean createIfAbsent) {
 //			throws InvalidOperationException {
 		if (this instanceof org.docx4j.openpackaging.parts.relationships.RelationshipsPart) {
 			// a relationship part can't have a relationship part
 			// but should we throw an error here?
 			//throw new InvalidOperationException();
 			return null;
-		} else {
-			return relationships;
+		} 
+		
+		if (relationships == null 
+				&& createIfAbsent) {
+			relationships = RelationshipsPart.createRelationshipsPartForPart(this);
 		}
+		
+		return relationships;
 	}
 
 	public void setRelationships(RelationshipsPart relationships) {
@@ -193,10 +212,6 @@ public abstract class Base {
 		if ( this instanceof RelationshipsPart ) {			
 			throw new InvalidFormatException("You should add your part to the target part, not the target part's relationships part.");
 		}
-
-		// Create RelationshipsPart for this part if necessary
-		if (this.getRelationshipsPart() == null ) 
-			RelationshipsPart.createRelationshipsPartForPart(this);
 		
 		// Now add the targetpart to the relationships
 		Relationship rel = this.getRelationshipsPart().addPart(targetpart, true, 

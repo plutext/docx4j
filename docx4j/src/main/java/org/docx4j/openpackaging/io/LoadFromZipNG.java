@@ -466,6 +466,7 @@ public class LoadFromZipNG extends Load {
 	public RelationshipsPart getRelationshipsPart(HashMap<String, ByteArray> partByteArrays, 
 			Part part)
 	throws Docx4JException, InvalidFormatException {
+		
 		RelationshipsPart rrp = null;
 		// recurse via this parts relationships, if it has any
 		//String relPart = PartName.getRelationshipsPartName(target);
