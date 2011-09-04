@@ -25,6 +25,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.dml.Theme;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
@@ -53,6 +54,9 @@ public final class ThemePart extends JaxbXmlPart<Theme> {
 
 		// Used when this Part is added to a rels 
 		setRelationshipType(Namespaces.THEME);
+		
+		setJAXBContext(Context.jcThemePart);						
+		
 		
 	}
 
