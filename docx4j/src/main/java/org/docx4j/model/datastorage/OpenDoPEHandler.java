@@ -551,11 +551,11 @@ public class OpenDoPEHandler {
 		WordprocessingMLPackage wordMLPackage;
 
 		@Override
-		public List<Object> apply(Object o) {
+		public List<Object> apply(Object wrapped) {
 
 			// apply processSdt to any sdt
 			// which might be a conditional|repeat
-
+			Object o = XmlUtils.unwrap(wrapped);
 			if (o instanceof org.docx4j.wml.SdtBlock
 					|| o instanceof org.docx4j.wml.SdtRun
 					|| o instanceof org.docx4j.wml.CTSdtRow
@@ -573,7 +573,8 @@ public class OpenDoPEHandler {
 
 			// Otherwise just preserve the content
 			List<Object> newContent = new ArrayList<Object>();
-			newContent.add(o);
+			
+			newContent.add(wrapped); // we want the JAXBElement (if any)
 			return newContent;
 
 		}
@@ -606,13 +607,7 @@ public class OpenDoPEHandler {
 				return;
 			} else {
 				for (Object o : children) {
-
-					newChildren.addAll(this.apply(XmlUtils.unwrap(o)));
-					// TODO: Post 2.7.0, review use of XmlUtils.unwrap(o) here;
-					// it can result in MarshalException for
-					// things which don't have @XmlRootElement.
-					// We really need some unit tests to be confident
-					// that making this change would be ok.
+					newChildren.addAll(this.apply(o));
 				}
 			}
 			// Replace list, so we'll traverse all the new sdts we've just
@@ -1151,7 +1146,7 @@ public class OpenDoPEHandler {
 
 			// Sanity test
 			if (!thisXPath.equals(xpathObj.getDataBinding().getXpath())) {
-				log.error("XPaths didn't match for id " + bindingId + ": "
+				log.error("XPaths didn't match for id " + bindingId + ": \n\r    " + thisXPath + "\n\rcf. " 
 						+ xpathObj.getDataBinding().getXpath());
 			}
 		}
