@@ -31,6 +31,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.diff.Differencer;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
@@ -59,8 +60,8 @@ public class CompareDocuments {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String newerfilepath = "/home/dev/workspace/docx4j/sample-docs/differencing_newer.docx";
-		String olderfilepath = "/home/dev/workspace/docx4j/sample-docs/differencing_older.docx";
+		String newerfilepath = System.getProperty("user.dir") + "/102.docx";
+		String olderfilepath = System.getProperty("user.dir") + "/103.docx";
 						
 		// 1. Load the Packages
 		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath));
@@ -68,6 +69,8 @@ public class CompareDocuments {
 		
 		Body newerBody = ((Document)newerPackage.getMainDocumentPart().getJaxbElement()).getBody();
 		Body olderBody = ((Document)olderPackage.getMainDocumentPart().getJaxbElement()).getBody();
+		
+		System.out.println("Differencing..");
 		
 		// 2. Do the differencing
 		java.io.StringWriter sw = new java.io.StringWriter();
@@ -100,7 +103,9 @@ public class CompareDocuments {
 		org.docx4j.convert.out.pdf.PdfConversion c 
 			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(newerPackage);
 
-//		c.view();
+		OutputStream os = new java.io.FileOutputStream(System.getProperty("user.dir") +  "/COMPARED.pdf");			
+		c.output(os, new PdfSettings() );
+		System.out.println("Saved " + System.getProperty("user.dir") +  "/COMPARED.pdf");
 				
 	}
 
