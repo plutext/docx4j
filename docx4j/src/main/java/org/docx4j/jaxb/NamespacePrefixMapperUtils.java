@@ -117,11 +117,11 @@ public class NamespacePrefixMapperUtils {
 
 		Object namespacePrefixMapper = getPrefixMapper();
 		
-		if ( namespacePrefixMapper instanceof NamespacePrefixMapperSunInternal) {
+		if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 			// Java 6
 			return ((NamespacePrefixMapperSunInternal)namespacePrefixMapper).getPreferredPrefix(namespaceUri, suggestion, requirePrefix); 
 			
-		} else if (namespacePrefixMapper instanceof NamespacePrefixMapper) {
+		} else if (namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapper")) {
     		// JAXB Reference Implementation		
 			return ((NamespacePrefixMapper)namespacePrefixMapper).getPreferredPrefix(namespaceUri, suggestion, requirePrefix); 
 			
