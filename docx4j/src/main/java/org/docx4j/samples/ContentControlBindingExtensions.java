@@ -20,6 +20,7 @@
 
 package org.docx4j.samples;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,9 @@ import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
+import org.docx4j.model.datastorage.OpenDoPEIntegrity;
+import org.docx4j.model.datastorage.RemovalHandler;
+import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -68,49 +72,54 @@ public class ContentControlBindingExtensions {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
+
+//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/hyperlink-binding-test.docx";
 		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
-		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice_preprocessed.xml";
-		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice_bound.xml";
 
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions_bound.xml";
 
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/IT inventory.docx";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/IT_inventory_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/IT_inventory_bound.xml";
 		
 //		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/word/databinding/MedicalChartSample.docx";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/MedicalChartSample_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/MedicalChartSample_bound.xml";
 		
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/repeat-containing-condition.docx";
-//		String save_preprocessed = System.getProperty("user.dir") + "/sample-docs/word/databinding/repeat-containing-condition_preprocessed.xml";
-//		String save_bound = System.getProperty("user.dir") + "/sample-docs/word/databinding/repeat-containing-condition_bound.xml";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
+		String filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
+		System.out.println(filepathprefix);
 
 		// Process conditionals and repeats
 		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
 		odh.preprocess();
+		
+		OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
+		odi.process(wordMLPackage);
+		
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);		
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-		saver.save(save_preprocessed);
-		System.out.println("Saved: " + save_preprocessed);
+		saver.save(filepathprefix + "_preprocessed.docx");
+		System.out.println("Saved: " + filepathprefix + "_preprocessed.docx");
 		
 		// Apply the bindings
+		BindingHandler.setHyperlinkStyle("hyperlink");						
 		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);
-		saver.save(save_bound);
-		System.out.println("Saved: " + save_bound);
+		saver.save(filepathprefix + "_bound.docx");
+		System.out.println("Saved: " + filepathprefix + "_bound.docx");
 		
-	}
-		
+		// Strip content controls: you MUST do this 
+		// if you are processing hyperlinks
+		RemovalHandler rh = new RemovalHandler();
+		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
+		saver.save(filepathprefix + "_stripped.docx");
+		System.out.println("Saved: " + filepathprefix + "_bound.docx");
+	}		
+				
 
 }
