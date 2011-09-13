@@ -21,6 +21,7 @@ import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -28,11 +29,14 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.RPr;
+import org.opendope.xpaths.Xpaths.Xpath;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
@@ -143,6 +147,17 @@ public class BindingHandler {
 			org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
 					part.getJaxbElement() ); 	
 			
+			XPathsPart xPathsPart = null;
+			
+			if ( ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart() == null) {
+				log.error("OpenDoPE XPaths part missing");
+				//throw new Docx4JException("OpenDoPE XPaths part missing");
+			} else {
+				xPathsPart = ((WordprocessingMLPackage)pkg).getMainDocumentPart().getXPathsPart();
+				//log.debug(XmlUtils.marshaltoString(xPaths, true, true));
+			}
+			
+			
 			JAXBContext jc = Context.jc;
 			try {
 				// Use constructor which takes Unmarshaller, rather than JAXBContext,
@@ -156,6 +171,7 @@ public class BindingHandler {
 						part.getPackage().getCustomXmlDataStorageParts());			
 				transformParameters.put("wmlPackage", (WordprocessingMLPackage)pkg);			
 				transformParameters.put("sourcePart", part);			
+				transformParameters.put("xPathsPart", xPathsPart);			
 						
 				org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 				
@@ -248,7 +264,7 @@ public class BindingHandler {
 			DocumentFragment docfrag = docContainer.createDocumentFragment();
 			
 			try {
-				log.debug(xpath + " yielded result " + r);
+				log.info(xpath + " yielded result " + r);
 				
 				RPr rPr = null;
 				Node rPrNode = rPrNodeIt.nextNode();
@@ -513,6 +529,38 @@ public class BindingHandler {
 				return null;
 			} 
 		}
+		
+		public static DocumentFragment xpathGenerateRuns(
+				WordprocessingMLPackage pkg, 
+				JaxbXmlPart sourcePart,				
+				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+				XPathsPart xPathsPart,
+				String odTag, 
+				NodeIterator rPrNodeIt, boolean multiLine) {
+			
+			QueryString qs = new QueryString();
+			HashMap<String, String> map = qs.parseQueryString(odTag, true);
+			
+			String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+			
+			log.info("Looking for xpath by id: " + xpathId);
+		
+			
+			Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			
+			String storeItemId = xpath.getDataBinding().getStoreItemID();
+			String xpathExp = xpath.getDataBinding().getXpath();
+			String prefixMappings = xpath.getDataBinding().getPrefixMappings();
+			
+			return xpathGenerateRuns(
+					 pkg, 
+					 sourcePart,				
+					 customXmlDataStorageParts,
+					 storeItemId,  xpathExp,  prefixMappings,
+					 rPrNodeIt,  multiLine);
+			
+		}
+		
 		
 
 }

@@ -718,73 +718,19 @@ public class OpenDoPEHandler {
 
 		} else if (xp != null) {
 
-			if (getSdtPr(sdt).getDataBinding() != null) {
-				// the XPath evaluates to an element, which Word can
-				// handle, so do nothing (shouldn't get here anyway though)
-				List<Object> newContent = new ArrayList<Object>();
-				newContent.add(sdt);
-				return newContent;
-			}
-			log.info("Processing XPath expression: " + tag.getVal());
-			log.info(XmlUtils.marshaltoString(sdt, true, true));
-
-			List<Object> contentList = null;
-			if (sdt instanceof org.docx4j.wml.SdtBlock) {
-				contentList = ((org.docx4j.wml.SdtBlock) sdt).getSdtContent()
-						.getContent();
-			} else if (sdt instanceof org.docx4j.wml.SdtRun) { // sdt in
-																// paragraph
-				contentList = ((org.docx4j.wml.SdtRun) sdt).getSdtContent()
-						.getContent();
-			}
-			// An CTSdtRow or CTSdtCell shouldn't be bound
-			if (contentList == null || contentList.size() == 0) {
-				List<Object> newContent = new ArrayList<Object>();
-				newContent.add(sdt);
-				return newContent;
-			}
-
-			// Word can't handle an XPath that returns something else
-			// eg string or boolean or number, so work this out.
+			// Word can't handle an XPath that returns something 
+			// other than an element 
+			// eg string or boolean or number, so we'll need to work this out.
 			// In principal, we could do this in this pre-processing step,
-			// or via bind.xslt. But probably slightly better to do it here.
-			org.opendope.xpaths.Xpaths.Xpath xpathObj = XPathsPart
-					.getXPathById(xPaths, xp);
-			String value = BindingHandler.xpathGetString(wordMLPackage,
-					customXmlDataStorageParts, xpathObj.getDataBinding()
-							.getStoreItemID(), xpathObj.getDataBinding()
-							.getXpath(), xpathObj.getDataBinding()
-							.getPrefixMappings());
-			log.info(xpathObj.getDataBinding().getXpath());
-
-			// Now insert
-			R r = null;
-			Object firstBlock = contentList.get(0);
-			if (firstBlock instanceof P) {
-				if (((P) firstBlock).getParagraphContent().get(0) instanceof R) {
-					r = (R) ((P) firstBlock).getParagraphContent().get(0);
-				}
-			} else if (firstBlock instanceof R) {
-				r = ((R) firstBlock);
-			}
-			if (r == null) {
-				// Give up
-				log.warn("Couldn't find a run in which to insert xpath value");
-				List<Object> newContent = new ArrayList<Object>();
-				newContent.add(sdt);
-				return newContent;
-			}
-			Text wt = null;
-			Object firstInline = XmlUtils.unwrap(r.getRunContent().get(0));
-			if (firstInline instanceof Text) {
-				wt = (Text) firstInline;
-			} else {
-				log.warn("First was " + firstInline);
-				wt = Context.getWmlObjectFactory().createText();
-				r.getRunContent().add(wt);
-			}
-			wt.setValue(value);
-			// Return the sdt with this value set
+			// or via bind.xslt. 
+			
+			// Doing it here means the bind.xslt step can be restricted to pure
+			// Word-like processing.
+			
+			// Doing it there means we can take advantage of the multiline
+			// processing we have there, and less code.
+			// So as from 13 Sept 2011 (what will be 2.7.1), do it there. 
+						
 			List<Object> newContent = new ArrayList<Object>();
 			newContent.add(sdt);
 			return newContent;
