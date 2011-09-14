@@ -78,7 +78,7 @@ public class PageDimensions {
 		
 		if (pgSz == null) {
 			log.warn("No pgSz in this section; defaulting.");
-			pgSz = Context.getWmlObjectFactory().createSectPrPgSz();			
+			this.pgSz = Context.getWmlObjectFactory().createSectPrPgSz();			
 			setPgSize(PageSizePaper.A4, false );
 		} else {
 			this.pgSz = pgSz;			
@@ -86,7 +86,7 @@ public class PageDimensions {
 		
 		if (pgMar ==null) {
 			log.warn("No pgMar in this section; defaulting.");
-			pgMar = Context.getWmlObjectFactory().createSectPrPgMar();			
+			this.pgMar = Context.getWmlObjectFactory().createSectPrPgMar();			
 			setMargins(MarginsWellKnown.NORMAL);
 		} else {
 			this.pgMar = pgMar;				
