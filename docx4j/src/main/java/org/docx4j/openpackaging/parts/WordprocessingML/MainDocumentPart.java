@@ -317,8 +317,37 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
 				
 				doc = (org.w3c.dom.Document)result.getNode();
-					
-				jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );					
+				
+				try {
+					jaxbElement =  (org.docx4j.wml.Document) binder.unmarshal( doc );
+				} catch (ClassCastException cce) {
+					// Work around for issue with JAXB binder, in Java 1.6
+					// encountered with /src/test/resources/jaxb-binder-issue.docx					
+					log.warn("Binder not available for this docx");
+					Unmarshaller u = jc.createUnmarshaller();
+					jaxbElement = (org.docx4j.wml.Document) u.unmarshal( doc );					
+					/* java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to javax.xml.bind.JAXBElement
+						at com.sun.xml.internal.bind.v2.runtime.ElementBeanInfoImpl$IntercepterLoader.intercept(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext.endElement(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.InterningXmlVisitor.endElement(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.SAXConnector.endElement(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.visit(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.scan(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.scan(Unknown Source)
+						at com.sun.xml.internal.bind.unmarshaller.DOMScanner.scan(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.BinderImpl.associativeUnmarshal(Unknown Source)
+						at com.sun.xml.internal.bind.v2.runtime.BinderImpl.unmarshal(Unknown Source)
+						at org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.unmarshal(MainDocumentPart.java:321)
+					 */
+				}
 				
 			}
 			
