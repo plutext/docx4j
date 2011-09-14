@@ -54,6 +54,7 @@
 										string(w:sdtPr/w:dataBinding/@w:xpath),
 										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
 										local-name(..),
+										local-name(w:sdtContent/*[1]),
 										string(w:sdtContent//wp:extent[1]/@cx), 
 										string(w:sdtContent//wp:extent[1]/@cy))" />
 				  		</xsl:when>

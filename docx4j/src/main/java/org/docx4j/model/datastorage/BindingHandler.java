@@ -421,7 +421,9 @@ public class BindingHandler {
 		public static DocumentFragment xpathInjectImage(WordprocessingMLPackage wmlPackage,
 				JaxbXmlPart sourcePart,
 				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-				String storeItemId, String xpath, String prefixMappings, String sdtParent,
+				String storeItemId, String xpath, String prefixMappings, 
+				String sdtParent,
+				String contentChild,
 				String cx, String cy) {
 
 			log.debug("sdt's parent: " + sdtParent);
@@ -482,16 +484,16 @@ public class BindingHandler {
 				org.docx4j.wml.Tc tc  = factory.createTc();
 				org.docx4j.wml.P  p   = factory.createP();
 				if (sdtParent.equals("tr")) {
-					tc.getEGBlockLevelElts().add(p);
+					tc.getContent().add(p);
 				}
 				org.docx4j.wml.R  run = factory.createR();		
 				if (sdtParent.equals("body")
 						|| sdtParent.equals("tr") 
 						|| sdtParent.equals("tc") ) {
-					p.getParagraphContent().add(run);
+					p.getContent().add(run);
 				}
 				org.docx4j.wml.Drawing drawing = factory.createDrawing();		
-				run.getRunContent().add(drawing);		
+				run.getContent().add(drawing);		
 				drawing.getAnchorOrInline().add(inline);
 				
 				
@@ -515,6 +517,16 @@ public class BindingHandler {
 					document = XmlUtils.marshaltoW3CDomDocument(tc);
 				} else if ( sdtParent.equals("p") ) {
 					document = XmlUtils.marshaltoW3CDomDocument(run);
+				} else if ( sdtParent.equals("sdtContent") ) {					
+					log.info("contentChild: " + contentChild);
+					if (contentChild.equals("p")) {
+						p.getContent().add(run);
+						document = XmlUtils.marshaltoW3CDomDocument(p);						
+					} else if (contentChild.equals("r")) {
+						document = XmlUtils.marshaltoW3CDomDocument(r);						
+					} else {
+						log.error("how to inject image for unexpected sdt's content: " + contentChild);					
+					}
 				} else {
 					log.error("how to inject image for unexpected sdt's parent: " + sdtParent);
 				}
