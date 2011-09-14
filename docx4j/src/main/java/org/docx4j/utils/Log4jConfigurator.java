@@ -20,7 +20,11 @@ public class Log4jConfigurator {
 	        Logger log = Logger.getLogger(Log4jConfigurator.class);
 	        log.info("Since your log4j configuration (if any) was not found, docx4j has configured log4j automatically.");
 	        
-	        org.docx4j.convert.out.pdf.viaXSLFO.Conversion.log.setLevel(Level.DEBUG);
+	        try {
+	        	org.docx4j.convert.out.pdf.viaXSLFO.Conversion.log.setLevel(Level.DEBUG);
+	        } catch (NoClassDefFoundError n) {
+	        	// If FOP jar is not available
+	        }
         }
     }
 
