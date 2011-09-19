@@ -139,9 +139,14 @@ PRINCIPLES:
 	<xsd:import id="m" namespace="http://schemas.openxmlformats.org/officeDocument/2006/math" 
 		schemaLocation="../shared/shared-math.xsd" />
 	
+	<!--  2011 09 20 include this to compile wml.xsd directly with jaxb-ri-20110601 -->
+	<xsd:import id="dml" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" 
+		schemaLocation="../dml/dml__ROOT.xsd" />
 	
 	<xsd:import id="wp" namespace="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" 
 		schemaLocation="../dml/dml-wordprocessingDrawing.xsd" />
+
+		 
 	
 	<!-- Used in FontRel -->
 	<xsd:import id="rel"
@@ -2529,7 +2534,7 @@ PRINCIPLES:
 			</xsd:enumeration>
 		</xsd:restriction>
 	</xsd:simpleType>
-	
+
 	<xsd:simpleType name="JcEnumeration"> <!-- was "ST_Jc" -->
 		<xsd:annotation>
 			<xsd:documentation>Horizontal Alignment Type</xsd:documentation>
@@ -2553,6 +2558,37 @@ PRINCIPLES:
 			<xsd:enumeration value="both">
 				<xsd:annotation>
 					<xsd:documentation>Justified</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="mediumKashida">
+				<xsd:annotation>
+					<xsd:documentation>Medium Kashida Length</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="distribute">
+				<xsd:annotation>
+					<xsd:documentation>Distribute All Characters Equally
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="numTab">
+				<xsd:annotation>
+					<xsd:documentation>Align to List Tab</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="highKashida">
+				<xsd:annotation>
+					<xsd:documentation>Widest Kashida Length</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lowKashida">
+				<xsd:annotation>
+					<xsd:documentation>Low Kashida Length</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="thaiDistribute">
+				<xsd:annotation>
+					<xsd:documentation>Thai Language Justification</xsd:documentation>
 				</xsd:annotation>
 			</xsd:enumeration>
 		</xsd:restriction>

@@ -18,7 +18,6 @@
 
  */
 
-
 package org.docx4j.wml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -38,6 +37,12 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="center"/>
  *     &lt;enumeration value="right"/>
  *     &lt;enumeration value="both"/>
+ *     &lt;enumeration value="mediumKashida"/>
+ *     &lt;enumeration value="distribute"/>
+ *     &lt;enumeration value="numTab"/>
+ *     &lt;enumeration value="highKashida"/>
+ *     &lt;enumeration value="lowKashida"/>
+ *     &lt;enumeration value="thaiDistribute"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -74,7 +79,50 @@ public enum JcEnumeration {
      * 
      */
     @XmlEnumValue("both")
-    BOTH("both");
+    BOTH("both"),
+
+    /**
+     * Medium Kashida Length
+     * 
+     */
+    @XmlEnumValue("mediumKashida")
+    MEDIUM_KASHIDA("mediumKashida"),
+
+    /**
+     * Distribute All Characters Equally
+     * 					
+     * 
+     */
+    @XmlEnumValue("distribute")
+    DISTRIBUTE("distribute"),
+
+    /**
+     * Align to List Tab
+     * 
+     */
+    @XmlEnumValue("numTab")
+    NUM_TAB("numTab"),
+
+    /**
+     * Widest Kashida Length
+     * 
+     */
+    @XmlEnumValue("highKashida")
+    HIGH_KASHIDA("highKashida"),
+
+    /**
+     * Low Kashida Length
+     * 
+     */
+    @XmlEnumValue("lowKashida")
+    LOW_KASHIDA("lowKashida"),
+
+    /**
+     * Thai Language Justification
+     * 
+     */
+    @XmlEnumValue("thaiDistribute")
+    THAI_DISTRIBUTE("thaiDistribute");
     private final String value;
 
     JcEnumeration(String v) {
