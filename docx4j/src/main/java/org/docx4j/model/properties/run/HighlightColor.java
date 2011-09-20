@@ -19,13 +19,10 @@
  */
 package org.docx4j.model.properties.run;
 
-import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
-import org.docx4j.wml.CTShd;
 import org.docx4j.wml.Highlight;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Element;
-import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
 public class HighlightColor extends AbstractRunProperty {
@@ -33,6 +30,15 @@ public class HighlightColor extends AbstractRunProperty {
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 
 	
+	/*
+	 * TODO: this class assumes that the
+	 * colors specified in org.docx4j.wml.Highlight
+	 * are valid CSS and XSL colors, and
+	 * vice versa.
+	 * 
+	 * Someone needs to add handling/mappings for when
+	 * this is not the case.
+	 */
 	
 	public HighlightColor(Highlight shading) {
 		this.setObject(shading);
@@ -40,18 +46,8 @@ public class HighlightColor extends AbstractRunProperty {
 	
 	public HighlightColor(CSSValue value) {	
 		
-		CTShd shd = Context.getWmlObjectFactory().createCTShd();
-
-		// PrimitiveType 25 -> RGBCOLOR
-		short ignored = 1;
-
-		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;
-		float fRed = cssPrimitiveValue.getRGBColorValue().getRed().getFloatValue(ignored); 
-		float fGreen = cssPrimitiveValue.getRGBColorValue().getGreen().getFloatValue(ignored); 
-		float fBlue = cssPrimitiveValue.getRGBColorValue().getBlue().getFloatValue(ignored); 
-		
-		shd.setFill(UnitsOfMeasurement.rgbTripleToHex(fRed, fGreen, fBlue)  );
-
+		Highlight shd = Context.getWmlObjectFactory().createHighlight();		
+		shd.setVal(value.getCssText());
 		this.setObject( shd  );
 	}
 
@@ -60,29 +56,12 @@ public class HighlightColor extends AbstractRunProperty {
 		
 		Highlight shd = ((Highlight)this.getObject());
 		
-		// TODO
-		// STShd styleVal = shd.getVal();  
-
-//		if (shd.getColor()!=null &&
-//				!shd.getColor().equals("auto")) {
-//			log.warn("TODO support w:shd/@w:color=" + shd.getColor() );
-//		}
-		
-		// We just support fill color right now
 		if (shd.getVal()!=null &&
-		!shd.getVal().equals("auto")) {
+		!shd.getVal().equals("none")) {
 			return composeCss(CSS_NAME, shd.getVal() );
 		} else {
 			return CSS_NULL;
 		}
-		
-//		if (shd.getFill()!=null &&
-//				!shd.getFill().equals("auto")) {
-//			return composeCss(CSS_NAME, "#" + shd.getFill() );
-//		} else {
-//			return CSS_NULL;
-//		}
-		
 	}
 
 
@@ -91,24 +70,11 @@ public class HighlightColor extends AbstractRunProperty {
 
 		Highlight shd = ((Highlight)this.getObject());
 		
-		// TODO
-		// STShd styleVal = shd.getVal();  
-
-//		if (shd.getColor()!=null &&
-//				!shd.getColor().equals("auto")) {
-//			log.warn("TODO support w:shd/@w:color=" + shd.getColor() );
-//		}
-		
-		// We just support fill color right now
 		if (shd.getVal()!=null &&
-				!shd.getVal().equals("auto")) {
+				!shd.getVal().equals("none")) {
 			foElement.setAttribute(FO_NAME, shd.getVal() );
 		} 
 		
-//		if (shd.getFill()!=null &&
-//				!shd.getFill().equals("auto")) {
-//			foElement.setAttribute(FO_NAME, "#" + shd.getFill() );
-//		} 
 	}
 
 	@Override
