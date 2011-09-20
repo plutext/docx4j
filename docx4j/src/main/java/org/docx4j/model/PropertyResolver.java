@@ -1001,9 +1001,9 @@ public class PropertyResolver {
 
 		//HpsMeasure szCs;
 		//Highlight highlight;
-		//if (rPrToApply.getHighlight()!=null ) {
-		//	return true;			
-		//}
+		if (rPrToApply.getHighlight()!=null ) {
+			return true;			
+		}
 		//U u;
 		if (rPrToApply.getU()!=null ) {
 			return true;			

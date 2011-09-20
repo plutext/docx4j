@@ -42,6 +42,7 @@ import org.docx4j.model.properties.run.Bold;
 import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.properties.run.FontColor;
 import org.docx4j.model.properties.run.FontSize;
+import org.docx4j.model.properties.run.HighlightColor;
 import org.docx4j.model.properties.run.Italics;
 import org.docx4j.model.properties.run.RBorder;
 import org.docx4j.model.properties.run.RShading;
@@ -215,8 +216,8 @@ public class PropertyFactory {
 //			dest.setEmboss(rPr.getEmboss());
 //		if (rPr.getFitText() != null)
 //			dest.setFitText(rPr.getFitText());
-//		if (rPr.getHighlight() != null)
-//			properties.add(new HighlightColor(rPr.getHighlight()));
+		if (rPr.getHighlight() != null)
+			properties.add(new HighlightColor(rPr.getHighlight()));
 		if (rPr.getI() != null)
 			properties.add(new Italics(rPr.getI()) );
 //		if (rPr.getICs() != null)
