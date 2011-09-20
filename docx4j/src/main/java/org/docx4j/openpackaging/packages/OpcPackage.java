@@ -21,9 +21,12 @@
 
 package org.docx4j.openpackaging.packages;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
@@ -165,37 +168,76 @@ public class OpcPackage extends Base {
 	 * @param docxFile
 	 *            The docx file 
 	 */	
-	public static OpcPackage load(java.io.File docxFile) throws Docx4JException {
+	public static OpcPackage load(final java.io.File docxFile) throws Docx4JException {
 		
-		if (docxFile.getName().endsWith(".xml")) {
-			
-			org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage;
-			try {
-				Unmarshaller u = Context.jcXmlPackage.createUnmarshaller();
-				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-				org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-						new javax.xml.transform.stream.StreamSource(new FileInputStream(docxFile.getAbsolutePath())))).getValue(); 
-
-				xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl);
-			} catch (Exception e) {
-				log.error(e);
-				throw new Docx4JException("Couldn't load xml from " + docxFile.getAbsolutePath(), e);
-			} 
-			return xmlPackage.get(); 
-		}
-		
-//		LoadFromZipFile loader = new LoadFromZipFile();
-		LoadFromZipNG loader = new LoadFromZipNG();
-//		return (WordprocessingMLPackage)loader.get(docxFile);		
-		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream(docxFile);
-		} catch (FileNotFoundException e) {
-			log.error(e);
+			if (docxFile.getName().endsWith(".xml")) {
+				return OpcPackage.load(new FileInputStream(docxFile),false);
+			}
+			return OpcPackage.load(new FileInputStream(docxFile),true);
+		} catch (final FileNotFoundException e) {
+			OpcPackage.log.error(e);
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
 		}
-		return loader.get(fis);
+	}
+
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * or PresentationMLPackage
+	 * from an inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * It detects the convenient format inspecting two first bytes of stream (magic bytes). 
+	 * For office 2007 'x' formats, these two bytes are 'PK' (same as zip file)  
+     *
+	 * @param inputStream
+	 *            The docx file 
+	 */	
+	public static OpcPackage load(final InputStream inputStream) throws Docx4JException{
+		//try to detect the type of file using a bufferedinputstream
+		final BufferedInputStream bis = new BufferedInputStream(inputStream);
+		bis.mark(0);
+		final byte[] firstTwobytes=new byte[2];
+		int read=0;
+		try {
+			read = bis.read(firstTwobytes);
+			bis.reset();
+		} catch (final IOException e) {
+			throw new Docx4JException("Error reading from the stream", e);
+		}
+		if (read!=2){
+			throw new Docx4JException("Error reading from the stream (no bytes available)");
+		}
+		final boolean docxType = (firstTwobytes[0]=='P' && firstTwobytes[1]=='K');
+		return OpcPackage.load(bis,docxType);
+	}
+	
+	/**
+	 * convenience method to load a word2007 document 
+	 * from an existing inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * 
+	 * @param is
+	 * @param docxFormat
+	 * @return
+	 * @throws Docx4JException
+	 */
+	public static OpcPackage load(final InputStream is, final boolean docxFormat) throws Docx4JException {
+		if (docxFormat){
+			final LoadFromZipNG loader = new LoadFromZipNG();
+			return loader.get(is);
+		}
+		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage;
+		try {
+			final Unmarshaller u = Context.jcXmlPackage.createUnmarshaller();
+			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+			final org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+					new javax.xml.transform.stream.StreamSource(is))).getValue(); 
+
+			xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl);
+		} catch (final Exception e) {
+			OpcPackage.log.error(e);
+			throw new Docx4JException("Couldn't load xml from stream ",e);
+		} 
+		return xmlPackage.get(); 
 	}
 
 	/**

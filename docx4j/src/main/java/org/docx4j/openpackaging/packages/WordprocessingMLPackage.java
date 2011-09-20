@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.packages;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -171,6 +172,18 @@ public class WordprocessingMLPackage extends OpcPackage {
 		return (WordprocessingMLPackage)OpcPackage.load(docxFile);
 	}
 
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * from an existing stream(.docx zip or .xml Flat OPC).
+     *
+	 * @param docxFile
+	 *            The docx file 
+	 */	
+	public static WordprocessingMLPackage load(InputStream is) throws Docx4JException {
+		
+		return (WordprocessingMLPackage)OpcPackage.load(is);
+	}
+	
 	/**
 	 * Convenience method to save a WordprocessingMLPackage
 	 * to a File.
