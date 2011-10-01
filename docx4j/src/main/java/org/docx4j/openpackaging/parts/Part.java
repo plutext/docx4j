@@ -22,6 +22,8 @@
 package org.docx4j.openpackaging.parts;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.docx4j.openpackaging.Base;
 import org.docx4j.openpackaging.contenttype.ContentType;
@@ -58,12 +60,21 @@ public abstract class Part extends Base {
 	
 	protected OpcPackage pack;
 	
-	private Relationship sourceRelationship;
+	private List<Relationship> sourceRelationships = new ArrayList<Relationship>();
+
+    /**
+     * @since 2.7.1
+     */
+	public List<Relationship> getSourceRelationships() {
+		return sourceRelationships;
+	}
+	
 	/**
 	 * @return the sourceRelationship
 	 */
+	@Deprecated
 	public Relationship getSourceRelationship() {
-		return sourceRelationship;
+		return sourceRelationships.get(0);
 	}
 	/**
 	 * NB a media part could be referenced from multiple
@@ -71,8 +82,10 @@ public abstract class Part extends Base {
 	 * 
 	 * @param sourceRelationship the sourceRelationship to set
 	 */
+	@Deprecated
 	public void setSourceRelationship(Relationship sourceRelationship) {
-		this.sourceRelationship = sourceRelationship;
+		sourceRelationships.clear();
+		sourceRelationships.add(sourceRelationship);
 	}
 	
 	/** The Namespace of this Part.  
@@ -86,7 +99,8 @@ public abstract class Part extends Base {
 			// there is little point in also have relationshipType,
 			// except for a part which isn't yet connected to
 			// a package via a relationship.
-			return this.sourceRelationship.getType();
+			return this.sourceRelationships.get(0).getType();
+			// It ought to be the same in each source rel
 		} else {
 			return relationshipType;
 		}
@@ -216,8 +230,10 @@ public abstract class Part extends Base {
 				&& result.startsWith("/")) {
 			result = result.substring(1);
 		}
-		log.debug("Result " + result); 		
-		sourceRelationship.setTarget(result);
+		log.debug("Result " + result);
+		for (Relationship rel : sourceRelationships) {
+			rel.setTarget(result);
+		}
 
 		// Set the new part name
 		this.partName = newName;
