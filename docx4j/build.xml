@@ -24,9 +24,10 @@
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
     	<!-- Xalan 2.7.1 and dependencies: see further below -->
-        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.8.3/wmf2svg-0.8.3.jar"/>
-        <pathelement location="${m2Repository}/org/apache/poi/hwpf/3.4.0/hwpf-3.4.0.jar"/>
-        <pathelement location="${m2Repository}/com/sun/xml/jaxb-NamespacePrefixMapper-interfaces/2.0.0/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>    
+        <pathelement location="${m2Repository}/net/arnx/wmf2svg/0.9.0/wmf2svg-0.9.0.jar"/>
+        <pathelement location="${m2Repository}/org/apache/poi/poi-scratchpad/3.8-beta4/poi-scratchpad-3.8-beta4.jar"/>
+        <pathelement location="${m2Repository}/org/apache/poi/poi/3.8-beta4/poi-3.8-beta4.jar"/>
+        <pathelement location="${m2Repository}/com/googlecode/jaxb-namespaceprefixmapper-interfaces/JAXBNamespacePrefixMapper/2.2.4/JAXBNamespacePrefixMapper-2.2.4.jar"/>    
 
         <pathelement location="${m2Repository}/org/antlr/antlr-runtime/3.3/antlr-runtime-3.3.jar"/>    
         <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>    
@@ -170,7 +171,7 @@
 			    <path refid="dist.classpath"/>
 			</path>
 		</copy>		
-    	 <delete file="${dist}/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar" />			
+    	 <delete file="${dist}/JAXBNamespacePrefixMapper-2.2.4.jar" />			
     </target>	
 
 

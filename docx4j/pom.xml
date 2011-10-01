@@ -441,6 +441,41 @@
 </dependency>
 -->
 		
+<dependency>
+    <groupId>net.arnx</groupId>
+    <artifactId>wmf2svg</artifactId>
+    <version>0.9.0</version>
+</dependency>
+
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-scratchpad</artifactId>
+			<version>3.8-beta4</version>
+		</dependency>
+
+		<!-- Ensure both the Java 6 and RI interfaces are present,
+		     even if the user has just one.
+		     NB: this (or an added source location containing them) is
+		     necessary (at least for Maven 2.2.1) since without this,
+		     Maven doesn't find the Java 6 copy in rt.jar -->  
+		<dependency>
+		    <groupId>com.googlecode.jaxb-namespaceprefixmapper-interfaces</groupId>
+		    <artifactId>JAXBNamespacePrefixMapper</artifactId>
+		    <version>2.2.4</version>
+   			<!-- http://dev.plutext.org/forums/docx-java-f6/dependency-management-improvements-t739.html -->    	
+   			<scope>provided</scope>			
+   		</dependency> 
+		
+		<dependency>
+    		<groupId>org.antlr</groupId>
+    		<artifactId>antlr-runtime</artifactId>
+    		<version>3.3</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.antlr</groupId>
+		    <artifactId>stringtemplate</artifactId>
+		    <version>3.2.1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -458,32 +493,6 @@
 		</dependency>
 		-->
  
-  		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 
-			
-			(stuff not available in public repositories) 
-			
-			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=lib/xalan-2.7.0-patched-6396599-stripped.jar -DgroupId=xalan -DartifactId=xalan-patched -Dversion=2.7.0 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
-			
-			 mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=../fop/tmp/fop-patched.jar -DgroupId=docx4j -DartifactId=fop-patched -Dversion=0.95.756436 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
-			 
-			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
-			
-			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=JAXB-NamespacePrefixMapperInterfaces.jar  -DgroupId=com.sun.xml -DartifactId=jaxb-NamespacePrefixMapper-interfaces -Dversion=2.0.0 -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
-						 
-		-->
-		
-
-		<dependency>
-			<groupId>net.arnx</groupId>
-			<artifactId>wmf2svg</artifactId>
-			<version>0.8.3</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-scratchpad</artifactId>
-			<version>3.8-beta4</version>
-		</dependency>
 		
 <!--	Uncomment for the PDF conversion via HTML or iText, which
 		may be found in docx4j-extras.
@@ -530,22 +539,7 @@
 		</dependency> 
  -->
 
-<!-- As from 2010 09 17 source is included (see src/main/java/org/jvnet..)
-	 so this is no longer required.
-	   
-		<dependency>
-			<groupId>org.jvnet.jaxb2_commons.ppp</groupId>
-			<artifactId>parent-pointer-plugin</artifactId>
-			<version>1.0</version>
-		</dependency>
- -->
-   
-		<!-- end of svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 -->
 
-		<!-- https://webdavclient4j.svn.sourceforge.net/svnroot/webdavclient4j/trunk/m2
-
-			(stuff not available in public repositories)                                 
-  -->
  
 		<!-- if you want to use the vfs stuff in docx4j-extras, you'll need commons-vfs
 		     (one of the two versions below), and jdom.
@@ -576,29 +570,14 @@
 			</dependency>
 		-->
 		
-		<!-- Ensure both the Java 6 and RI interfaces are present,
-		     even if the user has just one.
-		     NB: this (or an added source location containing them) is
-		     necessary (at least for Maven 2.2.1) since without this,
-		     Maven doesn't find the Java 6 copy in rt.jar -->  
- 		<dependency>
-   			<groupId>com.sun.xml</groupId>
-   			<artifactId>jaxb-NamespacePrefixMapper-interfaces</artifactId>
-   			<version>2.0.0</version>
-   			<!-- http://dev.plutext.org/forums/docx-java-f6/dependency-management-improvements-t739.html -->    	
-   			<scope>provided</scope>			
-   		</dependency> 
 		
-		<dependency>
-    		<groupId>org.antlr</groupId>
-    		<artifactId>antlr-runtime</artifactId>
-    		<version>3.3</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.antlr</groupId>
-		    <artifactId>stringtemplate</artifactId>
-		    <version>3.2.1</version>
-		</dependency>
+  		<!-- svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2 
+			
+			(stuff not available in public repositories) 
+						 
+			mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+			
+		-->
 		
 	</dependencies>
 	<distributionManagement>
