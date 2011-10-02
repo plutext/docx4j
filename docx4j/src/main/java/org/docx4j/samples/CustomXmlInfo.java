@@ -82,8 +82,8 @@ public class CustomXmlInfo extends AbstractSample {
 	public static void  printInfo(Part p, StringBuilder sb, String indent) throws Docx4JException {
 		
 		String relationshipType = "";
-		if (p.getSourceRelationship()!=null ) {
-			relationshipType = p.getSourceRelationship().getType();
+		if (p.getSourceRelationships().size()>0 ) {
+			relationshipType = p.getSourceRelationships().get(0).getType();
 		}
 		
 //		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " + relationshipType );

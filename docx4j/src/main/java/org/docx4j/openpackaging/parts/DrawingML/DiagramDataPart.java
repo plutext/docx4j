@@ -375,7 +375,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 			}
 		}
 		
-        return imagePart.getSourceRelationship().getId();
+        return imagePart.getSourceRelationships().get(0).getId();
 	}
 	
 	public static void debug(String message) {

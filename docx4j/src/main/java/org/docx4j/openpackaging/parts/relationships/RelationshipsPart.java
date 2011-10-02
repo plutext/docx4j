@@ -376,7 +376,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		log.debug("Loading part " + partName.getName() );
 		
 		part.setOwningRelationshipPart(this);
-		part.setSourceRelationship(sourceRelationship);  
+		part.getSourceRelationships().add(sourceRelationship);  
 
 		// All (non-relationship) parts are stored in a collection
 		// in the package, even though conceptually this loadPart

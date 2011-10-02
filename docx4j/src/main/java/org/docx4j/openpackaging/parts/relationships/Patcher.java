@@ -190,7 +190,7 @@ public class Patcher {
 				// which will cause problems)
 				
 				newPart.setOwningRelationshipPart(parentPart.getRelationshipsPart());
-				newPart.setSourceRelationship(
+				newPart.getSourceRelationships().add(
 						parentPart.getRelationshipsPart().getRel(new PartName(a.getPart().getName())));
 				otherPackage.getParts().put(newPart);
 				newPart.setPackage( otherPackage );

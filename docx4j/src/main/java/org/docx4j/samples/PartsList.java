@@ -88,8 +88,8 @@ public class PartsList extends AbstractSample {
 	public static void  printInfo(Part p, StringBuilder sb, String indent) {
 		
 		String relationshipType = "";
-		if (p.getSourceRelationship()!=null ) {
-			relationshipType = p.getSourceRelationship().getType();
+		if (p.getSourceRelationships().size()>0 ) {
+			relationshipType = p.getSourceRelationships().get(0).getType();
 		}
 		
 		sb.append("\n" + indent + "Part " + p.getPartName() + " [" + p.getClass().getName() + "] " + relationshipType );
