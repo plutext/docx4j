@@ -88,6 +88,61 @@ License version 2.0:
   RELEASE NOTES
 ==============================================================================
 
+Version 2.7.1 
+=============
+
+r1601-
+
+Release date
+------------
+
+TBD October 2011
+
+Contributors to this release
+----------------------------
+
+Albert Aymerich
+alberto
+Antoine
+Jason Harrop
+
+Notable Changes in Version 2.7.1
+---------------------------------
+
+Preparation for including docx4j in Maven Central
+
+[1605-1610] mc:AlternateContent preprocessor, allowing graceful degradation of Word 2010 specific content
+
+[1604] docx4j.properties, supports configuration of default page size, margins, orientation; also ability to set some of the doc props metadata (Application & AppVersion; dc.creator & dc.lastModifiedBy).
+
+[1631, 1637] HtmlExporterNG2,(Pdf)Conversion, SvgExporter: storing any images is delegated to a
+ConversionImageHandler that may be passed as a conversion parameter. Default implementation: DefaultConversionImageHandler
+
+VFS stuff moved to docx4j-extras
+
+
+OpenDoPE changes
+----------------
+
+[1639] Change static OpenDoPEHandler design to instance-based design, with objective of making it thread-safe.
+
+[1645] When binding, create hyperlinks out of text containing http://
+
+[1653] Handle unwrapping correctly in ShallowTraversor, so JAXBElements stay wrapped, and we don't risk a marshalling exception for any which don't have an @XmlRootElement annotation.
+
+[1658] Word can only resolve an XPath binding which results in an element (as opposed to a boolean, integer, string or node-set). OpenDoPE processing can handle these other results types (some of them anyway).
+Up until now, that processing was done in OpenDoPEHandler. Now it is done in BindingHandler and bind.xslt, for consistency with how normal Word XPath bindings are handled by docx4j.
+
+[1662] Bind picture correctly where parent is another content control.
+
+Other Changes (non-exhaustive)
+------------------------------
+
+[1613] Header and footer parts use XPath binder
+
+
+
+
 Version 2.7.0 
 =============
 
