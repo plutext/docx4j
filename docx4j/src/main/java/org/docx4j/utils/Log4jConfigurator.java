@@ -6,12 +6,18 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.docx4j.Docx4jProperties;
 
 //From http://wiki.apache.org/logging-log4j/UsefulCode
 public class Log4jConfigurator {
 
     public synchronized static void configure() {
         if (!isConfigured()) {
+        	
+			boolean disabled = Boolean.parseBoolean(
+					Docx4jProperties.getProperties().getProperty("docx4j.Log4j.Configurator.disabled", "false"));   			
+			if (disabled) return;
+        	
             BasicConfigurator.configure();
         
 	        // So now we should have a ConsoleAppender
