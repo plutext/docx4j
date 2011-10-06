@@ -73,7 +73,7 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 			inputfilepath = System.getProperty("user.dir")
-					+ "/sample-docs/sample-docx.xml";
+					+ "/sample-docs/word/sample-docx.xml";
 		}
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
