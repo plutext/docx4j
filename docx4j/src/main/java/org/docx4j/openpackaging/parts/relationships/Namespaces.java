@@ -234,13 +234,13 @@ public class Namespaces {
 
 	///xl/drawings/drawing1.xml
 	public final static String SPREADSHEETML_DRAWING =
-	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing";
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing";
 	
 	///xl/charts/chart1.xml
 	// Should have just called this CHART or RELS_CHART,
 	// since it is also used in PresentationML
 	public final static String SPREADSHEETML_CHART =
-	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart";
 
 	// /xl/comments1.xml 
 	public final static String SPREADSHEETML_COMMENTS =
@@ -248,15 +248,27 @@ public class Namespaces {
 		
 	///xl/pivotTables/pivotTable1.xml
 	public final static String SPREADSHEETML_PIVOT_TABLE =
-	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable";
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotTable";
+
+	// /xl/queryTables/queryTable1.xml
+	public final static String SPREADSHEETML_QUERY_TABLE =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/queryTable";
+	
+	// /xl/tables/table1.xml
+	public final static String SPREADSHEETML_TABLE =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/table";
+	
+	// /xl/connections.xml
+	public final static String SPREADSHEETML_CONNECTIONS =
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/connections";	
 	
 	///xl/pivotCache/pivotCacheDefinition1.xml
 	public final static String SPREADSHEETML_PIVOT_CACHE_DEFINITION =
-	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition";
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheDefinition";
 	
 	///xl/pivotCache/pivotCacheRecords1.xml
 	public final static String SPREADSHEETML_PIVOT_CACHE_RECORDS =
-	"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords";
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/pivotCacheRecords";
             
 //	public final static String NS_OFFICE = "urn:schemas-microsoft-com:office:office";
 

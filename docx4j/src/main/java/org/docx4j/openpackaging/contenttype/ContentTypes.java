@@ -271,10 +271,21 @@ public class ContentTypes {
 	public final static String SPREADSHEETML_PIVOT_TABLE =
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.pivotTable+xml";
 
+	// /xl/queryTables/queryTable1.xml
+	public final static String SPREADSHEETML_QUERY_TABLE =
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.queryTable+xml";
+	
+	// /xl/tables/table1.xml
+	public final static String SPREADSHEETML_TABLE =
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml";
+	
 	// /xl/comments1.xml
 	public final static String SPREADSHEETML_COMMENTS =
 		"application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml";
 	
+	// /xl/connections.xml
+	public final static String SPREADSHEETML_CONNECTIONS =
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml";	
 	
 	// /xl/charts/chart1.xml
 	public final static String DRAWINGML_CHART =

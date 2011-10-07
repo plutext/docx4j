@@ -44,6 +44,12 @@ public abstract class JaxbSmlPart<E>  extends JaxbXmlPart<E> {
 			return new PivotCacheRecords(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_COMMENTS)) {
 			return new CommentsPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_CONNECTIONS)) {
+			return new ConnectionsPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_TABLE)) {
+			return new TablePart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.SPREADSHEETML_QUERY_TABLE)) {
+			return new QueryTablePart(new PartName(partName));
 		} else {
 			throw new PartUnrecognisedException("No subclass found for "
 					+ partName + " (content type '" + contentType + "')");
