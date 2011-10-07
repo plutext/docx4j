@@ -17,7 +17,6 @@
     limitations under the License.
 
  */
-
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.awt.Dimension;
@@ -66,11 +65,9 @@ import org.docx4j.wml.SectPr;
 import org.docx4j.wml.SectPr.PgMar;
 import org.docx4j.wml.SectPr.PgSz;
 
-
 public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
 	protected static Logger log = Logger.getLogger(BinaryPartAbstractImage.class);
-	
 	final static String IMAGE_DIR_PREFIX = "/word/media/";
 	final static String IMAGE_NAME_PREFIX = "image";
 	
@@ -89,22 +86,15 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public BinaryPartAbstractImage(ExternalTarget externalTarget) {
 		super(externalTarget);
 	}
-	
-	
 	ImageInfo imageInfo;
 
 	public ImageInfo getImageInfo() {
 		
-		if (imageInfo==null) {
-			
+        if (imageInfo == null) {
 			// TODO - create it
-			
 			// Save byte buffer as a tmp file
-			
 			// Generate ImageInfo
-			
 			// Delete tmp file
-			
 		}
 		
 		return imageInfo;
@@ -113,14 +103,13 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public void setImageInfo(ImageInfo imageInfo) {
 		this.imageInfo = imageInfo;
 	}
-	
 	// TODO, instead of Part.getOwningRelationshipPart(),
 	// it would be better to have getOwningRelationship(),
 	// and if required, to get OwningRelationshipPart from that
 	// This is a temp workaround	
 	Relationship rel;
-		
 	static int density = 150;	
+
 	/**
 	 * Set the resolution at which a PDF or EPS is converted
 	 * to PNG.  For best quality, you should set this to match
@@ -138,7 +127,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		imageManager = new ImageManager(new DefaultImageContext());
 		
 	}
-
 	static ImageManager imageManager;
 
 	/**
@@ -159,6 +147,20 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 	}
 	
+    /*
+     * Possibility to put directly an image filePath instead of giving an image byte array
+     * @param wordMLPackage
+     * @param filePath
+     * 
+     */
+    public static BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
+            String filePath) throws Exception {
+
+        return createImagePartFromFilePath(wordMLPackage,
+                wordMLPackage.getMainDocumentPart(), filePath);
+
+    }
+
 	/**
 	 * This method assumes your package is a docx (not a pptx or xlsx).
 	 * 
@@ -168,13 +170,13 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @return
 	 */
 	@Deprecated
-	public static String createImageName(Base sourcePart, String proposedRelId, String ext ) {
+    public static String createImageName(Base sourcePart, String proposedRelId, String ext) {
 		
 		return PartName.generateUniqueName(sourcePart, proposedRelId, 
 				IMAGE_DIR_PREFIX, IMAGE_NAME_PREFIX, ext);
 	}
 
-	public static String createImageName(OpcPackage opcPackage, Base sourcePart, String proposedRelId, String ext ) {
+    public static String createImageName(OpcPackage opcPackage, Base sourcePart, String proposedRelId, String ext) {
 		
 		if (opcPackage instanceof WordprocessingMLPackage) {		
 			return PartName.generateUniqueName(sourcePart, proposedRelId, 
@@ -191,8 +193,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 					IMAGE_DIR_PREFIX, IMAGE_NAME_PREFIX, ext);			
 		}
 	}
-	
-	
 	
 	/**
 	 * Create an image part from the provided byte array, attach it to the source part
@@ -221,7 +221,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		FileOutputStream fos = new FileOutputStream(tmpImageFile);
 		fos.write(bytes);
 		fos.close();
-		log.debug("created tmp file: " +  tmpImageFile.getAbsolutePath() );
+        log.debug("created tmp file: " + tmpImageFile.getAbsolutePath());
 				
 		ImageInfo info = ensureFormatIsSupported(tmpImageFile.getAbsolutePath(), tmpImageFile, bytes);
 		
@@ -231,28 +231,28 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		ContentTypeManager ctm = opcPackage.getContentTypeManager();
 		
 		// Ensure the relationships part exists
-		if (sourcePart.getRelationshipsPart()==null) 
+        if (sourcePart.getRelationshipsPart() == null) {
 			RelationshipsPart.createRelationshipsPartForPart(sourcePart);
+        }
 
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 				
-		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/")+1);
+        String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
 		
 //		System.out.println(ext);
 		
 		BinaryPartAbstractImage imagePart = 
-			(BinaryPartAbstractImage)ctm.newPartForContentType(
+                (BinaryPartAbstractImage) ctm.newPartForContentType(
 				info.getMimeType(), 
-				createImageName(opcPackage, sourcePart, proposedRelId, ext), null
-				 );
+                createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
 				
-		log.debug("created part " + imagePart.getClass().getName() +
-				" with name " + imagePart.getPartName().toString() );		
+        log.debug("created part " + imagePart.getClass().getName()
+                + " with name " + imagePart.getPartName().toString());
 		
 		FileInputStream fis = new FileInputStream(tmpImageFile); 		
-		imagePart.setBinaryData( fis );
+        imagePart.setBinaryData(fis);
 				
-		imagePart.rel =  sourcePart.addTargetPart(imagePart, proposedRelId);
+        imagePart.rel = sourcePart.addTargetPart(imagePart, proposedRelId);
 		
 		imagePart.setImageInfo(info);
 
@@ -263,8 +263,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		fos = null;
 		fis = null;
 		System.gc();		
-		if (tmpImageFile.delete() ) {
-			log.debug(".. deleted " +  tmpImageFile.getAbsolutePath() );			
+        if (tmpImageFile.delete()) {
+            log.debug(".. deleted " + tmpImageFile.getAbsolutePath());
 		} else {
 			log.warn("Couldn't delete tmp file " + tmpImageFile.getAbsolutePath());
 			tmpImageFile.deleteOnExit();
@@ -276,7 +276,66 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 	}
 
+    /*
+     * Default, we suppose that image is load in a Byte Array (using function createImagePart) so isLoad is true.
+     * If we use createImagePartFromFilePath, then isLoad is false
+     */
+    static boolean isLoad = true;
+
 	/**
+     * Create an image part from the provided filePath image, attach it to the source part
+     * (eg the main document part, a header part etc), and return it.
+     * 
+     * Works for both docx and pptx.
+     * 
+     * @param opcPackage
+     * @param sourcePart
+     * @param filePath
+     * @return
+     * @throws Exception
+     */
+    public static BinaryPartAbstractImage createImagePartFromFilePath(
+            OpcPackage opcPackage,
+            Part sourcePart, String filePath) throws Exception {
+
+        final File locFile = new File(filePath);
+        final byte[] locByte = new byte[1];
+        //We are in the case that image is not load (no byte Array) so isLoad is false
+        isLoad = false;
+        //Here, filePath doesn't represent the tmpFile but the path of the image to load
+        ImageInfo info = ensureFormatIsSupported(filePath, locFile, locByte);
+
+        ContentTypeManager ctm = opcPackage.getContentTypeManager();
+
+        // Ensure the relationships part exists
+        if (sourcePart.getRelationshipsPart() == null) {
+            RelationshipsPart.createRelationshipsPartForPart(sourcePart);
+        }
+
+        String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
+
+        String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
+
+        BinaryPartAbstractImage imagePart =
+                (BinaryPartAbstractImage) ctm.newPartForContentType(
+                info.getMimeType(),
+                createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
+
+        log.debug("created part " + imagePart.getClass().getName()
+                + " with name " + imagePart.getPartName().toString());
+
+        FileInputStream fis = new FileInputStream(locFile);
+        imagePart.setBinaryData(fis);
+
+        imagePart.rel = sourcePart.addTargetPart(imagePart, proposedRelId);
+
+        imagePart.setImageInfo(info);
+
+        return imagePart;
+
+    }
+
+    /**
 	 * @param bytes
 	 * @param imageFile
 	 * @return
@@ -305,26 +364,25 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				// There is no preloader for eg PDFs.
 				// (To use an image natively, we do need a preloader)
 				imagePreloaderFound = false;
-				log.warn(e.getMessage() );
+                log.warn(e.getMessage());
 			}
 			
-			if ( imagePreloaderFound &&
-					(info.getMimeType().equals(ContentTypes.IMAGE_TIFF)
+            if (imagePreloaderFound
+                    && (info.getMimeType().equals(ContentTypes.IMAGE_TIFF)
 					|| info.getMimeType().equals(ContentTypes.IMAGE_EMF2) // ImageInfo 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_WMF) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_PNG) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_JPEG) 
 					|| info.getMimeType().equals(ContentTypes.IMAGE_GIF) 
 //					 || info.getMimeType().equals(ContentTypes.IMAGE_EPS)
-					|| info.getMimeType().equals(ContentTypes.IMAGE_BMP) 
-					)) {
+                    || info.getMimeType().equals(ContentTypes.IMAGE_BMP))) {
 					// TODO: add other supported formats
 				
 				// If its a format Word supports natively, 
 				// do nothing here
 				log.debug(".. supported natively by Word");					
 				
-			} else if ( imageFile!=null && bytes!=null ) {
+            } else if (imageFile != null && bytes != null) {
 				
 				// otherwise (eg if its an EPS or PDF), try to convert it
 				// Although the Word UI suggests you can embed an EPS
@@ -336,16 +394,35 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 				log.debug(".. attempting to convert to PNG");		
 				
-				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);			
-				fos = new FileOutputStream(imageFile); 
-							
-				convertToPNG(bais, fos, density);
+                //If image haven't been load (using function createImagePartFromFilePath), we load it
+                if (isLoad == false) {
+
+                    // So first, we create tmpFile	
+                    File tmpImageFile = File.createTempFile("img", ".img");
+                    fos = new FileOutputStream(tmpImageFile);
+
+                    //Now we get the inputStream, which is represented by imageFile in this case
+                    FileInputStream bais = new FileInputStream(imageFile);
+
+                    //We convert
+                    convertToPNG(bais, fos, density);
+
+                    //We don't forget to change locFile because the new image file is the converted image file!!
+                    imageFile = tmpImageFile;
+                    
+                } //Else image has been load in an array (using function cretaImagePart)
+                else {
+					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);			
+					fos = new FileOutputStream(imageFile); 
+					convertToPNG(bais, fos, density);
+                }
+
 				fos.close();
 				fos = null;
 				
 				// We need to refresh image info 
 				imageManager.getCache().clearCache();
-				info = getImageInfo(imageFile.getAbsolutePath() );
+                info = getImageInfo(imageFile.getAbsolutePath());
 				
 				// Debug ...
 				displayImageInfo(info);
@@ -358,7 +435,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		return info;
 	}
 	
-
 	/**
 	 * Create a linked image part, and attach it as a rel of the docx main document part
 	 * @param wordMLPackage
@@ -386,18 +462,18 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public static BinaryPartAbstractImage createLinkedImagePart(OpcPackage opcPackage, 
 			Part sourcePart, String fileurl) throws Exception {
 		
-		ImageInfo info = ensureFormatIsSupported(fileurl, null,null);
+        ImageInfo info = ensureFormatIsSupported(fileurl, null, null);
 
 		ContentTypeManager ctm = opcPackage.getContentTypeManager();
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
 		// In order to ensure unique part name,
 		// idea is to use the relId, which ought to be unique
-		String ext = info.getMimeType().substring( info.getMimeType().indexOf("/")+1);
+        String ext = info.getMimeType().substring(info.getMimeType().indexOf("/") + 1);
 		
 		BinaryPartAbstractImage imagePart = 
-			(BinaryPartAbstractImage)ctm.newPartForContentType(
+                (BinaryPartAbstractImage) ctm.newPartForContentType(
 				info.getMimeType(), 
-				createImageName(opcPackage, sourcePart, proposedRelId, ext ), null );
+                createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
 				
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());
@@ -418,7 +494,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		return imagePart;
 	}	
 
-	
 	/**
 	 * Create a <wp:inline> element suitable for this image,
 	 * which can be _embedded_ in w:p/w:r/w:drawing.
@@ -438,8 +513,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2) throws Exception {
 		
-		return createImageInline( filenameHint,  altText, 
-				 id1,  id2, false);
+        return createImageInline(filenameHint, altText,
+                id1, id2, false);
 
 	}
 	
@@ -461,17 +536,16 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2, boolean link) throws Exception {
 				
-		WordprocessingMLPackage wmlPackage = ((WordprocessingMLPackage)this.getPackage());
+        WordprocessingMLPackage wmlPackage = ((WordprocessingMLPackage) this.getPackage());
 		
 		List<SectionWrapper> sections = wmlPackage.getDocumentModel().getSections();
-		PageDimensions page = sections.get(sections.size()-1).getPageDimensions();
+        PageDimensions page = sections.get(sections.size() - 1).getPageDimensions();
 		
 		CxCy cxcy = CxCy.scale(imageInfo, page);
  
-		return createImageInline( filenameHint,  altText, 
-				 id1,  id2,  cxcy.getCx(),  cxcy.getCy(), link );		
+        return createImageInline(filenameHint, altText,
+                id1, id2, cxcy.getCx(), cxcy.getCy(), link);
 	}
-	
 	
 	/**
 	 * Create a <wp:inline> element suitable for this image,
@@ -491,8 +565,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2, long cx) throws Exception {
 		
-		return createImageInline( filenameHint,  altText, 
-				 id1,  id2, cx, false);
+        return createImageInline(filenameHint, altText,
+                id1, id2, cx, false);
 
 	}
 	
@@ -558,10 +632,10 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public Inline createImageInline(String filenameHint, String altText, 
 			int id1, int id2, long cx, long cy, boolean link) throws Exception {
 		
-		if (filenameHint==null) {
+        if (filenameHint == null) {
 			filenameHint = "";
 		}
-		if (altText==null) {
+        if (altText == null) {
 			altText = "";
 		}
 		
@@ -575,37 +649,35 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         String ml =
 //        	"<w:p ><w:r>" +
 //        "<w:drawing>" +
-        "<wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"" + namespaces + ">" +
-        "<wp:extent cx=\"${cx}\" cy=\"${cy}\"/>" +
-        "<wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>" +  //l=\"19050\"
-        "<wp:docPr id=\"${id1}\" name=\"${filenameHint}\" descr=\"${altText}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">" +
-        "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">" +
-        "<pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"${id2}\" name=\"${filenameHint}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill>" +
-        "<a:blip " + type +"=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>" +
-        "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"${cx}\" cy=\"${cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic>" +
-        "</wp:inline>"; // +
+                "<wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"" + namespaces + ">"
+                + "<wp:extent cx=\"${cx}\" cy=\"${cy}\"/>"
+                + "<wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>" + //l=\"19050\"
+                "<wp:docPr id=\"${id1}\" name=\"${filenameHint}\" descr=\"${altText}\"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" noChangeAspect=\"1\"/></wp:cNvGraphicFramePr><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\">"
+                + "<a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
+                + "<pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"${id2}\" name=\"${filenameHint}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill>"
+                + "<a:blip " + type + "=\"${rEmbedId}\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
+                + "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"${cx}\" cy=\"${cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic>"
+                + "</wp:inline>"; // +
 //        "</w:drawing>" +
 //        "</w:r></w:p>";
-        java.util.HashMap<String, String>mappings = new java.util.HashMap<String, String>();
+        java.util.HashMap<String, String> mappings = new java.util.HashMap<String, String>();
         
         mappings.put("cx", Long.toString(cx));
         mappings.put("cy", Long.toString(cy));
         mappings.put("filenameHint", filenameHint);
         mappings.put("altText", altText);
-        mappings.put("rEmbedId", rel.getId()  );
+        mappings.put("rEmbedId", rel.getId());
         mappings.put("id1", Integer.toString(id1));
         mappings.put("id2", Integer.toString(id2));
 
-        Object o = org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings ) ;        
-        Inline inline = (Inline)((JAXBElement)o).getValue();
+        Object o = org.docx4j.XmlUtils.unmarshallFromTemplate(ml, mappings);
+        Inline inline = (Inline) ((JAXBElement) o).getValue();
         
 		return inline;		
 	}
-	
-	final static String namespaces = " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" " +
-			"xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" " +
-			"xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\"";
-	
+    final static String namespaces = " xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" "
+            + "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
+            + "xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\"";
 	
 	public static ImageInfo getImageInfo(String uri) throws Exception {
 		
@@ -661,19 +733,18 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		displayImageInfo(ii);
 	}
 	
+    public static void displayImageInfo(ImageInfo info) {
 	
-	public static void displayImageInfo(ImageInfo info ) {
-		
 		  ImageSize size = info.getSize();
 		  
 		  Dimension2D dPt = size.getDimensionPt();
 		  Dimension dPx = size.getDimensionPx();
 
 		  log.debug(info.getOriginalURI() + " " + info.getMimeType() 
-				  + " " + Math.round(dPx.getWidth()) +"x" + Math.round(dPx.getHeight()));
+                + " " + Math.round(dPx.getWidth()) + "x" + Math.round(dPx.getHeight()));
 		  		  
-		  log.debug("Resolution:" + Math.round(size.getDpiHorizontal()) + "x" + Math.round(size.getDpiVertical()) );
-		  log.debug("Print size: " + Math.round(dPt.getWidth()/72) + "\" x" + Math.round(dPt.getHeight()/72)+"\"" ); 
+        log.debug("Resolution:" + Math.round(size.getDpiHorizontal()) + "x" + Math.round(size.getDpiVertical()));
+        log.debug("Print size: " + Math.round(dPt.getWidth() / 72) + "\" x" + Math.round(dPt.getHeight() / 72) + "\"");
 		
 	}
 	
@@ -719,7 +790,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 				return bytes;
 			} else {				
-				log.error("Part was a " + part.getClass().getName() );
+                log.error("Part was a " + part.getClass().getName());
 			}
 		} else {
 			log.error("Couldn't find rel " + rId);
@@ -731,14 +802,15 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	public static class CxCy {
 		
 		long cx;
+
 		/**
 		 * @return the resulting cx
 		 */
 		public long getCx() {
 			return cx;
 		}
-
 		long cy;
+
 		/**
 		 * @return the resulting cy
 		 */
@@ -746,6 +818,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			return cy;
 		}
 		boolean scaled;
+
 		/**
 		 * @return whether it was necessary to scale
 		 * the image to fit the page width
@@ -776,13 +849,13 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			long cx;
 			long cy;
 			boolean scaled = false;
-			if (imageWidthTwips>writableWidthTwips) {
+            if (imageWidthTwips > writableWidthTwips) {
 				
 				log.debug("Scaling image to fit page width");
 				scaled = true;
 				
 				cx = UnitsOfMeasurement.twipToEMU(writableWidthTwips);
-				cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips/imageWidthTwips);
+                cy = UnitsOfMeasurement.twipToEMU(dPt.getHeight() * 20 * writableWidthTwips / imageWidthTwips);
 				
 			} else {
 
@@ -799,7 +872,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			
 			
 		}
-		
 	}
 
 	/**
@@ -813,7 +885,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static void convertToPNG(InputStream is, OutputStream os, int density) throws IOException, InterruptedException{
+    public static void convertToPNG(InputStream is, OutputStream os, int density) throws IOException, InterruptedException {
 		
 	/*
 	 * See http://www.eichberger.de/2006/05/imagemagick-in-servlets.html
@@ -862,7 +934,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		 copy2(p.getErrorStream(), System.err);
 	 }
 	 
-	 if (p.waitFor()!=0) {
+        if (p.waitFor() != 0) {
 	  log.error("Error");
 	 }
 	 log.debug("End Process...");
@@ -872,39 +944,32 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	    byte[] buffer = new byte[512];
 	    while (true) {
 	     int bytesRead = is.read(buffer);
-	     if ( bytesRead == -1 ) break;
+            if (bytesRead == -1) {
+                break;
+            }
 	     os.write(buffer, 0, bytesRead);
 	    }
 	    os.flush();
 	   }//method
 	}//class
 
-
-	class StreamGobbler extends Thread
-	{
+class StreamGobbler extends Thread {
 		// The term "StreamGobbler" was taken from an article called "When Runtime.exec() won't", 
 		// see http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html.
 		
 	  InputStream is;
 	  OutputStream os;
 
-
-	  StreamGobbler(InputStream is, OutputStream redirect)
-	  {
-	      this.is =  new BufferedInputStream(is);
+    StreamGobbler(InputStream is, OutputStream redirect) {
+        this.is = new BufferedInputStream(is);
 	      this.os = redirect;
 	  }
 
-	  public void run()
-	  {
-	      try
-	      {  
+    public void run() {
+        try {
 	    	  BinaryPartAbstractImage.copy2(is, os);
-	      } catch (IOException ioe)
-	          {
+        } catch (IOException ioe) {
 	          ioe.printStackTrace();
 	          }
 	  }
-	  
 	}
-		
