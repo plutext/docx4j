@@ -31,6 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -61,9 +63,6 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.SectPr;
-import org.docx4j.wml.SectPr.PgMar;
-import org.docx4j.wml.SectPr.PgSz;
 
 public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
@@ -147,17 +146,17 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
 	}
 	
-    /*
+    /**
      * Possibility to put directly an image filePath instead of giving an image byte array
      * @param wordMLPackage
-     * @param filePath
+     * @param imageFile
      * 
      */
     public static BinaryPartAbstractImage createImagePart(WordprocessingMLPackage wordMLPackage,
-            String filePath) throws Exception {
+    		File imageFile) throws Exception {
 
-        return createImagePartFromFilePath(wordMLPackage,
-                wordMLPackage.getMainDocumentPart(), filePath);
+        return createImagePart(wordMLPackage,
+                wordMLPackage.getMainDocumentPart(), imageFile);
 
     }
 
@@ -223,7 +222,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		fos.close();
         log.debug("created tmp file: " + tmpImageFile.getAbsolutePath());
 				
-		ImageInfo info = ensureFormatIsSupported(tmpImageFile.getAbsolutePath(), tmpImageFile, bytes);
+		ImageInfo info = ensureFormatIsSupported(tmpImageFile, bytes, true);
 		
 		// In the absence of an exception, tmpImageFile now contains an image 
 		// Word will accept
@@ -276,11 +275,6 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 	}
 
-    /*
-     * Default, we suppose that image is load in a Byte Array (using function createImagePart) so isLoad is true.
-     * If we use createImagePartFromFilePath, then isLoad is false
-     */
-    static boolean isLoad = true;
 
 	/**
      * Create an image part from the provided filePath image, attach it to the source part
@@ -294,16 +288,14 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
      * @return
      * @throws Exception
      */
-    public static BinaryPartAbstractImage createImagePartFromFilePath(
+    public static BinaryPartAbstractImage createImagePart(
             OpcPackage opcPackage,
-            Part sourcePart, String filePath) throws Exception {
+            Part sourcePart, File imageFile) throws Exception {
 
-        final File locFile = new File(filePath);
         final byte[] locByte = new byte[1];
+
         //We are in the case that image is not load (no byte Array) so isLoad is false
-        isLoad = false;
-        //Here, filePath doesn't represent the tmpFile but the path of the image to load
-        ImageInfo info = ensureFormatIsSupported(filePath, locFile, locByte);
+        ImageInfo info = ensureFormatIsSupported(imageFile, locByte, false);
 
         ContentTypeManager ctm = opcPackage.getContentTypeManager();
 
@@ -324,7 +316,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
         log.debug("created part " + imagePart.getClass().getName()
                 + " with name " + imagePart.getPartName().toString());
 
-        FileInputStream fis = new FileInputStream(locFile);
+        FileInputStream fis = new FileInputStream(imageFile);
         imagePart.setBinaryData(fis);
 
         imagePart.rel = sourcePart.addTargetPart(imagePart, proposedRelId);
@@ -335,6 +327,10 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 
     }
 
+	private static ImageInfo ensureFormatIsSupported(File imageFile, byte[] bytes, boolean isLoad) throws Docx4JException, MalformedURLException {
+		return ensureFormatIsSupported(imageFile.toURI().toURL(),  imageFile,  bytes, isLoad);
+	}
+	
     /**
 	 * @param bytes
 	 * @param imageFile
@@ -344,7 +340,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	private static ImageInfo ensureFormatIsSupported(String uri, File imageFile, byte[] bytes) throws Docx4JException {
+	private static ImageInfo ensureFormatIsSupported(URL url, File imageFile, byte[] bytes, boolean isLoad) throws Docx4JException {
 		
 		FileOutputStream fos;
 		// ImageInfo can also tell us what sort of image it is	
@@ -353,8 +349,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		boolean imagePreloaderFound = true;
 		try {
 			try {
-				info = getImageInfo(uri);
-				
+				info = getImageInfo(url);
+
 				// Debug ... note that these figures 
 				// aren't necessarily accurate for EPS
 				displayImageInfo(info);
@@ -422,7 +418,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				
 				// We need to refresh image info 
 				imageManager.getCache().clearCache();
-                info = getImageInfo(imageFile.getAbsolutePath());
+                info = getImageInfo(new URL(imageFile.getAbsolutePath()));
 				
 				// Debug ...
 				displayImageInfo(info);
@@ -443,7 +439,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	 * @throws Exception
 	 */
 	public static BinaryPartAbstractImage createLinkedImagePart(WordprocessingMLPackage wordMLPackage, 
-			String fileurl) throws Exception {
+			URL fileurl) throws Exception {
 		
 		return createLinkedImagePart(wordMLPackage,
 				wordMLPackage.getMainDocumentPart(), fileurl);
@@ -451,18 +447,23 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
 	/**
 	 * Create a linked image part, and attach it as a rel of the specified source part
-	 * (eg a header part)
+	 * (eg a header part).
+	 * 
+	 * The current behaviour is that the part is added to the package, but 
+	 * since the target mode of the rel is external, the part is redundant. 
 	 * 
 	 * @param wordMLPackage
 	 * @param sourcePart
-	 * @param fileurl
+	 * @param url
 	 * @return
 	 * @throws Exception
 	 */
 	public static BinaryPartAbstractImage createLinkedImagePart(OpcPackage opcPackage, 
-			Part sourcePart, String fileurl) throws Exception {
+			Part sourcePart, URL url) throws Exception {
 		
-        ImageInfo info = ensureFormatIsSupported(fileurl, null, null);
+		log.debug("Incoming url for linked image: " + url.toString() );
+		
+        ImageInfo info = ensureFormatIsSupported(url, null, null, false); // final param doesn't matter in this case
 
 		ContentTypeManager ctm = opcPackage.getContentTypeManager();
 		String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
@@ -474,23 +475,27 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
                 (BinaryPartAbstractImage) ctm.newPartForContentType(
 				info.getMimeType(), 
                 createImageName(opcPackage, sourcePart, proposedRelId, ext), null);
+		
+		// NB: contents never populated
 				
 		log.debug("created part " + imagePart.getClass().getName()
 				+ " with name " + imagePart.getPartName().toString());
 
-		imagePart.rel = sourcePart.addTargetPart(imagePart);
+		imagePart.rel = sourcePart.addTargetPart(imagePart); // want to create rel with suitable name; side effect is to add part
 		imagePart.rel.setTargetMode("External");
 
 		opcPackage.getExternalResources().put(imagePart.getExternalTarget(), 
 				imagePart);			
 		
-		if (!fileurl.startsWith("file:///") && new File(fileurl).isFile()) {
-			imagePart.rel.setTarget("file:///" + fileurl);
-		} else {
-			imagePart.rel.setTarget(fileurl);
-		}
+//		if (!url.getProtocol().equals("file") && new File(url.toString() ).isFile()) {
+//			imagePart.rel.setTarget("file:///" + url);
+//		} else {
+//			imagePart.rel.setTarget(url.toString());
+//		}
+		imagePart.rel.setTarget(url.toString());
 
 		imagePart.setImageInfo(info);
+		
 		return imagePart;
 	}	
 
@@ -679,7 +684,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
             + "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
             + "xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\"";
 	
-	public static ImageInfo getImageInfo(String uri) throws Exception {
+	public static ImageInfo getImageInfo(URL url) throws Exception {
 		
 		// XmlGraphics images caches images by their URI;
 		// therefore it can only load images from a URI, rather
@@ -688,7 +693,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		ImageSessionContext sessionContext = new DefaultImageSessionContext(
 				imageManager.getImageContext(), null);
 
-		ImageInfo info = imageManager.getImageInfo(uri, sessionContext);
+		ImageInfo info = imageManager.getImageInfo(url.toString(), sessionContext);
 		
 		// Note that these figures do not appear to be reliable for EPS
 		// eg ImageMagick 6.2.4 10/02/07 Q16
@@ -728,7 +733,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		
 		//String uri = "/tmp/img4448.img";
 		
-		ImageInfo ii = getImageInfo(uri);
+		ImageInfo ii = getImageInfo(new URL(uri));
 		
 		displayImageInfo(ii);
 	}
