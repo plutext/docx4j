@@ -11,6 +11,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
@@ -68,8 +69,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	 * @param os
 	 *            The OutputStream to write the pdf to 
 	 * 
-	 * */     
-    public void output(OutputStream os) throws Docx4JException {
+	 * */    
+	@Override	
+    public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
     	
 //    	Document pdfDoc = new Document();
     	pdfDoc = new Document(PageSize.A4, 50, 50, 70, 70);
@@ -188,7 +190,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 				org.docx4j.wml.SdtBlock sdt = (org.docx4j.wml.SdtBlock) o;				
 				// Don't bother looking in SdtPr				
-				traverseBlockLevelContent(sdt.getSdtContent().getEGContentBlockContent(),
+				traverseBlockLevelContent(sdt.getSdtContent().getContent(),
 						parent);
 				
 //			} else if (o instanceof org.docx4j.wml.SdtContentBlock) {
