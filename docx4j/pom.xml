@@ -3,6 +3,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	 
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>  	
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
 	<version>2.7.1-SNAPSHOT</version>
@@ -10,8 +16,8 @@
 	<name>docx4j</name>
 	<description>
 		docx4j is a library which helps you to work with the Office Open
-		XML file format, including WordprocessingML and DrawingML, as used in docx
-		documents and pptx presentations.
+		XML file format as used in docx
+		documents, pptx presentations, and xlsx spreadsheets.
 	</description>
 	<url>http://www.docx4java.org/</url>
 	<licenses>
@@ -25,8 +31,8 @@
 	<!-- <prerequisites /> -->
 	<scm>
 	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk</connection>
-	    <!-- <developerConnection>scm:svn:https://127.0.0.1/svn/my-project</developerConnection>
-	         <tag>HEAD</tag>  -->
+	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk</developerConnection>
+	    <tag>HEAD</tag>
 	    <url>http://www.docx4java.org/svn/docx4j/trunk</url>
     </scm>
 	<inceptionYear>2007</inceptionYear>
@@ -47,10 +53,16 @@
 			<name>Adam Schmideg</name>
 		</contributor>
 		<contributor>
+			<name>Albert Aymerich</name>
+		</contributor>
+		<contributor>
 			<name>alberto</name>
 		</contributor>
 		<contributor>
 			<name>amdonov</name>
+		</contributor>
+		<contributor>
+			<name>Antoine</name>
 		</contributor>
 		<contributor>
 			<name>azeloro</name>
@@ -88,6 +100,9 @@
 		<contributor>
 			<name>Tinne</name>
 		</contributor>
+		<contributor>
+			<name>y.rolland</name>
+		</contributor>
 	</contributors>	
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
@@ -95,6 +110,19 @@
 		<outputDirectory>bin</outputDirectory>
 		<testOutputDirectory>bin</testOutputDirectory>
 	<plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>	
 		<plugin>
 			<groupId>org.codehaus.mojo</groupId>
 			<artifactId>build-helper-maven-plugin</artifactId>
