@@ -28,9 +28,9 @@
   	</licenses>
 	<!-- <prerequisites /> -->
 	<scm>
-	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/tags/VERSION_2_7_1</connection>
-	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/tags/VERSION_2_7_1</developerConnection>
-	    <url>http://www.docx4java.org/svn/docx4j/tags/VERSION_2_7_1</url>
+	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/tags/VERSION_2_7_1/docx4j</connection>
+	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/tags/VERSION_2_7_1/docx4j</developerConnection>
+	    <url>http://www.docx4java.org/svn/docx4j/tags/VERSION_2_7_1/docx4j</url>
     </scm>
 	<inceptionYear>2007</inceptionYear>
 	<developers>
