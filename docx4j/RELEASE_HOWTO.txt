@@ -19,35 +19,58 @@ Update pom.xml with target version number
 
 svn ci
 
-co as new project; check it
+svn co from command line (ie not in eclipse)
 
-to run tests:
-   ant test 
-or mvn install
+----
+
+Per https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
+
+mvn release:clean
+
+mvn release:prepare
+
+mvn release:perform
+
+perform breaks (1) because target/generated-sources is already under version control (why? get rid of this)
+
+so have to mv target out of the way, svn update, then copy current contents into it
+
+perform breaks (2) because it run in wrong dir, so cd target/checkout/docx4j and manually run it:
+
+$ mvn deploy --no-plugin-updates -Psonatype-oss-release -f pom.xml
+
+(This runs on the branch you've created in previous steps. All the previous steps do is create that branch, and change trunk's pom to whatever next version will be)
+
+Uploading: https://oss.sonatype.org/service/local/staging/deploy/maven2//org/docx4j/docx4j/2.7.1/docx4j-2.7.1.jar
+5691K uploaded  (docx4j-2.7.1.jar)
+
+Then release it:
+
+1. close the staging repository:
+
+   1. Login to the Nexus UI, https://oss.sonatype.org/index.html#welcome
+   2. Go to Staging Repositories page.
+   3. Select a staging repository.
+   4. Click the Close button.
+
+2. when you are sure the closed staging repository has no problem, click the Release button.
+
+--------
+
+The mvn generated jar is currently bigger (5.6MB), because it contains unnecessary docx.
+
+1111267 Fri Oct 14 15:03:28 EST 2011 jaxb-binder-issue.docx
+
+TODO: fix this
+
+-------
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
 
     (Remove the jaxb jars from dist dir)
 
     Create docx4j-x.x.x.tar.gz (ant dist, rename the jar as well)
-    
 
-Check Mvn build works
-- it creates an 18MB -javadoc, but don't upload that
-
-
-Check all jars match target (eg Java 1.5)    
-
-Tag the version in svn
-
-Create javadoc 
-
-    edit doctitle in build.xml
-
-    ant javadoc
-
-Maven upload
-
-   mvn deploy:deploy-file -f wagon-svn-pom.xml -Dfile=dist/docx4j.jar -DpomFile=pom.xml  -Dpackaging=jar -DrepositoryId=docx4j -Durl=svn:http://dev.plutext.org/svn/docx4j/trunk/docx4j/m2
+----
 
 Announce release in docx4j forum
