@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	 
   <parent>
@@ -11,7 +9,7 @@
   </parent>  	
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>2.7.1-SNAPSHOT</version>
+	<version>2.7.1</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
 	<description>
@@ -30,10 +28,10 @@
   	</licenses>
 	<!-- <prerequisites /> -->
 	<scm>
-	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk</connection>
-	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk</developerConnection>
+	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/tags/docx4j-2.7.1</connection>
+	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/tags/docx4j-2.7.1</developerConnection>
 	    <tag>HEAD</tag>
-	    <url>http://www.docx4java.org/svn/docx4j/trunk</url>
+	    <url>http://www.docx4java.org/svn/docx4j/tags/docx4j-2.7.1</url>
     </scm>
 	<inceptionYear>2007</inceptionYear>
 	<developers>
@@ -182,8 +180,7 @@
 				
 				<verbose>false</verbose>
 				<!--
-					maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn
-					install
+					maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install
 				-->
 				<!--
 					try to help maven to find package
