@@ -28,9 +28,9 @@
   	</licenses>
 	<!-- <prerequisites /> -->
 	<scm>
-	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk</connection>
-	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk</developerConnection>
-	    <url>http://www.docx4java.org/svn/docx4j/trunk</url>
+	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk/docx4j</connection>
+	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk/docx4j</developerConnection>
+	    <url>http://www.docx4java.org/svn/docx4j/trunk/docx4j</url>
     </scm>
 	<inceptionYear>2007</inceptionYear>
 	<developers>
