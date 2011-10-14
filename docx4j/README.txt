@@ -96,7 +96,7 @@ r1601-
 Release date
 ------------
 
-TBD October 2011
+14 October 2011
 
 Contributors to this release
 ----------------------------
@@ -105,6 +105,7 @@ Albert Aymerich
 alberto
 Antoine
 Jason Harrop
+y.rolland
 
 Notable Changes in Version 2.7.1
 ---------------------------------
@@ -140,7 +141,7 @@ Other Changes (non-exhaustive)
 
 [1613] Header and footer parts use XPath binder
 
-
+[1679-80] create image part directly from file
 
 
 Version 2.7.0 
