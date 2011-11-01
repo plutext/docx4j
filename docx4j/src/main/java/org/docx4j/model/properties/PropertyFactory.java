@@ -487,51 +487,57 @@ public class PropertyFactory {
 
 	public static Property createPropertyFromCssName(String name, CSSValue value) {
 		
-		// Run properties
-		if (name.equals(Font.CSS_NAME )) {
-			// font-family
-			return new Font(value);
-		} else if (name.equals(Bold.CSS_NAME )) {
-			// font-weight
-			return new Bold(value);
-		} else if (name.equals(Italics.CSS_NAME )) {
-			// font-style
-			return new Italics(value);
-		} else if (name.equals("text-decoration")) {
-			if (value.getCssText().toLowerCase().equals("line-through")) {
-				return new Strike(value);
-			} else if (value.getCssText().toLowerCase().equals("underline")) {
-				return new Underline(value);
-			} else {
-				log.error("What to do for " + name + ":" + value.getCssText());
-			}
-		} else if (name.equals(FontColor.CSS_NAME )) {
-			// color
-			return new FontColor(value);
-		} else if (name.equals(FontSize.CSS_NAME )) {
-			// font-size
-			return new FontSize(value);
-		} 
-		
-		// Paragraph properties
-		if (name.equals(Indent.CSS_NAME )) {
-			// left
-			return new Indent(value);
-		} else if (name.equals(Justification.CSS_NAME )) {
-			// text-align
-			return new Justification(value);
-		} else if (name.equals(KeepNext.CSS_NAME )) {
-			// page-break-after
-			return new KeepNext(value);
-		} else if (name.equals(PageBreakBefore.CSS_NAME)) {
-			// page-break-before
-			return new PageBreakBefore(value);
-		} else if (name.equals(TextAlignmentVertical.CSS_NAME )) {
-			// vertical-align
-			return new TextAlignmentVertical(value);
-		}		
-		
-		log.warn("How to handle: " + name + "?");
+		try {
+			// Run properties
+			if (name.equals(Font.CSS_NAME )) {
+				// font-family
+				return new Font(value);
+			} else if (name.equals(Bold.CSS_NAME )) {
+				// font-weight
+				return new Bold(value);
+			} else if (name.equals(Italics.CSS_NAME )) {
+				// font-style
+				return new Italics(value);
+			} else if (name.equals("text-decoration")) {
+				if (value.getCssText().toLowerCase().equals("line-through")) {
+					return new Strike(value);
+				} else if (value.getCssText().toLowerCase().equals("underline")) {
+					return new Underline(value);
+				} else {
+					log.error("What to do for " + name + ":" + value.getCssText());
+				}
+			} else if (name.equals(FontColor.CSS_NAME )) {
+				// color
+				return new FontColor(value);
+			} else if (name.equals(FontSize.CSS_NAME )) {
+				// font-size
+				return new FontSize(value);
+			} 
+			
+			// Paragraph properties
+			if (name.equals(Indent.CSS_NAME )) {
+				// left
+				return new Indent(value);
+			} else if (name.equals(Justification.CSS_NAME )) {
+				// text-align
+				return new Justification(value);
+			} else if (name.equals(KeepNext.CSS_NAME )) {
+				// page-break-after
+				return new KeepNext(value);
+			} else if (name.equals(PageBreakBefore.CSS_NAME)) {
+				// page-break-before
+				return new PageBreakBefore(value);
+			} else if (name.equals(TextAlignmentVertical.CSS_NAME )) {
+				// vertical-align
+				return new TextAlignmentVertical(value);
+			}		
+		} catch (java.lang.UnsupportedOperationException uoe) {
+			// TODO: consider whether it is right to catch this,
+			// or whether calling code should handle a docx4j exception wrapping this
+			log.error("Can't create property from: " + name + ":" + value.getCssText() );
+			return null;
+		}
+		log.debug("How to handle: " + name + "?");
 		return null;
 	}
 	

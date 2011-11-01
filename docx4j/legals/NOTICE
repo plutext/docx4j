@@ -1,5 +1,5 @@
    docx4j
-   Copyright 2007-2010 Plutext Pty Ltd
+   Copyright 2007-2011 Plutext Pty Ltd
    
    Portions of the package org.docx4j.openpackaging are
    derivative works of OpenXML4J. OpenXml4J is copyright
@@ -36,7 +36,10 @@
  	by Jan-Willem van den Broek, version 1.0, downloaded 
  	on 2011-06-18 from 
  	http://blog.jwbroek.com/2010/07/antlr-grammar-for-parsing-xpath-10.html
- 	That page said "Do with this code as you will." 	
+ 	That page said "Do with this code as you will." 
+ 	
+ 	The jar containing package org.docx4j.org.xhtmlrenderer is an LGPL library.
+ 	Source may be found at https://github.com/plutext/flyingsaucer 		
  	
  	TODO reference xsd license
 

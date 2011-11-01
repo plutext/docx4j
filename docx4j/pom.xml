@@ -328,6 +328,31 @@
    			</dependency>
   -->   			  
    			<!--  nothing newer in the repository! -->
+
+		<!--  xhtmlrenderer, below, is new for docx4j 2.8.0;
+			  it supports (x)html import. 
+		
+		 	  It will not be in Maven Central until docx4j 2.8.0 is released.
+		
+			  Currently, you can get it from:  
+			  
+			  		https://github.com/plutext/flyingsaucer
+			  		
+			  and install it to your local repository using:
+			  
+			  		mvn install
+		 -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>xhtmlrenderer</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.lowagie</groupId>
+						<artifactId>itext</artifactId>
+					</exclusion>
+				</exclusions>
+		</dependency>
 	
 		<dependency>
 			<groupId>log4j</groupId>
