@@ -69,12 +69,14 @@ public class BindingHandler {
 	/**
 	 * Configure, how the handler handles links found in Custom XML.
 	 * 
-	 * If set to <code>null</code>, strings containing 'http://'
-	 * are not converted to w:hyperlink. This is the default behavior.
+	 * If hyperlinkStyleId is set to <code>null</code>, strings 
+	 * containing 'http://' or 'https://' are not converted to 
+	 * w:hyperlink. This is the default behavior.
 	 * 
-	 * If set to <code>true</code>, strings containing 'http://'
-	 * are converted to w:hyperlink.  If you do this, you will
-	 * need to post-process with RemovalHandler, since a
+	 * If hyperlinkStyleId is set to <code>"someWordHyperlinkStyleName"</code>, 
+	 * strings containing 'http://' or 'https://' or or 'mailto:' are converted to w:hyperlink.  
+	 * The default Word hyperlink style name is "Hyperlink".
+	 * If you do this, you will need to post-process with RemovalHandler, since a
 	 * content control with SdtPr w:dataBinding and w:text
 	 * which contains a w:hyperlink will prevent Word 2007 from
 	 * opening the docx.
@@ -82,7 +84,7 @@ public class BindingHandler {
 	 * Due to the architecture of this class, this is a static flag changing the
 	 * behavior of all following calls to {@link #applyBindings}.
 	 * 
-	 * @param hyperlinkStyle
+	 * @param hyperlinkStyleID
 	 *            The style to use for hyperlinks (eg Hyperlink)
 	 */
 	public static void setHyperlinkStyle (
@@ -118,8 +120,8 @@ public class BindingHandler {
 			// and in headers/footers. See further
 			// http://forums.opendope.org/Support-components-in-headers-footers-tp2964174p2964174.html
 			
-			if (hyperlinkStyleId !=null 
-					&& wordMLPackage.getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId)) {
+			if (hyperlinkStyleId !=null) {
+					wordMLPackage.getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId);
 			}			
 
 			applyBindings(wordMLPackage.getMainDocumentPart());
@@ -143,6 +145,10 @@ public class BindingHandler {
 				= part.getPackage();		
 				// Binding is a concept which applies more broadly
 				// than just Word documents.
+			
+			if (hyperlinkStyleId !=null && pkg instanceof WordprocessingMLPackage) {
+				((WordprocessingMLPackage)pkg).getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId);
+			}
 			
 			org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
 					part.getJaxbElement() ); 	
@@ -326,9 +332,15 @@ public class BindingHandler {
 		
 		private static void processString(JaxbXmlPart sourcePart, DocumentFragment docfrag, String text, RPr rPr) throws JAXBException {
 			
-			int pos = text.indexOf("http://");
-
-			if (pos==-1) {				
+			// Since we'll calculate min, we don't want -1 for no match
+			int NOT_FOUND = 99999;
+			int pos1 = text.indexOf("http://")==-1 ? NOT_FOUND : text.indexOf("http://");
+			int pos2 = text.indexOf("https://")==-1 ? NOT_FOUND : text.indexOf("https://");
+			int pos3 = text.indexOf("mailto:")==-1 ? NOT_FOUND : text.indexOf("mailto:");
+			
+			int pos = Math.min(pos1,  Math.min(pos2, pos3));
+			
+			if (pos==NOT_FOUND || hyperlinkStyleId == null) {				
 				addRunToDocFrag(sourcePart, docfrag,  text,  rPr);
 				return;
 			} 

@@ -76,6 +76,8 @@ public class ContentControlBindingExtensions {
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/hyperlink-binding-test.docx";
 		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
+		
+//		String inputfilepath = System.getProperty("user.dir") + "/src/test/resources/OpenDoPE/hyperlinks.docx";
 
 //		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
 
@@ -105,7 +107,7 @@ public class ContentControlBindingExtensions {
 		System.out.println("Saved: " + filepathprefix + "_preprocessed.docx");
 		
 		// Apply the bindings
-		BindingHandler.setHyperlinkStyle("hyperlink");						
+		BindingHandler.setHyperlinkStyle("Hyperlink");						
 		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
@@ -118,7 +120,7 @@ public class ContentControlBindingExtensions {
 		RemovalHandler rh = new RemovalHandler();
 		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
 		saver.save(filepathprefix + "_stripped.docx");
-		System.out.println("Saved: " + filepathprefix + "_bound.docx");
+		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
 	}		
 				
 
