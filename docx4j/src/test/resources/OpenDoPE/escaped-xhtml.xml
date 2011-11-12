@@ -121,7 +121,7 @@
               <w:pStyle w:val="Heading1"/>
             </w:pPr>
             <w:r>
-              <w:t>multiple p</w:t>
+              <w:t>multiple p in body</w:t>
             </w:r>
           </w:p>
           <w:sdt>
@@ -132,6 +132,32 @@
                 <w:docPart w:val="DefaultPlaceholder_22675703"/>
               </w:placeholder>
               <w:dataBinding w:xpath="/yourxml/case4" w:storeItemID="{20B8AAA6-2C95-41E0-AB0F-D96D3E3AA22F}"/>
+              <w:text/>
+            </w:sdtPr>
+            <w:sdtContent>
+              <w:p>
+                <w:r>
+                  <w:t xml:space="preserve">          &lt;div&gt;            &lt;p&gt;hello 1&lt;/p&gt;            &lt;p&gt;hello 2&lt;/p&gt;          &lt;/div&gt;        </w:t>
+                </w:r>
+              </w:p>
+            </w:sdtContent>
+          </w:sdt>
+          <w:p>
+            <w:pPr>
+              <w:pStyle w:val="Heading1"/>
+            </w:pPr>
+            <w:r>
+              <w:t>multiple p in div</w:t>
+            </w:r>
+          </w:p>
+          <w:sdt>
+            <w:sdtPr>
+              <w:tag w:val="od:xpath=case4B&amp;od:ContentType=application/xhtml+xml"/>
+              <w:id w:val="7800137800"/>
+              <w:placeholder>
+                <w:docPart w:val="DefaultPlaceholder_22675703"/>
+              </w:placeholder>
+              <w:dataBinding w:xpath="/yourxml/case4B" w:storeItemID="{20B8AAA6-2C95-41E0-AB0F-D96D3E3AA22F}"/>
               <w:text/>
             </w:sdtPr>
             <w:sdtContent>
@@ -675,12 +701,18 @@
         <case2> &lt;body&gt; &lt;p&gt;hello &lt;/p&gt; &lt;/body&gt; </case2>
         <case3> &lt;p&gt;hello &lt;/p&gt; </case3>
         <case4>
+          &lt;body&gt;
+          &lt;p&gt;hello 1&lt;/p&gt;
+          &lt;p&gt;hello 2&lt;/p&gt;
+          &lt;/body&gt;
+        </case4>
+        <case4B>
           &lt;div&gt;
           &lt;p&gt;hello 1&lt;/p&gt;
           &lt;p&gt;hello 2&lt;/p&gt;
           &lt;/div&gt;
-        </case4>
-        <case5> &lt;span&gt;Please &lt;a href="mailto:foo@bar"&gt;click to email&lt;/a&gt; &lt;/span&gt; now!</case5>
+        </case4B>
+        <case5> &lt;span&gt;Please &lt;a href="mailto:foo@bar"&gt;click to email&lt;/a&gt; &lt;b&gt;now!&lt;/b&gt; &lt;/span&gt;</case5>
       </yourxml>
     </pkg:xmlData>
   </pkg:part>

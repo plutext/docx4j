@@ -42,17 +42,26 @@ public class FontSize extends AbstractRunProperty {
 		HpsMeasure hpsMeasure = Context.getWmlObjectFactory().createHpsMeasure();
 		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;
 		// Assume size is in points; sanity test.
-		if (cssPrimitiveValue.getPrimitiveType()!=CSSPrimitiveValue.CSS_PT) {
-			log.error("TODO Handle units: " + cssPrimitiveValue.getPrimitiveType() );
+		if (cssPrimitiveValue.getPrimitiveType()==CSSPrimitiveValue.CSS_IDENT) {
+			// eg 'medium'
+			String adjective = cssPrimitiveValue.getStringValue();
+			log.warn("TODO Handle FontSize units properly: " + adjective );			
+			if (adjective.equals("medium")) {
+				hpsMeasure.setVal( BigInteger.valueOf(22) ); //11 point for now
+				this.setObject(hpsMeasure);				
+			}
+			
+		} else  if (cssPrimitiveValue.getPrimitiveType()!=CSSPrimitiveValue.CSS_PT) {
+			log.error("TODO FontSize Handle units: " + cssPrimitiveValue.getPrimitiveType() );
 			debug(CSS_NAME, value);
+		} else {
+			short ignored = 1;
+			float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
+			int iVal = Math.round(fVal*2);
+			
+			hpsMeasure.setVal( BigInteger.valueOf(iVal) );
+			this.setObject(hpsMeasure);
 		}
-		short ignored = 1;
-		float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
-		int iVal = Math.round(fVal*2);
-		
-		hpsMeasure.setVal( BigInteger.valueOf(iVal) );
-		
-		this.setObject(hpsMeasure);
 	}
 
 	@Override

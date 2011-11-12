@@ -2,6 +2,7 @@ package org.docx4j.model.datastorage;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -16,9 +17,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.in.css.Importer;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
@@ -34,6 +37,7 @@ import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.RPr;
 import org.opendope.xpaths.Xpaths.Xpath;
@@ -243,6 +247,79 @@ public class BindingHandler {
 			}
 		}
 
+		//&lt;html&gt;&lt;body&gt;  &lt;p&gt;hello &lt;/p&gt; &lt;/body&gt;&lt;/html&gt;
+		
+		/**
+		 * Convert the input XHTML into a WordML w3c DocumentFragment, which Xalan 
+		 * can insert into XSLT output.
+		 *
+		 * Note that the input XHTML must be suitable for the context 
+		 * ie you can't insert block level stuff (eg p) into a run level sdt.
+		 */
+		public static DocumentFragment convertXHTML(
+				WordprocessingMLPackage pkg, 
+				JaxbXmlPart sourcePart,				
+				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+				String storeItemId, String xpath, String prefixMappings,
+				String sdtParent,
+				String contentChild,				
+				NodeIterator rPrNodeIt, 
+				String tag) {
+
+			log.info("convertXHTML extension function");
+			
+			String r = xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+			if (r==null) return null;
+			
+			try {
+				String unescaped = StringEscapeUtils.unescapeHtml(r);
+				log.info("Unescaped: " + unescaped);
+				
+				List<Object> results = Importer.convertFromString(unescaped, sourcePart.getRelationshipsPart() );
+				log.info("Got results: " + results.size() );
+				
+				org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
+				DocumentFragment docfrag = docContainer.createDocumentFragment();
+				
+				if (results.size()>0 && 
+						contentChild.equals("r") ) {
+					// Only accept the first result object
+					
+					// A span seems to come back as a w:p, so extract contents 					
+					if ( results.get(0) instanceof P) {
+						
+						for (Object o : ((P)results.get(0)).getContent() ) {							
+							Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
+							XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													
+						}
+						
+					} else {
+						log.error("TODO: handle case where conversion returns " + results.get(0).getClass().getName() );
+					}
+					
+				} else {
+	
+					
+					for(Object o : results) {
+						
+						String debug = XmlUtils.marshaltoString(o, true);
+						log.info("Conversion result: " + debug);
+						
+						Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
+						XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
+						
+					}
+				}
+				
+				// TODO: handle table related cases
+				
+				return docfrag;			
+				
+			} catch (Exception e) {
+				log.error(e);
+				return null;
+			}
+		}
 		
 		
 		/**
@@ -252,7 +329,10 @@ public class BindingHandler {
 				JaxbXmlPart sourcePart,				
 				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings,
-				NodeIterator rPrNodeIt, boolean multiLine) {
+				String sdtParent,
+				String contentChild,				
+				NodeIterator rPrNodeIt, boolean multiLine,
+				String tag) {
 			
 			/**
 			 * TODO test cases:
@@ -560,6 +640,8 @@ public class BindingHandler {
 				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
 				XPathsPart xPathsPart,
 				String odTag, 
+				String sdtParent,
+				String contentChild,				
 				NodeIterator rPrNodeIt, boolean multiLine) {
 			
 			QueryString qs = new QueryString();
@@ -581,7 +663,8 @@ public class BindingHandler {
 					 sourcePart,				
 					 customXmlDataStorageParts,
 					 storeItemId,  xpathExp,  prefixMappings,
-					 rPrNodeIt,  multiLine);
+					 sdtParent, contentChild,
+					 rPrNodeIt,  multiLine, odTag);
 			
 		}
 		

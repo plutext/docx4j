@@ -30,7 +30,270 @@
   </xsl:template>
 
   <xsl:template match="w:sdt">  
+  
+  	<xsl:variable name="tag" select="string(w:sdtPr/w:tag/@w:val)"/>
+  	
   	<xsl:choose>
+  	
+  		<xsl:when test="contains( string(w:sdtPr/w:tag/@w:val), 'od:ContentType=application/xhtml+xml' )">
+  			<!--  Convert XHTML -->
+			<xsl:copy>
+			     <xsl:apply-templates select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
+			     <w:sdtContent>
+			     	
+				  	<xsl:choose>
+				  		<xsl:when test="w:sdtContent/w:tbl">
+				  			<w:tbl>
+				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblPr"/>
+				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblGrid"/>
+					  			<w:tr>
+					  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr"/>
+						  			<w:tc>
+						  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr/w:tc/w:tcPr"/>
+							  			<w:p>
+							  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:tc/w:p/w:pPr"/>
+							  				
+											<xsl:copy-of
+											select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+														$wmlPackage,
+														$sourcePart,
+														$customXmlDataStorageParts,
+														string(w:sdtPr/w:dataBinding/@w:storeItemID),
+														string(w:sdtPr/w:dataBinding/@w:xpath),
+														string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+														w:sdtPr/w:rPr,
+														$tag )" />
+										</w:p>
+									</w:tc>
+								</w:tr>
+							</w:tbl>
+				  		</xsl:when>				  		
+				  		<xsl:when test="w:sdtContent/w:tr">
+				  			<w:tr>
+				  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr"/>
+					  			<w:tc>
+					  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr/w:tc/w:tcPr"/>
+						  			<w:p>
+						  				<xsl:copy-of select="w:sdtContent/w:tr/w:tc/w:p/w:pPr"/>
+						  				
+										<xsl:copy-of
+										select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+													$wmlPackage,
+													$sourcePart,
+													$customXmlDataStorageParts,
+													string(w:sdtPr/w:dataBinding/@w:storeItemID),
+													string(w:sdtPr/w:dataBinding/@w:xpath),
+													string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+													w:sdtPr/w:rPr,
+													$tag )" />
+									</w:p>
+								</w:tc>
+							</w:tr>
+				  		</xsl:when>				  		
+				  		<xsl:when test="w:sdtContent/w:tc">
+				  			<w:tc>
+				  				<!--  preserve existing w:tcPr -->
+				  				<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
+					  			<w:p>
+					  				<!--  preserve existing w:pPr -->
+					  				<xsl:copy-of select="w:sdtContent/w:tc/w:p/w:pPr"/>
+					  				
+					  				<!--  create runs -->
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												string(w:sdtPr/w:dataBinding/@w:storeItemID),
+												string(w:sdtPr/w:dataBinding/@w:xpath),
+												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+												w:sdtPr/w:rPr,
+												$tag )" />
+								</w:p>
+							</w:tc>
+				  		</xsl:when>				  		
+				  		<xsl:when test="w:sdtContent/w:p">
+				  		
+				  				<!--  preserve existing w:pPr mode? 
+				  					<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
+				  				-->
+				  				
+				  				<!--  create runs -->
+								<xsl:copy-of
+								select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+											$wmlPackage,
+											$sourcePart,
+											$customXmlDataStorageParts,
+											string(w:sdtPr/w:dataBinding/@w:storeItemID),
+											string(w:sdtPr/w:dataBinding/@w:xpath),
+											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+											w:sdtPr/w:rPr,
+											$tag )" />
+				  		</xsl:when>
+				  		<xsl:otherwise>  <!--  run level --> 
+				  			<!--  can we insert a fragment ie multiple runs? --> 		
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										string(w:sdtPr/w:dataBinding/@w:storeItemID),
+										string(w:sdtPr/w:dataBinding/@w:xpath),
+										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+										w:sdtPr/w:rPr,
+										$tag )" />
+				  		</xsl:otherwise>  		
+				  	</xsl:choose>    
+			     </w:sdtContent>
+			     
+			</xsl:copy>  		  			
+  		</xsl:when>
+  		
+  		
+  		
+  		
+  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:xpath')">
+  			<!--  honour extended bind (Word databinding only works when a element is returned);
+  				  (this used to be in OpenDoPEHandler, but moved 13 Sept 2011 for docx4j 2.7.1.
+  			      here we support boolean, integer. What to do with node-set?? -->
+			<xsl:copy>
+			     <xsl:apply-templates select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
+			     <w:sdtContent>
+			     	<xsl:variable name="multiLine" select="w:sdtPr/w:text/@w:multiLine='1' or w:sdtPr/w:text/@w:multiLine='true' or w:sdtPr/w:text/@w:multiLine='yes'" /> 
+			     	
+				  	<xsl:choose>
+				  		<xsl:when test="w:sdtContent/w:tbl">
+				  			<w:tbl>
+				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblPr"/>
+				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblGrid"/>
+					  			<w:tr>
+					  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr"/>
+						  			<w:tc>
+						  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr/w:tc/w:tcPr"/>
+							  			<w:p>
+							  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:tc/w:p/w:pPr"/>
+							  				
+											<xsl:copy-of
+											select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+														$wmlPackage,
+														$sourcePart,
+														$customXmlDataStorageParts,
+														$xPathsPart,
+														string(w:sdtPr/w:tag/@w:val),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+														w:sdtPr/w:rPr,
+														$multiLine)" />
+										</w:p>
+									</w:tc>
+								</w:tr>
+							</w:tbl>
+				  		</xsl:when>				  		
+				  		<xsl:when test="w:sdtContent/w:tr">
+				  			<w:tr>
+				  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr"/>
+					  			<w:tc>
+					  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr/w:tc/w:tcPr"/>
+						  			<w:p>
+						  				<xsl:copy-of select="w:sdtContent/w:tr/w:tc/w:p/w:pPr"/>
+						  				
+										<xsl:copy-of
+										select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+													$wmlPackage,
+													$sourcePart,
+													$customXmlDataStorageParts,
+													$xPathsPart,
+													string(w:sdtPr/w:tag/@w:val),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+													w:sdtPr/w:rPr,
+													$multiLine)" />
+									</w:p>
+								</w:tc>
+							</w:tr>
+				  		</xsl:when>				  		
+				  		<xsl:when test="w:sdtContent/w:tc">
+				  			<w:tc>
+				  				<!--  preserve existing w:tcPr -->
+				  				<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
+					  			<w:p>
+					  				<!--  preserve existing w:pPr -->
+					  				<xsl:copy-of select="w:sdtContent/w:tc/w:p/w:pPr"/>
+					  				
+					  				<!--  create runs -->
+									<xsl:copy-of
+									select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+												$wmlPackage,
+												$sourcePart,
+												$customXmlDataStorageParts,
+												$xPathsPart,
+												string(w:sdtPr/w:tag/@w:val),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+												w:sdtPr/w:rPr,
+												$multiLine)" />
+								</w:p>
+							</w:tc>
+				  		</xsl:when>				  		
+				  		<xsl:when test="w:sdtContent/w:p">
+				  			<w:p>
+				  				<!--  preserve existing w:pPr -->
+				  				<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
+				  				
+				  				<!--  create runs -->
+								<xsl:copy-of
+								select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+											$wmlPackage,
+											$sourcePart,
+											$customXmlDataStorageParts,
+											$xPathsPart,
+											string(w:sdtPr/w:tag/@w:val),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+											w:sdtPr/w:rPr,
+											$multiLine)" />
+							</w:p>
+				  		</xsl:when>
+				  		<xsl:otherwise>  <!--  run level --> 
+				  			<!--  can we insert a fragment ie multiple runs? --> 		
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										$xPathsPart,
+										string(w:sdtPr/w:tag/@w:val),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+										w:sdtPr/w:rPr,
+										$multiLine)" />
+				  		</xsl:otherwise>  		
+				  	</xsl:choose>    
+			     </w:sdtContent>
+			     
+			</xsl:copy>  		  			
+  		</xsl:when>
+  		
   		<xsl:when test="w:sdtPr/w:dataBinding and not(w:sdtPr/w:richText) and not(w:sdtPr/w:docPartGallery)">
   			<!--  honour w:dataBinding -->
 			<xsl:copy>
@@ -77,8 +340,11 @@
 														string(w:sdtPr/w:dataBinding/@w:storeItemID),
 														string(w:sdtPr/w:dataBinding/@w:xpath),
 														string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
 														w:sdtPr/w:rPr,
-														$multiLine )" />
+														$multiLine,
+														$tag )" />
 										</w:p>
 									</w:tc>
 								</w:tr>
@@ -100,8 +366,11 @@
 													string(w:sdtPr/w:dataBinding/@w:storeItemID),
 													string(w:sdtPr/w:dataBinding/@w:xpath),
 													string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
 													w:sdtPr/w:rPr,
-													$multiLine )" />
+													$multiLine,
+													$tag )" />
 									</w:p>
 								</w:tc>
 							</w:tr>
@@ -123,8 +392,11 @@
 												string(w:sdtPr/w:dataBinding/@w:storeItemID),
 												string(w:sdtPr/w:dataBinding/@w:xpath),
 												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
 												w:sdtPr/w:rPr,
-												$multiLine )" />
+												$multiLine,
+												$tag )" />
 								</w:p>
 							</w:tc>
 				  		</xsl:when>				  		
@@ -142,8 +414,11 @@
 											string(w:sdtPr/w:dataBinding/@w:storeItemID),
 											string(w:sdtPr/w:dataBinding/@w:xpath),
 											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
 											w:sdtPr/w:rPr,
-											$multiLine )" />
+											$multiLine,
+											$tag )" />
 							</w:p>
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level --> 
@@ -156,132 +431,17 @@
 										string(w:sdtPr/w:dataBinding/@w:storeItemID),
 										string(w:sdtPr/w:dataBinding/@w:xpath),
 										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
 										w:sdtPr/w:rPr,
-										$multiLine )" />
+										$multiLine,
+										$tag )" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
 			     </w:sdtContent>
 			     
 			</xsl:copy>  		  			
   		</xsl:when>
-  		
-  		<xsl:when test="contains(string(w:sdtPr/w:tag/@w:val), 'od:xpath')">
-  			<!--  honour extended bind (Word databinding only works when a element is returned);
-  				  (this used to be in OpenDoPEHandler, but moved 13 Sept 2011 for docx4j 2.7.1.
-  			      here we support boolean, integer. What to do with node-set?? -->
-			<xsl:copy>
-			     <xsl:apply-templates select="w:sdtPr"/>
-			     
-			     <xsl:if test="w:stdEndPr">
-			     	<xsl:copy-of select="w:sdtEndPr"/>
-		     	</xsl:if>
-			     
-			     <w:sdtContent>
-			     	<xsl:variable name="multiLine" select="w:sdtPr/w:text/@w:multiLine='1' or w:sdtPr/w:text/@w:multiLine='true' or w:sdtPr/w:text/@w:multiLine='yes'" /> 
-			     	
-				  	<xsl:choose>
-				  		<xsl:when test="w:sdtContent/w:tbl">
-				  			<w:tbl>
-				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblPr"/>
-				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblGrid"/>
-					  			<w:tr>
-					  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr"/>
-						  			<w:tc>
-						  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr/w:tc/w:tcPr"/>
-							  			<w:p>
-							  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:tc/w:p/w:pPr"/>
-							  				
-											<xsl:copy-of
-											select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
-														$wmlPackage,
-														$sourcePart,
-														$customXmlDataStorageParts,
-														$xPathsPart,
-														string(w:sdtPr/w:tag/@w:val),
-														w:sdtPr/w:rPr,
-														$multiLine )" />
-										</w:p>
-									</w:tc>
-								</w:tr>
-							</w:tbl>
-				  		</xsl:when>				  		
-				  		<xsl:when test="w:sdtContent/w:tr">
-				  			<w:tr>
-				  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr"/>
-					  			<w:tc>
-					  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr/w:tc/w:tcPr"/>
-						  			<w:p>
-						  				<xsl:copy-of select="w:sdtContent/w:tr/w:tc/w:p/w:pPr"/>
-						  				
-										<xsl:copy-of
-										select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
-													$wmlPackage,
-													$sourcePart,
-													$customXmlDataStorageParts,
-													$xPathsPart,
-													string(w:sdtPr/w:tag/@w:val),
-													w:sdtPr/w:rPr,
-													$multiLine )" />
-									</w:p>
-								</w:tc>
-							</w:tr>
-				  		</xsl:when>				  		
-				  		<xsl:when test="w:sdtContent/w:tc">
-				  			<w:tc>
-				  				<!--  preserve existing w:tcPr -->
-				  				<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
-					  			<w:p>
-					  				<!--  preserve existing w:pPr -->
-					  				<xsl:copy-of select="w:sdtContent/w:tc/w:p/w:pPr"/>
-					  				
-					  				<!--  create runs -->
-									<xsl:copy-of
-									select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
-												$wmlPackage,
-												$sourcePart,
-												$customXmlDataStorageParts,
-												$xPathsPart,
-												string(w:sdtPr/w:tag/@w:val),
-												w:sdtPr/w:rPr,
-												$multiLine )" />
-								</w:p>
-							</w:tc>
-				  		</xsl:when>				  		
-				  		<xsl:when test="w:sdtContent/w:p">
-				  			<w:p>
-				  				<!--  preserve existing w:pPr -->
-				  				<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
-				  				
-				  				<!--  create runs -->
-								<xsl:copy-of
-								select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
-											$wmlPackage,
-											$sourcePart,
-											$customXmlDataStorageParts,
-											$xPathsPart,
-											string(w:sdtPr/w:tag/@w:val),
-											w:sdtPr/w:rPr,
-											$multiLine )" />
-							</w:p>
-				  		</xsl:when>
-				  		<xsl:otherwise>  <!--  run level --> 
-				  			<!--  can we insert a fragment ie multiple runs? --> 		
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										$xPathsPart,
-										string(w:sdtPr/w:tag/@w:val),
-										w:sdtPr/w:rPr,
-										$multiLine )" />
-				  		</xsl:otherwise>  		
-				  	</xsl:choose>    
-			     </w:sdtContent>
-			     
-			</xsl:copy>  		  			
-  		</xsl:when>
-  		
   		
   		
   		<xsl:otherwise> <!--  no w:dataBinding, or one spec says to ignore -->  		
