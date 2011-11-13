@@ -2,6 +2,7 @@ package org.docx4j.convert.in.css;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
 import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.org.xhtmlrenderer.css.constants.CSSName;
@@ -29,12 +31,16 @@ import org.docx4j.org.xhtmlrenderer.render.BlockBox;
 import org.docx4j.org.xhtmlrenderer.render.Box;
 import org.docx4j.org.xhtmlrenderer.render.InlineBox;
 import org.docx4j.relationships.Relationships;
+import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.P.Hyperlink;
+import org.docx4j.wml.PPrBase.NumPr;
+import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -180,15 +186,48 @@ public class Importer {
     		            paraStillEmpty = true;
                 	}            		
 	            } else {
+	            	
+	            	// Avoid creating paragraphs for html, body
+	            	if (imports.size()>0 && paraStillEmpty) {
+			            imports.remove( imports.size()-1);                                        		
+	            	} 
+	            	
 		            currentP = Context.getWmlObjectFactory().createP();
 		            imports.add(currentP);
 		            paraStillEmpty = true;
 		            
 		            // Paragraph level styling
-		            if (e!=null) {
-			            currentP.setPPr(
-			            		addParagraphProperties( cssMap ));
+		            currentP.setPPr(
+		            		addParagraphProperties( cssMap ));
+		            
+		            if (e.getNodeName().equals("li")) {
+		            	
+		            	log.info( cssMap.get("list-style-type" )   );
+		            	
+		            	// TODO: code to generate appropriate numbering on first use, and store it in map
+		            	// Then we can just fetch it.
+
+			            paraStillEmpty = false;
+			            
+			    	    // Create and add <w:numPr>
+			    	    NumPr numPr =  Context.getWmlObjectFactory().createPPrBaseNumPr();
+			    	    currentP.getPPr().setNumPr(numPr);
+
+			    	    // The <w:numId> element
+			    	    NumId numIdElement = Context.getWmlObjectFactory().createPPrBaseNumPrNumId();
+			    	    numPr.setNumId(numIdElement);
+			    	    numIdElement.setVal(BigInteger.valueOf(1));
+			    	    
+			    	    // The <w:ilvl> element
+			    	    Ilvl ilvlElement = Context.getWmlObjectFactory().createPPrBaseNumPrIlvl();
+			    	    numPr.setIlvl(ilvlElement);
+			    	    ilvlElement.setVal(BigInteger.valueOf(0));
+				        
+			    	    // TMP: don't let this override our numbering
+			    	    currentP.getPPr().setInd(null);
+			    	    
 		            }
+		            
 	            }
         	}
             
@@ -200,101 +239,19 @@ public class Importer {
                     break;
                 case BlockBox.CONTENT_INLINE:
                     if ( ((BlockBox)box).getInlineContent()!=null) {
+                    	
                         for (Object o : ((BlockBox)box).getInlineContent() ) {
 //                            log.info("        " + o.getClass().getName() ); 
                             if (o instanceof InlineBox ) {
 //                                    && ((InlineBox)o).getElement()!=null // skip these (pseudo-elements?)
 //                                    && ((InlineBox)o).isStartsHere()) {
                                 
-                                // Doesn't extend box
-                                Styleable s = ((InlineBox)o);
-                                
-                                boolean isHyperlink = false;
-                                
-                                String debug = "";
-                                if (s==null) {
-                                    debug = "NULL InlineBox"; // how can this happen?
-                                } else {
-                                    if (s.getElement()!=null) {
-                                        debug = indents + "    " + "<" + s.getElement().getNodeName();
-                                        
-                                        if (s.getElement().getNodeName().equals("a")) {
-                                        	log.info("Ha!  found a hyperlink. ");
-                                        	isHyperlink = true;
-                                        }
-                                        if (s.getElement().getNodeName().equals("p")) {
-                                        	// This seems to be the usual case. Odd?
-                                        	log.debug("p in inline");
-                                            Map<String, CSSValue> cssMap = getCascadedProperties(s.getStyle());
-                                    		currentP = Context.getWmlObjectFactory().createP();                                        	
-                                        	if (paraStillEmpty) {
-                                        		// Replace it
-                            		            imports.remove( imports.size()-1);                                        		
-                                        	} 
-                        		            imports.add(currentP);
-                        		            paraStillEmpty = true;
-                    			            currentP.setPPr(
-                    			            		addParagraphProperties( cssMap ));
-
-                                        }                                        
-                                    }
-                                    if (s.getStyle()!=null) {
-                                        debug +=  " " + s.getStyle().toStringMine();
-                                    }
-                                }
-                                
-                                
-                                log.info(debug );
-                                //log.info("'" + ((InlineBox)o).getTextNode().getTextContent() );  // don't use .getText()
-                                if (((InlineBox)o).getTextNode()==null) {
-                                	log.info("InlineBox has no TextNode, so skipping" );
-                                } else  {
-                                    log.info( ((InlineBox)o).getTextNode().getTextContent() );  // don't use .getText()
-
-                                    String theText = ((InlineBox)o).getTextNode().getTextContent(); 
-                                    
-                		            paraStillEmpty = false;                                    
-                                    
-                                    if (isHyperlink) {
-                                    	
-                                    	Hyperlink h = createHyperlink(
-                                    			s.getElement().getAttribute("href"), 
-                                    			"Hyperlink", theText, rp);                                    	
-	                                    currentP.getContent().add(h);
-                                    	
-                                    } else { // usual case
-                                    
-	                                    R run = Context.getWmlObjectFactory().createR();
-	                                    Text text = Context.getWmlObjectFactory().createText();
-	                                    text.setValue( theText );
-	                                    if (theText.startsWith(" ")
-	                                    		|| theText.endsWith(" ") ) {
-	                                    	text.setSpace("preserve");
-	                                    }
-	                                    run.getContent().add(text);
-	                                    
-	                                    currentP.getContent().add(run);
-	                                    
-	                                    // Run level styling
-	                                    if (s.getStyle()!=null) { // shouldn't happen
-	                                        Map<String, CSSValue> cssMap = getCascadedProperties(s.getStyle());                                    	
-	//                        	            Map cssMap = styleReference.getCascadedPropertiesMap(s.getElement());
-	                        	            run.setRPr(
-	                        	            		addRunProperties( cssMap ));
-	                                    } 
-	//                                    else {
-	//                                    	// Get it from the parent element eg p
-	//                        	            //Map cssMap = styleReference.getCascadedPropertiesMap(e);
-	//                        	            run.setRPr(
-	//                        	            		addRunProperties( cssMap ));                                    	                                    	
-	//                                    }
-                                    }
-                                }
-                                
+                            	processInlineBox( (InlineBox)o, indents);
+                            	
                             } else if (o instanceof BlockBox ) {
                                 traverse((Box)o, indents + "    "); // commenting out gets rid of unwanted extra parent elements
                             } else {
-                                // log.info("What to do with " + box.getClass().getName() );                        
+                                log.info("What to do with " + box.getClass().getName() );                        
                             }
                         }
                     }
@@ -307,7 +264,109 @@ public class Importer {
     
     }
 
-    PPr addParagraphProperties(Map cssMap) {
+    private void processInlineBox( InlineBox inlineBox, String indents) {
+
+        // Doesn't extend box
+        Styleable s = ((InlineBox)inlineBox );
+        if (s.getStyle()==null) { // Assume this won't happen
+        	log.error("getStyle returned null!");
+        }
+        Map<String, CSSValue> cssMap = getCascadedProperties(s.getStyle());
+//        Map cssMap = styleReference.getCascadedPropertiesMap(s.getElement());
+                
+        boolean isHyperlink = false;
+        
+        String debug = "<UNKNOWN Styleable";
+        if (s.getElement()!=null) {
+            debug = indents + "    " + "<" + s.getElement().getNodeName();
+            
+            if (s.getElement().getNodeName().equals("a")) {
+            	log.info("Ha!  found a hyperlink. ");
+            	isHyperlink = true;
+            } else if (s.getElement().getNodeName().equals("p")) {
+            	// This seems to be the usual case. Odd?
+            	log.debug("p in inline");
+        		currentP = Context.getWmlObjectFactory().createP();                                        	
+            	if (paraStillEmpty) {
+            		// Replace it
+		            imports.remove( imports.size()-1);                                        		
+            	} 
+	            imports.add(currentP);
+	            paraStillEmpty = true;
+	            currentP.setPPr(
+	            		addParagraphProperties( cssMap ));
+            }	            
+        }
+        if (s.getStyle()!=null) {
+            debug +=  " " + s.getStyle().toStringMine();
+        }
+        
+        
+        log.info(debug );
+        //log.info("'" + ((InlineBox)o).getTextNode().getTextContent() );  // don't use .getText()
+        
+        
+        if (inlineBox.getTextNode()==null) {
+            if (isHyperlink) { // eg <a href="http://slashdot.org/" /> ie empty
+            	
+            	Hyperlink h = createHyperlink(
+            			s.getElement().getAttribute("href"), 
+            			"Hyperlink", 
+            			s.getElement().getAttribute("href"), rp);                                    	
+                currentP.getContent().add(h);
+                
+            } else if (s.getElement().getNodeName().equals("br") ) {
+                
+                R run = Context.getWmlObjectFactory().createR();
+                currentP.getContent().add(run);                
+           		run.getContent().add(Context.getWmlObjectFactory().createBr());
+                
+            } else {
+            	log.info("InlineBox has no TextNode, so skipping" );
+            }
+        } else  {
+            log.info( inlineBox.getTextNode().getTextContent() );  // don't use .getText()
+
+            String theText = inlineBox.getTextNode().getTextContent(); 
+            log.info("Processing " + theText);
+            
+            paraStillEmpty = false;                                    
+            
+            if (isHyperlink) {
+            	
+            	Hyperlink h = createHyperlink(
+            			s.getElement().getAttribute("href"), 
+            			"Hyperlink", theText, rp);                                    	
+                currentP.getContent().add(h);
+            	
+            } else { // usual case
+            
+                R run = Context.getWmlObjectFactory().createR();
+                Text text = Context.getWmlObjectFactory().createText();
+                text.setValue( theText );
+                if (theText.startsWith(" ")
+                		|| theText.endsWith(" ") ) {
+                	text.setSpace("preserve");
+                }
+                run.getContent().add(text);
+                
+                currentP.getContent().add(run);
+                
+                // Run level styling
+	            run.setRPr(
+	            		addRunProperties( cssMap ));
+    	            
+//                                    else {
+//                                    	// Get it from the parent element eg p
+//                        	            //Map cssMap = styleReference.getCascadedPropertiesMap(e);
+//                        	            run.setRPr(
+//                        	            		addRunProperties( cssMap ));                                    	                                    	
+//                                    }
+            }
+        }
+    }
+    
+    private PPr addParagraphProperties(Map cssMap) {
 
         PPr pPr =  Context.getWmlObjectFactory().createPPr();
         
@@ -406,13 +465,231 @@ public class Importer {
         
 //      File f = new File(System.getProperty("user.dir") + "/demos/browser/xhtml/hamlet-shortest.xhtml");
 //      File f = new File(System.getProperty("user.dir") + "/input.html");
-        File f = new File(System.getProperty("user.dir") + "/src/test/resources/html/inheritance.html");
+//        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/inheritance.html");
+        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/extjs-cleaned-omitDepr.xhtml");
             
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();		
-		wordMLPackage.getMainDocumentPart().getContent().addAll( convert(f, null) );
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+		
+		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
+		wordMLPackage.getMainDocumentPart().addTargetPart(ndp);
+		ndp.setJaxbElement( (Numbering) XmlUtils.unmarshalString(initialNumbering) );		
+		
+		wordMLPackage.getMainDocumentPart().getContent().addAll( 
+				convert(f, wordMLPackage.getMainDocumentPart().getRelationshipsPart() ) );
+		
+		System.out.println(
+				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 		
 		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/html_output.docx") );
       
   }
+
+	static final String initialNumbering = "<w:numbering xmlns:ve=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\">"
+	  +"<w:abstractNum w:abstractNumId=\"0\">"
+	    +"<w:nsid w:val=\"16892FB7\"/>"
+	    +"<w:multiLevelType w:val=\"hybridMultilevel\"/>"
+	    +"<w:tmpl w:val=\"5A4EB96A\"/>"
+	    +"<w:lvl w:ilvl=\"0\" w:tplc=\"0C090001\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"720\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Symbol\" w:hAnsi=\"Symbol\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"1\" w:tplc=\"0C090003\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"o\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"1440\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\" w:cs=\"Courier New\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"2\" w:tplc=\"0C090005\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"2160\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Wingdings\" w:hAnsi=\"Wingdings\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"3\" w:tplc=\"0C090001\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"2880\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Symbol\" w:hAnsi=\"Symbol\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"4\" w:tplc=\"0C090003\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"o\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"3600\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\" w:cs=\"Courier New\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"5\" w:tplc=\"0C090005\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"4320\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Wingdings\" w:hAnsi=\"Wingdings\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"6\" w:tplc=\"0C090001\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"5040\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Symbol\" w:hAnsi=\"Symbol\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"7\" w:tplc=\"0C090003\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"o\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"5760\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\" w:cs=\"Courier New\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"8\" w:tplc=\"0C090005\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"bullet\"/>"
+	      +"<w:lvlText w:val=\"\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"6480\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	      +"<w:rPr>"
+	        +"<w:rFonts w:ascii=\"Wingdings\" w:hAnsi=\"Wingdings\" w:hint=\"default\"/>"
+	      +"</w:rPr>"
+	    +"</w:lvl>"
+	  +"</w:abstractNum>"
+	  +"<w:abstractNum w:abstractNumId=\"1\">"
+	    +"<w:nsid w:val=\"7E706046\"/>"
+	    +"<w:multiLevelType w:val=\"hybridMultilevel\"/>"
+	    +"<w:tmpl w:val=\"336E8F2C\"/>"
+	    +"<w:lvl w:ilvl=\"0\" w:tplc=\"0C09000F\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"decimal\"/>"
+	      +"<w:lvlText w:val=\"%1.\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"720\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"1\" w:tplc=\"0C090019\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"lowerLetter\"/>"
+	      +"<w:lvlText w:val=\"%2.\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"1440\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"2\" w:tplc=\"0C09001B\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"lowerRoman\"/>"
+	      +"<w:lvlText w:val=\"%3.\"/>"
+	      +"<w:lvlJc w:val=\"right\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"2160\" w:hanging=\"180\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"3\" w:tplc=\"0C09000F\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"decimal\"/>"
+	      +"<w:lvlText w:val=\"%4.\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"2880\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"4\" w:tplc=\"0C090019\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"lowerLetter\"/>"
+	      +"<w:lvlText w:val=\"%5.\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"3600\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"5\" w:tplc=\"0C09001B\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"lowerRoman\"/>"
+	      +"<w:lvlText w:val=\"%6.\"/>"
+	      +"<w:lvlJc w:val=\"right\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"4320\" w:hanging=\"180\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"6\" w:tplc=\"0C09000F\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"decimal\"/>"
+	      +"<w:lvlText w:val=\"%7.\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"5040\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"7\" w:tplc=\"0C090019\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"lowerLetter\"/>"
+	      +"<w:lvlText w:val=\"%8.\"/>"
+	      +"<w:lvlJc w:val=\"left\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"5760\" w:hanging=\"360\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	    +"<w:lvl w:ilvl=\"8\" w:tplc=\"0C09001B\" w:tentative=\"1\">"
+	      +"<w:start w:val=\"1\"/>"
+	      +"<w:numFmt w:val=\"lowerRoman\"/>"
+	      +"<w:lvlText w:val=\"%9.\"/>"
+	      +"<w:lvlJc w:val=\"right\"/>"
+	      +"<w:pPr>"
+	        +"<w:ind w:left=\"6480\" w:hanging=\"180\"/>"
+	      +"</w:pPr>"
+	    +"</w:lvl>"
+	  +"</w:abstractNum>"
+	  +"<w:num w:numId=\"1\">"
+	    +"<w:abstractNumId w:val=\"1\"/>"
+	  +"</w:num>"
+	  +"<w:num w:numId=\"2\">"
+	    +"<w:abstractNumId w:val=\"0\"/>"
+	  +"</w:num>"
+	+"</w:numbering>";
     
 }

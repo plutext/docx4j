@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<style><!--
+
+
+.DocDefaults {display:block;space-after: 4mm;line-height: 115%;font-family: Calibri;font-size: 11.0pt;}
+.Heading1 {display:block;page-break-after: avoid;space-before: 0.33in;space-after: 0in;font-weight: bold;color: #365F91;font-family: Calibri;font-size: 14.0pt;}
+
+					--></style>
+					
+</head><body>
+    
+  <div class="document">
+  
+  <p class="DocDefaults ">This document is a test of CSS inheritance.</p>
+  
+  <p class="Heading1 DocDefaults ">Style only</p>
+
+<!-- BUG: Following should be 14pt -->
+  <p class="Heading1 DocDefaults " >
+  	<span style="white-space:pre-wrap;">Style </span>
+  	<span style="font-style: italic;font-size: 9.0pt;">with ad-hoc overrides</span>
+  	<span style="white-space:pre-wrap;"> only</span></p>
+  
+<!-- BUG: Following should be 14pt -->
+  <p class="Heading1 DocDefaults " 
+  	style="position: relative; margin-left: 0.5in;">
+  	<span style="white-space:pre-wrap;">Style </span>
+  	<span style="font-style: italic;font-size: 9.0pt;">with ad-hoc overrides</span>
+  	<span style="white-space:pre-wrap;"> only</span></p>
+
+  <p class="Heading1 DocDefaults " style="position: relative; margin-left: 0.5in;">Style - indented</p>
+
+    <p class="Heading1 DocDefaults " >
+  	<span style="white-space:pre-wrap;">This kills font inheritance? </span>
+</p>
+    <p class="Heading1 DocDefaults " >
+  	<span style="">How about this?</span>
+</p>
+
+    <p class="Heading1 DocDefaults " >
+  	<span>Or this?</span>
+</p>
+
+    <p class="Heading1" >
+  	<span>Or this?</span>
+</p>
+
+    <p class="Heading1 DocDefaults " >
+  	<span style="font-style: italic;">Italics</span>
+</p>
+  
+  <p>No css</p>
+  
+  </div>
+    
+  </body></html>
