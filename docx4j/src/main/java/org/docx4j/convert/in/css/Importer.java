@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -71,42 +73,47 @@ public class Importer {
     private P currentP;
     
     private RelationshipsPart rp;
+    private NumberingDefinitionsPart ndp;
     
-    private Importer(RelationshipsPart rp) {
-    	this.rp = rp;
+    private ListHelper listHelper;
+    
+    private Importer(RelationshipsPart rp, NumberingDefinitionsPart ndp) {
+    	this.rp  = rp;    	
+    	this.ndp = ndp;    	
+    	listHelper = new ListHelper();
     }
 
-    public static List<Object> convert(File file, RelationshipsPart rp) throws IOException {
+    public static List<Object> convert(File file, RelationshipsPart rp, NumberingDefinitionsPart ndp) throws IOException {
 
     	DocxRenderer renderer = new DocxRenderer();
         renderer.setDocument(file);
         renderer.layout();
                     
-        Importer importer = new Importer(rp);
+        Importer importer = new Importer(rp, ndp);
         importer.traverse(renderer.getRootBox(), "");
         
         return importer.imports;    	
     }
     
-    public static List<Object> convert(String uri, RelationshipsPart rp) {
+    public static List<Object> convert(String uri, RelationshipsPart rp, NumberingDefinitionsPart ndp) {
     	
     	DocxRenderer renderer = new DocxRenderer();
         renderer.setDocument(uri);
         renderer.layout();
                     
-        Importer importer = new Importer(rp);
+        Importer importer = new Importer(rp, ndp);
         importer.traverse(renderer.getRootBox(), "");
         
         return importer.imports;    	
     }
 
-    public static List<Object> convertFromString(String content, RelationshipsPart rp) {
+    public static List<Object> convertFromString(String content, RelationshipsPart rp, NumberingDefinitionsPart ndp) {
     	
     	DocxRenderer renderer = new DocxRenderer();
         renderer.setDocumentFromString(content);
         renderer.layout();
                     
-        Importer importer = new Importer(rp);
+        Importer importer = new Importer(rp, ndp);
         importer.traverse(renderer.getRootBox(), "");
         
         return importer.imports;    	
@@ -202,30 +209,52 @@ public class Importer {
 		            
 		            if (e.getNodeName().equals("li")) {
 		            	
-		            	log.info( cssMap.get("list-style-type" )   );
 		            	
-		            	// TODO: code to generate appropriate numbering on first use, and store it in map
-		            	// Then we can just fetch it.
+		            	Numbering.Num num = null;
+		            	try {
+			            	if ( cssMap.get("list-style-type" ).getCssText().equals("decimal")) {
+			            		num = listHelper.getOrderedList(ndp);
+			            	}
+			            	if (cssMap.get("list-style-type" ).getCssText().equals("disc")) {
+			            		num = listHelper.getUnorderedList(ndp);
+			            	}
+			            	
+			            	// TODO: support other list-style-type
+			            	
+			            	// TODO: generate list definitions based on CSS 
+			            	// (and multiple list definitions)
+			            	
+		            	} catch (JAXBException je) {
+		            		// Shouldn't happen
+		            		je.printStackTrace();
+		            		log.error(e);
+		            	}
 
-			            paraStillEmpty = false;
-			            
-			    	    // Create and add <w:numPr>
-			    	    NumPr numPr =  Context.getWmlObjectFactory().createPPrBaseNumPr();
-			    	    currentP.getPPr().setNumPr(numPr);
+		            	if (num==null) {
+			            	log.warn( "No support for list-style-type: " 
+			            			+ cssMap.get("list-style-type" ).getCssText()   );  // eg decimal, disc
+			            	
+		            	} else {
 
-			    	    // The <w:numId> element
-			    	    NumId numIdElement = Context.getWmlObjectFactory().createPPrBaseNumPrNumId();
-			    	    numPr.setNumId(numIdElement);
-			    	    numIdElement.setVal(BigInteger.valueOf(1));
-			    	    
-			    	    // The <w:ilvl> element
-			    	    Ilvl ilvlElement = Context.getWmlObjectFactory().createPPrBaseNumPrIlvl();
-			    	    numPr.setIlvl(ilvlElement);
-			    	    ilvlElement.setVal(BigInteger.valueOf(0));
-				        
-			    	    // TMP: don't let this override our numbering
-			    	    currentP.getPPr().setInd(null);
-			    	    
+				            paraStillEmpty = false;
+				            
+				    	    // Create and add <w:numPr>
+				    	    NumPr numPr =  Context.getWmlObjectFactory().createPPrBaseNumPr();
+				    	    currentP.getPPr().setNumPr(numPr);
+	
+				    	    // The <w:numId> element
+				    	    NumId numIdElement = Context.getWmlObjectFactory().createPPrBaseNumPrNumId();
+				    	    numPr.setNumId(numIdElement);
+				    	    numIdElement.setVal( num.getNumId() ); // point to the correct list
+				    	    
+				    	    // The <w:ilvl> element
+				    	    Ilvl ilvlElement = Context.getWmlObjectFactory().createPPrBaseNumPrIlvl();
+				    	    numPr.setIlvl(ilvlElement);
+				    	    ilvlElement.setVal(BigInteger.valueOf(0));
+					        
+				    	    // TMP: don't let this override our numbering
+				    	    currentP.getPPr().setInd(null);
+		            	}
 		            }
 		            
 	            }
@@ -472,10 +501,10 @@ public class Importer {
 		
 		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
 		wordMLPackage.getMainDocumentPart().addTargetPart(ndp);
-		ndp.setJaxbElement( (Numbering) XmlUtils.unmarshalString(initialNumbering) );		
+		ndp.unmarshalDefaultNumbering();		
 		
 		wordMLPackage.getMainDocumentPart().getContent().addAll( 
-				convert(f, wordMLPackage.getMainDocumentPart().getRelationshipsPart() ) );
+				convert(f, wordMLPackage.getMainDocumentPart().getRelationshipsPart(), ndp ) );
 		
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
@@ -484,212 +513,5 @@ public class Importer {
       
   }
 
-	static final String initialNumbering = "<w:numbering xmlns:ve=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:w10=\"urn:schemas-microsoft-com:office:word\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:wne=\"http://schemas.microsoft.com/office/word/2006/wordml\">"
-	  +"<w:abstractNum w:abstractNumId=\"0\">"
-	    +"<w:nsid w:val=\"16892FB7\"/>"
-	    +"<w:multiLevelType w:val=\"hybridMultilevel\"/>"
-	    +"<w:tmpl w:val=\"5A4EB96A\"/>"
-	    +"<w:lvl w:ilvl=\"0\" w:tplc=\"0C090001\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"720\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Symbol\" w:hAnsi=\"Symbol\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"1\" w:tplc=\"0C090003\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"o\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"1440\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\" w:cs=\"Courier New\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"2\" w:tplc=\"0C090005\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"2160\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Wingdings\" w:hAnsi=\"Wingdings\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"3\" w:tplc=\"0C090001\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"2880\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Symbol\" w:hAnsi=\"Symbol\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"4\" w:tplc=\"0C090003\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"o\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"3600\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\" w:cs=\"Courier New\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"5\" w:tplc=\"0C090005\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"4320\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Wingdings\" w:hAnsi=\"Wingdings\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"6\" w:tplc=\"0C090001\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"5040\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Symbol\" w:hAnsi=\"Symbol\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"7\" w:tplc=\"0C090003\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"o\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"5760\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\" w:cs=\"Courier New\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"8\" w:tplc=\"0C090005\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"bullet\"/>"
-	      +"<w:lvlText w:val=\"\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"6480\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	      +"<w:rPr>"
-	        +"<w:rFonts w:ascii=\"Wingdings\" w:hAnsi=\"Wingdings\" w:hint=\"default\"/>"
-	      +"</w:rPr>"
-	    +"</w:lvl>"
-	  +"</w:abstractNum>"
-	  +"<w:abstractNum w:abstractNumId=\"1\">"
-	    +"<w:nsid w:val=\"7E706046\"/>"
-	    +"<w:multiLevelType w:val=\"hybridMultilevel\"/>"
-	    +"<w:tmpl w:val=\"336E8F2C\"/>"
-	    +"<w:lvl w:ilvl=\"0\" w:tplc=\"0C09000F\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"decimal\"/>"
-	      +"<w:lvlText w:val=\"%1.\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"720\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"1\" w:tplc=\"0C090019\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"lowerLetter\"/>"
-	      +"<w:lvlText w:val=\"%2.\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"1440\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"2\" w:tplc=\"0C09001B\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"lowerRoman\"/>"
-	      +"<w:lvlText w:val=\"%3.\"/>"
-	      +"<w:lvlJc w:val=\"right\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"2160\" w:hanging=\"180\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"3\" w:tplc=\"0C09000F\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"decimal\"/>"
-	      +"<w:lvlText w:val=\"%4.\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"2880\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"4\" w:tplc=\"0C090019\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"lowerLetter\"/>"
-	      +"<w:lvlText w:val=\"%5.\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"3600\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"5\" w:tplc=\"0C09001B\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"lowerRoman\"/>"
-	      +"<w:lvlText w:val=\"%6.\"/>"
-	      +"<w:lvlJc w:val=\"right\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"4320\" w:hanging=\"180\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"6\" w:tplc=\"0C09000F\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"decimal\"/>"
-	      +"<w:lvlText w:val=\"%7.\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"5040\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"7\" w:tplc=\"0C090019\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"lowerLetter\"/>"
-	      +"<w:lvlText w:val=\"%8.\"/>"
-	      +"<w:lvlJc w:val=\"left\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"5760\" w:hanging=\"360\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	    +"<w:lvl w:ilvl=\"8\" w:tplc=\"0C09001B\" w:tentative=\"1\">"
-	      +"<w:start w:val=\"1\"/>"
-	      +"<w:numFmt w:val=\"lowerRoman\"/>"
-	      +"<w:lvlText w:val=\"%9.\"/>"
-	      +"<w:lvlJc w:val=\"right\"/>"
-	      +"<w:pPr>"
-	        +"<w:ind w:left=\"6480\" w:hanging=\"180\"/>"
-	      +"</w:pPr>"
-	    +"</w:lvl>"
-	  +"</w:abstractNum>"
-	  +"<w:num w:numId=\"1\">"
-	    +"<w:abstractNumId w:val=\"1\"/>"
-	  +"</w:num>"
-	  +"<w:num w:numId=\"2\">"
-	    +"<w:abstractNumId w:val=\"0\"/>"
-	  +"</w:num>"
-	+"</w:numbering>";
     
 }

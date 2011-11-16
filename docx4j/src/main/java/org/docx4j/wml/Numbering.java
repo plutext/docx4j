@@ -421,6 +421,7 @@ public class Numbering
         "numStyleLink",
         "lvl"
     })
+    @XmlRootElement(name = "abstractNum")    
     public static class AbstractNum
         implements Child
     {

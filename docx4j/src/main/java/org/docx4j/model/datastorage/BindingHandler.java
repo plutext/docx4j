@@ -33,6 +33,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -275,7 +276,12 @@ public class BindingHandler {
 				String unescaped = StringEscapeUtils.unescapeHtml(r);
 				log.info("Unescaped: " + unescaped);
 				
-				List<Object> results = Importer.convertFromString(unescaped, sourcePart.getRelationshipsPart() );
+				NumberingDefinitionsPart ndp = null;
+				if (sourcePart instanceof MainDocumentPart) {
+					ndp = ((MainDocumentPart)sourcePart).getNumberingDefinitionsPart();
+				}				
+				
+				List<Object> results = Importer.convertFromString(unescaped, sourcePart.getRelationshipsPart(), ndp );
 				log.info("Got results: " + results.size() );
 				
 				org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();

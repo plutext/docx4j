@@ -304,5 +304,77 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 		
 	}
 	
+	/**
+	 * Add the specified definition, allocating it a new w:abstractNumId.
+	 * 
+	 * Also create and add an associated ListNumberingDefinition, and return
+	 * the w:numId of this associated ListNumberingDefinition (since that is
+	 * what you are likely to use in the document). 
+	 * 
+	 * @param abstractNum
+	 * @return
+	 */
+	public Numbering.Num addAbstractListNumberingDefinition(Numbering.AbstractNum abstractNum) {
+		
+		//////////////////////////////////////////////
+		// Numbering.AbstractNum abstractNum
+		
+		// Generate a unique w:abstractNumId for it
+		int nextId = getAbstractListDefinitions().size();		
+    	do {
+    		nextId++;    		
+    	} while (getAbstractListDefinitions().containsKey( "" + nextId ));    	
+    	abstractNum.setAbstractNumId( BigInteger.valueOf(nextId) );
+    	
+    	// Add it to our JAXB object
+    	this.jaxbElement.getAbstractNum().add(abstractNum);
+    	
+    	// Add it to our hashmap
+        AbstractListNumberingDefinition absNumDef = new AbstractListNumberingDefinition(abstractNum);
+        abstractListDefinitions.put(absNumDef.getID(), absNumDef);
+
+		//////////////////////////////////////////////
+		// Numbering.Num num
+        
+        // Now make an associated ListNumberingDefinition
+		//	<w:num w:numId="1">
+		//	  <w:abstractNumId w:val="1"/>
+		//	</w:num>"        
+        Numbering.Num num = Context.wmlObjectFactory.createNumberingNum();
+        Numbering.Num.AbstractNumId abstractNumId = Context.wmlObjectFactory.createNumberingNumAbstractNumId();
+        abstractNumId.setVal(BigInteger.valueOf(nextId) );
+        num.setAbstractNumId(abstractNumId);
+        
+        nextId = getInstanceListDefinitions().size();		
+    	do {
+    		nextId++;    		
+    	} while (getInstanceListDefinitions().containsKey( "" + nextId ));    	
+    	num.setNumId( BigInteger.valueOf(nextId) );  
+    	
+    	// Add it to our JAXB object
+    	this.jaxbElement.getNum().add(num);
+    	
+    	// Add it to our hashmap
+        ListNumberingDefinition listDef = new ListNumberingDefinition(num, abstractListDefinitions);
+        instanceListDefinitions.put(listDef.getListNumberId(), listDef);
+        
+        // 
+    	return num;
+		
+	}
+	
+    public Numbering unmarshalDefaultNumbering() throws JAXBException {
+    	    	    	 
+		java.io.InputStream is = null;
+		try {
+			is = org.docx4j.utils.ResourceUtils.getResource(
+					"org/docx4j/openpackaging/parts/WordprocessingML/numbering.xml");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}    		
+    	
+    	return unmarshal( is );    // side-effect is to set jaxbElement 	
+    }
 
 }
