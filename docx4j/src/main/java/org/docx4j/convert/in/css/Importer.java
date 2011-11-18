@@ -12,12 +12,14 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
 import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -26,23 +28,24 @@ import org.docx4j.org.xhtmlrenderer.css.constants.IdentValue;
 import org.docx4j.org.xhtmlrenderer.css.style.CalculatedStyle;
 import org.docx4j.org.xhtmlrenderer.css.style.DerivedValue;
 import org.docx4j.org.xhtmlrenderer.css.style.FSDerivedValue;
+import org.docx4j.org.xhtmlrenderer.docx.Docx4JFSImage;
+import org.docx4j.org.xhtmlrenderer.docx.Docx4jUserAgent;
 import org.docx4j.org.xhtmlrenderer.docx.DocxRenderer;
 import org.docx4j.org.xhtmlrenderer.layout.Styleable;
 import org.docx4j.org.xhtmlrenderer.render.AnonymousBlockBox;
 import org.docx4j.org.xhtmlrenderer.render.BlockBox;
 import org.docx4j.org.xhtmlrenderer.render.Box;
 import org.docx4j.org.xhtmlrenderer.render.InlineBox;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
-import org.docx4j.wml.PPr;
-import org.docx4j.wml.R;
-import org.docx4j.wml.RPr;
-import org.docx4j.wml.Text;
 import org.docx4j.wml.P.Hyperlink;
+import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
+import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
+import org.docx4j.wml.Text;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -72,49 +75,57 @@ public class Importer {
     
     private P currentP;
     
+    private WordprocessingMLPackage wordMLPackage;
     private RelationshipsPart rp;
     private NumberingDefinitionsPart ndp;
     
     private ListHelper listHelper;
     
-    private Importer(RelationshipsPart rp, NumberingDefinitionsPart ndp) {
-    	this.rp  = rp;    	
-    	this.ndp = ndp;    	
+    private DocxRenderer renderer;
+    
+    private Importer(WordprocessingMLPackage wordMLPackage) {
+    	this.wordMLPackage= wordMLPackage;
+    	rp = wordMLPackage.getMainDocumentPart().getRelationshipsPart();
+    	ndp = wordMLPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+    	
     	listHelper = new ListHelper();
     }
 
-    public static List<Object> convert(File file, RelationshipsPart rp, NumberingDefinitionsPart ndp) throws IOException {
+    public static List<Object> convert(File file, WordprocessingMLPackage wordMLPackage) throws IOException {
 
-    	DocxRenderer renderer = new DocxRenderer();
-        renderer.setDocument(file);
-        renderer.layout();
+        Importer importer = new Importer(wordMLPackage);
+
+        importer.renderer = new DocxRenderer();
+        importer.renderer.setDocument(file);
+        importer.renderer.layout();
                     
-        Importer importer = new Importer(rp, ndp);
-        importer.traverse(renderer.getRootBox(), "");
+        importer.traverse(importer.renderer.getRootBox(), "");
         
         return importer.imports;    	
     }
     
-    public static List<Object> convert(String uri, RelationshipsPart rp, NumberingDefinitionsPart ndp) {
+    public static List<Object> convert(String uri, WordprocessingMLPackage wordMLPackage) {
+
+        Importer importer = new Importer(wordMLPackage);
     	
-    	DocxRenderer renderer = new DocxRenderer();
-        renderer.setDocument(uri);
-        renderer.layout();
+        importer.renderer = new DocxRenderer();
+        importer.renderer.setDocument(uri);
+        importer.renderer.layout();
                     
-        Importer importer = new Importer(rp, ndp);
-        importer.traverse(renderer.getRootBox(), "");
+        importer.traverse(importer.renderer.getRootBox(), "");
         
         return importer.imports;    	
     }
 
-    public static List<Object> convertFromString(String content, RelationshipsPart rp, NumberingDefinitionsPart ndp) {
+    public static List<Object> convertFromString(String content, WordprocessingMLPackage wordMLPackage, String baseUrl) {
     	
-    	DocxRenderer renderer = new DocxRenderer();
-        renderer.setDocumentFromString(content);
-        renderer.layout();
+        Importer importer = new Importer(wordMLPackage);
+
+        importer.renderer = new DocxRenderer();
+        importer.renderer.setDocumentFromString(content, baseUrl);
+        importer.renderer.layout();
                     
-        Importer importer = new Importer(rp, ndp);
-        importer.traverse(renderer.getRootBox(), "");
+        importer.traverse(importer.renderer.getRootBox(), "");
         
         return importer.imports;    	
     }
@@ -159,7 +170,7 @@ public class Importer {
     
     private void traverse(Box box, String indents) {
         
-        //log.info(box.getClass().getName() );
+        log.info(box.getClass().getName() );
         if (box instanceof BlockBox) {
             BlockBox blockBox = ((BlockBox)box);
 
@@ -208,53 +219,10 @@ public class Importer {
 		            		addParagraphProperties( cssMap ));
 		            
 		            if (e.getNodeName().equals("li")) {
-		            	
-		            	
-		            	Numbering.Num num = null;
-		            	try {
-			            	if ( cssMap.get("list-style-type" ).getCssText().equals("decimal")) {
-			            		num = listHelper.getOrderedList(ndp);
-			            	}
-			            	if (cssMap.get("list-style-type" ).getCssText().equals("disc")) {
-			            		num = listHelper.getUnorderedList(ndp);
-			            	}
-			            	
-			            	// TODO: support other list-style-type
-			            	
-			            	// TODO: generate list definitions based on CSS 
-			            	// (and multiple list definitions)
-			            	
-		            	} catch (JAXBException je) {
-		            		// Shouldn't happen
-		            		je.printStackTrace();
-		            		log.error(e);
-		            	}
-
-		            	if (num==null) {
-			            	log.warn( "No support for list-style-type: " 
-			            			+ cssMap.get("list-style-type" ).getCssText()   );  // eg decimal, disc
-			            	
-		            	} else {
-
-				            paraStillEmpty = false;
-				            
-				    	    // Create and add <w:numPr>
-				    	    NumPr numPr =  Context.getWmlObjectFactory().createPPrBaseNumPr();
-				    	    currentP.getPPr().setNumPr(numPr);
-	
-				    	    // The <w:numId> element
-				    	    NumId numIdElement = Context.getWmlObjectFactory().createPPrBaseNumPrNumId();
-				    	    numPr.setNumId(numIdElement);
-				    	    numIdElement.setVal( num.getNumId() ); // point to the correct list
-				    	    
-				    	    // The <w:ilvl> element
-				    	    Ilvl ilvlElement = Context.getWmlObjectFactory().createPPrBaseNumPrIlvl();
-				    	    numPr.setIlvl(ilvlElement);
-				    	    ilvlElement.setVal(BigInteger.valueOf(0));
-					        
-				    	    // TMP: don't let this override our numbering
-				    	    currentP.getPPr().setInd(null);
-		            	}
+		            	addNumbering(e, cssMap);
+		            } else if  (e.getNodeName().equals("img")) {
+		        		// TODO, should we be using ReplacedElementFactory approach instead?		            	
+		            	addImage(e);		            	
 		            }
 		            
 	            }
@@ -292,6 +260,85 @@ public class Importer {
         }
     
     }
+
+	private void addImage(Element e) {
+		System.out.println("Detected an image!!! " + e.getAttribute("src"));
+		
+		Docx4jUserAgent docx4jUserAgent = renderer.getDocx4jUserAgent();
+		Docx4JFSImage docx4JFSImage = docx4jUserAgent.getDocx4JImageResource( e.getAttribute("src") );
+				
+		BinaryPartAbstractImage imagePart;
+		Inline inline = null;
+		try {
+			
+			imagePart = BinaryPartAbstractImage.createImagePart(
+					wordMLPackage, 
+					docx4JFSImage.getBytes());
+		    inline = imagePart.createImageInline( null, null, 0, 1, false);
+		    
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}		        		
+		
+		// Now add the inline in w:p/w:r/w:drawing
+		org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
+		currentP.getContent().add(run);        
+		org.docx4j.wml.Drawing drawing = Context.getWmlObjectFactory().createDrawing();		
+		run.getContent().add(drawing);		
+		drawing.getAnchorOrInline().add(inline);
+		
+	    paraStillEmpty = false;
+		
+	}
+
+	private void addNumbering(Element e, Map<String, CSSValue> cssMap) {
+		Numbering.Num num = null;
+		try {
+			if ( cssMap.get("list-style-type" ).getCssText().equals("decimal")) {
+				num = listHelper.getOrderedList(ndp);
+			}
+			if (cssMap.get("list-style-type" ).getCssText().equals("disc")) {
+				num = listHelper.getUnorderedList(ndp);
+			}
+			
+			// TODO: support other list-style-type
+			
+			// TODO: generate list definitions based on CSS 
+			// (and multiple list definitions)
+			
+		} catch (JAXBException je) {
+			// Shouldn't happen
+			je.printStackTrace();
+			log.error(e);
+		}
+
+		if (num==null) {
+			log.warn( "No support for list-style-type: " 
+					+ cssMap.get("list-style-type" ).getCssText()   );  // eg decimal, disc
+			
+		} else {
+
+		    paraStillEmpty = false;
+		    
+		    // Create and add <w:numPr>
+		    NumPr numPr =  Context.getWmlObjectFactory().createPPrBaseNumPr();
+		    currentP.getPPr().setNumPr(numPr);
+
+		    // The <w:numId> element
+		    NumId numIdElement = Context.getWmlObjectFactory().createPPrBaseNumPrNumId();
+		    numPr.setNumId(numIdElement);
+		    numIdElement.setVal( num.getNumId() ); // point to the correct list
+		    
+		    // The <w:ilvl> element
+		    Ilvl ilvlElement = Context.getWmlObjectFactory().createPPrBaseNumPrIlvl();
+		    numPr.setIlvl(ilvlElement);
+		    ilvlElement.setVal(BigInteger.valueOf(0));
+		    
+		    // TMP: don't let this override our numbering
+		    currentP.getPPr().setInd(null);
+		}
+	}
 
     private void processInlineBox( InlineBox inlineBox, String indents) {
 
@@ -495,7 +542,7 @@ public class Importer {
 //      File f = new File(System.getProperty("user.dir") + "/demos/browser/xhtml/hamlet-shortest.xhtml");
 //      File f = new File(System.getProperty("user.dir") + "/input.html");
 //        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/inheritance.html");
-        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/extjs-cleaned-omitDepr.xhtml");
+        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/img.xhtml");
             
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
@@ -504,7 +551,7 @@ public class Importer {
 		ndp.unmarshalDefaultNumbering();		
 		
 		wordMLPackage.getMainDocumentPart().getContent().addAll( 
-				convert(f, wordMLPackage.getMainDocumentPart().getRelationshipsPart(), ndp ) );
+				convert(f, wordMLPackage) );
 		
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));

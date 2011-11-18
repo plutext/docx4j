@@ -281,7 +281,8 @@ public class BindingHandler {
 					ndp = ((MainDocumentPart)sourcePart).getNumberingDefinitionsPart();
 				}				
 				
-				List<Object> results = Importer.convertFromString(unescaped, sourcePart.getRelationshipsPart(), ndp );
+				String baseUrl = null;
+				List<Object> results = Importer.convertFromString(unescaped, pkg, baseUrl );
 				log.info("Got results: " + results.size() );
 				
 				org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
