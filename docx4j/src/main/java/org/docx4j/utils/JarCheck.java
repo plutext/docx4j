@@ -106,6 +106,7 @@ public final class JarCheck
         convertHumanToMachine.put( "1.4", 48 );
         convertHumanToMachine.put( "1.5", 49 );
         convertHumanToMachine.put( "1.6", 50 );
+        convertHumanToMachine.put( "1.7", 51 );
         }
 
     static
@@ -117,6 +118,7 @@ public final class JarCheck
         convertMachineToHuman.put( 48, "1.4" );
         convertMachineToHuman.put( 49, "1.5" );
         convertMachineToHuman.put( 50, "1.6" );
+        convertMachineToHuman.put( 51, "1.7" );
         }
 
     /**
