@@ -268,6 +268,7 @@ public class BindingHandler {
 				String tag) {
 
 			log.info("convertXHTML extension function");
+			log.info("contentChild: " + contentChild);
 			
 			String r = xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
 			if (r==null) return null;
@@ -289,7 +290,10 @@ public class BindingHandler {
 				DocumentFragment docfrag = docContainer.createDocumentFragment();
 				
 				if (results.size()>0 && 
-						contentChild.equals("r") ) {
+						(contentChild.equals("r")
+								|| contentChild.equals("proofErr")
+								// TODO: is there other inline content Word might put into a content control?
+								) ) {
 					// Only accept the first result object
 					
 					// A span seems to come back as a w:p, so extract contents 					
@@ -660,6 +664,11 @@ public class BindingHandler {
 		
 			
 			Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			
+			if (xpath==null) {
+				log.warn("Couldn't find xpath with id: " + xpathId);
+				return null;
+			}
 			
 			String storeItemId = xpath.getDataBinding().getStoreItemID();
 			String xpathExp = xpath.getDataBinding().getXpath();
