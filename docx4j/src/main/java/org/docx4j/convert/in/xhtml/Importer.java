@@ -45,6 +45,7 @@ import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.RStyle;
 import org.docx4j.wml.Text;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
@@ -387,6 +388,7 @@ public class Importer {
             	
             	Hyperlink h = createHyperlink(
             			s.getElement().getAttribute("href"), 
+            			addRunProperties( cssMap ),
             			"Hyperlink", 
             			s.getElement().getAttribute("href"), rp);                                    	
                 currentP.getContent().add(h);
@@ -411,7 +413,8 @@ public class Importer {
             if (isHyperlink) {
             	
             	Hyperlink h = createHyperlink(
-            			s.getElement().getAttribute("href"), 
+            			s.getElement().getAttribute("href"),
+            			addRunProperties( cssMap ),
             			"Hyperlink", theText, rp);                                    	
                 currentP.getContent().add(h);
             	
@@ -495,7 +498,7 @@ public class Importer {
         return rPr;
     }
 
-	private Hyperlink createHyperlink(String url, String style, String linkText, RelationshipsPart rp) {
+	private Hyperlink createHyperlink(String url, RPr rPr, String style, String linkText, RelationshipsPart rp) {
 		
 		try {
 
@@ -525,7 +528,14 @@ public class Importer {
             "</w:r>" +
             "</w:hyperlink>";
 
-			return (Hyperlink)XmlUtils.unmarshalString(hpl);
+			Hyperlink hyperlink = (Hyperlink)XmlUtils.unmarshalString(hpl);
+			R r = (R)hyperlink.getContent().get(0);
+			r.setRPr(rPr);
+			RStyle rStyle = Context.getWmlObjectFactory().createRStyle();
+			rStyle.setVal(style);
+			rPr.setRStyle(rStyle );
+			
+			return hyperlink;
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
