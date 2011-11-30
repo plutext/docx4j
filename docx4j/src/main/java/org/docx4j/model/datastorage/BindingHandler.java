@@ -282,6 +282,7 @@ public class BindingHandler {
 					ndp = ((MainDocumentPart)sourcePart).getNumberingDefinitionsPart();
 				}				
 				
+				Importer.setHyperlinkStyle(hyperlinkStyleId);
 				String baseUrl = null;
 				List<Object> results = Importer.convertFromString(unescaped, pkg, baseUrl );
 				log.info("Got results: " + results.size() );

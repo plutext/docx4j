@@ -69,6 +69,27 @@ public class Importer {
 	
 	protected static Logger log = Logger.getLogger(Importer.class);		
 	    
+	/**
+	 * Configure, how the Importer styles hyperlinks
+	 * 
+	 * If hyperlinkStyleId is set to <code>null</code>, hyperlinks are
+	 * styled using just the CSS. This is the default behavior.
+	 * 
+	 * If hyperlinkStyleId is set to <code>"someWordHyperlinkStyleName"</code>, 
+	 * strings containing 'http://' or 'https://' or or 'mailto:' are converted to w:hyperlink.  
+	 * The default Word hyperlink style name is "Hyperlink".
+	 * 
+	 * Due to the architecture of this class, this is a static flag changing the
+	 * behavior of all following calls.
+	 * 
+	 * @param hyperlinkStyleID
+	 *            The style to use for hyperlinks (eg Hyperlink)
+	 */
+	public static void setHyperlinkStyle (
+			String hyperlinkStyleID) {
+		hyperlinkStyleId = hyperlinkStyleID;
+	}
+	private static String hyperlinkStyleId = null;	
     private List<Object> imports = new ArrayList<Object>(); 
 //    public List<Object>  getImportedContent() {
 //    	return imports;
@@ -90,6 +111,11 @@ public class Importer {
     	ndp = wordMLPackage.getMainDocumentPart().getNumberingDefinitionsPart();
     	
     	listHelper = new ListHelper();
+    	
+		if (hyperlinkStyleId !=null && wordMLPackage instanceof WordprocessingMLPackage) {
+			((WordprocessingMLPackage)wordMLPackage).getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId);
+		}
+    	
     }
 
     public static List<Object> convert(File file, WordprocessingMLPackage wordMLPackage) throws IOException {
@@ -389,7 +415,6 @@ public class Importer {
             	Hyperlink h = createHyperlink(
             			s.getElement().getAttribute("href"), 
             			addRunProperties( cssMap ),
-            			"Hyperlink", 
             			s.getElement().getAttribute("href"), rp);                                    	
                 currentP.getContent().add(h);
                 
@@ -415,7 +440,7 @@ public class Importer {
             	Hyperlink h = createHyperlink(
             			s.getElement().getAttribute("href"),
             			addRunProperties( cssMap ),
-            			"Hyperlink", theText, rp);                                    	
+            			theText, rp);                                    	
                 currentP.getContent().add(h);
             	
             } else { // usual case
@@ -498,7 +523,7 @@ public class Importer {
         return rPr;
     }
 
-	private Hyperlink createHyperlink(String url, RPr rPr, String style, String linkText, RelationshipsPart rp) {
+	private Hyperlink createHyperlink(String url, RPr rPr, String linkText, RelationshipsPart rp) {
 		
 		try {
 
@@ -521,9 +546,6 @@ public class Importer {
 			String hpl = "<w:hyperlink r:id=\"" + rel.getId() + "\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" " +
             "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" >" +
             "<w:r>" +
-            "<w:rPr>" +
-            "<w:rStyle w:val=\"" + style + "\" />" +  
-            "</w:rPr>" +
             "<w:t>" + linkText + "</w:t>" +
             "</w:r>" +
             "</w:hyperlink>";
@@ -531,10 +553,11 @@ public class Importer {
 			Hyperlink hyperlink = (Hyperlink)XmlUtils.unmarshalString(hpl);
 			R r = (R)hyperlink.getContent().get(0);
 			r.setRPr(rPr);
-			RStyle rStyle = Context.getWmlObjectFactory().createRStyle();
-			rStyle.setVal(style);
-			rPr.setRStyle(rStyle );
-			
+			if (hyperlinkStyleId!=null) {
+				RStyle rStyle = Context.getWmlObjectFactory().createRStyle();
+				rStyle.setVal(hyperlinkStyleId);
+				rPr.setRStyle(rStyle );
+			}
 			return hyperlink;
 			
 		} catch (Exception e) {
