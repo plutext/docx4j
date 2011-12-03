@@ -21,12 +21,17 @@ package org.docx4j.utils;
 
 import java.util.List;
 
-/* Doing this as a class instead of an interface ensures that it is 
- * part of the inheritance hierarchy.
+/**
  * 
+ * Extend this class to specify what should be done when a
+ * particular object (eg P or Table) is visited during the
+ * traversal.
+ *
  *  @author alberto
  */
 public abstract class TraversalUtilVisitor<T> {
+// Doing this as a class instead of an interface ensures that it is part of the inheritance hierarchy.
+	
 	/**
 	 * 
 	 * @param element

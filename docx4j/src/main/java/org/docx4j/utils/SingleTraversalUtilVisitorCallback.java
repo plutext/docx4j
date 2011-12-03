@@ -2,8 +2,13 @@ package org.docx4j.utils;
 
 import java.util.List;
 
-/** @author alberto */
+/** 
+ * Use this if there is only a single object type (eg just P's)
+ * you are interested in doing something with.
+ * 
+ * @author alberto */
 public class SingleTraversalUtilVisitorCallback extends AbstractTraversalUtilVisitorCallback {
+	
 	protected TraversalUtilVisitor visitor = null;
 	protected Class visitorClass = null;
 	

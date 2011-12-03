@@ -121,6 +121,7 @@ public class TraversalUtil {
 
 		/**
 		 * Visits a node in pre order (before its children have been visited).
+
 		 * 
 		 * A node is visited only if all its parents have been traversed (
 		 * {@link #shouldTraverse(Object)}).</p>
@@ -395,63 +396,144 @@ public class TraversalUtil {
 		}
 	}
 	
-	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, TraversalUtilVisitor visitor) {
+	/** 
+	 * Use this if there is only a single object type (eg just P's)
+	 * you are interested in doing something with.  
+	 * 
+	 * This method allows you to traverse just the main document
+	 * part, or also headers/footers, footnotes/endnotes, and comments
+	 * as well. 
+	 * 
+	 * @param wmlPackage
+	 * @param bodyOnly
+	 * @param visitor
+	 */
+	public static void visit(WordprocessingMLPackage wmlPackage, 
+			boolean bodyOnly, TraversalUtilVisitor visitor) {
+		
 		if (visitor != null) {
 			visit(wmlPackage, bodyOnly, new SingleTraversalUtilVisitorCallback(visitor));
 		}
 	}
+
+	/** 
+	 * Use this if there is only a single object type (eg just P's)
+	 * you are interested in doing something with.
+	 * 
+	 * This method is for traversing an arbitrary WML object (eg a table), as opposed to
+	 * eg the main document part, or a header.
+	 * 
+	 * @param parent
+	 * @param visitor
+	 */
+	public static void visit(Object parent, TraversalUtilVisitor visitor) {
+		
+		if (visitor != null) {
+			visit(parent, new SingleTraversalUtilVisitorCallback(visitor));
+		}
+	}
 	
-	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, List<TraversalUtilVisitor> visitorList) {
-	CompoundTraversalUtilVisitorCallback callback = null;
+	/** 
+	 * Use this if there is more than one object type (eg Tables and Paragraphs)
+	 * you are interested in doing something with during the traversal.
+	 * 
+	 * This method allows you to traverse just the main document
+	 * part, or also headers/footers, footnotes/endnotes, and comments
+	 * as well. 
+	 * 
+	 * @param wmlPackage
+	 * @param bodyOnly
+	 * @param visitorList
+	 */
+	public static void visit(WordprocessingMLPackage wmlPackage,
+			boolean bodyOnly, List<TraversalUtilVisitor> visitorList) {
+		
+		CompoundTraversalUtilVisitorCallback callback = null;
 		if ((visitorList != null) && (!visitorList.isEmpty())) {
 			if (visitorList.size() > 1) {
-				visit(wmlPackage, bodyOnly, new CompoundTraversalUtilVisitorCallback(visitorList));
-			}
-			else {
+				visit(wmlPackage, bodyOnly,
+						new CompoundTraversalUtilVisitorCallback(visitorList));
+			} else {
 				visit(wmlPackage, bodyOnly, visitorList.get(0));
 			}
 		}
 	}
-	
-	public static void visit(WordprocessingMLPackage wmlPackage, boolean bodyOnly, Callback callback) {
-	MainDocumentPart mainDocument = null;
-	RelationshipsPart relPart = null;
-	List<Relationship> relList = null;
-	List<Object> elementList = null;
+
+	/** 
+	 * Use this if there is more than one object type (eg Tables and Paragraphs)
+	 * you are interested in doing something with during the traversal.
+	 * 
+	 * This method is for traversing an arbitrary WML object (eg a table), as opposed to
+	 * eg the main document part, or a header.
+	 * 
+	 * @param parent
+	 * @param visitorList
+	 */
+	public static void visit(Object parent,
+			List<TraversalUtilVisitor> visitorList) {
+		
+		CompoundTraversalUtilVisitorCallback callback = null;
+		if ((visitorList != null) && (!visitorList.isEmpty())) {
+			if (visitorList.size() > 1) {
+				visit(parent, new CompoundTraversalUtilVisitorCallback(
+						visitorList));
+			} else {
+				visit(parent, visitorList.get(0));
+			}
+		}
+	}
+
+	public static void visit(Object parent, Callback callback) {
+		
+		if ((parent != null) && (callback != null)) {
+			callback.walkJAXBElements(parent);
+		}
+	}
+
+	public static void visit(WordprocessingMLPackage wmlPackage,
+			boolean bodyOnly, Callback callback) {
+		
+		MainDocumentPart mainDocument = null;
+		RelationshipsPart relPart = null;
+		List<Relationship> relList = null;
+		List<Object> elementList = null;
+		
 		if ((wmlPackage != null) && (callback != null)) {
 			mainDocument = wmlPackage.getMainDocumentPart();
 			callback.walkJAXBElements(mainDocument.getJaxbElement().getBody());
 			if (!bodyOnly) {
 				relPart = mainDocument.getRelationshipsPart();
 				relList = relPart.getRelationships().getRelationship();
-				for (Relationship rs:relList) {
+				for (Relationship rs : relList) {
 					elementList = null;
 					if (Namespaces.HEADER.equals(rs.getType())) {
-						elementList = ((HeaderPart)relPart.getPart(rs)).getJaxbElement().getEGBlockLevelElts();
-					}
-					else if (Namespaces.FOOTER.equals(rs.getType())) {
-						elementList = ((FooterPart)relPart.getPart(rs)).getJaxbElement().getEGBlockLevelElts();
-					}
-					else if (Namespaces.ENDNOTES.equals(rs.getType())) {
+						elementList = ((HeaderPart) relPart.getPart(rs))
+								.getJaxbElement().getContent();
+					} else if (Namespaces.FOOTER.equals(rs.getType())) {
+						elementList = ((FooterPart) relPart.getPart(rs))
+								.getJaxbElement().getContent();
+					} else if (Namespaces.ENDNOTES.equals(rs.getType())) {
 						elementList = new ArrayList();
-						for (CTFtnEdn endnote: ((EndnotesPart)relPart.getPart(rs)).getJaxbElement().getEndnote()) {
+						for (CTFtnEdn endnote : ((EndnotesPart) relPart
+								.getPart(rs)).getJaxbElement().getEndnote()) {
 							elementList.addAll(endnote.getEGBlockLevelElts());
 						}
-					}
-					else if (Namespaces.FOOTNOTES.equals(rs.getType())) {
+					} else if (Namespaces.FOOTNOTES.equals(rs.getType())) {
 						elementList = new ArrayList();
-						for (CTFtnEdn footnote: ((FootnotesPart)relPart.getPart(rs)).getJaxbElement().getFootnote()) {
+						for (CTFtnEdn footnote : ((FootnotesPart) relPart
+								.getPart(rs)).getJaxbElement().getFootnote()) {
 							elementList.addAll(footnote.getEGBlockLevelElts());
 						}
-					}
-					else if (Namespaces.COMMENTS.equals(rs.getType())) {
+					} else if (Namespaces.COMMENTS.equals(rs.getType())) {
 						elementList = new ArrayList();
-						for (Comment comment: ((CommentsPart)relPart.getPart(rs)).getJaxbElement().getComment()) {
+						for (Comment comment : ((CommentsPart) relPart
+								.getPart(rs)).getJaxbElement().getComment()) {
 							elementList.addAll(comment.getEGBlockLevelElts());
 						}
 					}
 					if ((elementList != null) && (!elementList.isEmpty())) {
-						System.out.println("Processing target: " + rs.getTarget() + ", type: " + rs.getType());
+						System.out.println("Processing target: "
+								+ rs.getTarget() + ", type: " + rs.getType());
 						callback.walkJAXBElements(elementList);
 					}
 				}
@@ -459,30 +541,6 @@ public class TraversalUtil {
 		}
 	}
 	
-	public static void visit(Object parent, TraversalUtilVisitor visitor) {
-		if (visitor != null) {
-			visit(parent, new SingleTraversalUtilVisitorCallback(visitor));
-		}
-	}
-	
-	public static void visit(Object parent, List<TraversalUtilVisitor> visitorList) {
-	CompoundTraversalUtilVisitorCallback callback = null;
-		if ((visitorList != null) && (!visitorList.isEmpty())) {
-			if (visitorList.size() > 1) {
-				visit(parent, new CompoundTraversalUtilVisitorCallback(visitorList));
-			}
-			else {
-				visit(parent, visitorList.get(0));
-			}
-		}
-	}
-	
-	public static void visit(Object parent, Callback callback) {
-		if ((parent != null) && (callback != null)) {
-			callback.walkJAXBElements(parent);
-		}
-	}
-
 	// private void describeDrawing( org.docx4j.wml.Drawing d) {
 	//			
 	// log.info("In wml.Drawing" );
