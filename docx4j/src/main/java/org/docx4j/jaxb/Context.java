@@ -100,7 +100,7 @@ public class Context {
 		}				
 	}
 	
-	public static org.docx4j.wml.ObjectFactory wmlObjectFactory;
+	private static org.docx4j.wml.ObjectFactory wmlObjectFactory;
 	
 	public static org.docx4j.wml.ObjectFactory getWmlObjectFactory() {
 		

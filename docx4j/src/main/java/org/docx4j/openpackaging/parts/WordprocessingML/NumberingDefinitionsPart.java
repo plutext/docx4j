@@ -340,8 +340,8 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 		//	<w:num w:numId="1">
 		//	  <w:abstractNumId w:val="1"/>
 		//	</w:num>"        
-        Numbering.Num num = Context.wmlObjectFactory.createNumberingNum();
-        Numbering.Num.AbstractNumId abstractNumId = Context.wmlObjectFactory.createNumberingNumAbstractNumId();
+        Numbering.Num num = Context.getWmlObjectFactory().createNumberingNum();
+        Numbering.Num.AbstractNumId abstractNumId = Context.getWmlObjectFactory().createNumberingNumAbstractNumId();
         abstractNumId.setVal(BigInteger.valueOf(nextId) );
         num.setAbstractNumId(abstractNumId);
         
