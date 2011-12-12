@@ -49,20 +49,19 @@ public class Context {
 		Log4jConfigurator.configure();
 		
 		// Display diagnostic info about version of JAXB being used.
-    	try {
-    		Class.forName("com.sun.xml.bind.marshaller.MinimumEscapeHandler");
-    		log.info("JAXB: Using RI");
-
-    	} catch (ClassNotFoundException cnfe) {
-    		// JAXB Reference Implementation not present
-    	  log.info("JAXB: RI not present.  Trying Java 6 implementation.");
-        	try {
-				Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
-        log.info("JAXB: Using Java 6 implementation.");
-          } catch (ClassNotFoundException e) {
-            log.info("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-          }
-      }
+		Object namespacePrefixMapper;
+		try {
+			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
+			if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
+				// Java 6
+				log.info("Using Java 6/7 JAXB implementation");
+			} else {
+				log.info("Using JAXB Reference Implementation");			
+			}
+		} catch (JAXBException e) {
+			log.error("PANIC! No suitable JAXB implementation available");
+			e.printStackTrace();
+		}
       
       try { 
 			
