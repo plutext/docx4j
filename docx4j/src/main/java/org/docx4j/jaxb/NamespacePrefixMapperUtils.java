@@ -56,21 +56,33 @@ public class NamespacePrefixMapperUtils {
 			prefixMapper = new NamespacePrefixMapperSunInternal();
 			return prefixMapper;
 		} catch (java.lang.NoClassDefFoundError notJava6) {
-			// javax.xml.bind.PropertyException
 			log.error(notJava6.getMessage() + " .. trying RI.");
-			try {
-				// Try RI suitable one
-				m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-						new NamespacePrefixMapper() );
-				log.info("Using NamespacePrefixMapper, which is suitable for the JAXB RI");
-				prefixMapper = new NamespacePrefixMapper();
-				return prefixMapper;
-			} catch (javax.xml.bind.PropertyException notRIEither) {
-				notRIEither.printStackTrace();
-				log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
-				throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-			}
-			
+			return tryUsingRI(m);			
+		} catch (javax.xml.bind.PropertyException notJava6) {
+			// OpenJDK (1.6.0_23) does this
+			log.error(notJava6.getMessage() + " .. trying RI.");
+			return tryUsingRI(m);			
+		}
+	}
+
+
+	private static Object tryUsingRI(Marshaller m)
+			throws JAXBException {
+		try {
+			// Try RI suitable one
+			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+					new NamespacePrefixMapper() );
+			log.info("Using NamespacePrefixMapper, which is suitable for the JAXB RI");
+			prefixMapper = new NamespacePrefixMapper();
+			return prefixMapper;
+		} catch (java.lang.NoClassDefFoundError notRIEither) {
+			notRIEither.printStackTrace();
+			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+		} catch (javax.xml.bind.PropertyException notRIEither) {
+			notRIEither.printStackTrace();
+			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
 		}
 	}
 
@@ -99,20 +111,32 @@ public class NamespacePrefixMapperUtils {
 		} catch (java.lang.NoClassDefFoundError notJava6) {
 			// javax.xml.bind.PropertyException
 			log.error(notJava6.getMessage() + " .. trying RI.");
-			try {
-				// Try RI suitable one
-				m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
-						new NamespacePrefixMapperRelationshipsPart() );
-				log.info("Using NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
-				prefixMapperRels = new NamespacePrefixMapperRelationshipsPart();
-				return prefixMapperRels;
-			} catch (javax.xml.bind.PropertyException notRIEither) {
-				notRIEither.printStackTrace();
-				log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
-				throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-			}
-			
-		}		
+			return tryRIforRelationshipsPart(m);
+		} catch (javax.xml.bind.PropertyException notJava6) {
+			log.error(notJava6.getMessage() + " .. trying RI.");
+			return tryRIforRelationshipsPart(m);
+		}
+	}
+
+
+	private static Object tryRIforRelationshipsPart(Marshaller m)
+			throws JAXBException {
+		try {
+			// Try RI suitable one
+			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+					new NamespacePrefixMapperRelationshipsPart() );
+			log.info("Using NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
+			prefixMapperRels = new NamespacePrefixMapperRelationshipsPart();
+			return prefixMapperRels;
+		} catch (java.lang.NoClassDefFoundError notRIEither) {
+			notRIEither.printStackTrace();
+			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+		} catch (javax.xml.bind.PropertyException notRIEither) {
+			notRIEither.printStackTrace();
+			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
+			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+		}
 	}
 	
 	/**
