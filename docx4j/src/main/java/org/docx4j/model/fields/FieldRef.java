@@ -1,6 +1,12 @@
 package org.docx4j.model.fields;
 
+import javax.xml.bind.JAXBElement;
+
+import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
+import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.Text;
 
 /**
  * There are simple fields:
@@ -238,7 +244,7 @@ import org.docx4j.wml.R;
  * 
  * In general, you can "canonicalise" the field representation
  * to be 
- * (i)   instructions, contained within a single run (dropping rPr)
+ * (i)   instructions, contained within a single run 
  * (ii)  results, immediately following, though not nec just as following siblings
  * (iii) the final <w:fldChar w:fldCharType="end"/>
  * 
@@ -252,8 +258,78 @@ import org.docx4j.wml.R;
  */
 public class FieldRef {
 	
-	private R fieldParent;
+	private P parent;
+	public P getParent() {
+		return parent;
+	}
+	public void setParent(P parent) {
+		this.parent = parent;
+	}
+
 	
+	/**
+	 * The run 
+	 * 
+	 *       <w:r>
+                <w:fldChar w:fldCharType="begin"/>
+                <w:instrText xml:space="preserve"> ... </w:instrText>
+                <w:fldChar w:fldCharType="separate"/>
+            </w:r>
+            
+        Store a reference to it so we can delete it.
+	 */
+	private R beginRun;
+	public R getBeginRun() {
+		return beginRun;
+	}
+	public void setBeginRun(R beginRun) {
+		this.beginRun = beginRun;
+	}
+
+	/**
+	 * The run 
+	 * 
+            <w:r>
+                <w:fldChar w:fldCharType="end"/>
+            </w:r>
+            
+        Store a reference to it so we can delete it.
+	 */
+	private R endRun;
+	public R getEndRun() {
+		return endRun;
+	}
+	public void setEndRun(R endRun) {
+		this.endRun = endRun;
+	}
 	
+	private JAXBElement<Text> instrText;
+	public JAXBElement<Text> getInstrText() {
+		return instrText;
+	}
+	public void setInstrText(JAXBElement<Text> instrText) {
+		this.instrText = instrText;
+	}
+
+	private R resultsSlot;
+	public R getResultsSlot() {
+		return resultsSlot;
+	}
+	public void setResultsSlot(R resultsSlot) {
+		this.resultsSlot = resultsSlot;
+	}
+	
+	public void setResult(String val) {
+		
+		Text t = null;
+		if (resultsSlot.getContent().size()==0) {
+			t = Context.getWmlObjectFactory().createText();
+			resultsSlot.getContent().add(t);
+		} else {
+			// Assume child Text
+			t = (Text)XmlUtils.unwrap(resultsSlot.getContent().get(0));
+		}
+		t.setValue(val);		
+	}
 
 }

@@ -1,11 +1,15 @@
 package org.docx4j.model.fields;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -25,7 +29,9 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.STFldCharType;
+import org.docx4j.wml.Text;
 
 /**
  * This class puts fields into a "canonical" representation
@@ -41,6 +47,9 @@ import org.docx4j.wml.STFldCharType;
 public class FieldsPreprocessor {
 	
 	private static Logger log = Logger.getLogger(FieldsPreprocessor.class);		
+
+    private final static QName _RInstrText_QNAME = new QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", 
+    		"instrText");
 	
 	static Templates xslt;			
 	private static XPathFactory xPathFactory;
@@ -99,7 +108,7 @@ public class FieldsPreprocessor {
 //		}
 //	}
 	
-	public static P canonicalise(P p) {
+	public static P canonicalise(P p, List<FieldRef> fieldRefs) {
 		/*
 		 * Result is something like:
 		 * 
@@ -125,11 +134,16 @@ public class FieldsPreprocessor {
 		int depth = 0;
 		R newR = Context.getWmlObjectFactory().createR();
 		
+		RPr fieldRPr = null;
+		
+		FieldRef currentField = null;
+		
 		for (Object o : p.getContent() ) {
 			
 			if ( o instanceof R ) {
-
-				for (Object o2 : ((R)o).getContent() ) {
+				
+				R existingRun = (R)o;
+				for (Object o2 : existingRun.getContent() ) {
 
 					if (isCharType(o2, STFldCharType.BEGIN)) {
 						
@@ -139,10 +153,19 @@ public class FieldsPreprocessor {
 							// Add any content the run contains before the BEGIN
 							if (newR.getContent().size()>0) {
 								newP.getContent().add(newR);
+								
+								newR.setRPr(existingRun.getRPr() ); // if any
 							}
-							
+
 							newR = Context.getWmlObjectFactory().createR();
 							newR.getContent().add(o2);
+							
+							// Setup our FieldRef object - only top level fields for now
+							currentField = new FieldRef();							
+							fieldRefs.add(currentField);
+							currentField.setParent(newP);							
+							currentField.setBeginRun(newR);
+
 						}
 					}
 					else if (isCharType(o2, STFldCharType.END)) {
@@ -151,8 +174,13 @@ public class FieldsPreprocessor {
 						if (depth==0 ) {
 							// Top level field end - gets its own w:r
 							newP.getContent().add(newR);
+							
 							newR = Context.getWmlObjectFactory().createR();
 							newR.getContent().add(o2);
+							newP.getContent().add(newR);
+							
+							currentField.setEndRun(newR);
+							
 							newR = Context.getWmlObjectFactory().createR();
 						} else {
 							newR.getContent().add(o2);							
@@ -164,7 +192,23 @@ public class FieldsPreprocessor {
 							// Top level field separator
 							newP.getContent().add(newR);
 							newR = Context.getWmlObjectFactory().createR();
+							
+							// May as well set this; we'll insert our result into
+							// this (or recreate it).
+							newR.setRPr(fieldRPr ); 
+							
+							currentField.setResultsSlot(newR); // FIXME: ensure newR is actually added!
+							
 						}
+					} else if (o2 instanceof JAXBElement
+							&& ((JAXBElement)o2).getName().equals(_RInstrText_QNAME)) {
+						
+						currentField.setInstrText( (JAXBElement<Text>)o2);
+
+						newR.getContent().add(o2);	
+						
+						fieldRPr = existingRun.getRPr();
+						newR.setRPr(fieldRPr);
 						
 					} else {
 						newR.getContent().add(o2);													
@@ -226,7 +270,7 @@ public class FieldsPreprocessor {
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
 				new java.io.File(
-						System.getProperty("user.dir") + "/simpledatefield.docx"));
+						System.getProperty("user.dir") + "/mergefield1.docx"));
 		
 		complexifyFields(wordMLPackage.getMainDocumentPart() );
 		
@@ -236,17 +280,31 @@ public class FieldsPreprocessor {
 		FieldLocator fl = new FieldLocator();
 		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), fl);
 		log.info("Found " + fl.starts.size() + " fields ");
+		
+		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
+		
 		for( P p : fl.starts) {
 			int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
-			P newP = canonicalise(p);
+			P newP = canonicalise(p, fieldRefs);
 			System.out.println("NewP length: " + newP.getContent().size() );
 			((ContentAccessor)p.getParent()).getContent().set(index, newP);
 		}
-
+		
+		// Prove we can put something into the results
+		int counter = 0;
+		for (FieldRef fr : fieldRefs) {
+			fr.setResult("Result" + counter);
+			counter++;
+			
+			// If doing an actual mail merge, the begin-separate run is removed, as is the end run
+			fr.getParent().getContent().remove(fr.getBeginRun());
+			fr.getParent().getContent().remove(fr.getEndRun());			
+		}
+		
 		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 		
 		wordMLPackage.save(new java.io.File(
-				System.getProperty("user.dir") + "/simpledatefield-COMPLEX.docx") );
+				System.getProperty("user.dir") + "/mergefield1-OUT.docx") );
 		
 		
 	}
