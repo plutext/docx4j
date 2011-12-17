@@ -17,8 +17,11 @@ public class FieldLocator extends CallbackImpl {
 	 * If the paragraph contains 2 fields or nested fields, 
 	 * it will still be listed just once
 	 */
-	List<P> starts = new ArrayList<P>();
-	
+	List<P> starts = new ArrayList<P>();	
+	public List<P> getStarts() {
+		return starts;
+	}
+
 	P currentP;
 	int depth=0;
 

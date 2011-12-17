@@ -99,14 +99,6 @@ public class FieldsPreprocessor {
 				
 	}
 	
-//	public static boolean supported(String type) {
-//		
-//		if (type.contains("MERGEFIELD")) {
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
 	
 	public static P canonicalise(P p, List<FieldRef> fieldRefs) {
 		/*
@@ -266,46 +258,4 @@ public class FieldsPreprocessor {
 		return false;
 	}	
 	
-	public static void main(String[] args) throws Exception {
-
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
-				new java.io.File(
-						System.getProperty("user.dir") + "/mergefield1.docx"));
-		
-		complexifyFields(wordMLPackage.getMainDocumentPart() );
-		
-		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		
-		// canonicalise
-		FieldLocator fl = new FieldLocator();
-		new TraversalUtil(wordMLPackage.getMainDocumentPart().getContent(), fl);
-		log.info("Found " + fl.starts.size() + " fields ");
-		
-		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
-		
-		for( P p : fl.starts) {
-			int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
-			P newP = canonicalise(p, fieldRefs);
-			System.out.println("NewP length: " + newP.getContent().size() );
-			((ContentAccessor)p.getParent()).getContent().set(index, newP);
-		}
-		
-		// Prove we can put something into the results
-		int counter = 0;
-		for (FieldRef fr : fieldRefs) {
-			fr.setResult("Result" + counter);
-			counter++;
-			
-			// If doing an actual mail merge, the begin-separate run is removed, as is the end run
-			fr.getParent().getContent().remove(fr.getBeginRun());
-			fr.getParent().getContent().remove(fr.getEndRun());			
-		}
-		
-		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		
-		wordMLPackage.save(new java.io.File(
-				System.getProperty("user.dir") + "/mergefield1-OUT.docx") );
-		
-		
-	}
 }

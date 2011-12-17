@@ -304,8 +304,11 @@ public class FieldRef {
 	}
 	
 	private JAXBElement<Text> instrText;
-	public JAXBElement<Text> getInstrText() {
-		return instrText;
+//	public JAXBElement<Text> getInstrText() {
+//		return instrText;
+//	}
+	public String getInstr() {
+		return instrText.getValue().getValue();
 	}
 	public void setInstrText(JAXBElement<Text> instrText) {
 		this.instrText = instrText;
