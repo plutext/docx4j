@@ -2,25 +2,31 @@ package org.docx4j.model.fields.merge;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.fields.FieldLocator;
 import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
+import org.docx4j.model.structure.PageDimensions;
+import org.docx4j.model.structure.PageSizePaper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
+import org.docx4j.wml.SectPr;
 
 
 /**
@@ -78,8 +84,10 @@ public class MailMerger {
 		saver.save(baos);
 		byte[] template = baos.toByteArray();
 
+		
 		WordprocessingMLPackage target = WordprocessingMLPackage.load(
 				new ByteArrayInputStream(template));
+		SectPr documentSeparator = getDocumentSeparator(target);
 		target.getMainDocumentPart().getContent().clear();
 		
 		for (List<Object> content : results) {
@@ -87,12 +95,80 @@ public class MailMerger {
 			// now inject the content
 			target.getMainDocumentPart().getContent().addAll(content);
 			
-			// TODO - sectPr
+			// for all but last document
+			if (!content.equals(results.get(results.size()-1))) {
+				// add sectPr to final paragraph
+				Object last = content.get( content.size()-1);
+				P lastP = null;
+				if (last instanceof P) {
+					lastP = (P)last;
+				} else {
+					lastP = Context.getWmlObjectFactory().createP();
+					target.getMainDocumentPart().getContent().add(lastP);	
+				}
+				if (lastP.getPPr()==null) {
+					lastP.setPPr(Context.getWmlObjectFactory().createPPr());				
+				}
+				lastP.getPPr().setSectPr(documentSeparator);
+			}
 		}
 		
 		return target;
 	}
 
+	   /**
+	    * Word uses the existing sectPr element, but adds 
+	    * a page numbering restart to it.  TODO: investigate
+	    * what it does with headers/footers.
+	 * @param template
+	 * @return
+	 */
+	private static SectPr getDocumentSeparator(WordprocessingMLPackage template) {
+	    	
+		   SectPr sectPr = template.getMainDocumentPart().getJaxbElement().getBody().getSectPr();
+		   
+		   if (sectPr==null) {
+			   // Maybe the last P already contains one?
+			   // Presumably Word would reuse this.
+			   List all = template.getMainDocumentPart().getContent();
+		    	Object last = all.get( all.size()-1 );
+		    	if (last instanceof P) {
+		    		if (((P) last).getPPr()!=null 
+		    				&& ((P) last).getPPr().getSectPr() !=null) {
+		    			sectPr = ((P) last).getPPr().getSectPr();
+		    		}
+		    	}			   
+		   }
+		   
+		   if (sectPr==null) {
+			   
+				// Create a basic sectPr using our Page model
+				String papersize= Docx4jProperties.getProperties().getProperty("docx4j.PageSize", "A4");
+				log.info("Using paper size: " + papersize);
+				
+				String landscapeString = Docx4jProperties.getProperties().getProperty("docx4j.PageOrientationLandscape", "false");
+				boolean landscape= Boolean.parseBoolean(landscapeString);
+				log.info("Landscape orientation: " + landscape);
+				
+				PageDimensions page = new PageDimensions();
+				page.setPgSize(PageSizePaper.valueOf(papersize), landscape);
+				
+				sectPr = Context.getWmlObjectFactory().createSectPr();
+				sectPr.setPgSz(  page.getPgSz() );
+				sectPr.setPgMar( page.getPgMar() );				
+		   }
+		   
+		   // <w:pgNumType w:start="1"/>
+		   CTPageNumber pageNumber = sectPr.getPgNumType();
+		   if (pageNumber==null) {
+			   pageNumber = Context.getWmlObjectFactory().createCTPageNumber();
+			   sectPr.setPgNumType(pageNumber);
+		   }
+		   pageNumber.setStart(BigInteger.ONE);
+		   
+		   return sectPr;
+	   }	
+	
 	public static List<WordprocessingMLPackage> getResults(WordprocessingMLPackage input, 
 			List<Map<String, String>> data) throws Docx4JException {
 		
@@ -224,23 +300,31 @@ public class MailMerger {
 				new java.io.File(
 						System.getProperty("user.dir") + "/mergefield1.docx"));
 		
+		List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("Kundenname", "Plutext");
 		map.put("Kundenstrasse", "Bourke Street");
 		
-		List<Map<String, String>> data = new ArrayList<Map<String, String>>();
 		data.add(map);
+				
+		map = new HashMap<String, String>();
+		map.put("Kundenname", "Name 2");
+		map.put("Kundenstrasse", "Collins Street");
+		
+		data.add(map);		
+		// Word matches irrespective of case, and takes the first matching field
 		
 		
 //		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 
-		WordprocessingMLPackage output = getConsolidatedResultCrude(wordMLPackage, data);
+		WordprocessingMLPackage output = org.docx4j.model.fields.merge.MailMerger.getConsolidatedResultCrude(wordMLPackage, data);
 		
 		
-		System.out.println(XmlUtils.marshaltoString(output.getMainDocumentPart().getJaxbElement(), true, true));
+		//System.out.println(XmlUtils.marshaltoString(output.getMainDocumentPart().getJaxbElement(), true, true));
 		
-//		wordMLPackage.save(new java.io.File(
-//				System.getProperty("user.dir") + "/mergefield1-OUT.docx") );
+		output.save(new java.io.File(
+				System.getProperty("user.dir") + "/mergefield1-OUT.docx") );
 		
 	}
 
