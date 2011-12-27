@@ -51,6 +51,18 @@ import org.docx4j.wml.SectPr;
  * Images and hyperlinks should be ok. But numbering 
  * will continue, as will footnotes/endnotes. 
  * 
+ * LIMITATIONS:
+ * - currently only applied to main document part
+ *   (easily extended)
+ * - no support for text before (\b) and text after (\f)
+ *   switches
+ * - no support for \m and \v switches
+ * - no support formatting (date/time, numeric, or general), 
+ *   including MERGEFORMAT (which means preserve
+ *   the formatting of any existing field result)
+ * - no support for multiple MERGEFIELD in a single
+ *   instruction (eg MERGEFIELD CoutesyTitle \f " " MERGEFIELD FirstName \f " " MERGEFIELD LastName ) 
+ * 
  * @author jharrop
  *
  */
@@ -69,7 +81,7 @@ public class MailMerger {
 	 * @throws Docx4JException
 	 */
 	public static WordprocessingMLPackage getConsolidatedResultCrude(WordprocessingMLPackage input, 
-			List<Map<String, String>> data) throws Docx4JException {
+			List<Map<DataFieldName, String>> data) throws Docx4JException {
 		
 		// Just MDP for now
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
@@ -170,7 +182,7 @@ public class MailMerger {
 	   }	
 	
 	public static List<WordprocessingMLPackage> getResults(WordprocessingMLPackage input, 
-			List<Map<String, String>> data) throws Docx4JException {
+			List<Map<DataFieldName, String>> data) throws Docx4JException {
 		
 		List<WordprocessingMLPackage> pkgs = new ArrayList<WordprocessingMLPackage>();
 		
@@ -215,11 +227,11 @@ public class MailMerger {
 	 * @throws Docx4JException 
 	 */
 	private static List<List<Object>> perform(ContentAccessor contentList, 
-			List<Map<String, String>> data ) throws Docx4JException {
+			List<Map<DataFieldName, String>> data ) throws Docx4JException {
 		
 				
 		List<List<Object>> results = new ArrayList<List<Object>>();
-		for (Map<String, String> datamap : data) {
+		for (Map<DataFieldName, String> datamap : data) {
 			
 			// We need our fieldRefs point to the correct objects;
 			// the easiest way to do this is to create them after cloning!
@@ -257,7 +269,7 @@ public class MailMerger {
 					String key  = tmp.substring(0, tmp.indexOf(" ")) ;
 					log.info("Key: '" + key + "'");
 					
-					String val = datamap.get(key);
+					String val = datamap.get( new DataFieldName(key));
 					
 					if (val==null) {
 						log.warn("Couldn't find value for key: '" + key + "'");
@@ -300,17 +312,17 @@ public class MailMerger {
 				new java.io.File(
 						System.getProperty("user.dir") + "/mergefield1.docx"));
 		
-		List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+		List<Map<DataFieldName, String>> data = new ArrayList<Map<DataFieldName, String>>();
 
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("Kundenname", "Plutext");
-		map.put("Kundenstrasse", "Bourke Street");
+		Map<DataFieldName, String> map = new HashMap<DataFieldName, String>();
+		map.put( new DataFieldName("Kundenname"), "Plutext");
+		map.put(new DataFieldName("Kundenstrasse"), "Bourke Street");
 		
 		data.add(map);
 				
-		map = new HashMap<String, String>();
-		map.put("Kundenname", "Name 2");
-		map.put("Kundenstrasse", "Collins Street");
+		map = new HashMap<DataFieldName, String>();
+		map.put( new DataFieldName("Kundenname"), "Jason");
+		map.put(new DataFieldName("Kundenstrasse"), "Collins Street");
 		
 		data.add(map);		
 		// Word matches irrespective of case, and takes the first matching field
