@@ -190,11 +190,26 @@ public final class HeaderPart extends JaxbXmlPart<Hdr>  implements ContentAccess
 			} catch (UnmarshalException ue) {
 				log.info("encountered unexpected content; pre-processing");
 				eventHandler.setContinue(true);
+				
+				// There is no JAXBResult(binder),
+				// so use a 
 				DOMResult result = new DOMResult();
+				
 				Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 				XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
+				
 				doc = (org.w3c.dom.Document)result.getNode();
-				jaxbElement =  (Hdr) binder.unmarshal( doc );					
+				try {				
+					jaxbElement =  (Hdr) binder.unmarshal( doc );
+				} catch (ClassCastException cce) {
+					// Work around for issue with JAXB binder, in Java 1.6
+					// See comments in MainDocumentPart.					
+					log.warn("Binder not available for this docx");
+					Unmarshaller u = jc.createUnmarshaller();
+					jaxbElement = (Hdr) u.unmarshal( doc );					
+				}
+				
+				
 			}
 			
 			return jaxbElement;

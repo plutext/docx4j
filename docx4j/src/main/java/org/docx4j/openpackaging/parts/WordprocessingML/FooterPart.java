@@ -199,7 +199,16 @@ public final class FooterPart extends JaxbXmlPart<Ftr>  implements ContentAccess
 				Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 				XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
 				doc = (org.w3c.dom.Document)result.getNode();
-				jaxbElement =  (Ftr) binder.unmarshal( doc );					
+				
+				try {				
+					jaxbElement =  (Ftr) binder.unmarshal( doc );
+				} catch (ClassCastException cce) {
+					// Work around for issue with JAXB binder, in Java 1.6
+					// See comments in MainDocumentPart.					
+					log.warn("Binder not available for this docx");
+					Unmarshaller u = jc.createUnmarshaller();
+					jaxbElement = (Ftr) u.unmarshal( doc );					
+				}
 			}
 			
 			return jaxbElement;
