@@ -329,6 +329,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 					 * Work around for issue with JAXB binder, in Java 1.6 
 					 * encountered with /src/test/resources/jaxb-binder-issue.docx 
 					 * See http://old.nabble.com/BinderImpl.associativeUnmarshal-ClassCastException-casting-to-JAXBElement-td32456585.html
+					 * and  http://java.net/jira/browse/JAXB-874
 					 * 
 					 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to javax.xml.bind.JAXBElement
 						at com.sun.xml.internal.bind.v2.runtime.ElementBeanInfoImpl$IntercepterLoader.intercept(Unknown Source)

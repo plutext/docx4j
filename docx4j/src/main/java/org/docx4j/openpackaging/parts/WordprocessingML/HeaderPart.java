@@ -203,7 +203,7 @@ public final class HeaderPart extends JaxbXmlPart<Hdr>  implements ContentAccess
 					jaxbElement =  (Hdr) binder.unmarshal( doc );
 				} catch (ClassCastException cce) {
 					// Work around for issue with JAXB binder, in Java 1.6
-					// See comments in MainDocumentPart.					
+					// See  http://java.net/jira/browse/JAXB-874 and comments in MainDocumentPart.					
 					log.warn("Binder not available for this docx");
 					Unmarshaller u = jc.createUnmarshaller();
 					jaxbElement = (Hdr) u.unmarshal( doc );					
