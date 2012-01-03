@@ -69,7 +69,7 @@ public class StyleTree {
         		
             	Style style = allStyles.get(styleId);
                 if (style == null ) {
-                	log.error("Couldn't find style: " + styleId);
+                	log.warn("Couldn't find style: " + styleId);
                 	continue;
                 } 	        		
         		// Is it a table style?
@@ -89,7 +89,7 @@ public class StyleTree {
         		
             	Style style = allStyles.get(styleId);
                 if (style == null ) {
-                	log.error("Couldn't find style: " + styleId);
+                	log.warn("Couldn't find style: " + styleId);
                 	continue;
                 } 	        		
         		// Is it a paragraph style?
@@ -109,7 +109,7 @@ public class StyleTree {
         		
             	Style style = allStyles.get(styleId);
                 if (style == null ) {
-                	log.error("Couldn't find style: " + styleId);
+                	log.warn("Couldn't find style: " + styleId);
                 	continue;
                 } 	        		
         		// Is it a character style?
