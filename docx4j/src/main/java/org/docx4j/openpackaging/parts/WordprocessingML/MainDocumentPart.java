@@ -211,8 +211,13 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	
 	private StyleTree styleTree;
 	public StyleTree getStyleTree() {
+		return getStyleTree(false); // preserve existing behaviour
+	}
+	
+	public StyleTree getStyleTree(boolean refresh) {
+		// refresh is post 2.7.1
 		
-		if (styleTree==null) {
+		if (refresh || styleTree==null) {
 			
 			log.info("Preparing StyleTree");
 
