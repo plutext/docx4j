@@ -31,6 +31,12 @@ public class PBorderTop extends AbstractPBorder {
 	
 	public final static String FO_NAME  = "border-top";
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME_BASE;
+	}
 	
 	public PBorderTop(CTBorder val) {
 		super(val, CSS_NAME_BASE);

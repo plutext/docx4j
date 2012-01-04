@@ -36,6 +36,12 @@ public class BorderRight extends AbstractBorder {
 	private final static String CSS_NAME_BASE = "border-right"; 	
 	public final static String FO_NAME  = "TODO"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME_BASE;
+	}
 	
 	public BorderRight(CTBorder val) {
 		super(val, CSS_NAME_BASE);

@@ -31,6 +31,13 @@ public class Underline extends AbstractRunProperty {
 	public final static String CSS_NAME = "text-decoration"; 
 	public final static String FO_NAME  = "text-decoration"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
+	
 	public Underline(U u) {
 		this.setObject(u);
 	}

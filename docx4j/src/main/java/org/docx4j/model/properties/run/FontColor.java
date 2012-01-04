@@ -32,6 +32,13 @@ public class FontColor extends AbstractRunProperty {
 	public final static String CSS_NAME = "color"; 
 	public final static String FO_NAME  = "color"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
+	
 	public FontColor(Color color) {
 		this.setObject(color);
 	}

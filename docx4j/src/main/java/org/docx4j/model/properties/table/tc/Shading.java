@@ -38,6 +38,12 @@ public class Shading extends AbstractTcProperty {
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public Shading(CTShd textAlignment) {
 		this.setObject(textAlignment);

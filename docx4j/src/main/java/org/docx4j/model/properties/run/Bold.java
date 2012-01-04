@@ -30,6 +30,12 @@ public class Bold extends AbstractRunProperty {
 	public final static String CSS_NAME = "font-weight"; 
 	public final static String FO_NAME  = "font-weight"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public Bold(BooleanDefaultTrue val) {
 		this.setObject(val);

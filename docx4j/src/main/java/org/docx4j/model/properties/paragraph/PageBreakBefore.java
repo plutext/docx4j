@@ -30,6 +30,12 @@ public class PageBreakBefore extends AbstractParagraphProperty {
 	public final static String CSS_NAME = "page-break-before"; 
 	public final static String FO_NAME  = "break-before"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public PageBreakBefore(BooleanDefaultTrue val) {
 		this.setObject(val);

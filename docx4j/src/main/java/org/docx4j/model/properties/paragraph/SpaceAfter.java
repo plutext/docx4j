@@ -36,6 +36,14 @@ public class SpaceAfter extends AbstractParagraphProperty {
 	public final static String CSS_NAME = "space-after"; //??  	
 	public final static String FO_NAME  = "space-after"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
+	
+	
 	/*
 	 *       <w:spacing w:before="480" />  // twips
 	 */

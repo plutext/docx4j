@@ -30,6 +30,12 @@ public class KeepNext extends AbstractParagraphProperty {
 	public final static String CSS_NAME = "page-break-after"; 
 	public final static String FO_NAME  = "keep-with-next"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public KeepNext(BooleanDefaultTrue val) {
 		this.setObject(val);

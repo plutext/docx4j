@@ -35,6 +35,13 @@ public class SpaceBefore extends AbstractParagraphProperty {
 	
 	public final static String CSS_NAME = "space-before"; //??  	
 	public final static String FO_NAME  = "space-before"; 
+
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	/*
 	 *       <w:spacing w:before="480" />  // twips

@@ -30,6 +30,12 @@ public class TextAlignmentVertical extends AbstractParagraphProperty {
 	public final static String CSS_NAME = "vertical-align"; 
 	public final static String FO_NAME  = "vertical-align"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public TextAlignmentVertical(TextAlignment textAlignment) {
 		this.setObject(textAlignment);

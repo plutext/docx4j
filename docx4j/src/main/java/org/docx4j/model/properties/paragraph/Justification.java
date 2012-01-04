@@ -31,6 +31,12 @@ public class Justification extends AbstractParagraphProperty {
 	public final static String CSS_NAME = "text-align"; 
 	public final static String FO_NAME  = "text-align"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public Justification(Jc jc) {
 		this.setObject(jc);

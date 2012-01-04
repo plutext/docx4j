@@ -40,6 +40,12 @@ public class Indent extends AbstractTableProperty {
 	
 	public final static String FO_NAME  = "start-indent"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public Indent(TblWidth val) {
 		this.setObject(val);

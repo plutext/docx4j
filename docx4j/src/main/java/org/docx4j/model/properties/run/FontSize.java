@@ -32,6 +32,13 @@ public class FontSize extends AbstractRunProperty {
 
 	public final static String CSS_NAME = "font-size"; 
 	public final static String FO_NAME  = "font-size"; 
+
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public FontSize(HpsMeasure val) {
 		this.setObject(val);

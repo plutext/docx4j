@@ -32,6 +32,13 @@ public class RBorder extends AbstractRunProperty {
 	public static final String CSS_NAME_WIDTH = "border-width"; 
 	public static final String CSS_NAME_COLOR = "border-color";
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return "border"; // NB 
+	}
+	
 	// FO names are the same as the CSS ones.
 	//public final static String FO_NAME  = "TODO"; 
 	

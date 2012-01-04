@@ -30,6 +30,13 @@ public class Strike extends AbstractRunProperty {
 	public final static String CSS_NAME = "text-decoration"; 
 	public final static String FO_NAME  = "text-decoration"; 
 
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
+
 	public Strike(BooleanDefaultTrue val) {
 		this.setObject(val);
 	}

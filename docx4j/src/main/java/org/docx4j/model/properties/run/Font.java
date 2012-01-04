@@ -33,6 +33,12 @@ public class Font extends AbstractRunProperty {
 
 	public final static String CSS_NAME = "font-family"; 
 	public final static String FO_NAME  = "font-family"; 
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	private OpcPackage wmlPackage;
 	

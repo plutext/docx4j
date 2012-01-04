@@ -44,6 +44,13 @@ public class AdHocProperty extends Property {
 		this.foValue = foValue;
 	}
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return cssName;
+	}	
+	
 	public String getCssProperty() {
 		return composeCss(cssName, cssValue);
 	}

@@ -38,6 +38,12 @@ public class PBorderRight extends AbstractPBorder {
 	private final static String CSS_NAME_BASE = "border-right"; 	
 	public final static String FO_NAME  = "border-right";
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME_BASE;
+	}
 	
 	public PBorderRight(CTBorder val) {
 		super(val, CSS_NAME_BASE);

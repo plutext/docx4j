@@ -33,6 +33,12 @@ public class TextAlignmentVertical extends AbstractTcProperty {
 	public final static String CSS_NAME = "vertical-align"; 
 	public final static String FO_NAME  = "display-align";  
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public TextAlignmentVertical(CTVerticalJc textAlignment) {
 		this.setObject(textAlignment);

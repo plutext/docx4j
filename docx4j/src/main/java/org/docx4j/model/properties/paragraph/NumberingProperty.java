@@ -29,6 +29,12 @@ public class NumberingProperty extends AbstractParagraphProperty {
 	public final static String CSS_NAME = "FIXME"; 
 	public final static String FO_NAME  = "FIXME"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
 	
 	public NumberingProperty(NumPr numPr) {
 		this.setObject(numPr);

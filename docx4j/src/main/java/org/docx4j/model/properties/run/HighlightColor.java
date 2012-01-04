@@ -30,6 +30,13 @@ public class HighlightColor extends AbstractRunProperty {
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}
+	
 	/*
 	 * TODO: this class assumes that the
 	 * colors specified in org.docx4j.wml.Highlight

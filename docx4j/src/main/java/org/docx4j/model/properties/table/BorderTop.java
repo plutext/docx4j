@@ -37,6 +37,12 @@ public class BorderTop extends AbstractBorder {
 	
 	public final static String FO_NAME  = "TODO"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME_BASE;
+	}
 	
 	public BorderTop(CTBorder val) {
 		super(val, CSS_NAME_BASE);

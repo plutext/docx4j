@@ -65,6 +65,11 @@ public abstract class Property {
 	
 	public abstract String getCssProperty();
 
+	/**
+	 * @since 2.7.2
+	 */
+	public abstract String getCssName();
+	
 	public final static String CSS_NULL = ""; 
 
 	public final static String CSS_COLON = ":"; 

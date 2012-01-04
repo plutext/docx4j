@@ -36,6 +36,13 @@ public class LineSpacing extends AbstractParagraphProperty {
 	public final static String CSS_NAME = "line-height"; //??  	
 	public final static String FO_NAME  = "line-height"; 
 	
+	/**
+	 * @since 2.7.2
+	 */	
+	public String getCssName() {
+		return CSS_NAME;
+	}	
+	
 	/*
 	 *       <w:spacing w:line="276" />  // twips
 	 */
