@@ -25,6 +25,8 @@ REVISION HISTORY
 20090902 - add math back in
 
 20091010 - oops, added EG_MathContent back into EG_RunElements
+
+20120105 - add element name="compatSetting" and type="CT_CompatSetting" from 2ed, so Word 2010 can detect docx as native 
 	
 USAGE INSTRUCTIONS
 	  
@@ -34,7 +36,7 @@ USAGE INSTRUCTIONS
 	
   And the parent-pointer-plugin.  See http://fisheye5.cenqua.com/browse/jaxb2-commons/parent-pointer-plugin
 	
-  We have a copy of this in the lib dir.  Or you can build it yourself:
+  We have a copy of this in thealib dir.  Or you can build it yourself:
 	
 	cvs -d :pserver:$DEV_JAVA_NET_USERNAME@cvs.dev.java.net:/cvs checkout -P jaxb2-commons
 	 
@@ -67,6 +69,9 @@ USAGE INSTRUCTIONS
   
   )
   
+  Windows:
+  
+     C:>\Java\jaxb-ri-20110601\bin\xjc.bat -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d t2 -no-header -target 2.0
   
 	
 	cd to the directory containing the new sources
@@ -10589,8 +10594,31 @@ PRINCIPLES:
 						Balancing</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+			<xsd:element name="compatSetting" type="CT_CompatSetting" minOccurs="0" maxOccurs="unbounded">
+				<!--  Added from 3ed for docx4j 2.7.2, so native Word 2010 docx can be produced -->
+				<xsd:annotation>
+					<xsd:documentation>Custom Compatibility Setting</xsd:documentation>
+				</xsd:annotation>			
+			</xsd:element>
 		</xsd:sequence>
 	</xsd:complexType>
+	<xsd:complexType name="CT_CompatSetting">
+		<xsd:attribute name="name" type="ST_String">
+			<xsd:annotation>
+				<xsd:documentation>Name of Setting</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="uri" type="ST_String">
+			<xsd:annotation>
+				<xsd:documentation>Namespace of Setting</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="val" type="ST_String">
+			<xsd:annotation>
+				<xsd:documentation>Value of Setting</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>	
 	<xsd:complexType name="CT_DocVar">
 		<xsd:attribute name="name" type="ST_String" use="required">
 			<xsd:annotation>

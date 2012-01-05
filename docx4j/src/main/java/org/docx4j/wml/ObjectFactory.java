@@ -342,6 +342,14 @@ public class ObjectFactory {
     public CTCompat createCTCompat() {
         return new CTCompat();
     }
+    
+    /**
+     * Create an instance of {@link CTCompatSetting }
+     * 
+     */
+    public CTCompatSetting createCTCompatSetting() {
+        return new CTCompatSetting();
+    }    
 
     /**
      * Create an instance of {@link PPrBase }

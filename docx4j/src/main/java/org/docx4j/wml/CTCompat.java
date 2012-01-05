@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2012, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -21,6 +21,8 @@
 
 package org.docx4j.wml;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -104,6 +106,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="doNotVertAlignInTxbx" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *         &lt;element name="useAnsiKerningPairs" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
  *         &lt;element name="cachedColBalance" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}BooleanDefaultTrue" minOccurs="0"/>
+ *         &lt;element name="compatSetting" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_CompatSetting" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -178,7 +181,8 @@ import org.jvnet.jaxb2_commons.ppp.Child;
     "doNotBreakConstrainedForcedTable",
     "doNotVertAlignInTxbx",
     "useAnsiKerningPairs",
-    "cachedColBalance"
+    "cachedColBalance",
+    "compatSetting"
 })
 public class CTCompat
     implements Child
@@ -249,6 +253,7 @@ public class CTCompat
     protected BooleanDefaultTrue doNotVertAlignInTxbx;
     protected BooleanDefaultTrue useAnsiKerningPairs;
     protected BooleanDefaultTrue cachedColBalance;
+    protected List<CTCompatSetting> compatSetting;
     @XmlTransient
     private Object parent;
 
@@ -1810,6 +1815,35 @@ public class CTCompat
      */
     public void setCachedColBalance(BooleanDefaultTrue value) {
         this.cachedColBalance = value;
+    }
+
+    /**
+     * Gets the value of the compatSetting property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the compatSetting property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getCompatSetting().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link CTCompatSetting }
+     * 
+     * 
+     */
+    public List<CTCompatSetting> getCompatSetting() {
+        if (compatSetting == null) {
+            compatSetting = new ArrayList<CTCompatSetting>();
+        }
+        return this.compatSetting;
     }
 
     /**
