@@ -67,9 +67,9 @@ public class Underline extends AbstractRunProperty {
 			// This does happen			
 			return composeCss(CSS_NAME, "underline");
 		} else if (!((U)this.getObject()).getVal().equals( UnderlineEnumeration.NONE ) ) {
-			return composeCss(CSS_NAME, "none");  // Hmm, what if it was also Strike (a la line-through)
+			return composeCss(CSS_NAME, "underline");  
 		} else {
-			return CSS_NULL;
+			return CSS_NULL;  // text-decoration is also used for Strike (a la line-through)
 		}
 		// How to handle <w:u w:color="FF0000"> ie coloured underline?
 		
