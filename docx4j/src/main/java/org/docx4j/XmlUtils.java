@@ -1075,8 +1075,20 @@ public class XmlUtils {
                 break;
 
             case Node.TEXT_NODE:
-            	Node textNode = destParent.getOwnerDocument().createTextNode(sourceNode.getNodeValue());       
-            	destParent.appendChild(textNode);
+            	
+            	// Where destParent is com.sun.org.apache.xerces.internal.dom.DocumentImpl,
+            	// destParent.getOwnerDocument() returns null.
+            	// #document ; com.sun.org.apache.xerces.internal.dom.DocumentImpl
+            	
+            	//System.out.println(destParent.getNodeName() + " ; " + destParent.getClass().getName() );
+            	if (destParent.getOwnerDocument()==null
+            			&& destParent.getNodeName().equals("#document")) {
+	            	Node textNode = ((Document)destParent).createTextNode(sourceNode.getNodeValue());   
+	            	destParent.appendChild(textNode);
+            	} else {
+	            	Node textNode = destParent.getOwnerDocument().createTextNode(sourceNode.getNodeValue());   
+	            	destParent.appendChild(textNode);
+            	}
                 break;
 
 //                case Node.CDATA_SECTION_NODE:
