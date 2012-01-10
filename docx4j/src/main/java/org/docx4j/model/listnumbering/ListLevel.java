@@ -332,11 +332,19 @@ public class ListLevel {
     		NumberFormatLowerLetter converter = new NumberFormatLowerLetter(); 
     		return converter.format(current).toUpperCase();
     	}        	
+    	if (numFmt.equals( NumberFormat.DECIMAL_ZERO ) ) {        		
+    		NumberFormatDecimalZero converter = new NumberFormatDecimalZero(); 
+    		return converter.format(current);
+    	}
     	
     	log.error("Unhandled numFmt: " + numFmt.name() );
         return this.counter.getCurrentValue().toString();
     }
     
+    public String getCurrentValueUnformatted()
+    {        	
+        return this.counter.getCurrentValue().toString();
+    }    
     
     /**
      * increments the current count of list items of that level 
@@ -393,7 +401,7 @@ public class ListLevel {
 //		private void setNumFmt(STNumberFormat numFmt) {
 //			this.numFmt = numFmt;
 //		}
-	private NumberFormat getNumFmt() {
+	protected NumberFormat getNumFmt() {
 		return numFmt;
 	}
 

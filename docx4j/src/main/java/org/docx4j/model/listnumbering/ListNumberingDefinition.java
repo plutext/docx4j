@@ -92,6 +92,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.wml.Lvl;
+import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.Numbering.Num.LvlOverride.StartOverride;
 
@@ -251,7 +252,13 @@ public class ListNumberingDefinition {
     /// <returns></returns>
     public String GetCurrentNumberString(String level)
     {
-        String formatString = this.levels.get(level).getLevelText();
+        ListLevel controllingLvl = this.levels.get( level ); 
+        
+        boolean isLegal = controllingLvl.getJaxbAbstractLvl().getIsLgl() !=null 
+        					&& controllingLvl.getJaxbAbstractLvl().getIsLgl().isVal();
+        log.debug("isLegal: " + isLegal);
+    	
+        String formatString = controllingLvl.getLevelText();
         log.debug("levelText: " + formatString );
         StringBuilder result = new StringBuilder();
         String temp = ""; //String.Empty;
@@ -268,7 +275,18 @@ public class ListNumberingDefinition {
                     String formatStringLevel = formatString.substring(i + 1, i+2);
                     // as it turns out, in the format String, the level is 1-based
                     int levelId =  Integer.parseInt(formatStringLevel) - 1;
-                    result.append(this.levels.get( Integer.toString(levelId) ).getCurrentValueFormatted() );
+                    ListLevel lvl = this.levels.get( Integer.toString(levelId) );
+                    if (level.equals("" + levelId) // this bit is the actual level 
+                    		&& lvl.getNumFmt().equals( NumberFormat.DECIMAL_ZERO )) { // Where this level sets <w:isLgl>, what other formats are to be respected?
+                        result.append(lvl.getCurrentValueFormatted() );                    	
+                    } else if (isLegal ) {
+                    	// Use normal decimal numbering
+                    	result.append(lvl.getCurrentValueUnformatted() );
+                    	
+                    } else {
+                    	// Usual case
+                    	result.append(lvl.getCurrentValueFormatted() );
+                    }
                     i++;
                 }
             }
