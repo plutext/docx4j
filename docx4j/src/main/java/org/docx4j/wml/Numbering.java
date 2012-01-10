@@ -1301,6 +1301,7 @@ public class Numbering
             "startOverride",
             "lvl"
         })
+        @XmlRootElement(name = "lvlOverride")
         public static class LvlOverride
             implements Child
         {
