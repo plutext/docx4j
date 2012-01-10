@@ -83,22 +83,39 @@
  */
 package org.docx4j.model.listnumbering;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.wml.Lvl;
 import org.docx4j.wml.Numbering;
+import org.docx4j.wml.Numbering.Num.LvlOverride.StartOverride;
 
+/**
+ * Represents:
+ * 
+	  <w:num w:numId="1">
+	    <w:abstractNumId w:val="0"/>
+	  </w:num>
+	  
+	  or 
+	  
+	  <w:num w:numId="2">
+	    <w:abstractNumId w:val="0"/>
+	    <w:lvlOverride w:ilvl="0">
+	      <w:startOverride w:val="10"/>
+	    </w:lvlOverride>
+	  </w:num>
+	  	    
+	    (layered on top of the JAXB object representing same)
+    
+ */
 public class ListNumberingDefinition {
-	
-	/* There should be only one Emulator object per 
-	 * WordprocessingML package.  It is set on the 
-	 * numbering part.
-	 */
-	
+		
 	// The underlying JAXB object 
 	private Numbering.Num numNode;
 	public Numbering.Num getNumNode() {
@@ -107,18 +124,17 @@ public class ListNumberingDefinition {
 	
 	protected static Logger log = Logger.getLogger(ListNumberingDefinition.class);
 	
-    /// <summary>
-    /// constructor
-    /// </summary>
-    /// <param name="numNode"></param>
-    /// <param name="nsm"></param>
-    /// <param name="abstractListDefinitions"></param>
+    /**
+     * @param numNode
+     * @param abstractListDefinitions
+     */
     public ListNumberingDefinition(Numbering.Num numNode, 
     		HashMap<String, AbstractListNumberingDefinition> abstractListDefinitions)
     {
     	this.numNode = numNode;
     	
         this.listNumberId =  numNode.getNumId().toString(); //getAttributeValue(numNode, "w:numId");
+    	log.debug("Constructing model for numId=" + listNumberId);
 
         //XmlNode abstractNumNode = numNode.SelectSingleNode("./w:abstractNumId", nsm);
         Numbering.Num.AbstractNumId abstractNumNode = numNode.getAbstractNumId();
@@ -145,19 +161,36 @@ public class ListNumberingDefinition {
             List<Numbering.Num.LvlOverride> levelOverrideNodes = numNode.getLvlOverride(); 
             if (levelOverrideNodes != null)
             {
+            	/*
+            	 *     <w:lvlOverride w:ilvl="0">
+					      <w:startOverride w:val="10"/>
+					    </w:lvlOverride>
+            	 */
                 for (Numbering.Num.LvlOverride overrideNode : levelOverrideNodes)
                 {
-                    //XmlNode node = overrideNode.SelectSingleNode("./w:lvl", nsm);
-                	Lvl node = overrideNode.getLvl();
-                    if (node != null)
+                	log.debug("found LvlOverride " + XmlUtils.marshaltoString(overrideNode, true));
+                    if (overrideNode.getIlvl() != null)
                     {
-                        String overrideLevelId = node.getIlvl().toString(); //getAttributeValue(node, "w:ilvl");
+                        String overrideLevelId = overrideNode.getIlvl().toString(); //getAttributeValue(node, "w:ilvl");
+                    	log.debug(".. " + overrideLevelId );
 
-                        if (overrideLevelId!=null && !overrideLevelId.equals("") )
-                        {
-                            this.levels.get(overrideLevelId).SetOverrides(node);
+                        if (!overrideLevelId.equals("") )
+                        {                            
+                            // Is there a w:startOverride?
+                        	// This is given effect the first time the instance is encountered in the document
+                            StartOverride startOverride = overrideNode.getStartOverride();
+                            if (startOverride!=null
+                            		&& startOverride.getVal()!=null) {
+                            	this.levels.get(overrideLevelId).setStartValue(startOverride.getVal().subtract(BigInteger.ONE));
+                            	log.debug("level " + overrideLevelId + "starts at " + startOverride.getVal() );
+                            }
                         }
                     }
+//                	Lvl ilvl = overrideNode.getLvl();
+//                    if (ilvl != null)
+//                    {
+//                    this.levels.get(overrideLevelId).SetOverrides(overrideLevelId);
+//                    }                    
                 }
             }
         }
@@ -180,6 +213,7 @@ public class ListNumberingDefinition {
     /// <param name="level"></param>
     public void IncrementCounter(String level)
     {
+    	
     	log.debug("Increment level " + level);
         this.levels.get(level).IncrementCounter();
 

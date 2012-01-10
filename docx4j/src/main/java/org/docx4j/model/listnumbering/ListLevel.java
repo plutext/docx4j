@@ -102,6 +102,9 @@ public class ListLevel {
 	 * for each story, or the there should be a ListLevel defined
 	 * for each story! 
 	 * 
+	 * 2012 01 10: numbering set up on a per-part basis
+	 * seems the most sensible approach.
+	 * 
 	 */
 	
 	protected static Logger log = Logger.getLogger(ListLevel.class);
@@ -116,11 +119,26 @@ public class ListLevel {
 		return jaxbOverrideLvl;
 	}
 	
+	/**
+	 *  The counter is kept at the abstract level, since
+	 *  each instance definition shares a single counter.
+	 *  
+	 */
+	private Counter counter; 
+	
+	private boolean encounteredAlready = false;
+	
+	
+    /**
+     * Constructor for a ListLevel in an abstract definition.
+     */
     public ListLevel(Lvl levelNode)
     {
     	this.jaxbAbstractLvl = levelNode;
     	
         this.id = levelNode.getIlvl().toString(); 
+        
+        counter = new Counter();
 
         Lvl.Start startValueNode = levelNode.getStart();
         if (startValueNode != null)
@@ -128,7 +146,7 @@ public class ListLevel {
         	this.startValue = startValueNode.getVal().subtract(BigInteger.ONE);
         		// Start value is one less than the user set it to,
         		// since whenever we fetch the number, we first increment it.
-            this.counter = this.startValue;
+            counter.setCurrentValue(this.startValue);                        
         }
 
         Lvl.LvlText levelTextNode = levelNode.getLvlText();
@@ -162,9 +180,8 @@ public class ListLevel {
 
     }
 
-    /** copy constructor
-     * 
-     * @param masterCopy
+    /** 
+     * Constructor for a ListLevel in an instance definition.
      */
     public ListLevel(ListLevel masterCopy)
     {
@@ -173,7 +190,8 @@ public class ListLevel {
         this.id = masterCopy.id;
         this.levelText = masterCopy.levelText;
         this.startValue = masterCopy.startValue;
-        this.counter = this.startValue;
+        //this.counter = this.startValue;
+        this.counter = masterCopy.counter;  // reference the abstract one, since this is shared
         this.font = masterCopy.font;
         this.isBullet = masterCopy.isBullet;
         this.numFmt = masterCopy.numFmt;
@@ -190,9 +208,11 @@ public class ListLevel {
         Lvl.Start startValueNode = levelNode.getStart();
         if (startValueNode != null)
         {
-        	this.startValue = startValueNode.getVal(); 
+        	this.startValue = startValueNode.getVal().subtract(BigInteger.ONE);
+    		// Start value is one less than the user set it to,
+    		// since whenever we fetch the number, we first increment it.
+        	counter.setCurrentValue(this.startValue);                        
         }
-        this.counter = this.startValue;
 
         Lvl.LvlText levelTextNode = levelNode.getLvlText();
         if (levelTextNode != null)
@@ -237,7 +257,11 @@ public class ListLevel {
 
     private BigInteger startValue = BigInteger.ZERO;
 
-    /**
+    public void setStartValue(BigInteger startValue) {
+		this.startValue = startValue;
+	}
+
+	/**
      * start value of that level
      * @return
      */
@@ -246,16 +270,6 @@ public class ListLevel {
             return this.startValue;
     }
 
-    private BigInteger counter;
-
-    /**
-     * returns the current count of list items of that level
-     * @return
-     */
-    public BigInteger getCurrentValueRaw()
-    {        	
-            return this.counter;
-    }
 
     /**
      * The current number, formatted using numFmt.
@@ -285,7 +299,7 @@ public class ListLevel {
     	 */
     	
     	if (numFmt.equals( NumberFormat.DECIMAL ) ) {
-    		return this.counter.toString();
+    		return this.counter.getCurrentValue().toString();
     	}
     	
     	if (numFmt.equals( NumberFormat.NONE ) ) {
@@ -300,7 +314,7 @@ public class ListLevel {
     		return "*";        		
     	}
     	        	
-    	int current = this.counter.intValue();
+    	int current = this.counter.getCurrentValue().intValue();
     	
     	if (numFmt.equals( NumberFormat.UPPER_ROMAN ) ) {        		
     		NumberFormatRomanUpper converter = new NumberFormatRomanUpper(); 
@@ -320,7 +334,7 @@ public class ListLevel {
     	}        	
     	
     	log.error("Unhandled numFmt: " + numFmt.name() );
-        return this.counter.toString();
+        return this.counter.getCurrentValue().toString();
     }
     
     
@@ -329,9 +343,17 @@ public class ListLevel {
      */
     public void IncrementCounter()
     {
-        this.counter = this.counter.add(BigInteger.ONE); 
-        
-        log.debug("counter now: " + this.counter.toString() );
+    	if (!encounteredAlready) {
+    		// Defer setting the startValue until the list
+    		// is actually encountered in the main document part,
+    		// since otherwise earlier numbering (using the
+    		// same abstract number) would use this startValue
+        	counter.setCurrentValue(this.startValue);  
+        	encounteredAlready = true;
+    	}
+    	
+    	
+        counter.IncrementCounter();
         
     }
 
@@ -340,7 +362,7 @@ public class ListLevel {
      */
     public void ResetCounter()
     {
-        this.counter = this.startValue;
+        counter.setCurrentValue(this.startValue);
     }
 
     private String levelText;
@@ -385,6 +407,41 @@ public class ListLevel {
     public boolean IsBullet()
     {
             return this.isBullet;
+    }
+    
+    protected class Counter {
+    	
+        private BigInteger currentValue;
+        
+        Counter() {
+        	currentValue = BigInteger.ZERO;
+        }
+
+        public void setCurrentValue(BigInteger currentValue) {
+			this.currentValue = currentValue;
+		}
+
+		/**
+         * returns the current count of list items of that level
+         * @return
+         */
+        public BigInteger getCurrentValue()
+        {        	
+        	log.debug("counter: " + currentValue.intValue() );
+            return this.currentValue;
+        }
+    	
+        /**
+         * increments the current count of list items of that level 
+         */
+        public void IncrementCounter()
+        {
+        	setCurrentValue( currentValue.add(BigInteger.ONE)); 
+            
+            log.debug("counter now: " + currentValue.intValue() );
+            
+        }
+    	
     }
 
 }

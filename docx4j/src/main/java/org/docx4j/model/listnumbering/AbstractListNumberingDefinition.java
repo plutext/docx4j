@@ -97,6 +97,36 @@ import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.PPrBase.NumPr;
 
+/**
+ * Represents:
+ * 
+	  <w:abstractNum w:abstractNumId="0">
+	    <w:nsid w:val="2DD860C0"/>
+	    <w:multiLevelType w:val="multilevel"/>
+	    <w:tmpl w:val="0409001D"/>
+	    <w:lvl w:ilvl="0">
+	      <w:start w:val="1"/>
+	      <w:numFmt w:val="decimal"/>
+	      <w:lvlText w:val="%1)"/>
+	      <w:lvlJc w:val="left"/>
+	      <w:pPr>
+	        <w:ind w:left="360" w:hanging="360"/>
+	      </w:pPr>
+	    </w:lvl>
+	    <w:lvl w:ilvl="1">
+	      <w:start w:val="1"/>
+	      <w:numFmt w:val="lowerLetter"/>
+	      <w:lvlText w:val="%2)"/>
+	      <w:lvlJc w:val="left"/>
+	      <w:pPr>
+	        <w:ind w:left="720" w:hanging="360"/>
+	      </w:pPr>
+	    </w:lvl>
+	    etc
+	    
+	    (layered on top of the JAXB object representing same)
+    
+ */
 public class AbstractListNumberingDefinition {
 	
 	protected static Logger log = Logger.getLogger(AbstractListNumberingDefinition.class);
