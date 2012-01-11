@@ -160,40 +160,44 @@ public class ListNumberingDefinition {
             // XmlNodeList levelOverrideNodes = numNode.SelectNodes("./w:lvlOverride", nsm);
 
             List<Numbering.Num.LvlOverride> levelOverrideNodes = numNode.getLvlOverride(); 
-            if (levelOverrideNodes != null)
-            {
-            	/*
-            	 *     <w:lvlOverride w:ilvl="0">
-					      <w:startOverride w:val="10"/>
-					    </w:lvlOverride>
-            	 */
-                for (Numbering.Num.LvlOverride overrideNode : levelOverrideNodes)
-                {
-                	log.debug("found LvlOverride " + XmlUtils.marshaltoString(overrideNode, true));
-                    if (overrideNode.getIlvl() != null)
-                    {
-                        String overrideLevelId = overrideNode.getIlvl().toString(); //getAttributeValue(node, "w:ilvl");
-                    	log.debug(".. " + overrideLevelId );
+			if (levelOverrideNodes != null) {
+				/*
+				 * <w:lvlOverride w:ilvl="0"> <w:startOverride w:val="10"/>
+				 * </w:lvlOverride>
+				 */
+				for (Numbering.Num.LvlOverride overrideNode : levelOverrideNodes) {
+					log.debug("found LvlOverride "
+							+ XmlUtils.marshaltoString(overrideNode, true));
+					
+					if (overrideNode.getIlvl() == null) {
+						log.warn("Missing @w:ilvl! " + XmlUtils.marshaltoString(overrideNode, true));
+					} else {
+						String overrideLevelId = overrideNode.getIlvl().toString(); 
+						log.debug(".. " + overrideLevelId);
 
-                        if (!overrideLevelId.equals("") )
-                        {                            
-                            // Is there a w:startOverride?
-                        	// This is given effect the first time the instance is encountered in the document
-                            StartOverride startOverride = overrideNode.getStartOverride();
-                            if (startOverride!=null
-                            		&& startOverride.getVal()!=null) {
-                            	this.levels.get(overrideLevelId).setStartValue(startOverride.getVal().subtract(BigInteger.ONE));
-                            	log.debug("level " + overrideLevelId + "starts at " + startOverride.getVal() );
-                            }
-                        }
-                    }
-//                	Lvl ilvl = overrideNode.getLvl();
-//                    if (ilvl != null)
-//                    {
-//                    this.levels.get(overrideLevelId).SetOverrides(overrideLevelId);
-//                    }                    
-                }
-            }
+						if (!overrideLevelId.equals("")) {
+							// Is there a w:startOverride?
+							// This is only given effect the first time the instance
+							// is encountered in the document
+							StartOverride startOverride = overrideNode.getStartOverride();
+							if (startOverride != null
+									&& startOverride.getVal() != null) {
+								
+								this.levels.get(overrideLevelId).setStartValue(
+										startOverride.getVal().subtract(BigInteger.ONE));
+								log.debug("level " + overrideLevelId + "starts at " + startOverride.getVal());
+							}
+						}
+
+						Lvl lvl = overrideNode.getLvl();
+						if (lvl != null) {
+							this.levels.get(overrideLevelId).SetOverrides(lvl);
+						}
+						
+					}
+
+				}
+			}
         }
     }
 
@@ -245,18 +249,78 @@ public class ListNumberingDefinition {
             return this.listNumberId;
         }
 
-    /// <summary>
-    /// returns a String containing the current state of the counters, up to the indicated level
-    /// </summary>
-    /// <param name="level"></param>
-    /// <returns></returns>
+    /**
+     * returns a String containing the current state of the counters, up to the indicated level
+     * 
+     * @param level
+     * @return
+     */
     public String GetCurrentNumberString(String level)
     {
         ListLevel controllingLvl = this.levels.get( level ); 
         
-        boolean isLegal = controllingLvl.getJaxbAbstractLvl().getIsLgl() !=null 
+        boolean isLegal = level.equals("1")
+        					&& controllingLvl.getJaxbAbstractLvl().getIsLgl() !=null 
         					&& controllingLvl.getJaxbAbstractLvl().getIsLgl().isVal();
-        log.debug("isLegal: " + isLegal);
+        /*
+         * Explanation of <w:isLgl/>
+         * 
+         * COnsider Word (2010)'s built-in legal numbering:
+         * 
+         *   <w:abstractNum w:abstractNumId="2">
+			    <w:nsid w:val="78220137"/>
+			    <w:multiLevelType w:val="multilevel"/>
+			    <w:tmpl w:val="0DE0BCC2"/>
+			    <w:lvl w:ilvl="0">
+			      <w:start w:val="1"/>
+			      <w:numFmt w:val="upperRoman"/>
+			      <w:pStyle w:val="Heading1"/>
+			      <w:lvlText w:val="Article %1."/>
+			      <w:lvlJc w:val="left"/>
+			      <w:pPr>
+			        <w:ind w:left="0" w:firstLine="0"/>
+			      </w:pPr>
+			    </w:lvl>
+			    <w:lvl w:ilvl="1">
+			      <w:start w:val="1"/>
+			      <w:numFmt w:val="decimalZero"/>
+			      <w:pStyle w:val="Heading2"/>
+			      <w:isLgl/>                        <----------------
+			      <w:lvlText w:val="Section %1.%2"/>
+			      <w:lvlJc w:val="left"/>
+			      <w:pPr>
+			        <w:ind w:left="0" w:firstLine="0"/>
+			      </w:pPr>
+			    </w:lvl>
+			    <w:lvl w:ilvl="2">
+			      <w:start w:val="1"/>
+			      <w:numFmt w:val="lowerLetter"/>
+			      <w:pStyle w:val="Heading3"/>
+			      <w:lvlText w:val="(%3)"/>
+			      <w:lvlJc w:val="left"/>
+			      <w:pPr>
+			        <w:ind w:left="720" w:hanging="432"/>
+			      </w:pPr>
+			    </w:lvl>
+			    			  
+         * Notice <w:isLgl/> at @w:ilvl="1".  This produces:
+         * 
+         *   Article I.
+         *   Section 1.01
+         *   
+         * Without it, you'd get:
+         * 
+         *   Article I.
+         *   Section I.01
+         *  
+         * In other words, the default numbering behaviour is to 
+         * format a level using the w:numFmt specified in that level.
+         * w:isLgl overrides that behaviour, and uses decimal
+         * numbering for ilvl 0.  w:isLgl only seems to have 
+         * any effect in Word 2010 when specified at ilvl 1
+         * (I tried it at a deeper level, and is behaved as if
+         *  not present at all).
+         */
     	
         String formatString = controllingLvl.getLevelText();
         log.debug("levelText: " + formatString );
@@ -276,11 +340,8 @@ public class ListNumberingDefinition {
                     // as it turns out, in the format String, the level is 1-based
                     int levelId =  Integer.parseInt(formatStringLevel) - 1;
                     ListLevel lvl = this.levels.get( Integer.toString(levelId) );
-                    if (level.equals("" + levelId) // this bit is the actual level 
-                    		&& lvl.getNumFmt().equals( NumberFormat.DECIMAL_ZERO )) { // Where this level sets <w:isLgl>, what other formats are to be respected?
-                        result.append(lvl.getCurrentValueFormatted() );                    	
-                    } else if (isLegal ) {
-                    	// Use normal decimal numbering
+                    if (levelId==0  && isLegal ) {
+                    	// Special case: Use normal decimal numbering
                     	result.append(lvl.getCurrentValueUnformatted() );
                     	
                     } else {
