@@ -39,7 +39,13 @@
  	That page said "Do with this code as you will." 
  	
  	The jar containing package org.docx4j.org.xhtmlrenderer is an LGPL library.
- 	Source may be found at https://github.com/plutext/flyingsaucer 		
+ 	Source may be found at https://github.com/plutext/flyingsaucer
+ 	
+ 	Some of the package org.docx4j.model.listnumbering is a translation into 
+ 	Java of a portion of Program.cs from Microsoft's OpenXmlViewer, which 
+ 	is (c) Microsoft Corporation and was made available to the project under the 
+ 	Microsoft Public License (Ms-PL).  See further the license header on
+ 	the relevant files.		
  	
  	TODO reference xsd license
 
