@@ -243,6 +243,10 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					
 						span>STUFF</span-->
 				</xsl:when>
+				<xsl:when test="count(child::node())=1 and count(w:pPr)=1">
+					<!--  Don't count an empty paragraph -->
+					<!--  Don't apply templates, since there is nothing to do. -->
+				</xsl:when>				
 				<xsl:otherwise>
 					<!--  At present, this doesn't use HTML OL|UL and LI;
 					      we'll do that when we have a document model to work from -->								
