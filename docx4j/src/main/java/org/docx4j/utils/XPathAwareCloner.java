@@ -29,8 +29,8 @@ public class XPathAwareCloner {
 	private static Logger log = Logger.getLogger(XPathAwareCloner.class);	
 			
 	/** Clone this JAXB object, using default JAXBContext. */ 
-	public <T> T deepCopy(T value) {		
-		return deepCopy(value, Context.jc);		
+	public Object deepCopy(Object o) {		
+		return deepCopy(o, Context.jc);		
 	}	
 	
 	Object jaxbElement;
@@ -40,51 +40,28 @@ public class XPathAwareCloner {
 	 * @param jc
 	 * @return
 	 */
-	public <T> T deepCopy(T value, JAXBContext jc) {
+	public Object deepCopy(Object o, JAXBContext jc) {
 		
-		if (value==null) {
+		if (o==null) {
 			throw new IllegalArgumentException("Can't clone a null argument");
 		}
 		
 		try {
-			JAXBElement<?> elem;
-			Class<?> valueClass;
-			if (value instanceof JAXBElement<?>) {
-				log.debug("deep copy of JAXBElement..");
-				elem = (JAXBElement<?>) value;
-				valueClass = elem.getDeclaredType();
-			} else {
-				log.debug("deep copy of " + value.getClass().getName() );
-				@SuppressWarnings("unchecked")
-				Class<T> classT = (Class<T>) value.getClass();
-				elem = new JAXBElement<T>(new QName("temp"), classT, value);
-				valueClass = classT;
-			}
-			
 			// To be XPath aware, we need a binder.
 			// But to unmarshall using a binder, we need to unmarshal a node.
 			// So, our marshall should be to a W3C document
-			org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(elem, jc);
+			org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(o, jc);
 			
 			// OK, unmarshall to binder
 			binder = jc.createBinder();
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
 			binder.setEventHandler(eventHandler);
-			elem =  binder.unmarshal( doc, valueClass);
-
-			T res;
-			if (value instanceof JAXBElement<?>) {
-				@SuppressWarnings("unchecked")
-				T resT = (T) elem;
-				res = resT;
-			} else {
-				@SuppressWarnings("unchecked")
-				T resT = (T) elem.getValue();
-				res = resT;
-			}
-			jaxbElement = res;
-			return res;
+			jaxbElement =  binder.unmarshal( doc);
+			
+			//log.debug("Clone: " + XmlUtils.marshaltoString(jaxbElement, true, true));
+			
+			return jaxbElement;
 		} catch (JAXBException ex) {
 			throw new IllegalArgumentException(ex);
 		}
@@ -195,11 +172,16 @@ public class XPathAwareCloner {
 	    P pIn = (P)XmlUtils.unmarshalString(pString);
 	    
 	    XPathAwareCloner cloner = new XPathAwareCloner();
-	    P clonedP = cloner.deepCopy(pIn);
+	    P clonedP = (P)cloner.deepCopy(pIn);
 	    
 	    List<Object> results = cloner.getJAXBNodesViaXPath("//w:r[contains( w:t, 'seeking')]", false);
+	    //List<Object> results = cloner.getJAXBNodesViaXPath("//w:r", false);
 	    
-	    System.out.println(XmlUtils.marshaltoString(results.get(0), true, true));
+	    int i=1;
+	    for (Object result: results) {
+	    	System.out.println("\n\r" + i + ": " + XmlUtils.marshaltoString(result, true, true));
+	    	i++;
+	    }
 		
 
 	}
