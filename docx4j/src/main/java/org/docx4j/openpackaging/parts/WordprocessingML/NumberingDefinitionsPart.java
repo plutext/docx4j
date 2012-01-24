@@ -141,7 +141,6 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
         }
 
         // instantiate the list number definitions
-        //foreach (XmlNode numNode in numberNodes)
         for( Numbering.Num numNode : numbering.getNum() )
         {
             ListNumberingDefinition listDef 
@@ -234,7 +233,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 
 		// Operating on the docx4j.listnumbering plane,
 		// not the JAXB plane..
-		ListNumberingDefinition lnd = instanceListDefinitions.get(numId );
+		ListNumberingDefinition lnd = getInstanceListDefinitions().get(numId );
 		if (lnd==null) {
 			log.debug("couldn't find list for numId: " + numId);
 			return null;

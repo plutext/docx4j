@@ -16,6 +16,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
+import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -106,6 +107,7 @@ public class PropertyResolver {
 	
 	private StyleDefinitionsPart styleDefinitionsPart;
 	
+	private WordprocessingMLPackage wordMLPackage;
 	
 	/**
 	 * All styles in the Style Definitions Part.
@@ -132,6 +134,8 @@ public class PropertyResolver {
 	
 	public PropertyResolver(WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 		
+		this.wordMLPackage = wordMLPackage;
+		
 		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 		
 		styleDefinitionsPart = mdp.getStyleDefinitionsPart();
@@ -140,15 +144,15 @@ public class PropertyResolver {
 		init();
 	}
 	
-	public PropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
-							ThemePart themePart,
-							NumberingDefinitionsPart numberingDefinitionsPart) throws Docx4JException {
-		
-		this.styleDefinitionsPart= styleDefinitionsPart;
-		this.themePart = themePart;
-		this.numberingDefinitionsPart = numberingDefinitionsPart;
-		init();
-	}
+//	public PropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
+//							ThemePart themePart,
+//							NumberingDefinitionsPart numberingDefinitionsPart) throws Docx4JException {
+//		
+//		this.styleDefinitionsPart= styleDefinitionsPart;
+//		this.themePart = themePart;
+//		this.numberingDefinitionsPart = numberingDefinitionsPart;
+//		init();
+//	}
 	
 	String defaultParagraphStyleId;  // "Normal" in English, but ...
 	String defaultCharacterStyleId;
@@ -917,12 +921,14 @@ public class PropertyResolver {
 	
 	protected void applyPPr(PPr pPrToApply, PPr effectivePPr) {
 		
+		log.debug( "apply " + XmlUtils.marshaltoString(pPrToApply,  true, true)
+		+ "\n\r to " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
+		
 		if (pPrToApply==null) {
 			return;
 		}
 		
-    	List<Property> properties = PropertyFactory.createProperties(null, pPrToApply); // wmlPackage null
-    	
+    	List<Property> properties = PropertyFactory.createProperties(wordMLPackage, pPrToApply); 
     	for( Property p :  properties ) {
 			if (p!=null) {
 				log.debug("applying pPr " + p.getClass().getName() );
@@ -930,7 +936,8 @@ public class PropertyResolver {
 			}
     	}
 
-
+		log.debug( "result " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
+    	
 	}
 	
 	private boolean hasDirectRPrFormatting(RPr rPrToApply) {

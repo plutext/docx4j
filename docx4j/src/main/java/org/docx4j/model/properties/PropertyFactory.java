@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.paragraph.Justification;
 import org.docx4j.model.properties.paragraph.KeepNext;
@@ -395,28 +396,64 @@ public class PropertyFactory {
 //			dest.setKinsoku(pPr.getKinsoku());
 //		if (pPr.getMirrorIndents() != null)
 //			dest.setMirrorIndents(pPr.getMirrorIndents());
-		Ind ind = null;
-		if (pPr.getNumPr() != null) {
+		
+		/*
+		 * Where a p has indentation specified by both w:numPr and direct w:ind, eg:
+		 *  
+		    <w:p>
+		      <w:pPr>
+		        <w:numPr>
+		          <w:ilvl w:val="0"/>
+		          <w:numId w:val="2"/>
+		        </w:numPr>
+		        <w:ind w:left="0" w:firstLine="0"/>
+		      </w:pPr>
+
+			we want to ensure that the direct values are given effect.
+			
+			ie indent on direct pPr trumps indent in pPr in numbering, which trumps indent
+			specified in a style.  
+
+		 */
+		Indent indent = null; 
+		boolean numberingIndent = false;
+		if (pPr.getNumPr() == null) {
+			log.debug("No numPr.. ") ; 									
+		} else {
 			// Numbering is mostly handled directly in the HTML & PDF stylesheets			
 			properties.add(new NumberingProperty(pPr.getNumPr()));
-			// but we do want to override w:ind above
-			if (pPr.getNumPr()!=null) {
-				if (wmlPackage instanceof WordprocessingMLPackage) {
-					NumberingDefinitionsPart ndp = ((WordprocessingMLPackage)wmlPackage).getMainDocumentPart().getNumberingDefinitionsPart();
-                    if (ndp != null) {
-					ind = ndp.getInd(pPr.getNumPr());
-					if (ind!=null) {
-						properties.add(new Indent(ind));			
+			// but we do want to get w:ind (in case not set elsewhere)
+			if (wmlPackage instanceof WordprocessingMLPackage) {
+				NumberingDefinitionsPart ndp 
+					= ((WordprocessingMLPackage)wmlPackage).getMainDocumentPart().getNumberingDefinitionsPart();
+                if (ndp == null) {
+					log.debug("No NDP?.. ") ; 						                	
+                } else {
+					Ind ind = ndp.getInd(pPr.getNumPr());
+					if (ind==null) {
+						log.debug("No Indent in numbering.. ") ; 						
+					} else {
+						log.debug("Indent from numbering: " + XmlUtils.marshaltoString(ind,  true, true)) ; 
+						indent = new Indent(ind);
+						properties.add(indent);			
 						log.debug("Using w:ind from list level");
+						numberingIndent = true;
 					}
-                    }
-				}
+                }
+			} else {
+				log.info(wmlPackage + " " + wmlPackage.getClass().getName() ) ;
 			}
 		}
-		if (ind==null) {
-			if (pPr.getInd() != null)
+		
+		// Give effect to the prioritisation
+			if (pPr.getInd() != null) {
+				log.debug("Indent from ppr: " + XmlUtils.marshaltoString(pPr.getInd(),  true, true)) ; 
+				if (indent!=null) {
+					properties.remove(indent);
+				}
 				properties.add(new Indent(pPr.getInd()));			
-		}
+			}
+		
 //		if (pPr.getOutlineLvl() != null)
 //			dest.setOutlineLvl(pPr.getOutlineLvl());
 //		if (pPr.getOverflowPunct() != null)

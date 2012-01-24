@@ -23,12 +23,12 @@ public class ImmutablePropertyResolver extends PropertyResolver {
 		super(wordMLPackage);
 	}
 
-	public ImmutablePropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
-			ThemePart themePart,
-			NumberingDefinitionsPart numberingDefinitionsPart)
-			throws Docx4JException {
-		super(styleDefinitionsPart, themePart, numberingDefinitionsPart);
-	}
+//	public ImmutablePropertyResolver(StyleDefinitionsPart styleDefinitionsPart,
+//			ThemePart themePart,
+//			NumberingDefinitionsPart numberingDefinitionsPart)
+//			throws Docx4JException {
+//		super(styleDefinitionsPart, themePart, numberingDefinitionsPart);
+//	}
 
 	protected void applyPPr(PPr src, PPr dest) {
 		if (src == null) {

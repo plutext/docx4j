@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.Output;
 import org.docx4j.fonts.Mapper;
@@ -156,6 +157,7 @@ public abstract class AbstractHtmlExporter implements Output {
 	 * @return
 	 */
     public static DocumentFragment getNumberXmlNode(WordprocessingMLPackage wmlPackage,
+    		NodeIterator pPrNodeIt,
     		String pStyleVal, String numId, String levelId) {
     	
     	// Note that this is invoked for every paragraph with a pPr node.
@@ -198,17 +200,38 @@ public abstract class AbstractHtmlExporter implements Output {
 //				styleVal = indent.getCssProperty();
 //    		}
 			
-			NumberingDefinitionsPart ndp = wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
-			Ind ind = ndp.getInd(numId, levelId);
-			if (ind!=null && ind.getHanging()!=null) {
-				String hanging = UnitsOfMeasurement.twipToBest(ind.getHanging().intValue());
-				styleVal="position: absolute; left:-" + hanging + "; max-width: " + hanging +";";							
+        	PPr pPr = null;
+        	if (pPrNodeIt!=null) {
+        		Node n = pPrNodeIt.nextNode();
+        		if (n!=null) {
+					log.debug( XmlUtils.w3CDomNodeToString(n) );
+        			Unmarshaller u = Context.jc.createUnmarshaller();			
+        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+        			pPr = (PPr)u.unmarshal(n);
+        		}
+        	}   
+			if (pPr.getInd()==null) {
+			
+				NumberingDefinitionsPart ndp = wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
+				Ind ind = ndp.getInd(numId, levelId);
+				if (ind!=null && ind.getHanging()!=null) {
+					String hanging = UnitsOfMeasurement.twipToBest(ind.getHanging().intValue());
+					styleVal="position: absolute; left:-" + hanging + "; max-width: " + hanging +";";							
+				}
+				// TODO: position bullets correctly where there is no hanging
+				// TODO: The suff element tells us what separates the number from
+				// the text (tab, space or nothing).  If its a tab,
+				// we'll need to know the tab values here. Currently, we're 
+				// assuming hanging overrides all that.
+			} else {
+				
+				Ind ind = pPr.getInd();
+				if (ind!=null && ind.getHanging()!=null) {
+					String hanging = UnitsOfMeasurement.twipToBest(ind.getHanging().intValue());
+					styleVal="position: absolute; left:-" + hanging + "; max-width: " + hanging +";";							
+				}
+				
 			}
-			// TODO: position bullets correctly where there is no hanging
-			// TODO: The suff element tells us what separates the number from
-			// the text (tab, space or nothing).  If its a tab,
-			// we'll need to know the tab values here. Currently, we're 
-			// assuming hanging overrides all that.
 			
     		// Set the font
     		if (triple.getNumFont()!=null) {
