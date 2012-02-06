@@ -20,6 +20,11 @@
               (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
 <!--  <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/> -->
+   <!-- Use method="html" if you need IE9 to display quotes properly (it
+   		still doesn't use UTF 8 though!). Chrome works either way. 
+   		NB, with IE9, and XML output, 
+   		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+   		doesn't help.-->
    
 <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" 
 doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -225,6 +230,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
  			<!--  Invoke an extension function, so we can use
  			      docx4j to populate the fo:block -->
  		
+		<xsl:variable name="pPrNode" select="w:pPr" />  	 		
 		<xsl:variable name="pStyleVal" select="string( w:pPr/w:pStyle/@w:val )" />  
 
 		<xsl:variable name="numId" select="string( w:pPr/w:numPr/w:numId/@w:val )" />  
@@ -252,7 +258,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					      we'll do that when we have a document model to work from -->								
 					<xsl:copy-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
-					  					$wmlPackage, $pStyleVal, $numId, $levelId)" />					
+					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)" />					
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
 			</xsl:choose>
