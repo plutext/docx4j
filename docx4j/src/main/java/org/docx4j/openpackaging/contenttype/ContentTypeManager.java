@@ -82,6 +82,7 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
+import org.docx4j.openpackaging.parts.VMLBinaryPart;
 import org.docx4j.openpackaging.parts.VMLPart;
 import org.docx4j.openpackaging.parts.DrawingML.Chart;
 import org.docx4j.openpackaging.parts.DrawingML.Drawing;
@@ -396,7 +397,12 @@ public class ContentTypeManager  {
 		} else if (contentType.equals(ContentTypes.IMAGE_WMF)) {
 			return new MetafileWmfPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.VML_DRAWING)) {
-			return new VMLPart(new PartName(partName));
+			
+			if (partName.endsWith(".xml") ) {			
+				return new VMLPart(new PartName(partName));
+			} else {
+				return new VMLBinaryPart(new PartName(partName));				
+			}
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.drawing")) {

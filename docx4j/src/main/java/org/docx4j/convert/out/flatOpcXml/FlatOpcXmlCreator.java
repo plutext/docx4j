@@ -55,7 +55,11 @@ import org.w3c.dom.Document;
 /**
  * Convert a Package object to org.docx4j.xmlPackage.Package
  * (ie the "pkg" single XML file format, sometimes called
- *  Flat OPC format):
+ *  Flat OPC format).
+ * 
+ * Microsoft Word and Powerpoint both support
+ * saving to this format.  Excel doesn't, but you 
+ * can still have a spreadsheet in this format if you want to. 
  * 
  * "<?xml version=""1.0"" standalone=""yes""?>
  * <?mso-application progid=""Word.Document""?>

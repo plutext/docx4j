@@ -74,6 +74,10 @@ import org.w3c.dom.DOMException;
  * Create a Package object from an
  * XmlPackage object.
  * 
+ * Microsoft Word and Powerpoint both support
+ * saving to this format.  Excel doesn't, but you 
+ * can still have a spreadsheet in this format if you want to. 
+ * 
  * "<?xml version=""1.0"" standalone=""yes""?>
  * <?mso-application progid=""Word.Document""?>
  * 
