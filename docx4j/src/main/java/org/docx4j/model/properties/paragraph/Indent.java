@@ -22,6 +22,7 @@ package org.docx4j.model.properties.paragraph;
 import java.math.BigInteger;
 
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
@@ -30,9 +31,7 @@ import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
 public class Indent extends AbstractParagraphProperty {
-	
-	// Just handles left for the moment
-	
+		
 	public final static String CSS_NAME = "margin-left";  // Use 'margin-left' instead of 'left' for CSS.
 	// 'Left' pushes the box to the right, which results can result in a horizontal scroll bar in the web browser.
 	/**
@@ -78,14 +77,28 @@ public class Indent extends AbstractParagraphProperty {
 	@Override
 	public String getCssProperty() {
 		
+		String prop = "position: relative; ";
+		
 		BigInteger left = ((Ind)this.getObject()).getLeft();		
-		if (left==null) {
-			log.warn("Only left indentation is handled at present");
-			return CSS_NULL;
-		} else {
-			return "position: relative; " + composeCss(CSS_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
+		if (left!=null) {
+			prop  = prop  + composeCss(CSS_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
 		} 
 		
+		BigInteger firstline = ((Ind)this.getObject()).getFirstLine();		
+		if (firstline!=null) {
+			prop  = prop  + composeCss("text-indent", UnitsOfMeasurement.twipToBest(firstline.intValue()) );
+		} 
+
+		BigInteger hanging = ((Ind)this.getObject()).getHanging();		
+		if (hanging!=null) {
+			prop  = prop  + composeCss("text-indent", "-" + UnitsOfMeasurement.twipToBest(hanging.intValue()) );
+		} 
+		
+		if (left==null && firstline == null && hanging==null){
+			log.debug("What to do with " + XmlUtils.marshaltoString(this.getObject(), true, true));
+			prop =  CSS_NULL;
+		} 
+		return prop;
 	}
 	
 
