@@ -107,9 +107,13 @@ public class XmlUtils {
 		setTFactory();
 		
     	// Crimson fails to parse the HTML XSLT, so use Xerces ..
-		// .. this one is available in Java 6.		
-		if (System.getProperty("java.version").startsWith("1.6")
-				&& System.getProperty("java.vendor").startsWith("Sun") ) {
+		// .. this one is available in Java 6.	
+		System.out.println(System.getProperty("java.vendor"));
+		System.out.println(System.getProperty("java.version"));
+		if ((System.getProperty("java.version").startsWith("1.6")
+				&& System.getProperty("java.vendor").startsWith("Sun"))
+				|| (System.getProperty("java.version").startsWith("1.7")
+						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
 		
 			System.setProperty("javax.xml.parsers.SAXParserFactory", 
 			"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
@@ -640,6 +644,7 @@ public class XmlUtils {
 		try {
 				Transformer serializer = tfactory.newTransformer();
 				serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+				//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
 				serializer.transform( new DOMSource(n) , new StreamResult(sw) );				
 				return sw.toString();
 				//log.debug("serialised:" + n);
@@ -861,6 +866,8 @@ public class XmlUtils {
 		if (refreshXmlFirst) 
 			node = binder.updateXML(jaxbElement);
 		node = binder.getXMLNode(jaxbElement);
+		
+		//log.debug("XPath will execute against: " + XmlUtils.w3CDomNodeToString(node));
 		
         List<Object> resultList = new ArrayList<Object>();
         for( Node n : xpath(node, xpathExpr) ) {
