@@ -23,12 +23,24 @@ public class Docx4jProperties {
 		}
 	}
 	
-	public static String getProperty(String name) {
+	public static String getProperty(String key) {
 		
 		if (properties==null) {init();}
-		return properties.getProperty(name);		
+				
+		return properties.getProperty(key);		
 	}
 
+	
+	/**
+	 * @since 2.7.2
+	 */
+	public static String getProperty(String key, String defaultValue) {
+		
+		if (properties==null) {init();}
+				
+		return properties.getProperty(key, defaultValue);		
+	}
+	
 	public static Properties getProperties() {
 		
 		if (properties==null) {init();}
