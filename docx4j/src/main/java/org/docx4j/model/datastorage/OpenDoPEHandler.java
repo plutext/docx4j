@@ -174,7 +174,7 @@ public class OpenDoPEHandler {
 	 * complex conditions).
 	 * 
 	 * @param documentPart
-	 * @throws Docx4JException
+	 * @throws Exception 
 	 */
 	public WordprocessingMLPackage preprocess() throws Docx4JException {
 
@@ -189,8 +189,12 @@ public class OpenDoPEHandler {
 			Set<ContentAccessor> partList = getParts(wordMLPackage);
 
 			// Process repeats and conditionals.
-			for (ContentAccessor part : partList) {
-				new TraversalUtil(part, shallowTraversor);
+			try {
+				for (ContentAccessor part : partList) {
+					new TraversalUtil(part, shallowTraversor);
+				}
+			} catch (InputIntegrityException iie) { // RuntimeException
+				throw new Docx4JException(iie.getMessage(), iie);
 			}
 
 			// Convert any sdt with <w:tag w:val="od:component=comp1"/>
@@ -306,6 +310,11 @@ public class OpenDoPEHandler {
 
 				replacements.put(index, ac);
 
+				/*
+				 * 2011 12 11 TODO.  Rethink support for 
+				 * od:continuousBefore and od:continuousAfter.
+				 */
+				
 				// This is handled in this class
 				if (map.get(BINDING_ROLE_COMPONENT_BEFORE) != null
 						&& map.get(BINDING_ROLE_COMPONENT_BEFORE)
@@ -415,18 +424,14 @@ public class OpenDoPEHandler {
 			// wmlPkgList.getClass());
 			Method[] methods = documentBuilder.getMethods();
 			Method processMethod = null;
-			Method setEnsureContinuousMethod = null;
 			for (int j = 0; j < methods.length; j++) {
 				log.debug(methods[j].getName());
 				if (methods[j].getName().equals("process")) {
 					processMethod = methods[j];
-				} else if (methods[j].getName().equals("setEnsureContinuous")) {
-					setEnsureContinuousMethod = methods[j];
-				}
+				} 
 			}
-			if (processMethod == null || setEnsureContinuousMethod == null)
+			if (processMethod == null )
 				throw new NoSuchMethodException();
-			setEnsureContinuousMethod.invoke(null, continuousAfter);
 			return (WordprocessingMLPackage) processMethod.invoke(null,
 					srcPackage);
 
@@ -551,7 +556,7 @@ public class OpenDoPEHandler {
 		WordprocessingMLPackage wordMLPackage;
 
 		@Override
-		public List<Object> apply(Object wrapped) {
+		public List<Object> apply(Object wrapped) throws RuntimeException {
 
 			// apply processSdt to any sdt
 			// which might be a conditional|repeat
@@ -641,6 +646,7 @@ public class OpenDoPEHandler {
 	 * @param tag
 	 * @param sdtContent
 	 * @return
+	 * @throws Exception 
 	 */
 	private List<Object> processBindingRoleIfAny(
 			WordprocessingMLPackage wordMLPackage, Object sdt) {
@@ -681,6 +687,10 @@ public class OpenDoPEHandler {
 				log.error("Missing condition " + conditionId);
 			}
 			org.opendope.xpaths.Xpaths.Xpath xpath = getXPathFromCondition(c);
+			
+			if (xpath==null) {
+				throw new InputIntegrityException("XPath specified in condition '" + c.getId() + "' is missing!");
+			}
 
 			String val = BindingHandler.xpathGetString(wordMLPackage,
 					customXmlDataStorageParts, xpath.getDataBinding()
@@ -824,6 +834,7 @@ public class OpenDoPEHandler {
 		}
 
 		// Now get the xpath
+		log.info("Condition references xpath with id " + xpathRef.getId());
 		return XPathsPart.getXPathById(xPaths, xpathRef.getId());
 	}
 
