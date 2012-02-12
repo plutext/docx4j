@@ -33,6 +33,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
@@ -62,6 +63,8 @@ import org.docx4j.wml.PPrBase.NumPr.NumId;
 
 
 public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
+	
+	private static Logger log = Logger.getLogger(NumberingDefinitionsPart.class);	
 	
 	public NumberingDefinitionsPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -221,12 +224,18 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 		return em;
 	}
 
-	public Ind getInd(NumPr numPr) {
+	public Ind getInd(NumPr numPr) { //, StyleDefinitionsPart sdp, String styleId) {
 		
 		String ilvlString = "0";
 		if (numPr.getIlvl()!=null) ilvlString = numPr.getIlvl().getVal().toString();
 		
-		return getInd(numPr.getNumId().getVal().toString(), ilvlString );
+		if (numPr.getNumId()==null) {
+			log.warn("numPr without numId: " + XmlUtils.marshaltoString(numPr, true, true));
+						
+			return null;
+		} else {		
+			return getInd(numPr.getNumId().getVal().toString(), ilvlString );
+		}
 	}
 	
 	public Ind getInd(String numId, String ilvl) {
