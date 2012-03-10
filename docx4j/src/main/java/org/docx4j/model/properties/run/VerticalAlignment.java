@@ -94,7 +94,7 @@ public class VerticalAlignment extends AbstractRunProperty {
 			foElement.setAttribute(FO_NAME, "sub" );			
 			// Some suggest @baseline-shift="sub" as an alternative			
 		} else if ( STVerticalAlignRun.SUPERSCRIPT.equals(va) ) {
-			foElement.setAttribute(FO_NAME, "sup" );
+			foElement.setAttribute(FO_NAME, "super" );
 		} else {
 			// STVerticalAlignRun.BASELINE
 		}
