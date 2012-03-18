@@ -34,6 +34,33 @@
   	<xsl:variable name="tag" select="string(w:sdtPr/w:tag/@w:val)"/>
   	
   	<xsl:choose>
+
+  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:picture">
+  			<!--  honour w:dataBinding -->
+			<xsl:copy>
+			     <xsl:apply-templates select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
+			     <w:sdtContent>
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.xpathInjectImage(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										string(w:sdtPr/w:dataBinding/@w:storeItemID),
+										string(w:sdtPr/w:dataBinding/@w:xpath),
+										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+										string(w:sdtContent//wp:extent[1]/@cx), 
+										string(w:sdtContent//wp:extent[1]/@cy))" />
+			     </w:sdtContent>
+			</xsl:copy>
+		</xsl:when>
+
   	
   		<xsl:when test="contains( string(w:sdtPr/w:tag/@w:val), 'od:ContentType=application/xhtml+xml' )">
   			<!--  Convert XHTML -->
@@ -307,20 +334,6 @@
 			     	<xsl:variable name="multiLine" select="w:sdtPr/w:text/@w:multiLine='1' or w:sdtPr/w:text/@w:multiLine='true' or w:sdtPr/w:text/@w:multiLine='yes'" /> 
 			     	
 				  	<xsl:choose>
-				  		<xsl:when test="w:sdtPr/w:picture">
-							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.xpathInjectImage(
-										$wmlPackage,
-										$sourcePart,
-										$customXmlDataStorageParts,
-										string(w:sdtPr/w:dataBinding/@w:storeItemID),
-										string(w:sdtPr/w:dataBinding/@w:xpath),
-										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
-										string(w:sdtContent//wp:extent[1]/@cx), 
-										string(w:sdtContent//wp:extent[1]/@cy))" />
-				  		</xsl:when>
 				  		<xsl:when test="w:sdtContent/w:tbl">
 				  			<w:tbl>
 				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblPr"/>
