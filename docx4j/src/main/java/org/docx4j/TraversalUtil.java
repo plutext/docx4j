@@ -203,6 +203,32 @@ public class TraversalUtil {
 			}
 		} else if (o instanceof Pict) {
 			return ((Pict)o).getAnyAndAny(); // (why didn't the reflection below find this?)
+			
+		} else if (o instanceof org.docx4j.dml.picture.Pic) { // Post 2.7.1; untested
+			
+			org.docx4j.dml.picture.Pic dmlPic = ((org.docx4j.dml.picture.Pic)o);
+			if (dmlPic.getBlipFill()!=null
+					&& dmlPic.getBlipFill().getBlip()!=null) {
+					log.info("found DML Blip");
+					List<Object> artificialList = new ArrayList<Object>();
+					artificialList.add(dmlPic.getBlipFill().getBlip());
+					return artificialList;
+			} else {
+				return null;						
+			}		
+		} else if (o instanceof org.docx4j.dml.CTGvmlPicture) {  // Post 2.7.1
+			
+			org.docx4j.dml.CTGvmlPicture dmlPic = ((org.docx4j.dml.CTGvmlPicture)o);
+			if (dmlPic.getBlipFill()!=null
+					&& dmlPic.getBlipFill().getBlip()!=null) {
+					log.info("found DML Blip");
+					List<Object> artificialList = new ArrayList<Object>();
+					artificialList.add(dmlPic.getBlipFill().getBlip());
+					return artificialList;
+			} else {
+				return null;						
+			}		
+			
 		} else if (o instanceof org.docx4j.vml.CTShape) {				
 //			return ((org.docx4j.vml.CTShape)o).getAny();
 			List<Object> artificialList = new ArrayList<Object>();
@@ -228,7 +254,9 @@ public class TraversalUtil {
 //			return ((org.docx4j.wml.CTTxbxContent)o).getEGBlockLevelElts();
 		} else if (o instanceof CTObject) {
 			return ((CTObject)o).getAnyAndAny();
-		} 
+		} else if (o instanceof org.docx4j.dml.CTGvmlGroupShape) {
+			return ((org.docx4j.dml.CTGvmlGroupShape)o).getTxSpOrSpOrCxnSp();
+		}
 
 		// OK, what is this? Use reflection ..
 		// This should work for things including w:drawing
