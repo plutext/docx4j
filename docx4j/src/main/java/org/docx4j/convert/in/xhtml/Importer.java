@@ -313,47 +313,111 @@ public class Importer {
             		org.docx4j.org.xhtmlrenderer.newtable.TableCellBox tcb = (org.docx4j.org.xhtmlrenderer.newtable.TableCellBox)box;
             		// tcb.getVerticalAlign()
             		
-            		// TODO support rowspan
-            		// vertically merged cells are
-            		// represented as a top cell containing the actual content and a series
-            		// of dummy cells having a vMerge tag with "continue" attribute.            		
+            		// rowspan support: vertically merged cells are
+            		// represented as a top cell containing the actual content with a vMerge tag with "restart" attribute 
+            		// and a series of dummy cells having a vMerge tag with no (or "continue") attribute.            		
+            		            		
+            		// if cell to the left in source is part of a rowspan, 
+            		// insert dummy cell first            			
+            		TableSectionBox section = tcb.getSection();
+                    int effCol = tcb.getTable().colToEffCol(tcb.getCol());
+                    if (effCol != 0) {	                    
+	                    TableCellBox prevCell = section.cellAt(tcb.getRow(), tcb.getCol() - 1);
+	                    log.info("Got prevCell for " + tcb.getRow() + ", " + tcb.getCol() );
+	                    log.info("it is  " + prevCell.getRow() + ", " + prevCell.getCol() );
+	                    if ( prevCell.getRow() < tcb.getRow()
+	                    		&& prevCell.getStyle().getRowSpan()>1 ) {
+	                    	// eg tcb is r2,c1 & prevCell is r1,c0
+	                		Tc dummy = Context.getWmlObjectFactory().createTc();
+	                		contentContext.add(dummy);
+
+	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+	            			dummy.setTcPr(tcPr);
+	            			
+	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+	            			//vm.setVal("continue");
+	            			tcPr.setVMerge(vm);
+	            			
+	            			// Must have an empty w:p
+	            			dummy.getContent().add( new P() );
+	                    }
+                    }
             		
-            		// FIXME: following doesn't work, because rol & col are only set on row 0,
-            		// and then return 0 for all rows & cols ?!
-            		// At least for table/tbody/tr/td
-            		// because recalcCells is only done on first row!
-            		
-//            		// if cell to the left in source is part of a rowspan, 
-//            		// insert dummy cell first            			
-//            		TableSectionBox section = tcb.getSection();
-//                    //int effCol = tcb.getTable().colToEffCol(tcb.getCol());
-//                    //if (effCol != 0) {	                    
-//	                    TableCellBox prevCell = section.cellAt(tcb.getRow(), tcb.getCol() - 1);
-//	                    log.info("Got prevCell for " + tcb.getRow() + ", " + tcb.getCol() );
-//	                    if (prevCell == TableCellBox.SPANNING_CELL) {
-//	                		Tc dummy = Context.getWmlObjectFactory().createTc();
-//	                		contentContext.add(dummy);
-//
-//	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
-//	            			dummy.setTcPr(tcPr);
-//	            			
-//	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
-//	            			vm.setVal("continue");
-//	            			tcPr.setVMerge(vm);
-//	                    }
-//                    //}
-            		
+                    // The cell proper
             		Tc tc = Context.getWmlObjectFactory().createTc();
             		contentContext.add(tc);
+            		// Do we need a vMerge tag with "restart" attribute?
+            		// get cell below (only 1 section supported at present)
+                    if (tcb.getStyle().getRowSpan()> 1) {
+                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+            			tc.setTcPr(tcPr);
+            			
+            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+            			vm.setVal("restart");
+            			tcPr.setVMerge(vm);                        	
+                    } 
+            		
+/*                  The below works, but the above formulation is simpler
+ * 
+ * 					int r = tcb.getRow() + tcb.getStyle().getRowSpan() - 1;
+                    if (r < tcb.getSection().numRows() - 1) {
+                        // The cell is not in the last row, so use the next row in the
+                        // section.
+                        TableCellBox belowCell = section.cellAt( r + 1, effCol);
+	                    log.info("Got belowCell for " + tcb.getRow() + ", " + tcb.getCol() );
+	                    log.info("it is  " + belowCell.getRow() + ", " + belowCell.getCol() );
+                        if (belowCell.getRow() > tcb.getRow() + 1 ) {
+	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+	            			tc.setTcPr(tcPr);
+	            			
+	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+	            			vm.setVal("restart");
+	            			tcPr.setVMerge(vm);                        	
+                        }
+                    } 
+ */            		
             		
             		// if this is the last real cell in the source,
             		// is there a rowspan above and to the right?
+                    effCol = tcb.getTable().colToEffCol(tcb.getCol() + tcb.getStyle().getColSpan());
+                    int numEffCols = tcb.getTable().numEffCols(); 
+                    if (effCol >= numEffCols) {
+                        // we we're already in rightmost col
+                    } else { 
+                    	TableCellBox nextCell = tcb.getSection().cellAt(tcb.getRow(), effCol);
+	                    log.info("Got nextCell for " + tcb.getRow() + ", " + tcb.getCol() );
+	                    log.info("it is  " + nextCell.getRow() + ", " + nextCell.getCol() );
+	                    if ( nextCell.getRow() < tcb.getRow()
+	                    		// && nextCell.getStyle().getRowSpan()>1
+	                    		&& nextCell.getTable().colToEffCol(nextCell.getCol() + nextCell.getStyle().getColSpan())==numEffCols // rightmost
+	                    		) {
+	                    	log.info("it has rowspan  " + nextCell.getStyle().getRowSpan() );
+	                    	// eg tcb is r2,c1 & nextCell is r1,c2
+	                		Tc dummy = Context.getWmlObjectFactory().createTc();
+	                		contentContext.add(dummy);
+
+	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+	            			dummy.setTcPr(tcPr);
+	            			
+	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+	            			//vm.setVal("continue");
+	            			tcPr.setVMerge(vm);
+	            			
+	            			// Must have an empty w:p
+	            			dummy.getContent().add( new P() );	            			
+	                    }
+                    }
             		
 
             		// colspan support: horizontally merged cells are represented by one cell
             		// with a gridSpan attribute; 
             		int colspan = tcb.getStyle().getColSpan(); 
             		if (colspan>1) {
+            			
+            			if (tc.getTcPr()!=null) {
+            				log.warn("Trying to add GridSpan, when we've already added VMerge"); // this code doesn't support both at once
+            			}
+            			
             			TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
             			tc.setTcPr(tcPr);
 
