@@ -32,6 +32,8 @@ import org.docx4j.org.xhtmlrenderer.docx.Docx4JFSImage;
 import org.docx4j.org.xhtmlrenderer.docx.Docx4jUserAgent;
 import org.docx4j.org.xhtmlrenderer.docx.DocxRenderer;
 import org.docx4j.org.xhtmlrenderer.layout.Styleable;
+import org.docx4j.org.xhtmlrenderer.newtable.TableCellBox;
+import org.docx4j.org.xhtmlrenderer.newtable.TableSectionBox;
 import org.docx4j.org.xhtmlrenderer.render.AnonymousBlockBox;
 import org.docx4j.org.xhtmlrenderer.render.BlockBox;
 import org.docx4j.org.xhtmlrenderer.render.Box;
@@ -46,7 +48,13 @@ import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
+import org.docx4j.wml.Tbl;
+import org.docx4j.wml.Tc;
+import org.docx4j.wml.TcPr;
+import org.docx4j.wml.TcPrInner.GridSpan;
+import org.docx4j.wml.TcPrInner.VMerge;
 import org.docx4j.wml.Text;
+import org.docx4j.wml.Tr;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -61,6 +69,12 @@ import org.w3c.dom.css.CSSValue;
  * is no resources/schema on dir anymore which can be put on
  * the classpath.  Once this problem is fixed, things work better.
  * 
+ * TODO:
+ * - a DOCTYPE declaration currently causes an NPE at org.docx4j.org.xhtmlrenderer.resource.FSEntityResolver.resolveEntity(FSEntityResolver.java:106)  
+ * - fonts
+ * - underline, insert, delete
+ * - space-before, space-after unrecognized CSS property
+ * - proper logging in XHTML renderer project
  * 
  * @author jharrop
  *
@@ -115,9 +129,16 @@ public class Importer {
 		if (hyperlinkStyleId !=null && wordMLPackage instanceof WordprocessingMLPackage) {
 			((WordprocessingMLPackage)wordMLPackage).getMainDocumentPart().getPropertyResolver().activateStyle(hyperlinkStyleId);
 		}
-    	
     }
 
+    /**
+     * Convert the well formed XHTML (without DTD) contained in file to a list of WML objects.
+     * 
+     * @param file
+     * @param wordMLPackage
+     * @return
+     * @throws IOException
+     */
     public static List<Object> convert(File file, WordprocessingMLPackage wordMLPackage) throws IOException {
 
         Importer importer = new Importer(wordMLPackage);
@@ -126,11 +147,18 @@ public class Importer {
         importer.renderer.setDocument(file);
         importer.renderer.layout();
                     
-        importer.traverse(importer.renderer.getRootBox(), "");
+        importer.traverse(importer.renderer.getRootBox(), "", importer.imports);
         
         return importer.imports;    	
     }
     
+    /**
+     * Convert the well formed XHTML (without DTD) found at the specified URI to a list of WML objects.
+     * 
+     * @param uri
+     * @param wordMLPackage
+     * @return
+     */
     public static List<Object> convert(String uri, WordprocessingMLPackage wordMLPackage) {
 
         Importer importer = new Importer(wordMLPackage);
@@ -139,11 +167,20 @@ public class Importer {
         importer.renderer.setDocument(uri);
         importer.renderer.layout();
                     
-        importer.traverse(importer.renderer.getRootBox(), "");
+        importer.traverse(importer.renderer.getRootBox(), "", importer.imports);
         
         return importer.imports;    	
     }
 
+    /**
+     * 
+     * Convert the well formed XHTML (without DTD) contained in the string to a list of WML objects.
+     * 
+     * @param content
+     * @param wordMLPackage
+     * @param baseUrl
+     * @return
+     */
     public static List<Object> convertFromString(String content, WordprocessingMLPackage wordMLPackage, String baseUrl) {
     	
         Importer importer = new Importer(wordMLPackage);
@@ -152,7 +189,7 @@ public class Importer {
         importer.renderer.setDocumentFromString(content, baseUrl);
         importer.renderer.layout();
                     
-        importer.traverse(importer.renderer.getRootBox(), "");
+        importer.traverse(importer.renderer.getRootBox(), "", importer.imports);
         
         return importer.imports;    	
     }
@@ -195,7 +232,7 @@ public class Importer {
     // one created for a p within it, if it is still empty
     boolean paraStillEmpty;
     
-    private void traverse(Box box, String indents) {
+    private void traverse(Box box, String indents, List<Object> contentContext) {
         
         log.info(box.getClass().getName() );
         if (box instanceof BlockBox) {
@@ -210,8 +247,6 @@ public class Importer {
             } else {            
                 log.info("BB" + indents + "<" + e.getNodeName() + " " + box.getStyle().toStringMine() );
                 
-                // TEMP - Ignore tables
-                if (e.getNodeName().equals("table")) return;
                 
             	//Map cssMap = styleReference.getCascadedPropertiesMap(e);
                 Map<String, CSSValue> cssMap = getCascadedProperties(box.getStyle());
@@ -227,18 +262,117 @@ public class Importer {
                 	// Don't add a paragraph for this, unless ..
                 	if (currentP==null) {
                 		currentP = Context.getWmlObjectFactory().createP();
-    		            imports.add(currentP);
+    		            contentContext.add(currentP);
     		            paraStillEmpty = true;
                 	}            		
+                	
+            	} else if (e.getNodeName().equals("table")) {
+            		
+            		// org.docx4j.org.xhtmlrenderer.newtable.TableBox
+            		
+            		// eg <table color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; 
+            		//           border-collapse: collapse; -fs-border-spacing-horizontal: 2px; -fs-border-spacing-vertical: 2px; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: relative; ; right: auto; src: none; 
+            		//           table-layout: fixed; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: baseline; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0in; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;
+            		
+            		// TODO support: border-collapse: collapse; table-layout: fixed;
+                
+            		log.info(".. processing table");  // what happened to <colgroup><col style="width: 2.47in;" /><col style="width: 2.47in;" /> 
+            		
+            		Tbl tbl = Context.getWmlObjectFactory().createTbl();
+            		contentContext.add(tbl);
+		            paraStillEmpty = true;
+		            contentContext = tbl.getContent();
+            		
+            	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableSectionBox) {
+            		
+            		// eg <tbody color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; border-collapse: collapse; -fs-border-spacing-horizontal: 0; -fs-border-spacing-vertical: 0; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table-row-group; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: static; ; right: auto; src: none; table-layout: auto; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: middle; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: none; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; 
+            		log.info(".. processing <tbody");
+            		
+            		// Do nothing here for now .. the switch statement below traverses children
+            		
+            		// TODO: give effect to this CSS
+            		
+            	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableRowBox) {
+            		
+            		// eg <tr color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; border-collapse: collapse; -fs-border-spacing-horizontal: 0; -fs-border-spacing-vertical: 0; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table-row; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: static; ; right: auto; src: none; table-layout: auto; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: top; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: none; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;
+            		
+            		// TODO support vertical-align
+            		
+            		log.info(".. processing <tr");            		
+
+            		Tr tr = Context.getWmlObjectFactory().createTr();
+            		contentContext.add(tr);
+		            paraStillEmpty = true;
+		            contentContext = tr.getContent();
+            		
+            	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableCellBox) {
+            		
+            		log.info(".. processing <td");            		
+            		// eg <td color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; border-collapse: collapse; -fs-border-spacing-horizontal: 0; -fs-border-spacing-vertical: 0; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table-row; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: static; ; right: auto; src: none; table-layout: auto; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: top; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: none; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;
+            		
+            		org.docx4j.org.xhtmlrenderer.newtable.TableCellBox tcb = (org.docx4j.org.xhtmlrenderer.newtable.TableCellBox)box;
+            		// tcb.getVerticalAlign()
+            		
+            		// TODO support rowspan
+            		// vertically merged cells are
+            		// represented as a top cell containing the actual content and a series
+            		// of dummy cells having a vMerge tag with "continue" attribute.            		
+            		
+            		// FIXME: following doesn't work, because rol & col are only set on row 0,
+            		// and then return 0 for all rows & cols ?!
+            		// At least for table/tbody/tr/td
+            		// because recalcCells is only done on first row!
+            		
+//            		// if cell to the left in source is part of a rowspan, 
+//            		// insert dummy cell first            			
+//            		TableSectionBox section = tcb.getSection();
+//                    //int effCol = tcb.getTable().colToEffCol(tcb.getCol());
+//                    //if (effCol != 0) {	                    
+//	                    TableCellBox prevCell = section.cellAt(tcb.getRow(), tcb.getCol() - 1);
+//	                    log.info("Got prevCell for " + tcb.getRow() + ", " + tcb.getCol() );
+//	                    if (prevCell == TableCellBox.SPANNING_CELL) {
+//	                		Tc dummy = Context.getWmlObjectFactory().createTc();
+//	                		contentContext.add(dummy);
+//
+//	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+//	            			dummy.setTcPr(tcPr);
+//	            			
+//	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+//	            			vm.setVal("continue");
+//	            			tcPr.setVMerge(vm);
+//	                    }
+//                    //}
+            		
+            		Tc tc = Context.getWmlObjectFactory().createTc();
+            		contentContext.add(tc);
+            		
+            		// if this is the last real cell in the source,
+            		// is there a rowspan above and to the right?
+            		
+
+            		// colspan support: horizontally merged cells are represented by one cell
+            		// with a gridSpan attribute; 
+            		int colspan = tcb.getStyle().getColSpan(); 
+            		if (colspan>1) {
+            			TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+            			tc.setTcPr(tcPr);
+
+            			GridSpan gs = Context.getWmlObjectFactory().createTcPrInnerGridSpan();
+            			gs.setVal( BigInteger.valueOf(colspan));
+            			tcPr.setGridSpan(gs);
+            		}
+		            paraStillEmpty = true;
+		            contentContext = tc.getContent();
+            		
 	            } else {
 	            	
 	            	// Avoid creating paragraphs for html, body
-	            	if (imports.size()>0 && paraStillEmpty) {
-			            imports.remove( imports.size()-1);                                        		
+	            	if (contentContext.size()>0 && paraStillEmpty) {
+			            contentContext.remove( contentContext.size()-1);                                        		
 	            	} 
 	            	
 		            currentP = Context.getWmlObjectFactory().createP();
-		            imports.add(currentP);
+		            contentContext.add(currentP);
 		            paraStillEmpty = true;
 		            
 		            // Paragraph level styling
@@ -255,35 +389,42 @@ public class Importer {
 	            }
         	}
             
-            switch (blockBox.getChildrenContentType()) {
-                case BlockBox.CONTENT_BLOCK:
-                    for (Object o : ((BlockBox)box).getChildren() ) {
-                        traverse((Box)o, indents + "    ");                    
-                    }
-                    break;
-                case BlockBox.CONTENT_INLINE:
-                    if ( ((BlockBox)box).getInlineContent()!=null) {
-                    	
-                        for (Object o : ((BlockBox)box).getInlineContent() ) {
-//                            log.info("        " + o.getClass().getName() ); 
-                            if (o instanceof InlineBox ) {
-//                                    && ((InlineBox)o).getElement()!=null // skip these (pseudo-elements?)
-//                                    && ((InlineBox)o).isStartsHere()) {
-                                
-                            	processInlineBox( (InlineBox)o, indents);
-                            	
-                            } else if (o instanceof BlockBox ) {
-                                traverse((Box)o, indents + "    "); // commenting out gets rid of unwanted extra parent elements
-                            } else {
-                                log.info("What to do with " + box.getClass().getName() );                        
-                            }
-                        }
-                    }
-                    break;
-            }            
+            // the recursive bit:
+            
+		            switch (blockBox.getChildrenContentType()) {
+		                case BlockBox.CONTENT_BLOCK:
+		                    for (Object o : ((BlockBox)box).getChildren() ) {
+		                        traverse((Box)o, indents + "    ", contentContext);                    
+		                    }
+		                    break;
+		                case BlockBox.CONTENT_INLINE:
+		                    if ( ((BlockBox)box).getInlineContent()!=null) {
+		                    	
+		                        for (Object o : ((BlockBox)box).getInlineContent() ) {
+		//                            log.info("        " + o.getClass().getName() ); 
+		                            if (o instanceof InlineBox ) {
+		//                                    && ((InlineBox)o).getElement()!=null // skip these (pseudo-elements?)
+		//                                    && ((InlineBox)o).isStartsHere()) {
+		                                
+		                            	processInlineBox( (InlineBox)o, indents, contentContext);
+		                            	
+		                            } else if (o instanceof BlockBox ) {
+		                                traverse((Box)o, indents + "    ", contentContext); // commenting out gets rid of unwanted extra parent elements
+		                            } else {
+		                                log.info("What to do with " + box.getClass().getName() );                        
+		                            }
+		                        }
+		                    }
+		                    break;
+		            } 
+            
+		    
+            log.info("Done processing children of " + box.getClass().getName() );
+            // contentContext gets its old value back each time recursion finishes,
+            // ensuring elements are added at the appropriate level (eg inside tr) 
             
         } else if (box instanceof AnonymousBlockBox) {
-            //log.info("AnonymousBlockBox");            
+            log.info("AnonymousBlockBox");            
         }
     
     }
@@ -367,7 +508,7 @@ public class Importer {
 		}
 	}
 
-    private void processInlineBox( InlineBox inlineBox, String indents) {
+    private void processInlineBox( InlineBox inlineBox, String indents, List<Object> contentContext) {
 
         // Doesn't extend box
         Styleable s = ((InlineBox)inlineBox );
@@ -392,9 +533,9 @@ public class Importer {
         		currentP = Context.getWmlObjectFactory().createP();                                        	
             	if (paraStillEmpty) {
             		// Replace it
-		            imports.remove( imports.size()-1);                                        		
+		            contentContext.remove( contentContext.size()-1);                                        		
             	} 
-	            imports.add(currentP);
+	            contentContext.add(currentP);
 	            paraStillEmpty = true;
 	            currentP.setPPr(
 	            		addParagraphProperties( cssMap ));
@@ -575,8 +716,9 @@ public class Importer {
 //      File f = new File(System.getProperty("user.dir") + "/demos/browser/xhtml/hamlet-shortest.xhtml");
 //      File f = new File(System.getProperty("user.dir") + "/input.html");
 //        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/inheritance.html");
-        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/img.xhtml");
-            
+//        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/img.xhtml");
+        File f = new File(System.getProperty("user.dir") + "/sample-docs/word/table-simple.html");
+
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
