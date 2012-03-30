@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.microsoft.MicrosoftFonts;
 import org.docx4j.fonts.substitutions.FontSubstitutions;
@@ -73,7 +74,11 @@ public class BestMatchingMapper extends Mapper {
 	/** The substitutions listed in FontSubstitutions.xml
 	 * Will be used only if there is no panose match.  */
 	private final static Map<String, FontSubstitutions.Replace> explicitSubstitutionsMap;
-	
+
+    /** Physical fonts remapped using the short key convention in FontSubstitutions.xml */
+    private final static Map<String, PhysicalFont> physicalFontsByKey;
+
+
 	int lastSeenNumberOfPhysicalFonts = 0;
 
     
@@ -96,6 +101,9 @@ public class BestMatchingMapper extends Mapper {
 			setupMicrosoftFontFilenames();
 
 			PhysicalFonts.discoverPhysicalFonts();
+
+            physicalFontsByKey = new HashMap<String, PhysicalFont>();
+            generateKeysForPhysicalFonts();
 
 			// //////////////////////////////////////////////////////////////////////////////////
 			// Get candidate substitutions
@@ -140,8 +148,20 @@ public class BestMatchingMapper extends Mapper {
 		
 	}
 	
- 
-	
+    private static void generateKeysForPhysicalFonts() {
+        for (Map.Entry<String, PhysicalFont> entry : PhysicalFonts.getPhysicalFonts().entrySet()) {
+            physicalFontsByKey.put(generateFontKey(entry.getKey()), entry.getValue());
+        }
+    }
+
+    private static String generateFontKey(String fontName) {
+        return StringUtils.replaceChars(fontName.toLowerCase(), "- ", "");
+    }
+
+    private static PhysicalFont getPhysicalFontByKey(String key) {
+        return physicalFontsByKey.get(key);
+    }
+
 	/**
 	 * Get candidate substitutions 
 	 * On a non-MS platform, we need these for two things:
@@ -293,7 +313,7 @@ public class BestMatchingMapper extends Mapper {
 					//Invalid value 9 > 8 in position 5 of 2 11 8 6 3 9 2 5 2 4 
 				}
 				
-				String panoseKey =  findClosestPanoseMatch(documentFontName, documentFontPanose, 
+				String panoseKey =  findClosestPanoseMatch(documentFontName, documentFontPanose,
 							PhysicalFonts.getPhysicalFonts() , MATCH_THRESHOLD);
 				
 				if ( panoseKey==null) {
@@ -386,20 +406,19 @@ public class BestMatchingMapper extends Mapper {
 			
 			log.debug("So try explicit font substitutions table");					        
 			FontSubstitutions.Replace replacement = (FontSubstitutions.Replace) explicitSubstitutionsMap
-					.get((documentFontName));
+					.get((generateFontKey(documentFontName)));
 			if (replacement != null) {
 				// log.debug( "\n" + fontName + " found." );
 				// String subsFonts = replacement.getSubstFonts();
 
 				// Is there anything in subsFonts we can use?
-				String[] tokens = replacement.getSubstFonts().split(";");
+				String[] tokens = StringUtils.stripAll(replacement.getSubstFonts().split(";"));
 				
 	        	boolean foundMapping = false;
 				for (int x = 0; x < tokens.length; x++) {
 					// log.debug(tokens[x]);
-					if (PhysicalFonts.getPhysicalFonts().get(tokens[x]) != null) {
-						
-						fontMatched = PhysicalFonts.getPhysicalFonts().get(tokens[x]);
+                    fontMatched = getPhysicalFontByKey(tokens[x]);
+					if (fontMatched != null) {
 
 						String physicalFontFile = fontMatched.getEmbeddedFile();
 						log.debug("PDF: " + documentFontName + " --> "
@@ -511,7 +530,7 @@ public class BestMatchingMapper extends Mapper {
 				MATCH_THRESHOLD); 
 		if ( resultingPanoseKey!=null ) {
 			log.info("--> " + PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey).getEmbeddedFile() );
-        	return PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey);													
+        	return PhysicalFonts.getPhysicalFonts().get(resultingPanoseKey);
 		}  else {
 			log.warn("No match in panose space");
 			return null;
