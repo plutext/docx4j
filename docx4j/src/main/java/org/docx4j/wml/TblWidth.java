@@ -63,6 +63,9 @@ import org.jvnet.jaxb2_commons.ppp.Child;
 public class TblWidth implements Child
 {
 
+	public final static String TYPE_AUTO = "auto";
+	public final static String TYPE_DXA = "dxa"; // twips
+	
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
     protected BigInteger w;
     @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
