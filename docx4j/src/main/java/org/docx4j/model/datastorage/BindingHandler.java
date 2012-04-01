@@ -284,7 +284,7 @@ public class BindingHandler {
 				
 				Importer.setHyperlinkStyle(hyperlinkStyleId);
 				String baseUrl = null;
-				List<Object> results = Importer.convertFromString(unescaped, pkg, baseUrl );
+				List<Object> results = Importer.convert(unescaped, baseUrl, pkg );
 				log.info("Got results: " + results.size() );
 				
 				org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();

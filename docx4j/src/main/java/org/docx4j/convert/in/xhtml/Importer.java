@@ -1,14 +1,39 @@
+/*
+ *  Copyright 2011-2012, Plutext Pty Ltd.
+ *   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
 package org.docx4j.convert.in.xhtml;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXBException;
+import javax.xml.transform.Source;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -32,12 +57,16 @@ import org.docx4j.org.xhtmlrenderer.docx.Docx4JFSImage;
 import org.docx4j.org.xhtmlrenderer.docx.Docx4jUserAgent;
 import org.docx4j.org.xhtmlrenderer.docx.DocxRenderer;
 import org.docx4j.org.xhtmlrenderer.layout.Styleable;
+import org.docx4j.org.xhtmlrenderer.newtable.TableBox;
 import org.docx4j.org.xhtmlrenderer.newtable.TableCellBox;
 import org.docx4j.org.xhtmlrenderer.newtable.TableSectionBox;
 import org.docx4j.org.xhtmlrenderer.render.AnonymousBlockBox;
 import org.docx4j.org.xhtmlrenderer.render.BlockBox;
 import org.docx4j.org.xhtmlrenderer.render.Box;
 import org.docx4j.org.xhtmlrenderer.render.InlineBox;
+import org.docx4j.org.xhtmlrenderer.resource.XMLResource;
+import org.docx4j.wml.CTTblLayoutType;
+import org.docx4j.wml.CTTblPrBase.TblStyle;
 import org.docx4j.wml.Numbering;
 import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
@@ -48,18 +77,38 @@ import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
+import org.docx4j.wml.STTblLayoutType;
 import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblGrid;
+import org.docx4j.wml.TblGridCol;
+import org.docx4j.wml.TblPr;
+import org.docx4j.wml.TblWidth;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner.GridSpan;
 import org.docx4j.wml.TcPrInner.VMerge;
 import org.docx4j.wml.Text;
 import org.docx4j.wml.Tr;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.css.CSSValue;
+import org.xml.sax.InputSource;
 
 /**
- * Convert XHTML + CSS to WordML content.
+ * Convert XHTML + CSS to WordML content.  Can convert an entire document 
+ * (for now, without a DOCTYPE declaration), or a fragment consisting of
+ * one or more block level objects.
+ * 
+ * Your XHTML must be well formed XML!  
+ * 
+ * For best results, be sure to include src/main/resources on your classpath. 
+ * 
+ * Includes rudimentary support for:
+ * - paragraph and run formatting
+ * - tables
+ * - images
+ * - lists (ordered, unordered)
  * 
  * People complain flying-saucer is slow
  * (due to DTD related network lookups).
@@ -70,11 +119,10 @@ import org.w3c.dom.css.CSSValue;
  * the classpath.  Once this problem is fixed, things work better.
  * 
  * TODO:
- * - a DOCTYPE declaration currently causes an NPE at org.docx4j.org.xhtmlrenderer.resource.FSEntityResolver.resolveEntity(FSEntityResolver.java:106)  
  * - fonts
  * - underline, insert, delete
  * - space-before, space-after unrecognized CSS property
- * - proper logging in XHTML renderer project
+ * - no attempt is made to convert CSS classes to Word styles
  * 
  * @author jharrop
  *
@@ -90,8 +138,9 @@ public class Importer {
 	 * styled using just the CSS. This is the default behavior.
 	 * 
 	 * If hyperlinkStyleId is set to <code>"someWordHyperlinkStyleName"</code>, 
-	 * strings containing 'http://' or 'https://' or or 'mailto:' are converted to w:hyperlink.  
-	 * The default Word hyperlink style name is "Hyperlink".
+	 * that style is used. The default Word hyperlink style name is "Hyperlink".
+	 * It is currently your responsibility to define that style in your
+	 * styles definition part.
 	 * 
 	 * Due to the architecture of this class, this is a static flag changing the
 	 * behavior of all following calls.
@@ -135,22 +184,150 @@ public class Importer {
      * Convert the well formed XHTML (without DTD) contained in file to a list of WML objects.
      * 
      * @param file
+     * @param baseUrl
      * @param wordMLPackage
      * @return
      * @throws IOException
      */
-    public static List<Object> convert(File file, WordprocessingMLPackage wordMLPackage) throws IOException {
+    public static List<Object> convert(File file, String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
 
         Importer importer = new Importer(wordMLPackage);
 
         importer.renderer = new DocxRenderer();
-        importer.renderer.setDocument(file);
+        
+        File parent = file.getAbsoluteFile().getParentFile();
+        
+        importer.renderer.setDocument(
+        		importer.renderer.loadDocument(file.toURI().toURL().toExternalForm()),
+                (parent == null ? "" : parent.toURI().toURL().toExternalForm())
+        );
+
         importer.renderer.layout();
                     
-        importer.traverse(importer.renderer.getRootBox(), "", importer.imports);
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
         
         return importer.imports;    	
     }
+
+    /**
+     * Convert the well formed XHTML (without DTD) from the specified SAX InputSource
+     * 
+     * @param is
+     * @param baseUrl
+     * @param wordMLPackage
+     * @return
+     * @throws IOException
+     */
+    public static List<Object> convert(InputSource is,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+
+        Importer importer = new Importer(wordMLPackage);
+
+        importer.renderer = new DocxRenderer();
+        
+        Document dom = XMLResource.load(is).getDocument();        
+        importer.renderer.setDocument(dom, baseUrl);
+        
+        importer.renderer.layout();
+                    
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
+        
+        return importer.imports;    	
+    }
+
+    /**
+     * @param is
+     * @param baseUrl
+     * @param wordMLPackage
+     * @return
+     * @throws IOException
+     */
+    public static List<Object> convert(InputStream is, String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+        Importer importer = new Importer(wordMLPackage);
+    	
+        importer.renderer = new DocxRenderer();
+        
+        Document dom = XMLResource.load(is).getDocument();        
+        importer.renderer.setDocument(dom, baseUrl);
+
+        importer.renderer.layout();
+                    
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
+        
+        return importer.imports;    	    	
+    }
+    
+    /**
+     * @param node
+     * @param baseUrl
+     * @param wordMLPackage
+     * @return
+     * @throws IOException
+     */
+    public static List<Object> convert(Node node,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+        Importer importer = new Importer(wordMLPackage);
+    	
+        importer.renderer = new DocxRenderer();
+        if (node instanceof Document) {
+        	importer.renderer.setDocument( (Document)node, baseUrl );
+        } else {
+        	Document doc = XmlUtils.neww3cDomDocument();
+        	doc.importNode(node, true);
+        	importer.renderer.setDocument( doc, baseUrl );
+        }
+        importer.renderer.layout();
+                    
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
+        
+        return importer.imports;    	    	
+    }
+    
+    /**
+     * @param reader
+     * @param baseUrl
+     * @param wordMLPackage
+     * @return
+     * @throws IOException
+     */
+    public static List<Object> convert(Reader reader,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+        Importer importer = new Importer(wordMLPackage);
+    	
+        importer.renderer = new DocxRenderer();
+        
+        Document dom = XMLResource.load(reader).getDocument();        
+        importer.renderer.setDocument(dom, baseUrl);
+        
+        importer.renderer.layout();
+                    
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
+        
+        return importer.imports;    	    	
+    }
+    
+    /**
+     * @param source
+     * @param baseUrl
+     * @param wordMLPackage
+     * @return
+     * @throws IOException
+     */
+    public static List<Object> convert(Source source,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+    	
+        Importer importer = new Importer(wordMLPackage);
+    	
+        importer.renderer = new DocxRenderer();
+        
+        Document dom = XMLResource.load(source).getDocument();        
+        importer.renderer.setDocument(dom, baseUrl);
+
+        importer.renderer.layout();
+                    
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
+        
+        return importer.imports;    	    	
+    }
+    
+    //public static List<Object> convert(XMLEventReader reader, WordprocessingMLPackage wordMLPackage) throws IOException {
+    //public static List<Object> convert(XMLStreamReader reader, WordprocessingMLPackage wordMLPackage) throws IOException {
     
     /**
      * Convert the well formed XHTML (without DTD) found at the specified URI to a list of WML objects.
@@ -159,15 +336,18 @@ public class Importer {
      * @param wordMLPackage
      * @return
      */
-    public static List<Object> convert(String uri, WordprocessingMLPackage wordMLPackage) {
+    public static List<Object> convert(URL url, WordprocessingMLPackage wordMLPackage) {
 
         Importer importer = new Importer(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
-        importer.renderer.setDocument(uri);
+        
+        String urlString = url.toString();
+        Document dom =importer.renderer.loadDocument(urlString);
+        importer.renderer.setDocument(dom, urlString);
         importer.renderer.layout();
                     
-        importer.traverse(importer.renderer.getRootBox(), "", importer.imports);
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
         
         return importer.imports;    	
     }
@@ -177,19 +357,23 @@ public class Importer {
      * Convert the well formed XHTML (without DTD) contained in the string to a list of WML objects.
      * 
      * @param content
-     * @param wordMLPackage
      * @param baseUrl
+     * @param wordMLPackage
      * @return
      */
-    public static List<Object> convertFromString(String content, WordprocessingMLPackage wordMLPackage, String baseUrl) {
+    public static List<Object> convert(String content,  String baseUrl, WordprocessingMLPackage wordMLPackage) {
     	
         Importer importer = new Importer(wordMLPackage);
 
         importer.renderer = new DocxRenderer();
-        importer.renderer.setDocumentFromString(content, baseUrl);
+        
+        InputSource is = new InputSource(new BufferedReader(new StringReader(content)));
+        Document dom = XMLResource.load(is).getDocument();
+        
+        importer.renderer.setDocument(dom, baseUrl);
         importer.renderer.layout();
                     
-        importer.traverse(importer.renderer.getRootBox(), "", importer.imports);
+        importer.traverse(importer.renderer.getRootBox(), importer.imports, null);
         
         return importer.imports;    	
     }
@@ -232,7 +416,7 @@ public class Importer {
     // one created for a p within it, if it is still empty
     boolean paraStillEmpty;
     
-    private void traverse(Box box, String indents, List<Object> contentContext) {
+    private void traverse(Box box, List<Object> contentContext, TableProperties tableProperties) {
         
         log.info(box.getClass().getName() );
         if (box instanceof BlockBox) {
@@ -245,7 +429,7 @@ public class Importer {
             	// Shouldn't happen
                 log.info("<NULL>");
             } else {            
-                log.info("BB" + indents + "<" + e.getNodeName() + " " + box.getStyle().toStringMine() );
+                log.info("BB"  + "<" + e.getNodeName() + " " + box.getStyle().toStringMine() );
                 
                 
             	//Map cssMap = styleReference.getCascadedPropertiesMap(e);
@@ -268,20 +452,101 @@ public class Importer {
                 	
             	} else if (e.getNodeName().equals("table")) {
             		
-            		// org.docx4j.org.xhtmlrenderer.newtable.TableBox
+            		log.info(".. processing table");  // what happened to <colgroup><col style="width: 2.47in;" /><col style="width: 2.47in;" /> 
+
+            		org.docx4j.org.xhtmlrenderer.newtable.TableBox cssTable = (org.docx4j.org.xhtmlrenderer.newtable.TableBox)box;
             		
+            		tableProperties = new TableProperties();
+            		tableProperties.setTableBox(cssTable);
+
             		// eg <table color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; 
             		//           border-collapse: collapse; -fs-border-spacing-horizontal: 2px; -fs-border-spacing-vertical: 2px; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: relative; ; right: auto; src: none; 
             		//           table-layout: fixed; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: baseline; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0in; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;
             		
-            		// TODO support: border-collapse: collapse; table-layout: fixed;
-                
-            		log.info(".. processing table");  // what happened to <colgroup><col style="width: 2.47in;" /><col style="width: 2.47in;" /> 
-            		
+                            		
             		Tbl tbl = Context.getWmlObjectFactory().createTbl();
             		contentContext.add(tbl);
 		            paraStillEmpty = true;
 		            contentContext = tbl.getContent();
+
+            		TblPr tblPr = Context.getWmlObjectFactory().createTblPr();
+            		tbl.setTblPr(tblPr);    
+            		
+            		// TODO support: borders
+            		// for now, just 
+            		//         <w:tblStyle w:val="TableGrid"/>
+            		TblStyle tblStyle = Context.getWmlObjectFactory().createCTTblPrBaseTblStyle();
+            		tblStyle.setVal("TableGrid");
+            		tblPr.setTblStyle(tblStyle);  
+            		
+            		// Table indent.  
+            		// cssTable.getLeftMBP() which is setLeftMBP((int) margin.left() + (int) border.left() + (int) padding.left());
+            		// cssTable.getTx(); which is (int) margin.left() + (int) border.left() + (int) padding.left();
+            		// But want just margin.left
+            		if (cssTable.getMargin().left()>0) {
+            			log.info("Calculating TblInd from margin.left: " + cssTable.getMargin().left() );
+                		TblWidth tblIW = Context.getWmlObjectFactory().createTblWidth();
+                		tblIW.setW( BigInteger.valueOf( Math.round(
+                				cssTable.getMargin().left()
+                				)));
+                		tblIW.setType(TblWidth.TYPE_DXA);
+            			tblPr.setTblInd(tblIW);
+            		}
+            			
+            		// <w:tblW w:w="0" w:type="auto"/>
+            		// for both fixed width and auto fit tables.
+            		// You'd only set it to something else
+            		// eg <w:tblW w:w="5670" w:type="dxa"/>
+            		// for what in Word corresponds to 
+            		// "Preferred width".  TODO: decide what CSS
+            		// requires that.
+            		TblWidth tblW = Context.getWmlObjectFactory().createTblWidth();
+            		tblW.setW(BigInteger.ZERO);
+            		tblW.setType(TblWidth.TYPE_AUTO);
+            		tblPr.setTblW(tblW);
+            		
+	            	if (cssTable.getStyle().isIdent(CSSName.TABLE_LAYOUT, IdentValue.AUTO) 
+	            			|| cssTable.getStyle().isAutoWidth()) {
+	            		// Conditions under which FS creates AutoTableLayout
+	            		
+	            		tableProperties.setFixedWidth(false);
+	            		
+	            		// This is the default, so no need to set 
+	            		// STTblLayoutType.AUTOFIT
+	            		
+	                } else {
+	            		// FS creates FixedTableLayout
+	            		tableProperties.setFixedWidth(true);
+	            		
+	            		// <w:tblLayout w:type="fixed"/>
+	            		CTTblLayoutType tblLayout = Context.getWmlObjectFactory().createCTTblLayoutType();
+	            		tblLayout.setType(STTblLayoutType.FIXED);
+	            		tblPr.setTblLayout(tblLayout);
+	                }		            	
+		            
+	            	// Word can generally open a table without tblGrid:
+	                // <w:tblGrid>
+	                //  <w:gridCol w:w="4621"/>
+	                //  <w:gridCol w:w="4621"/>
+	                // </w:tblGrid>
+	            	// but for an AutoFit table (most common), it 
+	            	// is the w:gridCol val which prob specifies the actual width
+	            	TblGrid tblGrid = Context.getWmlObjectFactory().createTblGrid();
+	            	tbl.setTblGrid(tblGrid);
+	            	
+	            	int[] colPos = tableProperties.getColumnPos();
+	            	
+	            	for (int i=1; i<=cssTable.numEffCols(); i++) {
+	            		
+	            		TblGridCol tblGridCol = Context.getWmlObjectFactory().createTblGridCol();
+	            		tblGrid.getGridCol().add(tblGridCol);
+	            		
+	            		log.info("colpos=" + colPos[i]);
+	            		tblGridCol.setW( BigInteger.valueOf(colPos[i]-colPos[i-1]) );
+	            		
+	            	}
+	            	
+	            	
             		
             	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableSectionBox) {
             		
@@ -306,7 +571,7 @@ public class Importer {
 		            contentContext = tr.getContent();
             		
             	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableCellBox) {
-            		
+            		            		
             		log.info(".. processing <td");            		
             		// eg <td color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; border-collapse: collapse; -fs-border-spacing-horizontal: 0; -fs-border-spacing-vertical: 0; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table-row; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: static; ; right: auto; src: none; table-layout: auto; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: top; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: none; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;
             		
@@ -338,6 +603,8 @@ public class Importer {
 	            			//vm.setVal("continue");
 	            			tcPr.setVMerge(vm);
 	            			
+	            			this.setCellWidthAuto(tcPr);
+	            			
 	            			// Must have an empty w:p
 	            			dummy.getContent().add( new P() );
 	                    }
@@ -348,14 +615,19 @@ public class Importer {
             		contentContext.add(tc);
             		// Do we need a vMerge tag with "restart" attribute?
             		// get cell below (only 1 section supported at present)
+            		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+        			tc.setTcPr(tcPr);
                     if (tcb.getStyle().getRowSpan()> 1) {
-                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
-            			tc.setTcPr(tcPr);
             			
             			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
             			vm.setVal("restart");
-            			tcPr.setVMerge(vm);                        	
-                    } 
+            			tcPr.setVMerge(vm);            
+                    }
+                    // eg <w:tcW w:w="2268" w:type="dxa"/>
+            		TblWidth tblW = Context.getWmlObjectFactory().createTblWidth();
+            		tblW.setW(BigInteger.valueOf(tableProperties.getColumnWidth(effCol+1) ));
+            		tblW.setType(TblWidth.TYPE_DXA);
+            		tcPr.setTcW(tblW);    	                    
             		
 /*                  The below works, but the above formulation is simpler
  * 
@@ -396,12 +668,14 @@ public class Importer {
 	                		Tc dummy = Context.getWmlObjectFactory().createTc();
 	                		contentContext.add(dummy);
 
-	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
-	            			dummy.setTcPr(tcPr);
+	                		TcPr tcPr2 = Context.getWmlObjectFactory().createTcPr();
+	            			dummy.setTcPr(tcPr2);
 	            			
 	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
 	            			//vm.setVal("continue");
-	            			tcPr.setVMerge(vm);
+	            			tcPr2.setVMerge(vm);
+
+	            			this.setCellWidthAuto(tcPr2);
 	            			
 	            			// Must have an empty w:p
 	            			dummy.getContent().add( new P() );	            			
@@ -418,12 +692,14 @@ public class Importer {
             				log.warn("Trying to add GridSpan, when we've already added VMerge"); // this code doesn't support both at once
             			}
             			
-            			TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
-            			tc.setTcPr(tcPr);
+            			TcPr tcPr2 = Context.getWmlObjectFactory().createTcPr();
+            			tc.setTcPr(tcPr2);
 
             			GridSpan gs = Context.getWmlObjectFactory().createTcPrInnerGridSpan();
             			gs.setVal( BigInteger.valueOf(colspan));
-            			tcPr.setGridSpan(gs);
+            			tcPr2.setGridSpan(gs);
+            			
+            			this.setCellWidthAuto(tcPr2);            			
             		}
 		            paraStillEmpty = true;
 		            contentContext = tc.getContent();
@@ -458,7 +734,7 @@ public class Importer {
 		            switch (blockBox.getChildrenContentType()) {
 		                case BlockBox.CONTENT_BLOCK:
 		                    for (Object o : ((BlockBox)box).getChildren() ) {
-		                        traverse((Box)o, indents + "    ", contentContext);                    
+		                        traverse((Box)o, contentContext,  tableProperties);                    
 		                    }
 		                    break;
 		                case BlockBox.CONTENT_INLINE:
@@ -470,10 +746,10 @@ public class Importer {
 		//                                    && ((InlineBox)o).getElement()!=null // skip these (pseudo-elements?)
 		//                                    && ((InlineBox)o).isStartsHere()) {
 		                                
-		                            	processInlineBox( (InlineBox)o, indents, contentContext);
+		                            	processInlineBox( (InlineBox)o, contentContext);
 		                            	
 		                            } else if (o instanceof BlockBox ) {
-		                                traverse((Box)o, indents + "    ", contentContext); // commenting out gets rid of unwanted extra parent elements
+		                                traverse((Box)o, contentContext, tableProperties); // commenting out gets rid of unwanted extra parent elements
 		                            } else {
 		                                log.info("What to do with " + box.getClass().getName() );                        
 		                            }
@@ -487,10 +763,24 @@ public class Importer {
             // contentContext gets its old value back each time recursion finishes,
             // ensuring elements are added at the appropriate level (eg inside tr) 
             
+            // An empty tc shouldn't make the table disappear!
+            // TODO - make more elegant
+            if (e.getNodeName().equals("table")) {            	
+            	paraStillEmpty = false;
+            }
+            
         } else if (box instanceof AnonymousBlockBox) {
             log.info("AnonymousBlockBox");            
         }
     
+    }
+    
+    private void setCellWidthAuto(TcPr tcPr) {
+    	// <w:tcW w:w="0" w:type="auto"/>
+		TblWidth tblW = Context.getWmlObjectFactory().createTblWidth();
+		tblW.setW(BigInteger.ZERO);
+		tblW.setType(TblWidth.TYPE_AUTO);
+		tcPr.setTcW(tblW);    	
     }
 
 	private void addImage(Element e) {
@@ -572,7 +862,11 @@ public class Importer {
 		}
 	}
 
-    private void processInlineBox( InlineBox inlineBox, String indents, List<Object> contentContext) {
+	private boolean awaitingEnd = false;
+	
+    private void processInlineBox( InlineBox inlineBox, List<Object> contentContext) {
+    	
+    	log.info(inlineBox.toString());
 
         // Doesn't extend box
         Styleable s = ((InlineBox)inlineBox );
@@ -586,11 +880,34 @@ public class Importer {
         
         String debug = "<UNKNOWN Styleable";
         if (s.getElement()!=null) {
-            debug = indents + "    " + "<" + s.getElement().getNodeName();
+            debug = "<" + s.getElement().getNodeName();
             
             if (s.getElement().getNodeName().equals("a")) {
             	log.info("Ha!  found a hyperlink. ");
-            	isHyperlink = true;
+            	
+            	if (inlineBox.isStartsHere()) {
+            		
+                	Hyperlink h = null;
+                	String linkText = inlineBox.getElement().getTextContent();
+                	if (linkText!=null
+                			&& !linkText.trim().equals("")) {
+                    	h = createHyperlink(
+                    			s.getElement().getAttribute("href"), 
+                    			addRunProperties( cssMap ),
+                    			linkText, rp);                                    	            		
+                	} else {
+                    	// eg <a href="http://slashdot.org/" /> ie empty - malformed           	
+                    	h = createHyperlink(
+                    			s.getElement().getAttribute("href"), 
+                    			addRunProperties( cssMap ),
+                    			s.getElement().getAttribute("href"), rp);                                    	            		
+                	}
+                    currentP.getContent().add(h);
+            		
+            	}
+            	
+            	awaitingEnd = inlineBox.isStartsHere() && !inlineBox.isEndsHere();
+            	
             } else if (s.getElement().getNodeName().equals("p")) {
             	// This seems to be the usual case. Odd?
             	log.debug("p in inline");
@@ -609,21 +926,16 @@ public class Importer {
             debug +=  " " + s.getStyle().toStringMine();
         }
         
+        // We've processed the hyperlink, so skip the inline boxes
+        // representing its children
+        if (awaitingEnd) return;
         
         log.info(debug );
         //log.info("'" + ((InlineBox)o).getTextNode().getTextContent() );  // don't use .getText()
         
-        
         if (inlineBox.getTextNode()==null) {
-            if (isHyperlink) { // eg <a href="http://slashdot.org/" /> ie empty
-            	
-            	Hyperlink h = createHyperlink(
-            			s.getElement().getAttribute("href"), 
-            			addRunProperties( cssMap ),
-            			s.getElement().getAttribute("href"), rp);                                    	
-                currentP.getContent().add(h);
                 
-            } else if (s.getElement().getNodeName().equals("br") ) {
+            if (s.getElement().getNodeName().equals("br") ) {
                 
                 R run = Context.getWmlObjectFactory().createR();
                 currentP.getContent().add(run);                
@@ -631,7 +943,11 @@ public class Importer {
                 
             } else {
             	log.info("InlineBox has no TextNode, so skipping" );
+            	
+            	// TODO .. a span in a span?
+            	// need to traverse
             }
+            
         } else  {
             log.info( inlineBox.getTextNode().getTextContent() );  // don't use .getText()
 
@@ -639,31 +955,21 @@ public class Importer {
             log.info("Processing " + theText);
             
             paraStillEmpty = false;                                    
+                        
+            R run = Context.getWmlObjectFactory().createR();
+            Text text = Context.getWmlObjectFactory().createText();
+            text.setValue( theText );
+            if (theText.startsWith(" ")
+            		|| theText.endsWith(" ") ) {
+            	text.setSpace("preserve");
+            }
+            run.getContent().add(text);
             
-            if (isHyperlink) {
-            	
-            	Hyperlink h = createHyperlink(
-            			s.getElement().getAttribute("href"),
-            			addRunProperties( cssMap ),
-            			theText, rp);                                    	
-                currentP.getContent().add(h);
-            	
-            } else { // usual case
+            currentP.getContent().add(run);
             
-                R run = Context.getWmlObjectFactory().createR();
-                Text text = Context.getWmlObjectFactory().createText();
-                text.setValue( theText );
-                if (theText.startsWith(" ")
-                		|| theText.endsWith(" ") ) {
-                	text.setSpace("preserve");
-                }
-                run.getContent().add(text);
-                
-                currentP.getContent().add(run);
-                
-                // Run level styling
-	            run.setRPr(
-	            		addRunProperties( cssMap ));
+            // Run level styling
+            run.setRPr(
+            		addRunProperties( cssMap ));
     	            
 //                                    else {
 //                                    	// Get it from the parent element eg p
@@ -671,7 +977,6 @@ public class Importer {
 //                        	            run.setRPr(
 //                        	            		addRunProperties( cssMap ));                                    	                                    	
 //                                    }
-            }
         }
     }
     
@@ -773,30 +1078,51 @@ public class Importer {
 		
 		
 	}
-    
-    
-    public static void main(String[] args) throws Exception {
-        
-//      File f = new File(System.getProperty("user.dir") + "/demos/browser/xhtml/hamlet-shortest.xhtml");
-//      File f = new File(System.getProperty("user.dir") + "/input.html");
-//        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/inheritance.html");
-//        File f = new File(System.getProperty("user.dir") + "/src/test/resources/xhtml/img.xhtml");
-        File f = new File(System.getProperty("user.dir") + "/sample-docs/word/table-simple.html");
+	
+	public final static class TableProperties {
+		
+		private TableBox tableBox;
+		
+		public TableBox getTableBox() {
+			return tableBox;
+		}
 
+		public void setTableBox(TableBox tableBox) {
+			this.tableBox = tableBox;
+			colPos = tableBox.getColumnPos();
+		}
+		
+    	private int[] colPos; 
+    	public int[] getColumnPos() {
+    		return colPos;
+    	}
+		
+    	public int getColumnWidth(int col) {
+    		return colPos[col] - colPos[col-1];
+    	}
+
+		boolean isFixedWidth;
+
+		public boolean isFixedWidth() {
+			return isFixedWidth;
+		}
+
+		public void setFixedWidth(boolean isFixedWidth) {
+			this.isFixedWidth = isFixedWidth;
+		}
+	}
+    
+    
+    public static void mainz(String[] args) throws Exception {
+        
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
-		
-		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
-		wordMLPackage.getMainDocumentPart().addTargetPart(ndp);
-		ndp.unmarshalDefaultNumbering();		
-		
-		wordMLPackage.getMainDocumentPart().getContent().addAll( 
-				convert(f, wordMLPackage) );
+				
+			wordMLPackage.getMainDocumentPart().getContent().addAll( 
+					convert( "<p><span>one</span><span> </span><span>two</span></p>", null, wordMLPackage) );
 		
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		
-		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/html_output.docx") );
-      
+		      
   }
 
     
