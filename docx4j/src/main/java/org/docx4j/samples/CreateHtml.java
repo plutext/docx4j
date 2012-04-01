@@ -47,7 +47,8 @@ public class CreateHtml extends AbstractSample {
 			try {
 				getInputFilePath(args);
 			} catch (IllegalArgumentException e) {
-		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
+		    	//inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
+		    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
 			}
 			System.out.println(inputfilepath);	    	
 	    	
@@ -59,7 +60,11 @@ public class CreateHtml extends AbstractSample {
 			AbstractHtmlExporter exporter = new HtmlExporterNG2(); 	
 			
 	    	HtmlSettings htmlSettings = new HtmlSettings();
-	    	htmlSettings.setImageDirPath(inputfilepath + "_files");  
+	    	
+	    	htmlSettings.setImageDirPath(inputfilepath + "_files"); 
+	    	htmlSettings.setImageTargetUri(inputfilepath.substring(inputfilepath.lastIndexOf("/")+1) 
+	    			+ "_files");
+	    	
 	    	htmlSettings.setUserBodyTop("<H1>TOP!</H1>");
 	    	htmlSettings.setUserBodyTail("<H1>TAIL!</H1>");
 			
