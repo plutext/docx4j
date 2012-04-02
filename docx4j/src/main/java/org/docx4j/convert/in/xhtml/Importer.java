@@ -96,9 +96,8 @@ import org.w3c.dom.css.CSSValue;
 import org.xml.sax.InputSource;
 
 /**
- * Convert XHTML + CSS to WordML content.  Can convert an entire document 
- * (for now, without a DOCTYPE declaration), or a fragment consisting of
- * one or more block level objects.
+ * Convert XHTML + CSS to WordML content.  Can convert an entire document, 
+ * or a fragment consisting of one or more block level objects.
  * 
  * Your XHTML must be well formed XML!  
  * 
@@ -181,7 +180,7 @@ public class Importer {
     }
 
     /**
-     * Convert the well formed XHTML (without DTD) contained in file to a list of WML objects.
+     * Convert the well formed XHTML contained in file to a list of WML objects.
      * 
      * @param file
      * @param baseUrl
@@ -210,7 +209,7 @@ public class Importer {
     }
 
     /**
-     * Convert the well formed XHTML (without DTD) from the specified SAX InputSource
+     * Convert the well formed XHTML from the specified SAX InputSource
      * 
      * @param is
      * @param baseUrl
@@ -330,7 +329,7 @@ public class Importer {
     //public static List<Object> convert(XMLStreamReader reader, WordprocessingMLPackage wordMLPackage) throws IOException {
     
     /**
-     * Convert the well formed XHTML (without DTD) found at the specified URI to a list of WML objects.
+     * Convert the well formed XHTML found at the specified URI to a list of WML objects.
      * 
      * @param uri
      * @param wordMLPackage
@@ -354,7 +353,7 @@ public class Importer {
 
     /**
      * 
-     * Convert the well formed XHTML (without DTD) contained in the string to a list of WML objects.
+     * Convert the well formed XHTML contained in the string to a list of WML objects.
      * 
      * @param content
      * @param baseUrl
