@@ -84,7 +84,8 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 	public static Part newPartForContentType(String contentType, String partName)
 	throws InvalidFormatException, PartUnrecognisedException {
 		
-		if (contentType.equals(ContentTypes.PRESENTATIONML_MAIN)) {
+		if (contentType.equals(ContentTypes.PRESENTATIONML_MAIN)
+				|| contentType.equals(ContentTypes.PRESENTATIONML_TEMPLATE) ) {
 			return new MainPresentationPart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.PRESENTATIONML_SLIDE)) {
 			return new SlidePart(new PartName(partName));
