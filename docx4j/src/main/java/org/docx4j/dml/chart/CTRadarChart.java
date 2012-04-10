@@ -62,7 +62,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTRadarChart {
+public class CTRadarChart implements ListSer {
 
     @XmlElement(required = true)
     protected CTRadarStyle radarStyle;

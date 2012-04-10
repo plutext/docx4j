@@ -62,7 +62,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTArea3DChart {
+public class CTArea3DChart implements ListSer {
 
     protected CTGrouping grouping;
     protected CTBoolean varyColors;

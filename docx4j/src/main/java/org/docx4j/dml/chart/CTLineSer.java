@@ -74,7 +74,7 @@ import org.docx4j.dml.CTShapeProperties;
     "smooth",
     "extLst"
 })
-public class CTLineSer {
+public class CTLineSer implements SerContent {
 
     @XmlElement(required = true)
     protected CTUnsignedInt idx;

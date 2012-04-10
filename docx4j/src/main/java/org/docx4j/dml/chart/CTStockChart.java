@@ -64,7 +64,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTStockChart {
+public class CTStockChart implements ListSer {
 
     @XmlElement(required = true)
     protected List<CTLineSer> ser;

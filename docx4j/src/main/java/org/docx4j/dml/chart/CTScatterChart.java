@@ -62,7 +62,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTScatterChart {
+public class CTScatterChart implements ListSer {
 
     @XmlElement(required = true)
     protected CTScatterStyle scatterStyle;

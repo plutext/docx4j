@@ -70,7 +70,7 @@ import javax.xml.bind.annotation.XmlType;
     "serLines",
     "extLst"
 })
-public class CTOfPieChart {
+public class CTOfPieChart implements ListSer {
 
     @XmlElement(required = true)
     protected CTOfPieType ofPieType;

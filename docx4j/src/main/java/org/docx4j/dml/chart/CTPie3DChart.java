@@ -55,7 +55,7 @@ import javax.xml.bind.annotation.XmlType;
     "dLbls",
     "extLst"
 })
-public class CTPie3DChart {
+public class CTPie3DChart implements ListSer  {
 
     protected CTBoolean varyColors;
     protected List<CTPieSer> ser;

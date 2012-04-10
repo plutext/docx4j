@@ -68,7 +68,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTBubbleChart {
+public class CTBubbleChart implements ListSer {
 
     protected CTBoolean varyColors;
     protected List<CTBubbleSer> ser;

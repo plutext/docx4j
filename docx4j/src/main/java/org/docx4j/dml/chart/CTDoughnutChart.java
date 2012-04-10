@@ -59,7 +59,7 @@ import javax.xml.bind.annotation.XmlType;
     "holeSize",
     "extLst"
 })
-public class CTDoughnutChart {
+public class CTDoughnutChart implements ListSer {
 
     protected CTBoolean varyColors;
     protected List<CTPieSer> ser;

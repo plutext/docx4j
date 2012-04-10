@@ -66,7 +66,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTBarChart {
+public class CTBarChart implements ListSer {
 
     @XmlElement(required = true)
     protected CTBarDir barDir;

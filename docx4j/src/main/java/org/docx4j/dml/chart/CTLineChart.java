@@ -68,7 +68,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTLineChart {
+public class CTLineChart implements ListSer {
 
     @XmlElement(required = true)
     protected CTGrouping grouping;

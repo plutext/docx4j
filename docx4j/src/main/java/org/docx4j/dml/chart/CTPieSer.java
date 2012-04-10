@@ -68,7 +68,7 @@ import org.docx4j.dml.CTShapeProperties;
     "val",
     "extLst"
 })
-public class CTPieSer {
+public class CTPieSer implements SerContent {
 
     @XmlElement(required = true)
     protected CTUnsignedInt idx;

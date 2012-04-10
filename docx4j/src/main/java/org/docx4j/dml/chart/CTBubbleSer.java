@@ -76,7 +76,7 @@ import org.docx4j.dml.CTShapeProperties;
     "bubble3D",
     "extLst"
 })
-public class CTBubbleSer {
+public class CTBubbleSer implements SerContentXY {
 
     @XmlElement(required = true)
     protected CTUnsignedInt idx;

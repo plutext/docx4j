@@ -60,7 +60,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTAreaChart {
+public class CTAreaChart implements ListSer {
 
     protected CTGrouping grouping;
     protected CTBoolean varyColors;

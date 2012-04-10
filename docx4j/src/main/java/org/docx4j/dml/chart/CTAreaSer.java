@@ -72,7 +72,7 @@ import org.docx4j.dml.CTShapeProperties;
     "val",
     "extLst"
 })
-public class CTAreaSer {
+public class CTAreaSer implements SerContent {
 
     @XmlElement(required = true)
     protected CTUnsignedInt idx;

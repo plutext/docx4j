@@ -57,7 +57,7 @@ import javax.xml.bind.annotation.XmlType;
     "firstSliceAng",
     "extLst"
 })
-public class CTPieChart {
+public class CTPieChart implements ListSer {
 
     protected CTBoolean varyColors;
     protected List<CTPieSer> ser;

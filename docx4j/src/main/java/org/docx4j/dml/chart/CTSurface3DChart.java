@@ -58,7 +58,7 @@ import javax.xml.bind.annotation.XmlType;
     "axId",
     "extLst"
 })
-public class CTSurface3DChart {
+public class CTSurface3DChart implements ListSer {
 
     protected CTBoolean wireframe;
     protected List<CTSurfaceSer> ser;
