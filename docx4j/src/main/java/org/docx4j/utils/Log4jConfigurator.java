@@ -12,11 +12,12 @@ import org.docx4j.Docx4jProperties;
 public class Log4jConfigurator {
 
     public synchronized static void configure() {
+    	
+		boolean disabled = Boolean.parseBoolean(
+				Docx4jProperties.getProperties().getProperty("docx4j.Log4j.Configurator.disabled", "false"));   			
+		if (disabled) return;
+		
         if (!isConfigured()) {
-        	
-			boolean disabled = Boolean.parseBoolean(
-					Docx4jProperties.getProperties().getProperty("docx4j.Log4j.Configurator.disabled", "false"));   			
-			if (disabled) return;
         	
             BasicConfigurator.configure();
         
