@@ -76,6 +76,7 @@ import org.docx4j.wml.Style;
 import org.docx4j.wml.Styles;
 import org.docx4j.wml.Tag;
 import org.docx4j.wml.Tc;
+import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.w3c.dom.Node;
 
@@ -814,6 +815,36 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 		return para;
 	}
 	
+	/**
+	 * Create a Hyperlink object, which is suitable for adding to a w:p
+	 * @param bookmarkName
+	 * @param linkText
+	 * @return
+	 */
+	public static Hyperlink hyperlinkToBookmark(String bookmarkName, String linkText) {
+		
+		try {
+
+			
+			String hpl = "<w:hyperlink w:anchor=\"" + bookmarkName + "\" xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" " +
+            "w:history=\"1\" >" +
+            "<w:r>" +
+            "<w:rPr>" +
+            "<w:rStyle w:val=\"Hyperlink\" />" +  // TODO: enable this style in the document!
+            "</w:rPr>" +
+            "<w:t>" + linkText + "</w:t>" +
+            "</w:r>" +
+            "</w:hyperlink>";
+
+			return (Hyperlink)XmlUtils.unmarshalString(hpl);
+			
+		} catch (Exception e) {
+			// Shouldn't happen
+			e.printStackTrace();
+			return null;
+		}
+				
+	}
 	
 }
 

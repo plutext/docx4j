@@ -22,24 +22,20 @@ package org.docx4j.samples;
 
 
 import java.math.BigInteger;
-import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
 import org.docx4j.wml.CTBookmark;
 import org.docx4j.wml.CTMarkupRange;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
+import org.docx4j.wml.P.Hyperlink;
 import org.docx4j.wml.R;
 
 
@@ -52,31 +48,31 @@ public class BookmarkAdd  extends AbstractSample {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir")
-			+ "/simple.docx";
-		}
-				
-		boolean save = false;
-		String outputfilepath = "/home/dev/simple-out-rtt2.docx";		
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+
+		String outputfilepath = System.getProperty("user.dir")
+				+ "/bookmarkAdd-OUT.docx";;		
+						
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("x");
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("x");
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("hello world");
+		P p = (P)wordMLPackage.getMainDocumentPart().getContent().get(2);
+		R r = (R)p.getContent().get(0);
 		
+		String bookmarkName = "abcd"; 
+		bookmarkRun(p,r, bookmarkName, 123);
+
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("x");
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("x");
 		
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-		
-		P p = (P)wordMLPackage.getMainDocumentPart().getJaxbElement().getBody().getEGBlockLevelElts().get(0);
-		R r = (R)p.getParagraphContent().get(1);
-		
-		bookmarkRun(p,r, "abcd", 123);
+		// Now add an internal hyperlink to it
+		Hyperlink h = MainDocumentPart.hyperlinkToBookmark(bookmarkName, "link to bookmark");
+		wordMLPackage.getMainDocumentPart().addParagraphOfText("some text").getContent().add(h);
 		
 		System.out.println( XmlUtils.marshaltoString(p, true)  );
 		
-		// Save it		
-		if (save) {		
-			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-			saver.save(outputfilepath);
-		}
+		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
+		saver.save(outputfilepath);
 	}
 	
 	
