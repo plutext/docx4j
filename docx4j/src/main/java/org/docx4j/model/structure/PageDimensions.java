@@ -23,6 +23,7 @@ package org.docx4j.model.structure;
 import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SectPr;
@@ -46,14 +47,14 @@ public class PageDimensions {
 	
 	protected static Logger log = Logger.getLogger(PageDimensions.class);
 	
-	// TODO - defaults page size and margins in a .properties file?	
 	
 	public PageDimensions() {
+		
 		pgSz = Context.getWmlObjectFactory().createSectPrPgSz();
-		setPgSize(PageSizePaper.A4, false );		
+		setPgSize();		
 		
 		pgMar = Context.getWmlObjectFactory().createSectPrPgMar();
-		setMargins(MarginsWellKnown.NORMAL);
+		setMargins();
 	}
 
 	/**
@@ -79,7 +80,7 @@ public class PageDimensions {
 		if (pgSz == null) {
 			log.warn("No pgSz in this section; defaulting.");
 			this.pgSz = Context.getWmlObjectFactory().createSectPrPgSz();			
-			setPgSize(PageSizePaper.A4, false );
+			setPgSize();
 		} else {
 			this.pgSz = pgSz;			
 		}
@@ -87,7 +88,7 @@ public class PageDimensions {
 		if (pgMar ==null) {
 			log.warn("No pgMar in this section; defaulting.");
 			this.pgMar = Context.getWmlObjectFactory().createSectPrPgMar();			
-			setMargins(MarginsWellKnown.NORMAL);
+			setMargins();
 		} else {
 			this.pgMar = pgMar;				
 		}
@@ -129,7 +130,31 @@ public class PageDimensions {
 		return pgMar;		
 	}	
 
+	/**
+	 * set Margins from docx4j.properties
+	 * 
+	 * @since 2.8
+	 */
+	public void setMargins() {
 		
+		String margin= Docx4jProperties.getProperties().getProperty("docx4j.PageMargins", "NORMAL");
+		
+		setMargins(MarginsWellKnown.valueOf(margin));
+		
+//		if (margin.equals("normal")) {
+//			setMargins(MarginsWellKnown.NORMAL);
+//		} else if (margin.equals("narrow")) {
+//			setMargins(MarginsWellKnown.NARROW);
+//		} else if (margin.equals("moderate")) {
+//			setMargins(MarginsWellKnown.MODERATE);
+//		} else if (margin.equals("wide")) {
+//			setMargins(MarginsWellKnown.WIDE);
+//		} else {
+//			log.warn("Unknown margin setting " + margin + "in docx4j.properties");
+//			setMargins(MarginsWellKnown.NORMAL);			
+//		}
+	}
+	
 	/**
 	 * @since 2.7
 	 */
@@ -172,7 +197,22 @@ public class PageDimensions {
 		}
 		
 	}
-	
+
+	/**
+	 * set page size/orientation from docx4j.properties
+	 * @since 2.8
+	 */
+	public void setPgSize() {
+		
+		String papersize= Docx4jProperties.getProperties().getProperty("docx4j.PageSize", "A4");
+		log.info("Using paper size: " + papersize);
+		
+		String landscapeString = Docx4jProperties.getProperties().getProperty("docx4j.PageOrientationLandscape", "false");
+		boolean landscape= Boolean.parseBoolean(landscapeString);
+		log.info("Landscape orientation: " + landscape);
+				
+		setPgSize(PageSizePaper.valueOf(papersize), landscape);		
+	}	
 	/**
 	 * @since 2.7
 	 */

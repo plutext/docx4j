@@ -22,11 +22,14 @@
 package org.docx4j.openpackaging.packages;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
@@ -361,7 +364,25 @@ public class OpcPackage extends Base {
 		return docPropsCustomPart;
 	}
 
+	/** @since 2.7.2 */
+	public OpcPackage clone() {
+		
+		OpcPackage result = null;
+		
+		// Zip it up
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		SaveToZipFile saver = new SaveToZipFile(this);
+		try {
+			saver.save(baos);
+			result = load(new ByteArrayInputStream(baos.toByteArray()));
+		} catch (Docx4JException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
+		return result;
+		
+	}
 
 
 }
