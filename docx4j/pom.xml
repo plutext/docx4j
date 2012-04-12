@@ -69,8 +69,11 @@
 		</contributor>
 		<contributor>
 			<name>Holger Schlegel</name>
+		</contributor>		
+		<contributor>			
+			<name>Jeromy Evans</name>
 		</contributor>
-		<contributor>
+		<contributor>			
 			<name>Jojada Tirtowidjojo</name>
 		</contributor>
 		<contributor>
@@ -339,29 +342,33 @@
   -->   			  
    			<!--  nothing newer in the repository! -->
 
+
+<!-- 		<dependency>
+			<groupId>org.plutext.jaxb</groupId>
+			<artifactId>svg</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.plutext.jaxb</groupId>
+			<artifactId>xslfo</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+ -->	
 		<!--  xhtmlrenderer, below, is new for docx4j 2.8.0;
-			  it supports (x)html import. 
-		
-		 	  It will not be in Maven Central until docx4j 2.8.0 is released.
-		
-			  Currently, you can get it from:  
-			  
-			  		https://github.com/plutext/flyingsaucer
-			  		
-			  and install it to your local repository using:
-			  
-			  		mvn install
+			  it supports xhtml import. 
 		 -->
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>xhtmlrenderer</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.0.0</version>
+			<!-- currently itext is required (fonts for width calculations)
 				<exclusions>
 					<exclusion>
 						<groupId>com.lowagie</groupId>
 						<artifactId>itext</artifactId>
 					</exclusion>
 				</exclusions>
+				 -->
 		</dependency>
 	
 		<dependency>
