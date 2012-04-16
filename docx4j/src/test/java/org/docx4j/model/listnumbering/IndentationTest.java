@@ -50,6 +50,8 @@ public class IndentationTest {
 		PropertyResolver propertyResolver = 
 	    			wordMLPackage.getMainDocumentPart().getPropertyResolver();
 		
+		final int EXPECT_START_LENGTH = EXPECT_START.length();
+		
 		// Iterate through the paragraphs
 		int assertionCount=0;
 		for (Object o : wordMLPackage.getMainDocumentPart().getContent() ) {
@@ -71,14 +73,20 @@ public class IndentationTest {
     					String content = text.getValue();
 
     					// If contains [expect] [/expect], then test for this
-    					if (content.contains(EXPECT_START)) {
-    						int start = content.indexOf(EXPECT_START) + EXPECT_START.length();
-    						int end = content.indexOf(EXPECT_END);
-    						String expectedResult = content.substring(start, end);
-    						
-    						assertTrue("Expected " + expectedResult + " but got " + actual,
-    								expectedResult.equals(actual));
-    						assertionCount++;
+    					// Since attributes can be in any order, work on an
+    					// attribute by attribute basis.
+    					if (content.indexOf(EXPECT_START)>=0) {
+    						content = content.substring(content.indexOf(EXPECT_START));
+	    					StringTokenizer st = new StringTokenizer(content, EXPECT_START);
+	    					while (st.hasMoreTokens()) {
+	    						String token = st.nextToken();
+	    						int end = content.indexOf(EXPECT_END);
+	    						String expectedResult = content.substring(EXPECT_START_LENGTH, end);
+	    						assertTrue("Expected " + expectedResult + " but got " + actual,
+	    								actual.contains(expectedResult));
+	    						assertionCount++;
+	    						
+	    					}
     					}
     					
     				}
