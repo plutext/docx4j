@@ -103,58 +103,43 @@
 		<contributor>
 			<name>y.rolland</name>
 		</contributor>
-	</contributors>	
+	</contributors>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<testSourceDirectory>src/test/java</testSourceDirectory>
 		<outputDirectory>bin</outputDirectory>
 		<testOutputDirectory>bin</testOutputDirectory>
-	<plugins>
-	<!--  
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>	
-      -->
-		<plugin>
-			<groupId>org.codehaus.mojo</groupId>
-			<artifactId>build-helper-maven-plugin</artifactId>
-			<version>1.3</version>
-			<executions>
-				<execution>
-					<id>add-source</id>
-					<phase>generate-sources</phase>
-					<goals>
-						<goal>add-source</goal>
-					</goals>
-					<configuration>
-						<sources>
-							<source>src/diffx</source>
-							<source>src/xslfo</source>
-							<source>src/pptx4j/java</source>
-							<source>src/svg</source>
-							<source>src/xlsx4j/java</source>
-							<source>src/glox4j/java</source>
-							<!--source>src/sun</source-->
-						</sources>
-					</configuration>
-				</execution>
-			</executions>
-		</plugin>
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<version>2.3.2</version>
-			<configuration>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.3</version>
+				<executions>
+					<execution>
+						<id>add-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/diffx</source>
+								<source>src/xslfo</source>
+								<source>src/pptx4j/java</source>
+								<source>src/svg</source>
+								<source>src/xlsx4j/java</source>
+								<source>src/glox4j/java</source>
+								<!--source>src/sun</source -->
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
 				<!-- 
 					The objective is to generate a jar which is compatible with Java 1.5, 
 					whilst at the same time allowing @Override annotations in the source 
@@ -204,11 +189,13 @@
 			<configuration>
 				<excludes>
 					<exclude>**/samples/*.java</exclude>
+					<exclude>**/AbstractNumberingTest.java</exclude>
 				</excludes>
 			</configuration>
 		</plugin>
 		<plugin>
 			<artifactId>maven-source-plugin</artifactId>
+			<version>2.1.2</version>
 			<executions>
 				<execution>
 					<goals>
@@ -223,7 +210,9 @@
 		-->
 		<plugin>
 			<artifactId>maven-javadoc-plugin</artifactId>
+			<version>2.8</version>
 			<configuration>
+				<maxmemory>512m</maxmemory>
 			<!--  18 MB without the exclusion; still 15MB with  -->
 			<!-- 
 				<excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames>
@@ -276,6 +265,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
 				<reportSets>
 					<reportSet>
 						<id>standard-javadoc</id>
@@ -646,9 +636,31 @@
 		
 	</dependencies>
 
+
+	<profiles> <!--  use -P eg mvn -Psign-artifacts  -->
+		<profile>
+			<id>sign-artifacts</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.4</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		
    		<!--  comment this out, until the Windows path issues below are fixed in m2eclipse
-	
-   <profiles>
    	<profile>
    		<id>jdk15</id>
    		<activation>
@@ -683,8 +695,8 @@
    			</dependency>
    		</dependencies>
    	</profile>
+   				-->
    </profiles>
-   		 -->
 
    				<!--
                 <systemPath>
