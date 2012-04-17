@@ -126,7 +126,7 @@
 								<source>src/diffx</source>
 								<source>src/xslfo</source>
 								<source>src/pptx4j/java</source>
-								<source>src/svg</source>
+								<!-- <source>src/svg</source> -->
 								<source>src/xlsx4j/java</source>
 								<source>src/glox4j/java</source>
 								<!--source>src/sun</source -->
@@ -358,6 +358,11 @@
 					</exclusion>
 				</exclusions>
 				 -->
+		</dependency>
+		<dependency>
+			<groupId>org.plutext</groupId>
+			<artifactId>jaxb-svg11</artifactId>
+			<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.plutext</groupId>
