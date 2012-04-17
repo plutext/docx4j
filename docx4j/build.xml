@@ -7,13 +7,17 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="2.7.1-SNAPSHOT"/>
+	<property name="version" value="2.8.0-SNAPSHOT"/>
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
 	<property name="m2Repository" value="../../.m2/repository"/>	
     <path id="Maven Dependencies.libraryclasspath">
     
+        <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xslfo/1.0.1/jaxb-xslfo-1.0.1.jar"/>
+        <pathelement location="${m2Repository}/org/plutext/jaxb-xmldsig-core/1.0.0/jaxb-xmldsig-core-1.0.0.jar"/>
+        
         <pathelement location="${m2Repository}/log4j/log4j/1.2.15/log4j-1.2.15.jar"/>
         <pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
@@ -95,6 +99,7 @@
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
             <fileset dir="src/pptx4j/java" excludes="**/*.launch, **/*.java"/>
+            <fileset dir="src/main/resources" excludes="log4j.*"/>
         </copy>
     </target>
 	
@@ -116,8 +121,6 @@
             <src path="src/glox4j/java"/>
             <src path="src/pptx4j/java"/>
             <src path="src/xlsx4j/java"/>
-            <src path="src/svg"/>
-            <src path="src/xslfo"/>
             <!-- <classpath refid="docx4j.classpath"/> -->
             <!--  build with earlier than
 
@@ -150,8 +153,6 @@
             <src path="${src.main.java.dir}"/>
             <src path="src/pptx4j/java"/>
             <src path="src/xlsx4j/java"/>
-            <src path="src/svg"/>
-            <src path="src/xslfo"/>
         	<include name="**/package-info.java"/>
             <classpath refid="docx4j.classpath"/>
         </javac>
