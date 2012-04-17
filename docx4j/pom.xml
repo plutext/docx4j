@@ -123,12 +123,12 @@
 						</goals>
 						<configuration>
 							<sources>
-								<source>src/diffx</source>
-								<source>src/xslfo</source>
 								<source>src/pptx4j/java</source>
-								<!-- <source>src/svg</source> -->
 								<source>src/xlsx4j/java</source>
 								<source>src/glox4j/java</source>
+								<source>src/diffx</source>
+								<!-- <source>src/xslfo</source>  -->
+								<!-- <source>src/svg</source> -->
 								<!--source>src/sun</source -->
 							</sources>
 						</configuration>
@@ -361,13 +361,18 @@
 		</dependency>
 		<dependency>
 			<groupId>org.plutext</groupId>
-			<artifactId>jaxb-svg11</artifactId>
+			<artifactId>jaxb-svg11</artifactId><!-- previously part of docx4j source -->
 			<version>1.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.plutext</groupId>
+			<artifactId>jaxb-xslfo</artifactId><!-- previously part of docx4j source -->
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.plutext</groupId>
 			<artifactId>jaxb-xmldsig-core</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 		
 		<!--  End of new 2.8.0 new dependencies -->
