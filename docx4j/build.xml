@@ -37,7 +37,7 @@
         <pathelement location="${m2Repository}/antlr/antlr/2.7.7/antlr-2.7.7.jar"/>    
         <pathelement location="${m2Repository}/org/antlr/stringtemplate/3.2.1/stringtemplate-3.2.1.jar"/> 
     	
-        <pathelement location="${m2Repository}/org/docx4j/xhtmlrenderer/1.0.0-SNAPSHOT/xhtmlrenderer-1.0.0-SNAPSHOT.jar"/>    
+        <pathelement location="${m2Repository}/org/docx4j/xhtmlrenderer/1.0.0/xhtmlrenderer-1.0.0.jar"/>    
     	
 
         <!--<pathelement location="${m2Repository}/junit/junit/4.8/junit-4.8.jar"/>-->
