@@ -416,6 +416,8 @@ public class ContentTypeManager  {
 			return new WorkbookPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
 			return JaxbSmlPart.newPartForContentType(contentType, partName);
+		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_XML_SIGNATURE_PART)) {
+			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
 			// Simple minded detection of XML content.

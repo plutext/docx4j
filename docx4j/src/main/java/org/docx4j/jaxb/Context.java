@@ -41,6 +41,8 @@ public class Context {
 	
 	private static JAXBContext jcXslFo;
 	public static JAXBContext jcSectionModel;
+
+	public static JAXBContext jcXmlDSig;
 	
 	private static Logger log = Logger.getLogger(Context.class);
 	
@@ -91,6 +93,8 @@ public class Context {
 			jcContentTypes = JAXBContext.newInstance("org.docx4j.openpackaging.contenttype",classLoader );
 			
 			jcSectionModel = JAXBContext.newInstance("org.docx4j.model.structure.jaxb",classLoader );
+			
+			jcXmlDSig = JAXBContext.newInstance("org.plutext.jaxb.xmldsig",classLoader );
 			
 			log.info(".. others loaded ..");
 			

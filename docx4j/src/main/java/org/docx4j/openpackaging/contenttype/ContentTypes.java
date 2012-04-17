@@ -317,11 +317,11 @@ public class ContentTypes {
 //	 */
 //	public static final String DIGITAL_SIGNATURE_ORIGIN_PART = "application/vnd.openxmlformats-package.digital-signature-origin";
 //
-//	/**
-//	 * Digital Signature XML Signature part.
-//	 */
-//	public static final String DIGITAL_SIGNATURE_XML_SIGNATURE_PART = "application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml";
-//
+	/**
+	 * Digital Signature XML Signature part.
+	 */
+	public static final String DIGITAL_SIGNATURE_XML_SIGNATURE_PART = "application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml";
+
 
 	// Images format supported by WordprocessingML. See tc45-2006-334.pdf p.146
 

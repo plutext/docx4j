@@ -35,7 +35,7 @@ public class Namespaces {
 	public static final String RELATIONSHIPS_OFFICEDOC = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 	
-//	public final static String DIGITAL_SIGNATURE = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/signature";
+	public final static String DIGITAL_SIGNATURE = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/signature";
 //	public final static String DIGITAL_SIGNATURE_CERTIFICATE = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/certificate";
 //	public final static String DIGITAL_SIGNATURE_ORIGIN = "http://schemas.openxmlformats.org/package/2006/relationships/digital-signature/origin";
 	

@@ -344,12 +344,11 @@
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
  -->	
-		<!--  xhtmlrenderer, below, is new for docx4j 2.8.0;
-			  it supports xhtml import. 
-		 -->
+
+		<!--  New for docx4j 2.8.0 -->
 		<dependency>
 			<groupId>org.docx4j</groupId>
-			<artifactId>xhtmlrenderer</artifactId>
+			<artifactId>xhtmlrenderer</artifactId><!--  supports xhtml import -->
 			<version>1.0.0</version>
 			<!-- currently itext is required (fonts for width calculations)
 				<exclusions>
@@ -360,6 +359,13 @@
 				</exclusions>
 				 -->
 		</dependency>
+		<dependency>
+			<groupId>org.plutext</groupId>
+			<artifactId>jaxb-xmldsig-core</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		
+		<!--  End of new 2.8.0 new dependencies -->
 	
 		<dependency>
 			<groupId>log4j</groupId>
