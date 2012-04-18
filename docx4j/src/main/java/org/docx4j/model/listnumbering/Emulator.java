@@ -153,10 +153,8 @@ public class Emulator {
     	// If numId is not provided explicitly, 
     	// is it provided by the style?
     	// (ie does this style have a list associated with it?)
-    	if (numId != null 
-    			&& !numId.equals("")) {
-    		log.debug("Using numId: " + numId);    		
-    	} else {
+    	if (numId == null 
+    			|| numId.equals("")) {
     		
     		org.docx4j.wml.Style style = null;
     		if (pStyleVal==null || pStyleVal.equals("") ) {
@@ -212,8 +210,10 @@ public class Emulator {
     		}
     		
     		numId = numPr.getNumId().getVal().toString();
-    		log.info("numId=" + numId + " (from style)" );
-        	//System.out.println("numId=" + numId + " (from style)" );
+    		if (numId == null || numId.equals("")) {
+    			log.error("numId was null or empty!");
+    			return null;
+    		} 
     		
     		if (levelId == null 
     				|| levelId.equals("") ) {
@@ -227,18 +227,16 @@ public class Emulator {
     				levelId = "0";
     			}
     		}
-    	}	
+    	}
+
+		log.debug("Using numId: " + numId);    		
     	
 		if (levelId == null || levelId.equals("")) {
 			// String numId = getAttributeValue(numIdNode, ValAttrName);
-			log.warn("No level id?!");
-			return null;
+			log.warn("No level id?! Default to 0.");
+			levelId="0";
 		}
 
-		if (numId == null || numId.equals("")) {
-			log.error("numId was null or empty!");
-			return null;
-		} 
 
 		if (numberingPart.getInstanceListDefinitions().containsKey(numId)
 				&& numberingPart.getInstanceListDefinitions().get(numId).LevelExists(
