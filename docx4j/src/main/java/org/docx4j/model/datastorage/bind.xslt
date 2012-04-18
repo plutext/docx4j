@@ -63,7 +63,21 @@
 
   	
   		<xsl:when test="contains( string(w:sdtPr/w:tag/@w:val), 'od:ContentType=application/xhtml+xml' )">
-  			<!--  Convert XHTML -->
+  			<!--  Convert XHTML.
+  			
+  				  For all except the run-level case, we need to be able to have block level content.
+  				  Which means we need to be inserting into a rich text control,
+  				  which in turn means there can't be a w:sdtPr/w:dataBinding.  
+  				  
+  				  So the convertXHTML extension
+  				  function must read xpath from the w:tag, which in turn means the Word Add-In 
+  				  editor must write that.
+  				  
+  				  For the run-level case, there is an argument for writing w:dataBinding,
+  				  since this gives the user visual feedback in the Add-In, and that's probably
+  				  worth it for this common case.
+  			
+  			 -->
 			<xsl:copy>
 			     <xsl:apply-templates select="w:sdtPr"/>
 			     
@@ -74,112 +88,100 @@
 			     <w:sdtContent>
 			     	
 				  	<xsl:choose>
+				  		<!--  Note that all branches of this choose currently do the same 
+				  			  thing, so all it does is provide documentation for the various cases.
+				  			    -->
 				  		<xsl:when test="w:sdtContent/w:tbl">
-				  			<w:tbl>
-				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblPr"/>
-				  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tblGrid"/>
-					  			<w:tr>
-					  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr"/>
-						  			<w:tc>
-						  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:trPr/w:tc/w:tcPr"/>
-							  			<w:p>
-							  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:tc/w:p/w:pPr"/>
-							  				
-											<xsl:copy-of
-											select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
-														$wmlPackage,
-														$sourcePart,
-														$customXmlDataStorageParts,
-														string(w:sdtPr/w:dataBinding/@w:storeItemID),
-														string(w:sdtPr/w:dataBinding/@w:xpath),
-														string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+				  		<!--  When the sdt contains a table, assume block level content is to replace it
+				  		      (most likely, an XHTML table?).
+				  		      
+				  		      Tested/works for 2.8.0
+				  		      
+				  		      A future version could possibly read/re-use w:sdtContent/w:tbl/w:tblPr
+				  		      if there were the same number of columns?
+				  		       -->
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										$xPathsPart,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
-														w:sdtPr/w:rPr,
-														$tag )" />
-										</w:p>
-									</w:tc>
-								</w:tr>
-							</w:tbl>
+										w:sdtPr/w:rPr,
+										$tag )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tr">
-				  			<w:tr>
-				  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr"/>
-					  			<w:tc>
-					  				<xsl:copy-of select="w:sdtContent/w:tr/w:trPr/w:tc/w:tcPr"/>
-						  			<w:p>
-						  				<xsl:copy-of select="w:sdtContent/w:tr/w:tc/w:p/w:pPr"/>
-						  				
-										<xsl:copy-of
-										select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
-													$wmlPackage,
-													$sourcePart,
-													$customXmlDataStorageParts,
-													string(w:sdtPr/w:dataBinding/@w:storeItemID),
-													string(w:sdtPr/w:dataBinding/@w:xpath),
-													string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+				  			<!--  no reason in principle why we couldn't convert
+				  			      an XHTML tr to w:tr.
+				  			      
+				  			      TODO currently xhtmlrenderer NPEs
+				  			        
+				  		      	  A future version could possibly read/re-use w:sdtContent/w:tr/w:trPr
+				  			       -->
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										$xPathsPart,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
-													w:sdtPr/w:rPr,
-													$tag )" />
-									</w:p>
-								</w:tc>
-							</w:tr>
+										w:sdtPr/w:rPr,
+										$tag )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:tc">
-				  			<w:tc>
-				  				<!--  preserve existing w:tcPr -->
-				  				<xsl:copy-of select="w:sdtContent/w:tc/w:tcPr"/>
-					  			<w:p>
-					  				<!--  preserve existing w:pPr -->
-					  				<xsl:copy-of select="w:sdtContent/w:tc/w:p/w:pPr"/>
-					  				
-					  				<!--  create runs -->
-									<xsl:copy-of
-									select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
-												$wmlPackage,
-												$sourcePart,
-												$customXmlDataStorageParts,
-												string(w:sdtPr/w:dataBinding/@w:storeItemID),
-												string(w:sdtPr/w:dataBinding/@w:xpath),
-												string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+				  			<!--  no reason in principle why we couldn't convert
+				  			      an XHTML table cell to w:tc.
+				  			      
+				  			      TODO currently xhtmlrenderer NPEs
+				  			        
+				  			       -->
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										$xPathsPart,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
-												w:sdtPr/w:rPr,
-												$tag )" />
-								</w:p>
-							</w:tc>
+										w:sdtPr/w:rPr,
+										$tag )" />
 				  		</xsl:when>				  		
 				  		<xsl:when test="w:sdtContent/w:p">
 				  		
-				  				<!--  preserve existing w:pPr mode? 
-				  					<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
-				  				-->
-				  				
-				  				<!--  create runs -->
-								<xsl:copy-of
-								select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
-											$wmlPackage,
-											$sourcePart,
-											$customXmlDataStorageParts,
-											string(w:sdtPr/w:dataBinding/@w:storeItemID),
-											string(w:sdtPr/w:dataBinding/@w:xpath),
-											string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+			  				<!--  
+			  				
+			  				preserve existing w:pPr mode? 
+			  					<xsl:copy-of select="w:sdtContent/w:p/w:pPr"/>
+			  				-->
+			  				
+			  				<!--  create runs -->
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										$xPathsPart,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
-											w:sdtPr/w:rPr,
-											$tag )" />
+										w:sdtPr/w:rPr,
+										$tag )" />
 				  		</xsl:when>
-				  		<xsl:otherwise>  <!--  run level --> 
+				  		<xsl:otherwise>  <!--  run level 
+				  		
+				  			  Note also that in the w:p/w:sdt case, w:sdtContent is empty
+				  			  since Word puts nothing there without a dataBinding.  run-level
+				  			  sdt may be the same?  So in practice the xsl:otherwise is used.
+				  		
+				  		--> 
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
 							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
-										string(w:sdtPr/w:dataBinding/@w:storeItemID),
-										string(w:sdtPr/w:dataBinding/@w:xpath),
-										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										$xPathsPart,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
 										w:sdtPr/w:rPr,
@@ -227,8 +229,8 @@
 														$customXmlDataStorageParts,
 														$xPathsPart,
 														string(w:sdtPr/w:tag/@w:val),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+														local-name(..),
+														local-name(w:sdtContent/*[1]),
 														w:sdtPr/w:rPr,
 														$multiLine)" />
 										</w:p>
@@ -251,8 +253,8 @@
 													$customXmlDataStorageParts,
 													$xPathsPart,
 													string(w:sdtPr/w:tag/@w:val),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+													local-name(..),
+													local-name(w:sdtContent/*[1]),
 													w:sdtPr/w:rPr,
 													$multiLine)" />
 									</w:p>
@@ -275,8 +277,8 @@
 												$customXmlDataStorageParts,
 												$xPathsPart,
 												string(w:sdtPr/w:tag/@w:val),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+												local-name(..),
+												local-name(w:sdtContent/*[1]),
 												w:sdtPr/w:rPr,
 												$multiLine)" />
 								</w:p>
@@ -295,8 +297,8 @@
 											$customXmlDataStorageParts,
 											$xPathsPart,
 											string(w:sdtPr/w:tag/@w:val),
-										local-name(..),
-										local-name(w:sdtContent/*[1]),
+											local-name(..),
+											local-name(w:sdtContent/*[1]),
 											w:sdtPr/w:rPr,
 											$multiLine)" />
 							</w:p>

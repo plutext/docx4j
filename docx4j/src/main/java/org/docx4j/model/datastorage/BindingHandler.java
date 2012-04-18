@@ -174,7 +174,9 @@ public class BindingHandler {
 				// Use constructor which takes Unmarshaller, rather than JAXBContext,
 				// so we can set JaxbValidationEventHandler
 				Unmarshaller u = jc.createUnmarshaller();
-				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+				
+				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());  
+				
 				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
 				
 				Map<String, Object> transformParameters = new HashMap<String, Object>();
@@ -261,7 +263,8 @@ public class BindingHandler {
 				WordprocessingMLPackage pkg, 
 				JaxbXmlPart sourcePart,				
 				Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
-				String storeItemId, String xpath, String prefixMappings,
+				//String storeItemId, String xpath, String prefixMappings,
+				XPathsPart xPathsPart,				
 				String sdtParent,
 				String contentChild,				
 				NodeIterator rPrNodeIt, 
@@ -270,7 +273,26 @@ public class BindingHandler {
 			log.info("convertXHTML extension function");
 			log.info("contentChild: " + contentChild);
 			
-			String r = xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpath, prefixMappings);
+			QueryString qs = new QueryString();
+			HashMap<String, String> map = qs.parseQueryString(tag, true);
+			
+			String xpathId = map.get(OpenDoPEHandler.BINDING_ROLE_XPATH);
+			
+			log.info("Looking for xpath by id: " + xpathId);
+		
+			
+			Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			
+			if (xpath==null) {
+				log.warn("Couldn't find xpath with id: " + xpathId);
+				return null;
+			}
+			
+			String storeItemId = xpath.getDataBinding().getStoreItemID();
+			String xpathExp = xpath.getDataBinding().getXpath();
+			String prefixMappings = xpath.getDataBinding().getPrefixMappings();
+						
+			String r = xpathGetString(pkg, customXmlDataStorageParts, storeItemId, xpathExp, prefixMappings);
 			if (r==null) return null;
 			
 			try {
@@ -285,12 +307,27 @@ public class BindingHandler {
 				Importer.setHyperlinkStyle(hyperlinkStyleId);
 				String baseUrl = null;
 				List<Object> results = Importer.convert(unescaped, baseUrl, pkg );
-				log.info("Got results: " + results.size() );
-				
+
 				org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 				DocumentFragment docfrag = docContainer.createDocumentFragment();
 				
-				if (results.size()>0 && 
+				if (results==null) {
+					log.error("Couldn't convert " + unescaped);
+					return docfrag;
+				}
+				
+				log.info("Got results: " + results.size() );				
+				if (results.size()>0  
+						&& results.get(0) instanceof P
+						&& sdtParent.equals("p")) {
+					// Extract contents
+					for (Object o : ((P)results.get(0)).getContent() ) {							
+						Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
+						XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													
+					}
+					
+				}				
+				else if (results.size()>0 && 
 						(contentChild.equals("r")
 								|| contentChild.equals("proofErr")
 								// TODO: is there other inline content Word might put into a content control?
@@ -323,7 +360,7 @@ public class BindingHandler {
 					}
 				}
 				
-				// TODO: handle table related cases
+				System.out.println("returning...");
 				
 				return docfrag;			
 				
