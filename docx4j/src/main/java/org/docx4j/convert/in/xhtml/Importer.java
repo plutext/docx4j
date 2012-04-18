@@ -124,6 +124,7 @@ import org.xml.sax.InputSource;
  * - no attempt is made to convert CSS classes to Word styles
  * 
  * @author jharrop
+ * @since 2.8
  *
  */
 public class Importer {
