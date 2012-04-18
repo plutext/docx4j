@@ -165,8 +165,8 @@ public class Emulator {
     		}
     		
     		log.debug("no explicit numId; looking in styles");
-			style = propertyResolver.getStyle(pStyleVal);    			
-        	// TODO: use propertyResolver to follow <w:basedOn w:val="blagh"/>
+			style = propertyResolver.getStyle(pStyleVal); 
+			
 	    	if (style == null) {
 	    		log.debug("Couldn't find style '" + pStyleVal + "'");
 	    		return null;
@@ -196,7 +196,19 @@ public class Emulator {
     		}
     		
     		if (numPr.getNumId()==null) {
-    			return null; // Is this the right thing to do? Check!	    			
+    			log.debug("NumPr element has no numId");
+    			if (pStyleVal!=null) {
+    	        	// use propertyResolver to follow <w:basedOn w:val="blagh"/>
+        			log.debug(pStyleVal + ".. use propertyResolver to follow basedOn");
+    				propertyResolver.getEffectivePPr(pStyleVal);
+    			}
+    			
+    			if (numPr.getNumId()==null) {	
+        			log.debug(pStyleVal + "NumPr element still has no numId (basedOn didn't help)");
+    				return null; // Is this the right thing to do? Check!
+    			} else {
+    				log.info("Got numId: " + numPr.getNumId() );
+    			}
     		}
     		
     		numId = numPr.getNumId().getVal().toString();
