@@ -156,7 +156,7 @@ public abstract class AbstractHtmlExporter implements Output {
 	 * @param numId
 	 * @return
 	 */
-    public static DocumentFragment getNumberXmlNode(WordprocessingMLPackage wmlPackage,
+    public static String getNumberXmlNode(WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, String numId, String levelId) {
     	
@@ -169,86 +169,19 @@ public abstract class AbstractHtmlExporter implements Output {
         	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
         			wmlPackage, pStyleVal, numId, levelId);   
         	
-//    		System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-//    			"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
-        	
-        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
-			Document document = factory.newDocumentBuilder().newDocument();
-			DocumentFragment docfrag = document.createDocumentFragment();
 
 			if (triple==null) {
         		log.debug("computed number ResultTriple was null");
-    			Node spanElement = document.createElement("span");
-
-    			// It would be nice to include a comment in the
-    			// output HTML, but Sun's Xalan copy-of ignores it.
-    			
-//        		Comment c = document.createComment("computed number ResultTriple was null");
-//        		spanElement.appendChild(c);
-    			    			
-    			document.appendChild(spanElement);
-        		docfrag.appendChild(document.getDocumentElement());
-    			return docfrag;
+    			return "";
         	}
-
-			Element spanElement = document.createElement("span");
 			
 			String styleVal = "";
 			
-//    		if (triple.getIndent()!=null) {
-//    			Indent indent = new Indent(triple.getIndent());
-//				styleVal = indent.getCssProperty();
-//    		}
-			
-        	PPr pPr = null;
-        	if (pPrNodeIt!=null) {
-        		Node n = pPrNodeIt.nextNode();
-        		if (n!=null) {
-					log.debug( XmlUtils.w3CDomNodeToString(n) );
-        			Unmarshaller u = Context.jc.createUnmarshaller();			
-        			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-        			pPr = (PPr)u.unmarshal(n);
-        		}
-        	}   
-			if (pPr.getInd()==null) {
-			
-				NumberingDefinitionsPart ndp = wmlPackage.getMainDocumentPart().getNumberingDefinitionsPart();
-				Ind ind = ndp.getInd(numId, levelId);
-				if (ind!=null && ind.getHanging()!=null) {
-					String hanging = UnitsOfMeasurement.twipToBest(ind.getHanging().intValue());
-					styleVal="position: absolute; left:-" + hanging + "; max-width: " + hanging +";";							
-				}
-				// TODO: position bullets correctly where there is no hanging
-				// TODO: The suff element tells us what separates the number from
-				// the text (tab, space or nothing).  If its a tab,
-				// we'll need to know the tab values here. Currently, we're 
-				// assuming hanging overrides all that.
-			} else {
-				
-				Ind ind = pPr.getInd();
-				if (ind!=null && ind.getHanging()!=null) {
-					String hanging = UnitsOfMeasurement.twipToBest(ind.getHanging().intValue());
-					styleVal="position: absolute; left:-" + hanging + "; max-width: " + hanging +";";							
-				}
-				
-			}
-			
-    		// Set the font
-    		if (triple.getNumFont()!=null) {
-    			String font = Font.getPhysicalFont(wmlPackage, triple.getNumFont() );
-    			if (font!=null) {
-    				styleVal += Property.composeCss(Font.CSS_NAME, font );
-    			}
-    		}
-
-    		if (!styleVal.equals("") ) {
-				spanElement.setAttribute("style", styleVal);
-    		}
     		if (triple.getBullet()!=null ) {
-    			spanElement.setTextContent(triple.getBullet() + " " );    						
+    			return (triple.getBullet() + " " );    						
     		} else if (triple.getNumString()==null) {
 	    		log.error("computed NumString was null!");
-    			spanElement.setTextContent("?");    						
+    			return ("?");    						
     			
     			// It would be nice to include a comment in the
     			// output HTML, but Sun's Xalan copy-of ignores it.
@@ -256,15 +189,9 @@ public abstract class AbstractHtmlExporter implements Output {
 //        		Comment c = document.createComment("computed number triple.getNumString() was null");
 //        		spanElement.appendChild(c);
 	    	} else {
-				Text number = document.createTextNode( triple.getNumString() + " " );
-				spanElement.appendChild(number);				    		
+				return ( triple.getNumString() + " " );
 	    	}
 			
-			document.appendChild(spanElement);
-			docfrag.appendChild(document.getDocumentElement());
-
-			return docfrag;
-						
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println(e.toString() );
@@ -368,7 +295,13 @@ public abstract class AbstractHtmlExporter implements Output {
     	
     	StringBuffer result = new StringBuffer();
     	
-    	StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
+    	StyleTree styleTree = null;
+		try {
+			styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// First iteration - table styles
 		result.append("\n /* TABLE STYLES */ \n");    	
