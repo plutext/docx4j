@@ -30,6 +30,7 @@ import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
+import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
@@ -922,7 +923,7 @@ public class PropertyResolver {
 	protected void applyPPr(PPr pPrToApply, PPr effectivePPr) {
 		
 		log.debug( "apply " + XmlUtils.marshaltoString(pPrToApply,  true, true)
-		+ "\n\r to " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
+			+ "\n\r to " + XmlUtils.marshaltoString(effectivePPr,  true, true) );
 		
 		if (pPrToApply==null) {
 			return;
@@ -931,7 +932,7 @@ public class PropertyResolver {
     	List<Property> properties = PropertyFactory.createProperties(wordMLPackage, pPrToApply); 
     	for( Property p :  properties ) {
 			if (p!=null) {
-				log.debug("applying pPr " + p.getClass().getName() );
+//				log.debug("applying pPr " + p.getClass().getName() );
 				((AbstractParagraphProperty)p).set(effectivePPr);  // NB, this new method does not copy. TODO?
 			}
     	}
@@ -1170,6 +1171,8 @@ public class PropertyResolver {
 	 * @param effectivePPr
 	 */
 	private void fillPPrStack(String styleId, Stack<PPr> pPrStack) {
+		// The return value is the style on which styleId is based.
+		// It is purely for the purposes of ascertainNumId.
 		
 		// get the style
 		Style style = liveStyles.get(styleId);
@@ -1184,12 +1187,45 @@ public class PropertyResolver {
 		pPrStack.push(style.getPPr());
 		log.debug("Added " + styleId + " to pPr stack");
 		
+		// Some styles contain numPr, without specifying
+		// their numId!  In this case you have to get it
+		// from the numPr in their basedOn style.
+		// To save numbering emulator from having to do
+		// that work, we make the numId explicit here.
+		boolean ascertainNumId = false;
+		if (style.getPPr()!=null 
+				&& style.getPPr().getNumPr()!=null
+				&& style.getPPr().getNumPr().getNumId()==null) {
+
+			ascertainNumId = true;			
+			log.debug(styleId +" ascertainNumId: " + ascertainNumId);
+		} else {
+			log.debug(styleId +" ascertainNumId: " + ascertainNumId);			
+		}
+		
 		// if it is based on, recurse
     	if (style.getBasedOn()==null) {
 			log.debug("Style " + styleId + " is a root style.");
     	} else if (style.getBasedOn().getVal()!=null) {
         	String basedOnStyleName = style.getBasedOn().getVal();           	
+			log.debug("Style " + styleId + " is based on " + basedOnStyleName);
         	fillPPrStack( basedOnStyleName, pPrStack);
+        	Style basedOnStyle = liveStyles.get(basedOnStyleName);
+        	if (ascertainNumId && basedOnStyle!=null) {
+        		// This works via recursion        		
+        		//log.debug( XmlUtils.marshaltoString(basedOnStyle, true, true));
+        		if (basedOnStyle.getPPr()!=null 
+        				&& basedOnStyle.getPPr().getNumPr()!=null
+        				&& basedOnStyle.getPPr().getNumPr().getNumId()!=null) {
+        			NumId numId = basedOnStyle.getPPr().getNumPr().getNumId();
+        			// Attach it at this level - for this to work,
+        			// you can't have a style in the basedOn hierarchy
+        			// which doesn't have a numPr element, because
+        			// in that case there is nowhere to hang the style
+        			style.getPPr().getNumPr().setNumId(numId);
+        			log.info("Injected numId " + numId);
+        		}
+        	}
     	} else {
     		log.debug("No basedOn set for: " + style.getStyleId() );
     	}
