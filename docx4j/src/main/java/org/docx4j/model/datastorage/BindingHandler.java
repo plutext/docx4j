@@ -320,30 +320,11 @@ public class BindingHandler {
 				if (results.size()>0  
 						&& results.get(0) instanceof P
 						&& sdtParent.equals("p")) {
-					// Extract contents
+					// Importer class always returns run-level content wrapped in a w:p 
+					// so extract contents
 					for (Object o : ((P)results.get(0)).getContent() ) {							
 						Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
 						XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													
-					}
-					
-				}				
-				else if (results.size()>0 && 
-						(contentChild.equals("r")
-								|| contentChild.equals("proofErr")
-								// TODO: is there other inline content Word might put into a content control?
-								) ) {
-					// Only accept the first result object
-					
-					// A span seems to come back as a w:p, so extract contents 					
-					if ( results.get(0) instanceof P) {
-						
-						for (Object o : ((P)results.get(0)).getContent() ) {							
-							Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
-							XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													
-						}
-						
-					} else {
-						log.error("TODO: handle case where conversion returns " + results.get(0).getClass().getName() );
 					}
 					
 				} else {
