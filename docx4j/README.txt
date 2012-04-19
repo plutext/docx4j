@@ -88,6 +88,68 @@ License version 2.0:
   RELEASE NOTES
 ==============================================================================
 
+
+Version 2.8.0
+=============
+
+r1700-
+
+Release date
+------------
+
+[ ] May 2012
+
+Contributors to this release
+----------------------------
+
+Jeromy Evans
+Jason Harrop
+Arnaud Kleinpeter
+Pierre
+Tinne
+
+Notable Changes in Version 2.8.0
+---------------------------------
+
+XHTML import
+
+svg JAXB content model moved to its own project on Github, and uploaded to Maven Central 
+svg JAXB content model moved to its own project on Github, and uploaded to Maven Central 
+
+[1727] Field processing infrastructure, and [1732] MERGEFIELD processing
+
+OpenDoPE changes
+----------------
+
+Support binding/import of escaped XHTML content
+
+[1763] Support pictures in repeats (for this, a picture content control must have an od:xpath tag)
+
+Other Changes (non-exhaustive)
+------------------------------
+
+[1729] Improved approach to determining appropriate NamespacePrefixMapper
+[1736] Headers/footers: Work around for class cast exception in BinderImpl.unmarshal
+[1741] Add element name="compatSetting" and type="CT_CompatSetting" from ECMA-376 2ed to wml, so Word 2010 can detect docx as native
+[1745] Numbering: Support w:startOverride
+[1746] Numbering: Support for DECIMAL_ZERO (01, 02, 03 ..) and basic support for "Legal" numbering
+[1747] Numbering: w:isLgl
+[1751] XPath-aware deep copy
+[1754] Improvements to indentation (direct indent values are given priority over values in numbering, which in turn is given priority over values in styles), plus associated unit tests.
+[1758] For Oracle's Java 1.7, System.setProperty("javax.xml.parsers.SAXParserFactory", "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
+[1760] Convert first line and hanging indent to CSS (using text-indent). 
+[1762] For superscript, FO property corrected to "super"
+[1764] Traverse to DML pictures
+[1767] Improvements to bestmatching font mapper
+[1774] Open a .potx file (powerpoint template)
+[1775] Interfaces for dml.chart
+[1776] Internal hyperlinks sample
+[1777] Convenience method to create hyperlink to bookmark, plus example of use
+[1778] Read docx4j.properties for page size & margins
+[1779] Fix for getAllAppenders issues (slf4j)
+[1784] XmlSignature part, which uses JAXB representation of xmldsig-core, contained in separate project
+
+
 Version 2.7.1 
 =============
 
