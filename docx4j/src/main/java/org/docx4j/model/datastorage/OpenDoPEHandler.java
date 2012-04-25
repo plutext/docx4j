@@ -99,7 +99,8 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_COMPONENT = "od:component";
 	public final static String BINDING_ROLE_COMPONENT_BEFORE = "od:continuousBefore";
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
-
+	
+	public final static String BINDING_CONTENTTYPE = "od:ContentType";
 	/*
 	 * --------------------------------------------------------------------------
 	 * - Pre-processing of content controls which have a tag containing
@@ -1086,6 +1087,12 @@ public class OpenDoPEHandler {
 				xpathObj = XPathsPart.getXPathById(xPaths, repeatId);
 				thisXPath = xpathObj.getDataBinding().getXpath();
 
+			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
+
+				xpathObj = XPathsPart.getXPathById(xPaths, 
+						map.get(BINDING_ROLE_XPATH) );
+				thisXPath = xpathObj.getDataBinding().getXpath();
+				
 			} else {
 
 				log.warn("couldn't find binding or bindingrole!");
@@ -1108,8 +1115,14 @@ public class OpenDoPEHandler {
 			}
 		}
 
+//		System.out.println("xpathBase: " + xpathBase);
+//		System.out.println("index: " + index);
+//		System.out.println("thisXPath: " + thisXPath);
+		
 		final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
 
+//		System.out.println("newPath: " + newPath);
+		
 		if (log.isDebugEnabled() && !thisXPath.equals(newPath)) {
 			log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);
 		}
@@ -1147,7 +1160,18 @@ public class OpenDoPEHandler {
 				// set sdt to use it
 				map.put(BINDING_ROLE_REPEAT, newXPathObj.getId());
 				tag.setVal(QueryString.create(map));
-			}
+				
+			} else if (map.containsKey(BINDING_CONTENTTYPE)) {
+				
+				// Also need to create new xpath id, and add that
+				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
+						newPath, xpathObj, index);
+
+				// set sdt to use it
+				map.put(BINDING_ROLE_XPATH, newXPathObj.getId());
+				tag.setVal(QueryString.create(map));
+				
+			}			
 
 		} else {
 			binding.setXpath(newPath);
