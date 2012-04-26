@@ -353,6 +353,16 @@ public class OpcPackage extends Base {
 	 *            The docx file 
 	 */	
 	public void save(java.io.File docxFile) throws Docx4JException {
+		save(docxFile, null);
+	}	
+	/**
+	 * Convenience method to save a WordprocessingMLPackage
+	 * or PresentationMLPackage to a File.
+     *
+	 * @param docxFile
+	 *            The docx file 
+	 */	
+	private void save(java.io.File docxFile, String password) throws Docx4JException {
 
 		if (docxFile.getName().endsWith(".xml")) {
 			
@@ -375,9 +385,24 @@ public class OpcPackage extends Base {
 			}	
 			return;
 		}
+		
+		if (password==null) {
+			SaveToZipFile saver = new SaveToZipFile(this); 
+			saver.save(docxFile);
+		} else {
+			// Create the compound file
+	        try {
+	        	// Write the package to a stream
+	        	
+	        	// .. then encrypt
+	        	
+	        	// TODO.  See for example http://code.google.com/p/ooxmlcrypto/source/browse/trunk/OfficeCrypto/OfficeCrypto.cs
+				
+			} catch (Exception e) {
+				throw new Docx4JException("Problem reading compound file", e);
+			}  			
 			
-		SaveToZipFile saver = new SaveToZipFile(this); 
-		saver.save(docxFile);
+		}
 	}
 	
 	
