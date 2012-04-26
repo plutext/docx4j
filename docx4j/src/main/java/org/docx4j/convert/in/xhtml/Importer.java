@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,7 @@ import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
 import org.docx4j.model.properties.run.AbstractRunProperty;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
@@ -189,7 +191,7 @@ public class Importer {
      * @return
      * @throws IOException
      */
-    public static List<Object> convert(File file, String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+    public static List<Object> convert(File file, String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
         Importer importer = new Importer(wordMLPackage);
 
@@ -197,10 +199,14 @@ public class Importer {
         
         File parent = file.getAbsoluteFile().getParentFile();
         
-        importer.renderer.setDocument(
-        		importer.renderer.loadDocument(file.toURI().toURL().toExternalForm()),
-                (parent == null ? "" : parent.toURI().toURL().toExternalForm())
-        );
+        try {
+			importer.renderer.setDocument(
+					importer.renderer.loadDocument(file.toURI().toURL().toExternalForm()),
+			        (parent == null ? "" : parent.toURI().toURL().toExternalForm())
+			);
+		} catch (MalformedURLException e) {
+			throw new Docx4JException("Malformed URL", e);
+		}
 
         importer.renderer.layout();
                     
@@ -218,7 +224,7 @@ public class Importer {
      * @return
      * @throws IOException
      */
-    public static List<Object> convert(InputSource is,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+    public static List<Object> convert(InputSource is,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
         Importer importer = new Importer(wordMLPackage);
 
@@ -241,7 +247,7 @@ public class Importer {
      * @return
      * @throws IOException
      */
-    public static List<Object> convert(InputStream is, String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+    public static List<Object> convert(InputStream is, String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
         Importer importer = new Importer(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
@@ -263,7 +269,7 @@ public class Importer {
      * @return
      * @throws IOException
      */
-    public static List<Object> convert(Node node,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+    public static List<Object> convert(Node node,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
         Importer importer = new Importer(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
@@ -288,7 +294,7 @@ public class Importer {
      * @return
      * @throws IOException
      */
-    public static List<Object> convert(Reader reader,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+    public static List<Object> convert(Reader reader,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
         Importer importer = new Importer(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
@@ -310,7 +316,7 @@ public class Importer {
      * @return
      * @throws IOException
      */
-    public static List<Object> convert(Source source,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws IOException {
+    public static List<Object> convert(Source source,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
     	
         Importer importer = new Importer(wordMLPackage);
     	
@@ -336,7 +342,7 @@ public class Importer {
      * @param wordMLPackage
      * @return
      */
-    public static List<Object> convert(URL url, WordprocessingMLPackage wordMLPackage) {
+    public static List<Object> convert(URL url, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
         Importer importer = new Importer(wordMLPackage);
     	
@@ -361,7 +367,7 @@ public class Importer {
      * @param wordMLPackage
      * @return
      */
-    public static List<Object> convert(String content,  String baseUrl, WordprocessingMLPackage wordMLPackage) {
+    public static List<Object> convert(String content,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
     	
         Importer importer = new Importer(wordMLPackage);
 
@@ -416,7 +422,7 @@ public class Importer {
     // one created for a p within it, if it is still empty
     boolean paraStillEmpty;
     
-    private void traverse(Box box, List<Object> contentContext, TableProperties tableProperties) {
+    private void traverse(Box box, List<Object> contentContext, TableProperties tableProperties) throws Docx4JException {
         
         log.info(box.getClass().getName() );
         if (box instanceof BlockBox) {
@@ -584,31 +590,33 @@ public class Importer {
             		            		
             		// if cell to the left in source is part of a rowspan, 
             		// insert dummy cell first            			
-            		TableSectionBox section = tcb.getSection();
-                    int effCol = tcb.getTable().colToEffCol(tcb.getCol());
-                    if (effCol != 0) {	                    
-	                    TableCellBox prevCell = section.cellAt(tcb.getRow(), tcb.getCol() - 1);
-	                    log.info("Got prevCell for " + tcb.getRow() + ", " + tcb.getCol() );
-	                    log.info("it is  " + prevCell.getRow() + ", " + prevCell.getCol() );
-	                    if ( prevCell.getRow() < tcb.getRow()
-	                    		&& prevCell.getStyle().getRowSpan()>1 ) {
-	                    	// eg tcb is r2,c1 & prevCell is r1,c0
-	                		Tc dummy = Context.getWmlObjectFactory().createTc();
-	                		contentContext.add(dummy);
+            		int effCol;
+					TableSectionBox section = tcb.getSection();
+					effCol = tcb.getTable().colToEffCol(tcb.getCol());
+					if (effCol != 0) {	                    
+					    TableCellBox prevCell = section.cellAt(tcb.getRow(), tcb.getCol() - 1);
+					    log.info("Got prevCell for " + tcb.getRow() + ", " + tcb.getCol() );
+					    log.info("it is  " + prevCell.getRow() + ", " + prevCell.getCol() );
+					    if ( prevCell.getRow() < tcb.getRow()
+					    		&& prevCell.getStyle()!=null
+					    		&& prevCell.getStyle().getRowSpan()>1 ) {
+					    	// eg tcb is r2,c1 & prevCell is r1,c0
+							Tc dummy = Context.getWmlObjectFactory().createTc();
+							contentContext.add(dummy);
 
-	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
-	            			dummy.setTcPr(tcPr);
-	            			
-	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
-	            			//vm.setVal("continue");
-	            			tcPr.setVMerge(vm);
-	            			
-	            			this.setCellWidthAuto(tcPr);
-	            			
-	            			// Must have an empty w:p
-	            			dummy.getContent().add( new P() );
-	                    }
-                    }
+							TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
+							dummy.setTcPr(tcPr);
+							
+							VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+							//vm.setVal("continue");
+							tcPr.setVMerge(vm);
+							
+							this.setCellWidthAuto(tcPr);
+							
+							// Must have an empty w:p
+							dummy.getContent().add( new P() );
+					    }
+					}
             		
                     // The cell proper
             		Tc tc = Context.getWmlObjectFactory().createTc();
@@ -651,36 +659,37 @@ public class Importer {
             		
             		// if this is the last real cell in the source,
             		// is there a rowspan above and to the right?
-                    effCol = tcb.getTable().colToEffCol(tcb.getCol() + tcb.getStyle().getColSpan());
-                    int numEffCols = tcb.getTable().numEffCols(); 
-                    if (effCol >= numEffCols) {
-                        // we we're already in rightmost col
-                    } else { 
-                    	TableCellBox nextCell = tcb.getSection().cellAt(tcb.getRow(), effCol);
-	                    log.info("Got nextCell for " + tcb.getRow() + ", " + tcb.getCol() );
-	                    log.info("it is  " + nextCell.getRow() + ", " + nextCell.getCol() );
-	                    if ( nextCell.getRow() < tcb.getRow()
-	                    		// && nextCell.getStyle().getRowSpan()>1
-	                    		&& nextCell.getTable().colToEffCol(nextCell.getCol() + nextCell.getStyle().getColSpan())==numEffCols // rightmost
-	                    		) {
-	                    	log.info("it has rowspan  " + nextCell.getStyle().getRowSpan() );
-	                    	// eg tcb is r2,c1 & nextCell is r1,c2
-	                		Tc dummy = Context.getWmlObjectFactory().createTc();
-	                		contentContext.add(dummy);
+					effCol = tcb.getTable().colToEffCol(tcb.getCol() + tcb.getStyle().getColSpan());
+					int numEffCols = tcb.getTable().numEffCols(); 
+					if (effCol >= numEffCols) {
+					    // we we're already in rightmost col
+					} else { 
+						TableCellBox nextCell = tcb.getSection().cellAt(tcb.getRow(), effCol);
+					    if (nextCell==null) throw new Docx4JException("XHTML table import: Null nextCell for row " + tcb.getRow() + ", col " + tcb.getCol()); // Check your table is OK
+					    log.info("Got nextCell for " + tcb.getRow() + ", " + tcb.getCol() );
+					    log.info("it is  " + nextCell.getRow() + ", " + nextCell.getCol() );
+					    if ( nextCell.getRow() < tcb.getRow()
+					    		// && nextCell.getStyle().getRowSpan()>1
+					    		&& nextCell.getTable().colToEffCol(nextCell.getCol() + nextCell.getStyle().getColSpan())==numEffCols // rightmost
+					    		) {
+					    	log.info("it has rowspan  " + nextCell.getStyle().getRowSpan() );
+					    	// eg tcb is r2,c1 & nextCell is r1,c2
+							Tc dummy = Context.getWmlObjectFactory().createTc();
+							contentContext.add(dummy);
 
-	                		TcPr tcPr2 = Context.getWmlObjectFactory().createTcPr();
-	            			dummy.setTcPr(tcPr2);
-	            			
-	            			VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
-	            			//vm.setVal("continue");
-	            			tcPr2.setVMerge(vm);
+							TcPr tcPr2 = Context.getWmlObjectFactory().createTcPr();
+							dummy.setTcPr(tcPr2);
+							
+							VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+							//vm.setVal("continue");
+							tcPr2.setVMerge(vm);
 
-	            			this.setCellWidthAuto(tcPr2);
-	            			
-	            			// Must have an empty w:p
-	            			dummy.getContent().add( new P() );	            			
-	                    }
-                    }
+							this.setCellWidthAuto(tcPr2);
+							
+							// Must have an empty w:p
+							dummy.getContent().add( new P() );	            			
+					    }
+					}
             		
 
             		// colspan support: horizontally merged cells are represented by one cell
