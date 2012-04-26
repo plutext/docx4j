@@ -38,6 +38,11 @@ public class CreateSimpleSpreadsheet {
 		Cell cell = Context.getsmlObjectFactory().createCell();
 		cell.setV("1234");
 		
+		// Note: if you are trying to add characters, not a number,
+		// the easiest approach is to use inline strings (as opposed to the shared string table).
+		// See http://openxmldeveloper.org/blog/b/openxmldeveloper/archive/2011/11/22/screen-cast-write-simpler-spreadsheetml-when-generating-spreadsheets.aspx
+		// and http://www.docx4java.org/forums/xlsx-java-f15/cells-with-character-values-t874.html
+		
 		row.getC().add(cell);
 		sheetData.getRow().add(row);
 	}
