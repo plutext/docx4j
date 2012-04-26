@@ -310,6 +310,20 @@ public class OpcPackage extends Base {
 				final LoadFromZipNG loader = new LoadFromZipNG();
 				return loader.get(is2);				
 				
+			} catch (java.security.InvalidKeyException e) {
+		        /* Wrong password results in:
+		         * 
+			        Caused by: java.security.InvalidKeyException: No installed provider supports this key: (null)
+			    	at javax.crypto.Cipher.a(DashoA13*..)
+			    	at javax.crypto.Cipher.init(DashoA13*..)
+			    	at javax.crypto.Cipher.init(DashoA13*..)
+			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getCipher(AgileDecryptor.java:216)
+			    	at org.apache.poi.poifs.crypt.AgileDecryptor.access$200(AgileDecryptor.java:39)
+			    	at org.apache.poi.poifs.crypt.AgileDecryptor$ChunkedCipherInputStream.<init>(AgileDecryptor.java:127)
+			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getDataStream(AgileDecryptor.java:103)
+			    	at org.apache.poi.poifs.crypt.Decryptor.getDataStream(Decryptor.java:85)		        
+		         */
+				throw new Docx4JException("Problem reading compound file: wrong password?", e);
 			} catch (Exception e) {
 				throw new Docx4JException("Problem reading compound file", e);
 			}  			
