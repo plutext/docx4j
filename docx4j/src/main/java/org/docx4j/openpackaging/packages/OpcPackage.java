@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
@@ -38,6 +39,9 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
+import org.apache.poi.poifs.crypt.Decryptor;
+import org.apache.poi.poifs.crypt.EncryptionInfo;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -162,7 +166,6 @@ public class OpcPackage extends Base {
 	
 	protected DocPropsCustomPart docPropsCustomPart;
 	
-	
 	/**
 	 * Convenience method to create a WordprocessingMLPackage
 	 * or PresentationMLPackage
@@ -172,12 +175,24 @@ public class OpcPackage extends Base {
 	 *            The docx file 
 	 */	
 	public static OpcPackage load(final java.io.File docxFile) throws Docx4JException {
+		return load(docxFile, null);
+	}
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * or PresentationMLPackage
+	 * from an existing File (.docx/.docxm, .ppxtx or Flat OPC .xml).
+     *
+	 * @param docxFile
+	 *            The docx file
+	 * @param password
+	 *            The password, if the file is password protected (compound)
+	 *            
+	 * @Since 2.8.0           
+	 */	
+	public static OpcPackage load(final java.io.File docxFile, String password) throws Docx4JException {
 		
 		try {
-			if (docxFile.getName().endsWith(".xml")) {
-				return OpcPackage.load(new FileInputStream(docxFile),false);
-			}
-			return OpcPackage.load(new FileInputStream(docxFile),true);
+			return OpcPackage.load(new FileInputStream(docxFile), password );
 		} catch (final FileNotFoundException e) {
 			OpcPackage.log.error(e);
 			throw new Docx4JException("Couldn't load file from " + docxFile.getAbsolutePath(), e);
@@ -194,7 +209,24 @@ public class OpcPackage extends Base {
 	 * @param inputStream
 	 *            The docx file 
 	 */	
-	public static OpcPackage load(final InputStream inputStream) throws Docx4JException{
+	public static OpcPackage load(final InputStream inputStream) throws Docx4JException {
+		return load(inputStream, "");
+	}	
+	/**
+	 * Convenience method to create a WordprocessingMLPackage
+	 * or PresentationMLPackage
+	 * from an inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * It detects the convenient format inspecting two first bytes of stream (magic bytes). 
+	 * For office 2007 'x' formats, these two bytes are 'PK' (same as zip file)  
+     *
+	 * @param inputStream
+	 *            The docx file 
+	 * @param password
+	 *            The password, if the file is password protected (compound)
+	 *            
+	 * @Since 2.8.0           
+	 */	
+	public static OpcPackage load(final InputStream inputStream, String password) throws Docx4JException {
 		//try to detect the type of file using a bufferedinputstream
 		final BufferedInputStream bis = new BufferedInputStream(inputStream);
 		bis.mark(0);
@@ -209,10 +241,35 @@ public class OpcPackage extends Base {
 		if (read!=2){
 			throw new Docx4JException("Error reading from the stream (no bytes available)");
 		}
-		final boolean docxType = (firstTwobytes[0]=='P' && firstTwobytes[1]=='K');
-		return OpcPackage.load(bis,docxType);
+		if (firstTwobytes[0]=='P' && firstTwobytes[1]=='K') { // 50 4B
+			return OpcPackage.load(bis, Filetype.ZippedPackage, null);
+		} else if  (firstTwobytes[0]==(byte)0xD0 && firstTwobytes[1]==(byte)0xCF) {
+			// password protected docx is a compound file, with signature D0 CF 11 E0 A1 B1 1A E1
+			log.info("Detected compound file");
+			return OpcPackage.load(bis, Filetype.Compound, password);
+		} else {
+			//Assume..
+			log.info("Assuming Flat OPC XML");
+			return OpcPackage.load(bis, Filetype.FlatOPC, null);
+		}
 	}
 	
+	
+	/**
+	 * convenience method to load a word2007 document 
+	 * from an existing inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * Included for backwards compatibility
+	 * 
+	 * @param is
+	 * @param docxFormat
+	 * @return
+	 * @throws Docx4JException
+	 */
+	@Deprecated
+	public static OpcPackage load(final InputStream is, final boolean docxFormat) throws Docx4JException {
+		return load(is);  // check again, in case its a password protected compound file
+	}
+
 	/**
 	 * convenience method to load a word2007 document 
 	 * from an existing inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
@@ -221,12 +278,43 @@ public class OpcPackage extends Base {
 	 * @param docxFormat
 	 * @return
 	 * @throws Docx4JException
+	 * 
+	 * @Since 2.8.0           
 	 */
-	public static OpcPackage load(final InputStream is, final boolean docxFormat) throws Docx4JException {
-		if (docxFormat){
+	public static OpcPackage load(final InputStream is, Filetype type) throws Docx4JException {
+		return load(is, type, null);
+	}	
+	/**
+	 * convenience method to load a word2007 document 
+	 * from an existing inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
+	 * 
+	 * @param is
+	 * @param docxFormat
+	 * @return
+	 * @throws Docx4JException
+	 * 
+	 * @Since 2.8.0           
+	 */
+	public static OpcPackage load(final InputStream is, Filetype type, String password) throws Docx4JException {
+		if (type.equals(Filetype.ZippedPackage)){
 			final LoadFromZipNG loader = new LoadFromZipNG();
 			return loader.get(is);
+		} else if (type.equals(Filetype.Compound)){
+	        try {
+				POIFSFileSystem fs = new POIFSFileSystem(is);
+				EncryptionInfo info = new EncryptionInfo(fs); 
+		        Decryptor d = Decryptor.getInstance(info); 
+		        d.verifyPassword(password); 
+		        
+				InputStream is2 = d.getDataStream(fs);
+				final LoadFromZipNG loader = new LoadFromZipNG();
+				return loader.get(is2);				
+				
+			} catch (Exception e) {
+				throw new Docx4JException("Problem reading compound file", e);
+			}  			
 		}
+		
 		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage;
 		try {
 			final Unmarshaller u = Context.jcXmlPackage.createUnmarshaller();
@@ -384,5 +472,5 @@ public class OpcPackage extends Base {
 		
 	}
 
-
+	
 }
