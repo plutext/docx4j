@@ -79,7 +79,6 @@ public class TraverseSlide extends AbstractSample {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 			inputfilepath = System.getProperty("user.dir")
-					//+ "/sample-docs/sample-docx.xml";
 			+ "/sample-docs/pptx/pptx-basic.xml";
 		}
 
@@ -99,7 +98,11 @@ public class TraverseSlide extends AbstractSample {
 
 				String text = "";
 
-				System.out.println(indent + o.getClass().getName() + "\n\n" + XmlUtils.marshaltoString(o, true, org.pptx4j.jaxb.Context.jcPML));
+				try {
+					System.out.println(indent + o.getClass().getName() + "\n\n" + XmlUtils.marshaltoString(o, true, org.pptx4j.jaxb.Context.jcPML));					
+				} catch (RuntimeException me) {					
+					System.out.println(indent + o.getClass().getName() );										
+				}
 				
 				if (o instanceof org.pptx4j.pml.Shape) {
 					CTTextBody txBody = ((org.pptx4j.pml.Shape)o).getTxBody();
