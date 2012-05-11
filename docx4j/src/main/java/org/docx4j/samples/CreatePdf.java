@@ -46,7 +46,7 @@ public class CreatePdf extends AbstractSample {
 			try {
 				getInputFilePath(args);
 			} catch (IllegalArgumentException e) {
-//		    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
 //		    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";	    	
 			}
 	    	
@@ -87,6 +87,8 @@ public class CreatePdf extends AbstractSample {
 //				= new org.docx4j.convert.out.pdf.viaHTML.Conversion(wordMLPackage);
 				= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 //				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
+			
+			((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(new java.io.File(inputfilepath+".fo"));
 			
 			if (save) {
 				((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
