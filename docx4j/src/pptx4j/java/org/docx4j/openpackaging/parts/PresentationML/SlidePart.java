@@ -180,7 +180,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
     	
 		try {
 			
-			log.info("For MDP, unmarshall via binder");
+			log.info("For SlidePart, unmarshall via binder");
 			// InputStream to Document
 			javax.xml.parsers.DocumentBuilderFactory dbf 
 				= DocumentBuilderFactory.newInstance();
@@ -229,7 +229,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 					jaxbElement =  (Sld) binder.unmarshal( doc );
 				} catch (ClassCastException cce) {
  
-					log.warn("Binder not available for this docx");
+					log.warn("Binder not available for this slide");
 					Unmarshaller u = jc.createUnmarshaller();
 					jaxbElement = (Sld) u.unmarshal( doc );					
 					/* 
