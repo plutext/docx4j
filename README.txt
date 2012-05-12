@@ -17,8 +17,7 @@ Contents of this file:
 What is docx4j?
 ---------------
 
-docx4j is an open source (Apache v2) library for creating, editing, and saving OpenXML "packages",
-including docx, pptx, and xslx. 
+docx4j is an open source (Apache v2) library for creating, editing, and saving OpenXML "packages", including docx, pptx, and xslx. 
 
 It uses JAXB to create the Java representation.
 
@@ -38,7 +37,7 @@ It uses JAXB to create the Java representation.
 Where do I get it?
 ------------------
 
-http://dev.plutext.org/downloads.html
+http://www.docx4java.org/downloads.html
 
 
 How do I get started?
@@ -50,13 +49,13 @@ See the Getting Started guide.
 Where to get help?
 ------------------
 
-http://dev.plutext.org/forums
+http://www.docx4java.org/forums
 
 
 How do I build docx4j?
 ----------------------
 
-Get it from svn, at http://dev.plutext.org/svn/docx4j/trunk
+Get it from GitHub, at https://github.com/plutext/docx4j
 
 If you are using eclipse and m2eclipse plugin, enable dependency management.
 
