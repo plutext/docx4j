@@ -21,11 +21,11 @@
 
 package org.docx4j.dml.spreadsheetdrawing;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import ae.javax.xml.bind.annotation.XmlAccessType;
+import ae.javax.xml.bind.annotation.XmlAccessorType;
+import ae.javax.xml.bind.annotation.XmlAttribute;
+import ae.javax.xml.bind.annotation.XmlElement;
+import ae.javax.xml.bind.annotation.XmlType;
 import org.docx4j.dml.CTShapeProperties;
 import org.docx4j.dml.CTShapeStyle;
 import org.docx4j.dml.CTTextBody;

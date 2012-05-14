@@ -11,7 +11,7 @@
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
-	<property name="m2Repository" value="../../.m2/repository"/>	
+	<property name="m2Repository" value="../../../.m2/repository"/>	
     <path id="Maven Dependencies.libraryclasspath">
     
         <pathelement location="${m2Repository}/org/plutext/jaxb-svg11/1.0.2/jaxb-svg11-1.0.2.jar"/>
@@ -76,6 +76,13 @@
     <path id="docx4j.classpath">
         <pathelement location="bin"/>
         <path refid="Maven Dependencies.libraryclasspath"/>
+        <pathelement location="lib/activation.jar"/>
+        <pathelement location="lib/additionnal.jar"/>
+        <pathelement location="lib/ae-jaxb-2.2.5.jar"/>
+        <pathelement location="lib/commons-lang-gump-20062009.jar"/>
+        <pathelement location="lib/istack-commons-runtime.jar"/>
+        <pathelement location="lib/txw2-20110809.jar"/>
+        <pathelement location="lib/xercesImpl.jar"/>        
     </path>
 
     <path id="dist.classpath">
@@ -165,8 +172,8 @@
     <target name="dist"  depends="clean, build-project" >
 				
         <mkdir dir="${dist}"/>
-				
-		<jar destfile="${dist}/docx4j-${version}.jar" basedir="./bin"/>		
+				 
+ 		<jar destfile="${dist}/docx4j-${version}.jar" basedir="./bin" excludes="org/pptx4j/**/*.class,org/xlsx4j/**/*.class"/>		
 		
 		<!-- copy all the jar files! -->
 		<copy todir="${dist}" flatten="true">
@@ -175,8 +182,9 @@
 			    <path refid="dist.classpath"/>
 			</path>
 		</copy>		
-    	 <delete file="${dist}/JAXBNamespacePrefixMapper-2.2.4.jar" />			
-    </target>	
+<!--     	 <delete file="${dist}/JAXBNamespacePrefixMapper-2.2.4.jar" />			
+ -->   
+  </target>	
 
 
 	<!--  build just diffx; the usual targets build diffx as part of docx4j -->

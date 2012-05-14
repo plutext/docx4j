@@ -1,10 +1,10 @@
 
 package org.docx4j.bibliography;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import ae.javax.xml.bind.annotation.XmlAccessType;
+import ae.javax.xml.bind.annotation.XmlAccessorType;
+import ae.javax.xml.bind.annotation.XmlElement;
+import ae.javax.xml.bind.annotation.XmlType;
 
 
 /**

@@ -27,7 +27,7 @@ import javax.xml.namespace.NamespaceContext;
 
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 
-public class NamespacePrefixMapper extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
+public class NamespacePrefixMapper extends ae.com.sun.xml.bind.marshaller.NamespacePrefixMapper {
 	
     /**
      * Returns a preferred prefix for the given namespace URI.

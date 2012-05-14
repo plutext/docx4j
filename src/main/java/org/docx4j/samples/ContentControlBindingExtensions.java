@@ -25,10 +25,10 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.fonts.IdentityPlusMapper;

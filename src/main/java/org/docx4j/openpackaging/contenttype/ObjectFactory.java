@@ -20,9 +20,9 @@
 
 package org.docx4j.openpackaging.contenttype;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlElementDecl;
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.annotation.XmlElementDecl;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 
 

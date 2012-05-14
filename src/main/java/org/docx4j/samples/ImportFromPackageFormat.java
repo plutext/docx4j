@@ -25,10 +25,10 @@ package org.docx4j.samples;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;

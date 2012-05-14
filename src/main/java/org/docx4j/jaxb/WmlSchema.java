@@ -20,7 +20,7 @@
 
 package org.docx4j.jaxb;
 
-import javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBContext;
 
 /**
  * @author jharrop

@@ -24,15 +24,15 @@ package org.docx4j.dml;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.annotation.XmlAccessType;
+import ae.javax.xml.bind.annotation.XmlAccessorType;
+import ae.javax.xml.bind.annotation.XmlAnyElement;
+import ae.javax.xml.bind.annotation.XmlAttribute;
+import ae.javax.xml.bind.annotation.XmlSchemaType;
+import ae.javax.xml.bind.annotation.XmlType;
+import ae.javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import ae.javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.picture.Pic;

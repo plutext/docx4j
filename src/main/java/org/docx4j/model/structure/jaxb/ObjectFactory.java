@@ -1,7 +1,7 @@
 
 package org.docx4j.model.structure.jaxb;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 
 
 /**

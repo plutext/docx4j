@@ -19,8 +19,8 @@
  */
 package org.docx4j.openpackaging.parts.DrawingML;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.docx4j.openpackaging.contenttype.ContentTypes;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

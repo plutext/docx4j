@@ -1,6 +1,6 @@
 package org.docx4j.openpackaging.parts.opendope;
 
-import javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBContext;
 
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;

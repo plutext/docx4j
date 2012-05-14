@@ -23,7 +23,7 @@ package org.docx4j.openpackaging.parts.DrawingML;
 
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.dml.diagram.CTColorTransform;

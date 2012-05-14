@@ -20,14 +20,14 @@
 
 package org.docx4j.docProps.core;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.annotation.XmlAccessType;
+import ae.javax.xml.bind.annotation.XmlAccessorType;
+import ae.javax.xml.bind.annotation.XmlElement;
+import ae.javax.xml.bind.annotation.XmlElementRef;
+import ae.javax.xml.bind.annotation.XmlRootElement;
+import ae.javax.xml.bind.annotation.XmlSchemaType;
+import ae.javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 

@@ -22,12 +22,12 @@ package org.docx4j.openpackaging.parts;
 
 import java.io.ByteArrayOutputStream;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.UnmarshalException;
+import ae.javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.util.JAXBResult;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
@@ -51,12 +51,12 @@ import org.docx4j.wml.Numbering;
  *  
  *  This class provides only one of the methods for serializing (marshalling) the 
  *  Java content tree back into XML data found in 
- *  javax.xml.bind.Marshaller interface.  You can always use 
+ *  ae.javax.xml.bind.Marshaller interface.  You can always use 
  *  any of the others by getting the jaxbElement required by those
  *  methods.
  *  
  *  Insofar as unmarshalling is concerned, at present it doesn't 
- *  contain all the methods in javax.xml.bind.unmarshaller interface.
+ *  contain all the methods in ae.javax.xml.bind.unmarshaller interface.
  *  This is because the content always comes from the same place
  *  (ie from a zip file or JCR via org.docx4j.io.*).  
  *  TODO - what is the best thing to unmarshall from?

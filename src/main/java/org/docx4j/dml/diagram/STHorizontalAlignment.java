@@ -21,9 +21,9 @@
 
 package org.docx4j.dml.diagram;
 
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlType;
+import ae.javax.xml.bind.annotation.XmlEnum;
+import ae.javax.xml.bind.annotation.XmlEnumValue;
+import ae.javax.xml.bind.annotation.XmlType;
 
 
 /**

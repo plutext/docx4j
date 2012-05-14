@@ -23,10 +23,10 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 
 import java.util.List;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.Binder;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.UnmarshalException;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;

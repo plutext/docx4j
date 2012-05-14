@@ -20,8 +20,8 @@
 package org.xlsx4j.jaxb;
 
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 

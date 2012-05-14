@@ -33,13 +33,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
+import ae.javax.xml.bind.Binder;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.util.JAXBResult;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -180,7 +180,7 @@ public class XmlUtils {
 		
 		if (o==null) return null;
 		
-		if (o instanceof javax.xml.bind.JAXBElement) {
+		if (o instanceof ae.javax.xml.bind.JAXBElement) {
 			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 			log.debug("name: " + ((JAXBElement)o).getName() );
 			return ((JAXBElement)o).getValue();
@@ -200,7 +200,7 @@ public class XmlUtils {
 //		if (o instanceof x) {
 //			
 //		}
-//		else if (o instanceof javax.xml.bind.JAXBElement) {
+//		else if (o instanceof ae.javax.xml.bind.JAXBElement) {
 //			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 //			return ((JAXBElement)o).getValue();
 //		} else {
@@ -209,7 +209,7 @@ public class XmlUtils {
 //	}
 
 	
-	public static String JAXBElementDebug(javax.xml.bind.JAXBElement o)  {
+	public static String JAXBElementDebug(ae.javax.xml.bind.JAXBElement o)  {
 				
 		String prefix = null;
 		if (o.getName().getNamespaceURI()!=null) {
@@ -221,10 +221,10 @@ public class XmlUtils {
 		}
 		if (prefix!=null) {
 			return  prefix + ':' + o.getName().getLocalPart() 
-				+ " is a javax.xml.bind.JAXBElement; it has declared type " 
+				+ " is a ae.javax.xml.bind.JAXBElement; it has declared type " 
 				+ o.getDeclaredType().getName(); 
 		} else {
-			return  o.getName() + " is a javax.xml.bind.JAXBElement; it has declared type " 
+			return  o.getName() + " is a ae.javax.xml.bind.JAXBElement; it has declared type " 
 				+ o.getDeclaredType().getName(); 			
 		}
 		
@@ -300,7 +300,7 @@ public class XmlUtils {
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 		Object o = u.unmarshal(n,
 				declaredType);
-		if ( o instanceof javax.xml.bind.JAXBElement) {
+		if ( o instanceof ae.javax.xml.bind.JAXBElement) {
 			return ((JAXBElement)o).getValue();
 		} else {
 			return o;
@@ -875,7 +875,7 @@ public class XmlUtils {
         	if (o==null) {
         		log.warn("no object association for xpath result!");
         	} else {
-        		if (o instanceof javax.xml.bind.JAXBElement) {
+        		if (o instanceof ae.javax.xml.bind.JAXBElement) {
         			log.debug("added " + JAXBElementDebug((JAXBElement)o) );
         		} else {
         			log.debug("added " + o.getClass().getName() );        			

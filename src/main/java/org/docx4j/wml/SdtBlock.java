@@ -21,13 +21,13 @@
 
 package org.docx4j.wml;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.annotation.XmlAccessType;
+import ae.javax.xml.bind.annotation.XmlAccessorType;
+import ae.javax.xml.bind.annotation.XmlRootElement;
+import ae.javax.xml.bind.annotation.XmlTransient;
+import ae.javax.xml.bind.annotation.XmlType;
 
 import org.apache.log4j.Logger;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -208,7 +208,7 @@ public class SdtBlock implements SdtElement, Child
     				log.debug( "Paragraph object: ");
     				org.docx4j.wml.P p = (org.docx4j.wml.P)o;   				
     				flattenP(p);
- 	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
+ 	    		} else if (o instanceof ae.javax.xml.bind.JAXBElement) {
 	    			
 //	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.P") ) {
 //	    				log.debug( "Paragraph object: ");
@@ -251,7 +251,7 @@ public class SdtBlock implements SdtElement, Child
 	    			// need to refresh the list we are iterating
 	    			startAgain = true;
 	    			break;
-	    		} else if (o instanceof javax.xml.bind.JAXBElement) {
+	    		} else if (o instanceof ae.javax.xml.bind.JAXBElement) {
 	    			
 	    			if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.SdtRun") ) {
 	    				log.debug( ((JAXBElement)o).getDeclaredType().getName() + ".. detected SdtRun");

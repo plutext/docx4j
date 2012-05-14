@@ -18,5 +18,5 @@
 
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:office:excel", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@ae.javax.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:office:excel", elementFormDefault = ae.javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.docx4j.vml.spreadsheetDrawing;

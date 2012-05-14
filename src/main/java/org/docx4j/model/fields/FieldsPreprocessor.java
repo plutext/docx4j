@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -88,7 +88,7 @@ public class FieldsPreprocessor {
 			// so we can set JaxbValidationEventHandler
 			Unmarshaller u = jc.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-			javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
+			ae.javax.xml.bind.util.JAXBResult result = new ae.javax.xml.bind.util.JAXBResult(u );
 								
 			org.docx4j.XmlUtils.transform(doc, xslt, null, result);
 			

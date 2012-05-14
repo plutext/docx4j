@@ -21,9 +21,9 @@ package org.docx4j.model.images;
 
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;

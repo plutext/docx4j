@@ -1,8 +1,8 @@
 package org.docx4j.jaxb;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Marshaller;
 
 import org.apache.log4j.Logger;
 
@@ -58,7 +58,7 @@ public class NamespacePrefixMapperUtils {
 		} catch (java.lang.NoClassDefFoundError notJava6) {
 			log.error(notJava6.getMessage() + " .. trying RI.");
 			return tryUsingRI(m);			
-		} catch (javax.xml.bind.PropertyException notJava6) {
+		} catch (ae.javax.xml.bind.PropertyException notJava6) {
 			// OpenJDK (1.6.0_23) does this
 			log.error(notJava6.getMessage() + " .. trying RI.");
 			return tryUsingRI(m);			
@@ -70,7 +70,7 @@ public class NamespacePrefixMapperUtils {
 			throws JAXBException {
 		try {
 			// Try RI suitable one
-			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+			m.setProperty("ae.com.sun.xml.bind.namespacePrefixMapper", 
 					new NamespacePrefixMapper() );
 			log.info("Using NamespacePrefixMapper, which is suitable for the JAXB RI");
 			prefixMapper = new NamespacePrefixMapper();
@@ -79,7 +79,7 @@ public class NamespacePrefixMapperUtils {
 			notRIEither.printStackTrace();
 			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
 			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-		} catch (javax.xml.bind.PropertyException notRIEither) {
+		} catch (ae.javax.xml.bind.PropertyException notRIEither) {
 			notRIEither.printStackTrace();
 			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
 			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
@@ -109,10 +109,10 @@ public class NamespacePrefixMapperUtils {
 			prefixMapperRels = new NamespacePrefixMapperRelationshipsPartSunInternal();
 			return prefixMapperRels;
 		} catch (java.lang.NoClassDefFoundError notJava6) {
-			// javax.xml.bind.PropertyException
+			// ae.javax.xml.bind.PropertyException
 			log.error(notJava6.getMessage() + " .. trying RI.");
 			return tryRIforRelationshipsPart(m);
-		} catch (javax.xml.bind.PropertyException notJava6) {
+		} catch (ae.javax.xml.bind.PropertyException notJava6) {
 			log.error(notJava6.getMessage() + " .. trying RI.");
 			return tryRIforRelationshipsPart(m);
 		}
@@ -123,7 +123,7 @@ public class NamespacePrefixMapperUtils {
 			throws JAXBException {
 		try {
 			// Try RI suitable one
-			m.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+			m.setProperty("ae.com.sun.xml.bind.namespacePrefixMapper", 
 					new NamespacePrefixMapperRelationshipsPart() );
 			log.info("Using NamespacePrefixMapperRelationshipsPart, which is suitable for the JAXB RI");
 			prefixMapperRels = new NamespacePrefixMapperRelationshipsPart();
@@ -132,7 +132,7 @@ public class NamespacePrefixMapperUtils {
 			notRIEither.printStackTrace();
 			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
 			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
-		} catch (javax.xml.bind.PropertyException notRIEither) {
+		} catch (ae.javax.xml.bind.PropertyException notRIEither) {
 			notRIEither.printStackTrace();
 			log.error("JAXB: neither Reference Implementation nor Java 6 implementation present?", notRIEither);
 			throw new JAXBException("JAXB: neither Reference Implementation nor Java 6 implementation present?");
@@ -157,7 +157,7 @@ public class NamespacePrefixMapperUtils {
 					|| namespacePrefixMapper.getClass().getName().equals(
 							"org.docx4j.jaxb.NamespacePrefixMapperRelationshipsPart") ) {
 			
-				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", 
+				marshaller.setProperty("ae.com.sun.xml.bind.namespacePrefixMapper", 
 						namespacePrefixMapper ); 
 			
 				// Reference implementation appears to be present (in endorsed dir?)
@@ -173,7 +173,7 @@ public class NamespacePrefixMapperUtils {
 //				System.out.println("setProperty: com.sun.xml.INTERNAL.bind.namespacePrefixMapper");
 			}
 			
-		} catch (javax.xml.bind.PropertyException cnfe) {
+		} catch (ae.javax.xml.bind.PropertyException cnfe) {
 			
 //			cnfe.printStackTrace();
 			log.error(cnfe);

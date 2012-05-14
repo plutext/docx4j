@@ -21,7 +21,7 @@
 package org.pptx4j.samples;
 
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;

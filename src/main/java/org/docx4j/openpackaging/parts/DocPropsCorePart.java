@@ -21,8 +21,8 @@ package org.docx4j.openpackaging.parts;
 
 import java.io.IOException;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamSource;

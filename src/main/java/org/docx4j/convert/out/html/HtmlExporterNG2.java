@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -231,10 +231,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			privateImageHandler = true;
 		}
 		
-		if (htmlSettings.getFontMapper() == null) {
-			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
-			log.debug("FontMapper set.. ");
-		}
+//		if (htmlSettings.getFontMapper() == null) {
+//			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
+//			log.debug("FontMapper set.. ");
+//		}
 
 		htmlSettings.setWmlPackage(wmlPackage);
 

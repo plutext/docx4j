@@ -62,7 +62,7 @@ public class SymbolWriter extends ModelConverter {
 	DocumentFragment docfrag = doc.createDocumentFragment();
 	
 	String fontName = sm.getSym().getFont();
-	PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
+	PhysicalFont pf = null; //wordMLPackage.getFontMapper().getFontMappings().get(fontName);
 
 	if (pf==null) {
 		log.warn("No physical font present for:" + fontName);		

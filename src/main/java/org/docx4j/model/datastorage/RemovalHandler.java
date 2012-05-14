@@ -26,8 +26,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.util.JAXBResult;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.util.JAXBResult;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;

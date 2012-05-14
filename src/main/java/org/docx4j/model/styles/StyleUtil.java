@@ -3,7 +3,7 @@ package org.docx4j.model.styles;
 import java.math.BigInteger;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.docx4j.wml.BooleanDefaultTrue;

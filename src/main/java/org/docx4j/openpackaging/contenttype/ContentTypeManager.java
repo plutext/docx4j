@@ -57,10 +57,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -110,7 +110,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
-import org.glox4j.openpackaging.packages.GloxPackage;
+//import org.glox4j.openpackaging.packages.GloxPackage;
 
 
 /**
@@ -811,10 +811,10 @@ public class ContentTypeManager  {
 			log.info("Detected SpreadhseetMLPackage package ");
 			p = new SpreadsheetMLPackage(this);
 			return p;			
-		} else if (getPartNameOverridenByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
-			log.info("Detected Glox file ");
-			p = new GloxPackage(this);
-			return p;						
+//		} else if (getPartNameOverridenByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
+//			log.info("Detected Glox file ");
+//			p = new GloxPackage(this);
+//			return p;						
 		} else {
 			throw new InvalidFormatException("Unexpected package (docx4j supports docx/docxm and pptx only");
 //			log.warn("No part in [Content_Types].xml for content type"

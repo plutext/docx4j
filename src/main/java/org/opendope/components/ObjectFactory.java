@@ -1,7 +1,7 @@
 
 package org.opendope.components;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 
 
 /**

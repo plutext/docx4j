@@ -39,7 +39,7 @@ import javax.jcr.version.*;
 import javax.jcr.NodeIterator;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 
 //import org.apache.jackrabbit.core.TransientRepository;  // Testing only

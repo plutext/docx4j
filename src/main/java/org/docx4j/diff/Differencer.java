@@ -35,10 +35,10 @@ import java.util.ArrayList;
 import java.util.Map;
 
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
@@ -47,10 +47,10 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import javax.xml.stream.*;
-import javax.xml.stream.events.*;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
+import ae.javax.xml.stream.*;
+import ae.javax.xml.stream.events.*;
+import ae.javax.xml.stream.XMLOutputFactory;
+import ae.javax.xml.stream.XMLStreamWriter;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -1006,7 +1006,7 @@ public class Differencer {
 					
 					boolean found = false;
 					
-					if (o2 instanceof javax.xml.bind.JAXBElement) {
+					if (o2 instanceof ae.javax.xml.bind.JAXBElement) {
 	
 						if (((JAXBElement) o2).getDeclaredType().getName().equals(
 								"org.docx4j.wml.Text")) {
@@ -1083,7 +1083,7 @@ public class Differencer {
 	    	List runContent = r.getRunContent();
     		
 			for (Object o2 : runContent ) {					
-				if (o2 instanceof javax.xml.bind.JAXBElement) {
+				if (o2 instanceof ae.javax.xml.bind.JAXBElement) {
 
 					if (((JAXBElement) o2).getDeclaredType().getName().equals(
 							"org.docx4j.wml.Text")) {

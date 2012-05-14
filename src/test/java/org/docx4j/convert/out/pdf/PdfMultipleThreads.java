@@ -2,7 +2,7 @@ package org.docx4j.convert.out.pdf;
 import java.io.OutputStream;
 import java.text.NumberFormat;
 
-import javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBContext;
 
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.fonts.IdentityPlusMapper;

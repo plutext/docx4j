@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;

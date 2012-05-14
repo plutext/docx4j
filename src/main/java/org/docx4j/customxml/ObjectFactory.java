@@ -21,7 +21,7 @@
 
 package org.docx4j.customxml;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 
 
 /**

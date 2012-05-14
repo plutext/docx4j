@@ -28,12 +28,12 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.PropertyException;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
@@ -272,20 +272,20 @@ public class WordprocessingMLPackage extends OpcPackage {
 		org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();
 		marshaller.marshal(pkg, doc);
     			
-//		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
+//		ae.javax.xml.bind.util.JAXBResult result = new ae.javax.xml.bind.util.JAXBResult(jc );
 		
 		// Use constructor which takes Unmarshaller, rather than JAXBContext,
 		// so we can set JaxbValidationEventHandler
 		Unmarshaller u = jc.createUnmarshaller();
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-		javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
+		ae.javax.xml.bind.util.JAXBResult result = new ae.javax.xml.bind.util.JAXBResult(u );
 		
 		// Perform the transformation		
 		org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 		
 
 		//org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)result.getResult();
-		javax.xml.bind.JAXBElement je = (javax.xml.bind.JAXBElement)result.getResult();
+		ae.javax.xml.bind.JAXBElement je = (ae.javax.xml.bind.JAXBElement)result.getResult();
 		org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)je.getValue();
 		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
 		

@@ -1,6 +1,6 @@
 package org.docx4j.convert.in.xhtml;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;

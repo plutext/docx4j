@@ -23,7 +23,7 @@ package org.docx4j.samples;
 
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBContext;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.io.SaveToZipFile;

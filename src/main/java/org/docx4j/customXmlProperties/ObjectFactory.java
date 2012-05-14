@@ -20,7 +20,7 @@
 
 package org.docx4j.customXmlProperties;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 
 
 /**

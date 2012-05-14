@@ -18,9 +18,9 @@
 
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-@javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters
+@ae.javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", elementFormDefault = ae.javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@ae.javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters
 ({
-    @javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter(value=org.docx4j.wml.BigIntegerAdapter.class,type=java.math.BigInteger.class)
+    @ae.javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter(value=org.docx4j.wml.BigIntegerAdapter.class,type=java.math.BigInteger.class)
 })
 package org.docx4j.wml;

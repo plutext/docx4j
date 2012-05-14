@@ -22,8 +22,8 @@ package org.docx4j.openpackaging.parts.PresentationML;
 
 import java.util.Random;
 
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.pptx4j.jaxb.Context;
 import org.docx4j.openpackaging.contenttype.ContentTypes;

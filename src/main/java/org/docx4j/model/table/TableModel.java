@@ -52,8 +52,8 @@ import org.docx4j.wml.TcPrInner.VMerge;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
 
 /**
  * There are different ways to represent a table with possibly merged
@@ -302,14 +302,14 @@ public class TableModel extends Model {
 				tr = (org.docx4j.wml.Tr) o;
 				handleRow(cellContents, tr, r);
 				r++;
-			} else if (o instanceof javax.xml.bind.JAXBElement
+			} else if (o instanceof ae.javax.xml.bind.JAXBElement
 					&& ((JAXBElement) o).getDeclaredType().getName().equals(
 							"org.docx4j.wml.Tr")) {
 				startRow();
 				tr = (org.docx4j.wml.Tr) ((JAXBElement) o).getValue();
 				handleRow(cellContents, tr, r);
 				r++;
-			} else if (o instanceof javax.xml.bind.JAXBElement
+			} else if (o instanceof ae.javax.xml.bind.JAXBElement
 					&& ((JAXBElement) o).getDeclaredType().getName().equals(
 							"org.docx4j.wml.CTSdtRow")) {
 
@@ -329,7 +329,7 @@ public class TableModel extends Model {
 
 			} else {
 				// What?
-				if (o instanceof javax.xml.bind.JAXBElement) {
+				if (o instanceof ae.javax.xml.bind.JAXBElement) {
 					if (((JAXBElement) o).getDeclaredType().getName().equals(
 							"org.docx4j.wml.CTMarkupRange")) {
 						// Ignore w:bookmarkEnd
@@ -363,23 +363,23 @@ public class TableModel extends Model {
 			Tc tc = null;
 			if (o2 instanceof org.docx4j.wml.Tc) {
 				tc = (org.docx4j.wml.Tc) o2;
-			} else if (o2 instanceof javax.xml.bind.JAXBElement
+			} else if (o2 instanceof ae.javax.xml.bind.JAXBElement
 					&& ((JAXBElement) o2).getDeclaredType().getName().equals(
 							"org.docx4j.wml.Tc")) {
 				tc = (org.docx4j.wml.Tc) ((JAXBElement) o2).getValue();
-			} else if (o2 instanceof javax.xml.bind.JAXBElement
+			} else if (o2 instanceof ae.javax.xml.bind.JAXBElement
 					&& ((JAXBElement) o2).getDeclaredType().getName().equals(
 							"org.docx4j.wml.CTSdtCell")) {
 				org.docx4j.wml.CTSdtCell sdtCell = (org.docx4j.wml.CTSdtCell) ((JAXBElement) o2)
 						.getValue();
 				Object o3 = sdtCell.getSdtContent().getContent()
 						.get(0);
-				if (o3 instanceof javax.xml.bind.JAXBElement
+				if (o3 instanceof ae.javax.xml.bind.JAXBElement
 						&& ((JAXBElement) o3).getDeclaredType().getName()
 								.equals("org.docx4j.wml.Tc")) {
 					tc = (org.docx4j.wml.Tc) ((JAXBElement) o3).getValue();
 				} else {
-					if (o3 instanceof javax.xml.bind.JAXBElement) {
+					if (o3 instanceof ae.javax.xml.bind.JAXBElement) {
 						log.warn("TODO - skipping JAXBElement:  "
 								+ ((JAXBElement) o3).getDeclaredType()
 										.getName());
@@ -393,7 +393,7 @@ public class TableModel extends Model {
 					log.warn("w:sdtContent contains more than 1 cell. TODO");
 			} else {
 				// What?
-				if (o2 instanceof javax.xml.bind.JAXBElement) {
+				if (o2 instanceof ae.javax.xml.bind.JAXBElement) {
 					log.warn("TODO - skipping JAXBElement:  "
 							+ ((JAXBElement) o2).getDeclaredType().getName());
 				} else {

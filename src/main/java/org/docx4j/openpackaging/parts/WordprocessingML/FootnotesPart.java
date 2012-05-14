@@ -21,7 +21,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;

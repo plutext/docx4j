@@ -20,7 +20,7 @@
 
 package org.docx4j.jaxb;
 
-public class NamespacePrefixMapperRelationshipsPart extends com.sun.xml.bind.marshaller.NamespacePrefixMapper {
+public class NamespacePrefixMapperRelationshipsPart extends ae.com.sun.xml.bind.marshaller.NamespacePrefixMapper {
 	
     /**
      * Returns a preferred prefix for the given namespace URI;

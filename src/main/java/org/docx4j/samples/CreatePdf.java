@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;

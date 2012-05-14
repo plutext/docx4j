@@ -25,10 +25,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.docx4j.dml.picture.Pic;
 import org.docx4j.dml.wordprocessingDrawing.Anchor;
@@ -157,7 +157,7 @@ public class ConvertEmbeddedImageToLinked {
 	
 		for (Object o : bodyChildren ) {
 
-			if ( o instanceof javax.xml.bind.JAXBElement) {
+			if ( o instanceof ae.javax.xml.bind.JAXBElement) {
 			
 				System.out.println( o.getClass().getName() );
 				System.out.println( ((JAXBElement)o).getName() );
@@ -175,7 +175,7 @@ public class ConvertEmbeddedImageToLinked {
 		
 		for (Object o : children ) {					
 			System.out.println("  " + o.getClass().getName() );
-			if ( o instanceof javax.xml.bind.JAXBElement) {
+			if ( o instanceof ae.javax.xml.bind.JAXBElement) {
 				System.out.println("      " +  ((JAXBElement)o).getName() );
 				System.out.println("      " +  ((JAXBElement)o).getDeclaredType().getName());
 				

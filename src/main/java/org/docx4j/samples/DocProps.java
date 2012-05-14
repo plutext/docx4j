@@ -23,7 +23,7 @@ package org.docx4j.samples;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;

@@ -33,15 +33,15 @@ import java.io.OutputStream;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
-import org.apache.poi.poifs.crypt.Decryptor;
-import org.apache.poi.poifs.crypt.EncryptionInfo;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+//import org.apache.poi.poifs.crypt.Decryptor;
+//import org.apache.poi.poifs.crypt.EncryptionInfo;
+//import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -300,33 +300,34 @@ public class OpcPackage extends Base {
 			final LoadFromZipNG loader = new LoadFromZipNG();
 			return loader.get(is);
 		} else if (type.equals(Filetype.Compound)){
-	        try {
-				POIFSFileSystem fs = new POIFSFileSystem(is);
-				EncryptionInfo info = new EncryptionInfo(fs); 
-		        Decryptor d = Decryptor.getInstance(info); 
-		        d.verifyPassword(password); 
-		        
-				InputStream is2 = d.getDataStream(fs);
-				final LoadFromZipNG loader = new LoadFromZipNG();
-				return loader.get(is2);				
-				
-			} catch (java.security.InvalidKeyException e) {
-		        /* Wrong password results in:
-		         * 
-			        Caused by: java.security.InvalidKeyException: No installed provider supports this key: (null)
-			    	at javax.crypto.Cipher.a(DashoA13*..)
-			    	at javax.crypto.Cipher.init(DashoA13*..)
-			    	at javax.crypto.Cipher.init(DashoA13*..)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getCipher(AgileDecryptor.java:216)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor.access$200(AgileDecryptor.java:39)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor$ChunkedCipherInputStream.<init>(AgileDecryptor.java:127)
-			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getDataStream(AgileDecryptor.java:103)
-			    	at org.apache.poi.poifs.crypt.Decryptor.getDataStream(Decryptor.java:85)		        
-		         */
-				throw new Docx4JException("Problem reading compound file: wrong password?", e);
-			} catch (Exception e) {
-				throw new Docx4JException("Problem reading compound file", e);
-			}  			
+			throw new Docx4JException("No support for reading compound files in docx4j for Android (POIFSFileSystem not available)");
+//	        try {
+//				POIFSFileSystem fs = new POIFSFileSystem(is);
+//				EncryptionInfo info = new EncryptionInfo(fs); 
+//		        Decryptor d = Decryptor.getInstance(info); 
+//		        d.verifyPassword(password); 
+//		        
+//				InputStream is2 = d.getDataStream(fs);
+//				final LoadFromZipNG loader = new LoadFromZipNG();
+//				return loader.get(is2);				
+//				
+//			} catch (java.security.InvalidKeyException e) {
+//		        /* Wrong password results in:
+//		         * 
+//			        Caused by: java.security.InvalidKeyException: No installed provider supports this key: (null)
+//			    	at javax.crypto.Cipher.a(DashoA13*..)
+//			    	at javax.crypto.Cipher.init(DashoA13*..)
+//			    	at javax.crypto.Cipher.init(DashoA13*..)
+//			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getCipher(AgileDecryptor.java:216)
+//			    	at org.apache.poi.poifs.crypt.AgileDecryptor.access$200(AgileDecryptor.java:39)
+//			    	at org.apache.poi.poifs.crypt.AgileDecryptor$ChunkedCipherInputStream.<init>(AgileDecryptor.java:127)
+//			    	at org.apache.poi.poifs.crypt.AgileDecryptor.getDataStream(AgileDecryptor.java:103)
+//			    	at org.apache.poi.poifs.crypt.Decryptor.getDataStream(Decryptor.java:85)		        
+//		         */
+//				throw new Docx4JException("Problem reading compound file: wrong password?", e);
+//			} catch (Exception e) {
+//				throw new Docx4JException("Problem reading compound file", e);
+//			}  			
 		}
 		
 		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage;

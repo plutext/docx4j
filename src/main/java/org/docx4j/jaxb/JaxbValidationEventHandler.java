@@ -22,9 +22,9 @@ package org.docx4j.jaxb;
 
 import java.io.IOException;
 
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.bind.ValidationEventLocator;
+import ae.javax.xml.bind.ValidationEvent;
+import ae.javax.xml.bind.ValidationEventHandler;
+import ae.javax.xml.bind.ValidationEventLocator;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;

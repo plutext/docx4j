@@ -35,7 +35,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.apache.xmlgraphics.image.loader.ImageInfo;

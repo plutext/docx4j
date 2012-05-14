@@ -19,7 +19,7 @@
  */
 package org.docx4j.openpackaging.parts.DrawingML;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.docx4j.dml.CTTableStyleList;
 import org.docx4j.dml.spreadsheetdrawing.CTDrawing;

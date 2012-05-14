@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;

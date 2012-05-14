@@ -29,12 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBResult;
+import ae.javax.xml.bind.Binder;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.UnmarshalException;
+import ae.javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.util.JAXBResult;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Templates;
@@ -337,7 +337,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 					 * See http://old.nabble.com/BinderImpl.associativeUnmarshal-ClassCastException-casting-to-JAXBElement-td32456585.html
 					 * and  http://java.net/jira/browse/JAXB-874
 					 * 
-					 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to javax.xml.bind.JAXBElement
+					 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to ae.javax.xml.bind.JAXBElement
 						at com.sun.xml.internal.bind.v2.runtime.ElementBeanInfoImpl$IntercepterLoader.intercept(Unknown Source)
 						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext.endElement(Unknown Source)
 						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.InterningXmlVisitor.endElement(Unknown Source)

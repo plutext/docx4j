@@ -23,7 +23,7 @@ package org.docx4j.samples;
 
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -100,7 +100,7 @@ public class PartsList extends AbstractSample {
 		
 		if (p instanceof JaxbXmlPart) {
 			Object o = ((JaxbXmlPart)p).getJaxbElement();
-			if (o instanceof javax.xml.bind.JAXBElement) {
+			if (o instanceof ae.javax.xml.bind.JAXBElement) {
 				sb.append(" containing JaxbElement:" + XmlUtils.JAXBElementDebug((JAXBElement)o) );
 			} else {
 				sb.append(" containing JaxbElement:"  + o.getClass().getName() );

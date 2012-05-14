@@ -5,9 +5,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Marshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;

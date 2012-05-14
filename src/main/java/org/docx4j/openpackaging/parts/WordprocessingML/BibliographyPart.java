@@ -1,7 +1,7 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;

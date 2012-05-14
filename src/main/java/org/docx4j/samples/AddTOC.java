@@ -2,7 +2,7 @@ package org.docx4j.samples;
 
 import java.io.File;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.docx4j.jaxb.Context;

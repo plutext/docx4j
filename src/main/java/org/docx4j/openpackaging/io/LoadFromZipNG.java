@@ -40,8 +40,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -612,7 +612,7 @@ public class LoadFromZipNG extends Load {
 							
 						}
 						
-					} catch (javax.xml.bind.UnmarshalException ue) {
+					} catch (ae.javax.xml.bind.UnmarshalException ue) {
 						
 						// No ...
 						CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();	

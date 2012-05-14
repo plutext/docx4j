@@ -2,7 +2,7 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import java.util.HashMap;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;

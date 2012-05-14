@@ -23,10 +23,10 @@ package org.docx4j.samples;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 
 import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;

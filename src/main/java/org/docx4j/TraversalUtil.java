@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
 import org.docx4j.dml.diagram.CTDataModel;
@@ -100,7 +100,7 @@ public class TraversalUtil {
 
 				for (Object o : children) {
 
-					// if its wrapped in javax.xml.bind.JAXBElement, get its
+					// if its wrapped in ae.javax.xml.bind.JAXBElement, get its
 					// value; this is ok, provided the results of the Callback
 					// won't be marshalled
 					o = XmlUtils.unwrap(o);
@@ -325,7 +325,7 @@ public class TraversalUtil {
 
 					for (Object o : children) {
 
-						// if its wrapped in javax.xml.bind.JAXBElement, get its
+						// if its wrapped in ae.javax.xml.bind.JAXBElement, get its
 						// value; this is ok, provided the results of the Callback
 						// won't be marshalled
 						o = XmlUtils.unwrap(o);
@@ -370,7 +370,7 @@ public class TraversalUtil {
 				} else {
 					for (Object o : getChildren(parent) ) {
 
-						// if its wrapped in javax.xml.bind.JAXBElement, get its value
+						// if its wrapped in ae.javax.xml.bind.JAXBElement, get its value
 						o = XmlUtils.unwrap(o);
 						
 						newChildren.addAll(this.apply(o));

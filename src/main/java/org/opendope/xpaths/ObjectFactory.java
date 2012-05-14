@@ -1,7 +1,7 @@
 
 package org.opendope.xpaths;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 
 
 /**

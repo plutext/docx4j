@@ -20,7 +20,7 @@
 
 package org.docx4j.openpackaging.parts.PresentationML;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.docx4j.XmlUtils;

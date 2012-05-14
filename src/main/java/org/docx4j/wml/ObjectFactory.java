@@ -21,9 +21,9 @@
 
 package org.docx4j.wml;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlElementDecl;
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.annotation.XmlElementDecl;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 import org.docx4j.math.CTAcc;
 import org.docx4j.math.CTBar;

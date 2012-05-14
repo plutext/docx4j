@@ -22,10 +22,10 @@ package org.docx4j.openpackaging.parts.PresentationML;
 
 import java.util.List;
 
-import javax.xml.bind.Binder;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.UnmarshalException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.Binder;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.UnmarshalException;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Templates;
 import javax.xml.transform.dom.DOMResult;
@@ -238,7 +238,7 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 					 * See http://old.nabble.com/BinderImpl.associativeUnmarshal-ClassCastException-casting-to-JAXBElement-td32456585.html
 					 * and  http://java.net/jira/browse/JAXB-874
 					 * 
-					 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to javax.xml.bind.JAXBElement
+					 * java.lang.ClassCastException: org.docx4j.wml.PPr cannot be cast to ae.javax.xml.bind.JAXBElement
 						at com.sun.xml.internal.bind.v2.runtime.ElementBeanInfoImpl$IntercepterLoader.intercept(Unknown Source)
 						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.UnmarshallingContext.endElement(Unknown Source)
 						at com.sun.xml.internal.bind.v2.runtime.unmarshaller.InterningXmlVisitor.endElement(Unknown Source)

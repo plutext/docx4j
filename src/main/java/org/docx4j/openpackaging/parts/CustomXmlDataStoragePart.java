@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBException;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;

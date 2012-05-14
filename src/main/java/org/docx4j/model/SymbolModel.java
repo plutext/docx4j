@@ -19,7 +19,7 @@
  */
 package org.docx4j.model;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;

@@ -21,11 +21,11 @@
 
 package org.docx4j.vml.presentationDrawing;
 
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import ae.javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.annotation.XmlAccessType;
+import ae.javax.xml.bind.annotation.XmlAccessorType;
+import ae.javax.xml.bind.annotation.XmlTransient;
+import ae.javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 

@@ -25,8 +25,8 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.Calendar;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.Marshaller;
 
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;

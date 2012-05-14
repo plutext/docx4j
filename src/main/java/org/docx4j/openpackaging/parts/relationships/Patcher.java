@@ -23,7 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.convert.in.FlatOpcXmlImporter;

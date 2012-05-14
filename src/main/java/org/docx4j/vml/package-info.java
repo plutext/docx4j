@@ -18,5 +18,5 @@
 
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:vml", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@ae.javax.xml.bind.annotation.XmlSchema(namespace = "urn:schemas-microsoft-com:vml", elementFormDefault = ae.javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.docx4j.vml;

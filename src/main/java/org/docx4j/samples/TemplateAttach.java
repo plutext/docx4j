@@ -21,8 +21,8 @@
 
 package org.docx4j.samples;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.Marshaller;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;

@@ -22,8 +22,8 @@ package org.docx4j.diff;
 import static org.junit.Assert.*;
 import org.docx4j.diff.Differencer;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamResult;
 
 import org.docx4j.jaxb.Context;
@@ -94,7 +94,7 @@ public class ParagraphDifferencerTest {
 				
 				// Result format				
 				JAXBContext jc = Context.jc;
-				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(jc );
+				ae.javax.xml.bind.util.JAXBResult result = new ae.javax.xml.bind.util.JAXBResult(jc );
 		
 				// Run the diff
 				Differencer pd = new Differencer();				
@@ -120,7 +120,7 @@ public class ParagraphDifferencerTest {
 				}
 				
 				// Compare no pre-processor
-				result = new javax.xml.bind.util.JAXBResult(jc );
+				result = new ae.javax.xml.bind.util.JAXBResult(jc );
 				pd.diff(pl, pr, result, null, null, 
 						null, null);				
 				try {

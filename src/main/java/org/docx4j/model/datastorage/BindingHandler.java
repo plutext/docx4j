@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import ae.javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBException;
+import ae.javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -177,7 +177,7 @@ public class BindingHandler {
 				
 				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());  
 				
-				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
+				ae.javax.xml.bind.util.JAXBResult result = new ae.javax.xml.bind.util.JAXBResult(u );
 				
 				Map<String, Object> transformParameters = new HashMap<String, Object>();
 				transformParameters.put("customXmlDataStorageParts", 

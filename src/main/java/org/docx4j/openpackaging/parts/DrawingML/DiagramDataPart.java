@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
+import ae.javax.xml.bind.JAXBElement;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -164,7 +164,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 							for (Object o : children) {
 
-								// if its wrapped in javax.xml.bind.JAXBElement, get its
+								// if its wrapped in ae.javax.xml.bind.JAXBElement, get its
 								// value
 								o = XmlUtils.unwrap(o);
 
@@ -314,7 +314,7 @@ public final class DiagramDataPart extends JaxbDmlPart<CTDataModel> {
 
 							for (Object o : children) {
 
-								// if its wrapped in javax.xml.bind.JAXBElement, get its
+								// if its wrapped in ae.javax.xml.bind.JAXBElement, get its
 								// value
 								o = XmlUtils.unwrap(o);
 

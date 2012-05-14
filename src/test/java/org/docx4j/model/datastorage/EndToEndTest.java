@@ -4,7 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import javax.xml.bind.Binder;
+import ae.javax.xml.bind.Binder;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;

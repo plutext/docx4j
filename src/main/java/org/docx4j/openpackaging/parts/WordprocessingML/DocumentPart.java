@@ -24,7 +24,7 @@ package org.docx4j.openpackaging.parts.WordprocessingML;
 //import java.io.OutputStream;
 //import java.net.URI;
 //
-//import javax.xml.bind.JAXBContext;
+//import ae.javax.xml.bind.JAXBContext;
 //import java.net.URI;
 
 import org.docx4j.XmlUtils;

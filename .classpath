@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry including="**/*.java" kind="src" output="bin" path="src/main/java"/>
+	<classpathentry excluding="org/docx4j/openpackaging/parts/DrawingML/CreateDocxWithSmartArt.java|org/docx4j/openpackaging/parts/DrawingML/CreatePptxWithSmartArt.java" including="**/*.java" kind="src" output="bin" path="src/main/java"/>
 	<classpathentry kind="src" output="bin" path="src/pptx4j/java"/>
 	<classpathentry kind="src" output="bin" path="src/main/resources"/>
-	<classpathentry kind="src" output="bin" path="src/test/java"/>
 	<classpathentry excluding="**" kind="src" output="bin" path="src/test/resources"/>
-	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry kind="src" output="bin" path="src/xlsx4j/java">
-		<attributes>
-			<attribute name="optional" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="src" output="bin" path="src/glox4j/java">
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
@@ -21,6 +15,13 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre6"/>
+	<classpathentry exported="true" kind="lib" path="lib/activation.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/additionnal.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-lang-gump-20062009.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/istack-commons-runtime.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/txw2-20110809.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/xercesImpl.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JAXB 2.x"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

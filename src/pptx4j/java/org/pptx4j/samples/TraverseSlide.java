@@ -22,7 +22,7 @@ package org.pptx4j.samples;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
+import ae.javax.xml.bind.JAXBContext;
 
 import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
@@ -135,7 +135,7 @@ public class TraverseSlide extends AbstractSample {
 
 					for (Object o : children) {
 
-						// if its wrapped in javax.xml.bind.JAXBElement, get its
+						// if its wrapped in ae.javax.xml.bind.JAXBElement, get its
 						// value
 						o = XmlUtils.unwrap(o);
 

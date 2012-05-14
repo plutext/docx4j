@@ -1,7 +1,7 @@
 
 package org.docx4j.sharedtypes;
 
-import javax.xml.bind.annotation.XmlRegistry;
+import ae.javax.xml.bind.annotation.XmlRegistry;
 
 
 /**

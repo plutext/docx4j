@@ -23,7 +23,7 @@ package org.docx4j.openpackaging.parts.DrawingML;
 import java.io.File;
 import java.math.BigInteger;
 
-import javax.xml.bind.util.JAXBResult;
+import ae.javax.xml.bind.util.JAXBResult;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;

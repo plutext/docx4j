@@ -28,7 +28,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 
-import javax.xml.bind.util.JAXBResult;
+import ae.javax.xml.bind.util.JAXBResult;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
