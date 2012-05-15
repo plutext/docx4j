@@ -237,8 +237,11 @@ public class PropertyFactory {
 //			dest.setOutline(rPr.getOutline());
 //		if (rPr.getPosition() != null)
 //			dest.setPosition(rPr.getPosition());
-		if (rPr.getRFonts() != null)
-			properties.add(new Font(wmlPackage, rPr.getRFonts() ) );
+
+		// Android: comment out for now
+//		if (rPr.getRFonts() != null)
+//			properties.add(new Font(wmlPackage, rPr.getRFonts() ) );
+				
 //		if (rPr.getRPrChange() != null)
 //			dest.setRPrChange(rPr.getRPrChange());
 //		if (rPr.getRStyle() != null)

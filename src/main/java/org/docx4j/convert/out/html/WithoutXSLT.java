@@ -76,7 +76,7 @@ public class WithoutXSLT {
 	WordprocessingMLPackage wordMLPackage;
 	StyleTree styleTree;
 	
-	WithoutXSLT(WordprocessingMLPackage wordMLPackage) {
+	public WithoutXSLT(WordprocessingMLPackage wordMLPackage) {
 		
 		this.wordMLPackage = wordMLPackage;
 		
