@@ -180,38 +180,29 @@ public class WithoutXSLT {
 		}		
 	}
 
-	void handleRPr(RPr rPr, Element currentEl) {
+	void handleRPr(RPr rPr, Element spanEl) {
 
-		if ( rPr!=null ) {
-			
-			// Convert run to span
-			
-			Element spanEl = htmlDoc.createElement("span");
-			currentEl.appendChild( spanEl  );
-			currentEl = spanEl;
-		
-			// Set @class	
-			if ( rPr.getRStyle()!=null) {
-				String rStyleVal = rPr.getRStyle().getVal();
-				Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-				org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
-				if (asn==null) {
-					log.warn("No style node for: " + rStyleVal);
-				} else {
-					spanEl.setAttribute("class", 
-							StyleTree.getHtmlClassAttributeValue(cTree, asn)			
-					);		
-				}
+		// Set @class	
+		if ( rPr.getRStyle()!=null) {
+			String rStyleVal = rPr.getRStyle().getVal();
+			Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
+			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
+			if (asn==null) {
+				log.warn("No style node for: " + rStyleVal);
+			} else {
+				spanEl.setAttribute("class", 
+						StyleTree.getHtmlClassAttributeValue(cTree, asn)			
+				);		
 			}
-			
-			// Does our rPr contain anything else?
-			StringBuffer inlineStyle =  new StringBuffer();
-			AbstractHtmlExporter.createCss(wordMLPackage, rPr, inlineStyle);				
-			if (!inlineStyle.toString().equals("") ) {
-				spanEl.setAttribute("style", inlineStyle.toString() );
-			}
-			
 		}
+		
+		// Does our rPr contain anything else?
+		StringBuffer inlineStyle =  new StringBuffer();
+		AbstractHtmlExporter.createCss(wordMLPackage, rPr, inlineStyle);				
+		if (!inlineStyle.toString().equals("") ) {
+			spanEl.setAttribute("style", inlineStyle.toString() );
+		}
+			
 	}
 	
 	TableModelTransformState tableModelTransformState = new TableModelTransformState();
@@ -234,7 +225,18 @@ public class WithoutXSLT {
 			} else if (o instanceof org.docx4j.wml.R) {
 				
 				RPr rPr = ((R)o).getRPr();
-				handleRPr(rPr, currentEl);
+
+				if ( rPr!=null ) {
+					// Convert run to span
+					Element spanEl = htmlDoc.createElement("span");
+					currentEl.appendChild( spanEl  );
+					currentEl = spanEl;
+					
+					handleRPr(rPr, currentEl);
+				}
+				
+				// TODO .. when we next hit an R, don't 
+				// want it in this one!
 				
 			} else if (o instanceof org.docx4j.wml.Text) {
 				
@@ -309,7 +311,14 @@ public class WithoutXSLT {
 			} else if (o instanceof org.docx4j.wml.R) {
 				
 				RPr rPr = ((R)o).getRPr();
-				handleRPr(rPr, currentEl);
+				if ( rPr!=null ) {
+					// Convert run to span
+					Element spanEl = htmlDoc.createElement("span");
+					currentEl.appendChild( spanEl  );
+					currentEl = spanEl;
+					
+					handleRPr(rPr, currentEl);
+				}
 				
 			} else if (o instanceof org.docx4j.wml.Text) {
 				
