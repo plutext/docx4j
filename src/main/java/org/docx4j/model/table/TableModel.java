@@ -240,7 +240,16 @@ public class TableModel extends Model {
 			throw new TransformerException("Node: " + node.getNodeName() + "="
 					+ node.getNodeValue(), e);
 		}
+		build(tbl, children.item(0));
 		
+	}
+	
+	/**
+	 * Build a table representation from a <var>tbl</var> instance.
+	 * Remember to set wordMLPackage before using this method!
+	 */
+	public void build(Tbl tbl, Node content) throws TransformerException {
+
 		if (tbl.getTblPr()!=null
 				&& tbl.getTblPr().getTblStyle()!=null) {
 			styleId = tbl.getTblPr().getTblStyle().getVal();			
@@ -290,8 +299,7 @@ public class TableModel extends Model {
 //	    }
 		
 		
-		
-		NodeList cellContents = children.item(0).getChildNodes(); // the w:tr
+		NodeList cellContents = content.getChildNodes(); // the w:tr
 		List<Object> rows = tbl.getEGContentRowContent();
 		// int i = 0;
 		int r = 0;
@@ -352,12 +360,15 @@ public class TableModel extends Model {
 
 	private void handleRow(NodeList cellContents, Tr tr, int r) {
 
+		System.out.println("Processing r " + r);
+		
 		if (borderConflictResolutionRequired && tr.getTblPrEx() != null
 				&& tr.getTblPrEx().getTblCellSpacing() != null) {
 			borderConflictResolutionRequired = false;
 		}
 		List<Object> cells = tr.getEGContentCellContent();
 		int c = 0;
+		System.out.println("Processing c " + c);
 		for (Object o2 : cells) {
 
 			Tc tc = null;
@@ -404,7 +415,10 @@ public class TableModel extends Model {
 			}
 
 			Node wtrNode = cellContents.item(r); // w:tr
-			addCell(tc, wtrNode.getChildNodes().item(c));
+			if (wtrNode==null ) {
+				System.out.println("Couldn't find item " + r);
+			}
+			addCell(tc, wtrNode.getChildNodes().item(c)); // the cell content
 			// addCell(tc, cellContents.item(i));
 			// i++;
 			c++;
