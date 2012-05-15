@@ -102,17 +102,25 @@ public class TableWriter extends ModelConverter {
   public static String getId(int idx) {
 	  return "docx4j_tbl_" + idx;
   }
+  
   public Node toNode(Model tableModel, TransformState transformState) throws TransformerException {
+
+	    org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument();   
+	  
+		return toNode(tableModel, transformState, doc);
+  }
+  
+  public Node toNode(Model tableModel, TransformState transformState, org.w3c.dom.Document doc) throws TransformerException {
+	  
     TableModel table = (TableModel)tableModel;
     
     TableModelTransformState state = (TableModelTransformState)transformState; 
     
     log.debug("Table asXML:\n" + table.debugStr());
     
-    org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument();   
-	DocumentFragment docfrag = doc.createDocumentFragment();
-
     Element tbl = doc.createElement("table");
+
+    DocumentFragment docfrag = doc.createDocumentFragment();
     docfrag.appendChild(tbl);
     
 	// Set @class

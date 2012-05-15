@@ -1023,14 +1023,17 @@ public class XmlUtils {
             case Node.ELEMENT_NODE:
                 
                 // Copy of the node itself
-        		log.debug("copying: " + sourceNode.getNodeName() );
+        		log.info("copying: " + sourceNode.getNodeName() );
         		Node newChild;
         		if ( destParent instanceof Document ) {
         			newChild = ((Document)destParent).createElementNS(
         				sourceNode.getNamespaceURI(), sourceNode.getLocalName() );
-        		} else {
+        		} else if (sourceNode.getNamespaceURI()!=null) {
         			newChild = destParent.getOwnerDocument().createElementNS(
             				sourceNode.getNamespaceURI(), sourceNode.getLocalName() );	            			
+        		} else {
+        			newChild = destParent.getOwnerDocument().createElement(
+            				sourceNode.getNodeName() );	            			
         		}
         		destParent.appendChild(newChild);
         		
@@ -1061,7 +1064,7 @@ public class XmlUtils {
             		} else if (attr.getNamespaceURI()==null) {
                 		//log.debug("attr.getLocalName(): " + attr.getLocalName() + "=" + attr.getValue());
             			((org.w3c.dom.Element)newChild).setAttribute(
-                				attr.getLocalName(), attr.getValue() );
+                				attr.getName(), attr.getValue() );
             		} else if ( attr.getNamespaceURI().equals("http://www.w3.org/2000/xmlns/")) {
                 		; // this is a namespace declaration. not our problem
             		} else  {
