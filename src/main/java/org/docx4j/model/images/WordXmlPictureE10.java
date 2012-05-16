@@ -80,26 +80,32 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
 	Pict pict;
 	    
     private WordXmlPictureE10(WordprocessingMLPackage wmlPackage, 
-    		NodeIterator wpict) {
+    		Object wpict) {
     	
     	this.wmlPackage = wmlPackage;
     	    	
     	if (wpict!=null) {
-    		Node n = wpict.nextNode();
-    		if (n!=null) {
-    			Object jaxb=null;
-				try {
-					jaxb = XmlUtils.unmarshal(n, Context.jc, Pict.class); 
-				} catch (JAXBException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+    		
+			if (wpict instanceof org.docx4j.wml.Pict) {
+				this.pict = (org.docx4j.wml.Pict)wpict;
+			} else if (wpict instanceof NodeIterator) {
+				Node n = ((NodeIterator)wpict).nextNode();
+				if (n != null) {
+					Object jaxb = null;
+					try {
+						jaxb = XmlUtils.unmarshal(n, Context.jc, Pict.class);
+					} catch (JAXBException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					try {
+						this.pict = (Pict) jaxb;
+					} catch (ClassCastException e) {
+						log.error("Couldn't cast " + jaxb.getClass().getName()
+								+ " to PPr!");
+					}
 				}
-    			try {
-    				this.pict =  (Pict)jaxb;
-    			} catch (ClassCastException e) {
-    		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to PPr!");
-    			}        	        			
-    		}
+			}
     	}
     	
     }
@@ -153,7 +159,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     private static WordXmlPictureE10 createWordXmlPictureFromE10(
     		WordprocessingMLPackage wmlPackage,
     		ConversionImageHandler imageHandler,
-    		NodeIterator wpict,
+    		Object wpict,
     		Part sourcePart) {
 
     	WordXmlPictureE10 converter = new WordXmlPictureE10(wmlPackage, wpict);
@@ -202,7 +208,7 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     public static DocumentFragment createHtmlImgE10(
     		WordprocessingMLPackage wmlPackage,
     		ConversionImageHandler imageHandler,
-    		NodeIterator wpict) {
+    		Object wpict) {
     	
 
     	WordXmlPictureE10 converter = createWordXmlPictureFromE10( wmlPackage,

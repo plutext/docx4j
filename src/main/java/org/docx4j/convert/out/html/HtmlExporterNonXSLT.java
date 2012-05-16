@@ -16,6 +16,10 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.images.ConversionImageHandler;
+import org.docx4j.model.images.FileConversionImageHandler;
+import org.docx4j.model.images.WordXmlPictureE10;
+import org.docx4j.model.images.WordXmlPictureE20;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
@@ -60,9 +64,9 @@ import ae.javax.xml.bind.JAXBContext;
  * @author jharrop
  *
  */
-public class WithoutXSLT {
+public class HtmlExporterNonXSLT {
 
-	private static Logger log = Logger.getLogger(WithoutXSLT.class);
+	private static Logger log = Logger.getLogger(HtmlExporterNonXSLT.class);
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc;
 
@@ -76,7 +80,9 @@ public class WithoutXSLT {
 	WordprocessingMLPackage wordMLPackage;
 	StyleTree styleTree;
 	
-	public WithoutXSLT(WordprocessingMLPackage wordMLPackage) {
+	ConversionImageHandler conversionImageHandler;
+	
+	public HtmlExporterNonXSLT(WordprocessingMLPackage wordMLPackage) {
 		
 		this.wordMLPackage = wordMLPackage;
 		
@@ -88,16 +94,15 @@ public class WithoutXSLT {
     	// head
     	headEl = htmlDoc.createElement("head");
     	htmlEl.appendChild(headEl);
-    	
-    	// Wondering where <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    	// comes from? See http://stackoverflow.com/questions/1409091/how-do-i-prevent-the-java-xml-transformer-using-html-method-from-adding-meta
-    	    	
+    	    	    	
     	// body
     	bodyEl = htmlDoc.createElement("body");
     	htmlEl.appendChild(bodyEl);
 	}
 	
-	public org.w3c.dom.Document export() {
+	public org.w3c.dom.Document export(String imageDirPath, String targetUri, boolean includeUUID) {
+		
+		conversionImageHandler = new HTMLConversionImageHandler(imageDirPath, targetUri, includeUUID);
 		
     	styleTree = null;
 		try {
@@ -209,18 +214,23 @@ public class WithoutXSLT {
 	
     class HTMLGenerator extends CallbackImpl {
     	
-    	Element currentEl; 
+    	Element currentP; 
+    	Element currentSpan;
+    	
+    	// E20 image
+    	Object anchorOrInline;
     	
     	@Override
 		public List<Object> apply(Object o) {
 			
 			if (o instanceof P) {
 				
-				currentEl = htmlDoc.createElement("p");
-				bodyEl.appendChild( currentEl  );
+				currentP = htmlDoc.createElement("p");
+				currentSpan = null;
+				bodyEl.appendChild( currentP  );
 				
 				PPr pPr = ((P)o).getPPr();
-				handlePPr(pPr, currentEl);
+				handlePPr(pPr, currentP);
 				
 			} else if (o instanceof org.docx4j.wml.R) {
 				
@@ -229,19 +239,21 @@ public class WithoutXSLT {
 				if ( rPr!=null ) {
 					// Convert run to span
 					Element spanEl = htmlDoc.createElement("span");
-					currentEl.appendChild( spanEl  );
-					currentEl = spanEl;
+					currentP.appendChild( spanEl  );
+					currentSpan = spanEl;
 					
-					handleRPr(rPr, currentEl);
+					handleRPr(rPr, currentSpan);
 				}
-				
-				// TODO .. when we next hit an R, don't 
-				// want it in this one!
-				
+								
 			} else if (o instanceof org.docx4j.wml.Text) {
 				
-				currentEl.appendChild(htmlDoc.createTextNode(
-						((org.docx4j.wml.Text)o).getValue()));
+				if (currentSpan!=null) {
+					currentSpan.appendChild(htmlDoc.createTextNode(
+							((org.docx4j.wml.Text)o).getValue()));
+				} else {
+					currentP.appendChild(htmlDoc.createTextNode(
+							((org.docx4j.wml.Text)o).getValue()));					
+				}
 
 			} else if (o instanceof org.docx4j.wml.Tbl) {
 
@@ -263,13 +275,43 @@ public class WithoutXSLT {
 					tableWriter.setWordMLPackage(wordMLPackage);
 					Node htmlTable = tableWriter.toNode(tm, tableModelTransformState, htmlDoc);
 					
-					currentEl.appendChild(htmlTable);
+					currentP.appendChild(htmlTable);
 					
 				} catch (TransformerException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
+			} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline
+					|| o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
+				
+				anchorOrInline = o;  // keep this until we handle CTBlip
+				
+			} else if (o instanceof org.docx4j.dml.CTBlip) {
+	            /*<w:drawing>
+	                <wp:inline distT="0" distB="0" distL="0" distR="0">
+	                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+	                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+	                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+	                        <pic:blipFill>
+	                          <a:blip r:embed="rId10" cstate="print"/> */
+				
+				DocumentFragment foreignFragment = WordXmlPictureE20.createHtmlImgE20(wordMLPackage, 
+						conversionImageHandler, anchorOrInline);
+				anchorOrInline = null;
+				
+				currentP.appendChild( htmlDoc.importNode(foreignFragment, true) );
+				
+			} else if (o instanceof org.docx4j.wml.Pict) {
+		      /*<w:pict>
+		          <v:shape id="_x0000_i1025" type="#_x0000_t75" style="width:428.25pt;height:321pt">
+		            <v:imagedata r:id="rId4" o:title=""/>
+		          </v:shape> */
+
+				DocumentFragment foreignFragment = WordXmlPictureE10.createHtmlImgE10(wordMLPackage, 
+						conversionImageHandler, o);
+				
+				currentP.appendChild( htmlDoc.importNode(foreignFragment, true) );
 				
 			} else {
 				log.info("Encountered " + o.getClass().getName() );				
@@ -292,38 +334,47 @@ public class WithoutXSLT {
 
     class TableRowTraversor extends CallbackImpl {
 
-    	Element currentEl; 
-		DocumentFragment tableFragment = htmlDoc.createDocumentFragment();
-		Element tr;
-		
+    	Element currentBlock; 
+    	Element currentSpan; 
+
+    	DocumentFragment tableFragment = htmlDoc.createDocumentFragment();
+		Element tr;		
+    	
     	@Override
 		public List<Object> apply(Object o) {
 			
 			if (o instanceof P) {
 				
-				Element p = htmlDoc.createElement("p");
-				currentEl.appendChild( p  );
-				currentEl = p;
+				currentBlock = htmlDoc.createElement("p");
+				currentSpan = null;
+				bodyEl.appendChild( currentBlock  );
 				
 				PPr pPr = ((P)o).getPPr();
-				handlePPr(pPr, currentEl);
+				handlePPr(pPr, currentBlock);
 				
 			} else if (o instanceof org.docx4j.wml.R) {
 				
 				RPr rPr = ((R)o).getRPr();
+
 				if ( rPr!=null ) {
 					// Convert run to span
 					Element spanEl = htmlDoc.createElement("span");
-					currentEl.appendChild( spanEl  );
-					currentEl = spanEl;
+					currentBlock.appendChild( spanEl  );
+					currentSpan = spanEl;
 					
-					handleRPr(rPr, currentEl);
+					handleRPr(rPr, currentSpan);
 				}
-				
+								
 			} else if (o instanceof org.docx4j.wml.Text) {
 				
-				currentEl.appendChild(htmlDoc.createTextNode(
-						((org.docx4j.wml.Text)o).getValue()));
+				if (currentSpan!=null) {
+					currentSpan.appendChild(htmlDoc.createTextNode(
+							((org.docx4j.wml.Text)o).getValue()));
+				} else {
+					currentBlock.appendChild(htmlDoc.createTextNode(
+							((org.docx4j.wml.Text)o).getValue()));					
+				}
+
 
 			} else if (o instanceof org.docx4j.wml.Tbl) {
 
@@ -338,8 +389,9 @@ public class WithoutXSLT {
 				
 				Element tc = htmlDoc.createElementNS(Namespaces.NS_WORD12, "tc");
 				tr.appendChild(tc);
-				currentEl = tc;
-				// now the html p content will go temporarily go in w:tc!
+				currentBlock = tc;
+				// now the html p content will go temporarily go in w:tc,
+				// which is what we need for our existing table model.
 				
 			} else {
 				log.info("Encountered " + o.getClass().getName() );				
@@ -357,16 +409,19 @@ public class WithoutXSLT {
 
 
 		inputfilepath = System.getProperty("user.dir")
-				+ "/sample-docs/word/sample-docx.xml";
+//				+ "/sample-docs/word/sample-docx.xml";
+		+ "/sample-docs/word/2003/word2003-vml.docx";
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
 		
-		WithoutXSLT withoutXSLT = new WithoutXSLT(wordMLPackage);
+		HtmlExporterNonXSLT withoutXSLT = new HtmlExporterNonXSLT(wordMLPackage);
 				
 		log.info(XmlUtils.w3CDomNodeToString(
-				withoutXSLT.export()));
+				withoutXSLT.export("c:\\temp", "/bar", true)));
 
+    	// Wondering where <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    	// comes from? See http://stackoverflow.com/questions/1409091/how-do-i-prevent-the-java-xml-transformer-using-html-method-from-adding-meta
 	}
 
 }

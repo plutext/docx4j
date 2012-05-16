@@ -20,8 +20,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-lang-gump-20062009.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/istack-commons-runtime.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/txw2-20110809.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/xercesImpl.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JAXB 2.x"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/ae-jaxb-2.2.5.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre6"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/xmlgraphics-commons"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

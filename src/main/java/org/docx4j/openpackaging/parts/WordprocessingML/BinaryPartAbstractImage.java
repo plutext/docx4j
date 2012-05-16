@@ -19,8 +19,8 @@
  */
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
-import java.awt.Dimension;
-import java.awt.geom.Dimension2D;
+import ae.java.awt.Dimension;
+import ae.java.awt.geom.Dimension2D;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
