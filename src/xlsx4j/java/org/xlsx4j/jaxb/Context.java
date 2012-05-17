@@ -20,10 +20,15 @@
 package org.xlsx4j.jaxb;
 
 
+import ae.com.sun.xml.bind.v2.model.annotation.RuntimeInlineAnnotationReader;
+import ae.com.sun.xml.bind.v2.model.annotation.XmlSchemaMine;
 import ae.javax.xml.bind.JAXBContext;
 import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.dml.Graphic;
+import org.docx4j.dml.chart.CTChart;
+import org.docx4j.relationships.Relationships;
 
 public class Context {
 	
@@ -56,7 +61,13 @@ public class Context {
 				System.out.println("JAXB: neither Reference Implementation nor Java 6 implementation present?");
 			}
     	}
-		
+
+		// Android doesn't support package annotations, so 
+		// tell our JAXB about our namespaces
+      
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(Relationships.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/spreadsheetml/2006/main"));    					
+    	
 		try {	
 			
 			// JBOSS might use a different class loader to load JAXBContext, which causes problems,

@@ -20,10 +20,15 @@
 package org.pptx4j.jaxb;
 
 
+import ae.com.sun.xml.bind.v2.model.annotation.RuntimeInlineAnnotationReader;
+import ae.com.sun.xml.bind.v2.model.annotation.XmlSchemaMine;
 import ae.javax.xml.bind.JAXBContext;
 import ae.javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.dml.Graphic;
+import org.docx4j.dml.chart.CTChart;
+import org.docx4j.relationships.Relationships;
 
 public class Context {
 	
@@ -56,6 +61,42 @@ public class Context {
 				System.out.println("JAXB: neither Reference Implementation nor Java 6 implementation present?");
 			}
     	}
+		
+		// Android doesn't support package annotations, so 
+		// tell our JAXB about our namespaces
+      
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(Relationships.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/presentationml/2006/main"));
+    			
+		//DrawingML
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(Graphic.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/main")); 
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(CTChart.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/chart")); 
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(org.docx4j.dml.chartDrawing.CTDrawing.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/chartDrawing")); 
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(org.docx4j.dml.compatibility.CTCompat.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/compatibility")); 
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(org.docx4j.dml.diagram.CTDiagramDefinition.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/diagram")); 
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(org.docx4j.dml.diagram2008.CTDrawing.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.microsoft.com/office/drawing/2008/diagram")); 
+		
+		// LockedCanvas?
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(org.docx4j.dml.picture.Pic.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/picture")); 
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(org.docx4j.dml.spreadsheetdrawing.CTDrawing.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing")); 
+		
+		RuntimeInlineAnnotationReader.cachePackageAnnotation(org.docx4j.dml.wordprocessingDrawing.Inline.class.getPackage(), 
+				new XmlSchemaMine("http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing")); 
 		
 		try {	
 			
