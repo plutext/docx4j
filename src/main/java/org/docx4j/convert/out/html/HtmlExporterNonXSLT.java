@@ -334,23 +334,24 @@ public class HtmlExporterNonXSLT {
 
     class TableRowTraversor extends CallbackImpl {
 
-    	Element currentBlock; 
+    	Element currentP; 
     	Element currentSpan; 
 
     	DocumentFragment tableFragment = htmlDoc.createDocumentFragment();
 		Element tr;		
-    	
+		Element tc;
+		
     	@Override
 		public List<Object> apply(Object o) {
 			
 			if (o instanceof P) {
 				
-				currentBlock = htmlDoc.createElement("p");
+				currentP = htmlDoc.createElement("p");
 				currentSpan = null;
-				bodyEl.appendChild( currentBlock  );
+				tc.appendChild( currentP  );
 				
 				PPr pPr = ((P)o).getPPr();
-				handlePPr(pPr, currentBlock);
+				handlePPr(pPr, currentP);
 				
 			} else if (o instanceof org.docx4j.wml.R) {
 				
@@ -359,7 +360,7 @@ public class HtmlExporterNonXSLT {
 				if ( rPr!=null ) {
 					// Convert run to span
 					Element spanEl = htmlDoc.createElement("span");
-					currentBlock.appendChild( spanEl  );
+					currentP.appendChild( spanEl  );
 					currentSpan = spanEl;
 					
 					handleRPr(rPr, currentSpan);
@@ -371,7 +372,7 @@ public class HtmlExporterNonXSLT {
 					currentSpan.appendChild(htmlDoc.createTextNode(
 							((org.docx4j.wml.Text)o).getValue()));
 				} else {
-					currentBlock.appendChild(htmlDoc.createTextNode(
+					currentP.appendChild(htmlDoc.createTextNode(
 							((org.docx4j.wml.Text)o).getValue()));					
 				}
 
@@ -387,9 +388,8 @@ public class HtmlExporterNonXSLT {
 				
 			} else if (o instanceof org.docx4j.wml.Tc) {
 				
-				Element tc = htmlDoc.createElementNS(Namespaces.NS_WORD12, "tc");
+				tc = htmlDoc.createElementNS(Namespaces.NS_WORD12, "tc");
 				tr.appendChild(tc);
-				currentBlock = tc;
 				// now the html p content will go temporarily go in w:tc,
 				// which is what we need for our existing table model.
 				
@@ -409,8 +409,8 @@ public class HtmlExporterNonXSLT {
 
 
 		inputfilepath = System.getProperty("user.dir")
-//				+ "/sample-docs/word/sample-docx.xml";
-		+ "/sample-docs/word/2003/word2003-vml.docx";
+				+ "/sample-docs/word/sample-docx.xml";
+//		+ "/sample-docs/word/2003/word2003-vml.docx";
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
