@@ -22,8 +22,9 @@
         <pathelement location="${m2Repository}/commons-lang/commons-lang/2.4/commons-lang-2.4.jar"/>
         <pathelement location="${m2Repository}/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
         <pathelement location="${m2Repository}/commons-codec/commons-codec/1.3/commons-codec-1.3.jar"/>
-        <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.4/xmlgraphics-commons-1.4.jar"/>
-        <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
+<!--         <pathelement location="${m2Repository}/org/apache/xmlgraphics/xmlgraphics-commons/1.4/xmlgraphics-commons-1.4.jar"/>
+ -->
+         <pathelement location="${m2Repository}/commons-io/commons-io/1.3.1/commons-io-1.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/xmlgraphics/fop/1.0/fop-1.0.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-api/4.3.1/avalon-framework-api-4.3.1.jar"/>
         <pathelement location="${m2Repository}/org/apache/avalon/framework/avalon-framework-impl/4.3.1/avalon-framework-impl-4.3.1.jar"/>
@@ -79,17 +80,18 @@
         <pathelement location="lib/activation.jar"/>
         <pathelement location="lib/additionnal.jar"/>
         <pathelement location="lib/ae-jaxb-2.2.5.jar"/>
-        <pathelement location="lib/commons-lang-gump-20062009.jar"/>
+        <pathelement location="lib/ae-awt.jar"/>
+        <pathelement location="lib/ae-xmlgraphics-commons.jar"/>
         <pathelement location="lib/istack-commons-runtime.jar"/>
         <pathelement location="lib/txw2-20110809.jar"/>
-        <pathelement location="lib/xercesImpl.jar"/>        
-    </path>
+<!--         <pathelement location="lib/xercesImpl.jar"/>        
+ -->    </path>
 
     <path id="dist.classpath">
         <pathelement location="${m2Repository}/xalan/xalan/2.7.1/xalan-2.7.1.jar"/>
-        <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
+<!--         <pathelement location="${m2Repository}/xalan/serializer/2.7.1/serializer-2.7.1.jar"/>
         <pathelement location="${m2Repository}/xml-apis/xml-apis/1.3.04/xml-apis-1.3.04.jar"/>
-        <path refid="docx4j.classpath"/>
+ -->        <path refid="docx4j.classpath"/>
     </path>
 
     <path id="junit.classpath">
