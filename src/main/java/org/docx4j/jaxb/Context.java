@@ -55,6 +55,9 @@ public class Context {
 	private static Logger log = Logger.getLogger(Context.class);
 	
 	static {
+		
+        final long startTime = System.currentTimeMillis(); 
+        final long endTime; 		
 	  
 		Log4jConfigurator.configure();
 				
@@ -222,7 +225,13 @@ public class Context {
 			
 		} catch (Exception ex) {
 			log.error("Cannot initialize context", ex);
-		}				
+        } finally { 
+            endTime = System.currentTimeMillis(); 
+          } 
+          final long duration = endTime - startTime; 
+      
+          System.err.println("Context init: " + duration + "ms");
+      
 	}
 	
 	private static org.docx4j.wml.ObjectFactory wmlObjectFactory;
