@@ -82,9 +82,10 @@ public class HtmlExporterNonXSLT {
 	
 	ConversionImageHandler conversionImageHandler;
 	
-	public HtmlExporterNonXSLT(WordprocessingMLPackage wordMLPackage) {
+	public HtmlExporterNonXSLT(WordprocessingMLPackage wordMLPackage, ConversionImageHandler conversionImageHandler) {
 		
 		this.wordMLPackage = wordMLPackage;
+		this.conversionImageHandler = conversionImageHandler;
 		
     	htmlDoc = XmlUtils.neww3cDomDocument();
     	    	
@@ -100,10 +101,8 @@ public class HtmlExporterNonXSLT {
     	htmlEl.appendChild(bodyEl);
 	}
 	
-	public org.w3c.dom.Document export(String imageDirPath, String targetUri, boolean includeUUID) {
-		
-		conversionImageHandler = new HTMLConversionImageHandler(imageDirPath, targetUri, includeUUID);
-		
+	public org.w3c.dom.Document export() {
+				
     	styleTree = null;
 		try {
 			styleTree = wordMLPackage.getMainDocumentPart().getStyleTree();
@@ -415,10 +414,10 @@ public class HtmlExporterNonXSLT {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
 		
-		HtmlExporterNonXSLT withoutXSLT = new HtmlExporterNonXSLT(wordMLPackage);
-				
+		CopyOfHtmlExporterNonXSLT withoutXSLT = new CopyOfHtmlExporterNonXSLT(wordMLPackage, new HTMLConversionImageHandler("c:\\temp", "/bar", true) );
+		
 		log.info(XmlUtils.w3CDomNodeToString(
-				withoutXSLT.export("c:\\temp", "/bar", true)));
+				withoutXSLT.export()));
 
     	// Wondering where <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
     	// comes from? See http://stackoverflow.com/questions/1409091/how-do-i-prevent-the-java-xml-transformer-using-html-method-from-adding-meta
