@@ -98,10 +98,24 @@ public abstract class XmlPart extends Part {
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
 				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
 			documentFactory = DocumentBuilderFactory.newInstance();
+			log.info("Using javax.xml.parsers.DocumentBuilderFactory: "
+				+ "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
 		} catch (javax.xml.parsers.FactoryConfigurationError fce) {
-			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-				"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
-			documentFactory = DocumentBuilderFactory.newInstance();
+			log.warn("Couldn't set javax.xml.parsers.DocumentBuilderFactory: "
+					+ "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+			try {
+				System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+						"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+				documentFactory = DocumentBuilderFactory.newInstance();
+				log.info("Using javax.xml.parsers.DocumentBuilderFactory: "
+						+ "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+			} catch (javax.xml.parsers.FactoryConfigurationError fce2) {
+				log.warn("Couldn't set javax.xml.parsers.DocumentBuilderFactory: "
+						+ "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+				documentFactory = DocumentBuilderFactory.newInstance();
+				log.info("Falling back to: "
+						+ documentFactory.getClass().getName() );
+			}
 		}
 		
 		xPathFactory = XPathFactory.newInstance();
