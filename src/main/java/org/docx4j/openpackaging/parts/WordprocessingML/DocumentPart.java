@@ -31,7 +31,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -43,13 +43,12 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
 import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.CTFtnEdn;
-import org.docx4j.wml.Hdr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 
 
-public abstract class DocumentPart<E> extends JaxbXmlPart<E> {
+public abstract class DocumentPart<E> extends JaxbXmlPartXPathAware<E> {
 	
 	/** Parts which can be the target of a relationship from either
 	 *  the Main Document or the Glossary Document

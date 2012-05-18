@@ -14,7 +14,7 @@ public class XPathQuery {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
 		//String inputfilepath = System.getProperty("user.dir") + "//tmp//modelo.docx";
 //    	String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/fo-200912.xml";
 				
@@ -46,6 +46,8 @@ public class XPathQuery {
 				Object parent = txt.getParent();
 			
 				System.out.println( "parent: " +  XmlUtils.unwrap(parent).getClass().getName() );
+			} else {
+				System.out.println( XmlUtils.marshaltoString(o, true, true));
 			}
 
 			
