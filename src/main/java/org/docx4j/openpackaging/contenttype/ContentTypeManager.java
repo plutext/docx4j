@@ -107,6 +107,8 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MetafileWmfPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.ObfuscatedFontPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.VbaDataPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.VbaProjectBinaryPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.WebSettingsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.relationships.Relationship;
@@ -349,6 +351,11 @@ public class ContentTypeManager  {
 			return CreateStyleDefinitionsPartObject( partName);
 		} else if (contentType.equals(ContentTypes.WORDPROCESSINGML_WEBSETTINGS)) {
 			return CreateWebSettingsPartObject(partName );
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_DATA)) {
+			return new VbaDataPart(new PartName(partName));
+		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_VBA_PROJECT)) {
+			return new VbaProjectBinaryPart(new PartName(partName));
+			
 		} else if (contentType.equals(ContentTypes.IMAGE_JPEG)) {
 			
 			if (!partName.toLowerCase().endsWith("." + ContentTypes.EXTENSION_JPG_1)
