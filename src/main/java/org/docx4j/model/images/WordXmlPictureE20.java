@@ -157,49 +157,60 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 	private Inline inline;
 	private Anchor anchor;
     
-    private WordXmlPictureE20(WordprocessingMLPackage wmlPackage, NodeIterator anchorOrInline) {
+    private WordXmlPictureE20(WordprocessingMLPackage wmlPackage, Object anchorOrInline) {
     	
     	this.wmlPackage = wmlPackage;
     	
-    	if (anchorOrInline!=null) {
-    		Node n = anchorOrInline.nextNode();
-    		if (n!=null) {
-    			Object jaxb=null;
-				try {
-					Unmarshaller u = Context.jc.createUnmarshaller();			
-					u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-					jaxb = u.unmarshal(n);
-				} catch (JAXBException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+		if (anchorOrInline != null) {
+			if (anchorOrInline instanceof Inline) {
+				this.inline = (Inline) anchorOrInline;				
+			} else if (anchorOrInline instanceof Anchor) {
+				this.anchor = (Anchor) anchorOrInline;				
+			} else if (anchorOrInline instanceof NodeIterator) { // from Xalan/XSLT
+				Node n = ((NodeIterator) anchorOrInline).nextNode();
+				if (n != null) {
+					Object jaxb = null;
+					try {
+						Unmarshaller u = Context.jc.createUnmarshaller();
+						u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+						jaxb = u.unmarshal(n);
+					} catch (JAXBException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					try {
+						if (jaxb instanceof JAXBElement) {
+
+							JAXBElement jb = (JAXBElement) jaxb;
+							if (jb.getDeclaredType()
+									.getName()
+									.equals("org.docx4j.dml.wordprocessingDrawing.Inline")) {
+								this.inline = (Inline) jb.getValue();
+							} else if (jb
+									.getDeclaredType()
+									.getName()
+									.equals("org.docx4j.dml.wordprocessingDrawing.Anchor")) {
+								this.anchor = (Anchor) jb.getValue();
+							} else {
+								log.error("UNEXPECTED "
+										+ XmlUtils.JAXBElementDebug(jb));
+								return;
+							}
+						} else if (jaxb instanceof Inline) {
+							this.inline = (Inline) jaxb;
+						} else if (jaxb instanceof Anchor) {
+							this.anchor = (Anchor) jaxb;
+						} else {
+							log.error(jaxb.getClass().getName());
+							return;
+						}
+					} catch (ClassCastException e) {
+						log.error("Couldn't cast " + jaxb.getClass().getName()
+								+ " to Anchor or Inline ");
+					}
 				}
-    			try {
-        			if (jaxb instanceof JAXBElement ) {
-        				
-        				JAXBElement jb = (JAXBElement)jaxb;
-        				if (jb.getDeclaredType().getName().equals("org.docx4j.dml.wordprocessingDrawing.Inline")) {
-        					this.inline =  (Inline)jb.getValue();
-        				} else if (jb.getDeclaredType().getName().equals("org.docx4j.dml.wordprocessingDrawing.Anchor")) {
-            					this.anchor =  (Anchor)jb.getValue();
-        				} else {
-    	    				log.error("UNEXPECTED " +
-    	    						XmlUtils.JAXBElementDebug(jb)
-    	    						);
-    	    				return;
-        				}
-        			} else if (jaxb instanceof Inline) {    				
-        				this.inline =  (Inline)jaxb;
-        			} else if (jaxb instanceof Anchor) {    				
-        				this.anchor =  (Anchor)jaxb;
-        			} else {
-        				log.error( jaxb.getClass().getName() ); 
-        				return;
-        			}
-    			} catch (ClassCastException e) {
-    		    	log.error("Couldn't cast " + jaxb.getClass().getName() + " to Anchor or Inline ");
-    			}        	        			
-    		}
-    	}
+			}
+		}
     	
     }
 
@@ -225,7 +236,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      */
     public static WordXmlPictureE20 createWordXmlPictureFromE20(WordprocessingMLPackage wmlPackage,
     		ConversionImageHandler imageHandler,
-    		NodeIterator anchorOrInline,
+    		Object anchorOrInline,
     		Part sourcePart) {
 
     	WordXmlPictureE20 converter = new WordXmlPictureE20(wmlPackage, anchorOrInline);
@@ -305,7 +316,7 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      */
     public static DocumentFragment createHtmlImgE20(WordprocessingMLPackage wmlPackage,
     		ConversionImageHandler imageHandler,
-    		NodeIterator wpInline) {
+    		Object wpInline) {
 
     	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
         		 imageHandler, wpInline, wmlPackage.getMainDocumentPart() );
