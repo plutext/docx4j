@@ -414,7 +414,7 @@ public class HtmlExporterNonXSLT {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
 		
-		CopyOfHtmlExporterNonXSLT withoutXSLT = new CopyOfHtmlExporterNonXSLT(wordMLPackage, new HTMLConversionImageHandler("c:\\temp", "/bar", true) );
+		HtmlExporterNonXSLT withoutXSLT = new HtmlExporterNonXSLT(wordMLPackage, new HTMLConversionImageHandler("c:\\temp", "/bar", true) );
 		
 		log.info(XmlUtils.w3CDomNodeToString(
 				withoutXSLT.export()));
