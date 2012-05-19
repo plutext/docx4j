@@ -181,7 +181,7 @@ public class XmlUtils {
 		if (o==null) return null;
 		
 		if (o instanceof javax.xml.bind.JAXBElement) {
-			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+			log.info("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 			log.debug("name: " + ((JAXBElement)o).getName() );
 			return ((JAXBElement)o).getValue();
 		} else {
@@ -1023,7 +1023,7 @@ public class XmlUtils {
             case Node.ELEMENT_NODE:
                 
                 // Copy of the node itself
-        		log.info("copying: " + sourceNode.getNodeName() );
+        		log.debug("copying: " + sourceNode.getNodeName() );
         		Node newChild;
         		if ( destParent instanceof Document ) {
         			newChild = ((Document)destParent).createElementNS(
