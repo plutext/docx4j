@@ -5,46 +5,32 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
-import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
-import org.docx4j.jaxb.Context;
-import org.docx4j.model.Model;
-import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.TransformState;
 import org.docx4j.model.images.ConversionImageHandler;
-import org.docx4j.model.images.FileConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
-import org.docx4j.model.properties.Property;
-import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.model.table.Cell;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
-import org.docx4j.wml.TblGridCol;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import ae.javax.xml.bind.JAXBContext;
 
 /**
  * 
