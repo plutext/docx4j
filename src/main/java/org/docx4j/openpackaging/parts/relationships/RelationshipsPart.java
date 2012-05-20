@@ -447,7 +447,7 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 				if (proposedName.indexOf(".")>0) {
 					// TODO: strip trailing numerals off prefix
 					// eg footer1 should become footer
-					newPartName = getNewPartName( proposedName.substring(0, proposedName.indexOf(".")-1), 
+					newPartName = getNewPartName( proposedName.substring(0, proposedName.indexOf(".")), 
 							"." + part.getPartName().getExtension(), 
 							this.getPackage().getParts().getParts() );				
 				} else {
