@@ -17,7 +17,10 @@
     <!-- console -->
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* %c{1}: %m (%F, line %L)%n"/>
+<!--             <param name="ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* %c{1}: %m (%F, line %L)%n"/> -->            <param name="ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* %c{1}: %m (%F, line %L)%n"/>
+
+			<param name="ConversionPattern" value="%p %c %x.%M line %L - %m%n" />
+			
         </layout>
     </appender>
 
