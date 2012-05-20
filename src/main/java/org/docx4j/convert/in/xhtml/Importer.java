@@ -103,6 +103,9 @@ import org.xml.sax.InputSource;
  * 
  * Your XHTML must be well formed XML!  
  * 
+ * For usage examples, please see org.docx4j.samples/XHTMLImportFragment, 
+ * and XHTMLImportDocument 
+ * 
  * For best results, be sure to include src/main/resources on your classpath. 
  * 
  * Includes rudimentary support for:
@@ -408,9 +411,9 @@ public class Importer {
 
             } else  if (val!=null ) {
             	
-            	log.info("Skipping " +  name.toString() + " .. " + val.getClass().getName() );
+            	log.debug("Skipping " +  name.toString() + " .. " + val.getClass().getName() );
             } else {
-            	log.info("Skipping " +  name.toString() + " .. (null value)" );            	
+            	log.debug("Skipping " +  name.toString() + " .. (null value)" );            	
             }
         }
     	
@@ -740,32 +743,38 @@ public class Importer {
             
             // the recursive bit:
             
-		            switch (blockBox.getChildrenContentType()) {
-		                case BlockBox.CONTENT_BLOCK:
-		                    for (Object o : ((BlockBox)box).getChildren() ) {
-		                        traverse((Box)o, contentContext,  tableProperties);                    
-		                    }
-		                    break;
-		                case BlockBox.CONTENT_INLINE:
-		                    if ( ((BlockBox)box).getInlineContent()!=null) {
-		                    	
-		                        for (Object o : ((BlockBox)box).getInlineContent() ) {
-		//                            log.info("        " + o.getClass().getName() ); 
-		                            if (o instanceof InlineBox ) {
-		//                                    && ((InlineBox)o).getElement()!=null // skip these (pseudo-elements?)
-		//                                    && ((InlineBox)o).isStartsHere()) {
-		                                
-		                            	processInlineBox( (InlineBox)o, contentContext);
-		                            	
-		                            } else if (o instanceof BlockBox ) {
-		                                traverse((Box)o, contentContext, tableProperties); // commenting out gets rid of unwanted extra parent elements
-		                            } else {
-		                                log.info("What to do with " + box.getClass().getName() );                        
-		                            }
-		                        }
-		                    }
-		                    break;
-		            } 
+            	log.info("Processing children of " + box.getElement().getNodeName() );
+	            switch (blockBox.getChildrenContentType()) {
+	                case BlockBox.CONTENT_BLOCK:
+	                	log.info(".. which are BlockBox.CONTENT_BLOCK");	                	
+	                    for (Object o : ((BlockBox)box).getChildren() ) {
+	                        traverse((Box)o, contentContext,  tableProperties);                    
+	                    }
+	                    break;
+	                case BlockBox.CONTENT_INLINE:
+	                	
+	                	log.info(".. which are BlockBox.CONTENT_INLINE");	                	
+	                	
+	                    if ( ((BlockBox)box).getInlineContent()!=null) {
+
+	                    	
+	                        for (Object o : ((BlockBox)box).getInlineContent() ) {
+	//                            log.info("        " + o.getClass().getName() ); 
+	                            if (o instanceof InlineBox ) {
+	//                                    && ((InlineBox)o).getElement()!=null // skip these (pseudo-elements?)
+	//                                    && ((InlineBox)o).isStartsHere()) {
+	                                
+	                            	processInlineBox( (InlineBox)o, contentContext);
+	                            	
+	                            } else if (o instanceof BlockBox ) {
+	                                traverse((Box)o, contentContext, tableProperties); // commenting out gets rid of unwanted extra parent elements
+	                            } else {
+	                                log.info("What to do with " + box.getClass().getName() );                        
+	                            }
+	                        }
+	                    }
+	                    break;
+	            } 
             
 		    
             log.info("Done processing children of " + box.getClass().getName() );
@@ -871,12 +880,18 @@ public class Importer {
 		}
 	}
 
-	private boolean awaitingEnd = false;
+	// For a hyperlink, we do all the processing when
+	// we hit that element.  No need to add its children again
+	private boolean inAlreadyProcessed = false;
 	
     private void processInlineBox( InlineBox inlineBox, List<Object> contentContext) {
     	
     	log.info(inlineBox.toString());
 
+    	if (inAlreadyProcessed) {
+    		log.info(".. already done.");
+    		return;
+    	}
         // Doesn't extend box
         Styleable s = ((InlineBox)inlineBox );
         if (s.getStyle()==null) { // Assume this won't happen
@@ -884,9 +899,7 @@ public class Importer {
         }
         Map<String, CSSValue> cssMap = getCascadedProperties(s.getStyle());
 //        Map cssMap = styleReference.getCascadedPropertiesMap(s.getElement());
-                
-        boolean isHyperlink = false;
-        
+                        
         String debug = "<UNKNOWN Styleable";
         if (s.getElement()!=null) {
             debug = "<" + s.getElement().getNodeName();
@@ -894,28 +907,63 @@ public class Importer {
             if (s.getElement().getNodeName().equals("a")) {
             	log.info("Ha!  found a hyperlink. ");
             	
+            	/* For hyperlink anchors, there are three cases.
+            	 * 
+            	 * Case 1: hyperlink inline box contains another
+            	 * inline box eg <a href=".."><span>my inline box</span></a>
+            	 * 
+            	 * Case 2: hyperlink inline box doesn't contain
+            	 * another inline box eg <a href="..">no inline box</a>
+            	 * 
+            	 * Case 3: empty point tag eg 
+            	 * <a href="http://slashdot.org/" /> ie empty - malformed
+            	 * 
+            	 * The code has been tested with the following examples:
+            	 * 
+			        String xhtml= "<p ><a href=\"http://davidpritchard.org/images/pacsoc-s1b.png\"><span>http://davidpritchard.org/images/pacsoc-s1b.png</span></a></p>";
+			    	
+			        String xhtml= "<p ><a href=\"http://davidpritchard.org/images/pacsoc-s1b.png\">http://davidpritchard.org/images/pacsoc-s1b.png</a></p>";        
+			    	
+			        String xhtml= "<p ><a href=\"slashdot.org\" /></p>";        
+			        
+			        String xhtml= "<p ><a href=\"slashdot.org\" >slash<b>dot</b>.<span>o<i>r</i>g</span> </a></p>";
+			        
+			          in the last case, the link formatting is dropped.
+                    	 */
+            	
             	if (inlineBox.isStartsHere()) {
             		
                 	Hyperlink h = null;
                 	String linkText = inlineBox.getElement().getTextContent();
+                	log.info(linkText);
                 	if (linkText!=null
                 			&& !linkText.trim().equals("")) {
+                		// Cases 1 & 2
                     	h = createHyperlink(
                     			s.getElement().getAttribute("href"), 
                     			addRunProperties( cssMap ),
                     			linkText, rp);                                    	            		
+                        currentP.getContent().add(h);
+                        inAlreadyProcessed = true;
+                        return;
                 	} else {
-                    	// eg <a href="http://slashdot.org/" /> ie empty - malformed           	
+                    	// Case 3           	
                     	h = createHyperlink(
                     			s.getElement().getAttribute("href"), 
                     			addRunProperties( cssMap ),
                     			s.getElement().getAttribute("href"), rp);                                    	            		
+                        currentP.getContent().add(h);
+                        // No need to set inAlreadyProcessed = true;
+                        // since no children to process
+                        return;
                 	}
-                    currentP.getContent().add(h);
             		
-            	}
+            	} 
             	
-            	awaitingEnd = inlineBox.isStartsHere() && !inlineBox.isEndsHere();
+            	if (inlineBox.isEndsHere() ) {
+            		// When we hit the end of the hyperlink
+            		inAlreadyProcessed = false; // ready for next element
+            	}                	
             	
             } else if (s.getElement().getNodeName().equals("p")) {
             	// This seems to be the usual case. Odd?
@@ -935,14 +983,19 @@ public class Importer {
             debug +=  " " + s.getStyle().toStringMine();
         }
         
-        // We've processed the hyperlink, so skip the inline boxes
-        // representing its children
-        if (awaitingEnd) return;
+//        // We've processed the hyperlink, so skip the inline boxes
+//        // representing its children
+//        if (awaitingEnd) return;
         
         log.info(debug );
         //log.info("'" + ((InlineBox)o).getTextNode().getTextContent() );  // don't use .getText()
         
-        if (inlineBox.getTextNode()==null) {
+        processInlineBoxContent(inlineBox, s, cssMap);
+    }
+
+	private void processInlineBoxContent(InlineBox inlineBox, Styleable s,
+			Map<String, CSSValue> cssMap) {
+		if (inlineBox.getTextNode()==null) {
                 
             if (s.getElement().getNodeName().equals("br") ) {
                 
@@ -987,7 +1040,7 @@ public class Importer {
 //                        	            		addRunProperties( cssMap ));                                    	                                    	
 //                                    }
         }
-    }
+	}
     
     private PPr addParagraphProperties(Map cssMap) {
 
@@ -1122,17 +1175,5 @@ public class Importer {
 	}
     
     
-    public static void mainz(String[] args) throws Exception {
-        
-		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
-				
-			wordMLPackage.getMainDocumentPart().getContent().addAll( 
-					convert( "<p><span>one</span><span> </span><span>two</span></p>", null, wordMLPackage) );
-		
-		System.out.println(
-				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		      
-  }
-
     
 }
