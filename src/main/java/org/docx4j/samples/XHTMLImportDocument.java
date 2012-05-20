@@ -24,7 +24,7 @@ import java.io.File;
 import java.io.OutputStream;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.in.xhtml.Importer;
+import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
 import org.docx4j.convert.out.html.HtmlExporterNG2;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
@@ -46,7 +46,7 @@ public class XHTMLImportDocument {
     	// docx to XHTML first (ie round trip).
         String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 
-        Importer.setHyperlinkStyle("Hyperlink");
+        XHTMLImporter.setHyperlinkStyle("Hyperlink");
         
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
@@ -56,7 +56,7 @@ public class XHTMLImportDocument {
 		
 		if (inputfilepath.endsWith("html")) {
 			wordMLPackage.getMainDocumentPart().getContent().addAll( 
-					Importer.convert(new File(inputfilepath), null, wordMLPackage) );
+					XHTMLImporter.convert(new File(inputfilepath), null, wordMLPackage) );
 			
 		} else if (inputfilepath.endsWith("docx")) {
 			//Round trip docx -> XHTML -> docx
@@ -75,7 +75,7 @@ public class XHTMLImportDocument {
 			exporter.html(docx, result, htmlSettings );			
 						
 			wordMLPackage.getMainDocumentPart().getContent().addAll( 
-					Importer.convert( new File(inputfilepath + ".html"), null, wordMLPackage) );
+					XHTMLImporter.convert( new File(inputfilepath + ".html"), null, wordMLPackage) );
 		} else {
 			return;
 		}

@@ -20,7 +20,7 @@
 package org.docx4j.samples;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.in.xhtml.Importer;
+import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
@@ -34,12 +34,27 @@ public class XHTMLImportFragment {
 
     public static void main(String[] args) throws Exception {
         
-    	String xhtml= "<div><p>The <b>quick</b> <span style=\"font-size: 14pt;\">brown</span> fox...</p><p>Paragraph 2</p></div>";
+    	//String xhtml= "<div><p>The <b>quick</b> <span style=\"font-size: 14pt;\">brown</span> fox...</p><p>Paragraph 2</p></div>";
+    	
+        String xhtml= "<div><p>Sent: 5/2/2012 5:53 PM (<i>53 seconds ago</i>)<br/>Source:\n" +
+                "<a href=\"http://twitter.com/\">web</a>\n" +
+                "</p></div>";
+
+
+    	// Now  Works - note span inside the href
+//        String xhtml= "<p ><a href=\"http://davidpritchard.org/images/pacsoc-s1b.png\"><span>http://davidpritchard.org/images/pacsoc-s1b.png</span></a></p>";
+    	
+    	// Now works
+//        String xhtml= "<p ><a href=\"http://davidpritchard.org/images/pacsoc-s1b.png\">http://davidpritchard.org/images/pacsoc-s1b.png</a></p>";        
+    	
+//        String xhtml= "<p ><a href=\"slashdot.org\" /></p>";        
+        
+//      String xhtml= "<p ><a href=\"slashdot.org\" >slash<b>dot</b>.<span>o<i>r</i>g</span> </a></p>";        
     	
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		wordMLPackage.getMainDocumentPart().getContent().addAll( 
-				Importer.convert( xhtml, null, wordMLPackage) );
+				XHTMLImporter.convert( xhtml, null, wordMLPackage) );
 	
 	System.out.println(
 			XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));

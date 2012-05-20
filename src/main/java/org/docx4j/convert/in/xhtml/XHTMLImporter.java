@@ -132,9 +132,9 @@ import org.xml.sax.InputSource;
  * @since 2.8
  *
  */
-public class Importer {
+public class XHTMLImporter {
 	
-	protected static Logger log = Logger.getLogger(Importer.class);		
+	protected static Logger log = Logger.getLogger(XHTMLImporter.class);		
 	    
 	/**
 	 * Configure, how the Importer styles hyperlinks
@@ -173,7 +173,7 @@ public class Importer {
     
     private DocxRenderer renderer;
     
-    private Importer(WordprocessingMLPackage wordMLPackage) {
+    private XHTMLImporter(WordprocessingMLPackage wordMLPackage) {
     	this.wordMLPackage= wordMLPackage;
     	rp = wordMLPackage.getMainDocumentPart().getRelationshipsPart();
     	ndp = wordMLPackage.getMainDocumentPart().getNumberingDefinitionsPart();
@@ -196,7 +196,7 @@ public class Importer {
      */
     public static List<Object> convert(File file, String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
 
         importer.renderer = new DocxRenderer();
         
@@ -229,7 +229,7 @@ public class Importer {
      */
     public static List<Object> convert(InputSource is,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
 
         importer.renderer = new DocxRenderer();
         
@@ -251,7 +251,7 @@ public class Importer {
      * @throws IOException
      */
     public static List<Object> convert(InputStream is, String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
         
@@ -273,7 +273,7 @@ public class Importer {
      * @throws IOException
      */
     public static List<Object> convert(Node node,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
         if (node instanceof Document) {
@@ -298,7 +298,7 @@ public class Importer {
      * @throws IOException
      */
     public static List<Object> convert(Reader reader,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
         
@@ -321,7 +321,7 @@ public class Importer {
      */
     public static List<Object> convert(Source source,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
     	
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
         
@@ -347,7 +347,7 @@ public class Importer {
      */
     public static List<Object> convert(URL url, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
 
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
     	
         importer.renderer = new DocxRenderer();
         
@@ -372,7 +372,7 @@ public class Importer {
      */
     public static List<Object> convert(String content,  String baseUrl, WordprocessingMLPackage wordMLPackage) throws Docx4JException {
     	
-        Importer importer = new Importer(wordMLPackage);
+        XHTMLImporter importer = new XHTMLImporter(wordMLPackage);
 
         importer.renderer = new DocxRenderer();
         

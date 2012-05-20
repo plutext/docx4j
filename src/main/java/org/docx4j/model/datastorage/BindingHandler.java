@@ -21,7 +21,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.in.xhtml.Importer;
+import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.sdt.QueryString;
@@ -304,9 +304,9 @@ public class BindingHandler {
 					ndp = ((MainDocumentPart)sourcePart).getNumberingDefinitionsPart();
 				}				
 				
-				Importer.setHyperlinkStyle(hyperlinkStyleId);
+				XHTMLImporter.setHyperlinkStyle(hyperlinkStyleId);
 				String baseUrl = null;
-				List<Object> results = Importer.convert(unescaped, baseUrl, pkg );
+				List<Object> results = XHTMLImporter.convert(unescaped, baseUrl, pkg );
 
 				org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 				DocumentFragment docfrag = docContainer.createDocumentFragment();
