@@ -36,21 +36,25 @@ public class XHTMLImportFragment {
         
     	//String xhtml= "<div><p>The <b>quick</b> <span style=\"font-size: 14pt;\">brown</span> fox...</p><p>Paragraph 2</p></div>";
     	
-        String xhtml= "<div><p>Sent: 5/2/2012 5:53 PM (<i>53 seconds ago</i>)<br/>Source:\n" +
-                "<a href=\"http://twitter.com/\">web</a>\n" +
-                "</p></div>";
-
-
-    	// Now  Works - note span inside the href
-//        String xhtml= "<p ><a href=\"http://davidpritchard.org/images/pacsoc-s1b.png\"><span>http://davidpritchard.org/images/pacsoc-s1b.png</span></a></p>";
-    	
-    	// Now works
-//        String xhtml= "<p ><a href=\"http://davidpritchard.org/images/pacsoc-s1b.png\">http://davidpritchard.org/images/pacsoc-s1b.png</a></p>";        
-    	
-//        String xhtml= "<p ><a href=\"slashdot.org\" /></p>";        
-        
-//      String xhtml= "<p ><a href=\"slashdot.org\" >slash<b>dot</b>.<span>o<i>r</i>g</span> </a></p>";        
-    	
+        String xhtml= "<table class=\"reference\" style=\"width:60%\">\n" +
+                "\t<tr>\n" +
+                "\t\t<td>Apples</td>\n" +
+                "\t\t<td>44%</td>\n" +
+                "\t</tr>\n" +
+                "\t<tr>\n" +
+                "\t\t<td>Bananas</td>\n" +
+                "\t\t<td>23%</td>\n" +
+                "\t</tr>\n" +
+                "\t<tr>\n" +
+                "\t\t<td>Oranges</td>\n" +
+                "\t\t<td>13%</td>\n" +
+                "\t</tr>\n" +
+                "\t<tr>\n" +
+                "\t\t<td>Other</td>\n" +
+                "\t\t<td>10%</td>\n" +
+                "\t</tr>\n" +
+                "</table>\n";
+        		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		wordMLPackage.getMainDocumentPart().getContent().addAll( 

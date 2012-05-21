@@ -502,9 +502,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			t.setValue(simpleText);
 	
 			org.docx4j.wml.R  run = factory.createR();
-			run.getRunContent().add(t);		
+			run.getContent().add(t);		
 			
-			para.getParagraphContent().add(run);
+			para.getContent().add(run);
 		}
 		
 		return para;

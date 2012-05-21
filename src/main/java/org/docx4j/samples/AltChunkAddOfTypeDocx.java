@@ -23,24 +23,18 @@ package org.docx4j.samples;
 
 import java.io.FileInputStream;
 
-import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.contenttype.ContentType;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTAltChunk;
 
 
-public class AltChunk {
+public class AltChunkAddOfTypeDocx {
 	
 	public static void main(String[] args) throws Exception {
 		
-		boolean ADD_TO_HEADER = true;
-		HeaderPart hp = null;
+		boolean ADD_TO_HEADER = false;
 		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
 		
@@ -53,33 +47,13 @@ public class AltChunk {
 		// Open a document from the file system
 		// 1. Load the Package
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-		MainDocumentPart main = wordMLPackage.getMainDocumentPart();
-		
+				
 		if (ADD_TO_HEADER) {
-			hp = wordMLPackage.getDocumentModel().getSections().get(0).getHeaderFooterPolicy().getDefaultHeader();
-		}
-		
-		AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(new PartName("/chunk.docx") );
-		afiPart.setBinaryData(
-				new FileInputStream(chunkPath) );
-		
-		afiPart.setContentType(new ContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml")); //docx
-		//afiPart.setContentType(new ContentType("application/xhtml+xml")); //xhtml
-
-		Relationship altChunkRel = null;
-		if (ADD_TO_HEADER) {
-			altChunkRel = hp.addTargetPart(afiPart);
+			HeaderPart hp = wordMLPackage.getDocumentModel().getSections().get(0).getHeaderFooterPolicy().getDefaultHeader();
+			hp.addAltChunk(AltChunkType.WordprocessingML, new FileInputStream(chunkPath) );
 		} else {
-			altChunkRel = main.addTargetPart(afiPart);			
-		}
-		
-		CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
-		ac.setId(altChunkRel.getId());
-
-		if (ADD_TO_HEADER) {
-			hp.getJaxbElement().getEGBlockLevelElts().add(ac);
-		} else {
-			main.addObject(ac);
+			MainDocumentPart main = wordMLPackage.getMainDocumentPart();
+			main.addAltChunk(AltChunkType.WordprocessingML, new FileInputStream(chunkPath) );
 		}
 		
 		// Save it

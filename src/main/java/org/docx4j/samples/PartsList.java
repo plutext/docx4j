@@ -53,8 +53,8 @@ public class PartsList extends AbstractSample {
 //			 inputfilepath = System.getProperty("user.dir") 
 //			+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
 //	 inputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/pivot.xlsm";
-		inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
-	// inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/lines.pptx";
+//		inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
+	 inputfilepath = System.getProperty("user.dir") + "/altChunk_out.docx";
 		}
 		
 			
