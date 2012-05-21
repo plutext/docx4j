@@ -57,9 +57,7 @@ How do I build docx4j?
 
 Get it from GitHub, at https://github.com/plutext/docx4j
 
-If you are using eclipse and m2eclipse plugin, enable dependency management.
-
-For more details, see the Getting Started guide.
+For more details, see http://www.docx4java.org/blog/2012/05/docx4j-from-github-in-eclipse/
 
 
 
@@ -91,7 +89,7 @@ License version 2.0:
 Version 2.8.0
 =============
 
-r1700-
+** docx4j source code is now on GitHub.  Our SVN repository is obsolete. **
 
 Release date
 ------------
@@ -110,6 +108,7 @@ Tinne
 Notable Changes in Version 2.8.0
 ---------------------------------
 
+
 XHTML import
 
 svg JAXB content model moved to its own project on Github, and uploaded to Maven Central 
@@ -117,12 +116,27 @@ svg JAXB content model moved to its own project on Github, and uploaded to Maven
 
 [1727] Field processing infrastructure, and [1732] MERGEFIELD processing
 
+HTML export option without using Xalan/XSLT
+
+xlsx4j
+------
+
+40056bc - Convenience method getSharedStrings() 
+
+
+pptx4j
+------
+
+89be7a1 - Add XPath support to SlidePart 
+
+
 OpenDoPE changes
 ----------------
 
 Support binding/import of escaped XHTML content
 
 [1763] Support pictures in repeats (for this, a picture content control must have an od:xpath tag)
+469e126 - Make XHTML work in a repeat 
 
 Other Changes (non-exhaustive)
 ------------------------------
@@ -147,6 +161,13 @@ Other Changes (non-exhaustive)
 [1778] Read docx4j.properties for page size & margins
 [1779] Fix for getAllAppenders issues (slf4j)
 [1784] XmlSignature part, which uses JAXB representation of xmldsig-core, contained in separate project
+33b2ab1 - Support reading a password protected docx (which is a compound file)
+4a6604a - Add Eclipse project configuration 
+887b5ac - Introduce abstract class JaxbXmlPartXPathAware, which MDP, header/footer etc extend
+1b75487 - XmlPart: Use a document builder, even if Xerces (Apache's or Sun's) is not available
+e1b616e - Create VbaDataPart and VbaProjectBinaryPart
+54f2fad - AltChunk handling improvements 
+
 
 
 Version 2.7.1 
