@@ -21,50 +21,44 @@
 package org.docx4j.samples;
 
 
-import java.util.List;
-
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
-import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
 
 
+/**
+ * Simple example of opening an existing docx, and saving it
+ * again.
+ * 
+ * Notice that the file size might be different.  
+ * http://www.docx4java.org/forums/docx-java-f6/file-size-differences-t1091.html
+ * explains why.
+ * 
+ * @author jharrop
+ *
+ */
 public class OpenAndSaveRoundTripTest extends AbstractSample {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) throws Exception {
 
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/2010/2010-sample1.docx";
+	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		}
 		System.out.println(inputfilepath);	    	
-				
-		boolean save = true;
-		String outputfilepath = System.getProperty("user.dir") + "/OUT-roundtrip.docx";		
 		
 		
-		// Open a document from the file system
-		// 1. Load the Package
+		// Load the docx
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
 		// Save it
-		
-		if (save) {		
-			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-			saver.save(outputfilepath);
-		}
+		String outputfilepath = System.getProperty("user.dir") + "/OUT_OpenAndSaveRoundTripTest.docx";		
+		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
+		saver.save(outputfilepath);
 	}
 		
 
