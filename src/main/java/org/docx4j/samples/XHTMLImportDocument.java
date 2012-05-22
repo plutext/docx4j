@@ -19,15 +19,14 @@
  */
 package org.docx4j.samples;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.OutputStream;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.convert.out.html.AbstractHtmlExporter;
-import org.docx4j.convert.out.html.HtmlExporterNG2;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
+import org.docx4j.convert.out.html.HtmlExporterNG2;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 
@@ -48,6 +47,7 @@ public class XHTMLImportDocument {
 
         XHTMLImporter.setHyperlinkStyle("Hyperlink");
         
+        // Create an empty docx package
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		NumberingDefinitionsPart ndp = new NumberingDefinitionsPart();
@@ -55,6 +55,8 @@ public class XHTMLImportDocument {
 		ndp.unmarshalDefaultNumbering();		
 		
 		if (inputfilepath.endsWith("html")) {
+			
+			// Convert the XHTML, and add it into the empty docx we made
 			wordMLPackage.getMainDocumentPart().getContent().addAll( 
 					XHTMLImporter.convert(new File(inputfilepath), null, wordMLPackage) );
 			
@@ -73,7 +75,8 @@ public class XHTMLImportDocument {
 			
 			javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(os);
 			exporter.html(docx, result, htmlSettings );			
-						
+			
+			// Now after all that, we have XHTML we can convert 
 			wordMLPackage.getMainDocumentPart().getContent().addAll( 
 					XHTMLImporter.convert( new File(inputfilepath + ".html"), null, wordMLPackage) );
 		} else {
