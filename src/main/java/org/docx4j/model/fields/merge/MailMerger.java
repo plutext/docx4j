@@ -311,7 +311,7 @@ public class MailMerger {
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
 				new java.io.File(
-						System.getProperty("user.dir") + "/mergefield1.docx"));
+						System.getProperty("user.dir") + "/src/test/resources/MERGEFIELD.docx"));
 		
 		List<Map<DataFieldName, String>> data = new ArrayList<Map<DataFieldName, String>>();
 
