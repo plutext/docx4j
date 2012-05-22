@@ -21,66 +21,47 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.model.table.TblFactory;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
-import org.docx4j.openpackaging.contenttype.CTDefault;
-import org.docx4j.openpackaging.contenttype.ContentType;
-import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.openpackaging.contenttype.ObjectFactory;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTAltChunk;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.P;
+import org.docx4j.wml.R;
 import org.docx4j.wml.Tbl;
 
 /**
- * Creates a WordprocessingML document from scratch. 
+ * Creates a WordprocessingML document from scratch,
+ * and show several different ways of adding basic 
+ * content. 
  * 
  * @author Jason Harrop
- * @version 1.0
  */
 public class CreateWordprocessingMLDocument extends AbstractSample {
 
 	public static void main(String[] args) throws Exception {
 		
-		
-		try {
-			getInputFilePath(args);
-		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/CreateWordprocessingMLDocument_out.docx";	    	
-		}
-		
-		boolean save = 
-			(inputfilepath == null ? false : true);
-		
-		System.out.println( "Creating package..");
+				
+		boolean save = true; 
+
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 		
-		wordMLPackage.getMainDocumentPart()
-			.addStyledParagraphOfText("Title", "Hello world");
+		// Example 1: add text in Title style
+		mdp.addStyledParagraphOfText("Title", "Example 1");
 
-		wordMLPackage.getMainDocumentPart().addParagraphOfText("from docx4j!");
+		// Example 2: add normal paragraph (no explicit style)
+		mdp.addParagraphOfText("Example 2");
 		
+		// Example 3a: bold text
 		// To get bold text, you must set the run's rPr@w:b,
-	    // so you can't use the createParagraphOfText convenience method
-
-		//org.docx4j.wml.P p = wordMLPackage.getMainDocumentPart().createParagraphOfText("text");
+	    // so you can't use the addParagraphOfText convenience method
 		
-		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 		org.docx4j.wml.P  p = factory.createP();
 
 		org.docx4j.wml.Text  t = factory.createText();
-		t.setValue("text");
+		t.setValue("Example 3a (bold)");
 
 		org.docx4j.wml.R  run = factory.createR();
 		run.getContent().add(t);		
@@ -102,17 +83,30 @@ public class CreateWordprocessingMLDocument extends AbstractSample {
 	    ppr.setRPr(paraRpr);	    
 	    rpr.setB(b);
 	    
-	            
-	    wordMLPackage.getMainDocumentPart().addObject(p);
+	    mdp.getJaxbElement().getBody().getContent().add(p);
+	    // or just:
+	    // mdp.getContent().add(p);
+	    // but:
+	    // mdp.addObject(p);
+	    // is a better alternative if you are using a new style, since it 
+	    // will ensure that the style is activated  
+
+		// Example 3b: bold text
+	    // Well, actually you can use addParagraphOfText:
+		P p3b = mdp.addParagraphOfText("Example 3b (bold)");
+		R r3b = (R)p3b.getContent().get(0);
+	    // .. now set rPr (I'll just reuse the above object)
+		r3b.setRPr(rpr);
+
 	    
+	    // Example 4: Here is an easier way:
+	    String str = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" ><w:r><w:rPr><w:b /></w:rPr><w:t>Example 4</w:t></w:r></w:p>";
 	    
-	    // Here is an easier way:
-	    String str = "<w:p xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" ><w:r><w:rPr><w:b /></w:rPr><w:t>Bold, just at w:r level</w:t></w:r></w:p>";
-	    
-	    wordMLPackage.getMainDocumentPart().addObject(
+	    mdp.addObject(
 	    			org.docx4j.XmlUtils.unmarshalString(str) );
+
 	    
-	    // Let's add a table
+	    // Example 5: Let's add a table
 	    int writableWidthTwips = wordMLPackage.getDocumentModel().getSections().get(0).getPageDimensions().getWritableWidthTwips();
 	    int cols = 3;
 	    int cellWidthTwips = new Double( 
@@ -120,69 +114,23 @@ public class CreateWordprocessingMLDocument extends AbstractSample {
 	    								).intValue();
 	    
 	    Tbl tbl = TblFactory.createTable(3, 3, cellWidthTwips);
-	    wordMLPackage.getMainDocumentPart().addObject(tbl);
+	    mdp.addObject(tbl);
 	    
 		
-	    // Add an altChunk
-	    // .. the part
-	    String html = "<html><head><title>Import me</title></head><body><p>Hello World!</p></body></html>";
-	    AlternativeFormatInputPart afiPart = new AlternativeFormatInputPart(new PartName("/hw.html") ); 
-	    afiPart.setBinaryData(html.getBytes());
-	    afiPart.setContentType(new ContentType("text/html"));
-	    Relationship altChunkRel = wordMLPackage.getMainDocumentPart().addTargetPart(afiPart);
-	    // .. the bit in document body
-	    CTAltChunk ac = Context.getWmlObjectFactory().createCTAltChunk();
-	    ac.setId(altChunkRel.getId() );
-	    wordMLPackage.getMainDocumentPart().addObject(ac);
-
-	    // .. content type
-	    wordMLPackage.getContentTypeManager().addDefaultContentType("html", "text/html");
-	    
-		//injectDocPropsCustomPart(wordMLPackage);
 		
 		// Now save it
 		if (save) {
-			wordMLPackage.save(new java.io.File(inputfilepath) );
-			System.out.println("Saved " + inputfilepath);
+			String filename = System.getProperty("user.dir") + "/OUT_CreateWordprocessingMLDocument.docx";
+			wordMLPackage.save(new java.io.File(filename) );
+			System.out.println("Saved " + filename);
 		} else {
-		   	// Create a org.docx4j.wml.Package object
-			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
-			org.docx4j.xmlPackage.Package pkg = worker.get();
-	    	
-	    	// Now marshall it
-			JAXBContext jc = Context.jcXmlPackage;
-			Marshaller marshaller=jc.createMarshaller();
-			
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			NamespacePrefixMapperUtils.setProperty(marshaller, 
-					NamespacePrefixMapperUtils.getPrefixMapper());			
-			System.out.println( "\n\n OUTPUT " );
-			System.out.println( "====== \n\n " );	
-			marshaller.marshal(pkg, System.out);				
-			
+		   	// Just pretty print the main document part
+			System.out.println(
+					XmlUtils.marshaltoString(mdp.getJaxbElement(), true, true) );
 		}
 		
 		System.out.println("Done.");
 				
-	}
-	
-	public static void injectDocPropsCustomPart(WordprocessingMLPackage wordMLPackage) {
-		
-		try {
-			org.docx4j.openpackaging.parts.DocPropsCustomPart docPropsCustomPart = new org.docx4j.openpackaging.parts.DocPropsCustomPart();
-			
-			java.io.InputStream is = new java.io.FileInputStream("/tmp/custompart.xml" );
-			
-			docPropsCustomPart.unmarshal(is);
-			
-			wordMLPackage.addTargetPart(docPropsCustomPart);
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
 	}
 	
 }
