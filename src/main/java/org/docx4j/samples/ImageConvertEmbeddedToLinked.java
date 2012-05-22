@@ -50,7 +50,7 @@ import org.docx4j.wml.Body;
  * @author jharrop
  *
  */
-public class ConvertEmbeddedImageToLinked {
+public class ImageConvertEmbeddedToLinked {
 		
 	/**
 	 * @param args

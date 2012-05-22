@@ -33,7 +33,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
  * 
  * @author Jason Harrop
  */
-public class AddImage {
+public class ImageAdd {
 
 	public static void main(String[] args) throws Exception {
 		
