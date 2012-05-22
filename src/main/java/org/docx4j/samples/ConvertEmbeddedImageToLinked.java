@@ -25,15 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.docx4j.dml.picture.Pic;
-import org.docx4j.dml.wordprocessingDrawing.Anchor;
-import org.docx4j.dml.wordprocessingDrawing.Inline;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
+import org.docx4j.dml.CTBlip;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
@@ -43,6 +35,8 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.relationships.Relationships;
+import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
+import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.Body;
 
 
@@ -51,25 +45,13 @@ import org.docx4j.wml.Body;
  * and points at them with TargetMode="External",
  * and r:link (instead of r:embed).
  * 
- * Also saves the target part as a file.
+ * Optionally saves the target part as a file.
  * 
  * @author jharrop
  *
  */
 public class ConvertEmbeddedImageToLinked {
-	
-	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
-	
-	public String generateTargetUri( String username, String hash, String extension )  {
 		
-		// See spec 8.3.3
-		
-		return null;
-		
-		
-	}
-
-
 	/**
 	 * @param args
 	 */
@@ -77,20 +59,17 @@ public class ConvertEmbeddedImageToLinked {
 		
 		String BASE_DIR = System.getProperty("user.dir");
 
-		//String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/jpeg.docx";
-		String inputfilepath = BASE_DIR + "/png1.docx";
-		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/AutoOpen.docm";
+		String inputfilepath = BASE_DIR + "/sample-docs/word/sample-docx.docx";
 		
 		boolean saveImages = true;
 		boolean saveResultingDoc = true;
 		
-		String outputfilepath = BASE_DIR + "/imageLinked.docx";		
+		String outputfilepath = BASE_DIR + "/OUT_ConvertEmbeddedImageToLinked.docx";		
 		
 		
 		// Open a document from the file system
 		// Load the Package
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-		
 		
 		// Change the rels to TargetMode="External"
 		// Fetch rels part
@@ -102,24 +81,24 @@ public class ConvertEmbeddedImageToLinked {
 		// For each image rel
 		for (Relationship r : relsList) {
 
-			if ( r.getType().equals( Namespaces.IMAGE ) ) {
-				// 	.. externalise
-				r.setTargetMode("External");
+			System.out.println(r.getTargetMode());
+			if ( r.getType().equals( Namespaces.IMAGE )
+					&& (r.getTargetMode()==null
+							|| r.getTargetMode().equalsIgnoreCase("internal"))) {
 				
 				String target = r.getTarget();
 				System.out.println("target: " + target);
 				
-				// TODO .. change name to username_hash.type
-				
-				
 				if (saveImages) {
 					// Save the image as a file in the specified location
 					
-					File f = new File(BASE_DIR + "/word/" + target);
+					File f = new File(BASE_DIR + "/" + target);
 					if (f.exists()) {
 						System.out.println("Overwriting existing object: " + f.getPath() );
 					} else if ( !f.getParentFile().exists() ) {
+						System.out.println("creating " + f.getParentFile().getAbsolutePath() );
 						f.getParentFile().mkdirs();
+						//f = new File(BASE_DIR + "/" + target);
 					}					
 					
 					Part p = relsPart.getPart(r);
@@ -128,22 +107,21 @@ public class ConvertEmbeddedImageToLinked {
 					fos.close();
 					
 				}
+				// 	.. externalise - after getPart!
+				r.setTargetMode("External");
 				
 			}			
 		}
-	
-		
-		
-		
-		
+			
 		// Change r:embed to r:link
 		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
 		Body body =  wmlDocumentEl.getBody();
-
-		List <Object> bodyChildren = body.getEGBlockLevelElts();
-		
-		walkJAXBElements(bodyChildren);		
-		
+						
+		SingleTraversalUtilVisitorCallback imageVisitor 
+			= new SingleTraversalUtilVisitorCallback(
+					new TraversalUtilBlipVisitor());
+		imageVisitor.walkJAXBElements(body);
+				
 				
 		// Save it
 		
@@ -153,97 +131,46 @@ public class ConvertEmbeddedImageToLinked {
 		}
 	}
 	
-	static void walkJAXBElements(List <Object> bodyChildren){
 	
-		for (Object o : bodyChildren ) {
 
-			if ( o instanceof javax.xml.bind.JAXBElement) {
-			
-				System.out.println( o.getClass().getName() );
-				System.out.println( ((JAXBElement)o).getName() );
-				System.out.println( ((JAXBElement)o).getDeclaredType().getName() + "\n\n");
-					
-			} else if (o instanceof org.docx4j.wml.P) {
-				System.out.println( "Paragraph object: ");
-				
-				walkList( ((org.docx4j.wml.P)o).getParagraphContent());
-			}
-		}
-	}
-	
-	static void walkList(List children){
+	/** 
+	 * <w:drawing>
+		<wp:inline distT="0" distB="0" distL="0" distR="0">
+			<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+				<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+					<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+						<pic:blipFill>
+							<a:blip r:embed="rId5" />	
+	 */
+	public static class TraversalUtilBlipVisitor extends TraversalUtilVisitor<CTBlip> {
 		
-		for (Object o : children ) {					
-			System.out.println("  " + o.getClass().getName() );
-			if ( o instanceof javax.xml.bind.JAXBElement) {
-				System.out.println("      " +  ((JAXBElement)o).getName() );
-				System.out.println("      " +  ((JAXBElement)o).getDeclaredType().getName());
-				
-				// TODO - unmarshall directly to Text.
-				if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Text") ) {
-					org.docx4j.wml.Text t = (org.docx4j.wml.Text)((JAXBElement)o).getValue();
-					System.out.println("      " +  t.getValue() );
-					
-				} else if ( ((JAXBElement)o).getDeclaredType().getName().equals("org.docx4j.wml.Drawing") ) {
-					convertLinkToEmbed( (org.docx4j.wml.Drawing)((JAXBElement)o).getValue() );
-				}
-				
-				
-				
-			} else if (o instanceof org.w3c.dom.Node) {
-				System.out.println(" IGNORED " + ((org.w3c.dom.Node)o).getNodeName() );					
-			} else if ( o instanceof org.docx4j.wml.R) {
-				org.docx4j.wml.R  run = (org.docx4j.wml.R)o;
-				walkList(run.getRunContent());				
-				
-			} else {
-				
-				System.out.println(" IGNORED " + o.getClass().getName() );
-				
-			}
-//			else if ( o instanceof org.docx4j.jaxb.document.Text) {
-//				org.docx4j.jaxb.document.Text  t = (org.docx4j.jaxb.document.Text)o;
-//				System.out.println("      " +  t.getValue() );					
-//			}
-		}
-	}
+		@Override
+		public void apply(CTBlip element, Object parent, List<Object> siblings) {
 
-	
-	static void convertLinkToEmbed( org.docx4j.wml.Drawing d ) {
-	
-		System.out.println(" describeDrawing " );
-		
-		if ( d.getAnchorOrInline().get(0) instanceof Anchor ) {
-			
-			System.out.println(" ENCOUNTERED w:drawing/wp:anchor " );
-			// That's all for now...
-			
-		} else if ( d.getAnchorOrInline().get(0) instanceof Inline ) {
-			
-			// Extract w:drawing/wp:inline/a:graphic/a:graphicData/pic:pic/pic:blipFill/a:blip/@r:embed
-			
-			Inline inline = (Inline )d.getAnchorOrInline().get(0);
-			
-			Pic pic = inline.getGraphic().getGraphicData().getPic();
-						
-			System.out.println( "*** image relationship: " +  pic.getBlipFill().getBlip().getEmbed() );
-			
-			if (pic.getBlipFill().getBlip().getEmbed()!=null) {
+			if (element.getEmbed()!=null) {
 				
-				String relId = pic.getBlipFill().getBlip().getEmbed();
+				String relId = element.getEmbed();
 				// Add r:link
-				pic.getBlipFill().getBlip().setLink(relId);
+				element.setLink(relId);
 				// Remove r:embed
-				pic.getBlipFill().getBlip().setEmbed(null);
+				element.setEmbed(null);
+				
+				System.out.println("Converted a:blip with relId " + relId);
 				
 			}
-			
-			
-		} else {
-			
-			System.out.println(" Didn't get Inline :(  How to handle " + d.getAnchorOrInline().get(0).getClass().getName() );
 		}
-		
+	
 	}
-
+	
+	/** 
+		<w:pict>
+			:
+			<v:shape id="_x0000_i1025" type="#_x0000_t75" 
+				style="width:428.25pt;height:321pt">
+				<v:imagedata r:id="rId4" o:title="" />  <---- no link/embed attribute 
+			</v:shape>
+		</w:pict>
+	 */
+	
+	
 }
