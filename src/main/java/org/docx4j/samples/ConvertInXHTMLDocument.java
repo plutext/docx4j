@@ -36,7 +36,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
  * For best results, be sure to include src/main/resources on your classpath.
  *  
  */
-public class XHTMLImportDocument {
+public class ConvertInXHTMLDocument {
 
     public static void main(String[] args) throws Exception {
         

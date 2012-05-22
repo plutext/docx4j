@@ -44,7 +44,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
  * This is a convenient format for loading certain test cases.
  * 
  * */
-public class ImportFromPackageFormat extends AbstractSample {
+public class ConvertInFlatOpenPackage extends AbstractSample {
 
 	/**
 	 * @param args

@@ -63,7 +63,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
  * @author jharrop
  *
  */
-public class CreatePdf extends AbstractSample {
+public class ConvertOutPDF extends AbstractSample {
 	    
 	// Config for non-command line use
 	static {

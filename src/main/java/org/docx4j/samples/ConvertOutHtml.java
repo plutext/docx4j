@@ -43,7 +43,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * it with MIME type application/xhtml+xml
  *
  */
-public class CreateHtml extends AbstractSample {
+public class ConvertOutHtml extends AbstractSample {
 	
 	// Config for non-command line version
 	static {

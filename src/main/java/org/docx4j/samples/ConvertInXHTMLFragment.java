@@ -30,7 +30,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * For best results, be sure to include src/main/resources on your classpath. 
  *
  */
-public class XHTMLImportFragment {
+public class ConvertInXHTMLFragment {
 
     public static void main(String[] args) throws Exception {
         
