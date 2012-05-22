@@ -21,16 +21,24 @@
 package org.docx4j.samples;
 
 
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 
+/**
+ * Simple example showing how to see the
+ * document's XML (MainDocumentPart).
+ * 
+ * If you want to see all the parts
+ * as a Flat OPC XML document, see 
+ * the ExportInPackageFormat sample.
+ * 
+ * @author jharrop
+ *
+ */
 public class DisplayMainDocumentPartXml extends AbstractSample {
 
-
-		/**
-		 * @param args
-		 */
 		public static void main(String[] args) throws Exception {
 
 			/*
@@ -50,28 +58,15 @@ public class DisplayMainDocumentPartXml extends AbstractSample {
 				getInputFilePath(args);
 			} catch (IllegalArgumentException e) {
 				inputfilepath = System.getProperty("user.dir")
-						+ "/sample-docs/sample-docx.xml";
-
-//				inputfilepath = System.getProperty("user.dir")
-//				+ "/tmp/toc.docx";
+						+ "/sample-docs/word/sample-docx.xml";
 			}
 			
-			// Open a document from the file system
-			// 1. Load the Package
 			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-			
-			// 2. Fetch the document part 		
 			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 			
-			// Display its contents 
-			System.out.println( "\n\n OUTPUT " );
-			System.out.println( "====== \n\n " );	
-			
-			org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
-
-	        String xml = org.docx4j.XmlUtils.marshaltoString(wmlDocumentEl, true);
-	        
-	        System.out.println(xml);
+		   	// Pretty print the main document part
+			System.out.println(
+					XmlUtils.marshaltoString(documentPart.getJaxbElement(), true, true) );
 			
 		}
 		
