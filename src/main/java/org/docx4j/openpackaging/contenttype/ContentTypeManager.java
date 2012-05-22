@@ -712,24 +712,24 @@ public class ContentTypeManager  {
 		return types;
 	}
 	
-	public void listTypes() {
-		
-
-		for (Entry<String, CTDefault> entry : defaultContentType.entrySet()) {
-			
-			System.out.println("// " + entry.getValue().getExtension());
-			System.out.println("public final static String XX =" );
-			System.out.println(entry.getValue().getContentType());
-		}
-
-		if (overrideContentType != null) {
-			for (Entry<URI, CTOverride> entry : overrideContentType.entrySet()) {
-				System.out.println("// " + entry.getValue().getPartName());
-				System.out.println("public final static String XX =" );
-				System.out.println("\"" + entry.getValue().getContentType() + "\";");
-			}
-		}	
-	}
+//	public void listTypes() {
+//		
+//
+//		for (Entry<String, CTDefault> entry : defaultContentType.entrySet()) {
+//			
+//			System.out.println("// " + entry.getValue().getExtension());
+//			System.out.println("public final static String XX =" );
+//			System.out.println(entry.getValue().getContentType());
+//		}
+//
+//		if (overrideContentType != null) {
+//			for (Entry<URI, CTOverride> entry : overrideContentType.entrySet()) {
+//				System.out.println("// " + entry.getValue().getPartName());
+//				System.out.println("public final static String XX =" );
+//				System.out.println("\"" + entry.getValue().getContentType() + "\";");
+//			}
+//		}	
+//	}
 	
     public void marshal(org.w3c.dom.Node node) throws JAXBException {
 		
@@ -870,5 +870,11 @@ public class ContentTypeManager  {
 
     }
 	
+    public String toString() {
+    	
+    	CTTypes types = buildTypes();
+    	return XmlUtils.marshaltoString(types, true, true, Context.jcContentTypes);
+    	
+    }
 	
 }

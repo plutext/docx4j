@@ -28,10 +28,9 @@ import javax.xml.bind.JAXBElement;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
@@ -45,24 +44,22 @@ public class PartsList extends AbstractSample {
 	 */
 	public static void main(String[] args) throws Exception {
 		
-
+		// Configuration options
+		boolean printContentTypes = true;
 		
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-//			 inputfilepath = System.getProperty("user.dir") 
-//			+ "/sample-docs/test-docs/header-footer/header_sections_some-linked.xml";
-//	 inputfilepath = System.getProperty("user.dir") + "/sample-docs/xlsx/pivot.xlsm";
-//		inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
-	 inputfilepath = System.getProperty("user.dir") + "/altChunk_out.docx";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		}
 		
 			
-		// Open a document from the file system
-		// 1. Load the Package - .docx or Flat OPC .xml
-		org.docx4j.openpackaging.packages.OpcPackage opcPackage = org.docx4j.openpackaging.packages.OpcPackage.load(new java.io.File(inputfilepath));		
+		// Load the Package as an OpcPackage, since this 
+		// works for docx, pptx, and xlsx
+		OpcPackage opcPackage = OpcPackage.load(new java.io.File(inputfilepath));		
 		
-		//printContentTypes(opcPackage);
+		if (printContentTypes)
+			printContentTypes(opcPackage);
 		
 		// List the parts by walking the rels tree
 		RelationshipsPart rp = opcPackage.getRelationshipsPart();
@@ -72,17 +69,17 @@ public class PartsList extends AbstractSample {
 		
 		System.out.println(sb.toString());
 		
-//		SaveToZipFile saver = new SaveToZipFile(opcPackage);
-//		saver.save(System.getProperty("user.dir") + "/out.docx");
-		
 	}
 	
+	/**
+	 * It is often useful to see this [Content_Types].xml
+	 */
 	public static void printContentTypes(org.docx4j.openpackaging.packages.OpcPackage p) {
 		
 		ContentTypeManager ctm = p.getContentTypeManager();
-		
-		ctm.listTypes();
-		
+		//ctm.listTypes(); 
+		System.out.println(
+				ctm.toString() );		
 	}
 	
 	public static void  printInfo(Part p, StringBuilder sb, String indent) {
