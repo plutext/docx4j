@@ -34,15 +34,21 @@ import org.docx4j.wml.Body;
 
 
 /**
- * This sample is useful if you want to see what objects are used in your document.xml.
+ * To see what parts comprise your docx, try the PartsList sample.
  * 
- * This shows a general approach for traversing the JAXB object tree in
+ * There will always be a MainDocumentPart, usually called document.xml.
+ * This sample shows you what objects are in that part.
+ * 
+ * It also shows a general approach for traversing the JAXB object tree in
  * the Main Document part.  It can also be applied to headers, footers etc. 
  * 
  * It is an alternative to XSLT, and doesn't require marshalling/unmarshalling.
  * 
- * If many cases, the method getJAXBNodesViaXPath
- * may be more convenient.  
+ * If many cases, the method getJAXBNodesViaXPath would be more convenient,
+ * but there are 3 JAXB bugs which detract from that (see Getting Started).  
+ * 
+ * See related classes SingleTraversalUtilVisitorCallback 
+ * and CompoundTraversalUtilVisitorCallback
  * 
  * @author jharrop
  *
@@ -51,9 +57,6 @@ public class OpenMainDocumentAndTraverse extends AbstractSample {
 
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc;
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) throws Exception {
 
 		/*
