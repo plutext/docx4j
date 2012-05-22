@@ -34,26 +34,10 @@ public class XHTMLImportFragment {
 
     public static void main(String[] args) throws Exception {
         
-    	//String xhtml= "<div><p>The <b>quick</b> <span style=\"font-size: 14pt;\">brown</span> fox...</p><p>Paragraph 2</p></div>";
-    	
-        String xhtml= "<table class=\"reference\" style=\"width:60%\">\n" +
-                "\t<tr>\n" +
-                "\t\t<td>Apples</td>\n" +
-                "\t\t<td>44%</td>\n" +
-                "\t</tr>\n" +
-                "\t<tr>\n" +
-                "\t\t<td>Bananas</td>\n" +
-                "\t\t<td>23%</td>\n" +
-                "\t</tr>\n" +
-                "\t<tr>\n" +
-                "\t\t<td>Oranges</td>\n" +
-                "\t\t<td>13%</td>\n" +
-                "\t</tr>\n" +
-                "\t<tr>\n" +
-                "\t\t<td>Other</td>\n" +
-                "\t\t<td>10%</td>\n" +
-                "\t</tr>\n" +
-                "</table>\n";
+    	String xhtml= "<div>" +
+		    			"<p>The <b>quick</b> <span style=\"font-size: 14pt;\">brown</span> fox...</p>" +
+		    			"<p>Paragraph 2</p>" +
+		    		  "</div>";    	
         		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
