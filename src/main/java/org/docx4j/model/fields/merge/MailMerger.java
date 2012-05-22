@@ -263,10 +263,11 @@ public class MailMerger {
 				if ( isMergeField(instr) ) {
 
 					// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
+					// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
 					
 					String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
 					tmp = tmp.trim();
-					String key  = tmp.substring(0, tmp.indexOf(" ")) ;
+					String key  = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
 					log.info("Key: '" + key + "'");
 					
 					String val = datamap.get( new DataFieldName(key));
@@ -328,12 +329,12 @@ public class MailMerger {
 		data.add(map);		
 		
 		
-//		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
+		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 
 		WordprocessingMLPackage output = org.docx4j.model.fields.merge.MailMerger.getConsolidatedResultCrude(wordMLPackage, data);
 		
 		
-		//System.out.println(XmlUtils.marshaltoString(output.getMainDocumentPart().getJaxbElement(), true, true));
+		System.out.println(XmlUtils.marshaltoString(output.getMainDocumentPart().getJaxbElement(), true, true));
 		
 		output.save(new java.io.File(
 				System.getProperty("user.dir") + "/mergefield1-OUT.docx") );
