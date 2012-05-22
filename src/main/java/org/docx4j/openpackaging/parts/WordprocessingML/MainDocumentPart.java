@@ -452,7 +452,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 
 		if (getPropertyResolver().activateStyle(styleId)) {
 			// Style is available 
-			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();			
+			org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();			
 			org.docx4j.wml.PPr  pPr = factory.createPPr();
 			p.setPPr(pPr);
 			org.docx4j.wml.PPrBase.PStyle pStyle = factory.createPPrBasePStyle();
@@ -492,9 +492,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	 */
 	public org.docx4j.wml.P createParagraphOfText(String simpleText) {
 		
-		// Create content
-
-		org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+		org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory();
 		org.docx4j.wml.P  para = factory.createP();
 
 		if (simpleText!=null) {
@@ -502,14 +500,12 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 			t.setValue(simpleText);
 	
 			org.docx4j.wml.R  run = factory.createR();
-			run.getContent().add(t);		
+			run.getContent().add(t); // ContentAccessor		
 			
-			para.getContent().add(run);
+			para.getContent().add(run); // ContentAccessor
 		}
 		
 		return para;
-		
-		
 	}
 	
 	
