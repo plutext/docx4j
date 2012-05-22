@@ -117,20 +117,17 @@ public class CreateWordprocessingMLDocument extends AbstractSample {
 	    mdp.addObject(tbl);
 	    
 		
+	   	// Pretty print the main document part
+		System.out.println(
+				XmlUtils.marshaltoString(mdp.getJaxbElement(), true, true) );
 		
-		// Now save it
+		// Optionally save it
 		if (save) {
 			String filename = System.getProperty("user.dir") + "/OUT_CreateWordprocessingMLDocument.docx";
 			wordMLPackage.save(new java.io.File(filename) );
 			System.out.println("Saved " + filename);
-		} else {
-		   	// Just pretty print the main document part
-			System.out.println(
-					XmlUtils.marshaltoString(mdp.getJaxbElement(), true, true) );
 		}
-		
-		System.out.println("Done.");
-				
+						
 	}
 	
 }
