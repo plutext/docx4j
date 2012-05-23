@@ -21,33 +21,16 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
 import java.math.BigInteger;
 import java.util.Calendar;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
-import org.docx4j.model.table.TblFactory;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
-import org.docx4j.openpackaging.contenttype.CTDefault;
-import org.docx4j.openpackaging.contenttype.ContentType;
-import org.docx4j.openpackaging.contenttype.ContentTypes;
-import org.docx4j.openpackaging.contenttype.ObjectFactory;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
-import org.docx4j.relationships.Relationship;
-import org.docx4j.wml.CTAltChunk;
 import org.docx4j.wml.Comments;
-import org.docx4j.wml.P;
-import org.docx4j.wml.Tbl;
 import org.docx4j.wml.Comments.Comment;
+import org.docx4j.wml.P;
 
 /**
  * Creates a WordprocessingML document from scratch, and adds a comment.
@@ -71,7 +54,6 @@ import org.docx4j.wml.Comments.Comment;
  *  
  * 
  * @author Jason Harrop
- * @version 1.0
  */
 public class CommentsSample extends AbstractSample {
 
@@ -83,7 +65,7 @@ public class CommentsSample extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/Comments_out.docx";	    	
+	    	inputfilepath = System.getProperty("user.dir") + "/OUT_CommentsSample.docx";	    	
 		}
 		
 		boolean save = 
@@ -107,7 +89,7 @@ public class CommentsSample extends AbstractSample {
 		
 		// Add comment reference to document
 		P paraToCommentOn = wordMLPackage.getMainDocumentPart().addParagraphOfText("here is some content");
-		paraToCommentOn.getParagraphContent().add(createRunCommentReference(commentId));
+		paraToCommentOn.getContent().add(createRunCommentReference(commentId));
 
 		// ++, for next comment ...
 		commentId = commentId.add(java.math.BigInteger.ONE);
@@ -117,21 +99,9 @@ public class CommentsSample extends AbstractSample {
 			wordMLPackage.save(new java.io.File(inputfilepath) );
 			System.out.println("Saved " + inputfilepath);
 		} else {
-		   	// Create a org.docx4j.wml.Package object
+		   	// Show the Flat OPC XML
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
-			org.docx4j.xmlPackage.Package pkg = worker.get();
-	    	
-	    	// Now marshall it
-			JAXBContext jc = Context.jcXmlPackage;
-			Marshaller marshaller=jc.createMarshaller();
-			
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			NamespacePrefixMapperUtils.setProperty(marshaller, 
-					NamespacePrefixMapperUtils.getPrefixMapper());			
-			System.out.println( "\n\n OUTPUT " );
-			System.out.println( "====== \n\n " );	
-			marshaller.marshal(pkg, System.out);				
-			
+			worker.marshal(System.out);
 		}
 		
 		System.out.println("Done.");
@@ -155,9 +125,9 @@ public class CommentsSample extends AbstractSample {
 			org.docx4j.wml.P commentP = factory.createP();
 			comment.getEGBlockLevelElts().add(commentP);
 			org.docx4j.wml.R commentR = factory.createR();
-			commentP.getParagraphContent().add(commentR);
+			commentP.getContent().add(commentR);
 			org.docx4j.wml.Text commentText = factory.createText();
-			commentR.getRunContent().add(commentText);
+			commentR.getContent().add(commentText);
 			
 			commentText.setValue(message);
 	    	
@@ -168,7 +138,7 @@ public class CommentsSample extends AbstractSample {
 	    	
 			org.docx4j.wml.R run = factory.createR();
 			org.docx4j.wml.R.CommentReference commentRef = factory.createRCommentReference();
-			run.getRunContent().add(commentRef);
+			run.getContent().add(commentRef);
 			commentRef.setId( commentId );	
 			
 			return run;

@@ -44,9 +44,16 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
 
-public class CustomXmlInfo extends AbstractSample {
+/**
+ * This sample is similar to PartsList, but
+ * it provides info specific to your CustomXML parts.
+ * 
+ * @author jharrop
+ *
+ */
+public class ContentControlsPartsInfo extends AbstractSample {
 	
-	private static Logger log = Logger.getLogger(CustomXmlInfo.class);						
+	private static Logger log = Logger.getLogger(ContentControlsPartsInfo.class);						
 
 	/**
 	 * @param args
@@ -58,7 +65,7 @@ public class CustomXmlInfo extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/invoice.docx";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
 //			inputfilepath = System.getProperty("user.dir") + "/sample-docs/databinding/CountryRegions.xml";
 
 		}

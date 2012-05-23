@@ -69,7 +69,8 @@ public class ContentControlsXmlEdit {
 		// If we know the itemId ..
 		String itemId = "{5448916C-134B-45E6-B8FE-88CC1FFC17C3}".toLowerCase();
 		CustomXmlDataStoragePart customXmlDataStoragePart = wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
-		// .. if you don't know the itemId, you could get the part by name, by type,
+		// .. if you don't know the itemId (which you can get using ContentControlsPartsInfo), 
+		// you could get the part by name, by type,
 		// or you could find the item Id by looking in an SDT for w:storeItemID:
 		//  <w:sdt>
 		//    <w:sdtPr>

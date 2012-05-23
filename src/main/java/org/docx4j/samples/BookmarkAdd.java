@@ -51,7 +51,7 @@ public class BookmarkAdd  extends AbstractSample {
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 
 		String outputfilepath = System.getProperty("user.dir")
-				+ "/bookmarkAdd-OUT.docx";;		
+				+ "/OUT_bookmarkAdd.docx";;		
 						
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("x");
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("x");
@@ -87,7 +87,7 @@ public class BookmarkAdd  extends AbstractSample {
 	public static void bookmarkRun(P p, R r, String name, int id) {
 		
 		// Find the index
-		int index = p.getParagraphContent().indexOf(r);
+		int index = p.getContent().indexOf(r);
 	
 		if (index<0) {
 			System.out.println("P does not contain R!");
@@ -102,14 +102,14 @@ public class BookmarkAdd  extends AbstractSample {
 		CTMarkupRange mr = factory.createCTMarkupRange();
 		mr.setId(ID);
 		JAXBElement<CTMarkupRange> bmEnd = factory.createBodyBookmarkEnd(mr);
-		p.getParagraphContent().add(index+1, bmEnd); // from 2.7.0, use getContent()
+		p.getContent().add(index+1, bmEnd); 
 		
 		// Next, bookmark start
 		CTBookmark bm = factory.createCTBookmark();
 		bm.setId(ID);
 		bm.setName(name);		
 		JAXBElement<CTBookmark> bmStart =  factory.createBodyBookmarkStart(bm);
-		p.getParagraphContent().add(index, bmStart);
+		p.getContent().add(index, bmStart);
 		
 	}
 

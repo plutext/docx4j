@@ -53,7 +53,7 @@ public class HeaderFooterList extends AbstractSample {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
 			inputfilepath = System.getProperty("user.dir")
-					+ "/sample-docs/test-docs/header-footer/Header-firstPage.docx";
+					+ "/sample-docs/test-docs/header-footer/header_first.xml";
 			
 //			inputfilepath = System.getProperty("user.dir")
 //			+ "/tmp/toc.docx";
