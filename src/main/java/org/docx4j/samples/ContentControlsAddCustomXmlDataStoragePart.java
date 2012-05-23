@@ -21,32 +21,25 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
 import java.util.UUID;
 
+import org.docx4j.XmlUtils;
 import org.docx4j.customXmlProperties.DatastoreItem;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
-import org.docx4j.openpackaging.Base;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.Parts;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 
 /**
  * Creates a docx containing a CustomXml part.
  * 
  * @author Jason Harrop
- * @version 1.0
  */
-public class CreateDocxWithCustomXml {
+public class ContentControlsAddCustomXmlDataStoragePart {
 
 	public static void main(String[] args) throws Exception {
 		
@@ -59,36 +52,30 @@ public class CreateDocxWithCustomXml {
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("from docx4j!");
 		
 	    			
-		CustomXmlDataStoragePart customXmlDataStoragePart = injectCustomXmlDataStoragePart(wordMLPackage.getMainDocumentPart(),
-				wordMLPackage.getParts() );
+		CustomXmlDataStoragePart customXmlDataStoragePart = injectCustomXmlDataStoragePart(
+				wordMLPackage.getMainDocumentPart() );
 		
 		addProperties(customXmlDataStoragePart);
 		
 		// Now save it 
-		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/customxml2.docx") );
-		
-		System.out.println("Done.");
-				
+		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_withCustomXmlDataStoragePart.docx") );
+						
 	}
 	
 	
-	public static CustomXmlDataStoragePart injectCustomXmlDataStoragePart(Part parent, Parts parts) throws Exception {
+	public static CustomXmlDataStoragePart injectCustomXmlDataStoragePart(Part parent) throws Exception {
 		
 			org.docx4j.openpackaging.parts.CustomXmlDataStoragePart customXmlDataStoragePart = 
-				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart(parts);
+				new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart();
 				// Defaults to /customXml/item1.xml
 			
 			CustomXmlDataStorage data = new CustomXmlDataStorageImpl();
 			data.setDocument(createCustomXmlDocument());
 			
 			customXmlDataStoragePart.setData(data);
-			
-//			customXmlDataStoragePart.setDocument( createCustomXmlDocument() );
-					
-			parent.addTargetPart(customXmlDataStoragePart);
+			parent.addTargetPart(customXmlDataStoragePart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
 
 			return customXmlDataStoragePart;
-
 	}
 	
 	public static void addProperties(CustomXmlDataStoragePart customXmlDataStoragePart) throws InvalidFormatException {
@@ -106,11 +93,15 @@ public class CreateDocxWithCustomXml {
 		customXmlDataStoragePart.addTargetPart(part);
 	}
 	
+	/**
+	 * Generate or load the XML you want in your CustomXML part.
+	 */
 	public static org.w3c.dom.Document createCustomXmlDocument() {
 		
-		// TODO: implement
+		org.w3c.dom.Document domDoc = XmlUtils.neww3cDomDocument();
+		domDoc.appendChild(domDoc.createElement("someContent"));
 		
-		return null;
+		return domDoc;
 		
 	}
 	

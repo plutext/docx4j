@@ -30,6 +30,17 @@ import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 
+/**
+ * This adds an AlternativeFormatInputPart
+ * containing a docx.
+ * 
+ * Word will convert it to normal docx content
+ * when it is first opened.  Or you could 
+ * use Plutext's MergeDocx to do this.
+ * 
+ * @author jharrop
+ *
+ */
 public class AltChunkAddOfTypeDocx {
 	
 	public static void main(String[] args) throws Exception {
@@ -37,15 +48,13 @@ public class AltChunkAddOfTypeDocx {
 		boolean ADD_TO_HEADER = false;
 		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
-		
 		String chunkPath = System.getProperty("user.dir") + "/sample-docs/word/chunk.docx";
 		
 		boolean save = true;
-		String outputfilepath = System.getProperty("user.dir") + "/altChunk_out.docx";
+		String outputfilepath = System.getProperty("user.dir") + "/OUT_AltChunkAddOfTypeDocx.docx";
 		
 		
 		// Open a document from the file system
-		// 1. Load the Package
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 				
 		if (ADD_TO_HEADER) {
@@ -55,8 +64,6 @@ public class AltChunkAddOfTypeDocx {
 			MainDocumentPart main = wordMLPackage.getMainDocumentPart();
 			main.addAltChunk(AltChunkType.WordprocessingML, new FileInputStream(chunkPath) );
 		}
-		
-		// Save it
 		
 		if (save) {		
 			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);

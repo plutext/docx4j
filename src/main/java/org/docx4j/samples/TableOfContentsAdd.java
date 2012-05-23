@@ -18,7 +18,7 @@ import org.docx4j.wml.R;
 import org.docx4j.wml.STFldCharType;
 import org.docx4j.wml.Text;
 
-public class AddTOC {
+public class TableOfContentsAdd {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

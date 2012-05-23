@@ -31,11 +31,24 @@ import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
 
+/**
+ * Remove certain parts from docx,
+ * either the specified docx, or each one in
+ * the specified directory (beware!).
+ * 
+ * For this reason, this sample is shipped
+ * pointing to a non-existent directory.
+ * 
+ * Which parts are deleted is configurable 
+ * to some extent; please consult the code to see.
+ * 
+ * @author jharrop
+ *
+ */
 public class PartsStrip {
 	
 
@@ -43,8 +56,8 @@ public class PartsStrip {
 	static boolean flatOpcXmlOutput = false;
 	static boolean overwriteInputFile = true;
 	
-	static String dir = System.getProperty("user.dir") + "/src/test/resources/AlteredParts/";
-	static String file = "blagh";  // set to null to process all docx in dir
+	static String dir = System.getProperty("user.dir") + "/test-strip/";
+	static String file = null; //"blagh";  // set to null to process all docx in dir
 	
 	static boolean stripPropertiesParts = true;
 	static boolean keepStyles = true;
@@ -128,6 +141,8 @@ public class PartsStrip {
 			RelationshipsPart rp, 
 			StringBuilder sb, String indent)
 	 throws Docx4JException {
+		
+		// Sme approach as in PartsList sample
 				
 		List<Relationship> deletions = new ArrayList<Relationship>();
 		
@@ -149,14 +164,11 @@ public class PartsStrip {
 				String resolvedPartUri = URIHelper.resolvePartUri(rp.getSourceURI(), new URI(r.getTarget() ) ).toString();		
 				resolvedPartUri = resolvedPartUri.substring(1);	
 				
-				Part part = wordMLPackage.getParts().get(new PartName("/" + resolvedPartUri));
+				Part part = rp.getPart(r);
 				
-				// Or could just have done:
-				// Part p = rp.getPart(r);
+				// Or could  have done:
+				// Part part = wordMLPackage.getParts().get(new PartName("/" + resolvedPartUri));
 				
-				// TEMP
-//				if ()
-
 				if (part!=null) {
 					printInfo(part, sb, indent);					
 				}
