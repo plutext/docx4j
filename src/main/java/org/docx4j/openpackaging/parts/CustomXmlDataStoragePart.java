@@ -56,6 +56,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentCell;
@@ -121,10 +122,10 @@ public final class CustomXmlDataStoragePart extends Part {
 		init();
 	}
 	
-//	public CustomXmlDataStoragePart() throws InvalidFormatException {
-//		super(new PartName("/customXml/item1.xml"));
-//		init();
-//	}
+	public CustomXmlDataStoragePart() throws InvalidFormatException {
+		super(new PartName("/customXml/item1.xml"));
+		init();
+	}
 
 	/**
 	 * @param parts The parts present in the package to which this will be added.
@@ -132,6 +133,7 @@ public final class CustomXmlDataStoragePart extends Part {
 	 * the name /customXml/item2.xml to be generated.
 	 * @throws InvalidFormatException
 	 */
+	@Deprecated // since we now have AddPartBehaviour.RENAME_IF_NAME_EXISTS
 	public CustomXmlDataStoragePart(Parts parts) throws InvalidFormatException {
 		
 		int partNum = 1;
