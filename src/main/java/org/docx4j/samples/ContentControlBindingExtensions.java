@@ -20,32 +20,16 @@
 
 package org.docx4j.samples;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.List;
-import java.util.Map;
-
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.XmlUtils;
-import org.docx4j.fonts.IdentityPlusMapper;
-import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.BindingHandler;
-import org.docx4j.model.datastorage.CustomXmlDataStorage;
-import org.docx4j.model.datastorage.CustomXmlDataStorageImpl;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
 import org.docx4j.model.datastorage.RemovalHandler;
 import org.docx4j.model.datastorage.RemovalHandler.Quantifier;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
 
 
 /**
@@ -73,19 +57,7 @@ public class ContentControlBindingExtensions {
 	 */
 	public static void main(String[] args) throws Exception {
 
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/hyperlink-binding-test.docx";
-		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
-		
-//		String inputfilepath = System.getProperty("user.dir") + "/src/test/resources/OpenDoPE/hyperlinks.docx";
-
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/CountryRegions.xml";
-
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/IT inventory.docx";
-		
-//		String inputfilepath = "/home/dev/workspace/docx4j/sample-docs/word/databinding/MedicalChartSample.docx";
-		
-//		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/repeat-containing-condition.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		

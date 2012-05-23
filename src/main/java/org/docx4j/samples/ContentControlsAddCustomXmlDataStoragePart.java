@@ -37,6 +37,9 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBeh
 /**
  * Creates a docx containing a CustomXml part.
  * 
+ * See https://github.com/plutext/OpenDoPE-WAR/blob/master/webapp-simple/src/main/java/org/opendope/webapp/SubmitBoth.java
+ * for a servlet which injects XML into the supplied docx.
+ * 
  * @author Jason Harrop
  */
 public class ContentControlsAddCustomXmlDataStoragePart {
