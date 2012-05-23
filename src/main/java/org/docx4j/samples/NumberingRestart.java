@@ -24,6 +24,7 @@ package org.docx4j.samples;
 import java.math.BigInteger;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.wml.Numbering;
@@ -38,17 +39,15 @@ import org.docx4j.wml.PPrBase.NumPr.NumId;
  * it to demonstrate restart numbering. 
  * 
  * @author Jason Harrop
- * @version 1.0
  */
 public class NumberingRestart {
 	
-	static org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory(); 
+	static org.docx4j.wml.ObjectFactory factory = Context.getWmlObjectFactory(); 
 	
-	static String filename = "out-numberingrestart.docx";
+	static String filename = "OUT_NumberingRestart.docx";
 
 	public static void main(String[] args) throws Exception {
 		
-		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		// Add numbering part
@@ -56,8 +55,7 @@ public class NumberingRestart {
 		wordMLPackage.getMainDocumentPart().addTargetPart(ndp);
 		ndp.setJaxbElement( (Numbering) XmlUtils.unmarshalString(initialNumbering) );
 		
-		
-		// 
+		// Add some document content
 		wordMLPackage.getMainDocumentPart().addParagraphOfText("Example of restarting numbering");
 		
 		P p = createNumberedParagraph(1, 0, "text on top level" );
@@ -115,9 +113,9 @@ public class NumberingRestart {
 		t.setValue(paragraphText);
 
 		org.docx4j.wml.R  run = factory.createR();
-		run.getRunContent().add(t);		
+		run.getContent().add(t);		
 		
-		p.getParagraphContent().add(run);
+		p.getContent().add(run);
 						
 	    org.docx4j.wml.PPr ppr = factory.createPPr();	    
 	    p.setPPr( ppr );

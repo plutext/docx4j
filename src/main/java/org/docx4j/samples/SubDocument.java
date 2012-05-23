@@ -25,12 +25,9 @@ import javax.xml.bind.JAXBElement;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import org.docx4j.XmlUtils;
 import org.docx4j.wml.CTRel;
-import org.docx4j.wml.P;
-import org.docx4j.wml.P.Hyperlink;
 
 
 /**
@@ -40,8 +37,11 @@ import org.docx4j.wml.P.Hyperlink;
  * 
  * So this sample is very similar to the hyperlink one.
  * 
+ * In not sure where Master Document Tools are
+ * in Word 2010 ribbons, but you can add them
+ * via Word > Options
+ * 
  * @author Jason Harrop
- * @version 1.0
  */
 public class SubDocument  {
 	
@@ -68,28 +68,27 @@ public class SubDocument  {
 		
 		// Create the master doc, and specify
 		// the subdoc 
-		String subdocx = "sample-docx.xml";
+		String subdocx = ".\\sample-docs\\word\\sample-docx.xml";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart(); 
 		
 		// Link to subdoc
-		JAXBElement<CTRel> subdoc = createSubdoc(wordMLPackage, subdocx);
+		JAXBElement<CTRel> subdoc = createSubdoc(mdp, subdocx);
 		
 		// Add it to a paragraph
-		org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory(); 
+		org.docx4j.wml.ObjectFactory wmlFactory = Context.getWmlObjectFactory(); 
 		org.docx4j.wml.P paragraph = wmlFactory.createP();
 		
-		paragraph.getParagraphContent().add( subdoc );
-		wordMLPackage.getMainDocumentPart().addObject(paragraph);
+		paragraph.getContent().add( subdoc );
+		mdp.addObject(paragraph);
 		
 		// Now save it 
-		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/out-master.docx") );
+		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_SubDocumentMASTER.docx") );
 		
-		System.out.println("Done.");
-				
 	}
 	
-	public static JAXBElement<CTRel> createSubdoc(WordprocessingMLPackage wordMLPackage, 
+	public static JAXBElement<CTRel> createSubdoc(MainDocumentPart mdp, 
 			String subdocName) {
 		
 		try {
@@ -106,7 +105,7 @@ public class SubDocument  {
 			rel.setTarget(subdocName);
 			rel.setTargetMode("External");  
 									
-			wordMLPackage.getMainDocumentPart().getRelationshipsPart().addRelationship(rel);
+			mdp.getRelationshipsPart().addRelationship(rel);
 			
 			// addRelationship sets the rel's @Id
 			

@@ -1,12 +1,9 @@
 package org.docx4j.samples;
 
-import java.io.File;
-
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.docx4j.jaxb.Context;
-import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
@@ -20,55 +17,58 @@ import org.docx4j.wml.Text;
 
 public class TableOfContentsAdd {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		try {
-			
-		        ObjectFactory factory = Context.getWmlObjectFactory();
-		        
-		        P p = factory.createP();		       
-		        R r = factory.createR();
+	public static void main(String[] args) throws Exception {
 
-		        FldChar fldchar = factory.createFldChar();
-		        fldchar.setFldCharType(STFldCharType.BEGIN);
-		        fldchar.setDirty(true);
-		        r.getRunContent().add(getWrappedFldChar(fldchar));
-		        p.getParagraphContent().add(r);
-
-		        R r1 = factory.createR();
-		        Text txt = new Text();
-		        txt.setSpace("preserve");
-		        txt.setValue("TOC \\o \"1-3\" \\h \\z \\u \\h");
-		        r.getRunContent().add(factory.createRInstrText(txt) );
-		        p.getParagraphContent().add(r1);
-
-		        FldChar fldcharend = factory.createFldChar();
-		        fldcharend.setFldCharType(STFldCharType.END);
-		        R r2 = factory.createR();
-		        r2.getRunContent().add(getWrappedFldChar(fldcharend));
-		        p.getParagraphContent().add(r2);
-		        
-			WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
-			MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
-			
-			org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
-			Body body =  wmlDocumentEl.getBody();
-			body.getEGBlockLevelElts().add(p);
-			
-			documentPart.addStyledParagraphOfText("Heading1", "Hello 1");
-			documentPart.addStyledParagraphOfText("Heading2", "Hello 2");
-			documentPart.addStyledParagraphOfText("Heading3", "Hello 3");
-			documentPart.addStyledParagraphOfText("Heading1", "Hello 1");
-			
-			wordMLPackage.save(new File("c:\\tmpxml\\AddTOC.docx"));
-			
-			
-		} catch (InvalidFormatException e) {
-			e.printStackTrace();
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 		
+		org.docx4j.wml.Document wmlDocumentEl = (org.docx4j.wml.Document)documentPart.getJaxbElement();
+		Body body =  wmlDocumentEl.getBody();
+		
+        ObjectFactory factory = Context.getWmlObjectFactory();
+        
+        /* Create the following:
+         * 
+		    <w:p>
+		      <w:r>
+		        <w:fldChar w:dirty="true" w:fldCharType="begin"/>
+		        <w:instrText xml:space="preserve">TOC \o &quot;1-3&quot; \h \z \ u \h</w:instrText>
+		      </w:r>
+		      <w:r/>
+		      <w:r>
+		        <w:fldChar w:fldCharType="end"/>
+		      </w:r>
+		    </w:p>         */        
+        P paragraphForTOC = factory.createP();		       
+        R r = factory.createR();
+
+        FldChar fldchar = factory.createFldChar();
+        fldchar.setFldCharType(STFldCharType.BEGIN);
+        fldchar.setDirty(true);
+        r.getContent().add(getWrappedFldChar(fldchar));
+        paragraphForTOC.getContent().add(r);
+
+        R r1 = factory.createR();
+        Text txt = new Text();
+        txt.setSpace("preserve");
+        txt.setValue("TOC \\o \"1-3\" \\h \\z \\u \\h");
+        r.getContent().add(factory.createRInstrText(txt) );
+        paragraphForTOC.getContent().add(r1);
+
+        FldChar fldcharend = factory.createFldChar();
+        fldcharend.setFldCharType(STFldCharType.END);
+        R r2 = factory.createR();
+        r2.getContent().add(getWrappedFldChar(fldcharend));
+        paragraphForTOC.getContent().add(r2);
+		        
+		body.getContent().add(paragraphForTOC);
+		
+		documentPart.addStyledParagraphOfText("Heading1", "Hello 1");
+		documentPart.addStyledParagraphOfText("Heading2", "Hello 2");
+		documentPart.addStyledParagraphOfText("Heading3", "Hello 3");
+		documentPart.addStyledParagraphOfText("Heading1", "Hello 1");
+					
+		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_TableOfContentsAdd.docx") );
 		
 	}
 	

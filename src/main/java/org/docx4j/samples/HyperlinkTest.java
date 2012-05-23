@@ -21,20 +21,23 @@
 
 package org.docx4j.samples;
 
+import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
-
-import org.docx4j.XmlUtils;
-import org.docx4j.wml.P;
 import org.docx4j.wml.P.Hyperlink;
 
 
 /**
- * Fun with hyperlinks 
+ * Fun with hyperlinks to external resources
+ * eg web pages.
+ * 
+ * For an example of an internal hyperlink,
+ * see the BookmarkAdd sample.
  * 
  * @author Jason Harrop
- * @version 1.0
  */
 public class HyperlinkTest {
 	
@@ -66,27 +69,27 @@ public class HyperlinkTest {
 
 	public static void main(String[] args) throws Exception {
 		
-		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
+		MainDocumentPart mdp = wordMLPackage.getMainDocumentPart(); 
 		
 		// Create hyperlink
-		Hyperlink link = createHyperlink(wordMLPackage, "http://slashdot.org");
+		Hyperlink link = createHyperlink(mdp, "http://slashdot.org");
 		
 		// Add it to a paragraph
-		org.docx4j.wml.ObjectFactory wmlFactory = new org.docx4j.wml.ObjectFactory(); 
-		org.docx4j.wml.P paragraph = wmlFactory.createP();
-		
-		paragraph.getParagraphContent().add( link );
-		wordMLPackage.getMainDocumentPart().addObject(paragraph);
+		org.docx4j.wml.P paragraph = Context.getWmlObjectFactory().createP();
+		paragraph.getContent().add( link );
+		mdp.addObject(paragraph);
 		
 		// Now save it 
-		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/out-hyperlink.docx") );
+		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/OUT_HyperlinkTest.docx") );
 		
-		System.out.println("Done.");
+		// Uncomment to display the result as Flat OPC XML
+//		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
+//		worker.marshal(System.out);				
 				
 	}
 	
-	public static Hyperlink createHyperlink(WordprocessingMLPackage wordMLPackage, String url) {
+	public static Hyperlink createHyperlink(MainDocumentPart mdp, String url) {
 		
 		try {
 
@@ -102,7 +105,7 @@ public class HyperlinkTest {
 			rel.setTarget(url);
 			rel.setTargetMode("External");  
 									
-			wordMLPackage.getMainDocumentPart().getRelationshipsPart().addRelationship(rel);
+			mdp.getRelationshipsPart().addRelationship(rel);
 			
 			// addRelationship sets the rel's @Id
 			

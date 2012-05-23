@@ -60,8 +60,8 @@ public class CompareDocuments {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String newerfilepath = System.getProperty("user.dir") + "/102.docx";
-		String olderfilepath = System.getProperty("user.dir") + "/103.docx";
+		String newerfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
+		String olderfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 						
 		// 1. Load the Packages
 		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath));
@@ -103,9 +103,9 @@ public class CompareDocuments {
 		org.docx4j.convert.out.pdf.PdfConversion c 
 			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(newerPackage);
 
-		OutputStream os = new java.io.FileOutputStream(System.getProperty("user.dir") +  "/COMPARED.pdf");			
+		OutputStream os = new java.io.FileOutputStream(System.getProperty("user.dir") +  "/OUT_CompareDocuments.pdf");			
 		c.output(os, new PdfSettings() );
-		System.out.println("Saved " + System.getProperty("user.dir") +  "/COMPARED.pdf");
+		System.out.println("Saved " + System.getProperty("user.dir")  +  "/OUT_CompareDocuments.pdf");
 				
 	}
 
