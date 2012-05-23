@@ -24,16 +24,18 @@ package org.docx4j.samples;
 
 import java.io.FileOutputStream;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 
+/**
+ * Convert a docx to 'Flat OPC XML' format,
+ * which Word can happily read, and which 
+ * is convenient for editing in an XML editor.
+ * 
+ * @author jharrop
+ *
+ */
 public class ConvertOutFlatOpenPackage extends AbstractSample {
 
 	/**
@@ -44,47 +46,29 @@ public class ConvertOutFlatOpenPackage extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		}
 		
 		// Do we want to save output? 
-		boolean save = true;
+		boolean save = false;
 		// If so, whereto?
-		outputfilepath = inputfilepath + ".xml";
+		outputfilepath = System.getProperty("user.dir") + "/OUT_ConvertOutFlatOpenPackage.xml";
 		
 		// Open a document from the file system
-		// 1. Load the Package
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
 	   	// Create a org.docx4j.wml.Package object
 		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPackage);
-		org.docx4j.xmlPackage.Package pkg = worker.get();
     	
-    	// Now marshall it
-		JAXBContext jc = Context.jcXmlPackage;
-		Marshaller marshaller=jc.createMarshaller();
-		
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		NamespacePrefixMapperUtils.setProperty(marshaller, 
-				NamespacePrefixMapperUtils.getPrefixMapper());			
-		
-
-		
-		//org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();	
+		// .. marshall it 
 		if (save) {
-			marshaller.marshal(pkg, new FileOutputStream(outputfilepath));				
+			worker.marshal(new FileOutputStream(outputfilepath));				
 			System.out.println( "\n\n .. written to " + outputfilepath);
 		} else {
 			// Display its contents 
-			System.out.println( "\n\n OUTPUT " );
-			System.out.println( "====== \n\n " );	
-			marshaller.marshal(pkg, System.out);				
+			worker.marshal(System.out);				
 		}
 		
-		
-				
 	}
-	
-	
 
 }

@@ -20,7 +20,9 @@
 
 package org.docx4j.convert.out.flatOpcXml;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -139,6 +141,31 @@ public class FlatOpcXmlCreator implements Output {
 		 return pkgResult;
 	}
 
+	public void marshal(OutputStream os) throws Docx4JException {
+		
+		if (pkgResult==null) {
+			if (packageIn==null) {
+				throw new Docx4JException("No zipped package to convert to Flat OPC Package");
+			} else {
+				get();
+			}
+		}
+		
+		try {
+			JAXBContext jc = Context.jcXmlPackage;
+			Marshaller marshaller=jc.createMarshaller();
+			
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+				NamespacePrefixMapperUtils.setProperty(marshaller, 
+						NamespacePrefixMapperUtils.getPrefixMapper());
+	
+			// .. marshall it 
+			marshaller.marshal(pkgResult, os);				
+		} catch (JAXBException e) {
+			throw new Docx4JException("Couldn't marshall Flat OPC Package", e);
+		}			
+		
+	}
 
 //	public void  saveRawXmlPart(Part part) throws Docx4JException {
 //		
