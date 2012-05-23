@@ -36,7 +36,7 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 
 
-public class StripParts {
+public class PartsStrip {
 	
 
 	static boolean save = true;
@@ -50,7 +50,7 @@ public class StripParts {
 	static boolean keepStyles = true;
 	static boolean defaultToDelete = false;
 	
-	private static Logger log = Logger.getLogger(StripParts.class);						
+	private static Logger log = Logger.getLogger(PartsStrip.class);						
 	
 	/**
 	 * @param args

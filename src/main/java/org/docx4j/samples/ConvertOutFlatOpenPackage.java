@@ -34,7 +34,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 
-public class ExportInPackageFormat extends AbstractSample {
+public class ConvertOutFlatOpenPackage extends AbstractSample {
 
 	/**
 	 * @param args

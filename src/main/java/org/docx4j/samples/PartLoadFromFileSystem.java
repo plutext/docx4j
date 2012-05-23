@@ -29,39 +29,39 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.io.Load;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 
 /**
  * Import foreign parts 
  * 
  * @author Jason Harrop
- * @version 1.0
  */
-public class ImportForeignPart {
+public class PartLoadFromFileSystem {
 
 	public static void main(String[] args) throws Exception {
 		
-		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
+		String path_in = System.getProperty("user.dir") + "/src/test/resources/parts/";
+		
 		// Need to know how what type of part to map to		
-		InputStream in = new FileInputStream("/home/dev/workspace/docx4j/foregin_parts/[Content_Types].xml");
+		InputStream in = new FileInputStream(path_in + "[Content_Types].xml");
 		ContentTypeManager externalCtm = new ContentTypeManager();
 		externalCtm.parseContentTypesFile(in);
 		
 		// Example of a part which become a rel of the word document
-		in = new FileInputStream("/home/dev/workspace/docx4j/foreign_parts/word/settings.xml");
+		in = new FileInputStream(path_in + "settings.xml");
 		attachForeignPart(wordMLPackage, wordMLPackage.getMainDocumentPart(),
 				externalCtm, "word/settings.xml", in);
 
 		// Example of a part which become a rel of the package
-		in = new FileInputStream("/home/dev/workspace/docx4j/foreign_parts/docProps/app.xml");
+		in = new FileInputStream(path_in + "app.xml");
 		attachForeignPart(wordMLPackage, wordMLPackage,
 				externalCtm, "docProps/app.xml", in);
 		
-		// Now save it 
-		wordMLPackage.save(new java.io.File(System.getProperty("user.dir") + "/out.docx") );
-				
-		System.out.println("Done.");
+
+		wordMLPackage.save(new java.io.File(
+				System.getProperty("user.dir") + "/OUT_PartLoadFromFileSystem.docx") );
 				
 	}
 	
@@ -74,7 +74,7 @@ public class ImportForeignPart {
 		
 		Part foreignPart = Load.getRawPart(is, foreignCtm,  resolvedPartUri, null);
 			// the null means this won't work for an AlternativeFormatInputPart 
-		attachmentPoint.addTargetPart(foreignPart);
+		attachmentPoint.addTargetPart(foreignPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
 		// Add content type
 		ContentTypeManager packageCtm = wordMLPackage.getContentTypeManager();
 		packageCtm.addOverrideContentType(foreignPart.getPartName().getURI(), foreignPart.getContentType());
