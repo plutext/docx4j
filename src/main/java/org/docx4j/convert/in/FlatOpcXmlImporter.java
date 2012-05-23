@@ -22,21 +22,16 @@ package org.docx4j.convert.in;
 
 
 
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
@@ -64,8 +59,8 @@ import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
-import org.docx4j.relationships.Relationships;
 import org.docx4j.relationships.Relationship;
+import org.docx4j.relationships.Relationships;
 import org.w3c.dom.DOMException;
 
 
@@ -102,15 +97,29 @@ public class FlatOpcXmlImporter  {
 	
 	private static Logger log = Logger.getLogger(FlatOpcXmlImporter.class);
 
+	public FlatOpcXmlImporter(InputStream is) throws JAXBException {
+		
+		JAXBContext jc = Context.jcXmlPackage;
+		Unmarshaller u = jc.createUnmarshaller();
+		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+
+		org.docx4j.xmlPackage.Package flatOpcXml = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+				new javax.xml.transform.stream.StreamSource(is))).getValue(); 
+
+		init(flatOpcXml);
+		
+	}
 	
 	public FlatOpcXmlImporter(org.docx4j.xmlPackage.Package flatOpcXml) {
 				
-		parts = new HashMap<String, org.docx4j.xmlPackage.Part>();
+		init(flatOpcXml);
+	}
+	
+	private void init(org.docx4j.xmlPackage.Package flatOpcXml) {
 		
+		parts = new HashMap<String, org.docx4j.xmlPackage.Part>();
 		for(org.docx4j.xmlPackage.Part p : flatOpcXml.getPart() ) {
-			
 			parts.put(p.getName(), p);
-			
 		}
 		
 	}

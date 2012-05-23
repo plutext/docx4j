@@ -22,20 +22,10 @@ package org.docx4j.samples;
 
 
 
-import java.io.FileOutputStream;
 import java.io.FileInputStream;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
-import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.Part;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 
 /* 
  * This is an example of loading a file from the pkg format Word 2007
@@ -54,36 +44,22 @@ public class ConvertInFlatOpenPackage extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/sample-docx.xml";
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
 		}
 							
-		// Do we want to save output? 
-		boolean save = true;
-		// If so, where to?
-		String outputfilepath = inputfilepath + ".docx";
+		String outputfilepath = System.getProperty("user.dir") + "/OUT_ConvertInFlatOpenPackage.docx";
 		
 		try {
-			JAXBContext jc = Context.jcXmlPackage;
-			Unmarshaller u = jc.createUnmarshaller();
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
+			// First, load Flat OPC Package from file
+			org.docx4j.convert.in.FlatOpcXmlImporter importer 
+				= new org.docx4j.convert.in.FlatOpcXmlImporter( new FileInputStream(inputfilepath) ); 
 
-			org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-					new javax.xml.transform.stream.StreamSource(new FileInputStream(inputfilepath)))).getValue(); 
-
-			org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl); 
-
-			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)xmlPackage.get(); 
+			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)importer.get(); 
 			
-			// Now that its loaded properly, lets just save it
-			
-			if (save) {
-				SaveToZipFile saver = new SaveToZipFile(wmlPackage);
-				saver.save(outputfilepath);
-				System.out.println( "\n\n .. written to " + outputfilepath);
-			} else {
-				// Display its contents 
-				System.out.println( "\n\n..done " );
-			}
+			// All done ..  save the WordprocessingMLPackage
+			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
+			saver.save(outputfilepath);
+			System.out.println( "\n\n .. written to " + outputfilepath);
 			
 			
 		} catch (Exception exc) {
