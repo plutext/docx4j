@@ -510,8 +510,11 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	
 	
 	/**
-	 * Add the object o to the document.  
-	 * 
+	 * Add the object o to the document.
+	 * The same as getContent().add, except that   
+	 * this will ensure any style used
+     * is activated.
+     * 
 	 * @param o
 	 */
 	public void addObject(Object o) {
