@@ -9,7 +9,7 @@
   </parent>  	
 	<groupId>org.docx4j</groupId>
 	<artifactId>docx4j</artifactId>
-	<version>2.8.0-SNAPSHOT</version>
+	<version>2.8.0</version>
 	<packaging>jar</packaging>
 	<name>docx4j</name>
 	<description>
@@ -26,11 +26,8 @@
 	    <comments>A business-friendly OSS license</comments>
 	  </license>
   	</licenses>
-	<!-- <prerequisites /> -->
 	<scm>
-	    <connection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk/docx4j</connection>
-	    <developerConnection>scm:svn:http://www.docx4java.org/svn/docx4j/trunk/docx4j</developerConnection>
-	    <url>http://www.docx4java.org/svn/docx4j/trunk/docx4j</url>
+	    <developerConnection>scm:git|git@github.com:plutext/docx4j.git</developerConnection>
     </scm>
 	<inceptionYear>2007</inceptionYear>
 	<developers>
@@ -62,6 +59,9 @@
 			<name>Antoine</name>
 		</contributor>
 		<contributor>
+			<name>Arnaud Kleinpeter</name>
+		</contributor>
+		<contributor>
 			<name>azeloro</name>
 		</contributor>
 		<contributor>
@@ -87,6 +87,9 @@
 		</contributor>
 		<contributor>
 			<name>Patrick Linskey</name>
+		</contributor>
+		<contributor>
+			<name>Pierre</name>
 		</contributor>
 		<contributor>
 			<name>ppa_waw</name>
@@ -185,6 +188,7 @@
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
+			<!-- The Surefire Plugin is used during the test phase of the build lifecycle to execute the unit tests of an application -->
 			<version>2.6</version>
 			<configuration>
 				<excludes>
@@ -193,8 +197,22 @@
 				</excludes>
 			</configuration>
 		</plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+		<version>2.3.1</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*.docx</exclude><!--  docx files in /src/test/resources add unwanted 1 MB to jar.   -->
+            <exclude>src/test/resources/**</exclude>
+            	<!--   TODO this still leaves some ugly directories in our jar.  
+            	       Anyone know how to leave out all files and directories in src/test/resources?   -->
+          </excludes>
+        </configuration>
+      </plugin>		
 		<plugin>
 			<artifactId>maven-source-plugin</artifactId>
+			<!-- The Source Plugin creates a jar archive of the source files of the current project. -->
 			<version>2.1.2</version>
 			<executions>
 				<execution>
@@ -259,6 +277,12 @@
 				<include>xhtmlrenderer.conf</include>
 			</includes>
 		</resource>
+		<!-- <resource>
+			<directory>src/test/resources</directory>
+			<excludes>
+				<exclude>*.docx</exclude>
+			</excludes>
+		</resource>  -->
 	</resources>
 	</build>
 	<reporting>
