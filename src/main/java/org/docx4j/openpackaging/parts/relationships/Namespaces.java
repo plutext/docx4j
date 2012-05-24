@@ -121,6 +121,8 @@ public class Namespaces {
 	public final static String SUBDOCUMENT  = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/subDocument";
 	
+	public final static String ATTACHED_TEMPLATE  = 
+		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate";
 	
 	public final static String VBA_PROJECT = 
 		"http://schemas.microsoft.com/office/2006/relationships/vbaProject";
