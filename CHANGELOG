@@ -1,95 +1,10 @@
-==============================================================================
-  DOCX4J  -  README
-==============================================================================
-
-Contents of this file:
- - What is docx4j?
- - Where do I get it?
- - How do I get started?
- - Where to get help?
- - How do I build docx4j?
- - Legal Information
- - Release Notes
-
-==============================================================================
-
-
-What is docx4j?
----------------
-
-docx4j is an open source (Apache v2) library for creating, editing, and saving OpenXML "packages", including docx, pptx, and xslx. 
-
-It uses JAXB to create the Java representation.
-
-- Open existing docx/pptx/xlsx (from filesystem, SMB/CIFS, WebDAV using VFS)
-- Create new docx
-- Programmatically manipulate the docx document (of course)
-- CustomXML binding (with OpenDoPE extensions for repeats & conditionals) 
-- Export as HTML or PDF
-- Diff/compare documents, paragraphs or sdt (content controls)
-- Import a binary doc (uses Apache POI's HWPF)
-- Produce/consume Word 2007's xmlPackage (pkg) format
-- Save docx to filesystem as a docx (ie zipped), or to JCR (unzipped)
-- Apply transforms, including common filters
-- Font support (font substitution, and use of any fonts embedded in the document) 
-
-
-Where do I get it?
-------------------
-
-http://www.docx4java.org/downloads.html
-
-
-How do I get started?
-------------------
-
-See the Getting Started guide.
-
-
-Where to get help?
-------------------
-
-http://www.docx4java.org/forums or StackOverflow (use tag 'docx4j')
-
-
-How do I build docx4j?
-----------------------
-
-Get it from GitHub, at https://github.com/plutext/docx4j
-
-For more details, see http://www.docx4java.org/blog/2012/05/docx4j-from-github-in-eclipse/
-
-
-
-Legal Information
------------------
-
-docx4j is published under the Apache License version 2.0. For the license
-text, please see the following files in the legals directory:
-- LICENSE
-- NOTICE
-
-Legal information on libraries used by docx4j can be found in the 
-"legals/NOTICE" file.
-
-Here is a (TODO: non exhaustive?) list of files included in docx4j but not published under Apache
-License version 2.0:
-
-- DocX2Html.xslt (though docx2xhtmlNG2.xslt is our supported transform, not that) 
-- src/diffx (ARTISTIC LICENCE)
-- xsd/** 
-
-
-
-==============================================================================
-  RELEASE NOTES
-==============================================================================
-
+CHANGELOG
+=========
 
 Version 2.8.0
 =============
 
-** docx4j source code is now on GitHub.  Our SVN repository is obsolete. **
+** docx4j source code is now on GitHub. Our SVN repository is obsolete. **
 
 Release date
 ------------
@@ -108,7 +23,6 @@ Tinne
 Notable Changes in Version 2.8.0
 ---------------------------------
 
-
 XHTML import
 
 org.docx4j.samples reviewed
@@ -125,12 +39,10 @@ xlsx4j
 
 40056bc - Convenience method getSharedStrings() 
 
-
 pptx4j
 ------
 
 89be7a1 - Add XPath support to SlidePart 
-
 
 OpenDoPE changes
 ----------------
@@ -170,8 +82,6 @@ Other Changes (non-exhaustive)
 e1b616e - Create VbaDataPart and VbaProjectBinaryPart
 54f2fad - AltChunk handling improvements 
 
-
-
 Version 2.7.1 
 =============
 
@@ -205,7 +115,6 @@ ConversionImageHandler that may be passed as a conversion parameter. Default imp
 
 VFS stuff moved to docx4j-extras
 
-
 OpenDoPE changes
 ----------------
 
@@ -226,7 +135,6 @@ Other Changes (non-exhaustive)
 [1613] Header and footer parts use XPath binder
 
 [1679-80] create image part directly from file
-
 
 Version 2.7.0 
 =============
@@ -249,7 +157,6 @@ Patrick Linskey
 ppa_waw
 Richard
 Tinne
-
 
 Notable Changes in Version 2.7.0
 ---------------------------------
@@ -304,7 +211,6 @@ This is designed to handle an XPath expression which evaluates to a boolean or n
 
 [1547] Tinne's patch of 20 June, which takes the Jan-Willem van den Broeks XPath grammar and builds it into a rewriting parser that enhances xpath expressions just the way that is needed. Thus, all xpath 1.0 expressions can be used.
 
-
 Other Changes (non-exhaustive)
 ------------------------------
 
@@ -357,7 +263,6 @@ events.
 
 [1569] Configure log4j automatically if necessary; paves the way for all System.out.println to be removed.
 
-
 Version 2.6.0
 =============
 
@@ -370,7 +275,6 @@ Contributors to this release
 ----------------------------
 
 Jason Harrop
-
 
 Major Changes in Version 2.6.0
 ------------------------------
@@ -404,7 +308,6 @@ Other Changes (non-exhaustive)
 [1306] EmbeddedPackagePart
 [1307] OpcPackage: don't create props parts, merely because user has asked for one. CorePart: set JAXB context correctly. Rels part: relId generation altered
 
-
 pptx4j changes
 --------------
 
@@ -414,7 +317,6 @@ Only show text box with a red dash border if debug level logging is enabled.
 [1185] Support Word 2003 page numbers in PDF output. ie <w:fldChar w:fldCharType="begin"/> <w:instrText xml:space="preserve">PAGE  </w:instrText>
 <w:fldChar w:fldCharType="end"/>
 [1198] Method for creating a slide; don't do that when creating package.
-
 
 Version 2.5.0
 =============
@@ -490,7 +392,6 @@ pptx4j changes
 [1085] Convert line to SVG
 [1083] JAXB representation of SVG 1.1
 
-
 Version 2.3.0
 =============
 
@@ -498,7 +399,6 @@ Release date
 ------------
 
 17 Feb 2010
-
 
 Contributors to this release
 ----------------------------
@@ -550,7 +450,6 @@ Other Changes
 [ 905] Modify load method to also support loading a Flat OPC .xml file
 [ 903] Bug fix in revised deepCopy method: use JAXBContext parameter properly
 
-
 Version 2.2.2
 =============
 
@@ -559,22 +458,19 @@ Release date
 
 17 Sept 2009
 
-
 Contributors to this release
 ----------------------------
 
 Jason Harrop
 Holger Schlegel
 
-
 Major Changes in Version 2.2.2
 ------------------------------
-      
+
 [888] Generate classes from shared-math.xsd
 
 [885] JAXB representation for VML (eg as used when a document containing embedded images is 
       saved as docx from Word 2003).      
-
 
 Other Changes
 -------------
@@ -595,9 +491,6 @@ Other Changes
       
 [883] NamespacePrefixMappings stores the mappings in a single location, and is sufficient for xpath.      
 
-
-
-
 Version 2.2.1
 =============
 
@@ -606,20 +499,17 @@ Release date
 
 24 Aug 2009
 
-
 Contributors to this release
 ----------------------------
 
 Jason Harrop
 Adam Schmideg
 
-
 Major Changes
 -------------
 
 [869] NamespacePrefixMappers which work with Java 6 (ie if you don't have JAXB in your endorsed dir, 
       or can't (eg Java Web Start)).  
-
 
 Other Changes (not exhaustive)
 -------------
@@ -635,8 +525,6 @@ Other Changes (not exhaustive)
       Attributes on <w:tr w:rsidR="00E54D1F" w:rsidRPr="00A84EA1"> screws output.
 
 [864] ImmutablePropertyResolver, contributed by Adam Schmideg.    
-
-
 
 Version 2.2.0
 =============
@@ -722,9 +610,6 @@ Other Changes (not exhaustive)
 
 [607] Make it easy for a part to have its own NamespacePrefixMapper. (eg for relationships part, 
       we want the rels namespace to be the default namespace)
-      
-      
-      
 
 Version 2.1.0
 =============
@@ -746,7 +631,6 @@ Major Changes
 Use docx 2 html XSLT from OpenXMLViewer (OpenXMLViewer XSLT 11089, as downloaded 9 Oct 2008), 
 with support for numbering, image handling, hyperlinks  
 
-
 Other Changes (not exhaustive)
 -------------
 
@@ -767,8 +651,6 @@ Other Changes (not exhaustive)
 
 [529] Differencing improvements 
 
-
-
 Version 2.0
 =============
 
@@ -776,7 +658,6 @@ Release date
 ------------
 
 21 July 2008
-
 
 Major Changes
 -------------
@@ -788,6 +669,3 @@ Binary doc import proof of concept (using POI)
 Support for <w:drawing> element
 
 Differencing
-
-
-
