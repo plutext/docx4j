@@ -11,7 +11,7 @@ Check jar versions in pom.xml, build.xml
 
 Update README.txt with release info.
 
-    svn log -r 1073:HEAD > tmp_log_2_4_0.txt
+    http://www.jukie.net/bart/blog/pimping-out-git-log
     
 (refer to README.txt to see what rnumber to start at)    
 

@@ -49,7 +49,7 @@ See the Getting Started guide.
 Where to get help?
 ------------------
 
-http://www.docx4java.org/forums
+http://www.docx4java.org/forums or StackOverflow (use tag 'docx4j')
 
 
 How do I build docx4j?
@@ -94,7 +94,7 @@ Version 2.8.0
 Release date
 ------------
 
-[ ] May 2012
+24 May 2012
 
 Contributors to this release
 ----------------------------
@@ -110,6 +110,8 @@ Notable Changes in Version 2.8.0
 
 
 XHTML import
+
+org.docx4j.samples reviewed
 
 svg JAXB content model moved to its own project on Github, and uploaded to Maven Central 
 svg JAXB content model moved to its own project on Github, and uploaded to Maven Central 
