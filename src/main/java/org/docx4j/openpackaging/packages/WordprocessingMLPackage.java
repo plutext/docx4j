@@ -314,6 +314,12 @@ public class WordprocessingMLPackage extends OpcPackage {
     	
     }
     
+    @Deprecated
+	// since its questionable whether this
+	// is important enough to live in WordprocessingMLPackage,
+	// and in any case probably should be replaced with a TraversalUtil
+	// approach (which wouldn't involve marshal/unmarshall, and 
+	// so should be more efficient).    
     public void filter( FilterSettings filterSettings ) throws Exception {
 
     	if (filterTemplate==null) { // first use
