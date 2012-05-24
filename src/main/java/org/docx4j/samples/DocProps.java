@@ -21,45 +21,40 @@
 package org.docx4j.samples;
 
 
-import java.util.List;
-
-import javax.xml.bind.JAXBElement;
-
-import org.docx4j.openpackaging.io.LoadFromZipFile;
+import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.wml.Body;
 
 
+/**
+ * Shows how to access a docx's:
+ * - Core properties (Dublin Core title, creator etc) 
+ * - Extended properties (app.xml)
+ * - Custom properties (where you can store your own data, as shown here)
+ * 
+ * Note there is often also /word/settings.xml
+ * (see also TemplateAttach for how to set a dotx in that part)
+ * 
+ */
 public class DocProps extends AbstractSample {
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) throws Exception {
 
-
-		
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-			inputfilepath = System.getProperty("user.dir") + "/sample-docs/docProps.docx";		
+			inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/docProps.docx";		
 		}
-		
-		
+				
 		boolean save = false;
 		try {
 			getOutputFilePath(args);
 			save = true;
 		} catch (IllegalArgumentException e) {
-			outputfilepath = System.getProperty("user.dir") + "/sample-docs/docProps-out.docx";		
-			
-//			save = true;
+			outputfilepath = System.getProperty("user.dir") + "/OUT_DocProps.docx";		
 		}
 		
-		// Open a document from the file system
-		// 1. Load the Package
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 
 		// Let's look at the core properties
@@ -68,15 +63,12 @@ public class DocProps extends AbstractSample {
 		
 		// What is the title of the document?
 		System.out.println("'dc:title' is " + coreProps.getTitle().getValue().getContent().get(0));
-			// Yuck! TODO: Simplify the dc schema.
+			// That's a bit clunky
 
-		System.out.println(coreProps.getTitle().getValue().getClass().getName() );
+		//System.out.println(coreProps.getTitle().getValue().getClass().getName() );
 		// returns org.docx4j.docProps.core.dc.elements.SimpleLiteral as expected
 		
-		System.out.println("'dcterms:created' is " + coreProps.getCreated().getClass().getName() );
-		
-		
-		//System.out.println(coreProps.getTitle().getValue() instanceof )
+		//System.out.println("'dcterms:created' is " + coreProps.getCreated().getClass().getName() );
 		
 		
 		// Let's look at the extended properties
@@ -93,16 +85,17 @@ public class DocProps extends AbstractSample {
 		
 		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
 			
-			System.out.println(prop.getName());
-			
 			// At the moment, you need to know what sort of value it has.
 			// Could create a generic Object getValue() method.
-			
-			System.out.println(prop.getLpwstr());
+			if (prop.getLpwstr()!=null) {
+				System.out.println(prop.getName() + " = " + prop.getLpwstr());
+			} else {
+				System.out.println(prop.getName() + ": \n " + XmlUtils.marshaltoString(prop, true, Context.jcDocPropsCustom));
+			}
 			
 		}
 		
-		// Ok, let's add one.
+		// Ok, let's add a custom property.
 		org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
 		org.docx4j.docProps.custom.Properties.Property newProp = factory.createPropertiesProperty();
 		
@@ -114,35 +107,14 @@ public class DocProps extends AbstractSample {
 		
 		// .. add it
 		customProps.getProperty().add(newProp);
-		
-		/* Example of setting some extended properties
-		DocPropsExtendedPart extendedPart = new DocPropsExtendedPart(); 
-		wordMLPackage.addTargetPart(extendedPart);
-		// Add content type
-		ContentTypeManager ctm = wordMLPackage.getContentTypeManager();
-		ctm.addOverrideContentType(extendedPart.getPartName().getURI(), extendedPart.getContentType());
-		// Now the properties
-		org.docx4j.docProps.extended.ObjectFactory factory = new org.docx4j.docProps.extended.ObjectFactory();
-		Properties props = factory.createProperties();
-		props.setApplication("Microsoft Word 12.1.0");
-		props.setAppVersion("12.0256");	
-		extendedPart.setJaxbElement(props);`
-		//Required for docx4j < 2.2.0
-		extendedPart.setJAXBContext(Context.jcDocPropsExtended);
-		*/		
-				
-		// Save the revised document
-		
+						
+		// Save the revised document		
 		if (save) {		
 			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 			saver.save(outputfilepath);
 			System.out.println("Document saved as " + outputfilepath);
 		}
 		
-		System.out.println("Done.");
-		
 	}
-	
-	
 
 }

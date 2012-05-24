@@ -21,22 +21,20 @@
 
 package org.docx4j.samples;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.DocumentSettingsPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.CTRel;
 import org.docx4j.wml.CTSettings;
 
 /**
  * Creates a WordprocessingML document from scratch,
- * and attaches a template
+ * and attaches a template (for example, instead of Normal.dot)
+ * 
+ * Be sure to set String templatePath. 
  * 
  * In Flat OPC terms, aim is to produce:
  * 
@@ -57,23 +55,21 @@ import org.docx4j.wml.CTSettings;
 
  * 
  * @author Jason Harrop
- * @version 1.0
  */
 public class TemplateAttach extends AbstractSample {
 
 	public static void main(String[] args) throws Exception {
 		
-		
+		String templatePath = "file:///C:\\Users\\jsmith\\AppData\\Roaming\\Microsoft\\Templates\\yours.dotm";
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/TemplateAttach_out.docx";	    	
+	    	inputfilepath = System.getProperty("user.dir") + "/OUT_TemplateAttach.docx";	    	
 		}
 		
 		boolean save = 
 			(inputfilepath == null ? false : true);
 		
-		System.out.println( "Creating package..");
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.createPackage();
 		
 		wordMLPackage.getMainDocumentPart()
@@ -90,8 +86,8 @@ public class TemplateAttach extends AbstractSample {
 		// Create external rel
 		RelationshipsPart rp = RelationshipsPart.createRelationshipsPartForPart(dsp); 		
 		org.docx4j.relationships.Relationship rel = new org.docx4j.relationships.ObjectFactory().createRelationship();
-		rel.setType( "http://schemas.openxmlformats.org/officeDocument/2006/relationships/attachedTemplate"  );
-		rel.setTarget("file:///C:\\Users\\jsmith\\AppData\\Roaming\\Microsoft\\Templates\\yours.dotm");
+		rel.setType( Namespaces.ATTACHED_TEMPLATE  );
+		rel.setTarget(templatePath);
 		rel.setTargetMode("External");  		
 		rp.addRelationship(rel); // addRelationship sets the rel's @Id
 		
@@ -107,32 +103,12 @@ public class TemplateAttach extends AbstractSample {
 //				CTRel.class, null, id);
 //		settings.setAttachedTemplate(je.getValue());
 		
-		
-		
 		// Now save it
 		if (save) {
 			wordMLPackage.save(new java.io.File(inputfilepath) );
-			System.out.println("Saved " + inputfilepath);
 		} else {
-		   	// Create a org.docx4j.wml.Package object
-			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wordMLPackage);
-			org.docx4j.xmlPackage.Package pkg = worker.get();
-	    	
-	    	// Now marshall it
-			JAXBContext jc = Context.jcXmlPackage;
-			Marshaller marshaller=jc.createMarshaller();
-			
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-			NamespacePrefixMapperUtils.setProperty(marshaller, 
-					NamespacePrefixMapperUtils.getPrefixMapper());			
-			System.out.println( "\n\n OUTPUT " );
-			System.out.println( "====== \n\n " );	
-			marshaller.marshal(pkg, System.out);				
-			
+			System.out.println( XmlUtils.marshaltoString(dsp.getJaxbElement(), true, true, dsp.getJAXBContext()) );
 		}
-		
-		System.out.println("Done.");
-				
 	}
 	
 	

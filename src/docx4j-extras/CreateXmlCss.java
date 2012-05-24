@@ -40,6 +40,14 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+/**
+ * The idea here was to display a docx
+ * in the browser by converting it to 
+ * Flat OPC XML, then applying CSS to it.
+ * 
+ * @author jharrop
+ *
+ */
 public class CreateXmlCss {
 	
 	public final static String HTML_TOP = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">"

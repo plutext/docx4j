@@ -12,12 +12,11 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /**
  * This sample demonstrates how the MergeDocx utility can
- * be used to merge docx documents. It is one of two such
- * samples, the other being AltChunkProcessingExtension.
+ * be used to merge docx documents. 
  * 
  * The MergeDocx utility is a paid extension to docx4j.
  * Purchases of this extension support the docx4j project.
- * @see <a href="http://dev.plutext.org/blog/2010/11/merging-word-documents/">
+ * @see <a href="http://www.docx4java.org/blog/2010/11/merging-word-documents/">
  * merging-word-documents blog post</a> for more info, or 
  * @see <a href="http://www.plutext.com/">www.plutext.com</a>
  * or email sales@plutext.com if you want to buy it.
@@ -33,12 +32,12 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  */
 public class MergeDocx extends AbstractSample {
 
-	final static String BASE_DIR = System.getProperty("user.dir") + "/sample-docs/";
+	final static String BASE_DIR = System.getProperty("user.dir") + "/sample-docs/word/";
 
 	final static String[] sourceDocxNames = { "Table.docx", "Images.docx"};  
 
 	static boolean save = true;
-	static String outputfilepath = BASE_DIR+"MergeDocx_OUT.docx";		
+	static String outputfilepath = System.getProperty("user.dir") +"OUT_MergeDocx.docx";		
 	
 	/**
 	 * @param args
@@ -101,7 +100,7 @@ public class MergeDocx extends AbstractSample {
 	public static void extensionMissing(Exception e) {
 		System.out.println("\n" + e.getClass().getName() + ": " + e.getMessage() + "\n");
 		System.out.println("* You don't appear to have the MergeDocx paid extension,");
-		System.out.println("* which is necessary to merge docx, or process altChunk.");
+		System.out.println("* which is necessary to merge docx, or process altChunks (of type docx).");
 		System.out.println("* Purchases of this extension support the docx4j project.");
 		System.out.println("* Please visit www.plutext.com if you want to buy it.");
 	}

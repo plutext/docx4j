@@ -20,38 +20,24 @@
 
 package org.docx4j.samples;
 
-
-
-import java.io.FileOutputStream;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 
 
+/**
+ * Remove proof error markup, rsids etc.
+ */
 public class Filter {
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) throws Exception {
 
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/contentcontrols.docx";
-				
-		// Do we want to save output? 
-		boolean save = false;
-		// If so, whereto?
-		String outputfilepath = System.getProperty("user.dir") + "/sample-docs/qformat.pkg";		
+		//String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
 		
-		
-		// Open a document from the file system
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		
+		// Before .. note attributes w:rsidRDefault="00D15781" w:rsidR="00D15781"
+		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
 		
 		// Apply the filter
 		WordprocessingMLPackage.FilterSettings filterSettings = new WordprocessingMLPackage.FilterSettings();
@@ -59,34 +45,15 @@ public class Filter {
 		filterSettings.setRemoveContentControls(true);
 		filterSettings.setRemoveRsids(true);
 		wmlPackage.filter(filterSettings);
+		// Note the filter is deprecated, since its questionable whether this
+		// is important enough to live in WordprocessingMLPackage,
+		// and in any case probably should be replaced with a TraversalUtil
+		// approach (which wouldn't involve marshal/unmarshall, and 
+		// so should be more efficient).
 		
-	   	// Create a org.docx4j.wml.Package object
-		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPackage);
-		org.docx4j.xmlPackage.Package pkg = worker.get();
-    	
-    	// Now marshall it
-		JAXBContext jc = Context.jcXmlPackage;
-		Marshaller marshaller=jc.createMarshaller();
-		
-		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-		NamespacePrefixMapperUtils.setProperty(marshaller, 
-				NamespacePrefixMapperUtils.getPrefixMapper());			
-		
-		//org.w3c.dom.Document doc = org.docx4j.XmlUtils.neww3cDomDocument();	
-		if (save) {
-			marshaller.marshal(pkg, new FileOutputStream(outputfilepath));				
-			System.out.println( "\n\n .. written to " + outputfilepath);
-		} else {
-			// Display its contents 
-			System.out.println( "\n\n OUTPUT " );
-			System.out.println( "====== \n\n " );	
-			marshaller.marshal(pkg, System.out);				
-		}
-		
-		
+		// After .. those yucky attributes are all gone.
+		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
 				
 	}
-	
-	
 
 }

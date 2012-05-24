@@ -64,8 +64,9 @@ public class CompareDocumentsUsingDriver {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		String newerfilepath = System.getProperty("user.dir") + "/temp2/102.docx";
-		String olderfilepath = System.getProperty("user.dir") + "/temp2/102Ver2.docx";
+		String newerfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docxv2.docx";
+		String olderfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
+		//String olderfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml"; // TODO FIXME breaks if we use this
 						
 		// 1. Load the Packages
 		WordprocessingMLPackage newerPackage = WordprocessingMLPackage.load(new java.io.File(newerfilepath));
