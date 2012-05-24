@@ -254,6 +254,7 @@ public class Properties {
         "clsid",
         "cf"
     })
+    @XmlRootElement(name="property")
     public static class Property {
 
         @XmlElement(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes")
