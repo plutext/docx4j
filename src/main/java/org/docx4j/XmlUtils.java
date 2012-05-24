@@ -181,7 +181,7 @@ public class XmlUtils {
 		if (o==null) return null;
 		
 		if (o instanceof javax.xml.bind.JAXBElement) {
-			log.info("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
+			log.debug("Unwrapped " + ((JAXBElement)o).getDeclaredType().getName() );
 			log.debug("name: " + ((JAXBElement)o).getName() );
 			return ((JAXBElement)o).getValue();
 		} else {
@@ -364,7 +364,6 @@ public class XmlUtils {
 	public static String marshaltoString(Object o, boolean suppressDeclaration, JAXBContext jc ) {
 
 		return marshaltoString(o, suppressDeclaration, false, jc );
-
 	}
 	
 	/** Marshal to a String */ 
