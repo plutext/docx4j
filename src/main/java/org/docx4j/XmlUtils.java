@@ -108,8 +108,8 @@ public class XmlUtils {
 		
     	// Crimson fails to parse the HTML XSLT, so use Xerces ..
 		// .. this one is available in Java 6.	
-		System.out.println(System.getProperty("java.vendor"));
-		System.out.println(System.getProperty("java.version"));
+		// System.out.println(System.getProperty("java.vendor"));
+		// System.out.println(System.getProperty("java.version"));
 		if ((System.getProperty("java.version").startsWith("1.6")
 				&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")

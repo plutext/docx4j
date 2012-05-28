@@ -194,7 +194,7 @@ public abstract class AbstractHtmlExporter implements Output {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println(e.toString() );
+			// System.out.println(e.toString() );
 			log.error(e);
 		} 
     	
