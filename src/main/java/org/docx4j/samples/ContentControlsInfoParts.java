@@ -51,9 +51,9 @@ import org.docx4j.relationships.Relationship;
  * @author jharrop
  *
  */
-public class ContentControlsPartsInfo extends AbstractSample {
+public class ContentControlsInfoParts extends AbstractSample {
 	
-	private static Logger log = Logger.getLogger(ContentControlsPartsInfo.class);						
+	private static Logger log = Logger.getLogger(ContentControlsInfoParts.class);						
 
 	/**
 	 * @param args
