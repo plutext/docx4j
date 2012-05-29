@@ -1073,6 +1073,7 @@ public class OpenDoPEHandler {
 				c = ConditionsPart.getConditionById(conditions, conditionId);
 				if (c == null) {
 					log.error("Missing condition " + conditionId);
+					throw new RuntimeException("Required condition '" + conditionId + "' is missing");
 				}
 
 				// TODO: this code assumes the condition contains

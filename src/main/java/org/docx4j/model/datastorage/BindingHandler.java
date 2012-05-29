@@ -270,8 +270,7 @@ public class BindingHandler {
 				NodeIterator rPrNodeIt, 
 				String tag) {
 
-			log.info("convertXHTML extension function");
-			log.info("contentChild: " + contentChild);
+			log.debug("convertXHTML extension function for: " + sdtParent + "/w:sdt/w:sdtContent/" + contentChild);
 			
 			QueryString qs = new QueryString();
 			HashMap<String, String> map = qs.parseQueryString(tag, true);
@@ -296,23 +295,79 @@ public class BindingHandler {
 			if (r==null) return null;
 			
 			try {
-				String unescaped = StringEscapeUtils.unescapeHtml(r);
-				log.info("Unescaped: " + unescaped);
+				//String unescaped = StringEscapeUtils.unescapeHtml(r);
+				//log.info("Unescaped: " + unescaped);
 				
-				NumberingDefinitionsPart ndp = null;
-				if (sourcePart instanceof MainDocumentPart) {
-					ndp = ((MainDocumentPart)sourcePart).getNumberingDefinitionsPart();
-				}				
-				
-				XHTMLImporter.setHyperlinkStyle(hyperlinkStyleId);
-				String baseUrl = null;
-				List<Object> results = XHTMLImporter.convert(unescaped, baseUrl, pkg );
+				// It comes to us unescaped, so the above is unnecessary.
 
 				org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
 				DocumentFragment docfrag = docContainer.createDocumentFragment();
 				
+				XHTMLImporter.setHyperlinkStyle(hyperlinkStyleId);
+				String baseUrl = null;
+				List<Object> results = null;
+				try {
+					results = XHTMLImporter.convert(r, baseUrl, pkg );
+				} catch (Exception e) {
+					if (e instanceof NullPointerException) {
+						((NullPointerException)e).printStackTrace();
+					}
+					log.error(e);
+					log.error("with XHTML: " + r);
+					//throw new Docx4JException("Problem converting XHTML", e);
+					
+					String errMsg = e.getMessage() + " with XHTML from " + xpathExp + " : " + r; 
+
+					org.w3c.dom.Element wr = docContainer.createElementNS(Namespaces.NS_WORD12, "r");
+					org.w3c.dom.Element wt = docContainer.createElementNS(Namespaces.NS_WORD12, "t");
+					wt.setTextContent(errMsg);
+					wr.appendChild(wt);
+					
+					if (sdtParent.equals("p")) {
+						docfrag.appendChild(wr);
+						return docfrag;
+					} else if (sdtParent.equals("tbl")) {
+						
+						org.w3c.dom.Element wtr = docContainer.createElementNS(Namespaces.NS_WORD12, "tr");
+						docfrag.appendChild(wtr);
+						
+						org.w3c.dom.Element wtc = docContainer.createElementNS(Namespaces.NS_WORD12, "tc");
+						wtr.appendChild(wtc);
+						
+						org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+						wtc.appendChild(wp);
+						
+						wp.appendChild(wr);
+						
+						return docfrag;
+					} else if (sdtParent.equals("tr")) {
+						org.w3c.dom.Element wtc = docContainer.createElementNS(Namespaces.NS_WORD12, "tc");
+						docfrag.appendChild(wtc);
+						
+						org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+						wtc.appendChild(wp);
+						
+						wp.appendChild(wr);
+						return docfrag;
+					} else if (sdtParent.equals("tc")) {
+						org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+						docfrag.appendChild(wp);
+						
+						wp.appendChild(wr);
+						return docfrag;
+					} else {
+						org.w3c.dom.Element wp = docContainer.createElementNS(Namespaces.NS_WORD12, "p");
+						docfrag.appendChild(wp);
+						
+						wp.appendChild(wr);
+						return docfrag;
+	
+					}
+				}
+
+				
 				if (results==null) {
-					log.error("Couldn't convert " + unescaped);
+					log.error("Couldn't convert " + r);
 					return docfrag;
 				}
 				
@@ -333,7 +388,7 @@ public class BindingHandler {
 					for(Object o : results) {
 						
 						String debug = XmlUtils.marshaltoString(o, true);
-						log.info("Conversion result: " + debug);
+						log.debug("Conversion result: " + debug);
 						
 						Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
 						XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);						
