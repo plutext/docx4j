@@ -21,14 +21,20 @@
 package org.docx4j.openpackaging.parts.WordprocessingML;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTEndnotes;
+import org.docx4j.wml.CTFtnEdn;
+import org.docx4j.wml.ContentAccessor;
 
 
-public final class EndnotesPart extends JaxbXmlPartXPathAware<CTEndnotes> {
+public final class EndnotesPart extends JaxbXmlPartXPathAware<CTEndnotes>  implements ContentAccessor {
 	
 	public EndnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -50,5 +56,23 @@ public final class EndnotesPart extends JaxbXmlPartXPathAware<CTEndnotes> {
 		
 	}
 
+    /**
+     * Convenience method to getJaxbElement().getEndnote()
+     * @since 2.8.1
+     */
+    public List<Object> getContent() {
+    	
+    	if (this.getJaxbElement()==null) {    		
+    		this.setJaxbElement( Context.getWmlObjectFactory().createCTEndnotes() );
+    	}
+    	
+    	List<Object> tmpList = new ArrayList<Object>();
+    	for (CTFtnEdn o : this.getJaxbElement().getEndnote() ) {
+    		tmpList.add(o);
+    	}
+    	
+    	return tmpList;
+    }	
+	
 
 }
