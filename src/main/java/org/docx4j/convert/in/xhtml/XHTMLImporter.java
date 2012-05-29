@@ -45,6 +45,7 @@ import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
 import org.docx4j.model.properties.run.AbstractRunProperty;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
@@ -377,7 +378,33 @@ public class XHTMLImporter {
         importer.renderer = new DocxRenderer();
         
         InputSource is = new InputSource(new BufferedReader(new StringReader(content)));
-        Document dom = XMLResource.load(is).getDocument();
+        
+        Document dom;
+        try {
+        	dom = XMLResource.load(is).getDocument();
+        } catch  ( org.docx4j.org.xhtmlrenderer.util.XRRuntimeException xre) {
+        	// javax.xml.transform.TransformerException te
+        	Throwable t = xre.getCause();
+        	if (t instanceof javax.xml.transform.TransformerException) {
+	        	// eg content of elements must consist of well-formed character data or markup.
+        		
+        		
+	        	Throwable t2 = ((javax.xml.transform.TransformerException)t).getCause();
+	        	if (t2 instanceof org.xml.sax.SAXParseException) {
+	        		throw new Docx4JException(
+		        			"issues at Line " + ((org.xml.sax.SAXParseException)t2).getLineNumber() 
+		        			+ ", Col " + ((org.xml.sax.SAXParseException)t2).getColumnNumber(), t);
+	        		
+	        	}
+
+        		throw new Docx4JException(
+	        			((javax.xml.transform.TransformerException)t).getLocationAsString(), t);
+	        	
+        	} else {
+        		throw xre;
+        	}
+        }
+        
         
         importer.renderer.setDocument(dom, baseUrl);
         importer.renderer.layout();
@@ -427,7 +454,7 @@ public class XHTMLImporter {
     
     private void traverse(Box box, List<Object> contentContext, TableProperties tableProperties) throws Docx4JException {
         
-        log.info(box.getClass().getName() );
+        log.debug(box.getClass().getName() );
         if (box instanceof BlockBox) {
             BlockBox blockBox = ((BlockBox)box);
 
@@ -436,9 +463,9 @@ public class XHTMLImporter {
             // Don't add a new paragraph if this BlockBox is display: inline
             if (e==null) {
             	// Shouldn't happen
-                log.info("<NULL>");
+                log.debug("<NULL>");
             } else {            
-                log.info("BB"  + "<" + e.getNodeName() + " " + box.getStyle().toStringMine() );
+                log.debug("BB"  + "<" + e.getNodeName() + " " + box.getStyle().toStringMine() );
                 
                 
             	//Map cssMap = styleReference.getCascadedPropertiesMap(e);
@@ -447,7 +474,7 @@ public class XHTMLImporter {
             	/* Sometimes, when it is display: inline, the following is not set:
 	            	CSSValue cssValue = (CSSValue)cssMap.get("display");
 	            	if (cssValue !=null) {
-	            		log.info(cssValue.getCssText() );
+	            		log.debug(cssValue.getCssText() );
 	            	}
 	            */
             	// So do it this way ...
@@ -466,16 +493,36 @@ public class XHTMLImporter {
             		// to avoid a class cast exception
             		
             		// eg <tbody color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; border-collapse: collapse; -fs-border-spacing-horizontal: 0; -fs-border-spacing-vertical: 0; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table-row-group; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: static; ; right: auto; src: none; table-layout: auto; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: middle; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: none; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; 
-            		log.info(".. processing <tbody");
+            		log.debug(".. processing <tbody");
             		
             		// Do nothing here for now .. the switch statement below traverses children
             		
             		// TODO: give effect to this CSS
 
-            	} else if (e.getNodeName().equals(box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableBox)
-            			|| e.getNodeName().equals("table") ) {
+            	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableBox)  {
                 	
-            		log.info(".. processing table");  // what happened to <colgroup><col style="width: 2.47in;" /><col style="width: 2.47in;" /> 
+            		log.debug(".. processing table");  // what happened to <colgroup><col style="width: 2.47in;" /><col style="width: 2.47in;" /> 
+            		
+            		/*
+            		 * BEWARE: xhtmlrenderer seems to parse tables differently,
+            		 * depending on whether:
+            		 * 
+            		 * (i) the table is contained within a <div>
+            		 * 
+            		 * (ii) the table contains <caption>
+            		 * 
+            		 * See https://github.com/plutext/flyingsaucer/issues/1
+            		 * 
+            		 * Bare table with caption: BlockBox cannot be cast to TableSectionBox in xhtmlrenderer
+            		 * 
+            		 * div/table[count(caption)=1] ... table becomes TableBox, children are CONTENT_BLOCK
+            		 * 
+            		 * div/table[count(caption)=0] ... table becomes TableBox, children are CONTENT_BLOCK
+            		 * 
+            		 * 
+
+            		 * 
+            		 */
 
             		org.docx4j.org.xhtmlrenderer.newtable.TableBox cssTable = (org.docx4j.org.xhtmlrenderer.newtable.TableBox)box;
             		
@@ -507,7 +554,7 @@ public class XHTMLImporter {
             		// cssTable.getTx(); which is (int) margin.left() + (int) border.left() + (int) padding.left();
             		// But want just margin.left
             		if (cssTable.getMargin().left()>0) {
-            			log.info("Calculating TblInd from margin.left: " + cssTable.getMargin().left() );
+            			log.debug("Calculating TblInd from margin.left: " + cssTable.getMargin().left() );
                 		TblWidth tblIW = Context.getWmlObjectFactory().createTblWidth();
                 		tblIW.setW( BigInteger.valueOf( Math.round(
                 				cssTable.getMargin().left()
@@ -564,11 +611,22 @@ public class XHTMLImporter {
 	            		TblGridCol tblGridCol = Context.getWmlObjectFactory().createTblGridCol();
 	            		tblGrid.getGridCol().add(tblGridCol);
 	            		
-	            		log.info("colpos=" + colPos[i]);
+	            		log.debug("colpos=" + colPos[i]);
 	            		tblGridCol.setW( BigInteger.valueOf(colPos[i]-colPos[i-1]) );
 	            		
 	            	}
 	            	
+            	} else if (e.getNodeName().equals("table") ) {
+            		// but not instanceof org.docx4j.org.xhtmlrenderer.newtable.TableBox
+            		// .. this does happen.  See test/resources/block-level-lots.xhtml
+            		
+            		// TODO: look at whether we can style the table in this case
+
+            		log.warn("Encountered non-TableBox table: " + box.getClass().getName() );
+            		Tbl tbl = Context.getWmlObjectFactory().createTbl();
+            		contentContext.add(tbl);
+		            paraStillEmpty = true;
+		            contentContext = tbl.getContent();
             		
             	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableRowBox) {
             		
@@ -576,7 +634,7 @@ public class XHTMLImporter {
             		
             		// TODO support vertical-align
             		
-            		log.info(".. processing <tr");            		
+            		log.debug(".. processing <tr");            		
 
             		Tr tr = Context.getWmlObjectFactory().createTr();
             		contentContext.add(tr);
@@ -585,7 +643,7 @@ public class XHTMLImporter {
             		
             	} else if (box instanceof org.docx4j.org.xhtmlrenderer.newtable.TableCellBox) {
             		            		
-            		log.info(".. processing <td");            		
+            		log.debug(".. processing <td");            		
             		// eg <td color: #000000; background-color: transparent; background-image: none; background-repeat: repeat; background-attachment: scroll; background-position: [0%, 0%]; background-size: [auto, auto]; border-collapse: collapse; -fs-border-spacing-horizontal: 0; -fs-border-spacing-vertical: 0; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table-row; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: static; ; right: auto; src: none; table-layout: auto; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: top; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: none; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;
             		
             		org.docx4j.org.xhtmlrenderer.newtable.TableCellBox tcb = (org.docx4j.org.xhtmlrenderer.newtable.TableCellBox)box;
@@ -602,8 +660,8 @@ public class XHTMLImporter {
 					effCol = tcb.getTable().colToEffCol(tcb.getCol());
 					if (effCol != 0) {	                    
 					    TableCellBox prevCell = section.cellAt(tcb.getRow(), tcb.getCol() - 1);
-					    log.info("Got prevCell for " + tcb.getRow() + ", " + tcb.getCol() );
-					    log.info("it is  " + prevCell.getRow() + ", " + prevCell.getCol() );
+					    log.debug("Got prevCell for " + tcb.getRow() + ", " + tcb.getCol() );
+					    log.debug("it is  " + prevCell.getRow() + ", " + prevCell.getCol() );
 					    if ( prevCell.getRow() < tcb.getRow()
 					    		&& prevCell.getStyle()!=null
 					    		&& prevCell.getStyle().getRowSpan()>1 ) {
@@ -659,8 +717,8 @@ public class XHTMLImporter {
                         // The cell is not in the last row, so use the next row in the
                         // section.
                         TableCellBox belowCell = section.cellAt( r + 1, effCol);
-	                    log.info("Got belowCell for " + tcb.getRow() + ", " + tcb.getCol() );
-	                    log.info("it is  " + belowCell.getRow() + ", " + belowCell.getCol() );
+	                    log.debug("Got belowCell for " + tcb.getRow() + ", " + tcb.getCol() );
+	                    log.debug("it is  " + belowCell.getRow() + ", " + belowCell.getCol() );
                         if (belowCell.getRow() > tcb.getRow() + 1 ) {
 	                		TcPr tcPr = Context.getWmlObjectFactory().createTcPr();
 	            			tc.setTcPr(tcPr);
@@ -681,13 +739,13 @@ public class XHTMLImporter {
 					} else { 
 						TableCellBox nextCell = tcb.getSection().cellAt(tcb.getRow(), effCol);
 					    if (nextCell==null) throw new Docx4JException("XHTML table import: Null nextCell for row " + tcb.getRow() + ", col " + tcb.getCol()); // Check your table is OK
-					    log.info("Got nextCell for " + tcb.getRow() + ", " + tcb.getCol() );
-					    log.info("it is  " + nextCell.getRow() + ", " + nextCell.getCol() );
+					    log.debug("Got nextCell for " + tcb.getRow() + ", " + tcb.getCol() );
+					    log.debug("it is  " + nextCell.getRow() + ", " + nextCell.getCol() );
 					    if ( nextCell.getRow() < tcb.getRow()
 					    		// && nextCell.getStyle().getRowSpan()>1
 					    		&& nextCell.getTable().colToEffCol(nextCell.getCol() + nextCell.getStyle().getColSpan())==numEffCols // rightmost
 					    		) {
-					    	log.info("it has rowspan  " + nextCell.getStyle().getRowSpan() );
+					    	log.debug("it has rowspan  " + nextCell.getStyle().getRowSpan() );
 					    	// eg tcb is r2,c1 & nextCell is r1,c2
 							Tc dummy = Context.getWmlObjectFactory().createTc();
 							contentContext.add(dummy);
@@ -745,7 +803,7 @@ public class XHTMLImporter {
 		            	addNumbering(e, cssMap);
 		            } else if  (e.getNodeName().equals("img")) {
 		        		// TODO, should we be using ReplacedElementFactory approach instead?		            	
-		            	addImage(e);		            	
+		            	addImage(e);
 		            }
 		            
 	            }
@@ -753,23 +811,23 @@ public class XHTMLImporter {
             
             // the recursive bit:
             
-            	log.info("Processing children of " + box.getElement().getNodeName() );
+            	log.debug("Processing children of " + box.getElement().getNodeName() );
 	            switch (blockBox.getChildrenContentType()) {
 	                case BlockBox.CONTENT_BLOCK:
-	                	log.info(".. which are BlockBox.CONTENT_BLOCK");	                	
+	                	log.debug(".. which are BlockBox.CONTENT_BLOCK");	                	
 	                    for (Object o : ((BlockBox)box).getChildren() ) {
 	                        traverse((Box)o, contentContext,  tableProperties);                    
 	                    }
 	                    break;
 	                case BlockBox.CONTENT_INLINE:
 	                	
-	                	log.info(".. which are BlockBox.CONTENT_INLINE");	                	
+	                	log.debug(".. which are BlockBox.CONTENT_INLINE");	                	
 	                	
 	                    if ( ((BlockBox)box).getInlineContent()!=null) {
 
 	                    	
 	                        for (Object o : ((BlockBox)box).getInlineContent() ) {
-	//                            log.info("        " + o.getClass().getName() ); 
+	//                            log.debug("        " + o.getClass().getName() ); 
 	                            if (o instanceof InlineBox ) {
 	//                                    && ((InlineBox)o).getElement()!=null // skip these (pseudo-elements?)
 	//                                    && ((InlineBox)o).isStartsHere()) {
@@ -779,7 +837,7 @@ public class XHTMLImporter {
 	                            } else if (o instanceof BlockBox ) {
 	                                traverse((Box)o, contentContext, tableProperties); // commenting out gets rid of unwanted extra parent elements
 	                            } else {
-	                                log.info("What to do with " + box.getClass().getName() );                        
+	                                log.debug("What to do with " + box.getClass().getName() );                        
 	                            }
 	                        }
 	                    }
@@ -787,7 +845,7 @@ public class XHTMLImporter {
 	            } 
             
 		    
-            log.info("Done processing children of " + box.getClass().getName() );
+            log.debug("Done processing children of " + box.getClass().getName() );
             // contentContext gets its old value back each time recursion finishes,
             // ensuring elements are added at the appropriate level (eg inside tr) 
             
@@ -798,7 +856,7 @@ public class XHTMLImporter {
             }
             
         } else if (box instanceof AnonymousBlockBox) {
-            log.info("AnonymousBlockBox");            
+            log.debug("AnonymousBlockBox");            
         }
     
     }
@@ -811,7 +869,7 @@ public class XHTMLImporter {
 		tcPr.setTcW(tblW);    	
     }
 
-	private void addImage(Element e) {
+	private void addImage(Element e)  {
 		System.out.println("Detected an image!!! " + e.getAttribute("src"));
 		
 		Docx4jUserAgent docx4jUserAgent = renderer.getDocx4jUserAgent();
@@ -825,24 +883,42 @@ public class XHTMLImporter {
 					wordMLPackage, 
 					docx4JFSImage.getBytes());
 		    inline = imagePart.createImageInline( null, null, 0, 1, false);
+
+			// Now add the inline in w:p/w:r/w:drawing
+			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
+			currentP.getContent().add(run);        
+			org.docx4j.wml.Drawing drawing = Context.getWmlObjectFactory().createDrawing();		
+			run.getContent().add(drawing);		
+			drawing.getAnchorOrInline().add(inline);
 		    
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+
+			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
+			currentP.getContent().add(run);        
+
+			org.docx4j.wml.Text  text = Context.getWmlObjectFactory().createText();		
+			text.setValue("[MISSING IMAGE: " + e.getAttribute("src") );
+			
+			run.getContent().add(text);
 		}		        		
 		
-		// Now add the inline in w:p/w:r/w:drawing
-		org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-		currentP.getContent().add(run);        
-		org.docx4j.wml.Drawing drawing = Context.getWmlObjectFactory().createDrawing();		
-		run.getContent().add(drawing);		
-		drawing.getAnchorOrInline().add(inline);
 		
 	    paraStillEmpty = false;
 		
 	}
 
 	private void addNumbering(Element e, Map<String, CSSValue> cssMap) {
+		if (ndp==null) {
+			log.debug("No NumberingDefinitions part - so adding");
+			try {
+				ndp = new NumberingDefinitionsPart();
+				wordMLPackage.getMainDocumentPart().addTargetPart(ndp);
+				ndp.setJaxbElement( Context.getWmlObjectFactory().createNumbering() );				
+			} catch (InvalidFormatException e1) {
+				// Won't happen
+				e1.printStackTrace();
+			}
+		}
 		Numbering.Num num = null;
 		try {
 			if ( cssMap.get("list-style-type" ).getCssText().equals("decimal")) {
@@ -892,14 +968,14 @@ public class XHTMLImporter {
 
 	// For a hyperlink, we do all the processing when
 	// we hit that element.  No need to add its children again
-	private boolean inAlreadyProcessed = false;
+	private boolean inAlreadyProcessed = false; // TODO may need a stack of these.
 	
     private void processInlineBox( InlineBox inlineBox, List<Object> contentContext) {
     	
-    	log.info(inlineBox.toString());
+    	log.debug(inlineBox.toString());
 
     	if (inAlreadyProcessed) {
-    		log.info(".. already done.");
+    		log.debug(".. already done.");
     		return;
     	}
         // Doesn't extend box
@@ -915,7 +991,7 @@ public class XHTMLImporter {
             debug = "<" + s.getElement().getNodeName();
             
             if (s.getElement().getNodeName().equals("a")) {
-            	log.info("Ha!  found a hyperlink. ");
+            	log.debug("Ha!  found a hyperlink. ");
             	
             	/* For hyperlink anchors, there are three cases.
             	 * 
@@ -945,7 +1021,7 @@ public class XHTMLImporter {
             		
                 	Hyperlink h = null;
                 	String linkText = inlineBox.getElement().getTextContent();
-                	log.info(linkText);
+                	log.debug(linkText);
                 	if (linkText!=null
                 			&& !linkText.trim().equals("")) {
                 		// Cases 1 & 2
@@ -954,7 +1030,9 @@ public class XHTMLImporter {
                     			addRunProperties( cssMap ),
                     			linkText, rp);                                    	            		
                         currentP.getContent().add(h);
-                        inAlreadyProcessed = true;
+                        if (!inlineBox.isEndsHere() ) {
+                        	inAlreadyProcessed = true;
+                        }
                         return;
                 	} else {
                     	// Case 3           	
@@ -997,8 +1075,8 @@ public class XHTMLImporter {
 //        // representing its children
 //        if (awaitingEnd) return;
         
-        log.info(debug );
-        //log.info("'" + ((InlineBox)o).getTextNode().getTextContent() );  // don't use .getText()
+        log.debug(debug );
+        //log.debug("'" + ((InlineBox)o).getTextNode().getTextContent() );  // don't use .getText()
         
         processInlineBoxContent(inlineBox, s, cssMap);
     }
@@ -1014,17 +1092,17 @@ public class XHTMLImporter {
            		run.getContent().add(Context.getWmlObjectFactory().createBr());
                 
             } else {
-            	log.info("InlineBox has no TextNode, so skipping" );
+            	log.debug("InlineBox has no TextNode, so skipping" );
             	
             	// TODO .. a span in a span?
             	// need to traverse
             }
             
         } else  {
-            log.info( inlineBox.getTextNode().getTextContent() );  // don't use .getText()
+            log.debug( inlineBox.getTextNode().getTextContent() );  // don't use .getText()
 
             String theText = inlineBox.getTextNode().getTextContent(); 
-            log.info("Processing " + theText);
+            log.debug("Processing " + theText);
             
             paraStillEmpty = false;                                    
                         
@@ -1067,7 +1145,7 @@ public class XHTMLImporter {
 	        	if (p instanceof AbstractParagraphProperty) {        		
 	        		((AbstractParagraphProperty)p).set(pPr);
 	        	} else {
-	            	//log.info(p.getClass().getName() );
+	            	//log.debug(p.getClass().getName() );
 	        	}
         	}
         	
@@ -1098,7 +1176,7 @@ public class XHTMLImporter {
 	        	if (p instanceof AbstractRunProperty) {        		
 	        		((AbstractRunProperty)p).set(rPr);
 	        	} else {
-	            	//log.info(p.getClass().getName() );
+	            	//log.debug(p.getClass().getName() );
 	        	}
         	}
         }
