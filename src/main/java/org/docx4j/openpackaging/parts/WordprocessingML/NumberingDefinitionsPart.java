@@ -107,7 +107,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
     	if (numbering.getNum().size() == 0)
         {
     		log.debug("No num defined");
-            return;
+    		// Don't return; init empty lists.
         }
         
         // initialize the abstract number list
