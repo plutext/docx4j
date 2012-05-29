@@ -60,7 +60,7 @@ public class CTFootnotes
     implements Child
 {
 
-    protected List<CTFtnEdn> footnote;
+    protected List<Object> footnote;
     @XmlTransient
     private Object parent;
 
@@ -86,9 +86,9 @@ public class CTFootnotes
      * 
      * 
      */
-    public List<CTFtnEdn> getFootnote() {
+    public List<Object> getFootnote() {
         if (footnote == null) {
-            footnote = new ArrayList<CTFtnEdn>();
+            footnote = new ArrayList<Object>();
         }
         return this.footnote;
     }

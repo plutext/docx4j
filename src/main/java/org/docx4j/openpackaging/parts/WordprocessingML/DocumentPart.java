@@ -224,7 +224,7 @@ public abstract class DocumentPart<E> extends JaxbXmlPartXPathAware<E> {
 		int pos = Integer.parseInt(id);
 		
 		// No @XmlRootElement on CTFtnEdn, so .. 
-		CTFtnEdn ftn = footnotes.getFootnote().get(pos);
+		CTFtnEdn ftn = (CTFtnEdn)footnotes.getFootnote().get(pos);
 		Document d = XmlUtils.marshaltoW3CDomDocument( ftn,
 				Context.jc, Namespaces.NS_WORD12, "footnote",  CTFtnEdn.class );
 		log.debug("Footnote " + id + ": " + XmlUtils.w3CDomNodeToString(d));
