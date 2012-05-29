@@ -178,7 +178,8 @@ public abstract class AbstractHtmlExporter implements Output {
 			String styleVal = "";
 			
     		if (triple.getBullet()!=null ) {
-    			return (triple.getBullet() + " " );    						
+    			//return (triple.getBullet() + " " );    						
+    			return ("&bull; " );
     		} else if (triple.getNumString()==null) {
 	    		log.error("computed NumString was null!");
     			return ("?");    						
@@ -299,8 +300,8 @@ public abstract class AbstractHtmlExporter implements Output {
 		try {
 			styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Couldn't getStyleTree", e);
+    		return result.toString();			
 		}
 
 		// First iteration - table styles
