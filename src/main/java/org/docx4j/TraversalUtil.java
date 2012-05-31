@@ -552,7 +552,7 @@ public class TraversalUtil {
 						}
 					}
 					if ((elementList != null) && (!elementList.isEmpty())) {
-						System.out.println("Processing target: "
+						log.debug("Processing target: "
 								+ rs.getTarget() + ", type: " + rs.getType());
 						callback.walkJAXBElements(elementList);
 					}
