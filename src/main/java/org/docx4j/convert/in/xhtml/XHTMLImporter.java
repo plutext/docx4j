@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,6 +37,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
@@ -870,10 +872,43 @@ public class XHTMLImporter {
     }
 
 	private void addImage(Element e)  {
-		System.out.println("Detected an image!!! " + e.getAttribute("src"));
+
+		byte[] imageBytes = null;
 		
-		Docx4jUserAgent docx4jUserAgent = renderer.getDocx4jUserAgent();
-		Docx4JFSImage docx4JFSImage = docx4jUserAgent.getDocx4JImageResource( e.getAttribute("src") );
+		if (e.getAttribute("src").startsWith("data:image" ) ) {
+			// Supports 
+			//   data:[<MIME-type>][;charset=<encoding>][;base64],<data>
+			// eg data:image/png;base64,iVBORw0KGgo...
+			// http://www.greywyvern.com/code/php/binary2base64 is a convenient online encoder
+			String base64String = e.getAttribute("src");
+			int commaPos = base64String.indexOf(",");
+			if (commaPos<6) { // or so ...
+				// .. its broken
+				org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
+				currentP.getContent().add(run);        
+
+				org.docx4j.wml.Text  text = Context.getWmlObjectFactory().createText();		
+				text.setValue("[INVALID DATA URI: " + e.getAttribute("src") );
+				
+				run.getContent().add(text);
+				
+			    paraStillEmpty = false;
+			    return;
+			}
+			base64String = base64String.substring( commaPos+1 );
+			System.out.println(base64String);
+			try {
+				imageBytes = Base64.decodeBase64( base64String.getBytes("UTF8") );
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}			
+		} else {
+			Docx4jUserAgent docx4jUserAgent = renderer.getDocx4jUserAgent();
+			Docx4JFSImage docx4JFSImage = docx4jUserAgent.getDocx4JImageResource( e.getAttribute("src") );
+			imageBytes = docx4JFSImage.getBytes();			
+		}
+		
 				
 		BinaryPartAbstractImage imagePart;
 		Inline inline = null;
@@ -881,7 +916,7 @@ public class XHTMLImporter {
 			
 			imagePart = BinaryPartAbstractImage.createImagePart(
 					wordMLPackage, 
-					docx4JFSImage.getBytes());
+					imageBytes);
 		    inline = imagePart.createImageInline( null, null, 0, 1, false);
 
 			// Now add the inline in w:p/w:r/w:drawing
