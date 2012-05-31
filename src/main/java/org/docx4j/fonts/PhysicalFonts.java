@@ -107,14 +107,23 @@ public class PhysicalFonts {
         
         // Automagically finds a list of font files on local system
         // based on os.name
-        List fontFileList = fontFileFinder.find();                
+        List fontFileList = fontFileFinder.find();      
+        
+        //Uncomment to limit to the common fonts in order 
+        // to avoid java.lang.OutOfMemoryError: Java heap space
+        //String regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
+        String regex=null;
+        
         for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
         	
         	URL fontUrl = getURL(iter.next());
             
             // parse font to ascertain font info
-            FontInfoFinder finder = new FontInfoFinder();
-            addPhysicalFont( fontUrl);
+        	if (regex==null) { 
+        		addPhysicalFont( fontUrl);
+        	} else if (fontUrl.toString().matches(regex)){
+        		addPhysicalFont( fontUrl);        		
+        	}
         }
 
         // Add fonts from our Temporary Embedded Fonts dir
