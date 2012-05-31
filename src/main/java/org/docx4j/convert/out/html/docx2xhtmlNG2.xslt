@@ -250,7 +250,10 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 						span>STUFF</span-->
 				</xsl:when>
 				<xsl:when test="count(child::node())=1 and count(w:pPr)=1">
-					<!--  Don't count an empty paragraph -->
+					<!--  Do count an 'empty' paragraph (one with a w:pPr node only) -->
+					<xsl:copy-of select="
+						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
+					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)" />					
 					<!--  Don't apply templates, since there is nothing to do. -->
 				</xsl:when>				
 				<xsl:otherwise>
@@ -258,7 +261,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					      we'll do that when we have a document model to work from -->								
 					<xsl:copy-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
-					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)" />					
+					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)"  />					
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
 			</xsl:choose>
@@ -266,11 +269,21 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  	
 
-	  	<xsl:copy-of select="
+	  	<xsl:apply-templates select="
 	  		java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
- 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+ 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" mode="amp-workaround"/>
 		
   </xsl:template>
+
+	<xsl:template match="@*|node()" mode="amp-workaround">
+		<xsl:copy>
+			<xsl:apply-templates select="@*|node()" mode="amp-workaround" />
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="amp" mode="amp-workaround">
+		<xsl:text disable-output-escaping="yes">&amp;</xsl:text><xsl:value-of select="."/>
+	</xsl:template>
 
   <xsl:template match="w:pPr | w:rPr" /> <!--  handle via extension function -->
 

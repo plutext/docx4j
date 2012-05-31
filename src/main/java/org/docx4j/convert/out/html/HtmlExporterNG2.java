@@ -437,8 +437,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			// init
+			int childCount = 0;
 			Node n = childResults.nextNode();
 			do {	
+				childCount++;
 				
 				// getNumberXmlNode creates a span node, which is empty
 				// if there is no numbering.
@@ -481,6 +483,19 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				n = childResults.nextNode();
 				
 			} while ( n !=null ); 
+			
+			//if (childCount==0 && htmlElementName.equals("p") ) {
+			if (xhtmlBlock.getNodeName().equals("p")
+					&& !xhtmlBlock.hasChildNodes() ) {
+				// browsers don't display an empty p, so add a space to it
+				
+				Element amp = document.createElement("amp");
+				xhtmlBlock.appendChild(amp);
+				// don't use setTextContent
+				Text t = document.createTextNode("#160;");
+				amp.appendChild(t);
+				
+			}
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());

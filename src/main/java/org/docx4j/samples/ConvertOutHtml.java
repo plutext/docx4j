@@ -20,6 +20,7 @@
 
 package org.docx4j.samples;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 
 import org.docx4j.convert.out.Containerization;
@@ -48,8 +49,7 @@ public class ConvertOutHtml extends AbstractSample {
 	// Config for non-command line version
 	static {
 		
-    	//inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
+    	inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
 		
 		save = true;
 	}
@@ -94,7 +94,7 @@ public class ConvertOutHtml extends AbstractSample {
 		if (save) {
 			os = new java.io.FileOutputStream(inputfilepath + ".html");
 		} else {
-			os = System.out;
+			os = new ByteArrayOutputStream();
 		}		
 		javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(os);
 		
@@ -103,6 +103,8 @@ public class ConvertOutHtml extends AbstractSample {
 		
 		if (save) {
 			System.out.println("Saved: " + inputfilepath + ".html using " +  exporter.getClass().getName() );
+		} else {
+			System.out.println( ((ByteArrayOutputStream)os).toString() );
 		}
         	        
     }
