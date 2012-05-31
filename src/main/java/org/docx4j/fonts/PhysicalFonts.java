@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.docx4j.fonts.fop.fonts.EmbedFontInfo;
@@ -42,6 +44,7 @@ public class PhysicalFonts {
 	public static Map<String, PhysicalFont> getPhysicalFonts() {
 		return physicalFontMap;
 	}
+
 
 	private final static Map<String, PhysicalFont> physicalFontMapByFilenameLowercase;
 	
@@ -87,6 +90,26 @@ public class PhysicalFonts {
 			throw new RuntimeException(exc);
 		}
 	}
+
+    
+    private static String regex;
+	public static String getRegex() {
+		return regex;
+	}
+	
+	/**
+	 *  Set a regex to limit to the common fonts in order to lower memory use.
+	 *  eg on Mac regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
+	 *  on Windows:  regex=".*(calibri|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
+	 *  
+	 *  If you want to use this, set it before instantiating a Mapper. 
+	 *  
+	 *  @since 2.8.1
+	 */
+	public static void setRegex(String regex) {
+		PhysicalFonts.regex = regex;
+	}
+    
 	
 	/**
 	 * Autodetect fonts available on the system.
@@ -109,22 +132,32 @@ public class PhysicalFonts {
         // based on os.name
         List fontFileList = fontFileFinder.find();      
         
-        //Uncomment to limit to the common fonts in order 
-        // to avoid java.lang.OutOfMemoryError: Java heap space
-        //String regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
-        String regex=null;
         
-        for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
-        	
-        	URL fontUrl = getURL(iter.next());
-            
-            // parse font to ascertain font info
-        	if (regex==null) { 
-        		addPhysicalFont( fontUrl);
-        	} else if (fontUrl.toString().matches(regex)){
-        		addPhysicalFont( fontUrl);        		
-        	}
+        if (regex==null) {
+            for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+            	
+            	URL fontUrl = getURL(iter.next());
+                
+                // parse font to ascertain font info
+            	addPhysicalFont( fontUrl);
+            }
+        } else {
+        	Pattern pattern = Pattern.compile(regex);
+            for (Iterator iter = fontFileList.iterator(); iter.hasNext();) {
+            	
+            	URL fontUrl = getURL(iter.next());
+                
+            	
+                // parse font to ascertain font info
+            	if (pattern.matcher(fontUrl.toString()).matches()){
+            		addPhysicalFont( fontUrl);        		
+            	} else {
+                	log.debug("Ignoring " + fontUrl.toString() );
+
+            	}
+            }
         }
+        
 
         // Add fonts from our Temporary Embedded Fonts dir
         fontFileList = fontFileFinder.find( ObfuscatedFontPart.getTemporaryEmbeddedFontsDir() );

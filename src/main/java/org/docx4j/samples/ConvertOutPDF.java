@@ -68,9 +68,9 @@ public class ConvertOutPDF extends AbstractSample {
 	// Config for non-command line use
 	static {
 		
-		//inputfilepath = null; // to generate a docx (and PDF output) containing font samples
+		inputfilepath = null; // to generate a docx (and PDF output) containing font samples
 		
-    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
+    	//inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
     	//inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
 	}
 	
@@ -82,8 +82,20 @@ public class ConvertOutPDF extends AbstractSample {
 		} catch (IllegalArgumentException e) {
 		}
     	
-		System.out.println(inputfilepath);	    	
-	    	
+		System.out.println(inputfilepath);
+
+		// Set regex if you want to restrict to some defined subset of fonts
+		// Here we have to do this before calling createContent,
+		// since that discovers fonts
+		String regex = null;
+		// Windows:
+		// String
+		// regex=".*(calibri|cour|arial|times|comic|georgia|impact|LSANS|pala|tahoma|trebuc|verdana|symbol|webdings|wingding).*";
+		// Mac
+		// String
+		// regex=".*(Courier New|Arial|Times New Roman|Comic Sans|Georgia|Impact|Lucida Console|Lucida Sans Unicode|Palatino Linotype|Tahoma|Trebuchet|Verdana|Symbol|Webdings|Wingdings|MS Sans Serif|MS Serif).*";
+		PhysicalFonts.setRegex(regex);
+
 		WordprocessingMLPackage wordMLPackage;
 		if (inputfilepath==null) {
 			// Create a docx			
@@ -93,6 +105,7 @@ public class ConvertOutPDF extends AbstractSample {
 			// Load .docx or Flat OPC .xml
 			wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
 		}
+		
 		
 		// Set up font mapper
 		Mapper fontMapper = new IdentityPlusMapper();
