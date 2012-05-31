@@ -21,6 +21,8 @@
 package org.docx4j.samples;
 
 
+import java.util.List;
+
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -62,8 +64,13 @@ public class DocProps extends AbstractSample {
 		org.docx4j.docProps.core.CoreProperties coreProps = (org.docx4j.docProps.core.CoreProperties)docPropsCorePart.getJaxbElement();
 		
 		// What is the title of the document?
-		System.out.println("'dc:title' is " + coreProps.getTitle().getValue().getContent().get(0));
-			// That's a bit clunky
+		// Note: Word for Mac 2010 doesn't set title
+		String title = "Missing";
+		List<String> list = coreProps.getTitle().getValue().getContent();
+		if (list.size() > 0) {
+			title = list.get(0);
+		}
+		System.out.println("'dc:title' is " + title);
 
 		//System.out.println(coreProps.getTitle().getValue().getClass().getName() );
 		// returns org.docx4j.docProps.core.dc.elements.SimpleLiteral as expected
@@ -81,33 +88,37 @@ public class DocProps extends AbstractSample {
 		
 		// Finally, the custom properties
 		org.docx4j.openpackaging.parts.DocPropsCustomPart docPropsCustomPart = wordMLPackage.getDocPropsCustomPart();
-		org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)docPropsCustomPart.getJaxbElement();
-		
-		for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
+		if(docPropsCustomPart==null){
+			System.out.println("No DocPropsCustomPart");
+		} else {
+			org.docx4j.docProps.custom.Properties customProps = (org.docx4j.docProps.custom.Properties)docPropsCustomPart.getJaxbElement();
 			
-			// At the moment, you need to know what sort of value it has.
-			// Could create a generic Object getValue() method.
-			if (prop.getLpwstr()!=null) {
-				System.out.println(prop.getName() + " = " + prop.getLpwstr());
-			} else {
-				System.out.println(prop.getName() + ": \n " + XmlUtils.marshaltoString(prop, true, Context.jcDocPropsCustom));
+			for (org.docx4j.docProps.custom.Properties.Property prop: customProps.getProperty() ) {
+				
+				// At the moment, you need to know what sort of value it has.
+				// Could create a generic Object getValue() method.
+				if (prop.getLpwstr()!=null) {
+					System.out.println(prop.getName() + " = " + prop.getLpwstr());
+				} else {
+					System.out.println(prop.getName() + ": \n " + XmlUtils.marshaltoString(prop, true, Context.jcDocPropsCustom));
+				}
+				
 			}
 			
+			// Ok, let's add a custom property.
+			org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
+			org.docx4j.docProps.custom.Properties.Property newProp = factory.createPropertiesProperty();
+			
+			// .. set it up
+			newProp.setName("mynewcustomprop");
+			newProp.setFmtid(docPropsCustomPart.fmtidValLpwstr ); // Magic string
+			newProp.setPid( customProps.getNextId() ); 
+			newProp.setLpwstr("SomeValue");
+			
+			// .. add it
+			customProps.getProperty().add(newProp);
 		}
 		
-		// Ok, let's add a custom property.
-		org.docx4j.docProps.custom.ObjectFactory factory = new org.docx4j.docProps.custom.ObjectFactory();
-		org.docx4j.docProps.custom.Properties.Property newProp = factory.createPropertiesProperty();
-		
-		// .. set it up
-		newProp.setName("mynewcustomprop");
-		newProp.setFmtid(docPropsCustomPart.fmtidValLpwstr ); // Magic string
-		newProp.setPid( customProps.getNextId() ); 
-		newProp.setLpwstr("SomeValue");
-		
-		// .. add it
-		customProps.getProperty().add(newProp);
-						
 		// Save the revised document		
 		if (save) {		
 			SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
