@@ -1,5 +1,5 @@
-docx4j release process
-----------------------
+Docx4j release process
+======================
 
 [Do this process for a release candidate first]
 
