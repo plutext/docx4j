@@ -12,6 +12,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
@@ -171,13 +172,10 @@ public class BindingHandler {
 			
 			JAXBContext jc = Context.jc;
 			try {
-				// Use constructor which takes Unmarshaller, rather than JAXBContext,
-				// so we can set JaxbValidationEventHandler
-				Unmarshaller u = jc.createUnmarshaller();
-				
-				u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());  
-				
-				javax.xml.bind.util.JAXBResult result = new javax.xml.bind.util.JAXBResult(u );
+				// We used to use a JAXBResult, which 
+				// but its better to use DOMResult
+				// so we can use part.unmarshal, which should create a binder where possible
+				DOMResult result = new DOMResult(); 
 				
 				Map<String, Object> transformParameters = new HashMap<String, Object>();
 				transformParameters.put("customXmlDataStorageParts", 
@@ -188,7 +186,7 @@ public class BindingHandler {
 						
 				org.docx4j.XmlUtils.transform(doc, xslt, transformParameters, result);
 				
-				part.setJaxbElement(result);
+				part.unmarshal( ((org.w3c.dom.Document)result.getNode()).getDocumentElement() );
 			} catch (Exception e) {
 				throw new Docx4JException("Problems applying bindings", e);			
 			}
