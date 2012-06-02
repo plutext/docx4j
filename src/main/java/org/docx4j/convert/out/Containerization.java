@@ -69,12 +69,12 @@ public class Containerization {
 	 */
 	public static void groupAdjacentBorders(Body body) {
 		
-		List<Object> bodyElts = body.getEGBlockLevelElts();
+		List<Object> bodyElts = body.getContent();
 		List<Object> groupedContent = null;
 		groupedContent = groupBodyContent(bodyElts);
 		if (groupedContent != null) {
-			body.getEGBlockLevelElts().clear();
-			body.getEGBlockLevelElts().addAll(groupedContent);
+			body.getContent().clear();
+			body.getContent().addAll(groupedContent);
 		}
 	}
 		
@@ -83,24 +83,24 @@ public class Containerization {
 		List<Object> cellElts = null;
 		Tr tr = null;
 		Tc tc = null;
-		for (Object elemTr:table.getEGContentRowContent()) {
+		for (Object elemTr:table.getContent()) {
 			if (elemTr instanceof JAXBElement) {
 				elemTr = ((JAXBElement)elemTr).getValue();
 			}
 			if (elemTr instanceof Tr) {
 				tr = (Tr)elemTr;
-				if (tr.getEGContentCellContent() != null) {
-					for (Object elemCe:tr.getEGContentCellContent()) {
+				if (tr.getContent() != null) {
+					for (Object elemCe:tr.getContent()) {
 						if (elemCe instanceof JAXBElement) {
 							elemCe = ((JAXBElement)elemCe).getValue();
 						}
 						if (elemCe instanceof Tc) {
 							tc = (Tc)elemCe;
-							if (tc.getEGBlockLevelElts() != null) {
-								cellElts = groupBodyContent(tc.getEGBlockLevelElts());
+							if (tc.getContent() != null) {
+								cellElts = groupBodyContent(tc.getContent());
 								if (cellElts != null) {
-									tc.getEGBlockLevelElts().clear();
-									tc.getEGBlockLevelElts().addAll(cellElts);
+									tc.getContent().clear();
+									tc.getContent().addAll(cellElts);
 								}
 							}
 						}
@@ -128,10 +128,10 @@ public class Containerization {
 			}
 			if (o instanceof P) {
 				paragraph = (P)o;
-				paragraphElts = groupRuns(paragraph.getParagraphContent());
-				paragraph.getParagraphContent().clear();
+				paragraphElts = groupRuns(paragraph.getContent());
+				paragraph.getContent().clear();
 				if (paragraphElts != null) {
-					paragraph.getParagraphContent().addAll(paragraphElts);
+					paragraph.getContent().addAll(paragraphElts);
 				}
 
 				currentBorders = null;
