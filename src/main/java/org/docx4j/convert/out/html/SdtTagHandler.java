@@ -49,11 +49,7 @@ public abstract class SdtTagHandler {
 	protected Node attachContents(DocumentFragment docfrag, Node xhtmlDiv,
 			Node resultSoFar) {
 		
-		System.out.println("SdtTagHandler1A:" + XmlUtils.w3CDomNodeToString(resultSoFar) );
-		
 		XmlUtils.treeCopy(resultSoFar, xhtmlDiv);
-		
-		System.out.println("SdtTagHandler1B:" + XmlUtils.w3CDomNodeToString(docfrag) );
 		
 		return docfrag;
 		
@@ -122,8 +118,6 @@ public abstract class SdtTagHandler {
 
 			} while (n != null);
 			
-			System.out.println("SdtTagHandler:" + XmlUtils.w3CDomNodeToString(docfrag) );
-
 			return docfrag;
 
 	}

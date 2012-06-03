@@ -25,10 +25,14 @@
    		NB, with IE9, and XML output, 
    		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
    		doesn't help.-->
-   
+   		
 <xsl:output method="html" encoding="utf-8" omit-xml-declaration="no" indent="no" 
 doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
       doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
+   
+<!--  <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" 
+doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
+      doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/> -->
 <!--  indent="no" gives a better result for things like subscripts, because it stops
       the user-agent from replacing a carriage return in the HTML with a space in the output. -->
 <!-- TODO strict dtd -->
@@ -251,7 +255,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 				</xsl:when>
 				<xsl:when test="count(child::node())=1 and count(w:pPr)=1">
 					<!--  Do count an 'empty' paragraph (one with a w:pPr node only) -->
-					<xsl:copy-of select="
+					<xsl:value-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
 					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)"/>
 					<!--  Don't apply templates, since there is nothing to do. -->
@@ -259,7 +263,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 				<xsl:otherwise>
 					<!--  At present, this doesn't use HTML OL|UL and LI;
 					      we'll do that when we have a document model to work from -->								
-					<xsl:copy-of select="
+					<xsl:value-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
 					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)" />		
 					<xsl:apply-templates/>				
@@ -269,62 +273,49 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		
 		<xsl:variable name="pPrNode" select="w:pPr" />  
 		
-		<xsl:comment>
-		<xsl:value-of select="local-name(..)"></xsl:value-of>
-		</xsl:comment>	
-
-		<xsl:choose>
-			<xsl:when test="parent::w:sdtContent">
-				<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
-			 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+		<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
+	 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
 			
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:apply-templates select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
-			 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" mode="amp-workaround" />
-			</xsl:otherwise>		
-		</xsl:choose>
-	 							
-	 	<!-- 
-	 	
-	 	  2 things to try:
-	 	  
-	 	  0.  numbering via UTF8, not character entity
-	 	  
-	 	  1.  numbering thingie must return a doc frag containing <amp> for the follow on processing
-	 	       [but only works in some cases?? - create test]
-	 	  
-	 	  OR 2.  follow on processing should look for &amp;blagh, and replace with <amp>stuff ...
-	 	         [the advantage of this is that 
-	 	
-	 	
-	 	 -->						
 		
   </xsl:template>
 
-<!--  As a general principle, don't use character entities, since these
+<!--  Bullets, non-breaking spaces, quotes etc:-
+
+      As a general principle, don't use character entities, since these
       don't play nicely with extension functions.
       
-      Instead, use UTF-8 at the Java end. 
+      Instead, *use UTF-8 at the Java end*. 
       
-      Workaround for http://stackoverflow.com/questions/10842856/text-node-content-escaped-by-xalan-extension
-
- 	  where the document fragment contains a text node containing an entity, 
- 	  for example "&#160;", this is being inserted as &amp;#160;
- 	  
- 	  This only seems to work where the <amp> element is re-processed through our
- 	  createBlockForPPr extension!
+      This seems to work nicely.
+      
+      Note, that with HTML output method, \u2022 bullet is converted to &bull; 
+        and \u00A0 is converted to &nbsp;
+        
+      With XML output, the characters appear as their proper UTF 8 output.
+      
+      So either output method is fine.  (Though IE needs to use correct encoding ..
+      it seems to ignore encoding in XML declaration!)
+      
+      For completeness, note that I couldn't get character entities processing
+      properly through the extension functions.
+      
+	  Findings:
+	  1.  can return as text using value-of, provided you disable output escape.
+	  2.  to round trip certain entities as strings (don't disable output escaping!) 
+	  3.  ** can't create an entity as text, and return as DF, use in copy-of
+	      (so use of createTextNode in XmlUtils.treeCopy may cause problems .. 
+	       it converts a single & to &amp; and there seems to be no way around that,
+	       short of changing it to <amp> there ...  
+	  4.  (can round trip an entity as a node) 
+       
+      But as noted above, there is *no reason* ever to use an entity in our code 
+      .. just use the UTF 8 character, inserted at Java end as \u...
+      (not that XSLT end as &#...)
+      
+      The workaround described at http://stackoverflow.com/questions/10842856/text-node-content-escaped-by-xalan-extension
+      doesn't work in some cases, because in Java (XmlUtils.treecopy) createTextNode
+      seems to automatically convert a single '&' to &amp; 	  
  -->
-	<xsl:template match="@*|node()" mode="amp-workaround">
-		<xsl:copy>
-			<xsl:apply-templates select="@*|node()" mode="amp-workaround" />
-		</xsl:copy>
-	</xsl:template>
-
-	<xsl:template match="amp" mode="amp-workaround"> <!--  &#38; -->
-		<xsl:text disable-output-escaping="yes">&amp;</xsl:text><xsl:value-of select="."/>
-	</xsl:template>
-
 
 
   <xsl:template match="w:pPr | w:rPr" /> <!--  handle via extension function -->
@@ -376,10 +367,10 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 		<xsl:variable name="sdtPrNode" select="./w:sdtPr" />
 
-		<xsl:apply-templates
+		<xsl:copy-of
 			select="java:org.docx4j.convert.out.html.SdtWriter.toNode(
   			$wmlPackage, $sdtPrNode, 
-  			$childResults)" mode="amp-workaround" />
+  			$childResults)"  />
 
 	</xsl:template>
 
