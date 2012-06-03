@@ -1089,6 +1089,8 @@ public class XmlUtils {
             	// destParent.getOwnerDocument() returns null.
             	// #document ; com.sun.org.apache.xerces.internal.dom.DocumentImpl
             	
+//            	System.out.println(sourceNode.getNodeValue());
+            	
             	//System.out.println(destParent.getNodeName() + " ; " + destParent.getClass().getName() );
             	if (destParent.getOwnerDocument()==null
             			&& destParent.getNodeName().equals("#document")) {
@@ -1096,7 +1098,11 @@ public class XmlUtils {
 	            	destParent.appendChild(textNode);
             	} else {
 	            	Node textNode = destParent.getOwnerDocument().createTextNode(sourceNode.getNodeValue());   
-	            	destParent.appendChild(textNode);
+            		// Warning: If you attempt to write a single "&" character, it will be converted to &amp; 
+            		// even if it doesn't look like that with getNodeValue() or getTextContent()!
+	            	// So avoid any tricks with entities! See notes in docx2xhtmlNG2.xslt
+	            	Node appended = destParent.appendChild(textNode);
+	            	
             	}
                 break;
 
