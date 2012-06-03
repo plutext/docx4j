@@ -26,7 +26,7 @@
    		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
    		doesn't help.-->
    
-<xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" 
+<xsl:output method="html" encoding="utf-8" omit-xml-declaration="no" indent="no" 
 doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
       doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
 <!--  indent="no" gives a better result for things like subscripts, because it stops
@@ -237,7 +237,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		<xsl:variable name="levelId" select="string( w:pPr/w:numPr/w:ilvl/@w:val )" />  
 
 
-		<xsl:variable name="childResults">
+		<xsl:variable name="childResults" >
 			<xsl:choose>
 				<xsl:when test="ancestor::w:tbl and count(child::node())=0">
 					<!-- A row that has no content will be displayed by browsers
@@ -253,7 +253,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					<!--  Do count an 'empty' paragraph (one with a w:pPr node only) -->
 					<xsl:copy-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
-					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)" />					
+					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)"/>
 					<!--  Don't apply templates, since there is nothing to do. -->
 				</xsl:when>				
 				<xsl:otherwise>
@@ -261,29 +261,71 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					      we'll do that when we have a document model to work from -->								
 					<xsl:copy-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
-					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)"  />					
+					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)" />		
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:variable>
 		
-		<xsl:variable name="pPrNode" select="w:pPr" />  	
+		<xsl:variable name="pPrNode" select="w:pPr" />  
+		
+		<xsl:comment>
+		<xsl:value-of select="local-name(..)"></xsl:value-of>
+		</xsl:comment>	
 
-	  	<xsl:apply-templates select="
-	  		java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
- 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" mode="amp-workaround"/>
+		<xsl:choose>
+			<xsl:when test="parent::w:sdtContent">
+				<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
+			 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+			
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
+			 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" mode="amp-workaround" />
+			</xsl:otherwise>		
+		</xsl:choose>
+	 							
+	 	<!-- 
+	 	
+	 	  2 things to try:
+	 	  
+	 	  0.  numbering via UTF8, not character entity
+	 	  
+	 	  1.  numbering thingie must return a doc frag containing <amp> for the follow on processing
+	 	       [but only works in some cases?? - create test]
+	 	  
+	 	  OR 2.  follow on processing should look for &amp;blagh, and replace with <amp>stuff ...
+	 	         [the advantage of this is that 
+	 	
+	 	
+	 	 -->						
 		
   </xsl:template>
 
+<!--  As a general principle, don't use character entities, since these
+      don't play nicely with extension functions.
+      
+      Instead, use UTF-8 at the Java end. 
+      
+      Workaround for http://stackoverflow.com/questions/10842856/text-node-content-escaped-by-xalan-extension
+
+ 	  where the document fragment contains a text node containing an entity, 
+ 	  for example "&#160;", this is being inserted as &amp;#160;
+ 	  
+ 	  This only seems to work where the <amp> element is re-processed through our
+ 	  createBlockForPPr extension!
+ -->
 	<xsl:template match="@*|node()" mode="amp-workaround">
 		<xsl:copy>
 			<xsl:apply-templates select="@*|node()" mode="amp-workaround" />
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template match="amp" mode="amp-workaround">
+	<xsl:template match="amp" mode="amp-workaround"> <!--  &#38; -->
 		<xsl:text disable-output-escaping="yes">&amp;</xsl:text><xsl:value-of select="."/>
 	</xsl:template>
+
+
 
   <xsl:template match="w:pPr | w:rPr" /> <!--  handle via extension function -->
 
@@ -334,10 +376,10 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 		<xsl:variable name="sdtPrNode" select="./w:sdtPr" />
 
-		<xsl:copy-of
+		<xsl:apply-templates
 			select="java:org.docx4j.convert.out.html.SdtWriter.toNode(
   			$wmlPackage, $sdtPrNode, 
-  			$childResults)" />
+  			$childResults)" mode="amp-workaround" />
 
 	</xsl:template>
 

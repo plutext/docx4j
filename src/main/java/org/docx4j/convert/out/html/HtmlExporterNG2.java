@@ -437,10 +437,8 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			// our style sheet produced when it applied-templates
 			// to the child nodes
 			// init
-			int childCount = 0;
 			Node n = childResults.nextNode();
 			do {	
-				childCount++;
 				
 				// getNumberXmlNode creates a span node, which is empty
 				// if there is no numbering.
@@ -484,18 +482,33 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				
 			} while ( n !=null ); 
 			
-			//if (childCount==0 && htmlElementName.equals("p") ) {
 			if (xhtmlBlock.getNodeName().equals("p")
 					&& !xhtmlBlock.hasChildNodes() ) {
 				// browsers don't display an empty p, so add a space to it
 				
-				Element amp = document.createElement("amp");
-				xhtmlBlock.appendChild(amp);
-				// don't use setTextContent
-				Text t = document.createTextNode("#160;");
-				amp.appendChild(t);
+				// Where the document fragment contains a text node containing an entity, 
+				// for example "&#160;", this is being inserted as &amp;#160;
+				// So use <amp> element, and post-process that.
+				// See further  http://stackoverflow.com/questions/10842856/text-node-content-escaped-by-xalan-extension
+
+//				Element amp = document.createElement("amp");
+//				xhtmlBlock.appendChild(amp);
+//				// don't use setTextContent
+//				Text t = document.createTextNode("#160;");
+////				Text t = document.createTextNode("bull;");
+//				amp.appendChild(t);
+				
+				Text t = document.createTextNode("\u00A0"); //= &nbsp; = &#160;
+				xhtmlBlock.appendChild(t);
+				
+				// An alternative approach would be 
+			  	// <xsl:apply-templates ..  mode="populate-empty-p"/>
+				// but mode="amp-workaround" is something we can use for other entities
+				
 				
 			}
+			
+			System.out.println(XmlUtils.w3CDomNodeToString(document));
 			
 			DocumentFragment docfrag = document.createDocumentFragment();
 			docfrag.appendChild(document.getDocumentElement());

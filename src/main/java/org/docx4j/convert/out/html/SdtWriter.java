@@ -59,7 +59,9 @@ public class SdtWriter {
 		SdtTagHandler handler;
 
 		/* We avoid unmarshalling the sdt itself, since 
-		 * it could be one of a number of docx4j classes.
+		 * it could be one of a number of docx4j classes
+		 * [note 2012 06 03: but ContentAccessor interface
+		 *  overcomes this issue?]
 		 * 
 		 * If we did need to unmarshall it, we could either
 		 * use its parent element as a hint, or try 

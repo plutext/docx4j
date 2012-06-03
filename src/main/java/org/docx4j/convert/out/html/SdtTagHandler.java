@@ -49,7 +49,11 @@ public abstract class SdtTagHandler {
 	protected Node attachContents(DocumentFragment docfrag, Node xhtmlDiv,
 			Node resultSoFar) {
 		
+		System.out.println("SdtTagHandler1A:" + XmlUtils.w3CDomNodeToString(resultSoFar) );
+		
 		XmlUtils.treeCopy(resultSoFar, xhtmlDiv);
+		
+		System.out.println("SdtTagHandler1B:" + XmlUtils.w3CDomNodeToString(docfrag) );
 		
 		return docfrag;
 		
@@ -69,9 +73,6 @@ public abstract class SdtTagHandler {
 	protected Node attachContents(DocumentFragment docfrag, Node xhtmlDiv,
 			NodeIterator childResults) {
 
-			// Our fo:block wraps whatever result tree fragment
-			// our style sheet produced when it applied-templates
-			// to the child nodes
 			// init
 			Node n = childResults.nextNode();
 			do {
@@ -101,10 +102,6 @@ public abstract class SdtTagHandler {
 					}
 				} else {
 
-					// log.info("Node we are importing: " +
-					// n.getClass().getName() );
-					// foBlockElement.appendChild(
-					// document.importNode(n, true) );
 					/*
 					 * Node we'd like to import is of type
 					 * org.apache.xml.dtm.ref.DTMNodeProxy which causes
@@ -124,6 +121,8 @@ public abstract class SdtTagHandler {
 				n = childResults.nextNode();
 
 			} while (n != null);
+			
+			System.out.println("SdtTagHandler:" + XmlUtils.w3CDomNodeToString(docfrag) );
 
 			return docfrag;
 

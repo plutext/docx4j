@@ -156,33 +156,62 @@ public abstract class AbstractHtmlExporter implements Output {
 	 * @param numId
 	 * @return
 	 */
-    public static String getNumberXmlNode(WordprocessingMLPackage wmlPackage,
+    public static DocumentFragment getNumberXmlNode(WordprocessingMLPackage wmlPackage,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, String numId, String levelId) {
+    	
+    	// Return a DocumentFragment (as we used to?), since this seems to
+    	// be the only way to get &bull; out, rather than &amp;bull; 
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
     	log.debug("numbering, using style '" + pStyleVal + "'; numId=" + numId + "; ilvl " + levelId);    	
     	
+    	Document document = null;
+    	
         // Create a DOM builder and parse the fragment
         try {
+        	
+    		//Document document = XmlUtils.neww3cDomDocument();
+        	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
+    		document = factory.newDocumentBuilder().newDocument();			
+        	
         	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
         			wmlPackage, pStyleVal, numId, levelId);   
         	
 
 			if (triple==null) {
         		log.debug("computed number ResultTriple was null");
-    			return "";
+        		return null;
         	}
 			
 			String styleVal = "";
 			
     		if (triple.getBullet()!=null ) {
-    			//return (triple.getBullet() + " " );    						
-    			return ("&bull; " );
+    			//return (triple.getBullet() + " " );  
+    			// The old code did that:-
+    			// https://github.com/plutext/docx4j/commit/7627863e47c5dc7b3c91290b8d993ae5a7cd9fab#docx4j/src/main/java/org/docx4j/convert/out/html/AbstractHtmlExporter.java
+    			//What is wrong with that approach?
+    			// 
+    			
+    			// TODO, revist above.
+    			// In the meantime:
+				Element span = document.createElement("span");
+				document.appendChild(span);
+    			
+				Element amp = document.createElement("amp");
+				span.appendChild(amp);
+				// don't use setTextContent
+				Text text = document.createTextNode("bull; ");
+				amp.appendChild(text);
+    			
     		} else if (triple.getNumString()==null) {
 	    		log.error("computed NumString was null!");
-    			return ("?");    						
+				Element span = document.createElement("span");
+				document.appendChild(span);
+
+				Text t = document.createTextNode("?");
+	    		span.appendChild(t);
     			
     			// It would be nice to include a comment in the
     			// output HTML, but Sun's Xalan copy-of ignores it.
@@ -190,7 +219,11 @@ public abstract class AbstractHtmlExporter implements Output {
 //        		Comment c = document.createComment("computed number triple.getNumString() was null");
 //        		spanElement.appendChild(c);
 	    	} else {
-				return ( triple.getNumString() + " " );
+				Element span = document.createElement("span");
+				document.appendChild(span);
+
+				Text t = document.createTextNode( triple.getNumString() + " " );
+	    		span.appendChild(t);
 	    	}
 			
 		} catch (Exception e) {
@@ -199,7 +232,10 @@ public abstract class AbstractHtmlExporter implements Output {
 			log.error(e);
 		} 
     	
-    	return null;
+		DocumentFragment docfrag = document.createDocumentFragment();
+		docfrag.appendChild(document.getDocumentElement());
+
+		return docfrag;
     	
     }
     
