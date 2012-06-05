@@ -93,32 +93,34 @@ public class ContentControlsMergeXML {
 		FileInputStream fis = new FileInputStream(new File(input_XML));
 		customXmlDataStoragePart.getData().setDocument(fis);
 		
+		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		try {
 			// Process conditionals and repeats
 			OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
 			odh.preprocess();
 			
 			OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
-			odi.process(wordMLPackage);		
+			odi.process(wordMLPackage);
+			
+			if (DEBUG) {
+				String save_preprocessed; 						
+				if (OUTPUT_DOCX.lastIndexOf(".")==-1) {
+					save_preprocessed = OUTPUT_DOCX + "_INT.docx"; 
+				} else {
+					save_preprocessed = OUTPUT_DOCX.substring(0, OUTPUT_DOCX.lastIndexOf(".") ) + "_INT.docx"; 
+				}
+//				System.out.println(
+//						XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+//						);		
+				saver.save(save_preprocessed);
+				System.out.println("Saved: " + save_preprocessed);
+			}
+			
 		} catch (Docx4JException d) {
 			// Probably this docx doesn't contain OpenDoPE convention parts
 			System.out.println(d.getMessage());
 		}
 		
-		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
-		if (DEBUG) {
-			String save_preprocessed; 						
-			if (OUTPUT_DOCX.lastIndexOf(".")==-1) {
-				save_preprocessed = OUTPUT_DOCX + "_INT.docx"; 
-			} else {
-				save_preprocessed = OUTPUT_DOCX.substring(0, OUTPUT_DOCX.lastIndexOf(".") ) + "_INT.docx"; 
-			}
-//			System.out.println(
-//					XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
-//					);		
-			saver.save(save_preprocessed);
-			System.out.println("Saved: " + save_preprocessed);
-		}
 		
 		// Apply the bindings
 		//BindingHandler.setHyperlinkStyle("Hyperlink");
@@ -138,7 +140,6 @@ public class ContentControlsMergeXML {
 		saver.save(OUTPUT_DOCX);
 		System.out.println("Saved: " + OUTPUT_DOCX);
 		
-		System.out.println("..done");
 	}
 	
 	/**
