@@ -22,10 +22,12 @@ package org.docx4j.samples;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.CTBlip;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.datastorage.OpenDoPEIntegrity;
@@ -36,6 +38,10 @@ import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.samples.ImageConvertEmbeddedToLinked.TraversalUtilBlipVisitor;
+import org.docx4j.utils.SingleTraversalUtilVisitorCallback;
+import org.docx4j.utils.TraversalUtilVisitor;
+import org.docx4j.wml.SdtElement;
 
 
 /** 
@@ -44,7 +50,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
  * in the content controls)
  * 
  * In this example, the XML part is injected at runtime,
- * and OpenDoPE extensions are supported.
+ * and OpenDoPE extensions are supported (if present).
  * 
  * So this example is like 
  * See https://github.com/plutext/OpenDoPE-WAR/blob/master/webapp-simple/src/main/java/org/opendope/webapp/SubmitBoth.java
@@ -58,10 +64,15 @@ public class ContentControlsMergeXML {
 	
 
 	public static void main(String[] args) throws Exception {
-						
-		String input_DOCX = System.getProperty("user.dir") + "/tmp/IN.docx";
-		String input_XML = System.getProperty("user.dir") + "/tmp/jason_FIXED.xml";
-		String OUTPUT_DOCX = System.getProperty("user.dir") + "/tmp/OUTPUT_DOCX.docx";
+			
+		// the docx 'template'
+		String input_DOCX = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple.docx";
+		
+		// the instance data
+		String input_XML = System.getProperty("user.dir") + "/sample-docs/word/databinding/binding-simple-data.xml";
+		
+		// resulting docx
+		String OUTPUT_DOCX = System.getProperty("user.dir") + "/OUT_ContentControlsMergeXML.docx";
 
 		// Load input_template.docx
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(
@@ -82,13 +93,18 @@ public class ContentControlsMergeXML {
 		FileInputStream fis = new FileInputStream(new File(input_XML));
 		customXmlDataStoragePart.getData().setDocument(fis);
 		
-		// Process conditionals and repeats
-		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
-		odh.preprocess();
+		try {
+			// Process conditionals and repeats
+			OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
+			odh.preprocess();
+			
+			OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
+			odi.process(wordMLPackage);		
+		} catch (Docx4JException d) {
+			// Probably this docx doesn't contain OpenDoPE convention parts
+			System.out.println(d.getMessage());
+		}
 		
-		OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
-		odi.process(wordMLPackage);		
-
 		SaveToZipFile saver = new SaveToZipFile(wordMLPackage);
 		if (DEBUG) {
 			String save_preprocessed; 						
@@ -139,14 +155,34 @@ public class ContentControlsMergeXML {
 		
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();			
 		if (wordMLPackage.getMainDocumentPart().getXPathsPart()==null) {
-			throw new Docx4JException("OpenDoPE XPaths part missing");
-		} 
+			// Can't do it the easy way, so look up the binding on the first content control
+			TraversalUtilCCVisitor visitor = new TraversalUtilCCVisitor();
+			SingleTraversalUtilVisitorCallback ccFinder 
+			= new SingleTraversalUtilVisitorCallback(visitor);
+			ccFinder.walkJAXBElements(
+				wordMLPackage.getMainDocumentPart().getJaxbElement().getBody());
+			return visitor.storeItemID;
+			
+		} else {
 	
-		org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
-		
-		return xPaths.getXpath().get(0).getDataBinding().getStoreItemID();
-		
+			org.opendope.xpaths.Xpaths xPaths = wordMLPackage.getMainDocumentPart().getXPathsPart().getJaxbElement();
+			return xPaths.getXpath().get(0).getDataBinding().getStoreItemID();
+		}
 	}
 
+	public static class TraversalUtilCCVisitor extends TraversalUtilVisitor<SdtElement> {
+		
+		String storeItemID = null;
+		
+		@Override
+		public void apply(SdtElement element, Object parent, List<Object> siblings) {
+
+			if (element.getSdtPr()!=null
+					&& element.getSdtPr().getDataBinding()!=null) {
+				storeItemID = element.getSdtPr().getDataBinding().getStoreItemID();
+			}
+		}
+	
+	}
 	
 }
