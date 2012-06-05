@@ -289,7 +289,10 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
       This seems to work nicely.
       
       Note, that with HTML output method, \u2022 bullet is converted to &bull; 
-        and \u00A0 is converted to &nbsp;
+        and \u00A0 is converted to &nbsp; (I'm not sure how it knows to do
+        that .. see http://s-n-ushakov.blogspot.com.au/2011/09/xslt-entities-java-xalan.html
+        and http://stackoverflow.com/questions/31870/using-a-html-entity-in-xslt-e-g-nbsp
+        but nowhere do I tell it what &bull; is!)
         
       With XML output, the characters appear as their proper UTF 8 output.
       
