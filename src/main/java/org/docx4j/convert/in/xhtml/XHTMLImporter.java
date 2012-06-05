@@ -453,8 +453,12 @@ public class XHTMLImporter {
     // A paragraph created for a div can be replaced by
     // one created for a p within it, if it is still empty
     boolean paraStillEmpty;
-    
+
     private void traverse(Box box, List<Object> contentContext, TableProperties tableProperties) throws Docx4JException {
+    	traverse( box, contentContext, null,  tableProperties);
+    	}    
+    
+    private void traverse(Box box, List<Object> contentContext, Box parent, TableProperties tableProperties) throws Docx4JException {
         
         log.debug(box.getClass().getName() );
         if (box instanceof BlockBox) {
@@ -535,7 +539,10 @@ public class XHTMLImporter {
             		//           border-collapse: collapse; -fs-border-spacing-horizontal: 2px; -fs-border-spacing-vertical: 2px; -fs-font-metric-src: none; -fs-keep-with-inline: auto; -fs-page-width: auto; -fs-page-height: auto; -fs-page-sequence: auto; -fs-pdf-font-embed: auto; -fs-pdf-font-encoding: Cp1252; -fs-page-orientation: auto; -fs-table-paginate: auto; -fs-text-decoration-extent: line; bottom: auto; caption-side: top; clear: none; ; content: normal; counter-increment: none; counter-reset: none; cursor: auto; ; display: table; empty-cells: show; float: none; font-style: normal; font-variant: normal; font-weight: normal; font-size: medium; line-height: normal; font-family: serif; -fs-table-cell-colspan: 1; -fs-table-cell-rowspan: 1; height: auto; left: auto; letter-spacing: normal; list-style-type: disc; list-style-position: outside; list-style-image: none; max-height: none; max-width: none; min-height: 0; min-width: 0; orphans: 2; ; ; ; overflow: visible; page: auto; page-break-after: auto; page-break-before: auto; page-break-inside: auto; position: relative; ; right: auto; src: none; 
             		//           table-layout: fixed; text-align: left; text-decoration: none; text-indent: 0; text-transform: none; top: auto; ; vertical-align: baseline; visibility: visible; white-space: normal; word-wrap: normal; widows: 2; width: auto; word-spacing: normal; z-index: auto; border-top-color: #000000; border-right-color: #000000; border-bottom-color: #000000; border-left-color: #000000; border-top-style: solid; border-right-style: solid; border-bottom-style: solid; border-left-style: solid; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0in; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;
             		
-                            		
+
+            		contentContext = nestedTableHierarchyFix(contentContext,
+							parent);
+            		
             		Tbl tbl = Context.getWmlObjectFactory().createTbl();
             		contentContext.add(tbl);
 		            paraStillEmpty = true;
@@ -555,7 +562,8 @@ public class XHTMLImporter {
             		// cssTable.getLeftMBP() which is setLeftMBP((int) margin.left() + (int) border.left() + (int) padding.left());
             		// cssTable.getTx(); which is (int) margin.left() + (int) border.left() + (int) padding.left();
             		// But want just margin.left
-            		if (cssTable.getMargin().left()>0) {
+            		if (cssTable.getMargin() !=null
+            				&& cssTable.getMargin().left()>0) {
             			log.debug("Calculating TblInd from margin.left: " + cssTable.getMargin().left() );
                 		TblWidth tblIW = Context.getWmlObjectFactory().createTblWidth();
                 		tblIW.setW( BigInteger.valueOf( Math.round(
@@ -625,6 +633,10 @@ public class XHTMLImporter {
             		// TODO: look at whether we can style the table in this case
 
             		log.warn("Encountered non-TableBox table: " + box.getClass().getName() );
+            		
+            		contentContext = nestedTableHierarchyFix(contentContext,
+							parent);
+            		
             		Tbl tbl = Context.getWmlObjectFactory().createTbl();
             		contentContext.add(tbl);
 		            paraStillEmpty = true;
@@ -707,11 +719,15 @@ public class XHTMLImporter {
             			tcPr.setVMerge(vm);            
                     }
                     // eg <w:tcW w:w="2268" w:type="dxa"/>
-            		TblWidth tblW = Context.getWmlObjectFactory().createTblWidth();
-            		tblW.setW(BigInteger.valueOf(tableProperties.getColumnWidth(effCol+1) ));
-            		tblW.setType(TblWidth.TYPE_DXA);
-            		tcPr.setTcW(tblW);    	                    
-            		
+                    try {
+	            		TblWidth tblW = Context.getWmlObjectFactory().createTblWidth();
+	            		tblW.setW(BigInteger.valueOf(tableProperties.getColumnWidth(effCol+1) ));
+	            		tblW.setType(TblWidth.TYPE_DXA);
+	            		tcPr.setTcW(tblW);    	                    
+                    } catch (java.lang.ArrayIndexOutOfBoundsException aioob) {
+                    	// happens with http://en.wikipedia.org/wiki/Office_Open_XML
+                    	log.error("Problem with getColumnWidth for col" + (effCol+1) );
+                    }
 /*                  The below works, but the above formulation is simpler
  * 
  * 					int r = tcb.getRow() + tcb.getStyle().getRowSpan() - 1;
@@ -740,29 +756,34 @@ public class XHTMLImporter {
 					    // we we're already in rightmost col
 					} else { 
 						TableCellBox nextCell = tcb.getSection().cellAt(tcb.getRow(), effCol);
-					    if (nextCell==null) throw new Docx4JException("XHTML table import: Null nextCell for row " + tcb.getRow() + ", col " + tcb.getCol()); // Check your table is OK
-					    log.debug("Got nextCell for " + tcb.getRow() + ", " + tcb.getCol() );
-					    log.debug("it is  " + nextCell.getRow() + ", " + nextCell.getCol() );
-					    if ( nextCell.getRow() < tcb.getRow()
-					    		// && nextCell.getStyle().getRowSpan()>1
-					    		&& nextCell.getTable().colToEffCol(nextCell.getCol() + nextCell.getStyle().getColSpan())==numEffCols // rightmost
-					    		) {
-					    	log.debug("it has rowspan  " + nextCell.getStyle().getRowSpan() );
-					    	// eg tcb is r2,c1 & nextCell is r1,c2
-							Tc dummy = Context.getWmlObjectFactory().createTc();
-							contentContext.add(dummy);
-
-							TcPr tcPr2 = Context.getWmlObjectFactory().createTcPr();
-							dummy.setTcPr(tcPr2);
-							
-							VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
-							//vm.setVal("continue");
-							tcPr2.setVMerge(vm);
-
-							this.setCellWidthAuto(tcPr2);
-							
-							// Must have an empty w:p
-							dummy.getContent().add( new P() );	            			
+					    if (nextCell==null) {
+					    	//throw new Docx4JException("XHTML table import: Null nextCell for row " + tcb.getRow() + ", col " + tcb.getCol()); // Check your table is OK
+					    	log.error("XHTML table import: Null nextCell for row " + tcb.getRow() + ", col " + tcb.getCol()); // Check your table is OK
+					    	// eg http://en.wikipedia.org/w/index.php?title=Microsoft_Word&printable=yes
+					    } else {
+						    log.debug("Got nextCell for " + tcb.getRow() + ", " + tcb.getCol() );
+						    log.debug("it is  " + nextCell.getRow() + ", " + nextCell.getCol() );
+						    if ( nextCell.getRow() < tcb.getRow()
+						    		// && nextCell.getStyle().getRowSpan()>1
+						    		&& nextCell.getTable().colToEffCol(nextCell.getCol() + nextCell.getStyle().getColSpan())==numEffCols // rightmost
+						    		) {
+						    	log.debug("it has rowspan  " + nextCell.getStyle().getRowSpan() );
+						    	// eg tcb is r2,c1 & nextCell is r1,c2
+								Tc dummy = Context.getWmlObjectFactory().createTc();
+								contentContext.add(dummy);
+	
+								TcPr tcPr2 = Context.getWmlObjectFactory().createTcPr();
+								dummy.setTcPr(tcPr2);
+								
+								VMerge vm = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+								//vm.setVal("continue");
+								tcPr2.setVMerge(vm);
+	
+								this.setCellWidthAuto(tcPr2);
+								
+								// Must have an empty w:p
+								dummy.getContent().add( new P() );	            			
+						    }
 					    }
 					}
             		
@@ -813,12 +834,18 @@ public class XHTMLImporter {
             
             // the recursive bit:
             
+            Object lastChild = null;
+            
             	log.debug("Processing children of " + box.getElement().getNodeName() );
 	            switch (blockBox.getChildrenContentType()) {
 	                case BlockBox.CONTENT_BLOCK:
 	                	log.debug(".. which are BlockBox.CONTENT_BLOCK");	                	
 	                    for (Object o : ((BlockBox)box).getChildren() ) {
-	                        traverse((Box)o, contentContext,  tableProperties);                    
+	                    	
+	                    	lastChild = o;
+	                    	
+	                        traverse((Box)o, contentContext,  box, tableProperties);                    
+	                        log.debug(".. processed child " + o.getClass().getName() );
 	                    }
 	                    break;
 	                case BlockBox.CONTENT_INLINE:
@@ -837,10 +864,11 @@ public class XHTMLImporter {
 	                            	processInlineBox( (InlineBox)o, contentContext);
 	                            	
 	                            } else if (o instanceof BlockBox ) {
-	                                traverse((Box)o, contentContext, tableProperties); // commenting out gets rid of unwanted extra parent elements
+	                                traverse((Box)o, contentContext, box, tableProperties); // commenting out gets rid of unwanted extra parent elements
 	                            } else {
 	                                log.debug("What to do with " + box.getClass().getName() );                        
 	                            }
+		                        log.debug(".. processed child " + o.getClass().getName() );
 	                        }
 	                    }
 	                    break;
@@ -856,12 +884,82 @@ public class XHTMLImporter {
             if (e.getNodeName().equals("table")) {            	
             	paraStillEmpty = false;
             }
+
+//        	if ( (lastChild instanceof Box)
+//        			&& ((Box)lastChild).getElement().getNodeName().equals("table") ) {
+//        		System.out.println("## " + e.getNodeName() );
+//        	}       
+        	
+
+            // nested tables must end with a <p/> or Word 2010 can't open the docx!
+            // ie:
+            // <w:tc>
+            //   <w:tbl>..</w:tbl>
+            //   <w:p/>                <---------- 
+            // </w:tc>
+        	// This fixes the dodgy table/table case
+    		if (box instanceof TableBox
+    				|| box.getElement().getNodeName().equals("table") ) {
+        	
+            	if ( (lastChild instanceof Box)
+            			&& ((Box)lastChild).getElement().getNodeName().equals("table") ) {
+            		log.debug("Adding <w:p/> after nested table");
+            		P extraP = Context.getWmlObjectFactory().createP();                                        	
+    	            
+            		Tr tr = (Tr)
+            				contentContext.get(contentContext.size()-1);
+            		((Tc)tr.getContent().get(tr.getContent().size()-1)).getContent().add(extraP);
+            		//contentContext.add(extraP);            		
+                	paraStillEmpty = false; // ??           		
+            	}
+            }
+          
+    		
+          if (e.getNodeName().equals("td") ) {  // untested
+        	  
+          	if ( (lastChild instanceof Box)
+        			&& ((Box)lastChild).getElement().getNodeName().equals("table") ) {
+        		log.debug("Adding <w:p/> after nested table");
+        		P extraP = Context.getWmlObjectFactory().createP();                                        	
+	            
+        		contentContext.add(extraP);            		
+            	paraStillEmpty = false; // ??           		
+        	}
+        }
+            
             
         } else if (box instanceof AnonymousBlockBox) {
             log.debug("AnonymousBlockBox");            
         }
     
     }
+
+	/**
+	 * nested tables XHTML renderer seems to construct a tree: table/table
+	 * instead of table/tr/td/table?
+	 * TODO fix this upstream.
+	 * TestCase is http://en.wikipedia.org/wiki/Office_Open_XML
+	 * 
+	 * @param contentContext
+	 * @param parent
+	 * @return
+	 */
+	private List<Object> nestedTableHierarchyFix(List<Object> contentContext,
+			Box parent) {
+		if (parent instanceof TableBox
+				|| parent.getElement().getNodeName().equals("table") ) {
+			log.warn("table: Constructing missing w:tr/w:td..");
+
+			Tr tr = Context.getWmlObjectFactory().createTr();
+			contentContext.add(tr);
+		    contentContext = tr.getContent();            			
+			
+			Tc tc = Context.getWmlObjectFactory().createTc();
+			contentContext.add(tc);
+		    contentContext = tc.getContent();            			
+		}
+		return contentContext;
+	}
     
     private void setCellWidthAuto(TcPr tcPr) {
     	// <w:tcW w:w="0" w:type="auto"/>
@@ -959,7 +1057,8 @@ public class XHTMLImporter {
 			if ( cssMap.get("list-style-type" ).getCssText().equals("decimal")) {
 				num = listHelper.getOrderedList(ndp);
 			}
-			if (cssMap.get("list-style-type" ).getCssText().equals("disc")) {
+			if (cssMap.get("list-style-type" ).getCssText().equals("disc")
+					|| cssMap.get("list-style-type" ).getCssText().equals("square")) {
 				num = listHelper.getUnorderedList(ndp);
 			}
 			
@@ -1009,20 +1108,30 @@ public class XHTMLImporter {
     	
     	log.debug(inlineBox.toString());
 
-    	if (inAlreadyProcessed) {
-    		log.debug(".. already done.");
-    		return;
-    	}
         // Doesn't extend box
         Styleable s = ((InlineBox)inlineBox );
         if (s.getStyle()==null) { // Assume this won't happen
         	log.error("getStyle returned null!");
         }
+        
+    	if (inAlreadyProcessed) {
+    		log.debug(".. already done?!");
+        	if (s.getElement() !=null
+        			&& s.getElement().getNodeName().equals("a")
+        			&& inlineBox.isEndsHere() ) {
+        		// When we hit the end of the hyperlink
+        		inAlreadyProcessed = false; // ready for next element
+        	}                	
+    		return; 
+    	}
+        
         Map<String, CSSValue> cssMap = getCascadedProperties(s.getStyle());
 //        Map cssMap = styleReference.getCascadedPropertiesMap(s.getElement());
                         
         String debug = "<UNKNOWN Styleable";
-        if (s.getElement()!=null) {
+        if (s.getElement()==null) {
+        	// Do nothing
+        } else {
             debug = "<" + s.getElement().getNodeName();
             
             if (s.getElement().getNodeName().equals("a")) {
@@ -1050,6 +1159,10 @@ public class XHTMLImporter {
 			        String xhtml= "<p ><a href=\"slashdot.org\" >slash<b>dot</b>.<span>o<i>r</i>g</span> </a></p>";
 			        
 			          in the last case, the link formatting is dropped.
+			          
+			        TODO: there is still a weird case in http://en.wikipedia.org/wiki/Office_Open_XML
+			        where the contents are repeated.  Seems very sensitive to the context?
+			        
                     	 */
             	
             	if (inlineBox.isStartsHere()) {
@@ -1065,7 +1178,13 @@ public class XHTMLImporter {
                     			addRunProperties( cssMap ),
                     			linkText, rp);                                    	            		
                         currentP.getContent().add(h);
-                        if (!inlineBox.isEndsHere() ) {
+//                        if (inlineBox.getElement().getChildNodes().getLength()==1
+//                        		&& inlineBox.getElement().getChildNodes().item(0).getNodeType()==Node.TEXT_NODE) {
+//                        	// eg <a href="/wiki/Ecma_International" title="Ecma International">Ecma</a>
+//                        	// endsHere incorrectly set to true in that case?
+//                        	inAlreadyProcessed = true;                        	                        	
+//                        } else 
+                        	if (!inlineBox.isEndsHere() ) {
                         	inAlreadyProcessed = true;
                         }
                         return;
@@ -1083,10 +1202,6 @@ public class XHTMLImporter {
             		
             	} 
             	
-            	if (inlineBox.isEndsHere() ) {
-            		// When we hit the end of the hyperlink
-            		inAlreadyProcessed = false; // ready for next element
-            	}                	
             	
             } else if (s.getElement().getNodeName().equals("p")) {
             	// This seems to be the usual case. Odd?
@@ -1220,6 +1335,12 @@ public class XHTMLImporter {
 
 	private Hyperlink createHyperlink(String url, RPr rPr, String linkText, RelationshipsPart rp) {
 		
+		if (linkText.contains("&")
+				&& !linkText.contains("&amp;")) {
+			// escape them so we can unmarshall
+			linkText = linkText.replace("&", "&amp;");
+		}
+		
 		try {
 
 			// We need to add a relationship to word/_rels/document.xml.rels
@@ -1256,8 +1377,8 @@ public class XHTMLImporter {
 			return hyperlink;
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// eg  org.xml.sax.SAXParseException: The reference to entity "ballot_id" must end with the ';' delimiter. 
+			log.error("Dodgy link text: '" + linkText + "'", e);
 			return null;
 		}
 		
