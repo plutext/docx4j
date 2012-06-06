@@ -56,6 +56,14 @@ import org.docx4j.wml.Comments.Comment;
  * not everything will necessarily get traversed here
  * since visitChildren is not (yet) comprehensive.
  * 
+ * This utility might be redundant if we used
+ * http://code.google.com/p/jaxb-visitor/ or 
+ * https://github.com/ops4j/org.ops4j.xvisitor
+ * at XJC time. Haven't tried them though.
+ * 
+ * See also org.docx4j.utils.SingleTraversalUtilVisitorCallback
+ * and CompoundTraversalUtilVisitorCallback
+ * 
  * @author jharrop, alberto
  *
  */
