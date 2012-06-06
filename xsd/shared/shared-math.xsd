@@ -16,6 +16,11 @@
 		namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="../wml/xml.xsd" />
 		
+<!-- 
+	Download the JAXB RI, and parent-pointer-plugin, then:
+
+		C:\Users\jharrop\Downloads\jaxb-ri-20120218\bin\xjc.bat -classpath ..\..\lib\ppp.jar -extension -Xparent-pointer shared-math.xsd -d tmp -target 2.1
+ -->		
 	<xsd:annotation>
 		<xsd:appinfo>
 			<xsd:appinfo>
@@ -27,7 +32,45 @@
 		</xsd:appinfo>
 	</xsd:annotation>
 		
-
+	<xsd:complexType name="BooleanDefaultTrue">
+		<!--
+		
+		Replaces CT_OnOff, for more intuitive field generation by JAXB.
+		
+		In the MathML spec, all instances of CT_OnOff are supposed to default
+		to 1 where the attribute is missing (so no need for a BooleanDefaultFalse).
+		
+		http://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#boolean
+		says ·boolean· can have the following legal literals {true, false, 1, 0}.
+		
+		Don't use this for elements where Word 2007 passes 'on' or 'off' (which type="xsd:boolean" default="true" allows).
+		
+		Note that a third party processor could choose to use 'on' or 'off', even where
+		Word doesn't.  This would cause trouble.
+		
+		Hopefully the result of standardisation will be to formally get rid
+		of 'on' and 'off', and use xsd:boolean instead.   
+		
+		Equivalent type="xsd:boolean" default="true" formulation:			
+		
+		<xsd:attribute name="legacy" use="optional" type="xsd:boolean"
+		default="true">
+		<xsd:annotation>
+		<xsd:documentation>Use Legacy Numbering
+		Properties</xsd:documentation>
+		</xsd:annotation>
+		</xsd:attribute>
+		
+		
+		-->
+	<xsd:attribute name="val" type="xsd:boolean" default="true">
+			<xsd:annotation>
+				<xsd:documentation>True/False Value (default is
+					true)</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	
 	<xsd:simpleType name="ST_Integer255">
 		<xsd:annotation>
 			<xsd:documentation>
@@ -110,7 +153,8 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
-	<xsd:simpleType name="ST_OnOff">
+	
+<!-- 	<xsd:simpleType name="ST_OnOff">
 		<xsd:annotation>
 			<xsd:documentation>On Off</xsd:documentation>
 		</xsd:annotation>
@@ -134,6 +178,7 @@
 			</xsd:annotation>
 		</xsd:attribute>
 	</xsd:complexType>
+	 -->
 	<xsd:simpleType name="ST_String">
 		<xsd:annotation>
 			<xsd:documentation>String</xsd:documentation>
@@ -432,13 +477,13 @@
 	</xsd:group>
 	<xsd:complexType name="CT_RPR">
 		<xsd:sequence>
-			<xsd:element name="lit" minOccurs="0" type="CT_OnOff">
+			<xsd:element name="lit" minOccurs="0" type="BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Literal</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:choice>
-				<xsd:element name="nor" minOccurs="0" type="CT_OnOff">
+				<xsd:element name="nor" minOccurs="0" type="BooleanDefaultTrue">
 					<xsd:annotation>
 						<xsd:documentation>
 							Normal Text
@@ -455,7 +500,7 @@
 					<xsd:documentation>Break</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="aln" minOccurs="0" type="CT_OnOff">
+			<xsd:element name="aln" minOccurs="0" type="BooleanDefaultTrue">
 				<xsd:annotation>
 					<xsd:documentation>Align</xsd:documentation>
 				</xsd:annotation>
@@ -570,19 +615,19 @@
 	</xsd:complexType>
 	<xsd:complexType name="CT_BoxPr">
 		<xsd:sequence>
-			<xsd:element name="opEmu" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="opEmu" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Operator Emulator
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="noBreak" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="noBreak" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>No Break</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="diff" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="diff" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Differential</xsd:documentation>
 				</xsd:annotation>
@@ -593,7 +638,7 @@
 					<xsd:documentation>Break</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="aln" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="aln" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Alignment</xsd:documentation>
 				</xsd:annotation>
@@ -619,19 +664,19 @@
 	</xsd:complexType>
 	<xsd:complexType name="CT_BorderBoxPr">
 		<xsd:sequence>
-			<xsd:element name="hideTop" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="hideTop" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Hide Top Edge</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="hideBot" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="hideBot" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Hide Bottom Edge
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="hideLeft" type="CT_OnOff"
+			<xsd:element name="hideLeft" type="BooleanDefaultTrue"
 				minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -639,7 +684,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="hideRight" type="CT_OnOff"
+			<xsd:element name="hideRight" type="BooleanDefaultTrue"
 				minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -647,21 +692,21 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="strikeH" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="strikeH" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Border Box Strikethrough Horizontal
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="strikeV" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="strikeV" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Border Box Strikethrough Vertical
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="strikeBLTR" type="CT_OnOff"
+			<xsd:element name="strikeBLTR" type="BooleanDefaultTrue"
 				minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -670,7 +715,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="strikeTLBR" type="CT_OnOff"
+			<xsd:element name="strikeTLBR" type="BooleanDefaultTrue"
 				minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -722,7 +767,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="grow" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="grow" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Delimiter Grow
@@ -765,14 +810,14 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="maxDist" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="maxDist" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Maximum Distribution
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="objDist" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="objDist" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Object Distribution
@@ -1020,7 +1065,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="plcHide" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="plcHide" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Hide Placeholders (Matrix)
@@ -1119,19 +1164,19 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="grow" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="grow" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>n-ary Grow</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="subHide" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="subHide" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Hide Subscript (n-ary)
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="supHide" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="supHide" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Hide Superscript (n-ary)
@@ -1175,26 +1220,26 @@
 	</xsd:complexType>
 	<xsd:complexType name="CT_PhantPr">
 		<xsd:sequence>
-			<xsd:element name="show" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="show" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Phantom Show</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="zeroWid" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="zeroWid" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Phantom Zero Width
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="zeroAsc" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="zeroAsc" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Phantom Zero Ascent
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="zeroDesc" type="CT_OnOff"
+			<xsd:element name="zeroDesc" type="BooleanDefaultTrue"
 				minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -1202,7 +1247,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="transp" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="transp" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Transparent (Phantom)
@@ -1231,7 +1276,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="CT_RadPr">
 		<xsd:sequence>
-			<xsd:element name="degHide" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="degHide" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Hide Degree</xsd:documentation>
 				</xsd:annotation>
@@ -1325,7 +1370,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="CT_SSubSupPr">
 		<xsd:sequence>
-			<xsd:element name="alnScr" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="alnScr" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Align Scripts</xsd:documentation>
 				</xsd:annotation>
@@ -1709,7 +1754,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="smallFrac" type="CT_OnOff"
+			<xsd:element name="smallFrac" type="BooleanDefaultTrue"
 				minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
@@ -1717,7 +1762,7 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="dispDef" type="CT_OnOff" minOccurs="0">
+			<xsd:element name="dispDef" type="BooleanDefaultTrue" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>
 						Use Display Math Defaults
@@ -1783,7 +1828,7 @@
 						</xsd:documentation>
 					</xsd:annotation>
 				</xsd:element>
-				<xsd:element name="wrapRight" type="CT_OnOff">
+				<xsd:element name="wrapRight" type="BooleanDefaultTrue">
 					<xsd:annotation>
 						<xsd:documentation>
 							Wrap Right
