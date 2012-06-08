@@ -99,36 +99,52 @@ public class XmlUtils {
 	private static javax.xml.transform.TransformerFactory transformerFactory; 
 	
 	static {
+		// JAXP factories
 		
+		// javax.xml.transform.TransformerFactory
 		instantiateTransformerFactory();
+		
+		// javax.xml.parsers.SAXParserFactory
+		String sp = Docx4jProperties.getProperty("javax.xml.parsers.SAXParserFactory");
+		if (sp!=null) {
+			System.setProperty("javax.xml.parsers.SAXParserFactory",sp);
+			log.info("Using " + sp + " (from docx4j.properties)");
+		} 
+		
+		// CONSIDER using Xerces if present?
+		//		System.setProperty("javax.xml.parsers.SAXParserFactory",
+		//				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
+		
 		
     	// Crimson fails to parse the HTML XSLT, so use Xerces ..
 		// .. this one is available in Java 6.	
 		// System.out.println(System.getProperty("java.vendor"));
 		// System.out.println(System.getProperty("java.version"));
-		if ((System.getProperty("java.version").startsWith("1.6")
+		else if ((System.getProperty("java.version").startsWith("1.6")
 				&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
 		
 			System.setProperty("javax.xml.parsers.SAXParserFactory", 
-			"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
-	//		System.setProperty("javax.xml.parsers.SAXParserFactory",
-	//				"org.apache.xerces.jaxp.SAXParserFactoryImpl");
+					Docx4jProperties.getProperty("javax.xml.parsers.SAXParserFactory", 
+							"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl") );
 			
-			// Not needed
-	//    	System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-	//				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-		
 		} else {
 			log.warn("Using default SAXParserFactory: " + System.getProperty("javax.xml.parsers.SAXParserFactory" ));
 		}
+		// Note that we don't restore the value to its original setting (unlike TransformerFactory),
+		// since we want to avoid Crimson being used for the life of the application.
+
+		// javax.xml.parsers.DocumentBuilderFactory
+//    	System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+//				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
 		
 	}
 	
 	private static void instantiateTransformerFactory() {
 		
-		// As to why we require real Xalan, see further docs/JAXP_TransformerFactory_XSLT_notes.txt
+		// docx4j requires real Xalan
+		// See further docs/JAXP_TransformerFactory_XSLT_notes.txt
 				
 		javax.xml.transform.TransformerFactory tmpfactory = javax.xml.transform.TransformerFactory.newInstance();			
 		TRANSFORMER_FACTORY_ORIGINAL = tmpfactory.getClass().getName();
