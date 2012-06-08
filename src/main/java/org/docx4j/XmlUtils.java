@@ -97,6 +97,23 @@ public class XmlUtils {
 	//public static String TRANSFORMER_FACTORY_XSLTC_SUN = "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
 	
 	private static javax.xml.transform.TransformerFactory transformerFactory; 
+	/**
+	 * @since 2.8.1
+	 */
+	public static TransformerFactory getTransformerFactory() {
+		return transformerFactory;
+	}
+
+	private static DocumentBuilderFactory documentBuilderFactory;
+	/**
+	 * @since 2.8.1
+	 * 
+	 * TODO replace the various DocumentBuilderFactory.newInstance()
+	 * throughout docx4j with a call to this.
+	 */
+	public static DocumentBuilderFactory getDocumentBuilderFactory() {
+		return documentBuilderFactory;
+	}
 	
 	static {
 		// JAXP factories
@@ -121,13 +138,12 @@ public class XmlUtils {
 		// System.out.println(System.getProperty("java.vendor"));
 		// System.out.println(System.getProperty("java.version"));
 		else if ((System.getProperty("java.version").startsWith("1.6")
-				&& System.getProperty("java.vendor").startsWith("Sun"))
+						&& System.getProperty("java.vendor").startsWith("Sun"))
 				|| (System.getProperty("java.version").startsWith("1.7")
 						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
 		
 			System.setProperty("javax.xml.parsers.SAXParserFactory", 
-					Docx4jProperties.getProperty("javax.xml.parsers.SAXParserFactory", 
-							"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl") );
+					"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 			
 		} else {
 			log.warn("Using default SAXParserFactory: " + System.getProperty("javax.xml.parsers.SAXParserFactory" ));
@@ -136,10 +152,43 @@ public class XmlUtils {
 		// since we want to avoid Crimson being used for the life of the application.
 
 		// javax.xml.parsers.DocumentBuilderFactory
-//    	System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-//				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+
+		// Crimson doesn't support setTextContent; this.writeDocument also fails.
+		// We've already worked around the problem with setTextContent,
+		// but rather than do the same for writeDocument,
+		// let's just stop using it.
+
+		String dbf = Docx4jProperties.getProperty("javax.xml.parsers.DocumentBuilderFactory");
+		if (dbf!=null) {
+			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",dbf);
+			log.info("Using " + dbf + " (from docx4j.properties)");
+		} 
+		
+		// Consider using Xerces if present?  Not necessary...
+		// System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+		//		"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
+		// which is what we used to do in XmlPart.
+		else if ((System.getProperty("java.version").startsWith("1.6")
+						&& System.getProperty("java.vendor").startsWith("Sun"))
+				|| (System.getProperty("java.version").startsWith("1.7")
+						&& System.getProperty("java.vendor").startsWith("Oracle"))) {
+		
+			System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
+					"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+			
+		} else {
+			log.warn("Using default DocumentBuilderFactory: " 
+					+ System.getProperty("javax.xml.parsers.DocumentBuilderFactory" ));
+		}
+		
+		documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		documentBuilderFactory.setNamespaceAware(true);
+		// Note that we don't restore the value to its original setting (unlike TransformerFactory).
+		// Maybe we could, if docx4j always used this documentBuilderFactory.
 		
 	}
+	
+	
 	
 	private static void instantiateTransformerFactory() {
 		
@@ -179,12 +228,6 @@ public class XmlUtils {
 		
 	}
 	
-	/**
-	 * @since 2.8.1
-	 */
-	public static TransformerFactory getTransformerFactory() {
-		return transformerFactory;
-	}
 
 	/**
 	 * If an object is wrapped in a JAXBElement, return the object.

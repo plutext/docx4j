@@ -80,49 +80,11 @@ public abstract class XmlPart extends Part {
 	private static XPathFactory xPathFactory;
 	private static XPath xPath;
 
-	private static DocumentBuilderFactory documentFactory;
 
 	
 	static {
-		
-		// Crimson doesn't support setTextContent; this.writeDocument also fails.
-		// We've already worked around the problem with setTextContent,
-		// but rather than do the same for writeDocument,
-		// let's just stop using it.
-		
-		try {
-			// docx4j is not dependent on Xerces (other than here),
-			// but Websphere (presumably using IBM JDK) doesn't have
-			// Sun's Xerces implementation, so use real Xerces if it is
-			// on the class path
-			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-				"org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-			documentFactory = DocumentBuilderFactory.newInstance();
-			log.info("Using javax.xml.parsers.DocumentBuilderFactory: "
-				+ "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-		} catch (javax.xml.parsers.FactoryConfigurationError fce) {
-			log.warn("Couldn't set javax.xml.parsers.DocumentBuilderFactory: "
-					+ "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-			try {
-				System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
-						"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
-				documentFactory = DocumentBuilderFactory.newInstance();
-				log.info("Using javax.xml.parsers.DocumentBuilderFactory: "
-						+ "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
-			} catch (javax.xml.parsers.FactoryConfigurationError fce2) {
-				log.warn("Couldn't set javax.xml.parsers.DocumentBuilderFactory: "
-						+ "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
-				documentFactory = DocumentBuilderFactory.newInstance();
-				log.info("Falling back to: "
-						+ documentFactory.getClass().getName() );
-			}
-		}
-		
 		xPathFactory = XPathFactory.newInstance();
 		xPath = xPathFactory.newXPath();		
-		
-		documentFactory.setNamespaceAware(true);
-
 	}
 	
 	
@@ -137,7 +99,7 @@ public abstract class XmlPart extends Part {
 
 	public void setDocument(InputStream is) throws Docx4JException {
 		try {
-            DocumentBuilder documentBuilder = documentFactory.newDocumentBuilder(); // DocumentBuilder is not thread safe, so it needs to be local 
+            DocumentBuilder documentBuilder = XmlUtils.getDocumentBuilderFactory().newDocumentBuilder(); // DocumentBuilder is not thread safe, so it needs to be local 
             doc = documentBuilder.parse(is);
 		} catch (Exception e) {
 			throw new Docx4JException("Problems parsing InputStream for part " + this.partName.getName(), e);
