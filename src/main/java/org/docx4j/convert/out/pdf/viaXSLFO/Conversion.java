@@ -358,7 +358,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 				Source src = new StreamSource(new StringReader(fo));
 
-				Transformer transformer = XmlUtils.tfactory.newTransformer();
+				Transformer transformer = XmlUtils.getTransformerFactory().newTransformer();
 				transformer.transform(src, result);
 			} else {
 

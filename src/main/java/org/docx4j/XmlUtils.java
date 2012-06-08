@@ -51,6 +51,7 @@ import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -95,16 +96,11 @@ public class XmlUtils {
 	//public static String TRANSFORMER_FACTORY_XSLTC_XALAN = "org.apache.xalan.xsltc.trax.TransformerFactoryImpl";
 	//public static String TRANSFORMER_FACTORY_XSLTC_SUN = "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl";
 	
-	public static javax.xml.transform.TransformerFactory tfactory; 
+	private static javax.xml.transform.TransformerFactory transformerFactory; 
 	
 	static {
 		
-		javax.xml.transform.TransformerFactory tmpfactory = javax.xml.transform.TransformerFactory.newInstance();			
-		TRANSFORMER_FACTORY_ORIGINAL = tmpfactory.getClass().getName();
-		tmpfactory = null;
-		log.debug("Set TRANSFORMER_FACTORY_ORIGINAL to " + TRANSFORMER_FACTORY_ORIGINAL);
-				
-		setTFactory();
+		instantiateTransformerFactory();
 		
     	// Crimson fails to parse the HTML XSLT, so use Xerces ..
 		// .. this one is available in Java 6.	
@@ -130,38 +126,48 @@ public class XmlUtils {
 		
 	}
 	
-	private static void setTFactory() {
+	private static void instantiateTransformerFactory() {
 		
-		// see further docs/JAXP_TransformerFactory_XSLT_notes.txt
+		// As to why we require real Xalan, see further docs/JAXP_TransformerFactory_XSLT_notes.txt
+				
+		javax.xml.transform.TransformerFactory tmpfactory = javax.xml.transform.TransformerFactory.newInstance();			
+		TRANSFORMER_FACTORY_ORIGINAL = tmpfactory.getClass().getName();
+		tmpfactory = null;
+		log.debug("Set TRANSFORMER_FACTORY_ORIGINAL to " + TRANSFORMER_FACTORY_ORIGINAL);
 		
 		try {
 			System.setProperty("javax.xml.transform.TransformerFactory",
 					TRANSFORMER_FACTORY_PROCESSOR_XALAN);
 //					TRANSFORMER_FACTORY_SAXON);
 			
-			tfactory = javax.xml.transform.TransformerFactory
+			transformerFactory = javax.xml.transform.TransformerFactory
 					.newInstance();
 			// We've got our factory now, so set it back again!
 			System.setProperty("javax.xml.transform.TransformerFactory",
 					TRANSFORMER_FACTORY_ORIGINAL);
 		} catch (javax.xml.transform.TransformerFactoryConfigurationError e) {
 			
-			log.error(e);
-			
 			// Provider org.apache.xalan.processor.TransformerFactoryImpl not found
-			System.out.println("Warning: Xalan jar missing from classpath; xslt not supported");
+			log.error("Warning: Xalan jar missing from classpath; xslt not supported",e);
 			
 			// but try anyway
 			System.setProperty("javax.xml.transform.TransformerFactory",
 					TRANSFORMER_FACTORY_ORIGINAL);
 			
-			tfactory = javax.xml.transform.TransformerFactory
+			transformerFactory = javax.xml.transform.TransformerFactory
 			.newInstance();
 		}
 		
 		LoggingErrorListener errorListener = new LoggingErrorListener(false);
-		tfactory.setErrorListener(errorListener);
+		transformerFactory.setErrorListener(errorListener);
 		
+	}
+	
+	/**
+	 * @since 2.8.1
+	 */
+	public static TransformerFactory getTransformerFactory() {
+		return transformerFactory;
 	}
 
 	/**
@@ -641,7 +647,7 @@ public class XmlUtils {
    	 		
 		StringWriter sw = new StringWriter();
 		try {
-				Transformer serializer = tfactory.newTransformer();
+				Transformer serializer = transformerFactory.newTransformer();
 				serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
 				//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
 				serializer.transform( new DOMSource(n) , new StreamResult(sw) );				
@@ -734,7 +740,7 @@ public class XmlUtils {
     public static Templates getTransformerTemplate(
 			  javax.xml.transform.Source xsltSource) throws TransformerConfigurationException {
     	    
-    	return tfactory.newTemplates(xsltSource);
+    	return transformerFactory.newTemplates(xsltSource);
     }    
 
     /**

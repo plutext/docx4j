@@ -41,6 +41,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.Docx4jProperties;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.CoreProperties;
 import org.docx4j.docProps.extended.Properties;
@@ -281,7 +282,7 @@ public class SaveToZipFile {
 				 * 
 				 */
 				DOMSource source = new DOMSource(doc);
-				 TransformerFactory.newInstance().newTransformer().transform(source, 
+				 XmlUtils.getTransformerFactory().newTransformer().transform(source, 
 						 new StreamResult(out) );
 		       
 		        

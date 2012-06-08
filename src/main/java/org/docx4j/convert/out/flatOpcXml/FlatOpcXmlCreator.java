@@ -39,6 +39,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Output;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
@@ -501,9 +502,7 @@ public class FlatOpcXmlCreator implements Output {
 		
 		// Do this via identity transform
 		
-		javax.xml.transform.TransformerFactory tfactory = javax.xml.transform.TransformerFactory.newInstance();
-		String originalFactory = tfactory.getClass().getName();
-		System.setProperty("javax.xml.transform.TransformerFactory", "org.apache.xalan.processor.TransformerFactoryImpl");
+		javax.xml.transform.TransformerFactory tfactory = XmlUtils.getTransformerFactory();
 	
 		try {
 			Transformer serializer = tfactory.newTransformer();
@@ -511,9 +510,7 @@ public class FlatOpcXmlCreator implements Output {
 			serializer.transform( new DOMSource( getFlatDomDocument( (WordprocessingMLPackage)packageIn)) , result );				
 		} catch (Exception e) {
 			throw new Docx4JException("Failed to create Flat OPC output", e);
-		} finally {
-			System.setProperty("javax.xml.transform.TransformerFactory", originalFactory);						
-		}
+		} 
 		
 	}
 	

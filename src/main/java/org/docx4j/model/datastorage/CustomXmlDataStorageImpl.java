@@ -26,6 +26,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.XmlPart;
@@ -81,7 +82,7 @@ public class CustomXmlDataStorageImpl extends XmlPart implements CustomXmlDataSt
 		 */
 		 try {
 			DOMSource source = new DOMSource(doc);
-			 TransformerFactory.newInstance().newTransformer().transform(source, 
+			 XmlUtils.getTransformerFactory().newTransformer().transform(source, 
 					 new StreamResult(os) );
 		} catch (Exception e) {
 			throw new Docx4JException("Problems saving to OutputStream", e);

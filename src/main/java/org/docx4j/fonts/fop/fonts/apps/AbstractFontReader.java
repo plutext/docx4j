@@ -37,6 +37,7 @@ import javax.xml.transform.TransformerFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.docx4j.XmlUtils;
 import org.docx4j.fonts.fop.util.CommandLineLogger;
 
 /**
@@ -141,7 +142,7 @@ public abstract class AbstractFontReader {
             OutputStream out = new java.io.FileOutputStream(target);
             out = new java.io.BufferedOutputStream(out);
             try {
-                TransformerFactory factory = TransformerFactory.newInstance();
+                TransformerFactory factory = XmlUtils.getTransformerFactory();
                 Transformer transformer = factory.newTransformer();
                 transformer.transform(
                         new javax.xml.transform.dom.DOMSource(doc),
