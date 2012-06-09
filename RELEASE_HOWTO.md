@@ -13,13 +13,13 @@ Run JarCheck on result of mvn install to check its compiled for 1.5
 
 Update README.txt with release info.
 
-    http://www.jukie.net/bart/blog/pimping-out-git-log
+http://www.jukie.net/bart/blog/pimping-out-git-log
     
 (refer to README.txt to see what rnumber to start at)    
 
 Update pom.xml with target version number (must still be -SNAPSHOT)
 
-git commit / push upstream
+    git commit / push upstream
 
 Start up the Git Bash session and go to your project directory.
 
@@ -204,13 +204,13 @@ Then release it - see https://docs.sonatype.org/display/Repository/Sonatype+OSS+
 
 ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m" ant dist
 
-    (Remove the jaxb jars from dist dir)
-    
-    but for consistency, use the docx4j jar maven made.
-    
-    Put Getting Started in the dist dir
+(Remove the jaxb jars from dist dir)
 
-    Create docx4j-x.x.x.zip (ant dist, rename the jar as well)
+but for consistency, use the docx4j jar maven made.
+
+Put Getting Started in the dist dir
+
+Create docx4j-x.x.x.zip (ant dist, rename the jar as well)
 
 Update build.xml so it has the same version as pom.xml
 
