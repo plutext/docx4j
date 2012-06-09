@@ -1,37 +1,20 @@
 /*
- * Copyright 2006 The FOray Project.
- *      http://www.foray.org
- *
+ * Copyright 2012 Plutext Pty Ltd.
+ * 
+ * This file is part of docx4j.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * This work is in part derived from the following work(s), used with the
- * permission of the licensor:
- *      Apache FOP, licensed by the Apache Software Foundation
- *
  */
-
-/*
- * $LastChangedRevision: 10482 $
- * $LastChangedDate: 2008-03-23 02:59:39 +1100 (Sun, 23 Mar 2008) $
- * $LastChangedBy$
- */
-
-/* NOTICE: This file has been changed by Plutext Pty Ltd for use in docx4j.
- * 
- * This notice is included to meet the condition in clause 4(b) of the License. 
- */
-
-//package org.foray.font.format;
+ 
 package org.docx4j.fonts.foray.font.format;
 
 import java.io.Serializable;
