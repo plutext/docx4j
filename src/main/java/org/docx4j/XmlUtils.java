@@ -83,9 +83,7 @@ public class XmlUtils {
 		
 	// See http://www.edankert.com/jaxpimplementations.html for
 	// a helpful list.
-	
-	public static String TRANSFORMER_FACTORY_ORIGINAL;
-	
+		
 	public static String TRANSFORMER_FACTORY_PROCESSOR_XALAN = "org.apache.xalan.processor.TransformerFactoryImpl";
 	// TRANSFORMER_FACTORY_PROCESSOR_SUN .. JDK/JRE does not include anything like com.sun.org.apache.xalan.TransformerFactoryImpl
 	
@@ -194,12 +192,8 @@ public class XmlUtils {
 		
 		// docx4j requires real Xalan
 		// See further docs/JAXP_TransformerFactory_XSLT_notes.txt
+		String originalSystemProperty = System.getProperty("javax.xml.transform.TransformerFactory");
 				
-		javax.xml.transform.TransformerFactory tmpfactory = javax.xml.transform.TransformerFactory.newInstance();			
-		TRANSFORMER_FACTORY_ORIGINAL = tmpfactory.getClass().getName();
-		tmpfactory = null;
-		log.debug("Set TRANSFORMER_FACTORY_ORIGINAL to " + TRANSFORMER_FACTORY_ORIGINAL);
-		
 		try {
 			System.setProperty("javax.xml.transform.TransformerFactory",
 					TRANSFORMER_FACTORY_PROCESSOR_XALAN);
@@ -207,17 +201,26 @@ public class XmlUtils {
 			
 			transformerFactory = javax.xml.transform.TransformerFactory
 					.newInstance();
+			
 			// We've got our factory now, so set it back again!
-			System.setProperty("javax.xml.transform.TransformerFactory",
-					TRANSFORMER_FACTORY_ORIGINAL);
+			if (originalSystemProperty == null) {
+				System.clearProperty("javax.xml.transform.TransformerFactory");
+			} else {
+				System.setProperty("javax.xml.transform.TransformerFactory",
+						originalSystemProperty);
+			}
 		} catch (javax.xml.transform.TransformerFactoryConfigurationError e) {
 			
 			// Provider org.apache.xalan.processor.TransformerFactoryImpl not found
 			log.error("Warning: Xalan jar missing from classpath; xslt not supported",e);
 			
-			// but try anyway
-			System.setProperty("javax.xml.transform.TransformerFactory",
-					TRANSFORMER_FACTORY_ORIGINAL);
+			// so try using whatever TransformerFactory is available
+			if (originalSystemProperty == null) {
+				System.clearProperty("javax.xml.transform.TransformerFactory");
+			} else {
+				System.setProperty("javax.xml.transform.TransformerFactory",
+						originalSystemProperty);
+			}
 			
 			transformerFactory = javax.xml.transform.TransformerFactory
 			.newInstance();
