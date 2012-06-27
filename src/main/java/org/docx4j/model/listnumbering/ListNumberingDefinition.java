@@ -190,7 +190,7 @@ public class ListNumberingDefinition {
 						}
 
 						Lvl lvl = overrideNode.getLvl();
-						if (lvl != null) {
+						if (lvl != null && this.levels.get(overrideLevelId) != null) {
 							this.levels.get(overrideLevelId).SetOverrides(lvl);
 						}
 						
