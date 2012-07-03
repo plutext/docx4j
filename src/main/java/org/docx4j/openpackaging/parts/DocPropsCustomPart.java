@@ -132,7 +132,7 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 			jaxbElement = (Properties) u.unmarshal( is );
 			
 			
-			log.info("\n\n" + this.getClass().getName() + " unmarshalled \n\n" );									
+			log.info(this.getClass().getName() + " unmarshalled" );								
 
 		} catch (Exception e ) {
 			e.printStackTrace();
