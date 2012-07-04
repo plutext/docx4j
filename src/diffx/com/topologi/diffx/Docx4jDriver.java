@@ -324,7 +324,18 @@ public class Docx4jDriver {
 				//out.append("\n<!-- Differencing -->\n");
 				addComment("Differencing", formatter);
 				
-				Main.diff(seq1, seq2, formatter, diffxConfig);
+
+				if (seq1.size() + seq2.size() < 5000) {
+				  Main.diff(seq1, seq2, formatter, diffxConfig);
+				} else {
+					for (int i1=0; i1 < seq1.size(); i1++) {
+						formatter.delete(seq1.getEvent(i1));
+					}
+					for (int i2=0; i2 < seq2.size(); i2++) {
+						formatter.insert(seq2.getEvent(i2));
+					}
+				}
+
 				//out.append("\n<!-- .. Differencing done -->");
 				addComment(".. Differencing done", formatter);
 							
