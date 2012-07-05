@@ -43,6 +43,7 @@ import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTObject;
+import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
 import org.docx4j.wml.Comments.Comment;
 
@@ -264,6 +265,20 @@ public class TraversalUtil {
 			return ((CTObject)o).getAnyAndAny();
 		} else if (o instanceof org.docx4j.dml.CTGvmlGroupShape) {
 			return ((org.docx4j.dml.CTGvmlGroupShape)o).getTxSpOrSpOrCxnSp();
+		} else if(o instanceof FldChar) {
+			FldChar fldChar = ((FldChar)o);
+			List<Object> artificialList = new ArrayList<Object>();
+			artificialList.add(fldChar.getFldCharType());
+			if(fldChar.getFfData() != null) {
+				artificialList.add(fldChar.getFfData());
+			}
+			if(fldChar.getFldData() != null) {
+				artificialList.add(fldChar.getFldData());
+			}
+			if(fldChar.getNumberingChange() != null) {
+				artificialList.add(fldChar.getNumberingChange());
+			}
+			return artificialList;
 		}
 
 		// OK, what is this? Use reflection ..
