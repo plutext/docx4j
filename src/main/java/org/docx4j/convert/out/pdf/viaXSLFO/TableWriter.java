@@ -145,8 +145,20 @@ public class TableWriter extends ModelConverter {
 	// see http://wiki.apache.org/xmlgraphics-fop/IndentInheritance
 	// so reset here, so a sane value is inherited.
 	// TODO: find and use cell margin (or whatever) setting
-	foTableBody.setAttribute("start-indent", "3mm" );		
-	foTableBody.setAttribute("end-indent", "3mm" );		
+	String startIndent = "3mm";
+	String endIndent = "3mm";
+	org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
+	if (tblPr != null) {
+		org.docx4j.wml.CTTblCellMar tblCellMargin = tblPr.getTblCellMar();
+		if (tblCellMargin != null && tblCellMargin.getLeft() != null) {
+			startIndent = UnitsOfMeasurement.twipToBest(tblCellMargin.getLeft().getW().intValue());
+		}
+		if (tblCellMargin != null && tblCellMargin.getRight() != null) {
+			endIndent = UnitsOfMeasurement.twipToBest(tblCellMargin.getRight().getW().intValue());
+		}
+	}
+	foTableBody.setAttribute("start-indent", startIndent);
+	foTableBody.setAttribute("end-indent", endIndent );		
 	
 	
     
