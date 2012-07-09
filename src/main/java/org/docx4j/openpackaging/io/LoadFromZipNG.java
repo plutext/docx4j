@@ -206,6 +206,8 @@ public class LoadFromZipNG extends Load {
 			ctm.parseContentTypesFile(is);
 		} catch (IOException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
+		} catch (NullPointerException e) {
+			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
 		}
 				
 		OpcPackage p = ctm.createPackage();
