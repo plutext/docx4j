@@ -8,7 +8,6 @@ import java.util.StringTokenizer;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -18,7 +17,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.apache.xmlgraphics.image.loader.ImageSize;
 import org.docx4j.XmlUtils;
@@ -33,8 +31,6 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -105,6 +101,12 @@ public class BindingHandler {
 		log.info(message);
 	}
 
+	public static void log(NodeIterator nodeIterator ) {
+		
+		Node n = nodeIterator.nextNode();		
+		log.info(XmlUtils.w3CDomNodeToString(n));
+	}
+	
 	/* ---------------------------------------------------------------------------
 	 * Apply bindings
 	 * 
@@ -756,6 +758,23 @@ public class BindingHandler {
 			
 		}
 		
-		
+		public static String getRepeatPositionCondition(
+				XPathsPart xPathsPart,				
+				String odTag) {
+
+			QueryString qs = new QueryString();
+			HashMap<String, String> map = qs.parseQueryString(odTag, true);
+			
+			String xpathId = map.get("od:RptPosCon");
+			
+			log.info("Looking for xpath by id: " + xpathId);
+			Xpath xpath = xPathsPart.getXPathById(xPathsPart.getJaxbElement(), xpathId);
+			
+			String expression =xpath.getDataBinding().getXpath() ;
+			log.info(expression);
+
+			return expression;		
+		}
+
 
 }
