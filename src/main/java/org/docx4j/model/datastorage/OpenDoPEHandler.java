@@ -96,6 +96,7 @@ public class OpenDoPEHandler {
 	public final static String BINDING_ROLE_REPEAT = "od:repeat";
 	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
+	public final static String BINDING_ROLE_NARRATIVE = "od:narrative";
 	public final static String BINDING_ROLE_COMPONENT = "od:component";
 	public final static String BINDING_ROLE_COMPONENT_BEFORE = "od:continuousBefore";
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
@@ -692,6 +693,13 @@ public class OpenDoPEHandler {
 			if (xpath==null) {
 				throw new InputIntegrityException("XPath specified in condition '" + c.getId() + "' is missing!");
 			}
+			
+//			if (xpath.getDataBinding().getXpath().contains("position()")) {
+//				// Defer processing this to binding handler!
+//				List<Object> newContent = new ArrayList<Object>();
+//				newContent.add(sdt);
+//				return newContent;				
+//			}
 
 			String val = BindingHandler.xpathGetString(wordMLPackage,
 					customXmlDataStorageParts, xpath.getDataBinding()
@@ -929,24 +937,31 @@ public class OpenDoPEHandler {
 
 		for (int i = 0; i < numRepeats; i++) {
 
+			// 2012 07 13: for "od:RptPosCon" processing to
+			// work (conditional inclusion dependant on position
+			// in repeat), we need each entry (ie including the
+			// original) to have the same tag (which I've changed
+			// to od:rptd).
+			
+			
 			// the first sdt is just copied to the output, the rest has a
 			// removed repeat value and no binding
-			if (i > 0) {
+			//if (i > 0) {
 
 				// This needs to be done only once, as we're operating on this
 				// same object tree.
-				if (i == 1) {
+				//if (i == 1) {
 
 					emptyRepeatTagValue(sdtPr.getTag());
 
-					if (binding != null) {
+					if (binding != null) {  // Shouldn't be a binding anyway
 						sdtPr.getRPrOrAliasOrLock().remove(binding);
 					}
 
 					// Change ID
 					sdtPr.setId();
-				}
-			}
+				//}
+			//}
 
 			// Clone
 			newContent.add(XmlUtils.deepCopy(sdt));
@@ -967,8 +982,10 @@ public class OpenDoPEHandler {
 					+ tagVal);
 			return;
 		}
-		final String emptyRepeatValue = stripPatternMatcher.group(1)
-				+ stripPatternMatcher.group(3);
+//		final String emptyRepeatValue = stripPatternMatcher.group(1)
+//				+ stripPatternMatcher.group(3);
+		final String emptyRepeatValue = "od:rptd=" + stripPatternMatcher.group(2)
+		+ stripPatternMatcher.group(3);
 		tag.setVal(emptyRepeatValue);
 	}
 
