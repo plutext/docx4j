@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,10 +94,17 @@ public class OpenDoPEHandler {
 	private WordprocessingMLPackage wordMLPackage;
 	private ShallowTraversor shallowTraversor;
 
-	public final static String BINDING_ROLE_REPEAT = "od:repeat";
-	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
 	public final static String BINDING_ROLE_XPATH = "od:xpath";
+
+	public final static String BINDING_ROLE_CONDITIONAL = "od:condition";
+	
+	public final static String BINDING_ROLE_REPEAT = "od:repeat";
+	public final static String BINDING_ROLE_RPTD = "od:rptd";
+	public final static String BINDING_ROLE_RPT_INSTANCE = "od:RptInst"; // when a repeat is reused, distinguish each instance 
+	public final static String BINDING_ROLE_RPT_POS_CON = "od:RptPosCon";
+	
 	public final static String BINDING_ROLE_NARRATIVE = "od:narrative";
+	
 	public final static String BINDING_ROLE_COMPONENT = "od:component";
 	public final static String BINDING_ROLE_COMPONENT_BEFORE = "od:continuousBefore";
 	public final static String BINDING_ROLE_COMPONENT_AFTER = "od:continuousAfter";
@@ -935,6 +943,8 @@ public class OpenDoPEHandler {
 		// (CTDataBinding)XmlUtils.unwrap(sdtPr.getDataBinding());
 		CTDataBinding binding = sdtPr.getDataBinding();
 
+		emptyRepeatTagValue(sdtPr.getTag()); // 2012 07 15: do it to the first one
+		
 		for (int i = 0; i < numRepeats; i++) {
 
 			// 2012 07 13: for "od:RptPosCon" processing to
@@ -952,7 +962,7 @@ public class OpenDoPEHandler {
 				// same object tree.
 				//if (i == 1) {
 
-					emptyRepeatTagValue(sdtPr.getTag());
+					//emptyRepeatTagValue(sdtPr.getTag());
 
 					if (binding != null) {  // Shouldn't be a binding anyway
 						sdtPr.getRPrOrAliasOrLock().remove(binding);
@@ -970,6 +980,8 @@ public class OpenDoPEHandler {
 		return newContent;
 	}
 
+	AtomicInteger repeatInstanceId = new AtomicInteger(); 
+	
 	private void emptyRepeatTagValue(final Tag tag) {
 
 		final String tagVal = tag.getVal();
@@ -984,8 +996,8 @@ public class OpenDoPEHandler {
 		}
 //		final String emptyRepeatValue = stripPatternMatcher.group(1)
 //				+ stripPatternMatcher.group(3);
-		final String emptyRepeatValue = "od:rptd=" + stripPatternMatcher.group(2)
-		+ stripPatternMatcher.group(3);
+		final String emptyRepeatValue = BINDING_ROLE_RPTD + "=" + stripPatternMatcher.group(2)
+		+ stripPatternMatcher.group(3) + "&" + BINDING_ROLE_RPT_INSTANCE + "=" + repeatInstanceId.incrementAndGet();
 		tag.setVal(emptyRepeatValue);
 	}
 

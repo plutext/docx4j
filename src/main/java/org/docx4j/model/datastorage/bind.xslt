@@ -57,10 +57,10 @@
   	<xsl:param name="pos">3</xsl:param>
   	
 		<xsl:variable name="dummy"
-	select="java:org.docx4j.model.datastorage.BindingHandler.log(concat('$pos ', $pos))" />
+	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('$pos ', $pos))" />
 	
 		<xsl:variable name="dummy"
-	select="java:org.docx4j.model.datastorage.BindingHandler.log(concat('position() ', position() ))" />
+	select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('position() ', position() ))" />
 	
   	<xsl:choose>
   		<xsl:when test="position()=$pos">
@@ -88,7 +88,7 @@
 			     
 			     <w:sdtContent>
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.xpathInjectImage(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathInjectImage(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -143,7 +143,7 @@
 				  		      if there were the same number of columns?
 				  		       -->
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -162,7 +162,7 @@
 				  		      	  A future version could possibly read/re-use w:sdtContent/w:tr/w:trPr
 				  			       -->
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -180,7 +180,7 @@
 				  			        
 				  			       -->
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -200,7 +200,7 @@
 			  				
 			  				<!--  create runs -->
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -219,7 +219,7 @@
 				  		--> 
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.convertXHTML(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.convertXHTML(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -249,11 +249,13 @@
   		 -->
 			<xsl:variable name="vNode" select="ancestor::w:sdt[contains(string(w:sdtPr/w:tag/@w:val), 'od:rptd')]" /> 
 			<xsl:variable name="repeatTag" select="$vNode/w:sdtPr/w:tag/@w:val" />
+				<!--  We could match on repeat ID and repeat instance ID, 
+				 	  but no need, because the tag is cloned, so its contents will be the same across instances -->
 			<xsl:variable name="repeatParent" select="ancestor::*[contains(string(w:sdt/w:sdtPr/w:tag/@w:val), 'od:rptd')][1]" /> 
 			<xsl:variable name="vNodeSet" select="$repeatParent/w:sdt[contains(string(w:sdtPr/w:tag/@w:val), $repeatTag)]" /> 
 
 <!-- 			<xsl:variable name="dummy"
-				select="java:org.docx4j.model.datastorage.BindingHandler.log(concat('vNodeSet', count($vNodeSet)))" />
+				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('vNodeSet', count($vNodeSet)))" />
  -->
 			<xsl:variable name="vPrecNodes" select="$vNode/preceding::node()"/>
 			
@@ -270,7 +272,7 @@
 
 		
 			<xsl:variable name="expression"
-				select="java:org.docx4j.model.datastorage.BindingHandler.getRepeatPositionCondition(								
+				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.getRepeatPositionCondition(								
 										$xPathsPart,
 										string(w:sdtPr/w:tag/@w:val))" />
 							
@@ -283,7 +285,7 @@
 			</xsl:variable>		
 			
 <!-- 			<xsl:variable name="dummy"
-				select="java:org.docx4j.model.datastorage.BindingHandler.log(concat('result ', $result))" />
+				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('result ', $result))" />
  -->					
 										
 			<xsl:choose>
@@ -326,7 +328,7 @@
 							  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:tc/w:p/w:pPr"/>
 							  				
 											<xsl:copy-of
-											select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+											select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 														$wmlPackage,
 														$sourcePart,
 														$customXmlDataStorageParts,
@@ -350,7 +352,7 @@
 						  				<xsl:copy-of select="w:sdtContent/w:tr/w:tc/w:p/w:pPr"/>
 						  				
 										<xsl:copy-of
-										select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+										select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 													$wmlPackage,
 													$sourcePart,
 													$customXmlDataStorageParts,
@@ -374,7 +376,7 @@
 					  				
 					  				<!--  create runs -->
 									<xsl:copy-of
-									select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
@@ -394,7 +396,7 @@
 				  				
 				  				<!--  create runs -->
 								<xsl:copy-of
-								select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
@@ -409,7 +411,7 @@
 				  		<xsl:otherwise>  <!--  run level --> 
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
@@ -451,7 +453,7 @@
 							  				<xsl:copy-of select="w:sdtContent/w:tbl/w:tr/w:tc/w:p/w:pPr"/>
 							  				
 											<xsl:copy-of
-											select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+											select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 														$wmlPackage,
 														$sourcePart,
 														$customXmlDataStorageParts,
@@ -477,7 +479,7 @@
 						  				<xsl:copy-of select="w:sdtContent/w:tr/w:tc/w:p/w:pPr"/>
 						  				
 										<xsl:copy-of
-										select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+										select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 													$wmlPackage,
 													$sourcePart,
 													$customXmlDataStorageParts,
@@ -503,7 +505,7 @@
 					  				
 					  				<!--  create runs -->
 									<xsl:copy-of
-									select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+									select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 												$wmlPackage,
 												$sourcePart,
 												$customXmlDataStorageParts,
@@ -525,7 +527,7 @@
 				  				
 				  				<!--  create runs -->
 								<xsl:copy-of
-								select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+								select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 											$wmlPackage,
 											$sourcePart,
 											$customXmlDataStorageParts,
@@ -542,7 +544,7 @@
 				  		<xsl:otherwise>  <!--  run level --> 
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
 							<xsl:copy-of
-							select="java:org.docx4j.model.datastorage.BindingHandler.xpathGenerateRuns(
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathGenerateRuns(
 										$wmlPackage,
 										$sourcePart,
 										$customXmlDataStorageParts,
