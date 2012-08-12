@@ -1181,7 +1181,29 @@ public class PropertyResolver {
 		if (style==null) {
 			// No such style!
 			// For now, just log it..
-			log.error("Style definition not found: " + styleId);
+			if (styleId.equals("DocDefaults")) {
+				
+				// Don't worry about this.
+				// SDP.createVirtualStylesForDocDefaults()
+				// creates a DocDefaults style, and makes Normal based on it
+				// (and so if a different approach to handling
+				//  DocDefaults ... we really should do it one
+				//  way consistently).
+				// The problem here is, that is typically done
+				// after the PropertyResolver is created,
+				// so as far as this PropertyResolver is 
+				// concerned, the style doesn't exist.
+				// And we don't really want to always
+				// do createVirtualStylesForDocDefaults() before
+				// or during init of PropertyResolver, since that
+				// mean any docx saved would contain those
+				// virtual styles.
+				// Anyway, we don't need to worry about it
+				// here, because the doc defaults are still handled...
+				
+			} else {
+				log.error("Style definition not found: " + styleId);
+			}
 			return;
 		}
 		pPrStack.push(style.getPPr());
@@ -1273,7 +1295,7 @@ public class PropertyResolver {
 		
 		for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
 			liveStyles.put(s.getStyleId(), s);	
-//			log.debug("live style: " + s.getStyleId() );
+			log.debug("live style: " + s.getStyleId() );
 		}
     	
     }

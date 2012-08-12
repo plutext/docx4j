@@ -33,7 +33,7 @@ import org.w3c.dom.css.CSSValue;
 public class SpaceAfter extends AbstractParagraphProperty {
 	
 	
-	public final static String CSS_NAME = "space-after"; //??  	
+	public final static String CSS_NAME = "margin-bottom"; 
 	public final static String FO_NAME  = "space-after"; 
 	
 	/**

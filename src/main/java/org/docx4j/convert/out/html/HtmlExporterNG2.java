@@ -37,7 +37,9 @@ import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.PageBreak;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.SymbolModel.SymbolModelTransformState;
+import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.properties.paragraph.SpaceBefore;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
@@ -380,7 +382,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     	
 //    	log.info("pPrNode:" + pPrNodeIt.getClass().getName() ); // org.apache.xml.dtm.ref.DTMNodeIterator    	
 //    	log.info("childResults:" + childResults.getClass().getName() ); 
-    	
+    	    	
     	
         try {
         	
@@ -422,7 +424,8 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			xhtmlBlock.setAttribute("class", 
 					StyleTree.getHtmlClassAttributeValue(pTree, asn)			
 			);
-						
+		
+			
 			// Does our pPr contain anything else?
 			boolean ignoreBorders = (htmlElementName.equals("p"));
 			if (pPr!=null) {
@@ -431,6 +434,38 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				if (!inlineStyle.toString().equals("") ) {
 					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
 				}
+				if (!inlineStyle.toString().contains(SpaceBefore.CSS_NAME) ) {
+			    	// If there is no w:spacing/@w:before, it should be 0.
+			    	// unless it is set to anything in the effective style 
+			    	PropertyResolver propertyResolver = 
+			        		wmlPackage.getMainDocumentPart().getPropertyResolver();
+					PPr stylePPr = propertyResolver.getEffectivePPr(pStyleVal);
+					if (stylePPr.getSpacing()!=null 
+							&& stylePPr.getSpacing().getBefore()!=null) {
+						// it is specified in the style
+					} else {
+						/* For a doc where there is no w:spacing/@w:before specified
+						 * in the styles, Word's HTML output defaults to 
+ 
+							 p.MsoNormal, li.MsoNormal, div.MsoNormal
+								{
+								margin-top:0cm;
+								margin-right:0cm;
+								margin-bottom:10.0pt;
+								margin-left:0cm;
+								line-height:115%;  <------- from w:spacing/@w:line?
+								mso-pagination:widow-orphan;
+								font-size:11.0pt;
+								font-family:"Calibri","sans-serif";
+								
+							Here, for now, we are just dealing with 
+							w:spacing/@w:before.
+						 */
+						xhtmlBlock.setAttribute("style", inlineStyle.toString() + "; margin-top:0cm; " );
+						
+					}
+				}
+					
 			}
 						
 			// Our fo:block wraps whatever result tree fragment
