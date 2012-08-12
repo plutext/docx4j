@@ -261,7 +261,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				// "</fonts></renderer></renderers></fop>";
 
 				fopConfig = cfgBuilder.build(new ByteArrayInputStream(myConfig
-						.getBytes()));
+						.getBytes("UTF-8")));
 			}
 
 			fopFactory.setUserConfig(fopConfig);

@@ -187,10 +187,20 @@ public class PhysicalFonts {
 	
 	/**
 	 * Add a physical font's EmbedFontInfo object.
-	 * 
+	 *
 	 * @param fontUrl eg new java.net.URL("file:" + path)
 	 */
 	public static void addPhysicalFont(URL fontUrl) {
+		addPhysicalFont(null, fontUrl);
+	}
+
+	/**
+	 * Add a physical font's EmbedFontInfo object.
+	 * 
+	 * @param fontUrl eg new java.net.URL("file:" + path)
+	 */
+	public static void addPhysicalFont(String nameAsInFontTablePart, URL fontUrl) {
+
 		
 		//List<EmbedFontInfo> embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);		
 		EmbedFontInfo[] embedFontInfoList = fontInfoFinder.find(fontUrl, fontResolver, fontCache);
@@ -369,6 +379,11 @@ public class PhysicalFonts {
 		        	// Add it to the map
 		        	physicalFontMap.put(pf.getName(), pf);
 		    		log.debug("Added " + pf.getName() + " -> " + pf.getEmbeddedFile());
+
+				if (nameAsInFontTablePart != null && !physicalFontMap.containsKey(nameAsInFontTablePart)) {
+					physicalFontMap.put(nameAsInFontTablePart, pf);
+					log.debug("Added " + nameAsInFontTablePart + " -> " + pf.getEmbeddedFile());
+				}
 		    		
 		    		// We also need to add it to map by filename
 		    		String filename = pf.getEmbeddedFile();

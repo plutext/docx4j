@@ -42,6 +42,7 @@ public class Indent extends AbstractParagraphProperty {
 	}
 	
 	public final static String FO_NAME  = "start-indent"; 
+	public final static String FO_NAME_TEXT_INDENT  = "text-indent";
 	
 	
 	public Indent(Ind val) {
@@ -105,12 +106,22 @@ public class Indent extends AbstractParagraphProperty {
 	@Override
 	public void setXslFO(Element foElement) {
 
+		boolean updated = false;
 		BigInteger left = ((Ind)this.getObject()).getLeft();		
-		if (left==null) {
-			log.warn("Only left indentation is handled at present");
-		} else {
+		if (left !=null) {
 			foElement.setAttribute(FO_NAME, UnitsOfMeasurement.twipToBest(left.intValue()) );
-		} 		
+			updated = true;
+		}
+		BigInteger firstLine = ((Ind)this.getObject()).getFirstLine();
+		if (firstLine != null) {
+			foElement.setAttribute(FO_NAME_TEXT_INDENT, UnitsOfMeasurement.twipToBest(firstLine.intValue()) );
+			updated = true;
+		}
+    
+		if (!updated) {
+			log.warn("Only left/first-line indentation is handled at present");
+		}
+
 	}
 
 	@Override
