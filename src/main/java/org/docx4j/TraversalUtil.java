@@ -178,6 +178,11 @@ public class TraversalUtil {
 		}		
 	}
 	public static List<Object> getChildrenImpl(Object o) {
+		
+		if (o==null) {
+			log.warn("null passed to getChildrenImpl");
+			return null;
+		}
 
 		log.debug("getting children of " + o.getClass().getName() );
 		if (o instanceof org.docx4j.wml.Text) return null;
