@@ -28,6 +28,7 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Tbl;
+import org.w3c.dom.Attr;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -72,9 +73,25 @@ public class HtmlExporterNonXSLT {
 		
 		this.wordMLPackage = wordMLPackage;
 		this.conversionImageHandler = conversionImageHandler;
+
+    	styleTree = null;
+		try {
+			styleTree = wordMLPackage.getMainDocumentPart().getStyleTree();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 		
+	}
+	
+	/**
+	 * Generate HTML for the entire MainDocumentPart.
+	 * @return
+	 */
+	public org.w3c.dom.Document export() {
+				
     	htmlDoc = XmlUtils.neww3cDomDocument();
-    	    	
+    	
     	Element htmlEl = htmlDoc.createElement("html");
     	htmlDoc.appendChild(htmlEl);
     	
@@ -85,18 +102,8 @@ public class HtmlExporterNonXSLT {
     	// body
     	bodyEl = htmlDoc.createElement("body");
     	htmlEl.appendChild(bodyEl);
-	}
-	
-	public org.w3c.dom.Document export() {
-				
-    	styleTree = null;
-		try {
-			styleTree = wordMLPackage.getMainDocumentPart().getStyleTree();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
-		
+
+    	
 		// css
     	Element styleEl = htmlDoc.createElement("style");
     	headEl.appendChild(styleEl);
@@ -111,6 +118,36 @@ public class HtmlExporterNonXSLT {
 
 		return htmlDoc;
 	}
+	
+	public String getCss() {
+		
+		return AbstractHtmlExporter.getCssForStyles(wordMLPackage);
+	}
+	
+	/**
+	 * Generate HTML for the specified content.
+	 * 
+	 * @param blockLevelContent
+	 * @return
+	 */
+	public org.w3c.dom.Document export(Object blockLevelContent, String cssClass, String cssId) {
+		
+    	htmlDoc = XmlUtils.neww3cDomDocument();	
+    	
+    	bodyEl = htmlDoc.createElement("div");
+    	if (cssClass!=null) {
+    		bodyEl.setAttribute("class", cssClass);
+    	}
+    	if (cssId!=null) {
+    		bodyEl.setAttribute("id", cssId);
+    	}
+    	htmlDoc.appendChild(bodyEl);    	
+		
+		HTMLGenerator htmlGenerator = new HTMLGenerator();
+		new TraversalUtil(blockLevelContent, htmlGenerator);
+
+		return htmlDoc;
+	}	
 	
 	void handlePPr(PPr pPr, Element currentEl) {
 
