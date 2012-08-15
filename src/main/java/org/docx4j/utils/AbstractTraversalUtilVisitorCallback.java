@@ -66,7 +66,7 @@ public abstract class AbstractTraversalUtilVisitorCallback extends TraversalUtil
 	// Depth first
 	@Override
 	public void walkJAXBElements(Object parent) {
-	List children = getChildren(parent);
+		List children = getChildren(parent);
 		if (children != null) {
 			for (Object o : children) {
 				// if its wrapped in javax.xml.bind.JAXBElement, get its
