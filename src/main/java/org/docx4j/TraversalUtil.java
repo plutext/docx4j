@@ -569,9 +569,15 @@ public class TraversalUtil {
 						elementList = ((FooterPart) relPart.getPart(rs))
 								.getJaxbElement().getContent();
 					} else if (Namespaces.ENDNOTES.equals(rs.getType())) {
-						elementList = ((EndnotesPart) relPart.getPart(rs)).getContent();
+						//elementList = ((EndnotesPart) relPart.getPart(rs)).getContent();
+						elementList = new ArrayList();
+						elementList.addAll(
+								((EndnotesPart) relPart.getPart(rs)).getJaxbElement().getEndnote() );
 					} else if (Namespaces.FOOTNOTES.equals(rs.getType())) {
-						elementList =  ((FootnotesPart) relPart.getPart(rs)).getContent();
+						//elementList =  ((FootnotesPart) relPart.getPart(rs)).getContent();
+						elementList = new ArrayList();
+						elementList.addAll(
+								((FootnotesPart) relPart.getPart(rs)).getJaxbElement().getFootnote() );
 					} else if (Namespaces.COMMENTS.equals(rs.getType())) {
 						elementList = new ArrayList();
 						for (Comment comment : ((CommentsPart) relPart
