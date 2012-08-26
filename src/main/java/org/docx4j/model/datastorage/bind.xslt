@@ -103,6 +103,30 @@
 			</xsl:copy>
 		</xsl:when>
 
+  		<xsl:when test="w:sdtPr/w:dataBinding and w:sdtPr/w:date">
+  			<!--  honour w:dataBinding -->
+			<xsl:copy>
+			     <xsl:apply-templates select="w:sdtPr"/>
+			     
+			     <xsl:if test="w:stdEndPr">
+			     	<xsl:copy-of select="w:sdtEndPr"/>
+		     	</xsl:if>
+			     
+			     <w:sdtContent>
+							<xsl:copy-of
+							select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.xpathDate(
+										$wmlPackage,
+										$sourcePart,
+										$customXmlDataStorageParts,
+										string(w:sdtPr/w:dataBinding/@w:storeItemID),
+										string(w:sdtPr/w:dataBinding/@w:xpath),
+										string(w:sdtPr/w:dataBinding/@w:prefixMappings),
+										local-name(..),
+										local-name(w:sdtContent/*[1]),
+										w:sdtPr/w:date)" />
+			     </w:sdtContent>
+			</xsl:copy>
+		</xsl:when>
   	
   		<xsl:when test="contains( string(w:sdtPr/w:tag/@w:val), 'od:ContentType=application/xhtml+xml' )">
   			<!--  Convert XHTML.

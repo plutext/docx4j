@@ -1,6 +1,11 @@
 package org.docx4j.model.datastorage;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +34,10 @@ import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.CTSdtDate;
+import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
+import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.P.Hyperlink;
 import org.opendope.xpaths.Xpaths.Xpath;
@@ -635,5 +643,143 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 		return expression;		
 	}
 	
+	public static DocumentFragment nullResultParagraph(String sdtParent, String message) {
+
+		try
+		{
+			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+			org.docx4j.wml.R  run = factory.createR();	
+			org.docx4j.wml.Text text = factory.createText();
+			text.setValue(message);
+			run.getContent().add(text);
+				
+			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
+			if (sdtParent.equals("p")) {
+				// Stuff it in a run
+				docContainer = XmlUtils.marshaltoW3CDomDocument(run);						
+			} else {
+				// Stuff it in a p
+				org.docx4j.wml.P  p   = factory.createP();
+				p.getContent().add(run);
+				docContainer = XmlUtils.marshaltoW3CDomDocument(p);						
+			}
+			
+			DocumentFragment docfrag = docContainer.createDocumentFragment();
+			docfrag.appendChild(docContainer.getDocumentElement());
+		
+			return docfrag;
+			
+		} catch (Exception e) {
+			log.error(e);
+			return null;
+		}
+		
+	}
 	
+	public static DocumentFragment xpathDate(WordprocessingMLPackage wmlPackage,
+			JaxbXmlPart sourcePart,
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			String storeItemId, String xpath, String prefixMappings, 
+			String sdtParent,
+			String contentChild,
+			NodeIterator dateNodeIt) {
+		
+		CustomXmlDataStoragePart part = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+		if (part==null) {
+			log.error("Couldn't locate part by storeItemId " + storeItemId);
+			return null;
+		}
+		
+		try {
+			String r = part.getData().xpathGetString(xpath, prefixMappings);
+			log.debug(xpath + " yielded result " + r);
+			if (r==null) return nullResultParagraph(sdtParent, "[missing!]");
+			
+			CTSdtDate sdtDate = null;
+			Node dateNode = dateNodeIt.nextNode();
+			if (dateNode!=null) {
+				//sdtDate = (CTSdtDate)XmlUtils.unmarshal(dateNode);
+				sdtDate = (CTSdtDate)XmlUtils.unmarshal(dateNode, Context.jc, CTSdtDate.class);
+			}
+			
+			/*
+		        <w:date w:fullDate="2012-08-19T00:00:00Z">
+		          <w:dateFormat w:val="d/MM/yyyy"/>
+		          <w:lid w:val="en-AU"/>
+		          <w:storeMappedDataAs w:val="dateTime"/>
+		          <w:calendar w:val="gregorian"/>
+		        </w:date>
+		        
+		        Assume our String r contains something like "2012-08-19T00:00:00Z"
+		        
+		        We need to convert it to the given dateFormat string.
+		        
+			 */
+			// Drop the Z
+			if (r.indexOf("Z")>0) {
+				r = r.substring(0, r.indexOf("Z")-1);
+				log.warn("date now " + r);
+			}
+			
+			DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+			
+			String format = sdtDate.getDateFormat().getVal();
+			System.out.println("Using format: " + format);
+			
+			// C# dddd (eg "Monday') needs translation
+			// to "EEEE"
+			if (format.contains("dddd")) {
+				format = format.replace("dddd", "EEEE");
+			}
+			
+			Format formatter = new SimpleDateFormat(format);
+			org.docx4j.wml.ObjectFactory factory = new org.docx4j.wml.ObjectFactory();
+			
+			Date date;
+			RPr rPr = null;
+			try {
+				date = (Date)dateTimeFormat.parse(r);
+			} catch (ParseException e) {
+				log.warn(e.getMessage());
+				date = new Date();
+				
+				// <w:color w:val="FF0000"/>
+				rPr = factory.createRPr();
+				Color colorRed = factory.createColor();
+				colorRed.setVal("FF0000");
+				rPr.setColor(colorRed);
+			}
+			
+			String result = formatter.format(date);
+			
+			org.docx4j.wml.R  run = factory.createR();	
+			if (rPr!=null) {
+				run.setRPr(rPr);
+			}
+			org.docx4j.wml.Text text = factory.createText();
+			text.setValue(result);
+			run.getContent().add(text);
+				
+			org.w3c.dom.Document docContainer = XmlUtils.neww3cDomDocument();
+			if (sdtParent.equals("p")) {
+				// Stuff it in a run
+				docContainer = XmlUtils.marshaltoW3CDomDocument(run);						
+			} else {
+				// Stuff it in a p
+				org.docx4j.wml.P  p   = factory.createP();
+				p.getContent().add(run);
+				docContainer = XmlUtils.marshaltoW3CDomDocument(p);						
+			}
+			
+			DocumentFragment docfrag = docContainer.createDocumentFragment();
+			docfrag.appendChild(docContainer.getDocumentElement());
+		
+			return docfrag;
+			
+		} catch (Exception e) {
+			log.error(e);
+			return null;
+		}
+		
+	}	
 }
