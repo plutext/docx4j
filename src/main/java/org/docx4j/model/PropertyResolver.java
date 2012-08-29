@@ -1311,6 +1311,8 @@ public class PropertyResolver {
 		
 		// First look at the defaults
 		// 3 look at styles/rPrDefault 
+		//   eg <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia" 
+		//				  w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi"/>
 		// 3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
 		//     in which case if there is no theme part, default to "internally stored settings"
 		//	   (there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
@@ -1357,6 +1359,53 @@ public class PropertyResolver {
 			} else {
 				// TODO
 				log.error("Neither ascii or asciTheme.  What to do? ");
+				return null;
+			}						
+		} 
+	}
+
+	public String getDefaultFontEastAsia() {
+				
+		org.docx4j.wml.RFonts rFonts = documentDefaultRPr.getRFonts();
+		if (rFonts==null) {
+			log.info("No styles/docDefaults/rPrDefault/rPr/rFonts - default to SimSun");
+			return "SimSun"; 						
+		} else {						
+			// Usual case
+
+			if (rFonts.getEastAsiaTheme()!=null ) {
+				// for example minorEastAsia 
+				if (rFonts.getEastAsiaTheme().equals(org.docx4j.wml.STTheme.MINOR_EAST_ASIA)) {
+					if (themePart!=null) {
+						org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
+						if (fontScheme.getMinorFont()!=null
+								&& fontScheme.getMinorFont().getEa()!=null
+								&& !fontScheme.getMinorFont().getEa().getTypeface().equals("") ) {
+																	
+							log.debug("minorFont/EA font is " + fontScheme.getMinorFont().getEa().getTypeface() );
+							return fontScheme.getMinorFont().getEa().getTypeface();
+						} else {
+							// No minorFont/EA in theme part - default to SimSun
+							log.info("No minorFont/latin in theme part - default to SimSun");								
+							return "SimSun"; 
+						}
+					} else {
+						// No theme part - default to SimSun
+						log.info("No theme part - default to SimSun");
+						return "SimSun"; 
+					}
+				} else {
+					// TODO
+					log.error("Don't know how to handle: "
+							+ rFonts.getEastAsiaTheme());
+					return null;
+				}
+			} else if (rFonts.getEastAsia()!=null ) {
+				log.info("rPrDefault/rFonts referenced " + rFonts.getEastAsia());								
+				return rFonts.getEastAsia(); 							
+			} else {
+				// TODO
+				log.error("Neither EastAsia or EastAsiaTheme.  What to do? ");
 				return null;
 			}						
 		} 

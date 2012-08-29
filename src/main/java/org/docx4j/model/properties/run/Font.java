@@ -26,6 +26,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STHint;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -72,11 +73,32 @@ public class Font extends AbstractRunProperty {
 		
 		RFonts rFonts = (RFonts)this.getObject();
 		
-		String font = rFonts.getAscii();		
-		
-		if (font==null && wmlPackage instanceof WordprocessingMLPackage) {
-			font=((WordprocessingMLPackage)wmlPackage).getDefaultFont();
+		String font=null;
+		if (rFonts.getHint()!=null && rFonts.getHint().equals(STHint.EAST_ASIA) ) {
+			
+			font = rFonts.getEastAsia();		
+			
+			if (font==null && wmlPackage instanceof WordprocessingMLPackage) {
+				font=((WordprocessingMLPackage)wmlPackage).getMainDocumentPart().getPropertyResolver().getDefaultFontEastAsia();
+			}
+// TODO	HAnsi, and CS		
+//		} else if (rFonts.getHint().equals(STHint.CS) ) {
+//				
+//				font = rFonts.getCs();		
+//				
+//				if (font==null && wmlPackage instanceof WordprocessingMLPackage) {
+//					font=((WordprocessingMLPackage)wmlPackage).getDefaultFont();
+
+		} else {
+
+			font = rFonts.getAscii();		
+			
+			if (font==null && wmlPackage instanceof WordprocessingMLPackage) {
+				font=((WordprocessingMLPackage)wmlPackage).getDefaultFont();
+			}
+			
 		}
+		
 		
 		return getPhysicalFont(wmlPackage, font);
 		
