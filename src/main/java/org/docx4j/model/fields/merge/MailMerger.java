@@ -18,12 +18,23 @@ import org.docx4j.model.fields.FieldRef;
 import org.docx4j.model.fields.FieldsPreprocessor;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.PageSizePaper;
+import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
+import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
+import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
+import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTPageNumber;
+import org.docx4j.wml.CTRel;
 import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.SectPr;
@@ -69,7 +80,7 @@ import org.docx4j.wml.SectPr;
 public class MailMerger {
 
 	private static Logger log = Logger.getLogger(MailMerger.class);		
-	
+
 	/**
 	 * A "poor man's" approach, which generates the mail merge  
 	 * results as a single docx, and just hopes for the best.
@@ -82,11 +93,54 @@ public class MailMerger {
 	 */
 	public static WordprocessingMLPackage getConsolidatedResultCrude(WordprocessingMLPackage input, 
 			List<Map<DataFieldName, String>> data) throws Docx4JException {
+		return getConsolidatedResultCrude(input, data, false);
+	}
+	
+	/**
+	 * A "poor man's" approach, which generates the mail merge  
+	 * results as a single docx, and just hopes for the best.
+	 * Images and hyperlinks should be ok. But numbering 
+	 * will continue, as will footnotes/endnotes. 
+	 * @param input
+	 * @param data
+	 * @return
+	 * @throws Docx4JException
+	 * @ since 2.8.1
+	 */
+	public static WordprocessingMLPackage getConsolidatedResultCrude(WordprocessingMLPackage input, 
+			List<Map<DataFieldName, String>> data, boolean processHeadersAndFooters) throws Docx4JException {
 		
-		// Just MDP for now
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		List<List<Object>> results = perform(input.getMainDocumentPart(), data );
+		System.out.println("complexified: " + XmlUtils.marshaltoString(input.getMainDocumentPart().getJaxbElement(), true));
+		List<List<Object>> results = performOverList(input.getMainDocumentPart().getContent(), data );
 
+		Map<CTRel, JaxbXmlPart> hfTemplates = null;
+		BooleanDefaultTrue titlePage = null;
+		if (processHeadersAndFooters) {
+			// then we need a clone/template of the headers/footers
+			// in the first section
+			
+			hfTemplates = new HashMap<CTRel, JaxbXmlPart>();
+			
+			SectionWrapper sw = input.getDocumentModel().getSections().get(0);
+			SectPr sectPr = sw.getSectPr();
+			
+			List<CTRel> hdrFtrRefs = sectPr.getEGHdrFtrReferences();
+			titlePage = sectPr.getTitlePg();
+			
+			for (CTRel rel : hdrFtrRefs) {
+				String relId = rel.getId();
+				log.debug("for h|f relId: " + relId);
+				
+				JaxbXmlPart part = (JaxbXmlPart)input.getMainDocumentPart().getRelationshipsPart().getPart(relId);
+				FieldsPreprocessor.complexifyFields(part );
+				
+				System.out.println("complexified: " + XmlUtils.marshaltoString(part.getJaxbElement(), true));
+				
+				hfTemplates.put(rel, part);
+			}
+		}
+		
 		// Prepare for cloning
 		OpcPackage result = null;
 		
@@ -100,30 +154,86 @@ public class MailMerger {
 		WordprocessingMLPackage target = WordprocessingMLPackage.load(
 				new ByteArrayInputStream(template));
 		SectPr documentSeparator = getDocumentSeparator(target);
+		if (processHeadersAndFooters) {
+			if (titlePage!=null
+					&& titlePage.isVal()) {
+				documentSeparator.setTitlePg(titlePage);
+			}
+			documentSeparator.getEGHdrFtrReferences().clear();
+		}
 		target.getMainDocumentPart().getContent().clear();
 		
+		/*
+		 * What we're doing, effectively, is doing the 
+		 * main content in a single hit (ie for all
+		 * instances), and then, for each instance,
+		 * doing the headers/footers.
+		 * 
+		 * It is this way because that is how the code
+		 * has evolved.
+		 * 
+		 * Since we have to do the headers/footers 
+		 * instance by instance, it would probably
+		 * be neater to do the main content at 
+		 * the same time (ie instead of using 
+		 * performOverList at the start of this method).
+		 */
+		
+		int i = 0;
 		for (List<Object> content : results) {
 						
 			// now inject the content
 			target.getMainDocumentPart().getContent().addAll(content);
 			
-			// for all but last document
-			if (!content.equals(results.get(results.size()-1))) {
-				// add sectPr to final paragraph
-				Object last = content.get( content.size()-1);
-				P lastP = null;
-				if (last instanceof P) {
-					lastP = (P)last;
-				} else {
-					lastP = Context.getWmlObjectFactory().createP();
-					target.getMainDocumentPart().getContent().add(lastP);	
-				}
-				if (lastP.getPPr()==null) {
-					lastP.setPPr(Context.getWmlObjectFactory().createPPr());				
-				}
-				lastP.getPPr().setSectPr(documentSeparator);
+			// add sectPr to final paragraph
+			Object last = content.get( content.size()-1);
+			P lastP = null;
+			if (last instanceof P) {
+				lastP = (P)last;
+			} else {
+				lastP = Context.getWmlObjectFactory().createP();
+				target.getMainDocumentPart().getContent().add(lastP);	
 			}
+			if (lastP.getPPr()==null) {
+				lastP.setPPr(Context.getWmlObjectFactory().createPPr());				
+			}
+			SectPr thisSection = XmlUtils.deepCopy(documentSeparator);
+			lastP.getPPr().setSectPr(thisSection);
+			
+			if (processHeadersAndFooters) {
+				for( CTRel ctRel : hfTemplates.keySet()) {
+					
+					// Create a suitable part
+					JaxbXmlPart part = hfTemplates.get(ctRel);
+					JaxbXmlPart clonedPart = null;
+					if (part instanceof HeaderPart) {
+						clonedPart = new HeaderPart();
+						clonedPart.setJaxbElement(Context.getWmlObjectFactory().createHdr());
+					} else if (part instanceof FooterPart) {
+						clonedPart = new FooterPart();
+						clonedPart.setJaxbElement(Context.getWmlObjectFactory().createFtr());
+					}
+					
+					// Populate it
+					List<Object> newContent = performOnInstance(
+							((ContentAccessor)part).getContent(), 
+							data.get(i) );	
+					((ContentAccessor)clonedPart).getContent().addAll(newContent);
+					
+					// Add it
+					Relationship rel = target.getMainDocumentPart().addTargetPart(clonedPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
+					
+					// Now add CTRel!
+					CTRel newHfRef = XmlUtils.deepCopy(ctRel);
+					newHfRef.setId(rel.getId());
+					
+					thisSection.getEGHdrFtrReferences().add(newHfRef);
+					
+				}
+			}
+			i++;
 		}
+		
 		
 		return target;
 	}
@@ -188,7 +298,7 @@ public class MailMerger {
 		
 		// Just MDP for now
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		List<List<Object>> results = perform(input.getMainDocumentPart(), data );
+		List<List<Object>> results = performOverList(input.getMainDocumentPart().getContent(), data );
 		
 		// Prepare for cloning
 		OpcPackage result = null;
@@ -226,73 +336,82 @@ public class MailMerger {
 	 * @return
 	 * @throws Docx4JException 
 	 */
-	private static List<List<Object>> perform(ContentAccessor contentList, 
+	private static List<List<Object>> performOverList(List<Object> contentList, 
 			List<Map<DataFieldName, String>> data ) throws Docx4JException {
 		
 				
 		List<List<Object>> results = new ArrayList<List<Object>>();
 		for (Map<DataFieldName, String> datamap : data) {
 			
-			// We need our fieldRefs point to the correct objects;
-			// the easiest way to do this is to create them after cloning!
-			
-			// to facilitate cloning, wrap the list in a body
-			Body shell = Context.getWmlObjectFactory().createBody();
-			shell.getContent().addAll(contentList.getContent());
-			Body shellClone = (Body)XmlUtils.deepCopy(shell);
-			
-			// find fields
-			FieldLocator fl = new FieldLocator();
-			new TraversalUtil(shellClone, fl);
-			log.info("Found " + fl.getStarts().size() + " fields ");
-			
-			
-			// canonicalise and setup fieldRefs 
-			List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
-			for( P p : fl.getStarts() ) {
-				int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
-				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				System.out.println("NewP length: " + newP.getContent().size() );
-				((ContentAccessor)p.getParent()).getContent().set(index, newP);
-			}
-			
-			// Populate
-			for (FieldRef fr : fieldRefs) {
-				
-				String instr = fr.getInstr();
-				if ( isMergeField(instr) ) {
-
-					// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
-					// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
-					
-					String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
-					tmp = tmp.trim();
-					String key  = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
-					log.info("Key: '" + key + "'");
-					
-					String val = datamap.get( new DataFieldName(key));
-					
-					if (val==null) {
-						log.warn("Couldn't find value for key: '" + key + "'");
-					} else {
-						fr.setResult(val);
-					}
-					
-					// If doing an actual mail merge, the begin-separate run is removed, as is the end run
-					fr.getParent().getContent().remove(fr.getBeginRun());
-					fr.getParent().getContent().remove(fr.getEndRun());
-					
-//					System.out.println(XmlUtils.marshaltoString(
-//							fr.getParent(), true, true));
-					
-				}
-			}
-
-			results.add(shellClone.getContent());
+			results.add(
+					performOnInstance(contentList, datamap));
 		}
 		
 		return results;
 	}
+	
+	private static List<Object> performOnInstance(List<Object> contentList, 
+			Map<DataFieldName, String> datamap ) throws Docx4JException {
+		
+		// We need our fieldRefs point to the correct objects;
+		// the easiest way to do this is to create them after cloning!
+		
+		// to facilitate cloning, wrap the list in a body
+		Body shell = Context.getWmlObjectFactory().createBody();
+		shell.getContent().addAll(contentList);
+		Body shellClone = (Body)XmlUtils.deepCopy(shell);
+		
+		// find fields
+		FieldLocator fl = new FieldLocator();
+		new TraversalUtil(shellClone, fl);
+		log.info("Found " + fl.getStarts().size() + " fields ");
+		
+		
+		// canonicalise and setup fieldRefs 
+		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
+		for( P p : fl.getStarts() ) {
+			int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
+			P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+			System.out.println("NewP length: " + newP.getContent().size() );
+			((ContentAccessor)p.getParent()).getContent().set(index, newP);
+		}
+		
+		// Populate
+		for (FieldRef fr : fieldRefs) {
+			
+			String instr = fr.getInstr();
+			if ( isMergeField(instr) ) {
+
+				// eg <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse \* MERGEFORMAT </w:instrText>
+				// or <w:instrText xml:space="preserve"> MERGEFIELD  Kundenstrasse</w:instrText>
+				
+				String tmp = instr.substring( instr.indexOf("MERGEFIELD") + 10);
+				tmp = tmp.trim();
+				String key  = tmp.indexOf(" ") >-1 ? tmp.substring(0, tmp.indexOf(" ")) : tmp ;
+				log.info("Key: '" + key + "'");
+				
+				String val = datamap.get( new DataFieldName(key));
+				
+				if (val==null) {
+					log.warn("Couldn't find value for key: '" + key + "'");
+				} else {
+					fr.setResult(val);
+				}
+				
+				// If doing an actual mail merge, the begin-separate run is removed, as is the end run
+				fr.getParent().getContent().remove(fr.getBeginRun());
+				fr.getParent().getContent().remove(fr.getEndRun());
+				
+//				System.out.println(XmlUtils.marshaltoString(
+//						fr.getParent(), true, true));
+				
+			}
+		}
+		
+		return shellClone.getContent();
+
+	}
+	
 
 	public static boolean isMergeField(String type) {
 	

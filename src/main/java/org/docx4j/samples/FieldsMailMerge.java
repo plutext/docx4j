@@ -38,13 +38,13 @@ public class FieldsMailMerge {
 		
 		System.out.println(XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true));
 
-		WordprocessingMLPackage output = org.docx4j.model.fields.merge.MailMerger.getConsolidatedResultCrude(wordMLPackage, data);
+		WordprocessingMLPackage output = org.docx4j.model.fields.merge.MailMerger.getConsolidatedResultCrude(wordMLPackage, data, true);
 		
 		
 		System.out.println(XmlUtils.marshaltoString(output.getMainDocumentPart().getJaxbElement(), true, true));
 		
 		output.save(new java.io.File(
-				System.getProperty("user.dir") + "/mergefield1-OUT.docx") );
+				System.getProperty("user.dir") + "/OUT_FieldsMailMerge.docx") );
 		
 	}
 

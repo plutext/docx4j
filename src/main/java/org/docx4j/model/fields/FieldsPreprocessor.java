@@ -130,6 +130,8 @@ public class FieldsPreprocessor {
 		
 		FieldRef currentField = null;
 		
+		boolean seenSeparate=false;
+		
 		for (Object o : p.getContent() ) {
 			
 			if ( o instanceof R ) {
@@ -138,6 +140,9 @@ public class FieldsPreprocessor {
 				for (Object o2 : existingRun.getContent() ) {
 
 					if (isCharType(o2, STFldCharType.BEGIN)) {
+						
+//						log.debug("begin.. ");
+						seenSeparate = false;
 						
 						depth++;
 						if (depth==1 ) { 
@@ -162,6 +167,25 @@ public class FieldsPreprocessor {
 					}
 					else if (isCharType(o2, STFldCharType.END)) {
 						
+//						log.debug(".. end ");
+						
+						if (!seenSeparate) {
+//							log.debug(".. ADDING SEP ..  ");
+							// Word 2010 can produce a docx where:
+							//  <w:r>
+							//    <w:fldChar w:fldCharType="separate"/>
+							//  </w:r>
+							// is missing, so add it
+							R separateR = Context.getWmlObjectFactory().createR();							
+							FldChar fldChar = Context.getWmlObjectFactory().createFldChar();
+							fldChar.setFldCharType(STFldCharType.SEPARATE);
+							newR.getContent().add(fldChar);
+							newP.getContent().add(separateR);
+							
+							newR = Context.getWmlObjectFactory().createR();
+							currentField.setResultsSlot(newR); 
+						}
+						
 						depth--;
 						if (depth==0 ) {
 							// Top level field end - gets its own w:r
@@ -179,6 +203,10 @@ public class FieldsPreprocessor {
 						}
 						
 					} else if (isCharType(o2, STFldCharType.SEPARATE)) {
+						
+//						log.debug(".. sep ..  ");
+						seenSeparate = true;
+						
 						newR.getContent().add(o2);
 						if (depth==1 ) {
 							// Top level field separator
@@ -194,6 +222,8 @@ public class FieldsPreprocessor {
 						}
 					} else if (o2 instanceof JAXBElement
 							&& ((JAXBElement)o2).getName().equals(_RInstrText_QNAME)) {
+						
+//						log.debug("Processing " +((JAXBElement<Text>)o2).getValue().getValue() );
 						
 						currentField.setInstrText( (JAXBElement<Text>)o2);
 
@@ -229,6 +259,9 @@ public class FieldsPreprocessor {
 				&& !newP.getContent().contains(newR) ) {
 			newP.getContent().add(newR);
 		}
+		
+//		log.debug(XmlUtils.marshaltoString(newP, true));
+		
 		return newP;
 	}
 	
