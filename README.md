@@ -20,8 +20,19 @@ It uses JAXB to create the Java representation.
 - Apply transforms, including common filters
 - Font support (font substitution, and use of any fonts embedded in the document) 
 
-Where do I get it?
-------------------
+How do I build docx4j?
+----------------------
+
+Get it from GitHub, at https://github.com/plutext/docx4j
+For more details, see http://www.docx4java.org/blog/2012/05/docx4j-from-github-in-eclipse/
+
+If you are working with the source code, please join the developer
+mailing list:
+
+        docx4j-dev-subscribe@docx4java.org
+
+Where do I get a binary?
+------------------------
 
 http://www.docx4java.org/downloads.html
 
@@ -35,11 +46,11 @@ Where to get help?
 
 http://www.docx4java.org/forums or StackOverflow (use tag 'docx4j')
 
-How do I build docx4j?
-----------------------
+To subscribe, send an email to docx4j-user-subscribe@docx4java.org
 
-Get it from GitHub, at https://github.com/plutext/docx4j
-For more details, see http://www.docx4java.org/blog/2012/05/docx4j-from-github-in-eclipse/
+The forum is gatewayed to a mailing list, so you can interact via your email
+client if you prefer.  To subscribe, send an email to docx4j-user-subscribe@docx4java.org
+
 
 Legal Information
 -----------------
