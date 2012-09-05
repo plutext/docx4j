@@ -63,8 +63,6 @@ import org.docx4j.wml.SectPr;
  * will continue, as will footnotes/endnotes. 
  * 
  * LIMITATIONS:
- * - currently only applied to main document part
- *   (easily extended)
  * - no support for text before (\b) and text after (\f)
  *   switches
  * - no support for \m and \v switches
@@ -103,6 +101,8 @@ public class MailMerger {
 	 * will continue, as will footnotes/endnotes. 
 	 * @param input
 	 * @param data
+	 * @param processHeadersAndFooters process headers and footers in FIRST section only.
+	 * If you have multiple sections in your input docx, performMerge is a better approach
 	 * @return
 	 * @throws Docx4JException
 	 * @ since 2.8.1
@@ -291,36 +291,97 @@ public class MailMerger {
 		   return sectPr;
 	   }	
 	
-	public static List<WordprocessingMLPackage> getResults(WordprocessingMLPackage input, 
-			List<Map<DataFieldName, String>> data) throws Docx4JException {
+//	public static List<WordprocessingMLPackage> getResults(WordprocessingMLPackage input, 
+//			List<Map<DataFieldName, String>> data) throws Docx4JException {
+//		
+//		List<WordprocessingMLPackage> pkgs = new ArrayList<WordprocessingMLPackage>();
+//		
+//		// Just MDP for now
+//		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
+//		List<List<Object>> results = performOverList(input.getMainDocumentPart().getContent(), data );
+//		
+//		// Prepare for cloning
+//		OpcPackage result = null;
+//		
+//		// Zip it up
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		SaveToZipFile saver = new SaveToZipFile(input);
+//		saver.save(baos);
+//		byte[] template = baos.toByteArray();
+//		
+//		for (List<Object> content : results) {
+//			
+//			WordprocessingMLPackage target = WordprocessingMLPackage.load(
+//					new ByteArrayInputStream(template));
+//			pkgs.add(target);			
+//			
+//			// now inject the content
+//			target.getMainDocumentPart().getContent().clear();
+//			target.getMainDocumentPart().getContent().addAll(content);
+//		}
+//		
+//		return pkgs;
+//	}
+
+	/**
+	 * Perform merge on a single instance.
+	 * 
+	 * This is the best approach, if your input has headers/footers in
+	 * multiple sections.
+	 * 
+	 * If you are using MergeDocx, you can use that to join the 
+	 * instances into a single docx.
+	 * 
+	 * WARNING: The input docx will be modified, so input a copy if that is a problem.
+	 * This is left to the user, since that can potentially be more efficient, than
+	 * doing it here.
+	 * 
+	 * @param input
+	 * @param data
+	 * @param processHeadersAndFooters
+	 * @return
+	 * @throws Docx4JException
+	 */
+	public static void performMerge(WordprocessingMLPackage input, 
+			Map<DataFieldName, String> data, boolean processHeadersAndFooters ) throws Docx4JException {
 		
-		List<WordprocessingMLPackage> pkgs = new ArrayList<WordprocessingMLPackage>();
+		// HOWTO Clone the input docx
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		SaveToZipFile saver = new SaveToZipFile(input);
+//		saver.save(baos);
+//		byte[] template = baos.toByteArray();
+//		WordprocessingMLPackage target = WordprocessingMLPackage.load(
+//				new ByteArrayInputStream(template));
 		
-		// Just MDP for now
+		// MDP
 		FieldsPreprocessor.complexifyFields(input.getMainDocumentPart() );
-		List<List<Object>> results = performOverList(input.getMainDocumentPart().getContent(), data );
+		List<Object> mdpResults = performOnInstance(input.getMainDocumentPart().getContent(), data );
+		input.getMainDocumentPart().getContent().clear();
+		input.getMainDocumentPart().getContent().addAll(mdpResults);
 		
-		// Prepare for cloning
-		OpcPackage result = null;
-		
-		// Zip it up
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		SaveToZipFile saver = new SaveToZipFile(input);
-		saver.save(baos);
-		byte[] template = baos.toByteArray();
-		
-		for (List<Object> content : results) {
+		if (processHeadersAndFooters) {
 			
-			WordprocessingMLPackage target = WordprocessingMLPackage.load(
-					new ByteArrayInputStream(template));
-			pkgs.add(target);			
-			
-			// now inject the content
-			target.getMainDocumentPart().getContent().clear();
-			target.getMainDocumentPart().getContent().addAll(content);
+			RelationshipsPart rp = input.getMainDocumentPart().getRelationshipsPart();
+			for ( Relationship r : rp.getJaxbElement().getRelationship()  ) {
+				
+				if (r.getType().equals(Namespaces.HEADER)
+						|| r.getType().equals(Namespaces.FOOTER)) {
+					
+					JaxbXmlPart part = (JaxbXmlPart)rp.getPart(r);
+					
+					FieldsPreprocessor.complexifyFields(part );
+					List<Object> results = performOnInstance(
+							((ContentAccessor)part).getContent(), data );
+					((ContentAccessor)part).getContent().clear();
+					((ContentAccessor)part).getContent().addAll(results);
+					
+					System.out.println(XmlUtils.marshaltoString(part.getJaxbElement(), true));
+					
+				}			
+			}		
 		}
-		
-		return pkgs;
+			
+			
 	}
 	
 	/**
