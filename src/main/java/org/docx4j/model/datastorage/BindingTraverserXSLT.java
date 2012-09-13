@@ -482,11 +482,11 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			return null;
 		}
 		try {
-			String r = part.getData().xpathGetString(xpath, prefixMappings);
-			log.debug(xpath + " yielded result " + r);
+			String xpResult = part.getData().xpathGetString(xpath, prefixMappings);
+			log.debug(xpath + " yielded result " + xpResult);
 			
 			// Base64 decode it
-			byte[] bytes = Base64.decodeBase64( r.getBytes("UTF8") );
+			byte[] bytes = Base64.decodeBase64( xpResult.getBytes("UTF8") );
 			
 			// Create image part and add it
 	        BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wmlPackage, sourcePart, bytes);
@@ -567,7 +567,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 					p.getContent().add(run);
 					document = XmlUtils.marshaltoW3CDomDocument(p);						
 				} else if (contentChild.equals("r")) {
-					document = XmlUtils.marshaltoW3CDomDocument(r);						
+					document = XmlUtils.marshaltoW3CDomDocument(run);						
 				} else {
 					log.error("how to inject image for unexpected sdt's content: " + contentChild);					
 				}
@@ -740,16 +740,22 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 			try {
 				date = (Date)dateTimeFormat.parse(r);
 			} catch (ParseException e) {
-				log.warn(e.getMessage());
-				date = new Date();
-				
-				// <w:color w:val="FF0000"/>
-				rPr = factory.createRPr();
-				Color colorRed = factory.createColor();
-				colorRed.setVal("FF0000");
-				rPr.setColor(colorRed);
+				try {
+					// 2012-08-28
+					DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+					date = (Date) dateFormat.parse(r);
+				} catch (ParseException e2) {
+					log.warn(e.getMessage());
+					date = new Date();
+
+					// <w:color w:val="FF0000"/>
+					rPr = factory.createRPr();
+					Color colorRed = factory.createColor();
+					colorRed.setVal("FF0000");
+					rPr.setColor(colorRed);
+				}
 			}
-			
+
 			String result = formatter.format(date);
 			
 			org.docx4j.wml.R  run = factory.createR();	
