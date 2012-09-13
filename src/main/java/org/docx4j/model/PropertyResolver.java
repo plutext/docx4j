@@ -638,7 +638,8 @@ public class PropertyResolver {
 		
 		PPr expressPPr = s.getPPr();
 		if (expressPPr==null) {
-			log.error("style: " + styleId + " has no PPr");
+			// A paragraph style may have no w:pPr component
+			log.debug("style: " + styleId + " has no PPr");
 			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
 			resolvedPPr = resolvedStylePPrComponent.get(normalId);
 			return resolvedPPr;
