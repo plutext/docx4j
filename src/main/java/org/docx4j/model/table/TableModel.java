@@ -21,23 +21,28 @@
 package org.docx4j.model.table;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
+import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.datastorage.OpenDoPEHandler;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.CTSdtRow;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
+import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblGrid;
@@ -51,6 +56,7 @@ import org.docx4j.wml.TcPrInner.GridSpan;
 import org.docx4j.wml.TcPrInner.VMerge;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -300,63 +306,197 @@ public class TableModel extends Model {
 		
 		
 		NodeList cellContents = content.getChildNodes(); // the w:tr
-		List<Object> rows = tbl.getEGContentRowContent();
-		// int i = 0;
+		
+		TrFinder trFinder = new TrFinder();
+		new TraversalUtil(tbl, trFinder);
+		
 		int r = 0;
-		for (Object o : rows) {
-			Tr tr = null;
-			if (o instanceof org.docx4j.wml.Tr) {
+		for (Tr tr : trFinder.trList) {
 				startRow();
-				tr = (org.docx4j.wml.Tr) o;
 				handleRow(cellContents, tr, r);
 				r++;
-			} else if (o instanceof javax.xml.bind.JAXBElement
-					&& ((JAXBElement) o).getDeclaredType().getName().equals(
-							"org.docx4j.wml.Tr")) {
-				startRow();
-				tr = (org.docx4j.wml.Tr) ((JAXBElement) o).getValue();
-				handleRow(cellContents, tr, r);
-				r++;
-			} else if (o instanceof javax.xml.bind.JAXBElement
-					&& ((JAXBElement) o).getDeclaredType().getName().equals(
-							"org.docx4j.wml.CTSdtRow")) {
-
-				CTSdtRow sdt = (org.docx4j.wml.CTSdtRow) ((JAXBElement) o).getValue();
-
-				for (Object content0 : sdt.getSdtContent().getContent()) {
-
-					if (content0 instanceof org.docx4j.wml.Tr) {
-						startRow();
-						tr = (org.docx4j.wml.Tr) content0;
-						handleRow(cellContents, tr, r);
-						r++;
-					} else {
-						log.warn("Unexpected " + content0.getClass().getName());
-					}
-				}
-
-			} else {
-				// What?
-				if (o instanceof javax.xml.bind.JAXBElement) {
-					if (((JAXBElement) o).getDeclaredType().getName().equals(
-							"org.docx4j.wml.CTMarkupRange")) {
-						// Ignore w:bookmarkEnd
-					} else {
-						log
-								.warn("TODO - skipping JAXBElement:  "
-										+ ((JAXBElement) o).getDeclaredType()
-												.getName());
-						log.debug(XmlUtils.marshaltoString(o, true));
-					}
-				} else {
-					log.warn("TODO - skipping:  " + o.getClass().getName());
-					log.debug(XmlUtils.marshaltoString(o, true));
-				}
-				continue;
-			}
-
 		}
 	}
+	
+	static class TrFinder extends CallbackImpl {
+		
+		List<Tr> trList = new ArrayList<Tr>();  
+				
+		@Override
+		public List<Object> apply(Object o) {
+			
+			if (o instanceof Tr ) {
+				
+				trList.add((Tr)o);
+			}			
+			return null; 
+		}
+	}
+	
+	static class TcFinder extends CallbackImpl {
+		
+		List<Tc> tcList = new ArrayList<Tc>();  
+				
+		@Override
+		public List<Object> apply(Object o) {
+			
+			if (o instanceof Tc ) {
+				
+				tcList.add((Tc)o);
+			}			
+			return null; 
+		}
+	}
+	
+	/*
+	 * TrFinder and TcFinder can find tr and tc in a complex
+	 * case such as the following:
+	 * 
+		    <w:tbl>
+		      <w:tblPr>
+		        <w:tblStyle w:val="TableGrid"/>
+		        <w:tblW w:type="auto" w:w="0"/>
+		        <w:tblLook w:val="04A0"/>
+		      </w:tblPr>
+		      <w:tblGrid>
+		        <w:gridCol w:w="4621"/>
+		        <w:gridCol w:w="4621"/>
+		      </w:tblGrid>
+		      <w:tr w:rsidTr="005051A3" w:rsidR="005051A3">
+		        <w:tc>
+		          <w:tcPr>
+		            <w:tcW w:type="dxa" w:w="4621"/>
+		          </w:tcPr>
+		          <w:p w:rsidRDefault="005051A3" w:rsidR="005051A3">
+		            <w:r>
+		              <w:t>Desscription</w:t>
+		            </w:r>
+		          </w:p>
+		        </w:tc>
+		        <w:tc>
+		          <w:tcPr>
+		            <w:tcW w:type="dxa" w:w="4621"/>
+		          </w:tcPr>
+		          <w:p w:rsidRDefault="005051A3" w:rsidR="005051A3">
+		            <w:r>
+		              <w:t>Price</w:t>
+		            </w:r>
+		          </w:p>
+		        </w:tc>
+		      </w:tr>
+		      <w:sdt>
+		        <w:sdtPr>
+		          <w:alias w:val="REPEAT tr"/>
+		          <w:tag w:val="od:rptd=hU9bp&amp;od:RptInst=2"/>
+		          <w:id w:val="65990884"/>
+		        </w:sdtPr>
+		        <w:sdtContent>
+		          <w:tr w:rsidTr="005051A3" w:rsidR="005051A3">
+		            <w:sdt>
+		              <w:sdtPr>
+		                <w:alias w:val="desc"/>
+		                <w:tag w:val="od:xpath=NFSsi_0"/>
+		                <w:dataBinding w:storeItemID="{80261315-781E-4194-879C-F78D116D6A5E}" w:xpath="/oda:answers/oda:repeat[@qref='tr_oB']/oda:row[1][1]/oda:answer[@id='desc_UM']" w:prefixMappings="xmlns:oda='http://opendope.org/answers'"/>
+		                <w:text w:multiLine="true"/>
+		                <w:id w:val="1529259979"/>
+		              </w:sdtPr>
+		              <w:sdtContent>
+		                <w:tc>
+		                  <w:tcPr>
+		                    <w:tcW w:type="dxa" w:w="4621"/>
+		                  </w:tcPr>
+		                  <w:p>
+		                    <w:r>
+		                      <w:t>banana</w:t>
+		                    </w:r>
+		                  </w:p>
+		                </w:tc>
+		              </w:sdtContent>
+		            </w:sdt>
+		            <w:bookmarkStart w:name="_GoBack" w:displacedByCustomXml="next" w:id="0"/>
+		            <w:bookmarkEnd w:displacedByCustomXml="next" w:id="0"/>
+		            <w:sdt>
+		              <w:sdtPr>
+		                <w:alias w:val="price"/>
+		                <w:tag w:val="od:xpath=OhZO5_0"/>
+		                <w:dataBinding w:storeItemID="{80261315-781E-4194-879C-F78D116D6A5E}" w:xpath="/oda:answers/oda:repeat[@qref='tr_oB']/oda:row[1][1]/oda:answer[@id='price_a7']" w:prefixMappings="xmlns:oda='http://opendope.org/answers'"/>
+		                <w:text w:multiLine="true"/>
+		                <w:id w:val="494684987"/>
+		              </w:sdtPr>
+		              <w:sdtContent>
+		                <w:tc>
+		                  <w:tcPr>
+		                    <w:tcW w:type="dxa" w:w="4621"/>
+		                  </w:tcPr>
+		                  <w:p>
+		                    <w:r>
+		                      <w:t>10</w:t>
+		                    </w:r>
+		                  </w:p>
+		                </w:tc>
+		              </w:sdtContent>
+		            </w:sdt>
+		          </w:tr>
+		        </w:sdtContent>
+		      </w:sdt>
+		      <w:sdt>
+		        <w:sdtPr>
+		          <w:alias w:val="REPEAT tr"/>
+		          <w:tag w:val="od:rptd=hU9bp&amp;od:RptInst=2"/>
+		          <w:id w:val="351087912"/>
+		        </w:sdtPr>
+		        <w:sdtContent>
+		          <w:tr w:rsidTr="005051A3" w:rsidR="005051A3">
+		            <w:sdt>
+		              <w:sdtPr>
+		                <w:alias w:val="desc"/>
+		                <w:tag w:val="od:xpath=NFSsi_1"/>
+		                <w:dataBinding w:storeItemID="{80261315-781E-4194-879C-F78D116D6A5E}" w:xpath="/oda:answers/oda:repeat[@qref='tr_oB']/oda:row[2][1]/oda:answer[@id='desc_UM']" w:prefixMappings="xmlns:oda='http://opendope.org/answers'"/>
+		                <w:text w:multiLine="true"/>
+		                <w:id w:val="178426324"/>
+		              </w:sdtPr>
+		              <w:sdtContent>
+		                <w:tc>
+		                  <w:tcPr>
+		                    <w:tcW w:type="dxa" w:w="4621"/>
+		                  </w:tcPr>
+		                  <w:p>
+		                    <w:r>
+		                      <w:t>apple</w:t>
+		                    </w:r>
+		                  </w:p>
+		                </w:tc>
+		              </w:sdtContent>
+		            </w:sdt>
+		            <w:bookmarkStart w:name="_GoBack" w:displacedByCustomXml="next" w:id="0"/>
+		            <w:bookmarkEnd w:displacedByCustomXml="next" w:id="0"/>
+		            <w:sdt>
+		              <w:sdtPr>
+		                <w:alias w:val="price"/>
+		                <w:tag w:val="od:xpath=OhZO5_1"/>
+		                <w:dataBinding w:storeItemID="{80261315-781E-4194-879C-F78D116D6A5E}" w:xpath="/oda:answers/oda:repeat[@qref='tr_oB']/oda:row[2][1]/oda:answer[@id='price_a7']" w:prefixMappings="xmlns:oda='http://opendope.org/answers'"/>
+		                <w:text w:multiLine="true"/>
+		                <w:id w:val="1236330390"/>
+		              </w:sdtPr>
+		              <w:sdtContent>
+		                <w:tc>
+		                  <w:tcPr>
+		                    <w:tcW w:type="dxa" w:w="4621"/>
+		                  </w:tcPr>
+		                  <w:p>
+		                    <w:r>
+		                      <w:t>20</w:t>
+		                    </w:r>
+		                  </w:p>
+		                </w:tc>
+		              </w:sdtContent>
+		            </w:sdt>
+		          </w:tr>
+		        </w:sdtContent>
+		      </w:sdt>
+		    </w:tbl>
+	 */
+	
 
 	private void handleRow(NodeList cellContents, Tr tr, int r) {
 
@@ -366,64 +506,40 @@ public class TableModel extends Model {
 				&& tr.getTblPrEx().getTblCellSpacing() != null) {
 			borderConflictResolutionRequired = false;
 		}
-		List<Object> cells = tr.getEGContentCellContent();
+		
+		TcFinder tcFinder = new TcFinder();
+		new TraversalUtil(tr, tcFinder);
+		
+		//List<Object> cells = tr.getEGContentCellContent();
 		int c = 0;
 		System.out.println("Processing c " + c);
-		for (Object o2 : cells) {
-
-			Tc tc = null;
-			if (o2 instanceof org.docx4j.wml.Tc) {
-				tc = (org.docx4j.wml.Tc) o2;
-			} else if (o2 instanceof javax.xml.bind.JAXBElement
-					&& ((JAXBElement) o2).getDeclaredType().getName().equals(
-							"org.docx4j.wml.Tc")) {
-				tc = (org.docx4j.wml.Tc) ((JAXBElement) o2).getValue();
-			} else if (o2 instanceof javax.xml.bind.JAXBElement
-					&& ((JAXBElement) o2).getDeclaredType().getName().equals(
-							"org.docx4j.wml.CTSdtCell")) {
-				org.docx4j.wml.CTSdtCell sdtCell = (org.docx4j.wml.CTSdtCell) ((JAXBElement) o2)
-						.getValue();
-				Object o3 = sdtCell.getSdtContent().getContent()
-						.get(0);
-				if (o3 instanceof javax.xml.bind.JAXBElement
-						&& ((JAXBElement) o3).getDeclaredType().getName()
-								.equals("org.docx4j.wml.Tc")) {
-					tc = (org.docx4j.wml.Tc) ((JAXBElement) o3).getValue();
-				} else {
-					if (o3 instanceof javax.xml.bind.JAXBElement) {
-						log.warn("TODO - skipping JAXBElement:  "
-								+ ((JAXBElement) o3).getDeclaredType()
-										.getName());
-					} else {
-						log
-								.warn("TODO - skipping:  "
-										+ o3.getClass().getName());
-					}
-				}
-				if (sdtCell.getSdtContent().getContent().size() > 1)
-					log.warn("w:sdtContent contains more than 1 cell. TODO");
-			} else {
-				// What?
-				if (o2 instanceof javax.xml.bind.JAXBElement) {
-					log.warn("TODO - skipping JAXBElement:  "
-							+ ((JAXBElement) o2).getDeclaredType().getName());
-				} else {
-					log.warn("TODO - skipping:  " + o2.getClass().getName());
-				}
-				log.debug(XmlUtils.marshaltoString(o2, true));
-				continue;
-			}
+		for (Tc tc : tcFinder.tcList) {
 
 			Node wtrNode = cellContents.item(r); // w:tr
 			if (wtrNode==null ) {
 				System.out.println("Couldn't find item " + r);
 			}
-			addCell(tc, wtrNode.getChildNodes().item(c)); // the cell content
+			addCell(tc, getTc(wtrNode, c)); // the cell content
 			// addCell(tc, cellContents.item(i));
 			// i++;
 			c++;
 		}
 
+	}
+	
+	private Node getTc(Node wtrNode, int n) {
+		
+		int j = 0;		
+		for (int i=0; i<wtrNode.getChildNodes().getLength(); i++ ) {
+			
+			Node thisChild = wtrNode.getChildNodes().item(i);
+			
+			if (thisChild.getLocalName().equals("tc") ) {
+				if (j==n) return thisChild;
+				j++;
+			}			
+		}
+		return null;
 	}
 
 	/* (non-Javadoc)
