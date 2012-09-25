@@ -519,7 +519,7 @@ public class TableModel extends Model {
 			if (wtrNode==null ) {
 				System.out.println("Couldn't find item " + r);
 			}
-			addCell(tc, getTc(wtrNode, c)); // the cell content
+			addCell(tc, getTc(wtrNode, c, new IntRef(0))); // the cell content
 			// addCell(tc, cellContents.item(i));
 			// i++;
 			c++;
@@ -527,19 +527,45 @@ public class TableModel extends Model {
 
 	}
 	
-	private Node getTc(Node wtrNode, int n) {
+	/**
+	 * The tc could be inside something else, so find it recursively.
+	 * @param wtrNode
+	 * @param wanted
+	 * @param current
+	 * @return
+	 */
+	private Node getTc(Node wtrNode, int wanted, IntRef current) {
 		
-		int j = 0;		
 		for (int i=0; i<wtrNode.getChildNodes().getLength(); i++ ) {
 			
 			Node thisChild = wtrNode.getChildNodes().item(i);
 			
+			System.out.println("Looking at " + thisChild.getLocalName() + "; have encountered " + current.i);
+			
 			if (thisChild.getLocalName().equals("tc") ) {
-				if (j==n) return thisChild;
-				j++;
-			}			
+				if (current.i==wanted) return thisChild;
+				current.increment();
+			} else {
+				// could be inside
+				Node n = getTc(thisChild, wanted, current);
+				if (n!=null) return n;
+			}
 		}
 		return null;
+	}
+	
+	static class IntRef {
+		
+		IntRef(int i) {
+			this.i = i;
+		}
+		
+		int i;
+		
+		void increment() {
+			i++;
+		}
+		
 	}
 
 	/* (non-Javadoc)
