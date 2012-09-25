@@ -51,6 +51,13 @@ public class SdtWriter {
 	
 	static IdentityHandler identity = new IdentityHandler();
 	
+	private static Node debug(Node n) {
+		String xml = XmlUtils.w3CDomNodeToString(n);
+		log.debug("result: " + xml);
+		
+		return n;
+	}
+	
 	public static Node toNode(WordprocessingMLPackage wmlPackage,
     		NodeIterator sdtPrNodeIt,
 			NodeIterator childResults) throws TransformerException {
@@ -93,7 +100,7 @@ public class SdtWriter {
 				// Just return the contents!
 				result = identity.toNode(wmlPackage, null, null, childResults);
 			}
-			return result;
+			return debug(result);
 		}
 		
 		
@@ -112,7 +119,7 @@ public class SdtWriter {
 			
 			handler = handlers.get(key);
 			if (handler == null) {
-				log.error("No model registered for sdt tag key " + key + "; ignoring ..");
+				log.info("No model registered for sdt tag key " + key + "; ignoring ..");
 				continue;
 			} else {
 				log.debug("Using model " + handler.getClass().getName() + " for sdt tag key "
@@ -129,6 +136,7 @@ public class SdtWriter {
 		// Always apply handler called '**'
 		if (handlers.get("**")!=null) {
 			handler = handlers.get("**");			
+			log.info("applying handler '**' " );
 			if (result==null) {
 				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
 			} else {
@@ -141,15 +149,17 @@ public class SdtWriter {
 		if (result==null) {
 			if (handlers.get("*")!=null) {
 				// handler '*' only gets applied if no other one has been				
+				log.info("applying handler '*' " );
 				handler = handlers.get("*");			
 				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
 			} else {
 				// Just return the contents!
+				log.info("using identity " );
 				result = identity.toNode(wmlPackage, sdtPr, map, childResults);
 			}
 		}
 		
-		return result;
+		return debug(result);
 	}
 
 	/**
