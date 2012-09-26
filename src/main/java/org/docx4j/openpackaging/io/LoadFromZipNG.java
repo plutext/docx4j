@@ -520,6 +520,8 @@ public class LoadFromZipNG extends Load {
 				// first, as we do above.
 				part = ctm.getPart("/" + resolvedPartUri, rel);				
 
+				log.info("ctm returned " + part.getClass().getName() );
+				
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcThemePart);
@@ -605,7 +607,7 @@ public class LoadFromZipNG extends Load {
 														
 						} else {
 							
-							log.warn("No known part after all for CustomXmlPart " + o.getClass().getName());
+							log.error("TODO: handle known CustomXmlPart part  " + o.getClass().getName());
 
 							CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();					
 							is.reset();
@@ -615,8 +617,9 @@ public class LoadFromZipNG extends Load {
 						}
 						
 					} catch (javax.xml.bind.UnmarshalException ue) {
+
+						log.warn("No JAXB model for this CustomXmlDataStorage part; " + ue.getMessage()  );
 						
-						// No ...
 						CustomXmlDataStorage data = getCustomXmlDataStorageClass().factory();	
 						is.reset();
 						data.setDocument(is); // Not necessarily JAXB, that's just our method name
