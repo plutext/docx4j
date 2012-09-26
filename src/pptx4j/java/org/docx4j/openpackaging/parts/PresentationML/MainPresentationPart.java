@@ -28,6 +28,7 @@ import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.relationships.Relationship;
 import org.pptx4j.jaxb.Context;
 import org.pptx4j.model.SlideSizesWellKnown;
@@ -254,10 +255,26 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		return presentation;
 	}
 
-	public Presentation.SldIdLst.SldId addSlideIdListEntry(SlidePart slidePart) 
+	
+	/**
+	 * Add a slide to this presentation.
+	 * 
+	 * @param slidePart
+	 * @return
+	 * @throws InvalidFormatException
+	 */
+	public Presentation.SldIdLst.SldId addSlideIdListEntry(SlidePart slidePart) throws InvalidFormatException {
+		return addSlideIdListEntry(slidePart, AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS);
+	}
+
+	
+	/**
+	 * @since 2.8.1
+	 */		
+	public Presentation.SldIdLst.SldId addSlideIdListEntry(SlidePart slidePart, AddPartBehaviour mode) 
 		throws InvalidFormatException {	
 
-		Relationship rel = this.addTargetPart(slidePart);
+		Relationship rel = this.addTargetPart(slidePart, mode);
 		
 		Presentation.SldIdLst.SldId entry = Context.getpmlObjectFactory().createPresentationSldIdLstSldId();
 		
