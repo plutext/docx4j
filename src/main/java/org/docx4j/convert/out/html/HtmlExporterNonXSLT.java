@@ -192,7 +192,8 @@ public class HtmlExporterNonXSLT {
         		log.debug("computed number ResultTriple was null");
         	} else {
 				if (triple.getBullet() != null) {
-					numberText = (triple.getBullet() + " ");
+					//numberText = (triple.getBullet() + " ");
+					numberText = "\u2022  "; 
 				} else if (triple.getNumString() == null) {
 					log.error("computed NumString was null!");
 					numberText = ("?");
@@ -431,7 +432,8 @@ public class HtmlExporterNonXSLT {
 
 
 		inputfilepath = System.getProperty("user.dir")
-				+ "/sample-docs/word/sample-docx.xml";
+				+ "/hr.docx";
+//		+ "/sample-docs/word/sample-docx.xml";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
