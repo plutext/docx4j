@@ -269,6 +269,9 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 		
 		// Finally, add it to styles
 		this.jaxbElement.getStyle().add(pDefault);
+		log.debug("Added virtual style, id '" + pDefault.getStyleId() + "', name '"+ pDefault.getName() + "'");
+		
+		
     	
     }
     
