@@ -157,10 +157,26 @@ public class ContentTypeManager  {
 	private TreeMap<String, CTDefault> defaultContentType;
 
 	/**
+	 * @return the defaultContentType
+	 * @since 2.8.1
+	 */
+	public TreeMap<String, CTDefault> getDefaultContentType() {
+		return defaultContentType;
+	}
+
+	/**
 	 * Override content type tree.
 	 */
 	private TreeMap<URI, CTOverride> overrideContentType;
 	
+	/**
+	 * @return the overrideContentType
+	 * @since 2.8.1
+	 */
+	public TreeMap<URI, CTOverride> getOverrideContentType() {
+		return overrideContentType;
+	}
+
 	private static ObjectFactory ctFactory = new ObjectFactory();
 
 	public ContentTypeManager()  {
@@ -316,8 +332,12 @@ public class ContentTypeManager  {
 			return CreateDocPropsCustomPartObject(partName );
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_EXTENDEDPROPERTIES)) {
 			return CreateDocPropsExtendedPartObject(partName );
+			
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE)) {
+			
+			// NB, since this is just "application/xml", it 
 			return new org.docx4j.openpackaging.parts.CustomXmlDataStoragePart(new PartName(partName));
+			
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_CUSTOMXML_DATASTORAGEPROPERTIES)) {
 			return CreateCustomXmlDataStoragePropertiesPartObject(partName );			
 		} else if (contentType.equals(ContentTypes.OFFICEDOCUMENT_FONT)) {
@@ -381,20 +401,40 @@ public class ContentTypeManager  {
 		} else if (contentType.equals(ContentTypes.DRAWINGML_DIAGRAM_DRAWING)) {
 			return new org.docx4j.openpackaging.parts.DrawingML.DiagramDrawingPart(new PartName(partName));
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.drawing")) {
-			return JaxbDmlPart.newPartForContentType(contentType, partName);
+			try {
+				return JaxbDmlPart.newPartForContentType(contentType, partName);
+			} catch (Exception e) {
+				return new BinaryPart( new PartName(partName));				
+			}
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.presentationml")) {
-			return JaxbPmlPart.newPartForContentType(contentType, partName);
+			try {
+				return JaxbPmlPart.newPartForContentType(contentType, partName);
+			} catch (Exception e) {
+				return new BinaryPart( new PartName(partName));				
+			}
 		} else if (contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK)
 				|| contentType.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED)
 				|| contentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE)
 				|| contentType.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED)) { 
-			return new WorkbookPart(new PartName(partName));
+			try {
+				return new WorkbookPart(new PartName(partName));
+			} catch (Exception e) {
+				return new BinaryPart( new PartName(partName));				
+			}
+			
 		} else if (contentType.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml")) {
-			return JaxbSmlPart.newPartForContentType(contentType, partName);
+			try {
+				return JaxbSmlPart.newPartForContentType(contentType, partName);
+			} catch (Exception e) {
+				return new BinaryPart( new PartName(partName));				
+			}
 		} else if (contentType.equals(ContentTypes.DIGITAL_SIGNATURE_XML_SIGNATURE_PART)) {
 			return new org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart(new PartName(partName));
 		} else if (contentType.equals(ContentTypes.APPLICATION_XML)
 				|| partName.endsWith(".xml")) {
+			
+			// WARNING: not currently used!  See OFFICEDOCUMENT_CUSTOMXML_DATASTORAGE above.
+			
 			// Simple minded detection of XML content.
 			// If it turns out not to be XML, the zip loader
 			// will catch the error and load it as a binary part instead.
