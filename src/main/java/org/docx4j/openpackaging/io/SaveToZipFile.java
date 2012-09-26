@@ -363,12 +363,20 @@ public class SaveToZipFile {
 				if (!false) {
 					log.debug("Getting part /" + resolvedPartUri );
 					
-					Part part = p.getParts().get(new PartName("/" + resolvedPartUri));
+					//Part part = p.getParts().get(new PartName("/" + resolvedPartUri));
+					Part part = rp.getPart(r);
+						// 2012 09 26: If the part is actually attached to
+						// a different package, using this you can still get it.
+						// Use this 'feature' at your own risk!
 					
 					if (part==null) {
 						log.error("Part " + resolvedPartUri + " not found!");
 					} else {
 						log.debug(part.getClass().getName() );
+					}
+
+					if (!part.getPackage().equals(p)) {
+						log.warn("Part " + resolvedPartUri + " is attached to some other package");
 					}
 					
 					savePart(out, part);
