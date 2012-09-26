@@ -119,6 +119,9 @@ public class XmlUtils {
 		// javax.xml.transform.TransformerFactory
 		instantiateTransformerFactory();
 		
+		log.debug( System.getProperty("java.vendor") );
+		log.debug( System.getProperty("java.version") );
+		
 		// javax.xml.parsers.SAXParserFactory
 		String sp = Docx4jProperties.getProperty("javax.xml.parsers.SAXParserFactory");
 		if (sp!=null) {
@@ -142,6 +145,8 @@ public class XmlUtils {
 		
 			System.setProperty("javax.xml.parsers.SAXParserFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
+
+			log.info("Using com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl");
 			
 		} else {
 			log.warn("Using default SAXParserFactory: " + System.getProperty("javax.xml.parsers.SAXParserFactory" ));
@@ -173,6 +178,8 @@ public class XmlUtils {
 		
 			System.setProperty("javax.xml.parsers.DocumentBuilderFactory", 
 					"com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+
+			log.info("Using com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 			
 		} else {
 			log.warn("Using default DocumentBuilderFactory: " 
