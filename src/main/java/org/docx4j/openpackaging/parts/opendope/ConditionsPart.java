@@ -41,56 +41,56 @@ public class ConditionsPart extends JaxbCustomXmlDataStoragePart<org.opendope.co
 		return null;
 	}
 
-	/**
-	 * Extracts xpath object from condition.  
-	 * 
-	 * Note: this does NOT build an xpath corresponding to the condition
-	 * value, but rather, is typically used to identify
-	 * questions associated with the condition.
-	 * @param c
-	 * @param xPaths
-	 * @return
-	 * @throws InputIntegrityException
-	 */
-	public static List<org.opendope.xpaths.Xpaths.Xpath> getXPathsUsedInCondition(Condition c, org.opendope.xpaths.Xpaths xPaths) 
-		throws InputIntegrityException {
-		
-		List<org.opendope.xpaths.Xpaths.Xpath> xpaths = new ArrayList<org.opendope.xpaths.Xpaths.Xpath>(); 
-		
-		if (c.getXpathref()!=null) {
-			xpaths.add(XPathsPart.getXPathById(xPaths, c.getXpathref().getId())); 	
-			return xpaths;
-		} else if (c.getNot()!=null) {
-			
-			if (c.getNot().getXpathref()!=null) {
-				xpaths.add(XPathsPart.getXPathById(xPaths, c.getNot().getXpathref().getId())); 	
-				return xpaths;
-			} else {
-				throw new InputIntegrityException("Couldn't extract xpath from not in condition " + XmlUtils.marshaltoString(c, true) );							
-			}
-		}
-		throw new InputIntegrityException("Couldn't extract xpath from condition " + XmlUtils.marshaltoString(c, true) );
-		// TODO handle complex conditions
-	}	
-	
-	public static String buildEffectiveXPath(Condition c, org.opendope.xpaths.Xpaths xPaths) 
-			throws InputIntegrityException {
-			
-			//StringBuilder effectiveXPath = new StringBuilder(); 
-			
-			if (c.getXpathref()!=null) {
-				return XPathsPart.getXPathById(xPaths, c.getXpathref().getId()).getDataBinding().getXpath(); 	
-			} else if (c.getNot()!=null) {
-				
-				if (c.getNot().getXpathref()!=null) {
-					return "not(" + XPathsPart.getXPathById(xPaths, c.getNot().getXpathref().getId()).getDataBinding().getXpath()
-								+ ")";
-				} else {
-					throw new InputIntegrityException("Couldn't extract xpath from not in condition " + XmlUtils.marshaltoString(c, true) );							
-				}
-			}
-			throw new InputIntegrityException("Couldn't extract xpath from condition " + XmlUtils.marshaltoString(c, true) );
-			// TODO handle complex conditions
-		}	
+//	/**
+//	 * Extracts xpath object from condition.  
+//	 * 
+//	 * Note: this does NOT build an xpath corresponding to the condition
+//	 * value, but rather, is typically used to identify
+//	 * questions associated with the condition.
+//	 * @param c
+//	 * @param xPaths
+//	 * @return
+//	 * @throws InputIntegrityException
+//	 */
+//	public static List<org.opendope.xpaths.Xpaths.Xpath> getXPathsUsedInCondition(Condition c, org.opendope.xpaths.Xpaths xPaths) 
+//		throws InputIntegrityException {
+//		
+//		List<org.opendope.xpaths.Xpaths.Xpath> xpaths = new ArrayList<org.opendope.xpaths.Xpaths.Xpath>(); 
+//		
+//		if (c.getXpathref()!=null) {
+//			xpaths.add(XPathsPart.getXPathById(xPaths, c.getXpathref().getId())); 	
+//			return xpaths;
+//		} else if (c.getNot()!=null) {
+//			
+//			if (c.getNot().getXpathref()!=null) {
+//				xpaths.add(XPathsPart.getXPathById(xPaths, c.getNot().getXpathref().getId())); 	
+//				return xpaths;
+//			} else {
+//				throw new InputIntegrityException("Couldn't extract xpath from not in condition " + XmlUtils.marshaltoString(c, true) );							
+//			}
+//		}
+//		throw new InputIntegrityException("Couldn't extract xpath from condition " + XmlUtils.marshaltoString(c, true) );
+//		// TODO handle complex conditions
+//	}	
+//	
+//	public static String buildEffectiveXPath(Condition c, org.opendope.xpaths.Xpaths xPaths) 
+//			throws InputIntegrityException {
+//			
+//			//StringBuilder effectiveXPath = new StringBuilder(); 
+//			
+//			if (c.getXpathref()!=null) {
+//				return XPathsPart.getXPathById(xPaths, c.getXpathref().getId()).getDataBinding().getXpath(); 	
+//			} else if (c.getNot()!=null) {
+//				
+//				if (c.getNot().getXpathref()!=null) {
+//					return "not(" + XPathsPart.getXPathById(xPaths, c.getNot().getXpathref().getId()).getDataBinding().getXpath()
+//								+ ")";
+//				} else {
+//					throw new InputIntegrityException("Couldn't extract xpath from not in condition " + XmlUtils.marshaltoString(c, true) );							
+//				}
+//			}
+//			throw new InputIntegrityException("Couldn't extract xpath from condition " + XmlUtils.marshaltoString(c, true) );
+//			// TODO handle complex conditions
+//		}	
 	
 }

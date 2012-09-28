@@ -40,6 +40,7 @@ import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.Tag;
 import org.opendope.conditions.Condition;
+import org.opendope.conditions.Xpathref;
 
 
 /**
@@ -139,16 +140,20 @@ public class ContentControlsInfoStructure extends AbstractSample {
 						System.out.println(callback.indent + "  " + "Missing condition " + conditionId);
 					}
 					
-					org.opendope.conditions.Xpathref xpathRef = c.getXpathref();
-					if (xpathRef == null) {
-						System.out.println(callback.indent + "  " + "Condition " + c.getId() + " references a missing xpath!");
-					}
-
-					org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xpathRef.getId());
-					if (xpath==null) {
-						System.out.println(callback.indent + "  " + "XPath specified in condition '" + c.getId() + "' is missing!");
+					if (c.getParticle() instanceof org.opendope.conditions.Xpathref) {
+						org.opendope.conditions.Xpathref xpathRef = (Xpathref)c.getParticle();
+						if (xpathRef == null) {
+							System.out.println(callback.indent + "  " + "Condition " + c.getId() + " references a missing xpath!");
+						}
+						
+						org.opendope.xpaths.Xpaths.Xpath xpath = XPathsPart.getXPathById(xPaths, xpathRef.getId());
+						if (xpath==null) {
+							System.out.println(callback.indent + "  " + "XPath specified in condition '" + c.getId() + "' is missing!");
+						} else {
+							System.out.println(callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+						}
 					} else {
-						System.out.println(callback.indent + "  " +  xpath.getId() + ": " + xpath.getDataBinding().getXpath() );
+						System.out.println("Complex condition: " + XmlUtils.marshaltoString(c, true, true) );
 					}
 					
 				} else if (repeatId!=null ) {

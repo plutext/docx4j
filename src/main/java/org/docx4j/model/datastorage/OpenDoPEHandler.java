@@ -49,6 +49,7 @@ import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
+import org.docx4j.wml.SdtElement;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Tag;
@@ -618,7 +619,7 @@ public class OpenDoPEHandler {
 			Object parentUnwrapped = XmlUtils.unwrap(parent);
 			List children = getChildren(parentUnwrapped);
 			if (children == null) {
-				log.warn("no children: " + parentUnwrapped.getClass().getName());
+				log.debug("no children: " + parentUnwrapped.getClass().getName());
 				return;
 			} else {
 				for (Object o : children) {
@@ -631,7 +632,7 @@ public class OpenDoPEHandler {
 
 			children = getChildren(parentUnwrapped);
 			if (children == null) {
-				log.warn("no children: " + parentUnwrapped.getClass().getName());
+				log.debug("no children: " + parentUnwrapped.getClass().getName());
 			} else {
 				for (Object o : children) {
 
@@ -696,28 +697,8 @@ public class OpenDoPEHandler {
 			if (c == null) {
 				log.error("Missing condition " + conditionId);
 			}
-			org.opendope.xpaths.Xpaths.Xpath xpath = getXPathFromCondition(c);
-			
-			if (xpath==null) {
-				throw new InputIntegrityException("XPath specified in condition '" + c.getId() + "' is missing!");
-			}
-			
-//			if (xpath.getDataBinding().getXpath().contains("position()")) {
-//				// Defer processing this to binding handler!
-//				List<Object> newContent = new ArrayList<Object>();
-//				newContent.add(sdt);
-//				return newContent;				
-//			}
 
-			String val = BindingHandler.xpathGetString(wordMLPackage,
-					customXmlDataStorageParts, xpath.getDataBinding()
-							.getStoreItemID(), xpath.getDataBinding()
-							.getXpath(), xpath.getDataBinding()
-							.getPrefixMappings());
-
-			log.info("Got value: " + val);
-
-			if (new Boolean(val)) {
+			if ( c.evaluate(wordMLPackage, customXmlDataStorageParts, conditions, xPaths) ) {
 				log.debug("so keeping");
 
 				List<Object> newContent = new ArrayList<Object>();
@@ -834,26 +815,17 @@ public class OpenDoPEHandler {
 	}
 
 	private List<Object> obtainChildren(Object element) {
-		if (element instanceof ContentAccessor)
-			return ((ContentAccessor) element).getContent();
-
+		Object unwrapped = XmlUtils.unwrap(element); 
+		if (unwrapped instanceof ContentAccessor) {
+			return ((ContentAccessor) unwrapped).getContent();
+		} else if (unwrapped instanceof SdtElement) {
+			return ((SdtElement) unwrapped).getSdtContent().getContent();
+		}
 		log.warn("Don't know how to access the children of "
-				+ element.getClass().getName());
+				+ unwrapped.getClass().getName() );
 		return Collections.emptyList();
 	}
 
-	public org.opendope.xpaths.Xpaths.Xpath getXPathFromCondition(Condition c) {
-
-		org.opendope.conditions.Xpathref xpathRef = c.getXpathref();
-
-		if (xpathRef == null) {
-			log.error("Condition " + c.getId() + " references a missing xpath!");
-		}
-
-		// Now get the xpath
-		log.info("Condition references xpath with id " + xpathRef.getId());
-		return XPathsPart.getXPathById(xPaths, xpathRef.getId());
-	}
 
 	private List<Object> processRepeat(Object sdt,
 			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
@@ -1099,18 +1071,22 @@ public class OpenDoPEHandler {
 
 			if (conditionId != null) {
 
-				c = ConditionsPart.getConditionById(conditions, conditionId);
-				if (c == null) {
-					log.error("Missing condition " + conditionId);
-					throw new InputIntegrityException("Required condition '" + conditionId + "' is missing");
-				}
-
-				// TODO: this code assumes the condition contains
-				// a simple xpath
-				log.debug("Using condition"
-						+ XmlUtils.marshaltoString(c, true, true));
-				xpathObj = getXPathFromCondition(c);
-				thisXPath = xpathObj.getDataBinding().getXpath();
+//				c = ConditionsPart.getConditionById(conditions, conditionId);
+//				if (c == null) {
+//					log.error("Missing condition " + conditionId);
+//					throw new InputIntegrityException("Required condition '" + conditionId + "' is missing");
+//				}
+//
+//				// TODO: this code assumes the condition contains
+//				// a simple xpath
+//				log.debug("Using condition"
+//						+ XmlUtils.marshaltoString(c, true, true));
+//				xpathObj = getXPathFromCondition(c);
+//				thisXPath = xpathObj.getDataBinding().getXpath();
+				
+				processDescendantCondition( sdt,  xpathBase,
+						 index,  tag );
+				return;
 
 			} else if (repeatId != null) {
 
@@ -1129,6 +1105,10 @@ public class OpenDoPEHandler {
 				// not all sdt's need have a binding;
 				// they could be present in the docx for other purposes
 				return;
+				
+				// NB an OpenDoPE xpath tag (with no w:binding element)
+				// eg as created by authoring tool for a "count(" XPath
+				// ends up here.
 			}
 
 		} else {
@@ -1143,15 +1123,19 @@ public class OpenDoPEHandler {
 				log.error("XPaths didn't match for id " + bindingId + ": \n\r    " + thisXPath + "\n\rcf. " 
 						+ xpathObj.getDataBinding().getXpath());
 			}
+			
+			// 2012 09 20 - when did this break?
+			//thisXPath = xpathObj.getDataBinding().getXpath();
 		}
 
 //		System.out.println("xpathBase: " + xpathBase);
 //		System.out.println("index: " + index);
 //		System.out.println("thisXPath: " + thisXPath);
 		
+		
 		final String newPath = enhanceXPath(xpathBase, index + 1, thisXPath);
 
-//		System.out.println("newPath: " + newPath);
+		System.out.println("newPath: " + newPath);
 		
 		if (log.isDebugEnabled() && !thisXPath.equals(newPath)) {
 			log.debug("xpath prefix enhanced " + thisXPath + " to " + newPath);
@@ -1159,29 +1143,7 @@ public class OpenDoPEHandler {
 
 		if (binding == null) {
 
-			if (conditionId != null) {
-
-				// Create and add new condition
-				Condition newCondition = XmlUtils.deepCopy(c);
-				String newConditionId = conditionId + "_" + index;
-				newCondition.setId(newConditionId);
-				conditions.getCondition().add(newCondition);
-
-				// set sdt to use it
-				map.put(BINDING_ROLE_CONDITIONAL, newConditionId);
-				tag.setVal(QueryString.create(map));
-
-				// TODO: this code assumes the condition contains
-				// a simple xpath
-
-				// Clone the condition's xpath
-				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
-						newPath, xpathObj, index);
-
-				// Use it
-				newCondition.getXpathref().setId(newXPathObj.getId());
-
-			} else if (repeatId != null) {
+			if (repeatId != null) {
 
 				// Create the new xpath object
 				org.opendope.xpaths.Xpaths.Xpath newXPathObj = createNewXPathObject(
@@ -1217,6 +1179,42 @@ public class OpenDoPEHandler {
 
 	}
 
+	private void processDescendantCondition(Object sdt, String xpathBase,
+			int index, Tag tag ) {
+
+		String thisXPath = null;
+
+		Condition c = null;
+		org.opendope.xpaths.Xpaths.Xpath xpathObj = null;
+
+		HashMap<String, String> map = QueryString.parseQueryString(
+				tag.getVal(), true);
+
+
+		String conditionId = map.get(BINDING_ROLE_CONDITIONAL);
+
+		if (conditionId != null) {
+
+			c = ConditionsPart.getConditionById(conditions, conditionId);
+			if (c == null) {
+				log.error("Missing condition " + conditionId);
+				throw new InputIntegrityException("Required condition '" + conditionId + "' is missing");
+			}
+
+			// TODO: this code assumes the condition contains
+			// a simple xpath
+			log.debug("Using condition"
+					+ XmlUtils.marshaltoString(c, true, true));
+
+			Condition newCondition = c.repeat(xpathBase, index, conditions, xPaths);
+
+			// set sdt to use it
+			map.put(BINDING_ROLE_CONDITIONAL, newCondition.getId() );
+			tag.setVal(QueryString.create(map));
+		} 
+
+	}
+	
 	private org.opendope.xpaths.Xpaths.Xpath createNewXPathObject(
 			String newPath, org.opendope.xpaths.Xpaths.Xpath xpathObj, int index) {
 
@@ -1308,4 +1306,24 @@ public class OpenDoPEHandler {
 		return part.getData().xpathGetNodes(xpath, prefixMappings);
 	}
 
+	public static void main(String[] args) throws Exception {
+		
+		String inputfilepath = System.getProperty("user.dir") + "/item.docx";
+		
+		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
+		
+		String filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
+		System.out.println(filepathprefix);
+		
+		StringBuilder timingSummary = new StringBuilder();
+		
+
+		// Process conditionals and repeats
+		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
+		odh.preprocess();
+		
+		System.out.println(
+				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+				);	
+		}	
 }
