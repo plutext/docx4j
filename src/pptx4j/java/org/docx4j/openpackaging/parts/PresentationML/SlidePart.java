@@ -33,6 +33,7 @@ import javax.xml.transform.dom.DOMResult;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.pptx4j.jaxb.Context;
@@ -313,4 +314,52 @@ public final class SlidePart extends JaxbPmlPart<Sld> {
 			throw e;
 		}
 	}	
+    
+    NotesSlidePart notes;
+    SlideLayoutPart layout;
+    
+	public boolean setPartShortcut(Part part) {
+		
+		if (part == null ){
+			return false;
+		} else {
+			return setPartShortcut(part, part.getRelationshipType() );
+		}
+		
+	}	
+		
+	public boolean setPartShortcut(Part part, String relationshipType) {
+		
+		// Since each part knows its relationshipsType,
+		// why is this passed in as an arg?
+		// Answer: where the relationshipType is ascertained
+		// from the rel itself, it is the most authoritative.
+		// Note that we normally use the info in [Content_Types]
+		// to create a part of the correct type.  This info
+		// will not necessary correspond to the info in the rel!
+		
+		if (relationshipType==null) {
+			log.warn("trying to set part shortcut against a null relationship type.");
+			return false;
+		}
+		
+		if (relationshipType.equals(Namespaces.PRESENTATIONML_NOTES_SLIDE)) {
+			notes = (NotesSlidePart)part;
+			return true;			
+		} else if (relationshipType.equals(Namespaces.PRESENTATIONML_SLIDE_LAYOUT)) {
+			layout = (SlideLayoutPart)part;
+			return true;					
+		} else {	
+			return false;
+		}
+	}
+	
+	public NotesSlidePart getNotesSlidePart() {
+		return notes;
+	}
+	public SlideLayoutPart getSlideLayoutPart() {
+		return layout;
+	}
+	
+    
 }

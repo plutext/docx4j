@@ -84,6 +84,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.RStyle;
 import org.docx4j.wml.STTblLayoutType;
 import org.docx4j.wml.Tbl;
+import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblGrid;
 import org.docx4j.wml.TblGridCol;
 import org.docx4j.wml.TblPr;
@@ -137,7 +138,7 @@ import org.xml.sax.InputSource;
  */
 public class XHTMLImporter {
 	
-	protected static Logger log = Logger.getLogger(XHTMLImporter.class);		
+	public static Logger log = Logger.getLogger(XHTMLImporter.class);		
 	    
 	/**
 	 * Configure, how the Importer styles hyperlinks
@@ -550,13 +551,24 @@ public class XHTMLImporter {
 
             		TblPr tblPr = Context.getWmlObjectFactory().createTblPr();
             		tbl.setTblPr(tblPr);    
-            		
-            		// TODO support: borders
-            		// for now, just 
-            		//         <w:tblStyle w:val="TableGrid"/>
+
             		TblStyle tblStyle = Context.getWmlObjectFactory().createCTTblPrBaseTblStyle();
             		tblStyle.setVal("TableGrid");
             		tblPr.setTblStyle(tblStyle);  
+            		
+            		// borders.  rudimentary support
+            		// for now, look just at border-top-style.
+            		// If it is not 'none', for example 'solid', display a border.
+            		// cssTable.getBorder requires a CssContext; so just
+            		FSDerivedValue borderTopStyle = box.getStyle().valueByName(CSSName.BORDER_TOP_STYLE);
+            		if (borderTopStyle!=null  // what to default to if its null?
+            				&& borderTopStyle.asString().toLowerCase().contains("none")) {
+            			log.debug("setting borders to none");
+            			try {
+							TblBorders borders = (TblBorders)XmlUtils.unmarshalString(WORDML_TABLE_BORDERS, Context.jc, TblBorders.class);
+							tblPr.setTblBorders(borders);
+						} catch (JAXBException e1) {}            			
+            		} 
             		
             		// Table indent.  
             		// cssTable.getLeftMBP() which is setLeftMBP((int) margin.left() + (int) border.left() + (int) padding.left());
@@ -1384,6 +1396,16 @@ public class XHTMLImporter {
 		
 		
 	}
+	
+	static String  WORDML_TABLE_BORDERS = "<w:tblBorders xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" >"
+			+"  <w:top w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+			  +"  <w:left w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+			  +"<w:bottom w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+			  +"<w:right w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+			  +"<w:insideH w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+			  +"<w:insideV w:val=\"none\" w:sz=\"0\" w:space=\"0\" w:color=\"auto\"/>"
+			  +"</w:tblBorders>";
+
 	
 	public final static class TableProperties {
 		

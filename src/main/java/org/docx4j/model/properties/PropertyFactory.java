@@ -48,6 +48,7 @@ import org.docx4j.model.properties.run.Italics;
 import org.docx4j.model.properties.run.RBorder;
 import org.docx4j.model.properties.run.RShading;
 import org.docx4j.model.properties.run.Strike;
+import org.docx4j.model.properties.run.TextDirection;
 import org.docx4j.model.properties.run.Underline;
 import org.docx4j.model.properties.run.VerticalAlignment;
 import org.docx4j.model.properties.table.BorderBottom;
@@ -243,8 +244,8 @@ public class PropertyFactory {
 //			dest.setRPrChange(rPr.getRPrChange());
 //		if (rPr.getRStyle() != null)
 //			dest.setRStyle(rPr.getRStyle());
-//		if (rPr.getRtl() != null)
-//			dest.setRtl(rPr.getRtl());
+		if (rPr.getRtl() != null)
+			properties.add(new TextDirection(rPr.getRtl() ));
 //		if (rPr.getShadow() != null)
 //			dest.setShadow(rPr.getShadow());
 		if (rPr.getShd() != null)

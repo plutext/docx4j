@@ -32,7 +32,28 @@ import org.docx4j.wml.CTFootnotes;
 import org.docx4j.wml.ContentAccessor;
 
 
-public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes>  implements ContentAccessor {
+public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes> {
+	// implements ContentAccessor {
+	
+	/* Unfortunately, this class can't easily implement
+	 * ContentAccessor, because to do that,
+	 * both CTFootnotes and CTEndnotes would need 
+	 * to return List<Object> (if the list is to be
+	 * live not a snapshot).
+	 * 
+	 * But in that case, you get 
+	 *  java.lang.ClassCastException: ElementNSImpl cannot be cast to org.docx4j.wml.CTFtnEdn
+	 * because JAXB marshalls to a DOM node.
+	 * And we can't put @XmlRootElement on CTFtnEdn, since it could be either Ftn or Edn.
+	 * 
+	 * See further http://stackoverflow.com/questions/5122296/jaxb-not-unmarshalling-xml-any-element-to-jaxbelement
+	 * 
+	 * If we really need to implement ContentAccessor here, 
+	 * the first thing to do would be to change wml.xsd, so we generate
+	 * distinct classes CTFtn and CTEdn.  But that would be backwards incompatible,
+	 * unless we also retained CTFtnEdn in some fashion?
+	 */
+	
 	
 	public FootnotesPart(PartName partName) throws InvalidFormatException {
 		super(partName);
@@ -55,17 +76,17 @@ public final class FootnotesPart extends JaxbXmlPartXPathAware<CTFootnotes>  imp
 		
 	}
 
-    /**
-     * Convenience method to getJaxbElement().getFootnote()
-     * @since 2.8.1
-     */
-    public List<Object> getContent() {
-    	
-    	if (this.getJaxbElement()==null) {    		
-    		this.setJaxbElement( Context.getWmlObjectFactory().createCTFootnotes() );
-    	}
-    	
-    	return this.getJaxbElement().getFootnote();
-    }	
+//    /**
+//     * Convenience method to getJaxbElement().getFootnote()
+//     * @since 2.8.1
+//     */
+//    public List<Object> getContent() {
+//    	
+//    	if (this.getJaxbElement()==null) {    		
+//    		this.setJaxbElement( Context.getWmlObjectFactory().createCTFootnotes() );
+//    	}
+//    	
+//    	return this.getJaxbElement().getFootnote();
+//    }	
 
 }

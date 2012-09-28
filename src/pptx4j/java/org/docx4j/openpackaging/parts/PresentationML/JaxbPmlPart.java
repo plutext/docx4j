@@ -60,7 +60,7 @@ public abstract class JaxbPmlPart<E> extends JaxbXmlPart<E> {
 	
 	protected static Random random = new Random();
 	
-	protected long getSlideLayoutOrMasterId() {
+	public static long getSlideLayoutOrMasterId() {
 		// See spec 4.8.18 (ST_SlideLayoutId) and 4.8.20 (ST_SlideMasterId)
 		long val = random.nextInt(2147483647) + 2147483648l;
 		return val;

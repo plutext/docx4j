@@ -270,7 +270,7 @@ public class SdtPr
     	java.math.BigInteger newIdVal = java.math.BigInteger.valueOf(Math.abs(new java.util.Random().nextInt()));
     	id.setVal( newIdVal );
     	setId(id);    	
-		log.warn("Generated random id: " + newIdVal.toString() );
+		log.debug("Generated random id: " + newIdVal.toString() );
 		return newIdVal;
     }
 

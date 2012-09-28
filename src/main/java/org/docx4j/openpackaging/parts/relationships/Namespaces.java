@@ -298,4 +298,11 @@ public class Namespaces {
 	public final static String EMBEDDED_PKG = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/package";
 	
 	public final static String VML =  "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing";
+	
+	public final static String XML_EVENTS = "http://www.w3.org/2001/xml-events";
+
+	public final static String XFORMS = "http://www.w3.org/2002/xforms";
+
+	public final static String XML_SCHEMA = "http://www.w3.org/2001/XMLSchema";
+	
 }

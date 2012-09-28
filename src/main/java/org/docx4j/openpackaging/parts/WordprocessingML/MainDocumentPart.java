@@ -211,6 +211,9 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 //		log.debug("fontsDiscovered.put:" + defaultFont);
 //		fontsDiscovered.put( defaultFont, defaultFont  );
 		fontsDiscovered.put( ((WordprocessingMLPackage)pack).getDefaultFont(), ((WordprocessingMLPackage)pack).getDefaultFont() );
+
+		fontsDiscovered.put( ((WordprocessingMLPackage)pack).getMainDocumentPart().getPropertyResolver().getDefaultFontEastAsia(), 
+				((WordprocessingMLPackage)pack).getMainDocumentPart().getPropertyResolver().getDefaultFontEastAsia() );
 		
 	// Add fonts used in the styles we discovered
 		Iterator it = stylesInUse.entrySet().iterator();

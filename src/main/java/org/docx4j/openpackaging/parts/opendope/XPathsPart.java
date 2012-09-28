@@ -3,6 +3,8 @@ package org.docx4j.openpackaging.parts.opendope;
 import javax.xml.bind.JAXBContext;
 
 import org.apache.log4j.Logger;
+import org.docx4j.XmlUtils;
+import org.docx4j.model.datastorage.InputIntegrityException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.opendope.xpaths.Xpaths.Xpath;
@@ -23,15 +25,25 @@ public class XPathsPart extends JaxbCustomXmlDataStoragePart<org.opendope.xpaths
 	
 	public static Xpath getXPathById(org.opendope.xpaths.Xpaths xpaths, String id) {
 		
-		for (Xpath c : xpaths.getXpath() ) {
+		for (Xpath x : xpaths.getXpath() ) {
 			
-			if (c.getId().equals(id))
-				return c;
+			if (x.getId().equals(id))
+				return x;
 		}
-		
-		log.warn("XPath " + id + " is missing");
-		return null;
+		throw new InputIntegrityException("Couldn't find xpath " + id );		
 	}
 
+	public static Xpath getXPathByQuestionId(org.opendope.xpaths.Xpaths xpaths, String id) {
+		
+		for (Xpath x : xpaths.getXpath() ) {
+			
+			if (x.getQuestionID()!=null
+					&& x.getQuestionID().equals(id))
+				return x;
+		}
+		
+		log.warn("No XPath with question id " + id );
+		return null;
+	}
 
 }

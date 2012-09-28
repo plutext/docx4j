@@ -86,6 +86,10 @@ public class IdentityPlusMapper extends Mapper {
 	 * @throws Exception
 	 */
 	public void populateFontMappings(Map documentFontNames, org.docx4j.wml.Fonts wmlFonts ) throws Exception {
+		
+		// documentFontNames comes from MDP's fontsInUse()
+		// which contains getPropertyResolver().getFontnameFromStyle
+		// TODO: that needs to be extended to handle EastAsian (Chinese) etc
 				
 		/* org.docx4j.wml.Fonts fonts is obtained as follows:
 		 * 

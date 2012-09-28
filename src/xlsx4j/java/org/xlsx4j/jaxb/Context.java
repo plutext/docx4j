@@ -24,6 +24,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
+import org.docx4j.jaxb.NamespacePrefixMapperUtils;
+import org.docx4j.utils.Log4jConfigurator;
 
 public class Context {
 	
@@ -41,21 +43,22 @@ public class Context {
 	
 	static {
 
+		Log4jConfigurator.configure();
+		
 		// Display diagnostic info about version of JAXB being used.
-    	Class c;
-    	try {
-    		c = Class.forName("com.sun.xml.bind.marshaller.MinimumEscapeHandler");
-    		System.out.println("JAXB: Using RI");
-    	} catch (ClassNotFoundException cnfe) {
-    		// JAXB Reference Implementation not present
-    		System.out.println("JAXB: RI not present.  Trying Java 6 implementation.");
-        	try {
-				c = Class.forName("com.sun.xml.internal.bind.marshaller.MinimumEscapeHandler");
-	    		System.out.println("JAXB: Using Java 6 implementation.");
-			} catch (ClassNotFoundException e) {
-				System.out.println("JAXB: neither Reference Implementation nor Java 6 implementation present?");
+		Object namespacePrefixMapper;
+		try {
+			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
+			if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
+				// Java 6
+				log.info("Using Java 6/7 JAXB implementation");
+			} else {
+				log.info("Using JAXB Reference Implementation");			
 			}
-    	}
+		} catch (JAXBException e) {
+			log.error("PANIC! No suitable JAXB implementation available");
+			e.printStackTrace();
+		}
 		
 		try {	
 			

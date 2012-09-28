@@ -41,6 +41,16 @@ public class Docx4jProperties {
 		return properties.getProperty(key, defaultValue);		
 	}
 	
+	/**
+	 * @since 2.8.1
+	 */
+	public static boolean getProperty(String key, boolean defaultValue) {
+		
+		if (properties==null) {init();}
+		String result = properties.getProperty(key, Boolean.toString(defaultValue));
+		return Boolean.parseBoolean(result);
+	}
+	
 	public static Properties getProperties() {
 		
 		if (properties==null) {init();}

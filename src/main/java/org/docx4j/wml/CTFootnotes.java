@@ -26,6 +26,7 @@ import java.util.List;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
@@ -60,7 +61,8 @@ public class CTFootnotes
     implements Child
 {
 
-    protected List<Object> footnote;
+    protected List<CTFtnEdn> footnote;
+	
     @XmlTransient
     private Object parent;
 
@@ -86,9 +88,9 @@ public class CTFootnotes
      * 
      * 
      */
-    public List<Object> getFootnote() {
+    public List<CTFtnEdn> getFootnote() {
         if (footnote == null) {
-            footnote = new ArrayList<Object>();
+            footnote = new ArrayList<CTFtnEdn>();
         }
         return this.footnote;
     }

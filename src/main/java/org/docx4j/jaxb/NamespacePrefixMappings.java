@@ -201,6 +201,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		if (namespaceUri.equals("http://opendope.org/questions")) {
     		return "odq";
 		}
+		if (namespaceUri.equals("http://opendope.org/answers")) {
+    		return "oda";
+		}
 		
 		if (namespaceUri.equals("http://opendope.org/SmartArt/DataHierarchy")) {
     		return "odgm";
@@ -228,6 +231,16 @@ public class NamespacePrefixMappings implements NamespaceContext {
 //    		return "?";
 //		}  
     	
+    	if (namespaceUri.equals(Namespaces.XFORMS)) {
+    		return "xf";
+    	}
+    	if (namespaceUri.equals(Namespaces.XML_EVENTS)) {
+    		return "xe";
+    	}
+    	if (namespaceUri.equals(Namespaces.XML_SCHEMA)) {
+    		return "xs";
+    	}
+		
     	return suggestion;
     }
     
@@ -331,9 +344,17 @@ public class NamespacePrefixMappings implements NamespaceContext {
 			return "http://opendope.org/components";
 		if (prefix.equals("odq"))
 			return "http://opendope.org/questions";
+		if (prefix.equals("oda"))
+			return "http://opendope.org/answers";
 		if (prefix.equals("odgm"))
 			return "http://opendope.org/SmartArt/DataHierarchy";		
 		
+		if (prefix.equals("xf"))  
+			return Namespaces.XFORMS;
+		else if (prefix.equals("xe"))
+			return Namespaces.XML_EVENTS;
+		else if (prefix.equals("xs"))
+			return Namespaces.XML_SCHEMA;
 		
 		// Registered prefixes
 		String result = namespaces.get(prefix);

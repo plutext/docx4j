@@ -638,7 +638,8 @@ public class PropertyResolver {
 		
 		PPr expressPPr = s.getPPr();
 		if (expressPPr==null) {
-			log.error("style: " + styleId + " has no PPr");
+			// A paragraph style may have no w:pPr component
+			log.debug("style: " + styleId + " has no PPr");
 			String normalId = this.styleDefinitionsPart.getDefaultParagraphStyle().getStyleId();			
 			resolvedPPr = resolvedStylePPrComponent.get(normalId);
 			return resolvedPPr;
@@ -1181,7 +1182,29 @@ public class PropertyResolver {
 		if (style==null) {
 			// No such style!
 			// For now, just log it..
-			log.error("Style definition not found: " + styleId);
+			if (styleId.equals("DocDefaults")) {
+				
+				// Don't worry about this.
+				// SDP.createVirtualStylesForDocDefaults()
+				// creates a DocDefaults style, and makes Normal based on it
+				// (and so if a different approach to handling
+				//  DocDefaults ... we really should do it one
+				//  way consistently).
+				// The problem here is, that is typically done
+				// after the PropertyResolver is created,
+				// so as far as this PropertyResolver is 
+				// concerned, the style doesn't exist.
+				// And we don't really want to always
+				// do createVirtualStylesForDocDefaults() before
+				// or during init of PropertyResolver, since that
+				// mean any docx saved would contain those
+				// virtual styles.
+				// Anyway, we don't need to worry about it
+				// here, because the doc defaults are still handled...
+				
+			} else {
+				log.error("Style definition not found: " + styleId);
+			}
 			return;
 		}
 		pPrStack.push(style.getPPr());
@@ -1273,7 +1296,7 @@ public class PropertyResolver {
 		
 		for ( org.docx4j.wml.Style s : styles.getStyle() ) {				
 			liveStyles.put(s.getStyleId(), s);	
-//			log.debug("live style: " + s.getStyleId() );
+			log.debug("live style: " + s.getStyleId() );
 		}
     	
     }
@@ -1289,6 +1312,8 @@ public class PropertyResolver {
 		
 		// First look at the defaults
 		// 3 look at styles/rPrDefault 
+		//   eg <w:rFonts w:asciiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia" 
+		//				  w:hAnsiTheme="minorHAnsi" w:cstheme="minorBidi"/>
 		// 3.1 if there is an rFonts element, do what it says (it may refer you to the theme part, 
 		//     in which case if there is no theme part, default to "internally stored settings"
 		//	   (there is no normal.dot; see http://support.microsoft.com/kb/924460/en-us ) 
@@ -1335,6 +1360,53 @@ public class PropertyResolver {
 			} else {
 				// TODO
 				log.error("Neither ascii or asciTheme.  What to do? ");
+				return null;
+			}						
+		} 
+	}
+
+	public String getDefaultFontEastAsia() {
+				
+		org.docx4j.wml.RFonts rFonts = documentDefaultRPr.getRFonts();
+		if (rFonts==null) {
+			log.info("No styles/docDefaults/rPrDefault/rPr/rFonts - default to SimSun");
+			return "SimSun"; 						
+		} else {						
+			// Usual case
+
+			if (rFonts.getEastAsiaTheme()!=null ) {
+				// for example minorEastAsia 
+				if (rFonts.getEastAsiaTheme().equals(org.docx4j.wml.STTheme.MINOR_EAST_ASIA)) {
+					if (themePart!=null) {
+						org.docx4j.dml.BaseStyles.FontScheme fontScheme = themePart.getFontScheme();
+						if (fontScheme.getMinorFont()!=null
+								&& fontScheme.getMinorFont().getEa()!=null
+								&& !fontScheme.getMinorFont().getEa().getTypeface().equals("") ) {
+																	
+							log.debug("minorFont/EA font is " + fontScheme.getMinorFont().getEa().getTypeface() );
+							return fontScheme.getMinorFont().getEa().getTypeface();
+						} else {
+							// No minorFont/EA in theme part - default to SimSun
+							log.info("No minorFont/latin in theme part - default to SimSun");								
+							return "SimSun"; 
+						}
+					} else {
+						// No theme part - default to SimSun
+						log.info("No theme part - default to SimSun");
+						return "SimSun"; 
+					}
+				} else {
+					// TODO
+					log.error("Don't know how to handle: "
+							+ rFonts.getEastAsiaTheme());
+					return null;
+				}
+			} else if (rFonts.getEastAsia()!=null ) {
+				log.info("rPrDefault/rFonts referenced " + rFonts.getEastAsia());								
+				return rFonts.getEastAsia(); 							
+			} else {
+				// TODO
+				log.error("Neither EastAsia or EastAsiaTheme.  What to do? ");
 				return null;
 			}						
 		} 

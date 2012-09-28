@@ -43,6 +43,7 @@ import org.docx4j.utils.TraversalUtilVisitor;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTObject;
+import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
 import org.docx4j.wml.Comments.Comment;
 
@@ -178,6 +179,11 @@ public class TraversalUtil {
 		}		
 	}
 	public static List<Object> getChildrenImpl(Object o) {
+		
+		if (o==null) {
+			log.warn("null passed to getChildrenImpl");
+			return null;
+		}
 
 		log.debug("getting children of " + o.getClass().getName() );
 		if (o instanceof org.docx4j.wml.Text) return null;
@@ -264,6 +270,20 @@ public class TraversalUtil {
 			return ((CTObject)o).getAnyAndAny();
 		} else if (o instanceof org.docx4j.dml.CTGvmlGroupShape) {
 			return ((org.docx4j.dml.CTGvmlGroupShape)o).getTxSpOrSpOrCxnSp();
+		} else if(o instanceof FldChar) {
+			FldChar fldChar = ((FldChar)o);
+			List<Object> artificialList = new ArrayList<Object>();
+			artificialList.add(fldChar.getFldCharType());
+			if(fldChar.getFfData() != null) {
+				artificialList.add(fldChar.getFfData());
+			}
+			if(fldChar.getFldData() != null) {
+				artificialList.add(fldChar.getFldData());
+			}
+			if(fldChar.getNumberingChange() != null) {
+				artificialList.add(fldChar.getNumberingChange());
+			}
+			return artificialList;
 		}
 
 		// OK, what is this? Use reflection ..
@@ -549,9 +569,15 @@ public class TraversalUtil {
 						elementList = ((FooterPart) relPart.getPart(rs))
 								.getJaxbElement().getContent();
 					} else if (Namespaces.ENDNOTES.equals(rs.getType())) {
-						elementList = ((EndnotesPart) relPart.getPart(rs)).getContent();
+						//elementList = ((EndnotesPart) relPart.getPart(rs)).getContent();
+						elementList = new ArrayList();
+						elementList.addAll(
+								((EndnotesPart) relPart.getPart(rs)).getJaxbElement().getEndnote() );
 					} else if (Namespaces.FOOTNOTES.equals(rs.getType())) {
-						elementList =  ((FootnotesPart) relPart.getPart(rs)).getContent();
+						//elementList =  ((FootnotesPart) relPart.getPart(rs)).getContent();
+						elementList = new ArrayList();
+						elementList.addAll(
+								((FootnotesPart) relPart.getPart(rs)).getJaxbElement().getFootnote() );
 					} else if (Namespaces.COMMENTS.equals(rs.getType())) {
 						elementList = new ArrayList();
 						for (Comment comment : ((CommentsPart) relPart

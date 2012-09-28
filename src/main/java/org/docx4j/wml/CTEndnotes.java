@@ -60,7 +60,7 @@ public class CTEndnotes
     implements Child
 {
 
-    protected List<Object> endnote;
+    protected List<CTFtnEdn> endnote;
     @XmlTransient
     private Object parent;
 
@@ -86,9 +86,9 @@ public class CTEndnotes
      * 
      * 
      */
-    public List<Object> getEndnote() {
+    public List<CTFtnEdn> getEndnote() {
         if (endnote == null) {
-            endnote = new ArrayList<Object>();
+            endnote = new ArrayList<CTFtnEdn>();
         }
         return this.endnote;
     }
