@@ -45,8 +45,11 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *                 &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
  *                 &lt;attribute name="questionID" type="{http://www.w3.org/2001/XMLSchema}NCName" />
  *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="descrption" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="description" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="comments" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;attribute name="source" type="{http://www.w3.org/2001/XMLSchema}string" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -124,8 +127,11 @@ public class Xpaths {
      *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
      *       &lt;attribute name="questionID" type="{http://www.w3.org/2001/XMLSchema}NCName" />
      *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="descrption" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="description" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="comments" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+     *       &lt;attribute name="source" type="{http://www.w3.org/2001/XMLSchema}string" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -153,9 +159,15 @@ public class Xpaths {
         @XmlAttribute
         protected String name;
         @XmlAttribute
-        protected String descrption;
+        protected String description;
         @XmlAttribute
         protected String comments;
+        @XmlAttribute
+        protected String type;
+        @XmlAttribute
+        protected Boolean required;
+        @XmlAttribute
+        protected String source;
 
         /**
          * Gets the value of the dataBinding property.
@@ -254,27 +266,27 @@ public class Xpaths {
         }
 
         /**
-         * Gets the value of the descrption property.
+         * Gets the value of the description property.
          * 
          * @return
          *     possible object is
          *     {@link String }
          *     
          */
-        public String getDescrption() {
-            return descrption;
+        public String getDescription() {
+            return description;
         }
 
         /**
-         * Sets the value of the descrption property.
+         * Sets the value of the description property.
          * 
          * @param value
          *     allowed object is
          *     {@link String }
          *     
          */
-        public void setDescrption(String value) {
-            this.descrption = value;
+        public void setDescription(String value) {
+            this.description = value;
         }
 
         /**
@@ -299,6 +311,78 @@ public class Xpaths {
          */
         public void setComments(String value) {
             this.comments = value;
+        }
+
+        /**
+         * Gets the value of the type property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getType() {
+            return type;
+        }
+
+        /**
+         * Sets the value of the type property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setType(String value) {
+            this.type = value;
+        }
+
+        /**
+         * Gets the value of the required property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Boolean }
+         *     
+         */
+        public Boolean isRequired() {
+            return required;
+        }
+
+        /**
+         * Sets the value of the required property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Boolean }
+         *     
+         */
+        public void setRequired(Boolean value) {
+            this.required = value;
+        }
+
+        /**
+         * Gets the value of the source property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getSource() {
+            return source;
+        }
+
+        /**
+         * Sets the value of the source property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setSource(String value) {
+            this.source = value;
         }
 
 
