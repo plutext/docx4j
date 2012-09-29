@@ -51,15 +51,18 @@ JAXB INSTRUCTIONS
   </xs:element>
 
   <xs:element name="condition">
-    <xs:complexType>
-      <xs:sequence> 
-        <xs:choice  maxOccurs="1">
-          <xs:element minOccurs="0" ref="odc:xpathref" />
-          <xs:element minOccurs="0" ref="odc:and" />
-          <xs:element minOccurs="0" ref="odc:or"  />
-          <xs:element minOccurs="0" ref="odc:not"  />
+    <xs:complexType> 
+        <xs:choice  minOccurs="1" maxOccurs="1">
+	      <xs:annotation>
+	        <xs:appinfo>
+	          <jaxb:property name="particle"/>
+	        </xs:appinfo>
+	      </xs:annotation>        
+          <xs:element  ref="odc:xpathref" />
+          <xs:element  ref="odc:and" />
+          <xs:element  ref="odc:or"  />
+          <xs:element  ref="odc:not"  />
         </xs:choice>
-      </xs:sequence>
       <xs:attribute name="id" type="xs:ID" use="required" />
       <xs:attribute name="name" type="xs:string" />
       <xs:attribute name="descrption" type="xs:string" />
@@ -67,8 +70,6 @@ JAXB INSTRUCTIONS
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="true"/>
-  <xs:element name="false"/>
 
   <xs:element name="and">
     <xs:complexType>
@@ -79,8 +80,6 @@ JAXB INSTRUCTIONS
           <xs:element minOccurs="0" ref="odc:or"  />
           <xs:element minOccurs="0" ref="odc:not"  />
           <xs:element minOccurs="0" ref="odc:conditionref"  />
-          <xs:element minOccurs="0" ref="odc:true" />
-          <xs:element minOccurs="0" ref="odc:false"  />
         </xs:choice>
       </xs:sequence>
     </xs:complexType>
@@ -95,8 +94,6 @@ JAXB INSTRUCTIONS
         <xs:element minOccurs="0" ref="odc:or"  />
         <xs:element minOccurs="0" ref="odc:not"  />
         <xs:element minOccurs="0" ref="odc:conditionref"  />
-        <xs:element minOccurs="0" ref="odc:true" />
-        <xs:element minOccurs="0" ref="odc:false"  />
       </xs:choice>
     </xs:sequence>
     </xs:complexType>
@@ -104,17 +101,18 @@ JAXB INSTRUCTIONS
 
   <xs:element name="not">
     <xs:complexType>
-      <xs:sequence>
-        <xs:choice maxOccurs="1">
-          <xs:element minOccurs="0" ref="odc:xpathref" />
-          <xs:element minOccurs="0" ref="odc:and"  />
-          <xs:element minOccurs="0" ref="odc:or"  />
-          <xs:element minOccurs="0" ref="odc:not"  />
-          <xs:element minOccurs="0" ref="odc:conditionref"  />
-          <xs:element minOccurs="0" ref="odc:true" />
-          <xs:element minOccurs="0" ref="odc:false"  />
+        <xs:choice  minOccurs="1" maxOccurs="1">
+	      <xs:annotation>
+	        <xs:appinfo>
+	          <jaxb:property name="particle"/>
+	        </xs:appinfo>
+	      </xs:annotation>        
+          <xs:element ref="odc:xpathref" />
+          <xs:element ref="odc:and"  />
+          <xs:element ref="odc:or"  />
+          <xs:element ref="odc:not"  />
+          <xs:element ref="odc:conditionref"  />
         </xs:choice>
-      </xs:sequence>
     </xs:complexType>
   </xs:element>
 
