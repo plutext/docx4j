@@ -822,6 +822,12 @@
 			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForInstrText(
 		  		$wmlPackage, ., $childResults)" />
   </xsl:template>
+  
+   <xsl:template match="w:customXml">
+      <xsl:apply-templates />
+   </xsl:template>
+
+   <xsl:template match="w:customXmlPr" />  
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!--  +++++++++++++++++++  no match     +++++++++++++++++++++++ -->
