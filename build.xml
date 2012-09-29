@@ -100,7 +100,7 @@
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="${src.main.java.dir}" excludes="**/*.launch, **/*.java"/>
             <fileset dir="src/pptx4j/java" excludes="**/*.launch, **/*.java"/>
-            <fileset dir="src/main/resources" excludes="log4j.*"/>
+            <fileset dir="src/main/resources" excludes="log4j.*, docx4j.properties"/>
         </copy>
     </target>
 	
@@ -158,6 +158,7 @@
             <classpath refid="docx4j.classpath"/>
         </javac>
 
+        <echo message="Join the docx4j developers mailing list by emailing docx4j-dev-subscribe@docx4java.org" />
         
     </target>
  
