@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:od="http://opendope.org/xpaths" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://opendope.org/xpaths" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1"
+	jaxb:extensionBindingPrefixes="xjc"> 
+
+<!--
+
+JAXB INSTRUCTIONS
+	  
+  To generate java classes, you need xjc, from the JAXB 2.1 RI.
+  
+  (I used JAXB 2.1.?? included in JDK 1.6.0_27)
+		
+  To generate the classes (from the same directory)	
+
+	"c:\Program Files\Java\jdk1.6.0_27\bin"\xjc xpaths.xsd -d ..\..\src\main\java -no-header -target 2.0 -extension
+	
+ 	 xjc  xpaths.xsd -d ~/workspace/docx4j/src/main/java -no-header -target 2.0 -extension
+
+ 	 xjc  xpaths.xsd -d tmp -no-header -target 2.0 -extension
+
+-->
+
+  <xs:annotation>
+		<xs:appinfo>
+			<xs:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xs:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.opendope.xpaths"/>
+			</jaxb:schemaBindings>
+		</xs:appinfo>    
+  </xs:annotation>
+  <xs:element name="xpaths">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="xpath">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="dataBinding">
+                <xs:complexType>
+                  <xs:attribute name="xpath" type="xs:string" use="required" />
+                  <xs:attribute name="storeItemID" type="xs:string" use="required" />
+                  <xs:attribute name="prefixMappings" type="xs:string" />
+                  <!-- don't think @bindingrole is necessary-->
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:ID" use="required" />
+            <xs:attribute name="questionID" type="xs:NCName" />
+            <xs:attribute name="name" type="xs:string" />
+            <xs:attribute name="description" type="xs:string" />
+            <xs:attribute name="comments" type="xs:string" />
+            <xs:attribute name="type" type="xs:string" /> 
+              <!-- here, rather than in questions xsd, for non-interactive formatting and validation -->
+            <xs:attribute name="required" type="xs:boolean" />
+              <!-- here, rather than in questions xsd, since it is part of XForms inspired data type model -->
+            <xs:attribute name="source" type="xs:string" use="optional" />
+            <!-- if this xpath is in the library, the store item id of the original xpath part -->
+              
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
