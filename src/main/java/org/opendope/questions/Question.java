@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -24,17 +23,13 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="text">
- *           &lt;complexType>
- *             &lt;simpleContent>
- *               &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
- *               &lt;/extension>
- *             &lt;/simpleContent>
- *           &lt;/complexType>
- *         &lt;/element>
+ *         &lt;element name="text" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="help" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="hint" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element ref="{http://opendope.org/questions}response"/>
  *       &lt;/sequence>
  *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}ID" />
+ *       &lt;attribute name="appearance" type="{http://opendope.org/questions}appearanceType" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -45,13 +40,17 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
     "text",
+    "help",
+    "hint",
     "response"
 })
 @XmlRootElement(name = "question")
 public class Question {
 
     @XmlElement(required = true)
-    protected Question.Text text;
+    protected String text;
+    protected String help;
+    protected String hint;
     @XmlElement(required = true)
     protected Response response;
     @XmlAttribute(required = true)
@@ -59,16 +58,18 @@ public class Question {
     @XmlID
     @XmlSchemaType(name = "ID")
     protected String id;
+    @XmlAttribute
+    protected AppearanceType appearance;
 
     /**
      * Gets the value of the text property.
      * 
      * @return
      *     possible object is
-     *     {@link Question.Text }
+     *     {@link String }
      *     
      */
-    public Question.Text getText() {
+    public String getText() {
         return text;
     }
 
@@ -77,11 +78,59 @@ public class Question {
      * 
      * @param value
      *     allowed object is
-     *     {@link Question.Text }
+     *     {@link String }
      *     
      */
-    public void setText(Question.Text value) {
+    public void setText(String value) {
         this.text = value;
+    }
+
+    /**
+     * Gets the value of the help property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getHelp() {
+        return help;
+    }
+
+    /**
+     * Sets the value of the help property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setHelp(String value) {
+        this.help = value;
+    }
+
+    /**
+     * Gets the value of the hint property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getHint() {
+        return hint;
+    }
+
+    /**
+     * Sets the value of the hint property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setHint(String value) {
+        this.hint = value;
     }
 
     /**
@@ -132,56 +181,28 @@ public class Question {
         this.id = value;
     }
 
+    /**
+     * Gets the value of the appearance property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link AppearanceType }
+     *     
+     */
+    public AppearanceType getAppearance() {
+        return appearance;
+    }
 
     /**
-     * <p>Java class for anonymous complex type.
+     * Sets the value of the appearance property.
      * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;simpleContent>
-     *     &lt;extension base="&lt;http://www.w3.org/2001/XMLSchema>string">
-     *     &lt;/extension>
-     *   &lt;/simpleContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
+     * @param value
+     *     allowed object is
+     *     {@link AppearanceType }
+     *     
      */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "value"
-    })
-    public static class Text {
-
-        @XmlValue
-        protected String value;
-
-        /**
-         * Gets the value of the value property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getValue() {
-            return value;
-        }
-
-        /**
-         * Sets the value of the value property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setValue(String value) {
-            this.value = value;
-        }
-
+    public void setAppearance(AppearanceType value) {
+        this.appearance = value;
     }
 
 }

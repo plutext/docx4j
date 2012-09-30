@@ -30,30 +30,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Question.Text }
-     * 
-     */
-    public Question.Text createQuestionText() {
-        return new Question.Text();
-    }
-
-    /**
-     * Create an instance of {@link Response }
-     * 
-     */
-    public Response createResponse() {
-        return new Response();
-    }
-
-    /**
-     * Create an instance of {@link Questionnaire.Questions }
-     * 
-     */
-    public Questionnaire.Questions createQuestionnaireQuestions() {
-        return new Questionnaire.Questions();
-    }
-
-    /**
      * Create an instance of {@link Question }
      * 
      */
@@ -62,19 +38,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Response.Free }
+     * Create an instance of {@link Questionnaire }
      * 
      */
-    public Response.Free createResponseFree() {
-        return new Response.Free();
-    }
-
-    /**
-     * Create an instance of {@link Response.Fixed.Category }
-     * 
-     */
-    public Response.Fixed.Category createResponseFixedCategory() {
-        return new Response.Fixed.Category();
+    public Questionnaire createQuestionnaire() {
+        return new Questionnaire();
     }
 
     /**
@@ -86,11 +54,35 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Questionnaire }
+     * Create an instance of {@link Questionnaire.Questions }
      * 
      */
-    public Questionnaire createQuestionnaire() {
-        return new Questionnaire();
+    public Questionnaire.Questions createQuestionnaireQuestions() {
+        return new Questionnaire.Questions();
+    }
+
+    /**
+     * Create an instance of {@link Response.Free }
+     * 
+     */
+    public Response.Free createResponseFree() {
+        return new Response.Free();
+    }
+
+    /**
+     * Create an instance of {@link Response }
+     * 
+     */
+    public Response createResponse() {
+        return new Response();
+    }
+
+    /**
+     * Create an instance of {@link Response.Fixed.Item }
+     * 
+     */
+    public Response.Fixed.Item createResponseFixedItem() {
+        return new Response.Fixed.Item();
     }
 
 }
