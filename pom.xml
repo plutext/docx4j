@@ -130,7 +130,7 @@
 								<source>src/xlsx4j/java</source>
 								<source>src/glox4j/java</source>
 								<source>src/diffx</source>
-								<!-- <source>src/xslfo</source>  -->
+								<!-- <source>src/xslfo</source> -->
 								<!-- <source>src/svg</source> -->
 								<!--source>src/sun</source -->
 							</sources>
@@ -143,140 +143,148 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.2</version>
 				<configuration>
-				<!-- 
-					The objective is to generate a jar which is compatible with Java 1.5, 
-					whilst at the same time allowing @Override annotations in the source 
-					code on methods which merely implement an interface 
-					(Java 6 allows this, but 1.5 gives an error).
-					
-					When I played around with this, I found that both maven and ant would 
-					happily compile to target 1.5 with the pesky @Override annotations 
-					present (irrespective of whether source was set to 1.5 or 1.6).
-										
-					You are not allowed source=1.6, target=1.5; this results in:
-					
-						Failure executing javac, but could not parse the error
-						javac: source release 1.6 requires target release 1.6
-						
-					So we need source=1.5, target=1.5
-					
-					The downside is that m2eclipse mirrors this in Eclipse's 
-					compiler settings, and Eclipse then complains about the
-					@Override annotations :-(
-					
-					So you must manually change the Eclipse compiler setting back to 1.6.
-																				
-				 -->
-				<source>1.5</source>
-				<target>1.5</target>
-				
-				<verbose>false</verbose>
-				<!--
-					maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" mvn install -->
-				<!--
-					try to help maven to find package
-					com.sun.xml.internal.bind.marshaller:
-					<bootclasspath>${java.home}/lib/rt.jar</bootclasspath> but this
-					doesn't help
-				-->
-			</configuration>
-		</plugin>
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-dependency-plugin</artifactId>
+					<!-- The objective is to generate a jar which is compatible with Java 
+						1.5, whilst at the same time allowing @Override annotations in the source 
+						code on methods which merely implement an interface (Java 6 allows this, 
+						but 1.5 gives an error). When I played around with this, I found that both 
+						maven and ant would happily compile to target 1.5 with the pesky @Override 
+						annotations present (irrespective of whether source was set to 1.5 or 1.6). 
+						You are not allowed source=1.6, target=1.5; this results in: Failure executing 
+						javac, but could not parse the error javac: source release 1.6 requires target 
+						release 1.6 So we need source=1.5, target=1.5 The downside is that m2eclipse 
+						mirrors this in Eclipse's compiler settings, and Eclipse then complains about 
+						the @Override annotations :-( So you must manually change the Eclipse compiler 
+						setting back to 1.6. -->
+					<source>1.5</source>
+					<target>1.5</target>
+
+					<verbose>false</verbose>
+					<!-- maxmemory>512m</maxmemory On Linux, use: MAVEN_OPTS="-Xmx512m" 
+						mvn install -->
+					<!-- try to help maven to find package com.sun.xml.internal.bind.marshaller: 
+						<bootclasspath>${java.home}/lib/rt.jar</bootclasspath> but this doesn't help -->
+				</configuration>
 			</plugin>
-		<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
-			<artifactId>maven-surefire-plugin</artifactId>
-			<!-- The Surefire Plugin is used during the test phase of the build lifecycle to execute the unit tests of an application -->
-			<version>2.6</version>
-			<configuration>
-				<excludes>
-					<exclude>**/samples/*.java</exclude>
-					<exclude>**/AbstractNumberingTest.java</exclude>
-				</excludes>
-			</configuration>
-		</plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-		<version>2.3.1</version>
-        <configuration>
-          <excludes>
-            <exclude>**/*.docx</exclude><!--  docx files in /src/test/resources add unwanted 1 MB to jar.   -->
-            <exclude>src/test/resources/**</exclude>
-            	<!--   TODO this still leaves some ugly directories in our jar.  
-            	       Anyone know how to leave out all files and directories in src/test/resources?   -->
-          </excludes>
-        </configuration>
-      </plugin>		
-		<plugin>
-			<artifactId>maven-source-plugin</artifactId>
-			<!-- The Source Plugin creates a jar archive of the source files of the current project. -->
-			<version>2.1.2</version>
-			<executions>
-				<execution>
-					<goals>
-						<goal>jar</goal>
-					</goals>
-				</execution>
-			</executions>
-		</plugin>
-		<!--  maven-javadoc-plugin seems to require large -Xmx  
-			  so comment this out if your  build is failing
-			  because you don't have enough.
-		-->
-		<plugin>
-			<artifactId>maven-javadoc-plugin</artifactId>
-			<version>2.8</version>
-			<configuration>
-				<maxmemory>512m</maxmemory>
-			<!--  18 MB without the exclusion; still 15MB with  -->
-			<!-- 
-				<excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames>
-				 --> 
-			</configuration>
-			<executions>
-				<execution>
-					<id>attach-javadocs</id>
-					<goals>
-						<goal>jar</goal>
-					</goals>
-				</execution>
-			</executions>
-		</plugin>
-	</plugins>
-	<resources>
-		<!-- be sure to get xml,xlst resources in various src trees -->
-		<resource>
-			<directory>src/main/java</directory>
-			<includes>
-				<include>**/*.xslt</include>
-				<include>**/*.xml</include>
-			</includes>
-		</resource>
-		<resource>
-			<directory>src/pptx4j/java</directory>
-			<includes>
-				<include>**/*.xslt</include>
-				<include>**/*.xml</include>
-			</includes>
-		</resource>
-		<resource>
-			<directory>src/main/resources</directory>
-			<includes>
-				<include>docx4j.properties</include>
-				<include>XhtmlNamespaceHandler.css</include>
-				<include>xhtmlrenderer.conf</include>
-			</includes>
-		</resource>
-		<!-- <resource>
-			<directory>src/test/resources</directory>
-			<excludes>
-				<exclude>*.docx</exclude>
-			</excludes>
-		</resource>  -->
-	</resources>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<!-- The Surefire Plugin is used during the test phase of the build lifecycle 
+					to execute the unit tests of an application -->
+				<version>2.6</version>
+				<configuration>
+					<excludes>
+						<exclude>**/samples/*.java</exclude>
+						<exclude>**/AbstractNumberingTest.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<excludes>
+						<exclude>**/*.docx</exclude><!-- docx files in /src/test/resources 
+							add unwanted 1 MB to jar. -->
+						<exclude>src/test/resources/**</exclude>
+						<!-- TODO this still leaves some ugly directories in our jar. Anyone 
+							know how to leave out all files and directories in src/test/resources? -->
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<!-- The Source Plugin creates a jar archive of the source files of the 
+					current project. -->
+				<version>2.1.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- maven-javadoc-plugin seems to require large -Xmx so comment this 
+				out if your build is failing because you don't have enough. -->
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+				<configuration>
+					<maxmemory>512m</maxmemory>
+					<!-- 18 MB without the exclusion; still 15MB with -->
+					<!-- <excludePackageNames>org.plutext.jaxb.svg11:org.plutext.jaxb.xslfo</excludePackageNames> -->
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.soebes.maven.plugins</groupId>
+				<artifactId>maven-echo-plugin</artifactId>
+				<version>0.1</version>
+				<executions>
+					<execution>
+						<id>install-echo</id>
+						<phase>install</phase>
+						<goals>
+							<goal>echo</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>deploy-echo</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>echo</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<echos>
+						<echo>+---------------------------------------------------+</echo>
+						<echo>! Join the docx4j developers mailing list by !</echo>
+						<echo>! emailing docx4j-dev-subscribe@docx4java.org !</echo>
+						<echo>+---------------------------------------------------+</echo>
+					</echos>
+				</configuration>
+			</plugin>
+		</plugins>
+		<resources>
+			<!-- be sure to get xml,xlst resources in various src trees -->
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/pptx4j/java</directory>
+				<includes>
+					<include>**/*.xslt</include>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>docx4j.properties</include>
+					<include>XhtmlNamespaceHandler.css</include>
+					<include>xhtmlrenderer.conf</include>
+				</includes>
+			</resource>
+			<!-- <resource> <directory>src/test/resources</directory> <excludes> <exclude>*.docx</exclude> 
+				</excludes> </resource> -->
+		</resources>
 	</build>
 	<reporting>
 		<plugins>

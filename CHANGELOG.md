@@ -1,6 +1,94 @@
 CHANGELOG
 =========
 
+Version 2.8.1
+=============
+
+
+Release date
+------------
+
+30 September 2012
+
+Contributors to this release
+----------------------------
+
+Jason Harrop
+Olivier 'olabrosse'  
+sgrachov
+bezda
+tstirrat
+Nanocom
+dmole
+
+Notable Changes in Version 2.8.1
+---------------------------------
+
+improvements to XHTML import
+support for OpenDoPE complex conditions 
+
+
+pptx4j
+------
+
+b6c12c8 - make getSlideLayoutOrMasterId public  
+c8f6b33 - addSlideIdListEntry(SlidePart slidePart, AddPartBehaviour mode) 
+
+
+content control databinding (OpenDoPE) changes
+----------------------------------------------
+
+128853a - support for OpenDoPE complex conditions 
+8675678 - OpenDoPE od:RptPosCon bugfix 
+68fb8bc - Databinding for date content controls  
+dd3ed9a - Distinguish repeat instances, so "and" between repeat items still works when a repeat is re-used. 
+049ebe9 - Support for od:RptPosCon (retain/delete a content control sensitive to position in a repeat)  
+6a19661 - Make merge sample work where OpenDoPE parts aren't present; add sample data  
+ 
+
+Other Changes (non-exhaustive)
+------------------------------
+
+13070d5 - XSL FO PDF output Support for w:customXml
+7148124 - HTML non XSLT Use \u2022 for bullet  
+d68261a - Get the part from whatever package its rp thinks owns it (useful for MergePPtx) 
+d0deb52 – HTML table output: find tc nested in other content  
+8bdc83f - HTML table output: Improved approach to finding tr, tc\
+4872d98 – XHTML import: rudimentary support for table borders off  
+c9a1a35 - Bugfix in picture content control binding, contributed by Olivier 'olabrosse' 
+c7acf15 - New method performMerge(WordprocessingMLPackage input, Map<DataFieldName, String> data, boolean processHeadersAndFooters 
+80ea26f - Fix for https://github.com/plutext/docx4j/issues/11 Don't attempt to normalise image extension. 
+8009929 - Support for MailMerge into headers/footers  
+08ec3f1 - Basic support for EastAsian (eg Chinese) fonts (eg SimSun) in PDF output.  
+0b943b7 - Fix for class cast exception in JAXB which resulted from implementing ContentAccessor interface on EndnotesPart and FootnotesPart.  Those parts no longer implement that interface.  
+c889549 - Possibility of doing the binding step, without using XSLT
+59abc02 - Sketch of TextDirection (WIP).  
+eac9a9f - Prefix mappings for OpenDoPE answers, XForms, XML events, and XSD  
+a0c898a – HTML non XSLT Add a method for exporting a specific block level content object; and getCss() 
+19086e4 - workaround to support color:# as in <span style="color:#ff000"> 
+cc29ed0 - docx4jexception instead of npe when attempting to load bad zip file  
+cb01aa3 - diff doesn't work for 5000+ elements 
+afd9a70 - utf-8 in font names 
+031d9ec - Made CTTxbxContent implement ContentAccessor 
+940cfba - FldChar support for TraversalUtils  
+20bdafd - better cell margins for pdf  
+932843c - first-line indent support for pdf  
+ebaadc7 - Fixed NullPointerException when (invalid) numbering overrides are set to override a non-existent numbering definition. 
+83d6e8a - Handle paragraph space before and after in HtmlExporterNG2 output 
+eb2b366 - Save existing System.getProperty("javax.xml.transform.TransformerFactory") and restore.  [32m(3 months ago) [m
+57404de - Move choice of DocumentBuilderFactory from XmlPart, to XmlUtils. This and SAXParserFactory is now configurable via docx4j.properties. 
+b91e4f1 - SAXParserFactory can be read from docx4j.properties 
+1066a9e – XHTML import fixes in course of importing several pages from Wikipedia: - nested tables (insert empty p; hack to fix hierarchy) - hyperlink inAlreadyProcessed - lax table next cell null 
+9c3ffd0 - Fixed handling of special characters (bullet, non-breaking space) by avoiding use of character entities.  Instead, use UTF-8 characters in Java extensions (ie \u...) 
+523823c - Use DOMResult, so we can use part.unmarshal, which should create a binder where possible  
+d4fa494 - Support base 64 encoded image in data URI 
+18fdf42 - Word for Mac 2010 doesn't set title  
+b29b9cd - Configurable regex, to limit to common fonts in order to avoid java.lang.OutOfMemoryError: Java heap space  
+3ae1448 - Footnote/Endnote parts implement ContentAccessor  
+c2dc9cb - Improvements to XHTML import (tables)  
+
+
+
 Version 2.8.0
 =============
 
