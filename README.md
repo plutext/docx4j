@@ -39,7 +39,7 @@ http://www.docx4java.org/downloads.html
 How do I get started?
 ------------------
 
-See the Getting Started guide.
+See the Getting Started guide: https://github.com/ricn/docx4j/blob/master/docs/Docx4j_GettingStarted.pdf?raw=true
 
 Where to get help?
 ------------------
