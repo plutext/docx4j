@@ -275,12 +275,15 @@
 			<xsl:variable name="repeatTag" select="$vNode/w:sdtPr/w:tag/@w:val" />
 				<!--  We could match on repeat ID and repeat instance ID, 
 				 	  but no need, because the tag is cloned, so its contents will be the same across instances -->
-			<xsl:variable name="repeatParent" select="ancestor::*[contains(string(w:sdt/w:sdtPr/w:tag/@w:val), 'od:rptd')][1]" /> 
+			
+			<!-- <xsl:variable name="repeatParent" select="ancestor::*[contains(string(w:sdt/w:sdtPr/w:tag/@w:val), 'od:rptd')][1]" />  --> 
+			<xsl:variable name="repeatParent" select="$vNode/.." /> 
+			
 			<xsl:variable name="vNodeSet" select="$repeatParent/w:sdt[contains(string(w:sdtPr/w:tag/@w:val), $repeatTag)]" /> 
 
-<!-- 			<xsl:variable name="dummy"
+ 			<xsl:variable name="dummy"
 				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('vNodeSet', count($vNodeSet)))" />
- -->
+ 
 			<xsl:variable name="vPrecNodes" select="$vNode/preceding::node()"/>
 			
 			 <xsl:variable name="vAncNodes" select="$vNode/ancestor::node()"/>
@@ -308,9 +311,9 @@
 				</xsl:apply-templates>
 			</xsl:variable>		
 			
-<!-- 			<xsl:variable name="dummy"
+ 			<xsl:variable name="dummy"
 				select="java:org.docx4j.model.datastorage.BindingTraverserXSLT.log(concat('result ', $result))" />
- -->					
+ 				
 										
 			<xsl:choose>
 				<xsl:when test="contains($result, 'true')">

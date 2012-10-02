@@ -500,7 +500,7 @@ public class TableModel extends Model {
 
 	private void handleRow(NodeList cellContents, Tr tr, int r) {
 
-		System.out.println("Processing r " + r);
+		log.debug("Processing r " + r);
 		
 		if (borderConflictResolutionRequired && tr.getTblPrEx() != null
 				&& tr.getTblPrEx().getTblCellSpacing() != null) {
@@ -512,12 +512,12 @@ public class TableModel extends Model {
 		
 		//List<Object> cells = tr.getEGContentCellContent();
 		int c = 0;
-		System.out.println("Processing c " + c);
+		log.debug("Processing c " + c);
 		for (Tc tc : tcFinder.tcList) {
 
 			Node wtrNode = cellContents.item(r); // w:tr
 			if (wtrNode==null ) {
-				System.out.println("Couldn't find item " + r);
+				log.warn("Couldn't find item " + r);
 			}
 			addCell(tc, getTc(wtrNode, c, new IntRef(0))); // the cell content
 			// addCell(tc, cellContents.item(i));
@@ -540,7 +540,7 @@ public class TableModel extends Model {
 			
 			Node thisChild = wtrNode.getChildNodes().item(i);
 			
-			System.out.println("Looking at " + thisChild.getLocalName() + "; have encountered " + current.i);
+			log.debug("Looking at " + thisChild.getLocalName() + "; have encountered " + current.i);
 			
 			if (thisChild.getLocalName().equals("tc") ) {
 				if (current.i==wanted) return thisChild;

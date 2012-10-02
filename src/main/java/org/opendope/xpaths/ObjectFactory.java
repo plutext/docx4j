@@ -38,19 +38,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Xpaths }
-     * 
-     */
-    public Xpaths createXpaths() {
-        return new Xpaths();
-    }
-
-    /**
      * Create an instance of {@link Xpaths.Xpath }
      * 
      */
     public Xpaths.Xpath createXpathsXpath() {
         return new Xpaths.Xpath();
+    }
+
+    /**
+     * Create an instance of {@link Xpaths }
+     * 
+     */
+    public Xpaths createXpaths() {
+        return new Xpaths();
     }
 
 }

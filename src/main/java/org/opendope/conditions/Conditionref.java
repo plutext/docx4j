@@ -1,6 +1,9 @@
 
 package org.opendope.conditions;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -9,6 +12,10 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 
 
 /**
@@ -31,7 +38,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "")
 @XmlRootElement(name = "conditionref")
-public class Conditionref {
+public class Conditionref implements Evaluable {
 
     @XmlAttribute(required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
@@ -62,4 +69,42 @@ public class Conditionref {
         this.id = value;
     }
 
+	public boolean evaluate(WordprocessingMLPackage pkg, 
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths) {
+		
+		Condition particle = ConditionsPart.getConditionById(conditions, id);
+    	return particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+    }
+	
+	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
+			Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths) {
+		
+		Condition particle = ConditionsPart.getConditionById(conditions, id);
+    	particle.listXPaths(theList, conditions, xPaths);
+		
+	}
+	
+	public String toString(Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths) {
+
+		Condition particle = ConditionsPart.getConditionById(conditions, id);
+		return particle.toString(conditions, xPaths);
+	}
+    
+	public Condition repeat(String xpathBase,
+			int index,
+			Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths)	{
+
+		Condition particle = ConditionsPart.getConditionById(conditions, id);
+		Condition newCondition = particle.repeat(xpathBase, index, conditions, xPaths);
+		
+		this.id = newCondition.getId();
+
+    	return null;
+	}	
+	
 }

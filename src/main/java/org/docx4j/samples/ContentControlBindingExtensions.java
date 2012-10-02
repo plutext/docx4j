@@ -56,20 +56,33 @@ public class ContentControlBindingExtensions {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-
+		
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/databinding/invoice.docx";
 		
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));		
 		
 		String filepathprefix = inputfilepath.substring(0, inputfilepath.lastIndexOf("."));
 		System.out.println(filepathprefix);
+		
+		StringBuilder timingSummary = new StringBuilder();
+		
 
 		// Process conditionals and repeats
+		long startTime = System.currentTimeMillis();
 		OpenDoPEHandler odh = new OpenDoPEHandler(wordMLPackage);
 		odh.preprocess();
+		long endTime = System.currentTimeMillis();
+		timingSummary.append("OpenDoPEHandler: " + (endTime-startTime));
+
+		System.out.println(
+				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
+				);		
 		
+		startTime = System.currentTimeMillis();
 		OpenDoPEIntegrity odi = new OpenDoPEIntegrity();
 		odi.process(wordMLPackage);
+		endTime = System.currentTimeMillis();
+		timingSummary.append("\nOpenDoPEIntegrity: " + (endTime-startTime));
 		
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
@@ -80,7 +93,10 @@ public class ContentControlBindingExtensions {
 		
 		// Apply the bindings
 		BindingHandler.setHyperlinkStyle("Hyperlink");						
+		startTime = System.currentTimeMillis();
 		BindingHandler.applyBindings(wordMLPackage.getMainDocumentPart());
+		endTime = System.currentTimeMillis();
+		timingSummary.append("\nBindingHandler.applyBindings: " + (endTime-startTime));
 		System.out.println(
 				XmlUtils.marshaltoString(wordMLPackage.getMainDocumentPart().getJaxbElement(), true, true)
 				);
@@ -89,10 +105,16 @@ public class ContentControlBindingExtensions {
 		
 		// Strip content controls: you MUST do this 
 		// if you are processing hyperlinks
+		startTime = System.currentTimeMillis();
 		RemovalHandler rh = new RemovalHandler();
 		rh.removeSDTs(wordMLPackage, Quantifier.ALL);
+		endTime = System.currentTimeMillis();
+		timingSummary.append("\nRemovalHandler: " + (endTime-startTime));
+
 		saver.save(filepathprefix + "_stripped.docx");
 		System.out.println("Saved: " + filepathprefix + "_stripped.docx");
+		
+		System.out.println(timingSummary);
 	}		
 				
 

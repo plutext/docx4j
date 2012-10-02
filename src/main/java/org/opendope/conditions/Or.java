@@ -3,6 +3,8 @@ package org.opendope.conditions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -10,6 +12,9 @@ import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 
 
 /**
@@ -44,18 +49,16 @@ import javax.xml.bind.annotation.XmlType;
     "xpathrefOrAndOrOr"
 })
 @XmlRootElement(name = "or")
-public class Or {
+public class Or implements Evaluable {
 
     @XmlElementRefs({
         @XmlElementRef(name = "and", namespace = "http://opendope.org/conditions", type = And.class),
         @XmlElementRef(name = "xpathref", namespace = "http://opendope.org/conditions", type = Xpathref.class),
-        @XmlElementRef(name = "false", namespace = "http://opendope.org/conditions", type = JAXBElement.class),
         @XmlElementRef(name = "not", namespace = "http://opendope.org/conditions", type = Not.class),
         @XmlElementRef(name = "or", namespace = "http://opendope.org/conditions", type = Or.class),
-        @XmlElementRef(name = "true", namespace = "http://opendope.org/conditions", type = JAXBElement.class),
         @XmlElementRef(name = "conditionref", namespace = "http://opendope.org/conditions", type = Conditionref.class)
     })
-    protected List<Object> xpathrefOrAndOrOr;
+    protected List<Evaluable> xpathrefOrAndOrOr;
 
     /**
      * Gets the value of the xpathrefOrAndOrOr property.
@@ -85,11 +88,65 @@ public class Or {
      * 
      * 
      */
-    public List<Object> getXpathrefOrAndOrOr() {
+    public List<Evaluable> getXpathrefOrAndOrOr() {
         if (xpathrefOrAndOrOr == null) {
-            xpathrefOrAndOrOr = new ArrayList<Object>();
+            xpathrefOrAndOrOr = new ArrayList<Evaluable>();
         }
         return this.xpathrefOrAndOrOr;
     }
+    
+	public boolean evaluate(WordprocessingMLPackage pkg, 
+			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths) {
+    	
+    	for (Evaluable particle : xpathrefOrAndOrOr) {
+    		
+        	boolean result = particle.evaluate(pkg, customXmlDataStorageParts, conditions, xPaths);
+        	if (result==true) {
+        		return true;
+        	}    		
+    	}
+    	return false;
+    }
+    
+	public void listXPaths( List<org.opendope.xpaths.Xpaths.Xpath> theList, 
+			Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths) {
+		
+    	for (Evaluable particle : xpathrefOrAndOrOr) {
+    		particle.listXPaths(theList, conditions, xPaths);
+    	}
+		
+	}
 
+	public String toString(Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		int i = 0;
+		int total = xpathrefOrAndOrOr.size();
+    	for (Evaluable particle : xpathrefOrAndOrOr) {
+    		sb.append(particle.toString(conditions, xPaths));
+    		i++;
+    		if (i<total) {
+    			sb.append(" or ");
+    		}
+    	}
+		
+		return "(" + sb.toString() + ")";
+	}
+	
+	public Condition repeat(String xpathBase,
+			int index,
+			Conditions conditions,
+			org.opendope.xpaths.Xpaths xPaths)	{
+
+    	for (Evaluable particle : xpathrefOrAndOrOr) {
+    		particle.repeat(xpathBase, index, conditions, xPaths);
+    	}
+		return null;
+	}	
+	
 }

@@ -1,7 +1,6 @@
 
 package org.opendope.questions;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -26,22 +25,6 @@ import javax.xml.bind.annotation.XmlType;
  *           &lt;complexType>
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;all>
- *                   &lt;element name="format">
- *                     &lt;simpleType>
- *                       &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                         &lt;enumeration value="text"/>
- *                         &lt;enumeration value="longtext"/>
- *                         &lt;enumeration value="integer"/>
- *                         &lt;enumeration value="date"/>
- *                         &lt;enumeration value="currency"/>
- *                       &lt;/restriction>
- *                     &lt;/simpleType>
- *                   &lt;/element>
- *                   &lt;element name="length" type="{http://www.w3.org/2001/XMLSchema}integer"/>
- *                   &lt;element name="min" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *                   &lt;element name="max" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *                 &lt;/all>
  *               &lt;/restriction>
  *             &lt;/complexContent>
  *           &lt;/complexType>
@@ -51,20 +34,19 @@ import javax.xml.bind.annotation.XmlType;
  *             &lt;complexContent>
  *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                 &lt;sequence>
- *                   &lt;element name="category" maxOccurs="unbounded">
+ *                   &lt;element name="item" maxOccurs="unbounded">
  *                     &lt;complexType>
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;all>
+ *                           &lt;sequence>
  *                             &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *                             &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *                           &lt;/all>
+ *                           &lt;/sequence>
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
  *                   &lt;/element>
  *                 &lt;/sequence>
- *                 &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}integer" />
  *                 &lt;attribute name="canSelectMany" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
@@ -148,20 +130,19 @@ public class Response {
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *       &lt;sequence>
-     *         &lt;element name="category" maxOccurs="unbounded">
+     *         &lt;element name="item" maxOccurs="unbounded">
      *           &lt;complexType>
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *                 &lt;all>
+     *                 &lt;sequence>
      *                   &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string"/>
      *                   &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string"/>
-     *                 &lt;/all>
+     *                 &lt;/sequence>
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
      *         &lt;/element>
      *       &lt;/sequence>
-     *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}integer" />
      *       &lt;attribute name="canSelectMany" type="{http://www.w3.org/2001/XMLSchema}boolean" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
@@ -172,68 +153,42 @@ public class Response {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-        "category"
+        "item"
     })
     public static class Fixed {
 
         @XmlElement(required = true)
-        protected List<Response.Fixed.Category> category;
-        @XmlAttribute
-        protected BigInteger id;
+        protected List<Response.Fixed.Item> item;
         @XmlAttribute
         protected Boolean canSelectMany;
 
         /**
-         * Gets the value of the category property.
+         * Gets the value of the item property.
          * 
          * <p>
          * This accessor method returns a reference to the live list,
          * not a snapshot. Therefore any modification you make to the
          * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the category property.
+         * This is why there is not a <CODE>set</CODE> method for the item property.
          * 
          * <p>
          * For example, to add a new item, do as follows:
          * <pre>
-         *    getCategory().add(newItem);
+         *    getItem().add(newItem);
          * </pre>
          * 
          * 
          * <p>
          * Objects of the following type(s) are allowed in the list
-         * {@link Response.Fixed.Category }
+         * {@link Response.Fixed.Item }
          * 
          * 
          */
-        public List<Response.Fixed.Category> getCategory() {
-            if (category == null) {
-                category = new ArrayList<Response.Fixed.Category>();
+        public List<Response.Fixed.Item> getItem() {
+            if (item == null) {
+                item = new ArrayList<Response.Fixed.Item>();
             }
-            return this.category;
-        }
-
-        /**
-         * Gets the value of the id property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link BigInteger }
-         *     
-         */
-        public BigInteger getId() {
-            return id;
-        }
-
-        /**
-         * Sets the value of the id property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link BigInteger }
-         *     
-         */
-        public void setId(BigInteger value) {
-            this.id = value;
+            return this.item;
         }
 
         /**
@@ -270,10 +225,10 @@ public class Response {
          * &lt;complexType>
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-         *       &lt;all>
+         *       &lt;sequence>
          *         &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string"/>
          *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string"/>
-         *       &lt;/all>
+         *       &lt;/sequence>
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -283,9 +238,10 @@ public class Response {
          */
         @XmlAccessorType(XmlAccessType.FIELD)
         @XmlType(name = "", propOrder = {
-
+            "label",
+            "value"
         })
-        public static class Category {
+        public static class Item {
 
             @XmlElement(required = true)
             protected String label;
@@ -354,22 +310,6 @@ public class Response {
      * &lt;complexType>
      *   &lt;complexContent>
      *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;all>
-     *         &lt;element name="format">
-     *           &lt;simpleType>
-     *             &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-     *               &lt;enumeration value="text"/>
-     *               &lt;enumeration value="longtext"/>
-     *               &lt;enumeration value="integer"/>
-     *               &lt;enumeration value="date"/>
-     *               &lt;enumeration value="currency"/>
-     *             &lt;/restriction>
-     *           &lt;/simpleType>
-     *         &lt;/element>
-     *         &lt;element name="length" type="{http://www.w3.org/2001/XMLSchema}integer"/>
-     *         &lt;element name="min" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
-     *         &lt;element name="max" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
-     *       &lt;/all>
      *     &lt;/restriction>
      *   &lt;/complexContent>
      * &lt;/complexType>
@@ -378,113 +318,9 @@ public class Response {
      * 
      */
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-
-    })
+    @XmlType(name = "")
     public static class Free {
 
-        @XmlElement(required = true, defaultValue = "text")
-        protected String format;
-        @XmlElement(required = true)
-        protected BigInteger length;
-        protected String min;
-        protected String max;
-
-        /**
-         * Gets the value of the format property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getFormat() {
-            return format;
-        }
-
-        /**
-         * Sets the value of the format property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setFormat(String value) {
-            this.format = value;
-        }
-
-        /**
-         * Gets the value of the length property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link BigInteger }
-         *     
-         */
-        public BigInteger getLength() {
-            return length;
-        }
-
-        /**
-         * Sets the value of the length property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link BigInteger }
-         *     
-         */
-        public void setLength(BigInteger value) {
-            this.length = value;
-        }
-
-        /**
-         * Gets the value of the min property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getMin() {
-            return min;
-        }
-
-        /**
-         * Sets the value of the min property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setMin(String value) {
-            this.min = value;
-        }
-
-        /**
-         * Gets the value of the max property.
-         * 
-         * @return
-         *     possible object is
-         *     {@link String }
-         *     
-         */
-        public String getMax() {
-            return max;
-        }
-
-        /**
-         * Sets the value of the max property.
-         * 
-         * @param value
-         *     allowed object is
-         *     {@link String }
-         *     
-         */
-        public void setMax(String value) {
-            this.max = value;
-        }
 
     }
 
