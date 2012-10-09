@@ -418,7 +418,7 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 				
 				// We need to refresh image info 
 				imageManager.getCache().clearCache();
-                info = getImageInfo(new URL(imageFile.getAbsolutePath()));
+                info = getImageInfo(new URL("file://" + imageFile.getAbsolutePath()));
 				
 				// Debug ...
 				displayImageInfo(info);
