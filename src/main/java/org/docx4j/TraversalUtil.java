@@ -26,6 +26,8 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.docx4j.dml.CTHyperlink;
+import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
@@ -164,20 +166,47 @@ public class TraversalUtil {
 
 	}
 
+	
 	private static List<Object> handleGraphicData(org.docx4j.dml.GraphicData graphicData) {
-		// Its not graphicData.getAny() we're typically interested in
-		if (graphicData.getPic()!=null
-			&& graphicData.getPic().getBlipFill()!=null
-			&& graphicData.getPic().getBlipFill().getBlip()!=null) {
-			log.info("found CTBlip");
-			List<Object> artificialList = new ArrayList<Object>();
-			artificialList.add(graphicData.getPic().getBlipFill().getBlip());
-			return artificialList;
-		} else {
-			// Chart is in here
-			return graphicData.getAny();						
-		}		
+        // Added by Peter Buil
+        List<Object> tmpArtificialList = new ArrayList<Object>();
+        if (graphicData.getPic() != null) {
+            //GraphicData can have a hyperlink reference, which can be found this way
+            CTNonVisualDrawingProps picNonVisual = graphicData.getPic().getNvPicPr().getCNvPr();
+            if (picNonVisual != null) {
+                handleCTNonVisualDrawingProps(picNonVisual, tmpArtificialList);
+            }
+        }
+        // Its not graphicData.getAny() we're typically interested in
+        if (graphicData.getPic() != null && graphicData.getPic().getBlipFill() != null
+                && graphicData.getPic().getBlipFill().getBlip() != null) {
+            log.info("found CTBlip");
+            List<Object> artificialList = new ArrayList<Object>();
+            if (!tmpArtificialList.isEmpty())
+                artificialList.addAll(tmpArtificialList);
+            artificialList.add(graphicData.getPic().getBlipFill().getBlip());
+            return artificialList;
+        } else {
+            // Chart is in here
+            return graphicData.getAny();
+        }
+    }
+	
+	 
+	/**
+	 * There can be hyperlinks references in CTNonVisualDrawingProps.
+	 * @param drawingProps
+	 * @param artificialList
+	 */
+	private static void handleCTNonVisualDrawingProps(CTNonVisualDrawingProps drawingProps, List<Object> artificialList){
+      if (drawingProps != null) {
+          CTHyperlink docPrHyperLink = drawingProps.getHlinkClick();
+          if (docPrHyperLink != null)
+              artificialList.add(docPrHyperLink);
+      } 
 	}
+	
+	
 	public static List<Object> getChildrenImpl(Object o) {
 		
 		if (o==null) {
@@ -197,25 +226,40 @@ public class TraversalUtil {
 		} else if (o instanceof org.docx4j.wml.SdtElement) {
 			return ((org.docx4j.wml.SdtElement) o).getSdtContent().getContent();
 		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
-			org.docx4j.dml.wordprocessingDrawing.Anchor anchor = 
-				(org.docx4j.dml.wordprocessingDrawing.Anchor)o;
-			if (anchor.getGraphic()!=null) {
-				log.info("found a:graphic");
-				org.docx4j.dml.Graphic graphic = anchor.getGraphic();
-				if (graphic.getGraphicData()!=null) {
-					return handleGraphicData(graphic.getGraphicData());
-				}
-			}			
-		} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
-			org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline)o;
-			if (inline.getGraphic()!=null) {
-				log.info("found a:graphic");
-				org.docx4j.dml.Graphic graphic = inline.getGraphic();
-				if (graphic.getGraphicData()!=null) {
-					return handleGraphicData(graphic.getGraphicData());
-				}
-			}
-		} else if (o instanceof Pict) {
+            org.docx4j.dml.wordprocessingDrawing.Anchor anchor = (org.docx4j.dml.wordprocessingDrawing.Anchor) o;
+            List<Object> artificialList = new ArrayList<Object>();
+            CTNonVisualDrawingProps drawingProps = anchor.getDocPr();
+            if (drawingProps != null) {
+                handleCTNonVisualDrawingProps(drawingProps, artificialList);
+            }
+            if (anchor.getGraphic() != null) {
+                log.info("found a:graphic");
+                org.docx4j.dml.Graphic graphic = anchor.getGraphic();
+                if (graphic.getGraphicData() != null) {
+                    artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
+                }
+            }
+            if (!artificialList.isEmpty())
+                return artificialList;
+        } else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline) {
+            org.docx4j.dml.wordprocessingDrawing.Inline inline = (org.docx4j.dml.wordprocessingDrawing.Inline) o;
+            List<Object> artificialList = new ArrayList<Object>();
+            CTNonVisualDrawingProps drawingProps = inline.getDocPr();
+            if (drawingProps != null) {
+                handleCTNonVisualDrawingProps(drawingProps, artificialList);
+            }
+            if (inline.getGraphic() != null) {
+                log.info("found a:graphic");
+                org.docx4j.dml.Graphic graphic = inline.getGraphic();
+                if (graphic.getGraphicData() != null) {
+                    artificialList.addAll(handleGraphicData(graphic.getGraphicData()));
+                }
+                return artificialList;
+            }
+            if (!artificialList.isEmpty())
+                return artificialList;
+
+        } else if (o instanceof Pict) {
 			return ((Pict)o).getAnyAndAny(); // (why didn't the reflection below find this?)
 			
 		} else if (o instanceof org.docx4j.dml.picture.Pic) { // Post 2.7.1; untested

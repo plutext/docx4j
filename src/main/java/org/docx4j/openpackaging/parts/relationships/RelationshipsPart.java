@@ -726,12 +726,10 @@ public final class RelationshipsPart extends JaxbXmlPart<Relationships> {
 		
 		for (Relationship rel : jaxbElement.getRelationship() ) {
 			
-//			// TODO: come back to this
-//			if (rel.getTargetMode() !=null
-//					&& rel.getTargetMode().equals("External") ) {
-//				// This method can't be used to remove external resources
-//				continue;
-//			}
+			if (rel.getTargetMode() !=null && rel.getTargetMode().equals("External")) {
+				// This method can't be used to get external relationships
+				continue;
+			}
 				
 			// TODO 20110902: it would be more efficient to relativise the partName
 			// just once, and compare using that (see addPart, which
