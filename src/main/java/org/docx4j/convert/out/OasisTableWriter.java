@@ -21,11 +21,13 @@
 package org.docx4j.convert.out;
 
 import java.util.*;
+
 import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
+import org.docx4j.model.table.TableModelRow;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -74,31 +76,32 @@ public class OasisTableWriter extends ModelConverter {
     Element tbody = doc.createElement("tbody");
     tgroup.appendChild(tbody);
     
-    for (List<Cell> rows : table.getCells()) {
-			Element row = doc.createElement("row");
-			tbody.appendChild(row);
-			for (Cell cell : rows) {
-				// process cell
-				if (!cell.isDummy()) {
-					int col = cell.getColumn();
-					String start = table.getColName(col);
-					String end = table.getColName(col + cell.getExtraCols());
-					
-				    Element cellNode = doc.createElement("entry");
-				    row.appendChild(cellNode);
-				    cellNode.setAttribute("namest", start);
-				    cellNode.setAttribute("nameend", end);
-					int morerows = cell.getExtraRows();
-					if (morerows > 0)
-						cellNode.setAttribute("morerows", String
-								.valueOf(morerows));
-					// insert content into cell
-					// skipping w:tc node itself, insert only its children
-					XmlUtils.treeCopy(cell.getContent().getChildNodes(),
-							cellNode);
-				}
+	for (TableModelRow tmr : table.getCells()) {
+		List<Cell> rows = tmr.getRowContents();
+		Element row = doc.createElement("row");
+		tbody.appendChild(row);
+		for (Cell cell : rows) {
+			// process cell
+			if (!cell.isDummy()) {
+				int col = cell.getColumn();
+				String start = table.getColName(col);
+				String end = table.getColName(col + cell.getExtraCols());
+
+				Element cellNode = doc.createElement("entry");
+				row.appendChild(cellNode);
+				cellNode.setAttribute("namest", start);
+				cellNode.setAttribute("nameend", end);
+				int morerows = cell.getExtraRows();
+				if (morerows > 0)
+					cellNode.setAttribute("morerows",
+							String.valueOf(morerows));
+				// insert content into cell
+				// skipping w:tc node itself, insert only its children
+				XmlUtils.treeCopy(cell.getContent().getChildNodes(),
+						cellNode);
 			}
 		}
-    return docfrag;
+	}
+	return docfrag;
   }
 }

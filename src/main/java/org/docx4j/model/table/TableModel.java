@@ -97,7 +97,7 @@ public class TableModel extends Model {
 
 	public TableModel() {
 		resetIndexes();
-		cells = new Vector<List<Cell>>();
+		cells = new Vector<TableModelRow>();
 	}
 
 	// TODO, retire this
@@ -106,7 +106,7 @@ public class TableModel extends Model {
 	/**
 	 * A list of rows
 	 */
-	protected List<List<Cell>> cells;
+	protected List<TableModelRow> cells;
 	
 	private int row;
 	private int col;
@@ -148,11 +148,6 @@ public class TableModel extends Model {
 		return tblGrid;
 	}
 	
-
-	// TODO - we will eventually need a representation of row properties
-	// We could either store these in a list, or
-	// keep a reference to the w:tbl itself.
-
 	// We don't need this in our table model,
 	// at least for HTML. (PropertyFactory takes care of it)
 	
@@ -189,8 +184,8 @@ public class TableModel extends Model {
 		col = -1;
 	}
 
-	public void startRow() {
-		cells.add(new Vector<Cell>());
+	public void startRow(Tr tr) {
+		cells.add(new TableModelRow(tr) );
 		row++;
 		col = -1;
 	}
@@ -229,7 +224,7 @@ public class TableModel extends Model {
 		return cells.get(0).size();
 	}
 
-	public List<List<Cell>> getCells() {
+	public List<TableModelRow> getCells() {
 		return cells;
 	}
 
@@ -312,7 +307,7 @@ public class TableModel extends Model {
 		
 		int r = 0;
 		for (Tr tr : trFinder.trList) {
-				startRow();
+				startRow(tr);
 				handleRow(cellContents, tr, r);
 				r++;
 		}
@@ -712,8 +707,9 @@ public class TableModel extends Model {
 
 	public String debugStr() {
 		StringBuffer buf = new StringBuffer();
-		for (List<Cell> rows : cells) {
-			for (Cell c : rows) {
+		for (TableModelRow row : cells) {
+			List<Cell> rowContents = row.getRowContents();
+			for (Cell c : rowContents) {
 				if (c==null) {
 					buf.append("null     ");
 				} else {

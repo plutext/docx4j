@@ -20,6 +20,7 @@ import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
+import org.docx4j.model.table.TableModelRow;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
@@ -204,7 +205,8 @@ public class TableWriter extends ModelConverter {
     Element tbody = doc.createElement("tbody");
     tbl.appendChild(tbody);
     
-    for (List<Cell> rows : table.getCells()) {
+	for (TableModelRow tmr : table.getCells() ) {
+		List<Cell> rows = tmr.getRowContents();
 			Element row = doc.createElement("tr");
 			tbody.appendChild(row);
 			

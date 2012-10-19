@@ -16,16 +16,23 @@ import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
+import org.docx4j.model.table.TableModelRow;
 import org.docx4j.wml.CTBorder;
+import org.docx4j.wml.CTHeight;
+import org.docx4j.wml.CTTrPrBase;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblGridCol;
+import org.docx4j.wml.TrPr;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.apache.log4j.Logger;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.transform.TransformerException;
 
 /*
@@ -161,52 +168,69 @@ public class TableWriter extends ModelConverter {
 	foTableBody.setAttribute("end-indent", endIndent );		
 	
 	
-    
-    for (List<Cell> rows : table.getCells()) {
+		for (TableModelRow tmr : table.getCells()) {
+			List<Cell> rows = tmr.getRowContents();
 			// Element row = doc.createElement("tr");
-			Element row = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
-			"fo:table-row");			
+			Element row = doc.createElementNS(
+					"http://www.w3.org/1999/XSL/Format", "fo:table-row");
+			
+			String emptyCellHeight = "5mm";
+			TrPr trPr =tmr.getRowProperties(); 
+			if (trPr!=null) {
+				CTHeight height = this.getRowHeight(trPr);
+				if (height!=null
+						&& height.getVal()!=null) {
+					int x = height.getVal().intValue(); //twips
+					emptyCellHeight = UnitsOfMeasurement.twipToBest(x); // keep for later 
+					row.setAttribute("height", emptyCellHeight );
+				}
+			}
+			
 			foTableBody.appendChild(row);
 			for (Cell cell : rows) {
 				// process cell
 				if (!cell.isDummy()) {
 					int col = cell.getColumn();
-					//Element cellNode = doc.createElement("td");
-					Element cellNode = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
-					"fo:table-cell");
+					// Element cellNode = doc.createElement("td");
+					Element cellNode = doc.createElementNS(
+							"http://www.w3.org/1999/XSL/Format",
+							"fo:table-cell");
 					row.appendChild(cellNode);
 
 					// style
-					//cellNode.setAttribute("border-style", "dashed");
-					
-					if (tblBorders!=null) {
-						if (tblBorders.getInsideH()!=null) {
-							( new BorderTop(   tblBorders.getTop()    )).setXslFO(cellNode);
-							( new BorderBottom(tblBorders.getBottom() )).setXslFO(cellNode);
+					// cellNode.setAttribute("border-style", "dashed");
+
+					if (tblBorders != null) {
+						if (tblBorders.getInsideH() != null) {
+							(new BorderTop(tblBorders.getTop()))
+									.setXslFO(cellNode);
+							(new BorderBottom(tblBorders.getBottom()))
+									.setXslFO(cellNode);
 						}
-						if (tblBorders.getInsideV()!=null) { 
-							( new BorderRight(tblBorders.getRight() )).setXslFO(cellNode);
-							( new BorderLeft( tblBorders.getLeft()  )).setXslFO(cellNode);
-						}						
+						if (tblBorders.getInsideV() != null) {
+							(new BorderRight(tblBorders.getRight()))
+									.setXslFO(cellNode);
+							(new BorderLeft(tblBorders.getLeft()))
+									.setXslFO(cellNode);
+						}
 					}
 					// Ensure empty cells have a sensible height
-					cellNode.setAttribute("height", "5mm");
-						
+					cellNode.setAttribute("height", emptyCellHeight);
+
 					// now override the defaults
-					if (cell.getTcPr()!=null ) {
-						StringBuffer inlineStyle =  new StringBuffer();
-						Conversion.createFoAttributes(cell.getTcPr(), cellNode);				
+					if (cell.getTcPr() != null) {
+						StringBuffer inlineStyle = new StringBuffer();
+						Conversion.createFoAttributes(cell.getTcPr(), cellNode);
 					}
-					
-					
+
 					if (cell.getExtraCols() > 0) {
-						cellNode.setAttribute("number-columns-spanned", Integer.toString(cell
-								.getExtraCols() + 1));
-						
+						cellNode.setAttribute("number-columns-spanned",
+								Integer.toString(cell.getExtraCols() + 1));
+
 					}
 					if (cell.getExtraRows() > 0) {
-						cellNode.setAttribute("number-rows-spanned", Integer.toString(cell
-								.getExtraRows() + 1));
+						cellNode.setAttribute("number-rows-spanned",
+								Integer.toString(cell.getExtraRows() + 1));
 					}
 					// insert content into cell
 					// skipping w:tc node itself, insert only its children
@@ -221,5 +245,20 @@ public class TableWriter extends ModelConverter {
 			}
 		}
     return docfrag;
+  }
+  
+  private CTHeight getRowHeight(TrPr trPr) {
+//	    @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "trHeight", scope = CTTrPrBase.class)
+//	    public JAXBElement<CTHeight> createCTTrPrBaseTrHeight(CTHeight value) {
+//	        return new JAXBElement<CTHeight>(_CTTrPrBaseTrHeight_QNAME, CTHeight.class, CTTrPrBase.class, value);
+//	    }
+
+	  if (trPr==null) return null;
+	  for (JAXBElement o : trPr.getCnfStyleOrDivIdOrGridBefore() ) {
+		  if (o.getName().getLocalPart().equals("trHeight")) {
+			  return (CTHeight)XmlUtils.unwrap(o);
+		  }
+	  }
+	  return null;
   }
 }
