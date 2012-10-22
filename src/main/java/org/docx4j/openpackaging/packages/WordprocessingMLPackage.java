@@ -120,12 +120,24 @@ public class WordprocessingMLPackage extends OpcPackage {
 	
 	private DocumentModel documentModel;
 	public DocumentModel getDocumentModel() {
-		if (documentModel==null) {
-			documentModel = new DocumentModel(this);
-		}
-		return documentModel;
+		
+		return getDocumentModel(false);
 	}
 	
+	
+	/**
+	 * @param refresh
+	 * @return
+	 * 
+	 * @since 2.8.1
+	 */
+	public DocumentModel getDocumentModel(boolean refresh) {
+		if (documentModel==null
+				|| refresh) {
+			documentModel = new DocumentModel(this);
+		}
+		return documentModel;	
+	}
 	
 	private HeaderFooterPolicy headerFooterPolicy;	
 	@Deprecated	

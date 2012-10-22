@@ -226,6 +226,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	@Override
 	public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
 
+		// Refresh the document model, in case
+		// the user has added headers or footers
+		wordMLPackage.getDocumentModel(true);
+		
 		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
 		// (reuse if you plan to render multiple documents!)
 		FopFactory fopFactory = FopFactory.newInstance();
