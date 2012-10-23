@@ -326,6 +326,14 @@ public class TableModel extends Model {
 			}			
 			return null; 
 		}
+		
+		@Override
+		public boolean shouldTraverse(Object o) {
+			
+			// Yes, unless its a nested Tbl
+			return !(o instanceof Tbl); 
+		}
+		
 	}
 	
 	static class TcFinder extends CallbackImpl {
@@ -340,6 +348,13 @@ public class TableModel extends Model {
 				tcList.add((Tc)o);
 			}			
 			return null; 
+		}
+
+		@Override
+		public boolean shouldTraverse(Object o) {
+			
+			// Yes, unless its a nested Tbl
+			return !(o instanceof Tbl); 
 		}
 	}
 	
@@ -512,7 +527,8 @@ public class TableModel extends Model {
 
 			Node wtrNode = cellContents.item(r); // w:tr
 			if (wtrNode==null ) {
-				log.warn("Couldn't find item " + r);
+				log.error("Couldn't find item " + r);
+				return;
 			}
 			addCell(tc, getTc(wtrNode, c, new IntRef(0))); // the cell content
 			// addCell(tc, cellContents.item(i));
