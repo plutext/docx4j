@@ -1,6 +1,5 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -12,6 +11,7 @@ import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.wml.SectPr.PgMar;
 import org.plutext.jaxb.xslfo.ConditionalPageMasterReference;
 import org.plutext.jaxb.xslfo.LayoutMasterSet;
 import org.plutext.jaxb.xslfo.ObjectFactory;
@@ -23,7 +23,6 @@ import org.plutext.jaxb.xslfo.RegionBefore;
 import org.plutext.jaxb.xslfo.RegionBody;
 import org.plutext.jaxb.xslfo.RepeatablePageMasterAlternatives;
 import org.plutext.jaxb.xslfo.SimplePageMaster;
-
 import org.w3c.dom.DocumentFragment;
 
 public class LayoutMasterSetBuilder {
@@ -35,6 +34,29 @@ public class LayoutMasterSetBuilder {
 	public static DocumentFragment getLayoutMasterSetFragment(WordprocessingMLPackage wordMLPackage) {
 
 		LayoutMasterSet lms = getFoLayoutMasterSet(wordMLPackage);
+		
+		PgMar pageMargin = wordMLPackage.getMainDocumentPart().getJaxbElement().getBody().getSectPr().getPgMar();
+		if (pageMargin != null)
+		{
+			for (Object o: lms.getSimplePageMasterOrPageSequenceMaster())
+			{
+				if(o instanceof SimplePageMaster)
+				{
+					SimplePageMaster spm = (SimplePageMaster)o;
+					spm.setMarginTop("0pt");
+					spm.setMarginBottom("0pt");
+					spm.setMarginLeft("0pt" );
+					spm.setMarginRight("0pt");
+					
+					RegionBody rb = spm.getRegionBody();
+					rb.setMarginTop( (pageMargin.getTop().intValue() / 20) + "pt");
+					rb.setMarginBottom( (pageMargin.getBottom().intValue() / 20) + "pt");
+					rb.setMarginLeft( (pageMargin.getLeft().intValue() / 20) + "pt");
+					rb.setMarginRight( (pageMargin.getRight().intValue() / 20) + "pt");
+				}
+			}
+		}
+		
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		DocumentFragment docfrag = document.createDocumentFragment();
