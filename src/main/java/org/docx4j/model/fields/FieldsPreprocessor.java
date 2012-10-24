@@ -148,11 +148,11 @@ public class FieldsPreprocessor {
 						if (depth==1 ) { 
 						
 							// Add any content the run contains before the BEGIN
-							if (newR.getContent().size()>0) {
-								newP.getContent().add(newR);
-								
-								newR.setRPr(existingRun.getRPr() ); // if any
-							}
+//							if (newR.getContent().size()>0) {
+//								newP.getContent().add(newR);
+//
+//								newR.setRPr(existingRun.getRPr() ); // if any
+//							}
 
 							newR = Context.getWmlObjectFactory().createR();
 							newR.getContent().add(o2);
@@ -233,9 +233,11 @@ public class FieldsPreprocessor {
 						newR.setRPr(fieldRPr);
 						
 					} else {
-						newR.getContent().add(o2);													
-					}
-					
+						newR.getContent().add(o2);
+            newR.setRPr(existingRun.getRPr());
+            newP.getContent().add(newR);
+            newR = Context.getWmlObjectFactory().createR();
+          }
 				}
 				
 			} else {
