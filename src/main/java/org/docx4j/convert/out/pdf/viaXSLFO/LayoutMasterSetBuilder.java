@@ -35,6 +35,7 @@ public class LayoutMasterSetBuilder {
 
 		LayoutMasterSet lms = getFoLayoutMasterSet(wordMLPackage);
 		
+		
 		PgMar pageMargin = wordMLPackage.getMainDocumentPart().getJaxbElement().getBody().getSectPr().getPgMar();
 		if (pageMargin != null)
 		{
@@ -42,17 +43,24 @@ public class LayoutMasterSetBuilder {
 			{
 				if(o instanceof SimplePageMaster)
 				{
-					SimplePageMaster spm = (SimplePageMaster)o;
-					spm.setMarginTop("0pt");
-					spm.setMarginBottom("0pt");
-					spm.setMarginLeft("0pt" );
-					spm.setMarginRight("0pt");
+					int headerTop = pageMargin.getHeader().intValue() / 20;
+					int totalTop = pageMargin.getTop().intValue() / 20;
+					//int bodyTop = totalTop - headerTop;
 					
+					SimplePageMaster spm = (SimplePageMaster)o;
 					RegionBody rb = spm.getRegionBody();
-					rb.setMarginTop( (pageMargin.getTop().intValue() / 20) + "pt");
-					rb.setMarginBottom( (pageMargin.getBottom().intValue() / 20) + "pt");
-					rb.setMarginLeft( (pageMargin.getLeft().intValue() / 20) + "pt");
-					rb.setMarginRight( (pageMargin.getRight().intValue() / 20) + "pt");
+					
+					spm.setMarginTop(headerTop + "pt");
+					spm.setMarginBottom( (pageMargin.getBottom().intValue() / 20) + "pt");
+					spm.setMarginLeft( (pageMargin.getLeft().intValue() / 20) + "pt");
+					spm.setMarginRight( (pageMargin.getRight().intValue() / 20) + "pt");
+					
+					
+					rb.setMarginTop( totalTop + "pt");
+					rb.setMarginBottom("0pt");
+					rb.setMarginLeft("0pt" );
+					rb.setMarginRight("0pt");					
+					
 				}
 			}
 		}
