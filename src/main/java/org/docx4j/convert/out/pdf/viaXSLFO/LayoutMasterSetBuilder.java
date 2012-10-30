@@ -11,6 +11,7 @@ import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.SectPr.PgMar;
 import org.plutext.jaxb.xslfo.ConditionalPageMasterReference;
 import org.plutext.jaxb.xslfo.LayoutMasterSet;
@@ -31,9 +32,13 @@ public class LayoutMasterSetBuilder {
 	
 	private static org.plutext.jaxb.xslfo.ObjectFactory factory;
 	
+	// Word units (twentieth of a point) to mm
+	private static final double twip2mm = 0.017639;
+	
 	public static DocumentFragment getLayoutMasterSetFragment(WordprocessingMLPackage wordMLPackage) {
 
-		LayoutMasterSet lms = getFoLayoutMasterSet(wordMLPackage);
+		LayoutMasterSet lms = getFoLayoutMasterSet(wordMLPackage);		
+		
 		
 		PgMar pageMargin = wordMLPackage.getMainDocumentPart().getJaxbElement().getBody().getSectPr().getPgMar();
 		if (pageMargin != null)
@@ -42,17 +47,31 @@ public class LayoutMasterSetBuilder {
 			{
 				if(o instanceof SimplePageMaster)
 				{
-					SimplePageMaster spm = (SimplePageMaster)o;
-					spm.setMarginTop("0pt");
-					spm.setMarginBottom("0pt");
-					spm.setMarginLeft("0pt" );
-					spm.setMarginRight("0pt");
 					
+					boolean hasHeader = true;
+					
+					// Check if document has really a Header
+					if (wordMLPackage.getMainDocumentPart().getRelationshipsPart().
+							getRelationshipByType(Namespaces.HEADER) == null)
+						hasHeader = false;
+					
+					double headerTop = pageMargin.getHeader().intValue() * twip2mm;
+					double bodyTop = pageMargin.getTop().intValue() * twip2mm;					
+					
+					SimplePageMaster spm = (SimplePageMaster)o;
 					RegionBody rb = spm.getRegionBody();
-					rb.setMarginTop( (pageMargin.getTop().intValue() / 20) + "pt");
-					rb.setMarginBottom( (pageMargin.getBottom().intValue() / 20) + "pt");
-					rb.setMarginLeft( (pageMargin.getLeft().intValue() / 20) + "pt");
-					rb.setMarginRight( (pageMargin.getRight().intValue() / 20) + "pt");
+					
+					spm.setMarginTop( (hasHeader ? headerTop : 0) + "mm");
+					spm.setMarginBottom( (pageMargin.getBottom().intValue() * twip2mm) + "mm");
+					spm.setMarginLeft( (pageMargin.getLeft().intValue() * twip2mm) + "mm");
+					spm.setMarginRight( (pageMargin.getRight().intValue() * twip2mm) + "mm");					
+					
+					// if bodyTop < header.length we should use header.length instead
+					rb.setMarginTop( bodyTop + "mm");
+					rb.setMarginBottom("0mm");
+					rb.setMarginLeft("0mm" );
+					rb.setMarginRight("0mm");					
+					
 				}
 			}
 		}
