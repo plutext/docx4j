@@ -33,7 +33,7 @@ import org.xlsx4j.sml.Row;
 /**
  * Simple demonstration of editing charts in a PowerPoint deck
  *
- * @author <a href="mailto:jeff.beard1@gmail.com">Jeff Beard</a>
+ * @author Jeff Beard
  *
  */
 public class EditEmbeddedCharts
