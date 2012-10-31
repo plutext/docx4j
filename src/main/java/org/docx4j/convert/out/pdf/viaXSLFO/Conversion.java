@@ -228,7 +228,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 		// Refresh the document model, in case
 		// the user has added headers or footers
-		wordMLPackage.getDocumentModel(true);
+		wordMLPackage.getDocumentModel().refresh();
 		
 		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
 		// (reuse if you plan to render multiple documents!)
