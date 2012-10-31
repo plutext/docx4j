@@ -1,5 +1,6 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -11,8 +12,6 @@ import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
 import org.docx4j.model.structure.SectionWrapper;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.relationships.Namespaces;
-import org.docx4j.wml.SectPr.PgMar;
 import org.plutext.jaxb.xslfo.ConditionalPageMasterReference;
 import org.plutext.jaxb.xslfo.LayoutMasterSet;
 import org.plutext.jaxb.xslfo.ObjectFactory;
@@ -31,51 +30,10 @@ public class LayoutMasterSetBuilder {
 	protected static Logger log = Logger.getLogger(LayoutMasterSetBuilder.class);
 	
 	private static org.plutext.jaxb.xslfo.ObjectFactory factory;
-	
-	// Word units (twentieth of a point) to mm
-	private static final double twip2mm = 0.017639;
-	
+		
 	public static DocumentFragment getLayoutMasterSetFragment(WordprocessingMLPackage wordMLPackage) {
 
 		LayoutMasterSet lms = getFoLayoutMasterSet(wordMLPackage);		
-		
-		
-		PgMar pageMargin = wordMLPackage.getMainDocumentPart().getJaxbElement().getBody().getSectPr().getPgMar();
-		if (pageMargin != null)
-		{
-			for (Object o: lms.getSimplePageMasterOrPageSequenceMaster())
-			{
-				if(o instanceof SimplePageMaster)
-				{
-					
-					boolean hasHeader = true;
-					
-					// Check if document has really a Header
-					if (wordMLPackage.getMainDocumentPart().getRelationshipsPart().
-							getRelationshipByType(Namespaces.HEADER) == null)
-						hasHeader = false;
-					
-					double headerTop = pageMargin.getHeader().intValue() * twip2mm;
-					double bodyTop = pageMargin.getTop().intValue() * twip2mm;					
-					
-					SimplePageMaster spm = (SimplePageMaster)o;
-					RegionBody rb = spm.getRegionBody();
-					
-					spm.setMarginTop( (hasHeader ? headerTop : 0) + "mm");
-					spm.setMarginBottom( (pageMargin.getBottom().intValue() * twip2mm) + "mm");
-					spm.setMarginLeft( (pageMargin.getLeft().intValue() * twip2mm) + "mm");
-					spm.setMarginRight( (pageMargin.getRight().intValue() * twip2mm) + "mm");					
-					
-					// if bodyTop < header.length we should use header.length instead
-					rb.setMarginTop( bodyTop + "mm");
-					rb.setMarginBottom("0mm");
-					rb.setMarginLeft("0mm" );
-					rb.setMarginRight("0mm");					
-					
-				}
-			}
-		}
-		
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		DocumentFragment docfrag = document.createDocumentFragment();
