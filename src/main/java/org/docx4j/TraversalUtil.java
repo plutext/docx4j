@@ -304,10 +304,14 @@ public class TraversalUtil {
 		} else if (o instanceof org.docx4j.dml.diagram2008.CTDrawing) {
 			return ((org.docx4j.dml.diagram2008.CTDrawing)o).getSpTree().getSpOrGrpSp();
 		} else if (o instanceof org.docx4j.vml.CTTextbox) {				
-//			return ((org.docx4j.vml.CTTextbox)o).getAny();
-			return ((org.docx4j.vml.CTTextbox)o).getTxbxContent().getEGBlockLevelElts();
+//			return ((org.docx4j.vml.CTTextbox)o).getAny();			
+			org.docx4j.vml.CTTextbox textBox = ((org.docx4j.vml.CTTextbox)o);
+			if (textBox.getTxbxContent()==null) {
+				return null;
+			} else {
+				return textBox.getTxbxContent().getEGBlockLevelElts();
 				// grandchildren
-
+			}
 //		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {				
 //			return ((org.docx4j.wml.CTTxbxContent)o).getEGBlockLevelElts();
 		} else if (o instanceof CTObject) {
