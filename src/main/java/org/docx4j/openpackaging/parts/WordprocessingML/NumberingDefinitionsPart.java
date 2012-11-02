@@ -215,15 +215,27 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 //		this.em = em;
 //	}
 	public Emulator getEmulator() {
+		    	
+		return getEmulator(false);
+	}
+
+	
+	/**
+	 * @param reset
+	 * @return
+	 * @ since 2.8.2
+	 */
+	public Emulator getEmulator(boolean reset) {
 		
-    	if (em == null ) { 
+    	if (em == null 
+    			|| reset) { 
     		initialiseMaps();
     		em = new Emulator();    		
     	}
 		
 		return em;
 	}
-
+	
 	public Ind getInd(NumPr numPr) { //, StyleDefinitionsPart sdp, String styleId) {
 		
 		String ilvlString = "0";
