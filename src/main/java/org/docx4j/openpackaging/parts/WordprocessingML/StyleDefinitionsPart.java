@@ -275,7 +275,12 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     	
     }
     
-    private Style getStyleById(String id) {
+    /**
+     * @param id
+     * @return
+     * @since 2.8.2
+     */
+    public Style getStyleById(String id) {
     	
 		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
 			if( s.getStyleId().equals(id) ) {
