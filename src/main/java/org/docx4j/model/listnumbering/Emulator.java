@@ -193,25 +193,36 @@ public class Emulator {
 	        	return null;
     		}
     		
+    		
     		if (numPr.getNumId()==null) {
     			log.debug("NumPr element has no numId");
-    			if (pStyleVal!=null) {
+    			if (pStyleVal==null) {
+    				return null;
+    			} else {
     	        	// use propertyResolver to follow <w:basedOn w:val="blagh"/>
         			log.debug(pStyleVal + ".. use propertyResolver to follow basedOn");
-    				propertyResolver.getEffectivePPr(pStyleVal);
+    				PPr ppr = propertyResolver.getEffectivePPr(pStyleVal);
+    				
+    				numPr = ppr.getNumPr();
+        			if (numPr==null) {	
+            			log.debug(pStyleVal + "NumPr element still has no numId (basedOn didn't help)");
+        				return null; // Is this the right thing to do? Check!
+        			} else {        				
+        				log.info("Got numId: " + numPr.getNumId() );
+        			}
+    				
     			}
     			
-    			if (numPr.getNumId()==null) {	
-        			log.debug(pStyleVal + "NumPr element still has no numId (basedOn didn't help)");
-    				return null; // Is this the right thing to do? Check!
-    			} else {
-    				log.info("Got numId: " + numPr.getNumId() );
-    			}
+    		}
+    		
+    		if (numPr.getNumId()==null) {
+    			log.error("numId was null!");
+    			return null;    			
     		}
     		
     		numId = numPr.getNumId().getVal().toString();
-    		if (numId == null || numId.equals("")) {
-    			log.error("numId was null or empty!");
+    		if (numId.equals("")) {
+    			log.error("numId was empty!");
     			return null;
     		} 
     		
@@ -221,7 +232,7 @@ public class Emulator {
     			if (numPr.getIlvl() != null ) {
     				
     				levelId = numPr.getIlvl().getVal().toString();
-    	    		log.info("levelId=" + numId + " (from style)" );
+    	    		log.info("levelId=" + levelId + " (from style)" );
     			} else {
     				// default
     				levelId = "0";
