@@ -1,0 +1,4645 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" elementFormDefault="qualified" targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main">
+	<xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships" schemaLocation="shared-relationshipReference.xsd"/>
+	<xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="dml-main.xsd"/>
+	<xsd:import id="s" namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
+	<xsd:simpleType name="ST_TransitionSideDirectionType">
+		<xsd:annotation>
+			<xsd:documentation>Transition Slide Direction Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="l">
+				<xsd:annotation>
+					<xsd:documentation>Transition Slide Direction Enum ( Left )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="u">
+				<xsd:annotation>
+					<xsd:documentation>Transition Slide Direction Enum ( Up )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="r">
+				<xsd:annotation>
+					<xsd:documentation>Transition Slide Direction ( Right )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="d">
+				<xsd:annotation>
+					<xsd:documentation>Transition Slide Direction Enum ( Down )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TransitionCornerDirectionType">
+		<xsd:annotation>
+			<xsd:documentation>Transition Corner Direction Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="lu">
+				<xsd:annotation>
+					<xsd:documentation>Transition Corner Direction Enum ( Left-Up )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ru">
+				<xsd:annotation>
+					<xsd:documentation>Transition Corner Direction Enum ( Right-Up )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ld">
+				<xsd:annotation>
+					<xsd:documentation>Transition Corner Direction Enum ( Left-Down )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="rd">
+				<xsd:annotation>
+					<xsd:documentation>Transition Corner Direction Enum ( Right-Down )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TransitionInOutDirectionType">
+		<xsd:annotation>
+			<xsd:documentation>Transition In/Out Direction Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="out">
+				<xsd:annotation>
+					<xsd:documentation>Transition In/Out Direction Enum ( Out )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="in">
+				<xsd:annotation>
+					<xsd:documentation>Transition In/Out Direction Enum ( In )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SideDirectionTransition">
+		<xsd:attribute name="dir" type="ST_TransitionSideDirectionType" use="optional" default="l">
+			<xsd:annotation>
+				<xsd:documentation>Direction</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CornerDirectionTransition">
+		<xsd:attribute name="dir" type="ST_TransitionCornerDirectionType" use="optional" default="lu">
+			<xsd:annotation>
+				<xsd:documentation>Direction</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TransitionEightDirectionType">
+		<xsd:annotation>
+			<xsd:documentation>Transition Eight Direction</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="ST_TransitionSideDirectionType ST_TransitionCornerDirectionType"/>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_EightDirectionTransition">
+		<xsd:attribute name="dir" type="ST_TransitionEightDirectionType" use="optional" default="l">
+			<xsd:annotation>
+				<xsd:documentation>Direction</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_OrientationTransition">
+		<xsd:attribute name="dir" type="ST_Direction" use="optional" default="horz">
+			<xsd:annotation>
+				<xsd:documentation>Transition Direction</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_InOutTransition">
+		<xsd:attribute name="dir" type="ST_TransitionInOutDirectionType" use="optional" default="out">
+			<xsd:annotation>
+				<xsd:documentation>Direction</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_OptionalBlackTransition">
+		<xsd:attribute name="thruBlk" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Transition Through Black</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SplitTransition">
+		<xsd:attribute name="orient" type="ST_Direction" use="optional" default="horz">
+			<xsd:annotation>
+				<xsd:documentation>Orientation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="dir" type="ST_TransitionInOutDirectionType" use="optional" default="out">
+			<xsd:annotation>
+				<xsd:documentation>Direction</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_WheelTransition">
+		<xsd:attribute name="spokes" type="xsd:unsignedInt" use="optional" default="4">
+			<xsd:annotation>
+				<xsd:documentation>Spokes</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TransitionStartSoundAction">
+		<xsd:sequence>
+			<xsd:element minOccurs="1" maxOccurs="1" name="snd" type="a:CT_EmbeddedWAVAudioFile">
+				<xsd:annotation>
+					<xsd:documentation>Sound</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="loop" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Loop Sound</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TransitionSoundAction">
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="stSnd" type="CT_TransitionStartSoundAction">
+				<xsd:annotation>
+					<xsd:documentation>Start Sound Action</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="endSnd" type="CT_Empty">
+				<xsd:annotation>
+					<xsd:documentation>Stop Sound Action</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TransitionSpeed">
+		<xsd:annotation>
+			<xsd:documentation>Transition Speed</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="slow">
+				<xsd:annotation>
+					<xsd:documentation>low</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="med">
+				<xsd:annotation>
+					<xsd:documentation>Medium</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="fast">
+				<xsd:annotation>
+					<xsd:documentation>Fast</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SlideTransition">
+		<xsd:sequence>
+			<xsd:choice minOccurs="0" maxOccurs="1">
+				<xsd:element name="blinds" type="CT_OrientationTransition">
+					<xsd:annotation>
+						<xsd:documentation>Blinds Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="checker" type="CT_OrientationTransition">
+					<xsd:annotation>
+						<xsd:documentation>Checker Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="circle" type="CT_Empty">
+					<xsd:annotation>
+						<xsd:documentation>Circle Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="dissolve" type="CT_Empty">
+					<xsd:annotation>
+						<xsd:documentation>Dissolve Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="comb" type="CT_OrientationTransition">
+					<xsd:annotation>
+						<xsd:documentation>Comb Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="cover" type="CT_EightDirectionTransition">
+					<xsd:annotation>
+						<xsd:documentation>Cover Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="cut" type="CT_OptionalBlackTransition">
+					<xsd:annotation>
+						<xsd:documentation>Cut Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="diamond" type="CT_Empty">
+					<xsd:annotation>
+						<xsd:documentation>Diamond Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="fade" type="CT_OptionalBlackTransition">
+					<xsd:annotation>
+						<xsd:documentation>Fade Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="newsflash" type="CT_Empty">
+					<xsd:annotation>
+						<xsd:documentation>Newsflash Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="plus" type="CT_Empty">
+					<xsd:annotation>
+						<xsd:documentation>Plus Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="pull" type="CT_EightDirectionTransition">
+					<xsd:annotation>
+						<xsd:documentation>Pull Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="push" type="CT_SideDirectionTransition">
+					<xsd:annotation>
+						<xsd:documentation>Push Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="random" type="CT_Empty">
+					<xsd:annotation>
+						<xsd:documentation>Random Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="randomBar" type="CT_OrientationTransition">
+					<xsd:annotation>
+						<xsd:documentation>Random Bar Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="split" type="CT_SplitTransition">
+					<xsd:annotation>
+						<xsd:documentation>Split Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="strips" type="CT_CornerDirectionTransition">
+					<xsd:annotation>
+						<xsd:documentation>Strips Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="wedge" type="CT_Empty">
+					<xsd:annotation>
+						<xsd:documentation>Wedge Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="wheel" type="CT_WheelTransition">
+					<xsd:annotation>
+						<xsd:documentation>Wheel Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="wipe" type="CT_SideDirectionTransition">
+					<xsd:annotation>
+						<xsd:documentation>Wipe Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="zoom" type="CT_InOutTransition">
+					<xsd:annotation>
+						<xsd:documentation>Zoom Slide Transition</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="sndAc" minOccurs="0" maxOccurs="1" type="CT_TransitionSoundAction">
+				<xsd:annotation>
+					<xsd:documentation>Sound Action</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="spd" type="ST_TransitionSpeed" use="optional" default="fast">
+			<xsd:annotation>
+				<xsd:documentation>Transition Speed</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="advClick" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Advance on Click</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="advTm" type="xsd:unsignedInt" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Advance after time</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLTimeIndefinite">
+		<xsd:annotation>
+			<xsd:documentation>Indefinite Time Declaration</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="indefinite">
+				<xsd:annotation>
+					<xsd:documentation>Indefinite Type Enum</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLTime">
+		<xsd:annotation>
+			<xsd:documentation>Time</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="xsd:unsignedInt ST_TLTimeIndefinite"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLTimeNodeID">
+		<xsd:annotation>
+			<xsd:documentation>Time Node ID</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:unsignedInt"/>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLIterateIntervalTime">
+		<xsd:attribute name="val" type="ST_TLTime" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Time</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLIterateIntervalPercentage">
+		<xsd:attribute name="val" type="a:ST_PositivePercentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_IterateType">
+		<xsd:annotation>
+			<xsd:documentation>Iterate Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="el">
+				<xsd:annotation>
+					<xsd:documentation>Element</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="wd">
+				<xsd:annotation>
+					<xsd:documentation>Word</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lt">
+				<xsd:annotation>
+					<xsd:documentation>Letter</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLIterateData">
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="tmAbs" type="CT_TLIterateIntervalTime">
+				<xsd:annotation>
+					<xsd:documentation>Time Absolute</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="tmPct" type="CT_TLIterateIntervalPercentage">
+				<xsd:annotation>
+					<xsd:documentation>Time Percentage</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+		<xsd:attribute name="type" type="ST_IterateType" use="optional" default="el">
+			<xsd:annotation>
+				<xsd:documentation>Iterate Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="backwards" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Backwards</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLSubShapeId">
+		<xsd:attribute name="spid" type="a:ST_ShapeID" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Shape ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTextTargetElement">
+		<xsd:choice minOccurs="0" maxOccurs="1">
+			<xsd:element name="charRg" type="CT_IndexRange">
+				<xsd:annotation>
+					<xsd:documentation>Character Range</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pRg" type="CT_IndexRange">
+				<xsd:annotation>
+					<xsd:documentation>Paragraph Text Range</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLChartSubelementType">
+		<xsd:annotation>
+			<xsd:documentation>Chart Subelement Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="gridLegend">
+				<xsd:annotation>
+					<xsd:documentation>Grid Legend</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="series">
+				<xsd:annotation>
+					<xsd:documentation>Data Series</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="category">
+				<xsd:annotation>
+					<xsd:documentation>Category Axis</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ptInSeries">
+				<xsd:annotation>
+					<xsd:documentation>Single Point in Data Series</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ptInCategory">
+				<xsd:annotation>
+					<xsd:documentation>Single Point in Category</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLOleChartTargetElement">
+		<xsd:attribute name="type" type="ST_TLChartSubelementType" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="lvl" type="xsd:unsignedInt" use="optional" default="0">
+			<xsd:annotation>
+				<xsd:documentation>Level</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLShapeTargetElement">
+		<xsd:choice minOccurs="0" maxOccurs="1">
+			<xsd:element name="bg" type="CT_Empty">
+				<xsd:annotation>
+					<xsd:documentation>Background</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="subSp" type="CT_TLSubShapeId">
+				<xsd:annotation>
+					<xsd:documentation>Subshape</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="oleChartEl" type="CT_TLOleChartTargetElement">
+				<xsd:annotation>
+					<xsd:documentation>Embedded Chart Element</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="txEl" type="CT_TLTextTargetElement">
+				<xsd:annotation>
+					<xsd:documentation>Text Element</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="graphicEl" type="a:CT_AnimationElementChoice">
+				<xsd:annotation>
+					<xsd:documentation>Graphic Element</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+		<xsd:attribute name="spid" type="a:ST_ShapeID" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Shape ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTimeTargetElement">
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="sldTgt" type="CT_Empty">
+				<xsd:annotation>
+					<xsd:documentation>Slide Target</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sndTgt" type="a:CT_EmbeddedWAVAudioFile">
+				<xsd:annotation>
+					<xsd:documentation>Sound Target</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="spTgt" type="CT_TLShapeTargetElement">
+				<xsd:annotation>
+					<xsd:documentation>Shape Target</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="inkTgt" type="CT_TLSubShapeId">
+				<xsd:annotation>
+					<xsd:documentation>Ink Target</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTriggerTimeNodeID">
+		<xsd:attribute name="val" type="ST_TLTimeNodeID" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLTriggerRuntimeNode">
+		<xsd:annotation>
+			<xsd:documentation>Trigger RunTime Node</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="first">
+				<xsd:annotation>
+					<xsd:documentation>Trigger RunTime Node ( First )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="last">
+				<xsd:annotation>
+					<xsd:documentation>Trigger RunTime Node ( Last )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="all">
+				<xsd:annotation>
+					<xsd:documentation>Trigger RunTime Node Enum ( All )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLTriggerRuntimeNode">
+		<xsd:attribute name="val" type="ST_TLTriggerRuntimeNode" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLTriggerEvent">
+		<xsd:annotation>
+			<xsd:documentation>Trigger Event</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="onBegin">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Begin )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onEnd">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On End )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="begin">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( Begin )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="end">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( End )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onClick">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Click )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onDblClick">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Double Click )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onMouseOver">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Mouse Over )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onMouseOut">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Mouse Out )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onNext">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Next )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onPrev">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Previous )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="onStopAudio">
+				<xsd:annotation>
+					<xsd:documentation>Trigger Event Enum ( On Stop Audio )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLTimeCondition">
+		<xsd:choice minOccurs="0" maxOccurs="1">
+			<xsd:element name="tgtEl" type="CT_TLTimeTargetElement">
+				<xsd:annotation>
+					<xsd:documentation>Target Element Trigger Choice</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="tn" type="CT_TLTriggerTimeNodeID">
+				<xsd:annotation>
+					<xsd:documentation>Time Node</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="rtn" type="CT_TLTriggerRuntimeNode">
+				<xsd:annotation>
+					<xsd:documentation>Runtime Node Trigger Choice</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+		<xsd:attribute name="evt" use="optional" type="ST_TLTriggerEvent">
+			<xsd:annotation>
+				<xsd:documentation>Trigger Event</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="delay" type="ST_TLTime" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Trigger Delay</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTimeConditionList">
+		<xsd:sequence>
+			<xsd:element name="cond" type="CT_TLTimeCondition" minOccurs="1" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Condition</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TimeNodeList">
+		<xsd:choice minOccurs="1" maxOccurs="unbounded">
+			<xsd:element name="par" type="CT_TLTimeNodeParallel">
+				<xsd:annotation>
+					<xsd:documentation>Parallel Time Node</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="seq" type="CT_TLTimeNodeSequence">
+				<xsd:annotation>
+					<xsd:documentation>Sequence Time Node</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="excl" type="CT_TLTimeNodeExclusive">
+				<xsd:annotation>
+					<xsd:documentation>Exclusive</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="anim" type="CT_TLAnimateBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Animate</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="animClr" type="CT_TLAnimateColorBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Animate Color Behavior</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="animEffect" type="CT_TLAnimateEffectBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Animate Effect</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="animMotion" type="CT_TLAnimateMotionBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Animate Motion</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="animRot" type="CT_TLAnimateRotationBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Animate Rotation</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="animScale" type="CT_TLAnimateScaleBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Animate Scale</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cmd" type="CT_TLCommandBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Command</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="set" type="CT_TLSetBehavior">
+				<xsd:annotation>
+					<xsd:documentation>Set Time Node Behavior</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="audio" type="CT_TLMediaNodeAudio">
+				<xsd:annotation>
+					<xsd:documentation>Audio</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="video" type="CT_TLMediaNodeVideo">
+				<xsd:annotation>
+					<xsd:documentation>Video</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLTimeNodePresetClassType">
+		<xsd:annotation>
+			<xsd:documentation>Time Node Preset Class Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="entr">
+				<xsd:annotation>
+					<xsd:documentation>Preset Type Enum ( Entrance )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="exit">
+				<xsd:annotation>
+					<xsd:documentation>Exit</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="emph">
+				<xsd:annotation>
+					<xsd:documentation>Preset Type Enum ( Emphasis )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="path">
+				<xsd:annotation>
+					<xsd:documentation>Preset Type Enum ( Path )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="verb">
+				<xsd:annotation>
+					<xsd:documentation>Preset Type Enum ( Verb )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="mediacall">
+				<xsd:annotation>
+					<xsd:documentation>Preset Type Enum ( Media Call )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLTimeNodeRestartType">
+		<xsd:annotation>
+			<xsd:documentation>Time Node Restart Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="always">
+				<xsd:annotation>
+					<xsd:documentation>Restart Enum ( Always )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="whenNotActive">
+				<xsd:annotation>
+					<xsd:documentation>Restart Enum ( When Not Active )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="never">
+				<xsd:annotation>
+					<xsd:documentation>Restart Enum ( Never )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLTimeNodeFillType">
+		<xsd:annotation>
+			<xsd:documentation>Time Node Fill Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="remove">
+				<xsd:annotation>
+					<xsd:documentation>Remove</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="freeze">
+				<xsd:annotation>
+					<xsd:documentation>Freeze</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="hold">
+				<xsd:annotation>
+					<xsd:documentation>TimeNode Fill Type Enum ( Hold )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="transition">
+				<xsd:annotation>
+					<xsd:documentation>Transition</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLTimeNodeSyncType">
+		<xsd:annotation>
+			<xsd:documentation>Time Node Sync Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="canSlip">
+				<xsd:annotation>
+					<xsd:documentation>TimeNode Sync Enum ( Can Slip )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="locked">
+				<xsd:annotation>
+					<xsd:documentation>TimeNode Sync Enum ( Locked )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLTimeNodeMasterRelation">
+		<xsd:annotation>
+			<xsd:documentation>Time Node Master Relation</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="sameClick">
+				<xsd:annotation>
+					<xsd:documentation>TimeNode Master Relation Enum ( Same Click )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lastClick">
+				<xsd:annotation>
+					<xsd:documentation>TimeNode Master Relation Enum ( Last Click )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="nextClick">
+				<xsd:annotation>
+					<xsd:documentation>TimeNode Master Relation Enum ( Next Click )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLTimeNodeType">
+		<xsd:annotation>
+			<xsd:documentation>Time Node Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="clickEffect">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( Click Effect )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="withEffect">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( With Effect )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="afterEffect">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( After Effect )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="mainSeq">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( Main Sequence )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="interactiveSeq">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( Interactive Sequence )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="clickPar">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( Click Paragraph )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="withGroup">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( With Group )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="afterGroup">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( After Group )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="tmRoot">
+				<xsd:annotation>
+					<xsd:documentation>Node Type Enum ( Timing Root )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLCommonTimeNodeData">
+		<xsd:sequence>
+			<xsd:element name="stCondLst" type="CT_TLTimeConditionList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Start Conditions List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="endCondLst" type="CT_TLTimeConditionList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>End Conditions List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="endSync" type="CT_TLTimeCondition" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>EndSync</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="iterate" type="CT_TLIterateData" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Iterate</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="childTnLst" type="CT_TimeNodeList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Children Time Node List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="subTnLst" type="CT_TimeNodeList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Sub-TimeNodes List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="ST_TLTimeNodeID" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="presetID" type="xsd:int" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Preset ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="presetClass" type="ST_TLTimeNodePresetClassType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Preset Types</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="presetSubtype" type="xsd:int" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Preset SubType</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="dur" type="ST_TLTime" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Duration</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="repeatCount" type="ST_TLTime" use="optional" default="1000">
+			<xsd:annotation>
+				<xsd:documentation>Repeat Count</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="repeatDur" type="ST_TLTime" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Repeat Duration</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="spd" type="a:ST_Percentage" use="optional" default="100%">
+			<xsd:annotation>
+				<xsd:documentation>Speed</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="accel" type="a:ST_PositiveFixedPercentage" use="optional" default="0%">
+			<xsd:annotation>
+				<xsd:documentation>Acceleration</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="decel" type="a:ST_PositiveFixedPercentage" use="optional" default="0%">
+			<xsd:annotation>
+				<xsd:documentation>Deceleration</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="autoRev" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Auto Reverse</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="restart" type="ST_TLTimeNodeRestartType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Restart</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="fill" type="ST_TLTimeNodeFillType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Fill</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="syncBehavior" type="ST_TLTimeNodeSyncType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Synchronization Behavior</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="tmFilter" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Time Filter</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="evtFilter" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Event Filter</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="display" type="xsd:boolean" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Display</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="masterRel" type="ST_TLTimeNodeMasterRelation" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Master Relation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="bldLvl" type="xsd:int" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Build level</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="grpId" type="xsd:unsignedInt" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Group ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="afterEffect" type="xsd:boolean" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>After Effect</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="nodeType" type="ST_TLTimeNodeType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Node Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="nodePh" type="xsd:boolean" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Node Placeholder</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTimeNodeParallel">
+		<xsd:sequence>
+			<xsd:element name="cTn" type="CT_TLCommonTimeNodeData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Parallel TimeNode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLNextActionType">
+		<xsd:annotation>
+			<xsd:documentation>Next Action Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>Next Action Type Enum ( None )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="seek">
+				<xsd:annotation>
+					<xsd:documentation>Next Action Type Enum ( Seek )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLPreviousActionType">
+		<xsd:annotation>
+			<xsd:documentation>Previous Action Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>Previous Action Type Enum ( None )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="skipTimed">
+				<xsd:annotation>
+					<xsd:documentation>Previous Action Type Enum ( Skip Timed )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLTimeNodeSequence">
+		<xsd:sequence>
+			<xsd:element name="cTn" type="CT_TLCommonTimeNodeData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common TimeNode Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="prevCondLst" type="CT_TLTimeConditionList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Previous Conditions List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="nextCondLst" type="CT_TLTimeConditionList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Next Conditions List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="concurrent" type="xsd:boolean" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Concurrent</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="prevAc" type="ST_TLPreviousActionType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Previous Action</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="nextAc" type="ST_TLNextActionType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Next Action</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTimeNodeExclusive">
+		<xsd:sequence>
+			<xsd:element name="cTn" type="CT_TLCommonTimeNodeData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common TimeNode Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLBehaviorAttributeNameList">
+		<xsd:sequence>
+			<xsd:element name="attrName" type="xsd:string" minOccurs="1" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Attribute Name</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLBehaviorAdditiveType">
+		<xsd:annotation>
+			<xsd:documentation>Behavior Additive Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="base">
+				<xsd:annotation>
+					<xsd:documentation>Additive Enum ( Base )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="sum">
+				<xsd:annotation>
+					<xsd:documentation>Additive Enum ( Sum )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="repl">
+				<xsd:annotation>
+					<xsd:documentation>Additive Enum ( Replace )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="mult">
+				<xsd:annotation>
+					<xsd:documentation>Additive Enum ( Multiply )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>None</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLBehaviorAccumulateType">
+		<xsd:annotation>
+			<xsd:documentation>Behavior Accumulate Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>Accumulate Enum ( None )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="always">
+				<xsd:annotation>
+					<xsd:documentation>Accumulate Enum ( Always )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLBehaviorTransformType">
+		<xsd:annotation>
+			<xsd:documentation>Behavior Transform Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="pt">
+				<xsd:annotation>
+					<xsd:documentation>Point</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="img">
+				<xsd:annotation>
+					<xsd:documentation>Image</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLBehaviorOverrideType">
+		<xsd:annotation>
+			<xsd:documentation>Behavior Override Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="normal">
+				<xsd:annotation>
+					<xsd:documentation>Override Enum ( Normal )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="childStyle">
+				<xsd:annotation>
+					<xsd:documentation>Override Enum ( Child Style )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLCommonBehaviorData">
+		<xsd:sequence>
+			<xsd:element name="cTn" type="CT_TLCommonTimeNodeData" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="tgtEl" type="CT_TLTimeTargetElement" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Target Element</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="attrNameLst" type="CT_TLBehaviorAttributeNameList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Attribute Name List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="additive" type="ST_TLBehaviorAdditiveType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Additive</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="accumulate" type="ST_TLBehaviorAccumulateType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Accumulate</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="xfrmType" type="ST_TLBehaviorTransformType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Transform Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="from" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>From</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="to" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>To</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="by" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>By</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="rctx" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Runtime Context</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="override" type="ST_TLBehaviorOverrideType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Override</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimVariantBooleanVal">
+		<xsd:attribute name="val" type="xsd:boolean" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimVariantIntegerVal">
+		<xsd:attribute name="val" type="xsd:int" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimVariantFloatVal">
+		<xsd:attribute name="val" type="xsd:float" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimVariantStringVal">
+		<xsd:attribute name="val" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimVariant">
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="boolVal" type="CT_TLAnimVariantBooleanVal">
+				<xsd:annotation>
+					<xsd:documentation>Boolean Variant</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="intVal" type="CT_TLAnimVariantIntegerVal">
+				<xsd:annotation>
+					<xsd:documentation>Integer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="fltVal" type="CT_TLAnimVariantFloatVal">
+				<xsd:annotation>
+					<xsd:documentation>Float Value</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="strVal" type="CT_TLAnimVariantStringVal">
+				<xsd:annotation>
+					<xsd:documentation>String Value</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="clrVal" type="a:CT_Color">
+				<xsd:annotation>
+					<xsd:documentation>Color Value</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLTimeAnimateValueTime">
+		<xsd:annotation>
+			<xsd:documentation>Animation Time</xsd:documentation>
+		</xsd:annotation>
+		<xsd:union memberTypes="a:ST_PositiveFixedPercentage ST_TLTimeIndefinite"/>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLTimeAnimateValue">
+		<xsd:sequence>
+			<xsd:element name="val" type="CT_TLAnimVariant" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Value</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="tm" type="ST_TLTimeAnimateValueTime" use="optional" default="indefinite">
+			<xsd:annotation>
+				<xsd:documentation>Time</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="fmla" type="xsd:string" use="optional" default="">
+			<xsd:annotation>
+				<xsd:documentation>Formula</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTimeAnimateValueList">
+		<xsd:sequence>
+			<xsd:element name="tav" type="CT_TLTimeAnimateValue" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Time Animate Value</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLAnimateBehaviorCalcMode">
+		<xsd:annotation>
+			<xsd:documentation>Time List Animate Behavior Calculate Mode</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="discrete">
+				<xsd:annotation>
+					<xsd:documentation>Calc Mode Enum ( Discrete )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="lin">
+				<xsd:annotation>
+					<xsd:documentation>Calc Mode Enum ( Linear )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="fmla">
+				<xsd:annotation>
+					<xsd:documentation>Calc Mode Enum ( Formula )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLAnimateBehaviorValueType">
+		<xsd:annotation>
+			<xsd:documentation>Time List Animate Behavior Value Types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="str">
+				<xsd:annotation>
+					<xsd:documentation>Value Type Enum ( String )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="num">
+				<xsd:annotation>
+					<xsd:documentation>Value Type Enum ( Number )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="clr">
+				<xsd:annotation>
+					<xsd:documentation>Value Type Enum ( Color )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLAnimateBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="tavLst" type="CT_TLTimeAnimateValueList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Time Animated Value List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="by" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>By</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="from" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>From</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="to" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>To</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="calcmode" type="ST_TLAnimateBehaviorCalcMode" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Calculation Mode</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="valueType" type="ST_TLAnimateBehaviorValueType" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Value Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLByRgbColorTransform">
+		<xsd:attribute name="r" type="a:ST_FixedPercentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Red</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="g" type="a:ST_FixedPercentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Green</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="b" type="a:ST_FixedPercentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Blue</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLByHslColorTransform">
+		<xsd:attribute name="h" type="a:ST_Angle" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Hue</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="s" type="a:ST_FixedPercentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Saturation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="l" type="a:ST_FixedPercentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Lightness</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLByAnimateColorTransform">
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="rgb" type="CT_TLByRgbColorTransform">
+				<xsd:annotation>
+					<xsd:documentation>RGB</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="hsl" type="CT_TLByHslColorTransform">
+				<xsd:annotation>
+					<xsd:documentation>HSL</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLAnimateColorSpace">
+		<xsd:annotation>
+			<xsd:documentation>Time List Animate Color Space</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="rgb">
+				<xsd:annotation>
+					<xsd:documentation>Color Space Enum ( RGB )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="hsl">
+				<xsd:annotation>
+					<xsd:documentation>Color Space Enum ( HSL )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLAnimateColorDirection">
+		<xsd:annotation>
+			<xsd:documentation>Time List Animate Color Direction</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="cw">
+				<xsd:annotation>
+					<xsd:documentation>Direction Enum ( Clockwise )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ccw">
+				<xsd:annotation>
+					<xsd:documentation>Counter-Clockwise</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLAnimateColorBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="by" type="CT_TLByAnimateColorTransform" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>By</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="from" type="a:CT_Color" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>From</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="to" type="a:CT_Color" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>To</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="clrSpc" type="ST_TLAnimateColorSpace" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Color Space</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="dir" type="ST_TLAnimateColorDirection" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Direction</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLAnimateEffectTransition">
+		<xsd:annotation>
+			<xsd:documentation>Time List Animate Effect Transition</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="in">
+				<xsd:annotation>
+					<xsd:documentation>Transition Enum ( In )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="out">
+				<xsd:annotation>
+					<xsd:documentation>Transition Enum ( Out )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>Transition Enum ( None )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLAnimateEffectBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="progress" type="CT_TLAnimVariant" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Progress</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="transition" type="ST_TLAnimateEffectTransition" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Transition</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="filter" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Filter</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="prLst" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Property List</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLAnimateMotionBehaviorOrigin">
+		<xsd:annotation>
+			<xsd:documentation>Time List Animate Motion Behavior Origin</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="parent">
+				<xsd:annotation>
+					<xsd:documentation>Origin Enum ( Parent )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="layout">
+				<xsd:annotation>
+					<xsd:documentation>Origin Enum ( Layout )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_TLAnimateMotionPathEditMode">
+		<xsd:annotation>
+			<xsd:documentation>Time List Animate Motion Path Edit Mode</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="relative">
+				<xsd:annotation>
+					<xsd:documentation>Path Edit Mode Enum ( Relative )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="fixed">
+				<xsd:annotation>
+					<xsd:documentation>Path Edit Mode Enum ( Fixed )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLPoint">
+		<xsd:attribute name="x" type="a:ST_Percentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>X coordinate</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="y" type="a:ST_Percentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Y coordinate</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimateMotionBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="by" type="CT_TLPoint" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="from" type="CT_TLPoint" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>From</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="to" type="CT_TLPoint" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="rCtr" type="CT_TLPoint" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Rotation Center</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="origin" type="ST_TLAnimateMotionBehaviorOrigin" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Origin</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="path" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Path</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="pathEditMode" type="ST_TLAnimateMotionPathEditMode" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Path Edit Mode</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="rAng" type="a:ST_Angle" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Relative Angle</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="ptsTypes" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Points Types</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimateRotationBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="by" type="a:ST_Angle" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>By</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="from" type="a:ST_Angle" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>From</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="to" type="a:ST_Angle" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>To</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLAnimateScaleBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="by" type="CT_TLPoint" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>By</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="from" type="CT_TLPoint" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="to" type="CT_TLPoint" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>To</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="zoomContents" type="xsd:boolean" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Zoom Content</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLCommandType">
+		<xsd:annotation>
+			<xsd:documentation>Command Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="evt">
+				<xsd:annotation>
+					<xsd:documentation>Command Type Enum ( Event )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="call">
+				<xsd:annotation>
+					<xsd:documentation>Command Type Enum ( Call )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="verb">
+				<xsd:annotation>
+					<xsd:documentation>Command Type Enum ( Verb )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLCommandBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute type="ST_TLCommandType" name="type" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Command Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cmd" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Command</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLSetBehavior">
+		<xsd:sequence>
+			<xsd:element name="cBhvr" type="CT_TLCommonBehaviorData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common Behavior</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="to" type="CT_TLAnimVariant" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>To</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLCommonMediaNodeData">
+		<xsd:sequence>
+			<xsd:element name="cTn" type="CT_TLCommonTimeNodeData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common Time Node Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="tgtEl" type="CT_TLTimeTargetElement" minOccurs="1" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="vol" type="a:ST_PositiveFixedPercentage" default="50%" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Volume</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="mute" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Mute</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="numSld" type="xsd:unsignedInt" use="optional" default="1">
+			<xsd:annotation>
+				<xsd:documentation>Number of Slides</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showWhenStopped" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show When Stopped</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLMediaNodeAudio">
+		<xsd:sequence>
+			<xsd:element name="cMediaNode" type="CT_TLCommonMediaNodeData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common Media Node Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="isNarration" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Is Narration</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLMediaNodeVideo">
+		<xsd:sequence>
+			<xsd:element name="cMediaNode" type="CT_TLCommonMediaNodeData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common Media Node Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="fullScrn" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Full Screen</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:attributeGroup name="AG_TLBuild">
+		<xsd:attribute name="spid" type="a:ST_ShapeID" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Shape ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="grpId" type="xsd:unsignedInt" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Group ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="uiExpand" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Expand UI</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<xsd:complexType name="CT_TLTemplate">
+		<xsd:sequence>
+			<xsd:element name="tnLst" type="CT_TimeNodeList" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Time Node List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="lvl" type="xsd:unsignedInt" use="optional" default="0">
+			<xsd:annotation>
+				<xsd:documentation>Level</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLTemplateList">
+		<xsd:sequence>
+			<xsd:element name="tmpl" type="CT_TLTemplate" minOccurs="0" maxOccurs="9">
+				<xsd:annotation>
+					<xsd:documentation>Template Effects</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLParaBuildType">
+		<xsd:annotation>
+			<xsd:documentation>Paragraph Build Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="allAtOnce">
+				<xsd:annotation>
+					<xsd:documentation>All At Once</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="p">
+				<xsd:annotation>
+					<xsd:documentation>Paragraph</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cust">
+				<xsd:annotation>
+					<xsd:documentation>Custom</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="whole">
+				<xsd:annotation>
+					<xsd:documentation>Whole</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLBuildParagraph">
+		<xsd:sequence>
+			<xsd:element name="tmplLst" type="CT_TLTemplateList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Template effects</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="AG_TLBuild"/>
+		<xsd:attribute name="build" type="ST_TLParaBuildType" use="optional" default="whole">
+			<xsd:annotation>
+				<xsd:documentation>Build Types</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="bldLvl" type="xsd:unsignedInt" use="optional" default="1">
+			<xsd:annotation>
+				<xsd:documentation>Build Level</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="animBg" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Animate Background</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="autoUpdateAnimBg" type="xsd:boolean" default="true" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Auto Update Animation Background</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="rev" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Reverse</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="advAuto" type="ST_TLTime" use="optional" default="indefinite">
+			<xsd:annotation>
+				<xsd:documentation>Auto Advance Time</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLDiagramBuildType">
+		<xsd:annotation>
+			<xsd:documentation>Diagram Build Types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="whole">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Whole )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="depthByNode">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Depth By Node )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="depthByBranch">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Depth By Branch )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="breadthByNode">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Breadth By Node )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="breadthByLvl">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Breadth By Level )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cw">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Clockwise )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cwIn">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Clockwise-In )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cwOut">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Clockwise-Out )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ccw">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Counter-Clockwise )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ccwIn">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Counter-Clockwise-In )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ccwOut">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Counter-Clockwise-Out )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="inByRing">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( In-By-Ring )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="outByRing">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Out-By-Ring )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="up">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Up )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="down">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Down )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="allAtOnce">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( All At Once )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cust">
+				<xsd:annotation>
+					<xsd:documentation>Diagram Build Type Enum ( Custom )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLBuildDiagram">
+		<xsd:attributeGroup ref="AG_TLBuild"/>
+		<xsd:attribute name="bld" type="ST_TLDiagramBuildType" use="optional" default="whole">
+			<xsd:annotation>
+				<xsd:documentation>Diagram Build Types</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_TLOleChartBuildType">
+		<xsd:annotation>
+			<xsd:documentation>Embedded Chart Build Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="allAtOnce">
+				<xsd:annotation>
+					<xsd:documentation>Chart Build Type Enum ( All At Once )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="series">
+				<xsd:annotation>
+					<xsd:documentation>Chart Build Type Enum ( Series )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="category">
+				<xsd:annotation>
+					<xsd:documentation>Chart Build Type Enum ( Category )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="seriesEl">
+				<xsd:annotation>
+					<xsd:documentation>Chart Build Type Enum ( Series Element )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="categoryEl">
+				<xsd:annotation>
+					<xsd:documentation>Chart Build Type Enum ( Category Element )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_TLOleBuildChart">
+		<xsd:attributeGroup ref="AG_TLBuild"/>
+		<xsd:attribute name="bld" type="ST_TLOleChartBuildType" use="optional" default="allAtOnce">
+			<xsd:annotation>
+				<xsd:documentation>Build</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="animBg" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Animate Background</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TLGraphicalObjectBuild">
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="bldAsOne" type="CT_Empty">
+				<xsd:annotation>
+					<xsd:documentation>Build As One</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bldSub" type="a:CT_AnimationGraphicalObjectBuildProperties">
+				<xsd:annotation>
+					<xsd:documentation>Build Sub Elements</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+		<xsd:attributeGroup ref="AG_TLBuild"/>
+	</xsd:complexType>
+	<xsd:complexType name="CT_BuildList">
+		<xsd:choice minOccurs="1" maxOccurs="unbounded">
+			<xsd:element name="bldP" type="CT_TLBuildParagraph">
+				<xsd:annotation>
+					<xsd:documentation>Build Paragraph</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bldDgm" type="CT_TLBuildDiagram">
+				<xsd:annotation>
+					<xsd:documentation>Build Diagram</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bldOleChart" type="CT_TLOleBuildChart">
+				<xsd:annotation>
+					<xsd:documentation>Build Embedded Chart</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bldGraphic" type="CT_TLGraphicalObjectBuild">
+				<xsd:annotation>
+					<xsd:documentation>Build Graphics</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideTiming">
+		<xsd:sequence>
+			<xsd:element name="tnLst" type="CT_TimeNodeList" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="bldLst" type="CT_BuildList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Build List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Empty"/>
+	<xsd:simpleType name="ST_Name">
+		<xsd:annotation>
+			<xsd:documentation>Name string</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Direction">
+		<xsd:annotation>
+			<xsd:documentation>Direction</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="horz">
+				<xsd:annotation>
+					<xsd:documentation>Horizontal</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="vert">
+				<xsd:annotation>
+					<xsd:documentation>Vertical</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_Index">
+		<xsd:annotation>
+			<xsd:documentation>Index</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:unsignedInt"/>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_IndexRange">
+		<xsd:attribute name="st" type="ST_Index" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Start</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="end" type="ST_Index" use="required">
+			<xsd:annotation>
+				<xsd:documentation>End</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideRelationshipListEntry">
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideRelationshipList">
+		<xsd:sequence>
+			<xsd:element name="sld" type="CT_SlideRelationshipListEntry" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Presentation Slide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CustomShowId">
+		<xsd:attribute name="id" type="xsd:unsignedInt" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Custom Show Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:group name="EG_SlideListChoice">
+		<xsd:choice>
+			<xsd:element name="sldAll" type="CT_Empty">
+				<xsd:annotation>
+					<xsd:documentation>All Slides</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sldRg" type="CT_IndexRange">
+				<xsd:annotation>
+					<xsd:documentation>Slide Range</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="custShow" type="CT_CustomShowId">
+				<xsd:annotation>
+					<xsd:documentation>Custom Show</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:complexType name="CT_CustomerData">
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TagsData">
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CustomerDataList">
+		<xsd:sequence minOccurs="0" maxOccurs="1">
+			<xsd:element name="custData" type="CT_CustomerData" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Customer Data</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="tags" type="CT_TagsData" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Customer Data Tags</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Extension">
+		<xsd:sequence>
+			<xsd:any processContents="lax"/>
+		</xsd:sequence>
+		<xsd:attribute name="uri" type="xsd:token">
+			<xsd:annotation>
+				<xsd:documentation>Uniform Resource Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:group name="EG_ExtensionList">
+		<xsd:sequence>
+			<xsd:element name="ext" type="CT_Extension" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Extension</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:complexType name="CT_ExtensionList">
+		<xsd:sequence>
+			<xsd:group ref="EG_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ExtensionListModify">
+		<xsd:sequence>
+			<xsd:group ref="EG_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="mod" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Modify</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CommentAuthor">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:unsignedInt" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Comment Author ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="name" type="ST_Name" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Comment Author Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="initials" type="ST_Name" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Comment Author Initials</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="lastIdx" type="xsd:unsignedInt" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Index of Comment Author's last comment</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="clrIdx" type="xsd:unsignedInt" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Comment Author Color Index</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CommentAuthorList">
+		<xsd:sequence>
+			<xsd:element name="cmAuthor" type="CT_CommentAuthor" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Comment Author</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="cmAuthorLst" type="CT_CommentAuthorList">
+		<xsd:annotation>
+			<xsd:documentation>List of Comment Authors</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_Comment">
+		<xsd:sequence>
+			<xsd:element name="pos" type="a:CT_Point2D" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Comment Position</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="text" type="xsd:string" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Comment's Text Content</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="authorId" type="xsd:unsignedInt" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Comment Author ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="dt" type="xsd:dateTime" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Comment Date/Time</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="idx" type="ST_Index" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Comment Index</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CommentList">
+		<xsd:sequence>
+			<xsd:element name="cm" type="CT_Comment" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Comment</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="cmLst" type="CT_CommentList">
+		<xsd:annotation>
+			<xsd:documentation>Comment List</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:attributeGroup name="AG_Ole">
+		<xsd:attribute name="name" type="xsd:string" use="optional" default="">
+			<xsd:annotation>
+				<xsd:documentation>Embedded Object Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showAsIcon" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Show Embedded Object As Icon</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="r:id" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Relationship ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="imgW" type="a:ST_PositiveCoordinate32" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Image Width</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="imgH" type="a:ST_PositiveCoordinate32" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Image Height</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<xsd:simpleType name="ST_OleObjectFollowColorScheme">
+		<xsd:annotation>
+			<xsd:documentation>Embedded object to Follow Color Scheme</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="none">
+				<xsd:annotation>
+					<xsd:documentation>None</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="full">
+				<xsd:annotation>
+					<xsd:documentation>Full</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="textAndBackground">
+				<xsd:annotation>
+					<xsd:documentation>Text and Background</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_OleObjectEmbed">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="followColorScheme" type="ST_OleObjectFollowColorScheme" use="optional" default="none">
+			<xsd:annotation>
+				<xsd:documentation>Color Scheme Properties for Embedded object</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_OleObjectLink">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="updateAutomatic" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Update Linked Embedded Objects Automatically</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_OleObject">
+		<xsd:choice minOccurs="1" maxOccurs="1">
+			<xsd:element name="embed" type="CT_OleObjectEmbed">
+				<xsd:annotation>
+					<xsd:documentation>Embedded Object or Control</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="link" type="CT_OleObjectLink">
+				<xsd:annotation>
+					<xsd:documentation>Linked Object or Control</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="pic" type="CT_Picture"/>
+		</xsd:choice>
+		<xsd:attributeGroup ref="AG_Ole"/>
+		<xsd:attribute name="progId" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Embedded Object ProgID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:element name="oleObj" type="CT_OleObject">
+		<xsd:annotation>
+			<xsd:documentation>Global Element for Embedded objects and Controls</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_Control">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="pic" type="CT_Picture" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="AG_Ole"/>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ControlList">
+		<xsd:sequence>
+			<xsd:element name="control" type="CT_Control" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Embedded Control</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_SlideId">
+		<xsd:annotation>
+			<xsd:documentation>Slide Identifier</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:unsignedInt">
+			<xsd:minInclusive value="256"/>
+			<xsd:maxExclusive value="2147483648"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SlideIdListEntry">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="ST_SlideId" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Slide Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideIdList">
+		<xsd:sequence>
+			<xsd:element name="sldId" type="CT_SlideIdListEntry" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Slide ID</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_SlideMasterId">
+		<xsd:annotation>
+			<xsd:documentation>Slide Master ID</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:unsignedInt">
+			<xsd:minInclusive value="2147483648"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SlideMasterIdListEntry">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="ST_SlideMasterId" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Slide Master Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideMasterIdList">
+		<xsd:sequence>
+			<xsd:element name="sldMasterId" type="CT_SlideMasterIdListEntry" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Slide Master ID</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_NotesMasterIdListEntry">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_NotesMasterIdList">
+		<xsd:sequence>
+			<xsd:element name="notesMasterId" type="CT_NotesMasterIdListEntry" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Notes Master ID</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_HandoutMasterIdListEntry">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_HandoutMasterIdList">
+		<xsd:sequence>
+			<xsd:element name="handoutMasterId" type="CT_HandoutMasterIdListEntry" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Handout Master ID</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_EmbeddedFontDataId">
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_EmbeddedFontListEntry">
+		<xsd:sequence>
+			<xsd:element name="font" type="a:CT_TextFont" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Embedded Font Name</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="regular" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Regular Embedded Font</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bold" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Bold Embedded Font</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="italic" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Italic Embedded Font</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="boldItalic" type="CT_EmbeddedFontDataId" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Bold Italic Embedded Font</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_EmbeddedFontList">
+		<xsd:sequence>
+			<xsd:element name="embeddedFont" type="CT_EmbeddedFontListEntry" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Embedded Font</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SmartTags">
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CustomShow">
+		<xsd:sequence>
+			<xsd:element name="sldLst" type="CT_SlideRelationshipList" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Presentation Slides</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="ST_Name" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Custom Show Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="id" type="xsd:unsignedInt" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Custom Show ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CustomShowList">
+		<xsd:sequence>
+			<xsd:element name="custShow" type="CT_CustomShow" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Custom Show</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_PhotoAlbumLayout">
+		<xsd:annotation>
+			<xsd:documentation>Photo Album Layout Definition</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="fitToSlide">
+				<xsd:annotation>
+					<xsd:documentation>Fit Photos to Slide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1pic">
+				<xsd:annotation>
+					<xsd:documentation>1 Photo per Slide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2pic">
+				<xsd:annotation>
+					<xsd:documentation>2 Photos per Slide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4pic">
+				<xsd:annotation>
+					<xsd:documentation>4 Photos per Slide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1picTitle">
+				<xsd:annotation>
+					<xsd:documentation>1 Photo per Slide with Titles</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="2picTitle">
+				<xsd:annotation>
+					<xsd:documentation>2 Photos per Slide with Titles</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="4picTitle">
+				<xsd:annotation>
+					<xsd:documentation>4 Photos per Slide with Titles</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PhotoAlbumFrameShape">
+		<xsd:annotation>
+			<xsd:documentation>Photo Album Shape for Photo Mask</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="frameStyle1">
+				<xsd:annotation>
+					<xsd:documentation>Rectangle Photo Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="frameStyle2">
+				<xsd:annotation>
+					<xsd:documentation>Rounded Rectangle Photo Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="frameStyle3">
+				<xsd:annotation>
+					<xsd:documentation>Simple White Photo Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="frameStyle4">
+				<xsd:annotation>
+					<xsd:documentation>Simple Black Photo Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="frameStyle5">
+				<xsd:annotation>
+					<xsd:documentation>Compound Black Photo Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="frameStyle6">
+				<xsd:annotation>
+					<xsd:documentation>Center Shadow Photo Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="frameStyle7">
+				<xsd:annotation>
+					<xsd:documentation>Soft Edge Photo Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_PhotoAlbum">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="bw" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Black and White</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showCaptions" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Show/Hide Captions</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="layout" type="ST_PhotoAlbumLayout" use="optional" default="fitToSlide">
+			<xsd:annotation>
+				<xsd:documentation>Photo Album Layout</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="frame" type="ST_PhotoAlbumFrameShape" use="optional" default="frameStyle1">
+			<xsd:annotation>
+				<xsd:documentation>Frame Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_SlideSizeCoordinate">
+		<xsd:annotation>
+			<xsd:documentation>Slide Size Coordinate</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="a:ST_PositiveCoordinate32">
+			<xsd:minInclusive value="914400"/>
+			<xsd:maxInclusive value="51206400"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_SlideSizeType">
+		<xsd:annotation>
+			<xsd:documentation>Slide Size Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="screen4x3">
+				<xsd:annotation>
+					<xsd:documentation>Screen 4x3</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="letter">
+				<xsd:annotation>
+					<xsd:documentation>Letter</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="A4">
+				<xsd:annotation>
+					<xsd:documentation>A4</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="35mm">
+				<xsd:annotation>
+					<xsd:documentation>35mm Film</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="overhead">
+				<xsd:annotation>
+					<xsd:documentation>Overhead</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="banner">
+				<xsd:annotation>
+					<xsd:documentation>Banner</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="custom">
+				<xsd:annotation>
+					<xsd:documentation>Custom</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ledger">
+				<xsd:annotation>
+					<xsd:documentation>Ledger</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="A3">
+				<xsd:annotation>
+					<xsd:documentation>A3</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="B4ISO">
+				<xsd:annotation>
+					<xsd:documentation>B4ISO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="B5ISO">
+				<xsd:annotation>
+					<xsd:documentation>B5ISO</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="B4JIS">
+				<xsd:annotation>
+					<xsd:documentation>B4JIS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="B5JIS">
+				<xsd:annotation>
+					<xsd:documentation>B5JIS</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="hagakiCard">
+				<xsd:annotation>
+					<xsd:documentation>Hagaki Card</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="screen16x9">
+				<xsd:annotation>
+					<xsd:documentation>Screen 16x9</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="screen16x10">
+				<xsd:annotation>
+					<xsd:documentation>Screen 16x10</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SlideSize">
+		<xsd:attribute name="cx" type="ST_SlideSizeCoordinate" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Extent Length</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="cy" type="ST_SlideSizeCoordinate" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Extent Width</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="type" type="ST_SlideSizeType" use="optional" default="custom">
+			<xsd:annotation>
+				<xsd:documentation>Type of Size</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Kinsoku">
+		<xsd:attribute name="lang" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Language</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="invalStChars" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Invalid Kinsoku Start Characters</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="invalEndChars" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Invalid Kinsoku End Characters</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_BookmarkIdSeed">
+		<xsd:annotation>
+			<xsd:documentation>Bookmark ID Seed</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:unsignedInt">
+			<xsd:minInclusive value="1"/>
+			<xsd:maxExclusive value="2147483648"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_ModifyVerifier">
+		<xsd:attribute name="algorithmName" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Cryptographic Algorithm Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="hashValue" type="xsd:base64Binary" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Password Hash Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="saltValue" type="xsd:base64Binary" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Salt Value for Password Verifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="spinValue" type="xsd:unsignedInt" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Iterations to Run Hashing Algorithm</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Presentation">
+		<xsd:sequence>
+			<xsd:element name="sldMasterIdLst" type="CT_SlideMasterIdList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Slide Master IDs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="notesMasterIdLst" type="CT_NotesMasterIdList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Notes Master IDs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="handoutMasterIdLst" type="CT_HandoutMasterIdList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Handout Master IDs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sldIdLst" type="CT_SlideIdList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Slide IDs</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sldSz" type="CT_SlideSize" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Presentation Slide Size</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="notesSz" type="a:CT_PositiveSize2D" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Notes Slide Size</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="smartTags" type="CT_SmartTags" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Smart Tags</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="embeddedFontLst" type="CT_EmbeddedFontList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Embedded Font List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="custShowLst" type="CT_CustomShowList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Custom Shows</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="photoAlbum" type="CT_PhotoAlbum" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Photo Album Information</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="custDataLst" type="CT_CustomerDataList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Customer Data Buckets</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="kinsoku" type="CT_Kinsoku" minOccurs="0">
+				<xsd:annotation>
+					<xsd:documentation>Kinsoku Settings</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="defaultTextStyle" type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Presentation Default Text Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="modifyVerifier" type="CT_ModifyVerifier" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Modification Verifier</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Extension List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="serverZoom" type="a:ST_Percentage" use="optional" default="50%">
+			<xsd:annotation>
+				<xsd:documentation>Server Zoom</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="firstSlideNum" type="xsd:int" use="optional" default="1">
+			<xsd:annotation>
+				<xsd:documentation>First Slide Number</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showSpecialPlsOnTitleSld" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Header and Footer Placeholders on Titles</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="rtl" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Right-To-Left Views</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="removePersonalInfoOnSave" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Remove Personal Information on Save</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="compatMode" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Compatibility Mode</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="strictFirstAndLastChars" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Strict First and Last Characters</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="embedTrueTypeFonts" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Embed True Type Fonts</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="saveSubsetFonts" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Save Subset Fonts</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="autoCompressPictures" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Automatically Compress Pictures</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="bookmarkIdSeed" type="ST_BookmarkIdSeed" use="optional" default="1">
+			<xsd:annotation>
+				<xsd:documentation>Bookmark ID Seed</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="conformance" type="s:ST_ConformanceClass">
+			<xsd:annotation>
+				<xsd:documentation>Document Conformance Class</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:element name="presentation" type="CT_Presentation">
+		<xsd:annotation>
+			<xsd:documentation>Presentation</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_HtmlPublishProperties">
+		<xsd:sequence>
+			<xsd:group ref="EG_SlideListChoice" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="showSpeakerNotes" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Speaker Notes</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="target" type="xsd:string" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>Target Output Profile</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="title" type="xsd:string" use="optional" default="">
+			<xsd:annotation>
+				<xsd:documentation>HTML Output Title</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Publish Path</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_PrintWhat">
+		<xsd:annotation>
+			<xsd:documentation>Default print output</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="slides">
+				<xsd:annotation>
+					<xsd:documentation>Slides</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="handouts1">
+				<xsd:annotation>
+					<xsd:documentation>1 Slide / Handout Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="handouts2">
+				<xsd:annotation>
+					<xsd:documentation>2 Slides / Handout Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="handouts3">
+				<xsd:annotation>
+					<xsd:documentation>3 Slides / Handout Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="handouts4">
+				<xsd:annotation>
+					<xsd:documentation>4 Slides / Handout Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="handouts6">
+				<xsd:annotation>
+					<xsd:documentation>6 Slides / Handout Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="handouts9">
+				<xsd:annotation>
+					<xsd:documentation>9 Slides / Handout Page</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="notes">
+				<xsd:annotation>
+					<xsd:documentation>Notes</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="outline">
+				<xsd:annotation>
+					<xsd:documentation>Outline</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PrintColorMode">
+		<xsd:annotation>
+			<xsd:documentation>Print Color Mode</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="bw">
+				<xsd:annotation>
+					<xsd:documentation>Black and White Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="gray">
+				<xsd:annotation>
+					<xsd:documentation>Grayscale Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="clr">
+				<xsd:annotation>
+					<xsd:documentation>Color Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_PrintProperties">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="prnWhat" type="ST_PrintWhat" use="optional" default="slides">
+			<xsd:annotation>
+				<xsd:documentation>Print Output</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="clrMode" type="ST_PrintColorMode" use="optional" default="clr">
+			<xsd:annotation>
+				<xsd:documentation>Print Color Mode</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="hiddenSlides" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Print Hidden Slides</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="scaleToFitPaper" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Scale to Fit Paper when printing</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="frameSlides" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Frame slides when printing</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ShowInfoBrowse">
+		<xsd:attribute name="showScrollbar" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Scroll Bar in Window</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ShowInfoKiosk">
+		<xsd:attribute name="restart" type="xsd:unsignedInt" use="optional" default="300000">
+			<xsd:annotation>
+				<xsd:documentation>Restart Show</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:group name="EG_ShowType">
+		<xsd:choice>
+			<xsd:element name="present" type="CT_Empty">
+				<xsd:annotation>
+					<xsd:documentation>Presenter Slide Show Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="browse" type="CT_ShowInfoBrowse">
+				<xsd:annotation>
+					<xsd:documentation>Browse Slide Show Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="kiosk" type="CT_ShowInfoKiosk">
+				<xsd:annotation>
+					<xsd:documentation>Kiosk Slide Show Mode</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:complexType name="CT_ShowProperties">
+		<xsd:sequence minOccurs="0" maxOccurs="1">
+			<xsd:group ref="EG_ShowType" minOccurs="0" maxOccurs="1"/>
+			<xsd:group ref="EG_SlideListChoice" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="penClr" type="a:CT_Color" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Pen Color for Slide Show</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="loop" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Loop Slide Show</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showNarration" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Show Narration in Slide Show</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showAnimation" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Animation in Slide Show</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="useTimings" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Use Timings in Slide Show</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_PresentationProperties">
+		<xsd:sequence>
+			<xsd:element name="prnPr" type="CT_PrintProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Printing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="showPr" type="CT_ShowProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Presentation-wide Show Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="clrMru" type="a:CT_ColorMRU" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Color MRU</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="presentationPr" type="CT_PresentationProperties">
+		<xsd:annotation>
+			<xsd:documentation>Presentation-wide Properties</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_HeaderFooter">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="sldNum" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Slide Number Placeholder</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="hdr" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Header Placeholder</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="ftr" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Footer Placeholder</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="dt" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Date/Time Placeholder</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_PlaceholderType">
+		<xsd:annotation>
+			<xsd:documentation>Placeholder IDs</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="title">
+				<xsd:annotation>
+					<xsd:documentation>Title</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="body">
+				<xsd:annotation>
+					<xsd:documentation>Body</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ctrTitle">
+				<xsd:annotation>
+					<xsd:documentation>Centered Title</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="subTitle">
+				<xsd:annotation>
+					<xsd:documentation>Subtitle</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="dt">
+				<xsd:annotation>
+					<xsd:documentation>Date and Time</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="sldNum">
+				<xsd:annotation>
+					<xsd:documentation>Slide Number</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="ftr">
+				<xsd:annotation>
+					<xsd:documentation>Footer</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="hdr">
+				<xsd:annotation>
+					<xsd:documentation>Header</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="obj">
+				<xsd:annotation>
+					<xsd:documentation>Object</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="chart">
+				<xsd:annotation>
+					<xsd:documentation>Chart</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="tbl">
+				<xsd:annotation>
+					<xsd:documentation>Table</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="clipArt">
+				<xsd:annotation>
+					<xsd:documentation>Clip Art</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="dgm">
+				<xsd:annotation>
+					<xsd:documentation>Diagram</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="media">
+				<xsd:annotation>
+					<xsd:documentation>Media</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="sldImg">
+				<xsd:annotation>
+					<xsd:documentation>Slide Image</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="pic">
+				<xsd:annotation>
+					<xsd:documentation>Picture</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_PlaceholderSize">
+		<xsd:annotation>
+			<xsd:documentation>Placeholder Size</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="full">
+				<xsd:annotation>
+					<xsd:documentation>Full</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="half">
+				<xsd:annotation>
+					<xsd:documentation>Half</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="quarter">
+				<xsd:annotation>
+					<xsd:documentation>Quarter</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_Placeholder">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="type" type="ST_PlaceholderType" use="optional" default="obj">
+			<xsd:annotation>
+				<xsd:documentation>Placeholder Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="orient" type="ST_Direction" use="optional" default="horz">
+			<xsd:annotation>
+				<xsd:documentation>Placeholder Orientation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="sz" type="ST_PlaceholderSize" use="optional" default="full">
+			<xsd:annotation>
+				<xsd:documentation>Placeholder Size</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="idx" type="xsd:unsignedInt" use="optional" default="0">
+			<xsd:annotation>
+				<xsd:documentation>Placeholder Index</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="hasCustomPrompt" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Placeholder has custom prompt</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ApplicationNonVisualDrawingProps">
+		<xsd:sequence>
+			<xsd:element name="ph" type="CT_Placeholder" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Placeholder Shape</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="a:EG_Media" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="custDataLst" type="CT_CustomerDataList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Customer Data List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="isPhoto" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Is a Photo Album</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="userDrawn" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Is User Drawn</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ShapeNonVisual">
+		<xsd:sequence>
+			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cNvSpPr" type="a:CT_NonVisualDrawingShapeProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Drawing Properties for a Shape</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="nvPr" type="CT_ApplicationNonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Application Non-Visual Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Shape">
+		<xsd:sequence>
+			<xsd:element name="nvSpPr" type="CT_ShapeNonVisual" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Properties for a Shape</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Shape Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="txBody" type="a:CT_TextBody" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Shape Text Body</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="useBgFill" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Use Background Fill</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ConnectorNonVisual">
+		<xsd:sequence>
+			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cNvCxnSpPr" type="a:CT_NonVisualConnectorProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Connector Shape Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="nvPr" type="CT_ApplicationNonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Application Non-Visual Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Connector">
+		<xsd:sequence>
+			<xsd:element name="nvCxnSpPr" type="CT_ConnectorNonVisual" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Properties for a Connection Shape</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Shape Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Connector Shape Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_PictureNonVisual">
+		<xsd:sequence>
+			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="cNvPicPr" type="a:CT_NonVisualPictureProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Picture Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="nvPr" type="CT_ApplicationNonVisualDrawingProps" minOccurs="1" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Picture">
+		<xsd:sequence>
+			<xsd:element name="nvPicPr" type="CT_PictureNonVisual" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Properties for a Picture</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="blipFill" type="a:CT_BlipFillProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Picture Fill</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="spPr" type="a:CT_ShapeProperties" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="style" type="a:CT_ShapeStyle" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_GraphicalObjectFrameNonVisual">
+		<xsd:sequence>
+			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cNvGraphicFramePr" type="a:CT_NonVisualGraphicFrameProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Graphic Frame Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="nvPr" type="CT_ApplicationNonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Application Non-Visual Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_GraphicalObjectFrame">
+		<xsd:sequence>
+			<xsd:element name="nvGraphicFramePr" type="CT_GraphicalObjectFrameNonVisual" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Properties for a Graphic Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="xfrm" type="a:CT_Transform2D" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>2D Transform for Graphic Frame</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element ref="a:graphic" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Extension List with Modification Flag</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_GroupShapeNonVisual">
+		<xsd:sequence>
+			<xsd:element name="cNvPr" type="a:CT_NonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-visual Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="cNvGrpSpPr" type="a:CT_NonVisualGroupDrawingShapeProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Group Shape Drawing Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="nvPr" type="CT_ApplicationNonVisualDrawingProps" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_GroupShape">
+		<xsd:sequence>
+			<xsd:element name="nvGrpSpPr" type="CT_GroupShapeNonVisual" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Non-Visual Properties for a Group Shape</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="grpSpPr" type="a:CT_GroupShapeProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Group Shape Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+				<xsd:element name="sp" type="CT_Shape">
+					<xsd:annotation>
+						<xsd:documentation>Shape</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="grpSp" type="CT_GroupShape">
+					<xsd:annotation>
+						<xsd:documentation>Group Shape</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="graphicFrame" type="CT_GraphicalObjectFrame">
+					<xsd:annotation>
+						<xsd:documentation>Graphic Frame</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="cxnSp" type="CT_Connector">
+					<xsd:annotation>
+						<xsd:documentation>Connection Shape</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="pic" type="CT_Picture">
+					<xsd:annotation>
+						<xsd:documentation>Picture</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="contentPart" type="CT_Rel">
+					<xsd:annotation>
+						<xsd:documentation>Content Part</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Rel">
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship to Part</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:group name="EG_TopLevelSlide">
+		<xsd:sequence>
+			<xsd:element name="clrMap" type="a:CT_ColorMapping" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Color Scheme Map</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:group name="EG_ChildSlide">
+		<xsd:sequence>
+			<xsd:element name="clrMapOvr" type="a:CT_ColorMappingOverride" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Color Scheme Map Override</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:attributeGroup name="AG_ChildSlide">
+		<xsd:attribute name="showMasterSp" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Master Shapes</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showMasterPhAnim" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Master Placeholder Animations</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:attributeGroup>
+	<xsd:complexType name="CT_BackgroundProperties">
+		<xsd:sequence>
+			<xsd:group ref="a:EG_FillProperties" minOccurs="1" maxOccurs="1"/>
+			<xsd:group ref="a:EG_EffectProperties" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="shadeToTitle" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Shade to Title</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:group name="EG_Background">
+		<xsd:choice>
+			<xsd:element name="bgPr" type="CT_BackgroundProperties">
+				<xsd:annotation>
+					<xsd:documentation>Background Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bgRef" type="a:CT_StyleMatrixReference">
+				<xsd:annotation>
+					<xsd:documentation>Background Style Reference</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:choice>
+	</xsd:group>
+	<xsd:complexType name="CT_Background">
+		<xsd:sequence>
+			<xsd:group ref="EG_Background"/>
+		</xsd:sequence>
+		<xsd:attribute name="bwMode" type="a:ST_BlackWhiteMode" use="optional" default="white">
+			<xsd:annotation>
+				<xsd:documentation>Black and White Mode</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CommonSlideData">
+		<xsd:sequence>
+			<xsd:element name="bg" type="CT_Background" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Background</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="spTree" type="CT_GroupShape" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Shape Tree</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="custDataLst" type="CT_CustomerDataList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Customer Data List</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="controls" type="CT_ControlList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of controls</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string" use="optional" default="">
+			<xsd:annotation>
+				<xsd:documentation>Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Slide">
+		<xsd:sequence minOccurs="1" maxOccurs="1">
+			<xsd:element name="cSld" type="CT_CommonSlideData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common slide data for slides</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="EG_ChildSlide" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="transition" type="CT_SlideTransition" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Transition</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="timing" type="CT_SlideTiming" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Timing Information for a Slide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="AG_ChildSlide"/>
+		<xsd:attribute name="show" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Slide in Slide Show</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:element name="sld" type="CT_Slide">
+		<xsd:annotation>
+			<xsd:documentation>Presentation Slide</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="ST_SlideLayoutType">
+		<xsd:annotation>
+			<xsd:documentation>Slide Layout Type</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="title">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Title )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="tx">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Text )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="twoColTx">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Two Column Text )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="tbl">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Table )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="txAndChart">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Text and Chart )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="chartAndTx">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Chart and Text )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="dgm">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Diagram )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="chart">
+				<xsd:annotation>
+					<xsd:documentation>Chart</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="txAndClipArt">
+				<xsd:annotation>
+					<xsd:documentation>Text and Clip Art</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="clipArtAndTx">
+				<xsd:annotation>
+					<xsd:documentation>Clip Art and Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="titleOnly">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Title Only )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="blank">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Blank )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="txAndObj">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Text and Object )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="objAndTx">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Object and Text )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="objOnly">
+				<xsd:annotation>
+					<xsd:documentation>Object</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="obj">
+				<xsd:annotation>
+					<xsd:documentation>Title and Object</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="txAndMedia">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Text and Media )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="mediaAndTx">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Media and Text )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="objOverTx">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Object over Text)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="txOverObj">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Text over Object)</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="txAndTwoObj">
+				<xsd:annotation>
+					<xsd:documentation>Text and Two Objects</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="twoObjAndTx">
+				<xsd:annotation>
+					<xsd:documentation>Two Objects and Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="twoObjOverTx">
+				<xsd:annotation>
+					<xsd:documentation>Two Objects over Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="fourObj">
+				<xsd:annotation>
+					<xsd:documentation>Four Objects</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="vertTx">
+				<xsd:annotation>
+					<xsd:documentation>Vertical Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="clipArtAndVertTx">
+				<xsd:annotation>
+					<xsd:documentation>Clip Art and Vertical Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="vertTitleAndTx">
+				<xsd:annotation>
+					<xsd:documentation>Vertical Title and Text</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="vertTitleAndTxOverChart">
+				<xsd:annotation>
+					<xsd:documentation>Vertical Title and Text Over Chart</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="twoObj">
+				<xsd:annotation>
+					<xsd:documentation>Two Objects</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="objAndTwoObj">
+				<xsd:annotation>
+					<xsd:documentation>Object and Two Object</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="twoObjAndObj">
+				<xsd:annotation>
+					<xsd:documentation>Two Objects and Object</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="cust">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Type Enumeration ( Custom )</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="secHead">
+				<xsd:annotation>
+					<xsd:documentation>Section Header</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="twoTxTwoObj">
+				<xsd:annotation>
+					<xsd:documentation>Two Text and Two Objects</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="objTx">
+				<xsd:annotation>
+					<xsd:documentation>Title, Object, and Caption</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="picTx">
+				<xsd:annotation>
+					<xsd:documentation>Picture and Caption</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SlideLayout">
+		<xsd:sequence minOccurs="1" maxOccurs="1">
+			<xsd:element name="cSld" type="CT_CommonSlideData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common slide data for slide layouts</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="EG_ChildSlide" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="transition" type="CT_SlideTransition" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Transition for a Slide Layout</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="timing" type="CT_SlideTiming" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Timing Information for a Slide Layout</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="hf" type="CT_HeaderFooter" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Header/Footer information for a slide layout</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="AG_ChildSlide"/>
+		<xsd:attribute name="matchingName" type="xsd:string" use="optional" default="">
+			<xsd:annotation>
+				<xsd:documentation>Matching Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="type" type="ST_SlideLayoutType" use="optional" default="cust">
+			<xsd:annotation>
+				<xsd:documentation>Slide Layout Type</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="preserve" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Preserve Slide Layout</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="userDrawn" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Is User Drawn</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:element name="sldLayout" type="CT_SlideLayout">
+		<xsd:annotation>
+			<xsd:documentation>Slide Layout</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_SlideMasterTextStyles">
+		<xsd:sequence>
+			<xsd:element name="titleStyle" type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Master Title Text Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="bodyStyle" type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Master Body Text Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="otherStyle" type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Master Other Text Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:simpleType name="ST_SlideLayoutId">
+		<xsd:annotation>
+			<xsd:documentation>Slide Layout ID</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:unsignedInt">
+			<xsd:minInclusive value="2147483648"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_SlideLayoutIdListEntry">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="ST_SlideLayoutId" use="optional">
+			<xsd:annotation>
+				<xsd:documentation>ID Tag</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>ID Tag</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideLayoutIdList">
+		<xsd:sequence>
+			<xsd:element name="sldLayoutId" type="CT_SlideLayoutIdListEntry" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Slide Layout Id</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideMaster">
+		<xsd:sequence minOccurs="1" maxOccurs="1">
+			<xsd:element name="cSld" type="CT_CommonSlideData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common slide data for slide masters</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="EG_TopLevelSlide" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="sldLayoutIdLst" type="CT_SlideLayoutIdList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Slide Layouts</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="transition" type="CT_SlideTransition" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Transition for a Slide Master</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="timing" type="CT_SlideTiming" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Timing Information for Slide Masters</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="hf" type="CT_HeaderFooter" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Header/Footer information for a slide master</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="txStyles" type="CT_SlideMasterTextStyles" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Master Text Styles</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="preserve" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Preserve Slide Master</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:element name="sldMaster" type="CT_SlideMaster">
+		<xsd:annotation>
+			<xsd:documentation>Slide Master</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_HandoutMaster">
+		<xsd:sequence>
+			<xsd:element name="cSld" type="CT_CommonSlideData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common slide data for handout master</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="EG_TopLevelSlide" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="hf" type="CT_HeaderFooter" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Header/Footer information for a handout master</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="handoutMaster" type="CT_HandoutMaster">
+		<xsd:annotation>
+			<xsd:documentation>Handout Master</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_NotesMaster">
+		<xsd:sequence>
+			<xsd:element name="cSld" type="CT_CommonSlideData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common Slide Data</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="EG_TopLevelSlide" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="hf" type="CT_HeaderFooter" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Header/Footer Information for a Notes Master</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="notesStyle" type="a:CT_TextListStyle" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Notes Text Style</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="notesMaster" type="CT_NotesMaster">
+		<xsd:annotation>
+			<xsd:documentation>Notes Master</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_NotesSlide">
+		<xsd:sequence minOccurs="1" maxOccurs="1">
+			<xsd:element name="cSld" type="CT_CommonSlideData" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common slide data for notes slides</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:group ref="EG_ChildSlide" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="extLst" type="CT_ExtensionListModify" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="AG_ChildSlide"/>
+	</xsd:complexType>
+	<xsd:element name="notes" type="CT_NotesSlide">
+		<xsd:annotation>
+			<xsd:documentation>Notes Slide</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_SlideSyncProperties">
+		<xsd:sequence>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="serverSldId" type="xsd:string" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Server's Slide File ID</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="serverSldModifiedTime" type="xsd:dateTime" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Server's Slide File's modification date/time</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="clientInsertedTime" type="xsd:dateTime" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Client Slide Insertion date/time</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:element name="sldSyncPr" type="CT_SlideSyncProperties">
+		<xsd:annotation>
+			<xsd:documentation>Slide Synchronization Properties</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="CT_StringTag">
+		<xsd:attribute name="name" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>Name</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="val" type="xsd:string">
+			<xsd:annotation>
+				<xsd:documentation>Value</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_TagList">
+		<xsd:sequence>
+			<xsd:element name="tag" type="CT_StringTag" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Programmable Extensibility Tag</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="tagLst" type="CT_TagList">
+		<xsd:annotation>
+			<xsd:documentation>Programmable Tab List</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:simpleType name="ST_SplitterBarState">
+		<xsd:annotation>
+			<xsd:documentation>Splitter Bar State</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="minimized">
+				<xsd:annotation>
+					<xsd:documentation>Min</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="restored">
+				<xsd:annotation>
+					<xsd:documentation>Restored</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="maximized">
+				<xsd:annotation>
+					<xsd:documentation>Max</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="ST_ViewType">
+		<xsd:annotation>
+			<xsd:documentation>List of View Types</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:token">
+			<xsd:enumeration value="sldView">
+				<xsd:annotation>
+					<xsd:documentation>Normal Slide View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="sldMasterView">
+				<xsd:annotation>
+					<xsd:documentation>Slide Master View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="notesView">
+				<xsd:annotation>
+					<xsd:documentation>Notes View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="handoutView">
+				<xsd:annotation>
+					<xsd:documentation>Handout View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="notesMasterView">
+				<xsd:annotation>
+					<xsd:documentation>Notes Master View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="outlineView">
+				<xsd:annotation>
+					<xsd:documentation>Outline View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="sldSorterView">
+				<xsd:annotation>
+					<xsd:documentation>Slide Sorter View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="sldThumbnailView">
+				<xsd:annotation>
+					<xsd:documentation>Slide Thumbnail View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:complexType name="CT_NormalViewPortion">
+		<xsd:attribute name="sz" type="a:ST_PositiveFixedPercentage" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Normal View Dimension Size</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="autoAdjust" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Auto Adjust Normal View</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_NormalViewProperties">
+		<xsd:sequence>
+			<xsd:element name="restoredLeft" type="CT_NormalViewPortion" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Normal View Restored Left Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="restoredTop" type="CT_NormalViewPortion" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Normal View Restored Top Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="showOutlineIcons" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Outline Icons in Normal View</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="snapVertSplitter" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Snap Vertical Splitter</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="vertBarState" type="ST_SplitterBarState" use="optional" default="restored">
+			<xsd:annotation>
+				<xsd:documentation>State of the Vertical Splitter Bar</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="horzBarState" type="ST_SplitterBarState" use="optional" default="restored">
+			<xsd:annotation>
+				<xsd:documentation>State of the Horizontal Splitter Bar</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="preferSingleView" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Prefer Single View</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CommonViewProperties">
+		<xsd:sequence>
+			<xsd:element name="scale" type="a:CT_Scale2D" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>View Scale</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="origin" type="a:CT_Point2D" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>View Origin</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="varScale" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Variable Scale</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_NotesTextViewProperties">
+		<xsd:sequence minOccurs="1" maxOccurs="1">
+			<xsd:element name="cViewPr" type="CT_CommonViewProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Base properties for Notes View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_OutlineViewSlideEntry">
+		<xsd:attribute ref="r:id" use="required">
+			<xsd:annotation>
+				<xsd:documentation>Relationship Identifier</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="collapse" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Collapsed</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_OutlineViewSlideList">
+		<xsd:sequence>
+			<xsd:element name="sld" type="CT_OutlineViewSlideEntry" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Presentation Slide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_OutlineViewProperties">
+		<xsd:sequence minOccurs="1" maxOccurs="1">
+			<xsd:element name="cViewPr" type="CT_CommonViewProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sldLst" type="CT_OutlineViewSlideList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Presentation Slides</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideSorterViewProperties">
+		<xsd:sequence minOccurs="1" maxOccurs="1">
+			<xsd:element name="cViewPr" type="CT_CommonViewProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Base properties for Slide Sorter View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="showFormatting" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Formatting</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_Guide">
+		<xsd:attribute name="orient" type="ST_Direction" use="optional" default="vert">
+			<xsd:annotation>
+				<xsd:documentation>Guide Orientation</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="pos" type="a:ST_Coordinate32" use="optional" default="0">
+			<xsd:annotation>
+				<xsd:documentation>Guide Position</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_GuideList">
+		<xsd:sequence minOccurs="0" maxOccurs="1">
+			<xsd:element name="guide" type="CT_Guide" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>A Guide</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_CommonSlideViewProperties">
+		<xsd:sequence>
+			<xsd:element name="cViewPr" type="CT_CommonViewProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Base properties for Slide View</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="guideLst" type="CT_GuideList" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>List of Guides</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="snapToGrid" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Snap Objects to Grid</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="snapToObjects" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Snap Objects to Objects</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showGuides" type="xsd:boolean" use="optional" default="false">
+			<xsd:annotation>
+				<xsd:documentation>Show Guides in View</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="CT_SlideViewProperties">
+		<xsd:sequence>
+			<xsd:element name="cSldViewPr" type="CT_CommonSlideViewProperties" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_NotesViewProperties">
+		<xsd:sequence>
+			<xsd:element name="cSldViewPr" type="CT_CommonSlideViewProperties" minOccurs="1" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Common Slide View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CT_ViewProperties">
+		<xsd:sequence minOccurs="0" maxOccurs="1">
+			<xsd:element name="normalViewPr" type="CT_NormalViewProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Normal View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="slideViewPr" type="CT_SlideViewProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="outlineViewPr" type="CT_OutlineViewProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Outline View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="notesTextViewPr" type="CT_NotesTextViewProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Notes Text View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="sorterViewPr" type="CT_SlideSorterViewProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Slide Sorter View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="notesViewPr" type="CT_NotesViewProperties" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Notes View Properties</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="gridSpacing" type="a:CT_PositiveSize2D" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>Grid Spacing</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
+		</xsd:sequence>
+		<xsd:attribute name="lastView" type="ST_ViewType" use="optional" default="sldView">
+			<xsd:annotation>
+				<xsd:documentation>Last View</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="showComments" type="xsd:boolean" use="optional" default="true">
+			<xsd:annotation>
+				<xsd:documentation>Show Comments</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:element name="viewPr" type="CT_ViewProperties">
+		<xsd:annotation>
+			<xsd:documentation>Presentation-wide View Properties</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+</xsd:schema>
