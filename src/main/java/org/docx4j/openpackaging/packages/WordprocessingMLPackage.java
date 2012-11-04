@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,10 +41,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
 import org.docx4j.Docx4jProperties;
+import org.docx4j.TextUtils;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.convert.out.pdf.viaXSLFO.Conversion;
 import org.docx4j.convert.out.pdf.viaXSLFO.PartTracker;
+import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.fonts.IdentityPlusMapper;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.jaxb.Context;
@@ -470,10 +473,12 @@ public class WordprocessingMLPackage extends OpcPackage {
 		}
 		
 		// Metadata: docx4j 2.7.1 can populate some of this from docx4j.properties
+		// See SaveToZipFile
 		DocPropsCorePart core = new DocPropsCorePart();
 		org.docx4j.docProps.core.ObjectFactory coreFactory = new org.docx4j.docProps.core.ObjectFactory();
 		core.setJaxbElement(coreFactory.createCoreProperties() );
 		wmlPack.addTargetPart(core);
+			
 		
 		DocPropsExtendedPart app = new DocPropsExtendedPart();
 		org.docx4j.docProps.extended.ObjectFactory extFactory = new org.docx4j.docProps.extended.ObjectFactory();
@@ -484,6 +489,7 @@ public class WordprocessingMLPackage extends OpcPackage {
 		return wmlPack;
 		
 	}
+	
 
 	public static class FilterSettings {
 		

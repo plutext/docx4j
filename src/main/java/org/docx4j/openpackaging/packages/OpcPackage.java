@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
 
@@ -42,7 +43,9 @@ import org.apache.log4j.Logger;
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.docx4j.TextUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.Base;
@@ -490,6 +493,51 @@ public class OpcPackage extends Base {
 		
 		return docPropsCustomPart;
 	}
+	
+	/**
+	 * @since 2.8.2
+	 */	
+	public void setTitle(String title) {
+		
+		if (this.getDocPropsCorePart()==null) {
+			DocPropsCorePart core;
+			try {
+				core = new DocPropsCorePart();
+				org.docx4j.docProps.core.ObjectFactory coreFactory = new org.docx4j.docProps.core.ObjectFactory();
+				core.setJaxbElement(coreFactory.createCoreProperties() );
+				this.addTargetPart(core);			
+			} catch (InvalidFormatException e) {
+				log.error(e);
+			}
+		}
+		
+		org.docx4j.docProps.core.dc.elements.ObjectFactory of = new org.docx4j.docProps.core.dc.elements.ObjectFactory();
+		SimpleLiteral literal = of.createSimpleLiteral();
+		literal.getContent().add(title);
+		this.getDocPropsCorePart().getJaxbElement().setTitle(of.createTitle(literal) );				
+	}
+	
+	/**
+	 * @since 2.8.2
+	 */	
+	public String getTitle() {
+		
+		if (this.getDocPropsCorePart()==null) {
+			return null;
+		}
+		
+		JAXBElement<SimpleLiteral> sl = this.getDocPropsCorePart().getJaxbElement().getTitle();
+		if (sl == null) return null;
+		
+		StringWriter sw = new StringWriter(); 
+		 try {
+			TextUtils.extractText(sl, sw, Context.jcDocPropsCore);
+		} catch (Exception e) {
+			log.error(e);
+		}
+		return sw.toString();				
+	}
+	
 
 	/** @since 2.7.2 */
 	public OpcPackage clone() {
