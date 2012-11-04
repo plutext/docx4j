@@ -83,7 +83,7 @@ import javax.xml.bind.annotation.XmlType;
     "tableStyleInfo",
     "extLst"
 })
-@XmlRootElement
+@XmlRootElement(name = "table")
 public class CTTable {
 
     protected CTAutoFilter autoFilter;
