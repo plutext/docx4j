@@ -47,7 +47,7 @@
 	<xsl:template match="w:sdt">
 		<xsl:choose>
 			<xsl:when
-				test="$xpath and contains(w:sdtPr/w:tag/@w:val, 'od:xpath=') or $repeat and contains(w:sdtPr/w:tag/@w:val, 'od:repeat=') or $condition and contains(w:sdtPr/w:tag/@w:val, 'od:condition=')">
+				test="$xpath and contains(w:sdtPr/w:tag/@w:val, 'od:xpath=') or $repeat and contains(w:sdtPr/w:tag/@w:val, 'od:repeat=') or $repeat and contains(w:sdtPr/w:tag/@w:val, 'od:rptd=') or $condition and contains(w:sdtPr/w:tag/@w:val, 'od:condition=')">
 				<xsl:apply-templates select="w:sdtContent/node()" />
 			</xsl:when>
 			<xsl:otherwise>
