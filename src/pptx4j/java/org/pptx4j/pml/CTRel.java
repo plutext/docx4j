@@ -22,20 +22,19 @@ package org.pptx4j.pml;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for CT_CustomShowId complex type.
+ * <p>Java class for CT_Rel complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="CT_CustomShowId">
+ * &lt;complexType name="CT_Rel">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
+ *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -44,26 +43,33 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CT_CustomShowId")
-public class CTCustomShowId {
+@XmlType(name = "CT_Rel")
+public class CTRel {
 
-    @XmlAttribute(name = "id", required = true)
-    @XmlSchemaType(name = "unsignedInt")
-    protected long id;
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
+    protected String id;
 
     /**
-     * Gets the value of the id property.
+     * Relationship to Part
      * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public long getId() {
+    public String getId() {
         return id;
     }
 
     /**
      * Sets the value of the id property.
      * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setId(long value) {
+    public void setId(String value) {
         this.id = value;
     }
 

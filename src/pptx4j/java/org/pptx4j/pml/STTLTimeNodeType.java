@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -54,81 +52,63 @@ public enum STTLTimeNodeType {
 
 
     /**
-     * 
-     * 						Node Type Enum ( Click Effect )
-     * 					
+     * Node Type Enum ( Click Effect )
      * 
      */
     @XmlEnumValue("clickEffect")
     CLICK_EFFECT("clickEffect"),
 
     /**
-     * 
-     * 						Node Type Enum ( With Effect )
-     * 					
+     * Node Type Enum ( With Effect )
      * 
      */
     @XmlEnumValue("withEffect")
     WITH_EFFECT("withEffect"),
 
     /**
-     * 
-     * 						Node Type Enum ( After Effect )
-     * 					
+     * Node Type Enum ( After Effect )
      * 
      */
     @XmlEnumValue("afterEffect")
     AFTER_EFFECT("afterEffect"),
 
     /**
-     * 
-     * 						Node Type Enum ( Main Sequence )
-     * 					
+     * Node Type Enum ( Main Sequence )
      * 
      */
     @XmlEnumValue("mainSeq")
     MAIN_SEQ("mainSeq"),
 
     /**
-     * 
-     * 						Node Type Enum ( Interactive Sequence )
-     * 					
+     * Node Type Enum ( Interactive Sequence )
      * 
      */
     @XmlEnumValue("interactiveSeq")
     INTERACTIVE_SEQ("interactiveSeq"),
 
     /**
-     * 
-     * 						Node Type Enum ( Click Paragraph )
-     * 					
+     * Node Type Enum ( Click Paragraph )
      * 
      */
     @XmlEnumValue("clickPar")
     CLICK_PAR("clickPar"),
 
     /**
-     * 
-     * 						Node Type Enum ( With Group )
-     * 					
+     * Node Type Enum ( With Group )
      * 
      */
     @XmlEnumValue("withGroup")
     WITH_GROUP("withGroup"),
 
     /**
-     * 
-     * 						Node Type Enum ( After Group )
-     * 					
+     * Node Type Enum ( After Group )
      * 
      */
     @XmlEnumValue("afterGroup")
     AFTER_GROUP("afterGroup"),
 
     /**
-     * 
-     * 						Node Type Enum ( Timing Root )
-     * 					
+     * Node Type Enum ( Timing Root )
      * 
      */
     @XmlEnumValue("tmRoot")

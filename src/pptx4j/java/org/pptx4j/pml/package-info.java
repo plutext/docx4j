@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -16,7 +16,5 @@
     See the License for the specific language governing permissions and 
     limitations under the License.
 
- */
-
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.openxmlformats.org/presentationml/2006/main", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+ */@javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.openxmlformats.org/presentationml/2006/main", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.pptx4j.pml;

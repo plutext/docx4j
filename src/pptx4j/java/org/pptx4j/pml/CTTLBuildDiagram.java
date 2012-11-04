@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -52,15 +50,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlType(name = "CT_TLBuildDiagram")
 public class CTTLBuildDiagram {
 
-    @XmlAttribute
+    @XmlAttribute(name = "bld")
     protected STTLDiagramBuildType bld;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "spid", required = true)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String spid;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "grpId", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long grpId;
-    @XmlAttribute
+    @XmlAttribute(name = "uiExpand")
     protected Boolean uiExpand;
 
     /**

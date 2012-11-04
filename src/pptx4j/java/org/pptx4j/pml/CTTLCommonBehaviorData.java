@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -70,21 +68,21 @@ public class CTTLCommonBehaviorData {
     @XmlElement(required = true)
     protected CTTLTimeTargetElement tgtEl;
     protected CTTLBehaviorAttributeNameList attrNameLst;
-    @XmlAttribute
+    @XmlAttribute(name = "additive")
     protected STTLBehaviorAdditiveType additive;
-    @XmlAttribute
+    @XmlAttribute(name = "accumulate")
     protected STTLBehaviorAccumulateType accumulate;
-    @XmlAttribute
+    @XmlAttribute(name = "xfrmType")
     protected STTLBehaviorTransformType xfrmType;
-    @XmlAttribute
+    @XmlAttribute(name = "from")
     protected String from;
-    @XmlAttribute
+    @XmlAttribute(name = "to")
     protected String to;
-    @XmlAttribute
+    @XmlAttribute(name = "by")
     protected String by;
-    @XmlAttribute
+    @XmlAttribute(name = "rctx")
     protected String rctx;
-    @XmlAttribute
+    @XmlAttribute(name = "override")
     protected STTLBehaviorOverrideType override;
 
     /**

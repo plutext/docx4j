@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -53,18 +51,14 @@ public enum STViewType {
 
 
     /**
-     * 
-     * 						Normal Slide View
-     * 					
+     * Normal Slide View
      * 
      */
     @XmlEnumValue("sldView")
     SLD_VIEW("sldView"),
 
     /**
-     * 
-     * 						Slide Master View
-     * 					
+     * Slide Master View
      * 
      */
     @XmlEnumValue("sldMasterView")
@@ -85,9 +79,7 @@ public enum STViewType {
     HANDOUT_VIEW("handoutView"),
 
     /**
-     * 
-     * 						Notes Master View
-     * 					
+     * Notes Master View
      * 
      */
     @XmlEnumValue("notesMasterView")
@@ -101,18 +93,14 @@ public enum STViewType {
     OUTLINE_VIEW("outlineView"),
 
     /**
-     * 
-     * 						Slide Sorter View
-     * 					
+     * Slide Sorter View
      * 
      */
     @XmlEnumValue("sldSorterView")
     SLD_SORTER_VIEW("sldSorterView"),
 
     /**
-     * 
-     * 						Slide Thumbnail View
-     * 					
+     * Slide Thumbnail View
      * 
      */
     @XmlEnumValue("sldThumbnailView")

@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -41,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="showSpeakerNotes" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="pubBrowser" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_HtmlPublishWebBrowserSupport" default="v3v4" />
+ *       &lt;attribute name="target" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="title" type="{http://www.w3.org/2001/XMLSchema}string" default="" />
  *       &lt;attribute ref="{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id use="required""/>
  *     &lt;/restriction>
@@ -64,13 +62,13 @@ public class CTHtmlPublishProperties {
     protected CTIndexRange sldRg;
     protected CTCustomShowId custShow;
     protected CTExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "showSpeakerNotes")
     protected Boolean showSpeakerNotes;
-    @XmlAttribute
-    protected STHtmlPublishWebBrowserSupport pubBrowser;
-    @XmlAttribute
+    @XmlAttribute(name = "target")
+    protected String target;
+    @XmlAttribute(name = "title")
     protected String title;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
     protected String id;
 
     /**
@@ -198,31 +196,27 @@ public class CTHtmlPublishProperties {
     }
 
     /**
-     * Gets the value of the pubBrowser property.
+     * Gets the value of the target property.
      * 
      * @return
      *     possible object is
-     *     {@link STHtmlPublishWebBrowserSupport }
+     *     {@link String }
      *     
      */
-    public STHtmlPublishWebBrowserSupport getPubBrowser() {
-        if (pubBrowser == null) {
-            return STHtmlPublishWebBrowserSupport.V_3_V_4;
-        } else {
-            return pubBrowser;
-        }
+    public String getTarget() {
+        return target;
     }
 
     /**
-     * Sets the value of the pubBrowser property.
+     * Sets the value of the target property.
      * 
      * @param value
      *     allowed object is
-     *     {@link STHtmlPublishWebBrowserSupport }
+     *     {@link String }
      *     
      */
-    public void setPubBrowser(STHtmlPublishWebBrowserSupport value) {
-        this.pubBrowser = value;
+    public void setTarget(String value) {
+        this.target = value;
     }
 
     /**

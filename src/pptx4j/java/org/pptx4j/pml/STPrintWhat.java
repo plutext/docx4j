@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -61,54 +59,42 @@ public enum STPrintWhat {
     SLIDES("slides"),
 
     /**
-     * 
-     * 						1 Slide / Handout Page
-     * 					
+     *  1 Slide / Handout Page
      * 
      */
     @XmlEnumValue("handouts1")
     HANDOUTS_1("handouts1"),
 
     /**
-     * 
-     * 						2 Slides / Handout Page
-     * 					
+     *  2 Slides / Handout Page
      * 
      */
     @XmlEnumValue("handouts2")
     HANDOUTS_2("handouts2"),
 
     /**
-     * 
-     * 						3 Slides / Handout Page
-     * 					
+     *  3 Slides / Handout Page
      * 
      */
     @XmlEnumValue("handouts3")
     HANDOUTS_3("handouts3"),
 
     /**
-     * 
-     * 						4 Slides / Handout Page
-     * 					
+     *  4 Slides / Handout Page
      * 
      */
     @XmlEnumValue("handouts4")
     HANDOUTS_4("handouts4"),
 
     /**
-     * 
-     * 						6 Slides / Handout Page
-     * 					
+     *  6 Slides / Handout Page
      * 
      */
     @XmlEnumValue("handouts6")
     HANDOUTS_6("handouts6"),
 
     /**
-     * 
-     * 						9 Slides / Handout Page
-     * 					
+     *  9 Slides / Handout Page
      * 
      */
     @XmlEnumValue("handouts9")

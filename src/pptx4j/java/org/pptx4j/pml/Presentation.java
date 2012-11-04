@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import java.util.ArrayList;
@@ -33,6 +31,7 @@ import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.dml.CTTextListStyle;
+import org.docx4j.sharedtypes.STConformanceClass;
 
 
 /**
@@ -115,7 +114,7 @@ import org.docx4j.dml.CTTextListStyle;
  *         &lt;element name="modifyVerifier" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ModifyVerifier" minOccurs="0"/>
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="serverZoom" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="50000" />
+ *       &lt;attribute name="serverZoom" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="50" />
  *       &lt;attribute name="firstSlideNum" type="{http://www.w3.org/2001/XMLSchema}int" default="1" />
  *       &lt;attribute name="showSpecialPlsOnTitleSld" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="rtl" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
@@ -126,6 +125,7 @@ import org.docx4j.dml.CTTextListStyle;
  *       &lt;attribute name="saveSubsetFonts" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="autoCompressPictures" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="bookmarkIdSeed" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_BookmarkIdSeed" default="1" />
+ *       &lt;attribute name="conformance" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_ConformanceClass" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -170,28 +170,30 @@ public class Presentation {
     protected CTTextListStyle defaultTextStyle;
     protected CTModifyVerifier modifyVerifier;
     protected CTExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "serverZoom")
     protected Integer serverZoom;
-    @XmlAttribute
+    @XmlAttribute(name = "firstSlideNum")
     protected Integer firstSlideNum;
-    @XmlAttribute
+    @XmlAttribute(name = "showSpecialPlsOnTitleSld")
     protected Boolean showSpecialPlsOnTitleSld;
-    @XmlAttribute
+    @XmlAttribute(name = "rtl")
     protected Boolean rtl;
-    @XmlAttribute
+    @XmlAttribute(name = "removePersonalInfoOnSave")
     protected Boolean removePersonalInfoOnSave;
-    @XmlAttribute
+    @XmlAttribute(name = "compatMode")
     protected Boolean compatMode;
-    @XmlAttribute
+    @XmlAttribute(name = "strictFirstAndLastChars")
     protected Boolean strictFirstAndLastChars;
-    @XmlAttribute
+    @XmlAttribute(name = "embedTrueTypeFonts")
     protected Boolean embedTrueTypeFonts;
-    @XmlAttribute
+    @XmlAttribute(name = "saveSubsetFonts")
     protected Boolean saveSubsetFonts;
-    @XmlAttribute
+    @XmlAttribute(name = "autoCompressPictures")
     protected Boolean autoCompressPictures;
-    @XmlAttribute
+    @XmlAttribute(name = "bookmarkIdSeed")
     protected Long bookmarkIdSeed;
+    @XmlAttribute(name = "conformance")
+    protected STConformanceClass conformance;
 
     /**
      * Gets the value of the sldMasterIdLst property.
@@ -563,7 +565,7 @@ public class Presentation {
      */
     public int getServerZoom() {
         if (serverZoom == null) {
-            return  50000;
+            return  50;
         } else {
             return serverZoom;
         }
@@ -861,6 +863,30 @@ public class Presentation {
         this.bookmarkIdSeed = value;
     }
 
+    /**
+     * Gets the value of the conformance property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link STConformanceClass }
+     *     
+     */
+    public STConformanceClass getConformance() {
+        return conformance;
+    }
+
+    /**
+     * Sets the value of the conformance property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link STConformanceClass }
+     *     
+     */
+    public void setConformance(STConformanceClass value) {
+        this.conformance = value;
+    }
+
 
     /**
      * <p>Java class for anonymous complex type.
@@ -959,7 +985,7 @@ public class Presentation {
         public static class SldId {
 
             protected CTExtensionList extLst;
-            @XmlAttribute(required = true)
+            @XmlAttribute(name = "id", required = true)
             protected long id;
             @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
             protected String rid;
@@ -1005,9 +1031,7 @@ public class Presentation {
             }
 
             /**
-             * 
-             * 												Relationship Identifier
-             * 											
+             * Relationship Identifier
              * 
              * @return
              *     possible object is
@@ -1132,7 +1156,7 @@ public class Presentation {
         public static class SldMasterId {
 
             protected CTExtensionList extLst;
-            @XmlAttribute
+            @XmlAttribute(name = "id")
             protected Long id;
             @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships", required = true)
             protected String rid;
@@ -1186,9 +1210,7 @@ public class Presentation {
             }
 
             /**
-             * 
-             * 								Relationship Identifier
-             * 							
+             * Relationship Identifier
              * 
              * @return
              *     possible object is
@@ -1239,11 +1261,11 @@ public class Presentation {
     @XmlType(name = "")
     public static class SldSz {
 
-        @XmlAttribute(required = true)
+        @XmlAttribute(name = "cx", required = true)
         protected int cx;
-        @XmlAttribute(required = true)
+        @XmlAttribute(name = "cy", required = true)
         protected int cy;
-        @XmlAttribute
+        @XmlAttribute(name = "type")
         @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
         protected String type;
 

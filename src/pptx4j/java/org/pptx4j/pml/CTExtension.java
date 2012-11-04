@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -42,7 +40,7 @@ import org.w3c.dom.Element;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;any/>
+ *         &lt;any processContents='lax'/>
  *       &lt;/sequence>
  *       &lt;attribute name="uri" type="{http://www.w3.org/2001/XMLSchema}token" />
  *     &lt;/restriction>
@@ -60,7 +58,7 @@ public class CTExtension {
 
     @XmlAnyElement(lax = true)
     protected Object any;
-    @XmlAttribute
+    @XmlAttribute(name = "uri")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlSchemaType(name = "token")
     protected String uri;

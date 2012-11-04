@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,16 +17,12 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
@@ -40,6 +36,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionList" minOccurs="0"/>
+ *         &lt;element name="pic" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Picture" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://schemas.openxmlformats.org/presentationml/2006/main}AG_Ole"/>
  *     &lt;/restriction>
@@ -51,23 +48,22 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_Control", propOrder = {
-    "extLst"
+    "extLst",
+    "pic"
 })
 public class CTControl {
 
     protected CTExtensionList extLst;
-    @XmlAttribute(required = true)
-    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
-    protected String spid;
-    @XmlAttribute
+    protected Pic pic;
+    @XmlAttribute(name = "name")
     protected String name;
-    @XmlAttribute
+    @XmlAttribute(name = "showAsIcon")
     protected Boolean showAsIcon;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
     protected String id;
-    @XmlAttribute
+    @XmlAttribute(name = "imgW")
     protected Integer imgW;
-    @XmlAttribute
+    @XmlAttribute(name = "imgH")
     protected Integer imgH;
 
     /**
@@ -95,27 +91,27 @@ public class CTControl {
     }
 
     /**
-     * Gets the value of the spid property.
+     * Gets the value of the pic property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link Pic }
      *     
      */
-    public String getSpid() {
-        return spid;
+    public Pic getPic() {
+        return pic;
     }
 
     /**
-     * Sets the value of the spid property.
+     * Sets the value of the pic property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link Pic }
      *     
      */
-    public void setSpid(String value) {
-        this.spid = value;
+    public void setPic(Pic value) {
+        this.pic = value;
     }
 
     /**

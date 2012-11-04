@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -57,13 +55,13 @@ import javax.xml.bind.annotation.XmlType;
 public class CTHeaderFooter {
 
     protected CTExtensionListModify extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "sldNum")
     protected Boolean sldNum;
-    @XmlAttribute
+    @XmlAttribute(name = "hdr")
     protected Boolean hdr;
-    @XmlAttribute
+    @XmlAttribute(name = "ftr")
     protected Boolean ftr;
-    @XmlAttribute
+    @XmlAttribute(name = "dt")
     protected Boolean dt;
 
     /**

@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -62,154 +60,119 @@ public enum STTLDiagramBuildType {
 
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Whole )
-     * 					
+     * Diagram Build Type Enum ( Whole )
      * 
      */
     @XmlEnumValue("whole")
     WHOLE("whole"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Depth By Node )
-     * 					
+     * Diagram Build Type Enum ( Depth By Node )
      * 
      */
     @XmlEnumValue("depthByNode")
     DEPTH_BY_NODE("depthByNode"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Depth By Branch )
-     * 					
+     * Diagram Build Type Enum ( Depth By Branch )
      * 
      */
     @XmlEnumValue("depthByBranch")
     DEPTH_BY_BRANCH("depthByBranch"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Breadth By Node )
-     * 					
+     * Diagram Build Type Enum ( Breadth By Node )
      * 
      */
     @XmlEnumValue("breadthByNode")
     BREADTH_BY_NODE("breadthByNode"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Breadth By Level )
-     * 					
+     * Diagram Build Type Enum ( Breadth By Level )
      * 
      */
     @XmlEnumValue("breadthByLvl")
     BREADTH_BY_LVL("breadthByLvl"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Clockwise )
-     * 					
+     * Diagram Build Type Enum ( Clockwise )
      * 
      */
     @XmlEnumValue("cw")
     CW("cw"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Clockwise-In )
-     * 					
+     * Diagram Build Type Enum ( Clockwise-In )
      * 
      */
     @XmlEnumValue("cwIn")
     CW_IN("cwIn"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Clockwise-Out )
-     * 					
+     * Diagram Build Type Enum ( Clockwise-Out )
      * 
      */
     @XmlEnumValue("cwOut")
     CW_OUT("cwOut"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Counter-Clockwise )
-     * 					
+     * Diagram Build Type Enum ( Counter-Clockwise )
      * 
      */
     @XmlEnumValue("ccw")
     CCW("ccw"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Counter-Clockwise-In )
-     * 					
+     * Diagram Build Type Enum ( Counter-Clockwise-In )
      * 
      */
     @XmlEnumValue("ccwIn")
     CCW_IN("ccwIn"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Counter-Clockwise-Out
-     * 						)
-     * 					
+     * Diagram Build Type Enum ( Counter-Clockwise-Out )
      * 
      */
     @XmlEnumValue("ccwOut")
     CCW_OUT("ccwOut"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( In-By-Ring )
-     * 					
+     * Diagram Build Type Enum ( In-By-Ring )
      * 
      */
     @XmlEnumValue("inByRing")
     IN_BY_RING("inByRing"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Out-By-Ring )
-     * 					
+     * Diagram Build Type Enum ( Out-By-Ring )
      * 
      */
     @XmlEnumValue("outByRing")
     OUT_BY_RING("outByRing"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Up )
-     * 					
+     * Diagram Build Type Enum ( Up )
      * 
      */
     @XmlEnumValue("up")
     UP("up"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Down )
-     * 					
+     * Diagram Build Type Enum ( Down )
      * 
      */
     @XmlEnumValue("down")
     DOWN("down"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( All At Once )
-     * 					
+     * Diagram Build Type Enum ( All At Once )
      * 
      */
     @XmlEnumValue("allAtOnce")
     ALL_AT_ONCE("allAtOnce"),
 
     /**
-     * 
-     * 						Diagram Build Type Enum ( Custom )
-     * 					
+     * Diagram Build Type Enum ( Custom )
      * 
      */
     @XmlEnumValue("cust")

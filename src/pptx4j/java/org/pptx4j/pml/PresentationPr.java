@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -38,8 +36,6 @@ import org.docx4j.dml.CTColorMRU;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="htmlPubPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_HtmlPublishProperties" minOccurs="0"/>
- *         &lt;element name="webPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_WebProperties" minOccurs="0"/>
  *         &lt;element name="prnPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_PrintProperties" minOccurs="0"/>
  *         &lt;element name="showPr" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ShowProperties" minOccurs="0"/>
  *         &lt;element name="clrMru" type="{http://schemas.openxmlformats.org/drawingml/2006/main}CT_ColorMRU" minOccurs="0"/>
@@ -54,8 +50,6 @@ import org.docx4j.dml.CTColorMRU;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-    "htmlPubPr",
-    "webPr",
     "prnPr",
     "showPr",
     "clrMru",
@@ -64,60 +58,10 @@ import org.docx4j.dml.CTColorMRU;
 @XmlRootElement(name = "presentationPr")
 public class PresentationPr {
 
-    protected CTHtmlPublishProperties htmlPubPr;
-    protected CTWebProperties webPr;
     protected CTPrintProperties prnPr;
     protected CTShowProperties showPr;
     protected CTColorMRU clrMru;
     protected CTExtensionList extLst;
-
-    /**
-     * Gets the value of the htmlPubPr property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTHtmlPublishProperties }
-     *     
-     */
-    public CTHtmlPublishProperties getHtmlPubPr() {
-        return htmlPubPr;
-    }
-
-    /**
-     * Sets the value of the htmlPubPr property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTHtmlPublishProperties }
-     *     
-     */
-    public void setHtmlPubPr(CTHtmlPublishProperties value) {
-        this.htmlPubPr = value;
-    }
-
-    /**
-     * Gets the value of the webPr property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link CTWebProperties }
-     *     
-     */
-    public CTWebProperties getWebPr() {
-        return webPr;
-    }
-
-    /**
-     * Sets the value of the webPr property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link CTWebProperties }
-     *     
-     */
-    public void setWebPr(CTWebProperties value) {
-        this.webPr = value;
-    }
 
     /**
      * Gets the value of the prnPr property.

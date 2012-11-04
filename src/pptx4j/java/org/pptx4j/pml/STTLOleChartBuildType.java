@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -50,45 +48,35 @@ public enum STTLOleChartBuildType {
 
 
     /**
-     * 
-     * 						Chart Build Type Enum ( All At Once )
-     * 					
+     * Chart Build Type Enum ( All At Once )
      * 
      */
     @XmlEnumValue("allAtOnce")
     ALL_AT_ONCE("allAtOnce"),
 
     /**
-     * 
-     * 						Chart Build Type Enum ( Series )
-     * 					
+     * Chart Build Type Enum ( Series )
      * 
      */
     @XmlEnumValue("series")
     SERIES("series"),
 
     /**
-     * 
-     * 						Chart Build Type Enum ( Category )
-     * 					
+     * Chart Build Type Enum ( Category )
      * 
      */
     @XmlEnumValue("category")
     CATEGORY("category"),
 
     /**
-     * 
-     * 						Chart Build Type Enum ( Series Element )
-     * 					
+     * Chart Build Type Enum ( Series Element )
      * 
      */
     @XmlEnumValue("seriesEl")
     SERIES_EL("seriesEl"),
 
     /**
-     * 
-     * 						Chart Build Type Enum ( Category Element )
-     * 					
+     * Chart Build Type Enum ( Category Element )
      * 
      */
     @XmlEnumValue("categoryEl")

@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -52,63 +50,49 @@ public enum STPhotoAlbumFrameShape {
 
 
     /**
-     * 
-     * 						Rectangle Photo Frame
-     * 					
+     * Rectangle Photo Frame
      * 
      */
     @XmlEnumValue("frameStyle1")
     FRAME_STYLE_1("frameStyle1"),
 
     /**
-     * 
-     * 						Rounded Rectangle Photo Frame
-     * 					
+     * Rounded Rectangle Photo Frame
      * 
      */
     @XmlEnumValue("frameStyle2")
     FRAME_STYLE_2("frameStyle2"),
 
     /**
-     * 
-     * 						Simple White Photo Frame
-     * 					
+     * Simple White Photo Frame
      * 
      */
     @XmlEnumValue("frameStyle3")
     FRAME_STYLE_3("frameStyle3"),
 
     /**
-     * 
-     * 						Simple Black Photo Frame
-     * 					
+     * Simple Black Photo Frame
      * 
      */
     @XmlEnumValue("frameStyle4")
     FRAME_STYLE_4("frameStyle4"),
 
     /**
-     * 
-     * 						Compound Black Photo Frame
-     * 					
+     * Compound Black Photo Frame
      * 
      */
     @XmlEnumValue("frameStyle5")
     FRAME_STYLE_5("frameStyle5"),
 
     /**
-     * 
-     * 						Center Shadow Photo Frame
-     * 					
+     * Center Shadow Photo Frame
      * 
      */
     @XmlEnumValue("frameStyle6")
     FRAME_STYLE_6("frameStyle6"),
 
     /**
-     * 
-     * 						Soft Edge Photo Frame
-     * 					
+     * Soft Edge Photo Frame
      * 
      */
     @XmlEnumValue("frameStyle7")

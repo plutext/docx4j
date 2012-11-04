@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -51,9 +49,7 @@ public enum STTLTimeNodePresetClassType {
 
 
     /**
-     * 
-     * 						Preset Type Enum ( Entrance )
-     * 					
+     * Preset Type Enum ( Entrance )
      * 
      */
     @XmlEnumValue("entr")
@@ -67,36 +63,28 @@ public enum STTLTimeNodePresetClassType {
     EXIT("exit"),
 
     /**
-     * 
-     * 						Preset Type Enum ( Emphasis )
-     * 					
+     * Preset Type Enum ( Emphasis )
      * 
      */
     @XmlEnumValue("emph")
     EMPH("emph"),
 
     /**
-     * 
-     * 						Preset Type Enum ( Path )
-     * 					
+     * Preset Type Enum ( Path )
      * 
      */
     @XmlEnumValue("path")
     PATH("path"),
 
     /**
-     * 
-     * 						Preset Type Enum ( Verb )
-     * 					
+     * Preset Type Enum ( Verb )
      * 
      */
     @XmlEnumValue("verb")
     VERB("verb"),
 
     /**
-     * 
-     * 						Preset Type Enum ( Media Call )
-     * 					
+     * Preset Type Enum ( Media Call )
      * 
      */
     @XmlEnumValue("mediacall")

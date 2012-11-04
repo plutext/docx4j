@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -50,46 +48,35 @@ public enum STTLChartSubelementType {
 
 
     /**
-     * 
-     * 						Chart Build Element Type Enum ( Grid Legend )
-     * 					
+     * Grid Legend
      * 
      */
     @XmlEnumValue("gridLegend")
     GRID_LEGEND("gridLegend"),
 
     /**
-     * 
-     * 						Chart Build Element Type Enum ( Series )
-     * 					
+     * Data Series
      * 
      */
     @XmlEnumValue("series")
     SERIES("series"),
 
     /**
-     * 
-     * 						Chart Build Element Type Enum ( Category )
-     * 					
+     * Category Axis
      * 
      */
     @XmlEnumValue("category")
     CATEGORY("category"),
 
     /**
-     * 
-     * 						Chart Build Element Type Enum ( Point in Series
-     * 						)
-     * 					
+     * Single Point in Data Series
      * 
      */
     @XmlEnumValue("ptInSeries")
     PT_IN_SERIES("ptInSeries"),
 
     /**
-     * 
-     * 						Chart Build Element Type Enum ( Point in Cat )
-     * 					
+     * Single Point in Category
      * 
      */
     @XmlEnumValue("ptInCategory")

@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -49,36 +47,28 @@ public enum STTransitionSideDirectionType {
 
 
     /**
-     * 
-     * 						Transition Slide Direction Enum ( Left )
-     * 					
+     * Transition Slide Direction Enum ( Left )
      * 
      */
     @XmlEnumValue("l")
     L("l"),
 
     /**
-     * 
-     * 						Transition Slide Direction Enum ( Up )
-     * 					
+     * Transition Slide Direction Enum ( Up )
      * 
      */
     @XmlEnumValue("u")
     U("u"),
 
     /**
-     * 
-     * 						Transition Slide Direction ( Right )
-     * 					
+     * Transition Slide Direction ( Right )
      * 
      */
     @XmlEnumValue("r")
     R("r"),
 
     /**
-     * 
-     * 						Transition Slide Direction Enum ( Down )
-     * 					
+     * Transition Slide Direction Enum ( Down )
      * 
      */
     @XmlEnumValue("d")

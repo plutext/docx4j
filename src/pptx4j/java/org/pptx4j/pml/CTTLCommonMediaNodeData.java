@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -42,7 +40,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="cTn" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLCommonTimeNodeData"/>
  *         &lt;element name="tgtEl" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_TLTimeTargetElement"/>
  *       &lt;/sequence>
- *       &lt;attribute name="vol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="50000" />
+ *       &lt;attribute name="vol" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="50" />
  *       &lt;attribute name="mute" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="numSld" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="1" />
  *       &lt;attribute name="showWhenStopped" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
@@ -64,14 +62,14 @@ public class CTTLCommonMediaNodeData {
     protected CTTLCommonTimeNodeData cTn;
     @XmlElement(required = true)
     protected CTTLTimeTargetElement tgtEl;
-    @XmlAttribute
+    @XmlAttribute(name = "vol")
     protected Integer vol;
-    @XmlAttribute
+    @XmlAttribute(name = "mute")
     protected Boolean mute;
-    @XmlAttribute
+    @XmlAttribute(name = "numSld")
     @XmlSchemaType(name = "unsignedInt")
     protected Long numSld;
-    @XmlAttribute
+    @XmlAttribute(name = "showWhenStopped")
     protected Boolean showWhenStopped;
 
     /**
@@ -132,7 +130,7 @@ public class CTTLCommonMediaNodeData {
      */
     public int getVol() {
         if (vol == null) {
-            return  50000;
+            return  50;
         } else {
             return vol;
         }

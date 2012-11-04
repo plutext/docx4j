@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -59,17 +57,17 @@ import javax.xml.bind.annotation.XmlType;
 public class CTCommentAuthor {
 
     protected CTExtensionList extLst;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "id", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long id;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "name", required = true)
     protected String name;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "initials", required = true)
     protected String initials;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "lastIdx", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long lastIdx;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "clrIdx", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long clrIdx;
 

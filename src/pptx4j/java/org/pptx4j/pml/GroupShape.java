@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import java.util.ArrayList;
@@ -63,6 +61,7 @@ import org.docx4j.dml.CTNonVisualGroupDrawingShapeProps;
  *           &lt;element name="graphicFrame" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_GraphicalObjectFrame"/>
  *           &lt;element name="cxnSp" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Connector"/>
  *           &lt;element name="pic" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Picture"/>
+ *           &lt;element name="contentPart" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_Rel"/>
  *         &lt;/choice>
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/presentationml/2006/main}CT_ExtensionListModify" minOccurs="0"/>
  *       &lt;/sequence>
@@ -87,11 +86,12 @@ public class GroupShape {
     @XmlElement(required = true)
     protected CTGroupShapeProperties grpSpPr;
     @XmlElements({
-        @XmlElement(name = "pic", type = Pic.class),
-        @XmlElement(name = "grpSp", type = GroupShape.class),
         @XmlElement(name = "sp", type = Shape.class),
+        @XmlElement(name = "grpSp", type = GroupShape.class),
         @XmlElement(name = "graphicFrame", type = CTGraphicalObjectFrame.class),
-        @XmlElement(name = "cxnSp", type = CxnSp.class)
+        @XmlElement(name = "cxnSp", type = CxnSp.class),
+        @XmlElement(name = "pic", type = Pic.class),
+        @XmlElement(name = "contentPart", type = CTRel.class)
     })
     protected List<Object> spOrGrpSpOrGraphicFrame;
     protected CTExtensionListModify extLst;
@@ -162,11 +162,12 @@ public class GroupShape {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Pic }
-     * {@link GroupShape }
      * {@link Shape }
+     * {@link GroupShape }
      * {@link CTGraphicalObjectFrame }
      * {@link CxnSp }
+     * {@link Pic }
+     * {@link CTRel }
      * 
      * 
      */

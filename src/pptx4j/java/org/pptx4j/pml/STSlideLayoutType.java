@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -81,64 +79,49 @@ public enum STSlideLayoutType {
 
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Title )
-     * 					
+     * Slide Layout Type Enumeration ( Title )
      * 
      */
     @XmlEnumValue("title")
     TITLE("title"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Text )
-     * 					
+     * Slide Layout Type Enumeration ( Text )
      * 
      */
     @XmlEnumValue("tx")
     TX("tx"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Two Column Text
-     * 						)
-     * 					
+     * Slide Layout Type Enumeration ( Two Column Text )
      * 
      */
     @XmlEnumValue("twoColTx")
     TWO_COL_TX("twoColTx"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Table )
-     * 					
+     * Slide Layout Type Enumeration ( Table )
      * 
      */
     @XmlEnumValue("tbl")
     TBL("tbl"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Text and Chart )
-     * 					
+     * Slide Layout Type Enumeration ( Text and Chart )
      * 
      */
     @XmlEnumValue("txAndChart")
     TX_AND_CHART("txAndChart"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Chart and Text )
-     * 					
+     * Slide Layout Type Enumeration ( Chart and Text )
      * 
      */
     @XmlEnumValue("chartAndTx")
     CHART_AND_TX("chartAndTx"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Diagram )
-     * 					
+     * Slide Layout Type Enumeration ( Diagram )
      * 
      */
     @XmlEnumValue("dgm")
@@ -152,56 +135,42 @@ public enum STSlideLayoutType {
     CHART("chart"),
 
     /**
-     * 
-     * 						Text and Clip Art
-     * 					
+     * Text and Clip Art
      * 
      */
     @XmlEnumValue("txAndClipArt")
     TX_AND_CLIP_ART("txAndClipArt"),
 
     /**
-     * 
-     * 						Clip Art and Text
-     * 					
+     * Clip Art and Text
      * 
      */
     @XmlEnumValue("clipArtAndTx")
     CLIP_ART_AND_TX("clipArtAndTx"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Title Only )
-     * 					
+     * Slide Layout Type Enumeration ( Title Only )
      * 
      */
     @XmlEnumValue("titleOnly")
     TITLE_ONLY("titleOnly"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Blank )
-     * 					
+     * Slide Layout Type Enumeration ( Blank )
      * 
      */
     @XmlEnumValue("blank")
     BLANK("blank"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Text and Object
-     * 						)
-     * 					
+     * Slide Layout Type Enumeration ( Text and Object )
      * 
      */
     @XmlEnumValue("txAndObj")
     TX_AND_OBJ("txAndObj"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Object and Text
-     * 						)
-     * 					
+     * Slide Layout Type Enumeration ( Object and Text )
      * 
      */
     @XmlEnumValue("objAndTx")
@@ -215,74 +184,56 @@ public enum STSlideLayoutType {
     OBJ_ONLY("objOnly"),
 
     /**
-     * 
-     * 						Title and Object
-     * 					
+     * Title and Object
      * 
      */
     @XmlEnumValue("obj")
     OBJ("obj"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Text and Media )
-     * 					
+     * Slide Layout Type Enumeration ( Text and Media )
      * 
      */
     @XmlEnumValue("txAndMedia")
     TX_AND_MEDIA("txAndMedia"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Media and Text )
-     * 					
+     * Slide Layout Type Enumeration ( Media and Text )
      * 
      */
     @XmlEnumValue("mediaAndTx")
     MEDIA_AND_TX("mediaAndTx"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Object over
-     * 						Text)
-     * 					
+     * Slide Layout Type Enumeration ( Object over Text)
      * 
      */
     @XmlEnumValue("objOverTx")
     OBJ_OVER_TX("objOverTx"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Text over
-     * 						Object)
-     * 					
+     * Slide Layout Type Enumeration ( Text over Object)
      * 
      */
     @XmlEnumValue("txOverObj")
     TX_OVER_OBJ("txOverObj"),
 
     /**
-     * 
-     * 						Text and Two Objects
-     * 					
+     * Text and Two Objects
      * 
      */
     @XmlEnumValue("txAndTwoObj")
     TX_AND_TWO_OBJ("txAndTwoObj"),
 
     /**
-     * 
-     * 						Two Objects and Text
-     * 					
+     * Two Objects and Text
      * 
      */
     @XmlEnumValue("twoObjAndTx")
     TWO_OBJ_AND_TX("twoObjAndTx"),
 
     /**
-     * 
-     * 						Two Objects over Text
-     * 					
+     * Two Objects over Text
      * 
      */
     @XmlEnumValue("twoObjOverTx")
@@ -303,27 +254,21 @@ public enum STSlideLayoutType {
     VERT_TX("vertTx"),
 
     /**
-     * 
-     * 						Clip Art and Vertical Text
-     * 					
+     * Clip Art and Vertical Text
      * 
      */
     @XmlEnumValue("clipArtAndVertTx")
     CLIP_ART_AND_VERT_TX("clipArtAndVertTx"),
 
     /**
-     * 
-     * 						Vertical Title and Text
-     * 					
+     * Vertical Title and Text
      * 
      */
     @XmlEnumValue("vertTitleAndTx")
     VERT_TITLE_AND_TX("vertTitleAndTx"),
 
     /**
-     * 
-     * 						Vertical Title and Text Over Chart
-     * 					
+     * Vertical Title and Text Over Chart
      * 
      */
     @XmlEnumValue("vertTitleAndTxOverChart")
@@ -337,63 +282,49 @@ public enum STSlideLayoutType {
     TWO_OBJ("twoObj"),
 
     /**
-     * 
-     * 						Object and Two Object
-     * 					
+     * Object and Two Object
      * 
      */
     @XmlEnumValue("objAndTwoObj")
     OBJ_AND_TWO_OBJ("objAndTwoObj"),
 
     /**
-     * 
-     * 						Two Objects and Object
-     * 					
+     * Two Objects and Object
      * 
      */
     @XmlEnumValue("twoObjAndObj")
     TWO_OBJ_AND_OBJ("twoObjAndObj"),
 
     /**
-     * 
-     * 						Slide Layout Type Enumeration ( Custom )
-     * 					
+     * Slide Layout Type Enumeration ( Custom )
      * 
      */
     @XmlEnumValue("cust")
     CUST("cust"),
 
     /**
-     * 
-     * 						Section Header
-     * 					
+     * Section Header
      * 
      */
     @XmlEnumValue("secHead")
     SEC_HEAD("secHead"),
 
     /**
-     * 
-     * 						Two Text and Two Objects
-     * 					
+     * Two Text and Two Objects
      * 
      */
     @XmlEnumValue("twoTxTwoObj")
     TWO_TX_TWO_OBJ("twoTxTwoObj"),
 
     /**
-     * 
-     * 						Title, Object, and Caption
-     * 					
+     * Title, Object, and Caption
      * 
      */
     @XmlEnumValue("objTx")
     OBJ_TX("objTx"),
 
     /**
-     * 
-     * 						Picture and Caption
-     * 					
+     * Picture and Caption
      * 
      */
     @XmlEnumValue("picTx")

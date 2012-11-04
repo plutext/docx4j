@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -56,99 +54,77 @@ public enum STTLTriggerEvent {
 
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Begin )
-     * 					
+     * Trigger Event Enum ( On Begin )
      * 
      */
     @XmlEnumValue("onBegin")
     ON_BEGIN("onBegin"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On End )
-     * 					
+     * Trigger Event Enum ( On End )
      * 
      */
     @XmlEnumValue("onEnd")
     ON_END("onEnd"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( Begin )
-     * 					
+     * Trigger Event Enum ( Begin )
      * 
      */
     @XmlEnumValue("begin")
     BEGIN("begin"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( End )
-     * 					
+     * Trigger Event Enum ( End )
      * 
      */
     @XmlEnumValue("end")
     END("end"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Click )
-     * 					
+     * Trigger Event Enum ( On Click )
      * 
      */
     @XmlEnumValue("onClick")
     ON_CLICK("onClick"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Double Click )
-     * 					
+     * Trigger Event Enum ( On Double Click )
      * 
      */
     @XmlEnumValue("onDblClick")
     ON_DBL_CLICK("onDblClick"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Mouse Over )
-     * 					
+     * Trigger Event Enum ( On Mouse Over )
      * 
      */
     @XmlEnumValue("onMouseOver")
     ON_MOUSE_OVER("onMouseOver"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Mouse Out )
-     * 					
+     * Trigger Event Enum ( On Mouse Out )
      * 
      */
     @XmlEnumValue("onMouseOut")
     ON_MOUSE_OUT("onMouseOut"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Next )
-     * 					
+     * Trigger Event Enum ( On Next )
      * 
      */
     @XmlEnumValue("onNext")
     ON_NEXT("onNext"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Previous )
-     * 					
+     * Trigger Event Enum ( On Previous )
      * 
      */
     @XmlEnumValue("onPrev")
     ON_PREV("onPrev"),
 
     /**
-     * 
-     * 						Trigger Event Enum ( On Stop Audio )
-     * 					
+     * Trigger Event Enum ( On Stop Audio )
      * 
      */
     @XmlEnumValue("onStopAudio")

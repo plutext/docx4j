@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -52,7 +50,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;attribute name="dur" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" />
  *       &lt;attribute name="repeatCount" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" default="1000" />
  *       &lt;attribute name="repeatDur" type="{http://schemas.openxmlformats.org/presentationml/2006/main}ST_TLTime" />
- *       &lt;attribute name="spd" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100000" />
+ *       &lt;attribute name="spd" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_Percentage" default="100" />
  *       &lt;attribute name="accel" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="0" />
  *       &lt;attribute name="decel" type="{http://schemas.openxmlformats.org/drawingml/2006/main}ST_PositiveFixedPercentage" default="0" />
  *       &lt;attribute name="autoRev" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
@@ -92,52 +90,52 @@ public class CTTLCommonTimeNodeData {
     protected CTTLIterateData iterate;
     protected CTTimeNodeList childTnLst;
     protected CTTimeNodeList subTnLst;
-    @XmlAttribute
+    @XmlAttribute(name = "id")
     protected Long id;
-    @XmlAttribute
+    @XmlAttribute(name = "presetID")
     protected Integer presetID;
-    @XmlAttribute
+    @XmlAttribute(name = "presetClass")
     protected STTLTimeNodePresetClassType presetClass;
-    @XmlAttribute
+    @XmlAttribute(name = "presetSubtype")
     protected Integer presetSubtype;
-    @XmlAttribute
+    @XmlAttribute(name = "dur")
     protected String dur;
-    @XmlAttribute
+    @XmlAttribute(name = "repeatCount")
     protected String repeatCount;
-    @XmlAttribute
+    @XmlAttribute(name = "repeatDur")
     protected String repeatDur;
-    @XmlAttribute
+    @XmlAttribute(name = "spd")
     protected Integer spd;
-    @XmlAttribute
+    @XmlAttribute(name = "accel")
     protected Integer accel;
-    @XmlAttribute
+    @XmlAttribute(name = "decel")
     protected Integer decel;
-    @XmlAttribute
+    @XmlAttribute(name = "autoRev")
     protected Boolean autoRev;
-    @XmlAttribute
+    @XmlAttribute(name = "restart")
     protected STTLTimeNodeRestartType restart;
-    @XmlAttribute
+    @XmlAttribute(name = "fill")
     protected STTLTimeNodeFillType fill;
-    @XmlAttribute
+    @XmlAttribute(name = "syncBehavior")
     protected STTLTimeNodeSyncType syncBehavior;
-    @XmlAttribute
+    @XmlAttribute(name = "tmFilter")
     protected String tmFilter;
-    @XmlAttribute
+    @XmlAttribute(name = "evtFilter")
     protected String evtFilter;
-    @XmlAttribute
+    @XmlAttribute(name = "display")
     protected Boolean display;
-    @XmlAttribute
+    @XmlAttribute(name = "masterRel")
     protected STTLTimeNodeMasterRelation masterRel;
-    @XmlAttribute
+    @XmlAttribute(name = "bldLvl")
     protected Integer bldLvl;
-    @XmlAttribute
+    @XmlAttribute(name = "grpId")
     @XmlSchemaType(name = "unsignedInt")
     protected Long grpId;
-    @XmlAttribute
+    @XmlAttribute(name = "afterEffect")
     protected Boolean afterEffect;
-    @XmlAttribute
+    @XmlAttribute(name = "nodeType")
     protected STTLTimeNodeType nodeType;
-    @XmlAttribute
+    @XmlAttribute(name = "nodePh")
     protected Boolean nodePh;
 
     /**
@@ -466,7 +464,7 @@ public class CTTLCommonTimeNodeData {
      */
     public int getSpd() {
         if (spd == null) {
-            return  100000;
+            return  100;
         } else {
             return spd;
         }

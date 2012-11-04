@@ -1,7 +1,7 @@
 /*
- *  Copyright 2010, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.pptx4j.pml;
 
 import java.util.ArrayList;
@@ -68,19 +66,19 @@ import javax.xml.bind.annotation.XmlType;
 public class CTTimeNodeList {
 
     @XmlElements({
-        @XmlElement(name = "animEffect", type = CTTLAnimateEffectBehavior.class),
-        @XmlElement(name = "seq", type = CTTLTimeNodeSequence.class),
         @XmlElement(name = "par", type = CTTLTimeNodeParallel.class),
-        @XmlElement(name = "cmd", type = CTTLCommandBehavior.class),
-        @XmlElement(name = "anim", type = CTTLAnimateBehavior.class),
-        @XmlElement(name = "audio", type = CTTLMediaNodeAudio.class),
-        @XmlElement(name = "set", type = CTTLSetBehavior.class),
-        @XmlElement(name = "video", type = CTTLMediaNodeVideo.class),
-        @XmlElement(name = "animClr", type = CTTLAnimateColorBehavior.class),
+        @XmlElement(name = "seq", type = CTTLTimeNodeSequence.class),
         @XmlElement(name = "excl", type = CTTLTimeNodeExclusive.class),
-        @XmlElement(name = "animScale", type = CTTLAnimateScaleBehavior.class),
+        @XmlElement(name = "anim", type = CTTLAnimateBehavior.class),
+        @XmlElement(name = "animClr", type = CTTLAnimateColorBehavior.class),
+        @XmlElement(name = "animEffect", type = CTTLAnimateEffectBehavior.class),
+        @XmlElement(name = "animMotion", type = CTTLAnimateMotionBehavior.class),
         @XmlElement(name = "animRot", type = CTTLAnimateRotationBehavior.class),
-        @XmlElement(name = "animMotion", type = CTTLAnimateMotionBehavior.class)
+        @XmlElement(name = "animScale", type = CTTLAnimateScaleBehavior.class),
+        @XmlElement(name = "cmd", type = CTTLCommandBehavior.class),
+        @XmlElement(name = "set", type = CTTLSetBehavior.class),
+        @XmlElement(name = "audio", type = CTTLMediaNodeAudio.class),
+        @XmlElement(name = "video", type = CTTLMediaNodeVideo.class)
     })
     protected List<Object> parOrSeqOrExcl;
 
@@ -102,19 +100,19 @@ public class CTTimeNodeList {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link CTTLAnimateEffectBehavior }
-     * {@link CTTLTimeNodeSequence }
      * {@link CTTLTimeNodeParallel }
-     * {@link CTTLCommandBehavior }
-     * {@link CTTLAnimateBehavior }
-     * {@link CTTLMediaNodeAudio }
-     * {@link CTTLSetBehavior }
-     * {@link CTTLMediaNodeVideo }
-     * {@link CTTLAnimateColorBehavior }
+     * {@link CTTLTimeNodeSequence }
      * {@link CTTLTimeNodeExclusive }
-     * {@link CTTLAnimateScaleBehavior }
-     * {@link CTTLAnimateRotationBehavior }
+     * {@link CTTLAnimateBehavior }
+     * {@link CTTLAnimateColorBehavior }
+     * {@link CTTLAnimateEffectBehavior }
      * {@link CTTLAnimateMotionBehavior }
+     * {@link CTTLAnimateRotationBehavior }
+     * {@link CTTLAnimateScaleBehavior }
+     * {@link CTTLCommandBehavior }
+     * {@link CTTLSetBehavior }
+     * {@link CTTLMediaNodeAudio }
+     * {@link CTTLMediaNodeVideo }
      * 
      * 
      */
