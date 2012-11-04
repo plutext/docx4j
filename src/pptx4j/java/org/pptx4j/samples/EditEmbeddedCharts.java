@@ -52,7 +52,7 @@ public class EditEmbeddedCharts
 		
 		// Output file
 		String outputfilepath = System.getProperty("user.dir") 
-				+ "/sample-docs/pptx/pptx-chart-output-" 
+				+ "/OUT_EditEmbeddedCharts-" 
 				+ System.currentTimeMillis() + ".pptx";
 		
 		// Values to change
@@ -138,8 +138,6 @@ public class EditEmbeddedCharts
 						}
 					}					
 				}
-				// Overwrite with the updated bit
-				spreadSheet.addTargetPart(wsp, AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS); 
 			}
 		}
 
