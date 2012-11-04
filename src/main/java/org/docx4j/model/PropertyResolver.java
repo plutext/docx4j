@@ -1474,7 +1474,7 @@ public class PropertyResolver {
     		result1 = true;
     	} else {
     		
-    		log.error("Expected " + s.getStyleId() + " to have <w:basedOn ??");
+    		log.warn("Expected " + s.getStyleId() + " to have <w:basedOn ??");
     		// Not properly activated
     		result1 = false;
     	}
