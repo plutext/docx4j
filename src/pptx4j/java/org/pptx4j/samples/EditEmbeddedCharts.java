@@ -25,7 +25,6 @@ import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.DrawingML.Chart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBehaviour;
 import org.docx4j.utils.BufferUtil;
 import org.xlsx4j.sml.Cell;
 import org.xlsx4j.sml.Row;
