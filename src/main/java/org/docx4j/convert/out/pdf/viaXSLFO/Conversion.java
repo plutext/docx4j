@@ -723,10 +723,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	        		// save the effort of doing this again in Emulator
 	        		Ilvl ilvl = pPr.getNumPr().getIlvl();
 	        		String ilvlString = ilvl == null ? "0" : ilvl.getVal().toString();
-	        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-		        			wmlPackage, pStyleVal, 
-		        			pPr.getNumPr().getNumId().getVal().toString(), 
-		        			ilvlString ); 		        			
+	        		triple = null; 
+	        		if (pPr.getNumPr().getNumId()!=null) {
+		        		triple = org.docx4j.model.listnumbering.Emulator.getNumber(
+			        			wmlPackage, pStyleVal, 
+			        			pPr.getNumPr().getNumId().getVal().toString(), 
+			        			ilvlString ); 		        	
+	        		}
 	        	}
 				
 				if (triple==null) {
