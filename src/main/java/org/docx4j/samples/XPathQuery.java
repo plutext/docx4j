@@ -27,7 +27,13 @@ public class XPathQuery {
 	 * 
 	 * 3. For some document, JAXB can’t set up the XPath at all!
 	 * 
-	 * If these problems affect you, consider using TraversalUtil;
+	 * If these problems affect you, you could try using
+	 * MOXy as your JAXB implementation (which docx4j supports
+	 * as from forthcoming docx4j 3.0).  See 
+	 * http://www.docx4java.org/forums/docx-java-f6/moxy-t1242.html
+	 * 
+	 * Alternatively, the tried and tested approach is
+	 * to use TraversalUtil;
 	 * see the OpenMainDocumentAndTraverse sample.
 	 * 
 	 */

@@ -163,6 +163,8 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 			// 
 			binder = jc.createBinder();
 			
+			System.out.println("@# " + binder.getClass().getName());
+			
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
 			binder.setEventHandler(eventHandler);

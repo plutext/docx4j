@@ -44,6 +44,7 @@ import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.TextUtils;
+import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.jaxb.Context;
@@ -337,9 +338,13 @@ public class OpcPackage extends Base {
 			final Unmarshaller u = Context.jcXmlPackage.createUnmarshaller();
 			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-			final org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-					new javax.xml.transform.stream.StreamSource(is))).getValue(); 
+//			final org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+//					new javax.xml.transform.stream.StreamSource(is))).getValue(); 
 
+			// JAXB RI unmarshalls to JAXBElement; MOXy gives Package directly
+			final org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(
+					new javax.xml.transform.stream.StreamSource(is))); 
+			
 			xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl);
 		} catch (final Exception e) {
 			OpcPackage.log.error(e);
