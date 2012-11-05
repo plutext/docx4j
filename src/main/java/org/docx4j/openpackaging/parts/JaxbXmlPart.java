@@ -193,7 +193,11 @@ public abstract class JaxbXmlPart<E> extends Part {
 			Marshaller marshaller = jc.createMarshaller();
 			NamespacePrefixMapperUtils.setProperty(marshaller, namespacePrefixMapper);
 			
-			log.info("marshalling " + this.getClass().getName() );									
+			log.info("marshalling " + this.getClass().getName() );	
+			if (jaxbElement==null) {
+				log.error("No JAXBElement has been created for this part, yet!");
+				throw new JAXBException("No JAXBElement has been created for this part, yet!");
+			}
 			marshaller.marshal(jaxbElement, os);
 
 		} catch (JAXBException e) {
