@@ -56,6 +56,7 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.opendope.ComponentsPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.QuestionsPart;
+import org.docx4j.openpackaging.parts.opendope.StandardisedAnswersPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -528,6 +529,12 @@ public class LoadFromZipFile extends Load {
 							part = new QuestionsPart(name);
 							((QuestionsPart)part).setJaxbElement(
 									(org.opendope.questions.Questionnaire)o);
+
+						} else if (o instanceof org.opendope.answers.Answers) {
+							
+							part = new StandardisedAnswersPart(name);
+							((StandardisedAnswersPart)part).setJaxbElement(
+									(org.opendope.answers.Answers)o);
 														
 						} else if (o instanceof org.opendope.components.Components) {
 							
