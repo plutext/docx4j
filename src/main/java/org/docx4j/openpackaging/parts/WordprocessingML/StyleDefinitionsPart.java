@@ -278,7 +278,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     /**
      * @param id
      * @return
-     * @since 2.8.2
+     * @since 3.0.0
      */
     public Style getStyleById(String id) {
     	

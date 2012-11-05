@@ -223,7 +223,7 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 	/**
 	 * @param reset
 	 * @return
-	 * @ since 2.8.2
+	 * @since 3.0.0
 	 */
 	public Emulator getEmulator(boolean reset) {
 		

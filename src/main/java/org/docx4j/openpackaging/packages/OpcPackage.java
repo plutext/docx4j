@@ -500,7 +500,7 @@ public class OpcPackage extends Base {
 	}
 	
 	/**
-	 * @since 2.8.2
+	 * @since 3.0.0
 	 */	
 	public void setTitle(String title) {
 		
@@ -523,7 +523,7 @@ public class OpcPackage extends Base {
 	}
 	
 	/**
-	 * @since 2.8.2
+	 * @since 3.0.0
 	 */	
 	public String getTitle() {
 		
