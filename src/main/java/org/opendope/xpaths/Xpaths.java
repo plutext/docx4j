@@ -1,6 +1,7 @@
 
 package org.opendope.xpaths;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -49,6 +50,12 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *                 &lt;attribute name="comments" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;attribute name="prepopulate" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+ *                 &lt;attribute name="fieldWidth" type="{http://www.w3.org/2001/XMLSchema}positiveInteger" />
+ *                 &lt;attribute name="lower" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="lowerOperator" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="upper" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="upperOperator" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="source" type="{http://www.w3.org/2001/XMLSchema}string" />
  *               &lt;/restriction>
  *             &lt;/complexContent>
@@ -131,6 +138,12 @@ public class Xpaths {
      *       &lt;attribute name="comments" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="type" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="required" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+     *       &lt;attribute name="prepopulate" type="{http://www.w3.org/2001/XMLSchema}boolean" />
+     *       &lt;attribute name="fieldWidth" type="{http://www.w3.org/2001/XMLSchema}positiveInteger" />
+     *       &lt;attribute name="lower" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="lowerOperator" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="upper" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="upperOperator" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="source" type="{http://www.w3.org/2001/XMLSchema}string" />
      *     &lt;/restriction>
      *   &lt;/complexContent>
@@ -166,6 +179,19 @@ public class Xpaths {
         protected String type;
         @XmlAttribute
         protected Boolean required;
+        @XmlAttribute
+        protected Boolean prepopulate;
+        @XmlAttribute
+        @XmlSchemaType(name = "positiveInteger")
+        protected BigInteger fieldWidth;
+        @XmlAttribute
+        protected String lower;
+        @XmlAttribute
+        protected String lowerOperator;
+        @XmlAttribute
+        protected String upper;
+        @XmlAttribute
+        protected String upperOperator;
         @XmlAttribute
         protected String source;
 
@@ -359,6 +385,150 @@ public class Xpaths {
          */
         public void setRequired(Boolean value) {
             this.required = value;
+        }
+
+        /**
+         * Gets the value of the prepopulate property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link Boolean }
+         *     
+         */
+        public Boolean isPrepopulate() {
+            return prepopulate;
+        }
+
+        /**
+         * Sets the value of the prepopulate property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link Boolean }
+         *     
+         */
+        public void setPrepopulate(Boolean value) {
+            this.prepopulate = value;
+        }
+
+        /**
+         * Gets the value of the fieldWidth property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link BigInteger }
+         *     
+         */
+        public BigInteger getFieldWidth() {
+            return fieldWidth;
+        }
+
+        /**
+         * Sets the value of the fieldWidth property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link BigInteger }
+         *     
+         */
+        public void setFieldWidth(BigInteger value) {
+            this.fieldWidth = value;
+        }
+
+        /**
+         * Gets the value of the lower property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getLower() {
+            return lower;
+        }
+
+        /**
+         * Sets the value of the lower property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setLower(String value) {
+            this.lower = value;
+        }
+
+        /**
+         * Gets the value of the lowerOperator property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getLowerOperator() {
+            return lowerOperator;
+        }
+
+        /**
+         * Sets the value of the lowerOperator property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setLowerOperator(String value) {
+            this.lowerOperator = value;
+        }
+
+        /**
+         * Gets the value of the upper property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getUpper() {
+            return upper;
+        }
+
+        /**
+         * Sets the value of the upper property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setUpper(String value) {
+            this.upper = value;
+        }
+
+        /**
+         * Gets the value of the upperOperator property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getUpperOperator() {
+            return upperOperator;
+        }
+
+        /**
+         * Sets the value of the upperOperator property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setUpperOperator(String value) {
+            this.upperOperator = value;
         }
 
         /**
