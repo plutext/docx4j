@@ -50,6 +50,8 @@ public class Context {
 	
 	private static Logger log = Logger.getLogger(Context.class);
 	
+	private static boolean MOXy_intended = false;
+	
 	static {
 	  
 		Log4jConfigurator.configure();
@@ -61,20 +63,21 @@ public class Context {
 			try {
 				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
 				if (f.exists() ) {
-					log.info("Using MOXy JAXB implementation");
-					// EclipseLink JAXB (MOXy) uses the prefixes as specified in the @XmlSchema annotation
-					// See http://blog.bdoughan.com/2011/11/jaxb-and-namespace-prefixes.html
-				} else if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
-					// Java 6
-					log.info("Using Java 6/7 JAXB implementation");
-				} else {
-					log.info("Using JAXB Reference Implementation");			
+					log.info("MOXy JAXB implementation intended..");
+					MOXy_intended = true;
+				} else { 
+					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
+					log.info("MOXy JAXB implementation intended..");
+					MOXy_intended = true;
 				}
 			} catch (Exception e2) {
+				log.error(e2.getMessage());
 				try {
-					InputStream is = ResourceUtils.getResource("src/main/java/org/docx4j/wml/jaxb.properties");
-					log.info("Using MOXy JAXB implementation");	
+					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
+					log.info("MOXy JAXB implementation intended..");
+					MOXy_intended = true;
 				} catch (Exception e3) {
+					log.error(e3.getMessage());
 					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 						// Java 6
 						log.info("Using Java 6/7 JAXB implementation");
@@ -96,7 +99,8 @@ public class Context {
 			java.lang.ClassLoader classLoader = tmp.getClass().getClassLoader();
 			//log.info("\n\nClassloader: " + classLoader.toString() );			
 			
-			log.info("loading Context jc");			
+			log.info("loading Context jc");		
+						
 			jc = JAXBContext.newInstance("org.docx4j.wml:" +
 					"org.docx4j.dml:org.docx4j.dml.chart:org.docx4j.dml.chartDrawing:org.docx4j.dml.compatibility:org.docx4j.dml.diagram:org.docx4j.dml.lockedCanvas:org.docx4j.dml.picture:org.docx4j.dml.wordprocessingDrawing:org.docx4j.dml.spreadsheetdrawing:org.docx4j.dml.diagram2008:" +
 					// All VML stuff is here, since compiling it requires WML and DML (and MathML), but not PML or SML
@@ -104,7 +108,15 @@ public class Context {
 					"org.opendope.xpaths:org.opendope.conditions:org.opendope.questions:org.opendope.components:org.opendope.SmartArt.dataHierarchy:" +
 					"org.docx4j.math:" +
 					"org.docx4j.sharedtypes:org.docx4j.bibliography",classLoader );
-			log.info("loaded " + jc.getClass().getName() + " .. loading others ..");
+			String jcImplementation = jc.getClass().getName();
+			log.info("loaded " + jcImplementation + " .. loading others ..");
+			if (MOXy_intended) {
+				if (jcImplementation.contains("org.eclipse.persistence.jaxb.JAXBContext")) {
+					log.info("MOXy is being used.");
+				} else {
+					log.warn("MOXy is not being used, for some reason.");					
+				}
+			}
 			
 			jcThemePart = jc; //JAXBContext.newInstance("org.docx4j.dml",classLoader );
 			jcDocPropsCore = JAXBContext.newInstance("org.docx4j.docProps.core:org.docx4j.docProps.core.dc.elements:org.docx4j.docProps.core.dc.terms",classLoader );
