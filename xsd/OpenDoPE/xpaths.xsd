@@ -55,8 +55,15 @@ JAXB INSTRUCTIONS
             <xs:attribute name="comments" type="xs:string" />
             <xs:attribute name="type" type="xs:string" /> 
               <!-- here, rather than in questions xsd, for non-interactive formatting and validation -->
+            <!-- the following are here, rather than in questions xsd, since they are part of XForms inspired data type model -->
             <xs:attribute name="required" type="xs:boolean" />
-              <!-- here, rather than in questions xsd, since it is part of XForms inspired data type model -->
+            <xs:attribute name="prepopulate" type="xs:boolean" />
+            <xs:attribute name="fieldWidth" type="xs:positiveInteger" />
+            <xs:attribute name="lower" type="xs:string" />
+            <xs:attribute name="lowerOperator" type="xs:string" />
+            <xs:attribute name="upper" type="xs:string" />
+            <xs:attribute name="upperOperator" type="xs:string" />
+            <!-- ends XForms constraints  -->
             <xs:attribute name="source" type="xs:string" use="optional" />
             <!-- if this xpath is in the library, the store item id of the original xpath part -->
               
