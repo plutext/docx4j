@@ -295,6 +295,8 @@
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/pptx4j/java/org/pptx4j/pml/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/xlsx4j/java/org/xlsx4j/sml/jaxb.properties"/>
     
+    	<echo message="in pom.xml, uncomment the org.eclipse.persistence.moxy dependency, and the EclipseLink Repo" />
+    
     </target>	
 
     <target name="JAXB-switch-from-MOXy-to-Oracle" >

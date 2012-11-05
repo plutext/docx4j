@@ -318,13 +318,16 @@
 		</plugins>
 	</reporting>
 	<dependencies>
-	
-	  <dependency>
-    <groupId>org.eclipse.persistence</groupId>
-    <artifactId>org.eclipse.persistence.moxy</artifactId>
-    <version>2.4.1</version>
-  </dependency>	
-	
+
+		<!--  To use MOXy, uncomment this and the EclipseLink repo, and run ant JAXB-use-MOXy  -->
+		<!-- 
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>org.eclipse.persistence.moxy</artifactId>
+			<version>2.4.1</version>
+		</dependency>	
+	    -->
+	 
 		  <!--  Uncomment this if you are using Java 5.  
 		  		
 		  		StAX reference implementation,
