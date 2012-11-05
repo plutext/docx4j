@@ -1,7 +1,7 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.docx4j.math;
 
 import javax.xml.bind.annotation.XmlEnum;
@@ -49,9 +47,7 @@ public enum STJc {
 
 
     /**
-     * 
-     * 						Left Justification
-     * 					
+     * Left Justification
      * 
      */
     @XmlEnumValue("left")
@@ -65,18 +61,14 @@ public enum STJc {
     RIGHT("right"),
 
     /**
-     * 
-     * 						Center (Equation)
-     * 					
+     * Center (Text)
      * 
      */
     @XmlEnumValue("center")
     CENTER("center"),
 
     /**
-     * 
-     * 						Centered as Group (Equations)
-     * 					
+     * Centered as Group (Text)
      * 
      */
     @XmlEnumValue("centerGroup")

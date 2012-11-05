@@ -1,7 +1,7 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.docx4j.math;
 
 import javax.xml.bind.Unmarshaller;
@@ -41,7 +39,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * <pre>
  * &lt;complexType name="CT_Text">
  *   &lt;simpleContent>
- *     &lt;extension base="&lt;http://schemas.openxmlformats.org/officeDocument/2006/math>ST_String">
+ *     &lt;extension base="&lt;http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes>ST_String">
  *       &lt;attribute ref="{http://www.w3.org/XML/1998/namespace}space"/>
  *     &lt;/extension>
  *   &lt;/simpleContent>
@@ -51,8 +49,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", 
-		 name = "CT_Text", propOrder = {
+@XmlType(name = "CT_Text", propOrder = {
     "value"
 })
 public class CTText
@@ -61,7 +58,7 @@ public class CTText
 
     @XmlValue
     protected String value;
-    @XmlAttribute(namespace = "http://www.w3.org/XML/1998/namespace")
+    @XmlAttribute(name = "space", namespace = "http://www.w3.org/XML/1998/namespace")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     protected String space;
     @XmlTransient
@@ -92,9 +89,7 @@ public class CTText
     }
 
     /**
-     * 
-     * 							Content Contains Significant Whitespace
-     * 						
+     * Content Contains Significant Whitespace
      * 
      * @return
      *     possible object is

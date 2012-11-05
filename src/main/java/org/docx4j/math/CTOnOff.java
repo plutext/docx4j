@@ -1,7 +1,7 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.docx4j.math;
 
 import javax.xml.bind.Unmarshaller;
@@ -39,7 +37,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_OnOff">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}ST_OnOff" />
+ *       &lt;attribute name="val" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_OnOff" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -53,8 +51,8 @@ public class CTOnOff
     implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math")
-    protected STOnOff val;
+    @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math")
+    protected Boolean val;
     @XmlTransient
     private Object parent;
 
@@ -63,10 +61,10 @@ public class CTOnOff
      * 
      * @return
      *     possible object is
-     *     {@link STOnOff }
+     *     {@link Boolean }
      *     
      */
-    public STOnOff getVal() {
+    public Boolean isVal() {
         return val;
     }
 
@@ -75,10 +73,10 @@ public class CTOnOff
      * 
      * @param value
      *     allowed object is
-     *     {@link STOnOff }
+     *     {@link Boolean }
      *     
      */
-    public void setVal(STOnOff value) {
+    public void setVal(Boolean value) {
         this.val = value;
     }
 

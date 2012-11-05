@@ -1,8 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" elementFormDefault="qualified" attributeFormDefault="qualified" blockDefault="#all" targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/math">
-	<xsd:import id="w" namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main" schemaLocation="wml.xsd"/>
-	<xsd:import id="s" namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" schemaLocation="shared-commonSimpleTypes.xsd"/>
-	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace"/>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://schemas.openxmlformats.org/officeDocument/2006/math"
+	xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+	xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	elementFormDefault="qualified" attributeFormDefault="qualified"
+	blockDefault="#all"
+	targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/math"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"  jaxb:version="2.1"
+	>
+	
+	<xsd:import id="w"
+		namespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+		schemaLocation="../wml/wml.xsd" />
+	<xsd:import id="s"
+		namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+		schemaLocation="shared-commonSimpleTypes.xsd" />
+	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace" 
+		schemaLocation="../wml/xml.xsd" />
+	
+<!-- 
+	This will get generated when you generate wml.xsd
+ -->		
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings/>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.math"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
 	<!--  
         Note: the preceding import statement may need to be modified depending on the W3C XML Schema validator you are using.
         If your validator requires the schemaLocation be present, you may use the following import statement:
@@ -368,6 +398,9 @@
 			<xsd:element name="rPr" type="CT_RPR" minOccurs="0">
 				<xsd:annotation>
 					<xsd:documentation>Run Properties</xsd:documentation>
+ 					<xsd:appinfo>
+						<jaxb:class name="rPrMath"/>
+					</xsd:appinfo> 
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:group ref="w:EG_RPr" minOccurs="0"/>
@@ -376,6 +409,9 @@
 				<xsd:element name="t" type="CT_Text" minOccurs="0">
 					<xsd:annotation>
 						<xsd:documentation>Text</xsd:documentation>
+ 						<xsd:appinfo>
+							<jaxb:class name="tMath"/>
+						</xsd:appinfo> 
 					</xsd:annotation>
 				</xsd:element>
 			</xsd:choice>

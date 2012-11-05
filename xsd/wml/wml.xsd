@@ -142,7 +142,7 @@ PRINCIPLES:
 		namespace="http://schemas.openxmlformats.org/schemaLibrary/2006/main"
 		schemaLocation="../customXml/shared-customXmlSchemaProperties.xsd"/>
 	<xsd:import id="m" namespace="http://schemas.openxmlformats.org/officeDocument/2006/math" 
-		schemaLocation="../shared/shared-math.xsd" />
+		schemaLocation="../shared/shared-math-2ed.xsd" />
 	
 	<!--  2011 09 20 include this to compile wml.xsd directly with jaxb-ri-20110601 -->
 	<xsd:import id="dml" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" 

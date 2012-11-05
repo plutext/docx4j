@@ -1,7 +1,7 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.docx4j.math;
 
 import javax.xml.bind.Unmarshaller;
@@ -39,7 +37,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_TwipsMeasure">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}ST_TwipsMeasure" />
+ *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_TwipsMeasure" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -48,29 +46,37 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", name = "CT_TwipsMeasure")
+@XmlType(name = "CT_TwipsMeasure")
 public class CTTwipsMeasure
     implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", required = true)
-    protected long val;
+    @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", required = true)
+    protected String val;
     @XmlTransient
     private Object parent;
 
     /**
      * Gets the value of the val property.
      * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
      */
-    public long getVal() {
+    public String getVal() {
         return val;
     }
 
     /**
      * Sets the value of the val property.
      * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
      */
-    public void setVal(long value) {
+    public void setVal(String value) {
         this.val = value;
     }
 

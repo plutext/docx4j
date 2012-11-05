@@ -1,7 +1,7 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2010-2012, Plutext Pty Ltd.
  *   
- *  This file is part of docx4j.
+ *  This file is part of pptx4j, a component of docx4j.
 
     docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
     you may not use this file except in compliance with the License. 
@@ -17,8 +17,6 @@
     limitations under the License.
 
  */
-
-
 package org.docx4j.math;
 
 import javax.xml.bind.Unmarshaller;
@@ -27,6 +25,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.docx4j.sharedtypes.STYAlign;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -39,7 +38,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  * &lt;complexType name="CT_YAlign">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/math}ST_YAlign" />
+ *       &lt;attribute name="val" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_YAlign" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -53,7 +52,7 @@ public class CTYAlign
     implements Child
 {
 
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", required = true)
+    @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", required = true)
     protected STYAlign val;
     @XmlTransient
     private Object parent;
