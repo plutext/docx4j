@@ -20,11 +20,15 @@
 package org.docx4j.jaxb;
 
 
+import java.io.File;
+import java.io.InputStream;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.utils.Log4jConfigurator;
+import org.docx4j.utils.ResourceUtils;
 
 public class Context {
 	
@@ -54,11 +58,30 @@ public class Context {
 		Object namespacePrefixMapper;
 		try {
 			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
-			if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
-				// Java 6
-				log.info("Using Java 6/7 JAXB implementation");
-			} else {
-				log.info("Using JAXB Reference Implementation");			
+			try {
+				File f = new File("src/main/java/org/docx4j/wml/jaxb.properties");
+				if (f.exists() ) {
+					log.info("Using MOXy JAXB implementation");
+					// EclipseLink JAXB (MOXy) uses the prefixes as specified in the @XmlSchema annotation
+					// See http://blog.bdoughan.com/2011/11/jaxb-and-namespace-prefixes.html
+				} else if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
+					// Java 6
+					log.info("Using Java 6/7 JAXB implementation");
+				} else {
+					log.info("Using JAXB Reference Implementation");			
+				}
+			} catch (Exception e2) {
+				try {
+					InputStream is = ResourceUtils.getResource("src/main/java/org/docx4j/wml/jaxb.properties");
+					log.info("Using MOXy JAXB implementation");	
+				} catch (Exception e3) {
+					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
+						// Java 6
+						log.info("Using Java 6/7 JAXB implementation");
+					} else {
+						log.info("Using JAXB Reference Implementation");			
+					}
+				}
 			}
 		} catch (JAXBException e) {
 			log.error("PANIC! No suitable JAXB implementation available");
