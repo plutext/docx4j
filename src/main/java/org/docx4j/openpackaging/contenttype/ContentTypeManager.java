@@ -670,8 +670,9 @@ public class ContentTypeManager  {
 
 			log.debug("unmarshalling " + this.getClass().getName() );		
 			
-			Object res = u.unmarshal( contentTypes );
-			types = (CTTypes)((JAXBElement)res).getValue();				
+			Object res = XmlUtils.unwrap(u.unmarshal( contentTypes ));
+			//types = (CTTypes)((JAXBElement)res).getValue();				
+			types = (CTTypes)res;
 			//log.debug( types.getClass().getName() + " unmarshalled" );
 			
 			if (log.isDebugEnabled()) {
