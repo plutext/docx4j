@@ -1,6 +1,5 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
-import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -25,6 +24,13 @@ import org.plutext.jaxb.xslfo.RepeatablePageMasterAlternatives;
 import org.plutext.jaxb.xslfo.SimplePageMaster;
 import org.w3c.dom.DocumentFragment;
 
+/**
+ * A description of how this stuff works
+ * can be found at /docs/headers_footers.docx
+ * 
+ * @author jharrop
+ *
+ */
 public class LayoutMasterSetBuilder {
 
 	protected static Logger log = Logger.getLogger(LayoutMasterSetBuilder.class);
