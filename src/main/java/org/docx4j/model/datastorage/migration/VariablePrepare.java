@@ -18,13 +18,14 @@
 
  */
 
-package org.docx4j.samples;
+package org.docx4j.model.datastorage.migration;
 
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.openpackaging.io.SaveToZipFile;
@@ -45,7 +46,7 @@ import org.docx4j.wml.Text;
  * There are at least 3 approaches for replacing variables in 
  * a docx.
  * 
- * 1. as shows in this example
+ * 1. as shown in this example
  * 2. using Merge Fields (see org.docx4j.model.fields.merge.MailMerger)
  * 3. binding content controls to an XML Part (via XPath)
  * 
@@ -64,20 +65,14 @@ import org.docx4j.wml.Text;
  */
 public class VariablePrepare {
 	
+	private static Logger log = Logger.getLogger(VariablePrepare.class);			
 	
+	/**
+	 * @param wmlPackage
+	 * @throws Exception
+	 */
+	public static void prepare(WordprocessingMLPackage wmlPackage) throws Exception {
 	
-	public static void main(String[] args) throws Exception {
-
-		boolean save=true;
-		
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateDirtyExample.docx";
-
-		
-		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
-		
-		// Before .. note attributes w:rsidRDefault="00D15781" w:rsidR="00D15781"
-		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
-		
 		// Apply the filter
 		WordprocessingMLPackage.FilterSettings filterSettings = new WordprocessingMLPackage.FilterSettings();
 		filterSettings.setRemoveProofErrors(true);
@@ -90,7 +85,7 @@ public class VariablePrepare {
 		// approach (which wouldn't involve marshal/unmarshall, and 
 		// so should be more efficient).
 
-		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
+		log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
 		
 		// Now clean up some more
 		org.docx4j.wml.Document wmlDocumentEl = wmlPackage.getMainDocumentPart().getJaxbElement();
@@ -101,15 +96,9 @@ public class VariablePrepare {
 					new TraversalUtilParagraphVisitor());
 		paragraphVisitor.walkJAXBElements(body);
 		
-		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
-
-		// Save it
-		if (save) {
-			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
-			saver.save(System.getProperty("user.dir") + "/OUT_VariablePrepare.docx");
-			System.out.println("Saved");
-		} 
+		log.info(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
 	}
+	
 
 	public static class TraversalUtilParagraphVisitor extends TraversalUtilVisitor<P> {
 		
@@ -227,4 +216,28 @@ public class VariablePrepare {
 //		}
 //		
 //	}
+
+	public static void main(String[] args) throws Exception {
+
+		boolean save=true;
+		
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateDirtyExample.docx";
+		
+		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		
+		// Before .. note attributes w:rsidRDefault="00D15781" w:rsidR="00D15781"
+		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
+		
+		prepare(wmlPackage);
+		
+		System.out.println(XmlUtils.marshaltoString(wmlPackage.getMainDocumentPart().getJaxbElement(), true, true));
+
+		// Save it
+		if (save) {
+			SaveToZipFile saver = new SaveToZipFile(wmlPackage);
+			saver.save(System.getProperty("user.dir") + "/OUT_VariablePrepare.docx");
+			System.out.println("Saved");
+		} 
+	}
+
 }
