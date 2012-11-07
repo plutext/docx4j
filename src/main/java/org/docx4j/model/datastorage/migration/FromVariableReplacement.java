@@ -32,6 +32,7 @@ import org.docx4j.wml.CTDataBinding;
 import org.docx4j.wml.CTSdtContentRun;
 import org.docx4j.wml.P;
 import org.docx4j.wml.R;
+import org.docx4j.wml.RPr;
 import org.docx4j.wml.SdtPr;
 import org.docx4j.wml.SdtPr.Alias;
 import org.docx4j.wml.SdtRun;
@@ -66,21 +67,19 @@ import org.opendope.xpaths.Xpaths.Xpath.DataBinding;
  * specifies a regex the magic string
  * must match.
  * 
+ * Limitations: this first version
+ * operates only on the main document part
+ * (ie it won't process variables in
+ *  headers/footers, footnotes/endnotes,
+ *  or comments)
+ * 
  * @author jharrop
  * @since 3.0.0
  */
-public class FromVariableReplacement {
+public class FromVariableReplacement extends AbstractMigrator {
 	
 	private static Logger log = Logger.getLogger(FromVariableReplacement.class);
-	
-	private Map<String, String> keys = new HashMap<String, String>();
-	
-	private XPathsPart xPathsPart;
-	private QuestionsPart questionsPart;
-	private StandardisedAnswersPart standardisedAnswersPart;
-	
-	private String storeItemID; // of the answers part
-	
+		
 	public WordprocessingMLPackage migrate(WordprocessingMLPackage pkgIn) throws Exception {
 		
 		// TODO - test that OpenDoPE parts aren't already present
@@ -93,30 +92,8 @@ public class FromVariableReplacement {
 		// Run the cleaner first
 		VariablePrepare.prepare(pkgOut);		
 		
-		// Add OpenDoPE parts to target
-		// .. conditions - not that we use this here
-		ConditionsPart conditionsPart = new ConditionsPart(new PartName("/customXml/item1.xml")); // name doesn't matter
-		pkgOut.getMainDocumentPart().addTargetPart(conditionsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS); // Word will silently drop the CXPs if they aren't added to the MDP!
-		addPropertiesPart(conditionsPart, "http://opendope.org/conditions");
-		conditionsPart.setJaxbElement(new Conditions());
-		// .. XPaths
-		xPathsPart = new XPathsPart(new PartName("/customXml/item1.xml")); 
-		pkgOut.getMainDocumentPart().addTargetPart(xPathsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
-		addPropertiesPart(xPathsPart, "http://opendope.org/xpaths");
-		xPathsPart.setJaxbElement(new Xpaths());
-		// .. Questions
-		questionsPart = new QuestionsPart(new PartName("/customXml/item1.xml")); 
-		pkgOut.getMainDocumentPart().addTargetPart(questionsPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
-		addPropertiesPart(questionsPart,"http://opendope.org/questions");
-		questionsPart.setJaxbElement(new Questionnaire());
-		Questionnaire.Questions questions = new Questionnaire.Questions();
-		questionsPart.getJaxbElement().setQuestions(questions);
-		
-		// .. Standardised Answer format
-		standardisedAnswersPart = new StandardisedAnswersPart(new PartName("/customXml/item1.xml")); 
-		pkgOut.getMainDocumentPart().addTargetPart(standardisedAnswersPart, AddPartBehaviour.RENAME_IF_NAME_EXISTS);
-		storeItemID = addPropertiesPart(standardisedAnswersPart, "http://opendope.org/answers");	
-		standardisedAnswersPart.setJaxbElement(new Answers());
+		// Create the CustomXML parts
+		createParts(pkgOut);
 		
 		// Operate at the p level
 		PFinder pFinder = new PFinder();
@@ -172,86 +149,14 @@ public class FromVariableReplacement {
 			int keyEnd = s.indexOf('}', startKey);
 			String key = s.substring(startKey + 2, keyEnd);
 
-			// Has it been encountered already?
-			if (!keys.containsKey(key) ) {
-				// add the part entries
-				addPartEntries(key);
-				keys.put(key,  key);
-			} 
-			
-			// create the content control
-			SdtRun sdtRun = Context.getWmlObjectFactory().createSdtRun();
-			replacementContent.add(sdtRun);
-
-			SdtPr sdtPr = Context.getWmlObjectFactory().createSdtPr();
-			sdtRun.setSdtPr(sdtPr);
-		    /* <w:sdtPr>
-		        <w:alias w:val="Title of document"/>
-		        <w:tag w:val="od:xpath=cktpD"/>
-		        <w:id w:val="289095091"/>
-		        <w:dataBinding w:prefixMappings="xmlns:oda='http://opendope.org/answers'" 
-		        w:xpath="/oda:answers/oda:answer[@id='Title_of_document_nM']" 
-		        w:storeItemID="{183E9AF4-65AB-46DF-8044-944891825721}"/>
-		        <w:text w:multiLine="1"/>
-		      </w:sdtPr>
-		      */
-			
-			Alias alias = Context.getWmlObjectFactory().createSdtPrAlias();
-			alias.setVal(key);
-			Tag tag = Context.getWmlObjectFactory().createTag();
-			tag.setVal("od:xpath=" + key);
-			sdtPr.setTag(tag);
-			sdtPr.setId();
-			CTDataBinding ctDataBinding = Context.getWmlObjectFactory().createCTDataBinding();
-			JAXBElement<CTDataBinding> jaxbDB = 
-					Context.getWmlObjectFactory().createSdtPrDataBinding(ctDataBinding);
-			sdtPr.setDataBinding(ctDataBinding);
-			ctDataBinding.setXpath("/oda:answers/oda:answer[@id='" + key +"']");
-			ctDataBinding.setPrefixMappings("xmlns:oda='http://opendope.org/answers'");
-			ctDataBinding.setStoreItemID(storeItemID);
-						
-			CTSdtContentRun sdtContent = Context.getWmlObjectFactory().createCTSdtContentRun();			
-			sdtRun.setSdtContent(sdtContent);
-
-			R rnew = new R();
-			rnew.setRPr( r.getRPr() ); // point at old rPr, if any
-			Text text = Context.getWmlObjectFactory().createText();
-			text.setValue(key);
-			rnew.getContent().add(text);
-			
-			sdtContent.getContent().add(rnew);
+			createContentControl(r.getRPr(), replacementContent, key);
 			
 			handle(r, s, keyEnd + 1, replacementContent);
 		}
 	}
+
+
 	
-	private void addPartEntries(String key) {
-		
-		// answer
-		Answer a = new Answer();
-		a.setId(key);
-		a.setValue("${" + key + "}");
-		standardisedAnswersPart.getJaxbElement().getAnswerOrRepeat().add(a);
-		
-		// XPath
-		Xpaths.Xpath xp = new org.opendope.xpaths.ObjectFactory().createXpathsXpath();
-		xp.setId(key);
-		xp.setQuestionID(key);
-		DataBinding db = new org.opendope.xpaths.ObjectFactory().createXpathsXpathDataBinding();
-		db.setXpath("/oda:answers/oda:answer[@id='" + key +"']");
-		db.setPrefixMappings("xmlns:oda='http://opendope.org/answers'");
-		db.setStoreItemID(storeItemID);
-		xp.setDataBinding(db);
-		xPathsPart.getJaxbElement().getXpath().add(xp);
-		
-		// question
-		Question q = new Question();
-		q.setId(key);
-		q.setText(key + "?");
-		Response r = new Response();
-		r.setFree( new Response.Free() );
-		questionsPart.getJaxbElement().getQuestions().getQuestion().add(q);
-	}
 	
 	 private void addTextRun(R r, String val, List<Object> replacementContent) {
 		 
