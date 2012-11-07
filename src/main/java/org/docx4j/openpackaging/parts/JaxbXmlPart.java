@@ -250,7 +250,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 					try {
 						Templates mcPreprocessorXslt = JaxbValidationEventHandler.getMcPreprocessor();
 						is.reset();
-						JAXBResult result = XmlUtils.prepareJAXBResult(Context.jc);
+						JAXBResult result = XmlUtils.prepareJAXBResult(jc);
 						XmlUtils.transform(new StreamSource(is), 
 								mcPreprocessorXslt, null, result);
 						jaxbElement = (E) XmlUtils.unwrap(
@@ -301,7 +301,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 						doc = el.getOwnerDocument();
 					}
 					eventHandler.setContinue(true);
-					JAXBResult result = XmlUtils.prepareJAXBResult(Context.jc);
+					JAXBResult result = XmlUtils.prepareJAXBResult(jc);
 					Templates mcPreprocessorXslt = JaxbValidationEventHandler
 							.getMcPreprocessor();
 					XmlUtils.transform(doc, mcPreprocessorXslt, null, result);
