@@ -70,7 +70,7 @@ public class PageBreakBefore extends AbstractParagraphProperty {
 		if (((BooleanDefaultTrue)this.getObject()).isVal() ) {
 			foElement.setAttribute(FO_NAME, "page" );
 		} else {
-			//
+			foElement.setAttribute(FO_NAME, "auto" );
 		}
 		
 	}
