@@ -384,7 +384,7 @@ public class SaveToZipFile {
 				}
 					
 			} catch (Exception e) {
-				throw new Docx4JException("Failed to add parts from relationships", e);				
+				throw new Docx4JException("Failed to add parts from relationships of " + rp.getSourceP().getPartName(), e);				
 			}
 		}
 		
