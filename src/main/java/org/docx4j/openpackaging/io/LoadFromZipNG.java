@@ -423,12 +423,32 @@ public class LoadFromZipNG extends Load {
 			return;
 		}
 		
-		if (pkg.handled.get(resolvedPartUri)!=null) return;
 		
 		String relationshipType = r.getType();		
+		Part part;
+		
+		if (pkg.handled.get(resolvedPartUri)!=null) {
 			
-		Part part = getRawPart(partByteArrays, ctm, resolvedPartUri, r); // will throw exception if null
+			// The source Part (or Package) might have a convenience
+			// method for this
+			part = pkg.getParts().getParts().get(new PartName("/" + resolvedPartUri));
+			if (source.setPartShortcut(part, relationshipType ) ) {
+				log.debug("Convenience method established from " + source.getPartName() 
+						+ " to " + part.getPartName());
+			}			
+			return;
+		}
+		
+		part = getRawPart(partByteArrays, ctm, resolvedPartUri, r); // will throw exception if null
 
+		// The source Part (or Package) might have a convenience
+		// method for this
+		if (source.setPartShortcut(part, relationshipType ) ) {
+			log.debug("Convenience method established from " + source.getPartName() 
+					+ " to " + part.getPartName());
+		}
+
+		
 		if (part instanceof BinaryPart
 				|| part instanceof DefaultXmlPart) {
 			// The constructors of other parts should take care of this...
@@ -437,12 +457,6 @@ public class LoadFromZipNG extends Load {
 		rp.loadPart(part, r);
 		pkg.handled.put(resolvedPartUri, resolvedPartUri);
 
-		// The source Part (or Package) might have a convenience
-		// method for this
-		if (source.setPartShortcut(part, relationshipType ) ) {
-			log.debug("Convenience method established from " + source.getPartName() 
-					+ " to " + part.getPartName());
-		}
 		
 //		unusedZipEntries.put(resolvedPartUri, new Boolean(false));
 		
