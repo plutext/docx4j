@@ -48,6 +48,7 @@ import org.docx4j.wml.CTObject;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
 import org.docx4j.wml.Comments.Comment;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -102,7 +103,7 @@ public class TraversalUtil {
 	}	
 
 	public static abstract class CallbackImpl implements Callback {
-
+		
 		// Depth first
 		public void walkJAXBElements(Object parent) {
 			
@@ -110,11 +111,16 @@ public class TraversalUtil {
 			if (children != null) {
 
 				for (Object o : children) {
-
+					
 					// if its wrapped in javax.xml.bind.JAXBElement, get its
 					// value; this is ok, provided the results of the Callback
 					// won't be marshalled
 					o = XmlUtils.unwrap(o);
+					
+					// workaround for broken getParent (since 3.0.0)
+					if (o instanceof Child) {
+						((Child)o).setParent(parent);
+					}
 					
 					this.apply(o);
 
