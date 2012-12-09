@@ -179,4 +179,12 @@ public class Cell {
 		s += rowspan;
 		return s + " ";
 	}
+
+	/*
+	 * @since 3.0.0
+	 */
+	public boolean isVMerged() {
+		return (tcPr != null) && 
+			   (tcPr.getVMerge() != null);
+	}
 }

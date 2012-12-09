@@ -1,3 +1,22 @@
+/*
+   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
+   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
 package org.docx4j.model.styles;
 
 import java.math.BigInteger;
@@ -6,6 +25,8 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
+import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTCnf;
@@ -83,7 +104,13 @@ import org.docx4j.wml.TrPr;
 import org.docx4j.wml.U;
 import org.docx4j.wml.UnderlineEnumeration;
 
+/*
+ *  @author Alberto Zerolo
+ *  @since 3.0.0
+ *  
+*/
 public class StyleUtil {
+	
 	public static final String CHARACTER_STYLE = "character";
 	public static final String PARAGRAPH_STYLE = "paragraph";
 	public static final String TABLE_STYLE = "table";
@@ -1519,6 +1546,9 @@ public class StyleUtil {
 		return (val == null) || (val.length() == 0);
 	}
 
+	protected static boolean isEmpty(STThemeColor val) {
+		return (val == null) || (val.equals(STThemeColor.NONE));
+	}
 	
 	
 	
@@ -1545,7 +1575,7 @@ public class StyleUtil {
 	public static PPr apply(PPr source, PPr destination) {
 		if (!isEmpty(source)) {
 			if (destination == null) 
-				destination = new PPr();
+				destination = Context.getWmlObjectFactory().createPPr();
 			apply((PPrBase)source, (PPrBase)destination);
 			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
 		}
@@ -1591,10 +1621,11 @@ public class StyleUtil {
 	}
 
 	public static RPr apply(RPr source, RPr destination) {
-		if (isEmpty(destination))
-			return source;
 
 		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createRPr();
+			
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
 			destination.setB(apply(source.getB(), destination.getB()));
@@ -1635,9 +1666,9 @@ public class StyleUtil {
 
 	public static RPr apply(ParaRPr source, RPr destination) {
 		if (!isEmpty(source)) {
-			if (destination == null) {
-				destination = new RPr();
-			}
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createRPr();
+			
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
 			destination.setB(apply(source.getB(), destination.getB()));
@@ -1678,9 +1709,9 @@ public class StyleUtil {
 
 	public static ParaRPr apply(RPr source, ParaRPr destination) {
 		if (!isEmpty(source)) {
-			if (destination == null) {
-				destination = new ParaRPr();
-			}
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createParaRPr();
+			
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
 			destination.setB(apply(source.getB(), destination.getB()));
@@ -1720,10 +1751,11 @@ public class StyleUtil {
 	}
 
 	public static ParaRPr apply(ParaRPr source, ParaRPr destination) {
-		if (isEmpty(destination))
-			return source;
 
 		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createParaRPr();
+			
 			destination.setRStyle(apply(source.getRStyle(), destination.getRStyle()));
 			destination.setRFonts(apply(source.getRFonts(), destination.getRFonts()));
 			destination.setB(apply(source.getB(), destination.getB()));
@@ -1763,10 +1795,10 @@ public class StyleUtil {
 	}
 	
 	public static CTTblPrBase apply(CTTblPrBase source, CTTblPrBase destination) {
-		if (isEmpty(destination)) 
-			return source;
-		
 		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createTblPr();
+			
 			destination.setTblStyle(apply(source.getTblStyle(), destination.getTblStyle()));
 			destination.setTblpPr(apply(source.getTblpPr(), destination.getTblpPr()));
 			destination.setTblOverlap(apply(source.getTblOverlap(), destination.getTblOverlap()));
@@ -1786,9 +1818,10 @@ public class StyleUtil {
 	}
 
 	public static TcPr apply(TcPr source, TcPr destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createTcPr();
+			
 			destination.setCnfStyle(apply(source.getCnfStyle(), destination.getCnfStyle()));
 			destination.setTcW(apply(source.getTcW(), destination.getTcW()));
 			destination.setGridSpan(apply(source.getGridSpan(), destination.getGridSpan()));
@@ -1807,38 +1840,84 @@ public class StyleUtil {
 	}
 
 	public static void apply(List<CTTblStylePr> source, List<CTTblStylePr> destination) {
+		CTTblStylePr destinationTblStylePr = null;
 		if (!isEmpty(source)) {
 			//not sure about this, but if the source defines a content model it should
 			//replace the one of the source as a whole, and not parts of it.
 			destination.clear();
-			destination.addAll(source);
+			for (int i=0; i<source.size(); i++) {
+				destinationTblStylePr = apply(source.get(i), null);
+				if (destinationTblStylePr != null) {
+					destination.add(destinationTblStylePr);
+				}
+			}
 		}
 	}
 
+	public static CTTblStylePr apply(CTTblStylePr source, CTTblStylePr destination) {
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblStylePr();
+			destination.setPPr(apply(source.getPPr(), destination.getPPr()));
+			destination.setRPr(apply(source.getRPr(), destination.getRPr()));
+			destination.setTblPr(apply(source.getTblPr(), destination.getTblPr()));
+			destination.setTcPr(apply(source.getTcPr(), destination.getTcPr()));
+			destination.setTrPr(apply(source.getTrPr(), destination.getTrPr()));
+			destination.setType(source.getType()); //enum
+		}
+		return destination;
+	}
+
 	public static OutlineLvl apply(OutlineLvl source, OutlineLvl destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createPPrBaseOutlineLvl();
+			destination.setVal(source.getVal()); //atomic
+		}
+		return destination;
 	}
 
 	public static CTTextboxTightWrap apply(CTTextboxTightWrap source, CTTextboxTightWrap destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createCTTextboxTightWrap();
+			destination.setVal(source.getVal()); //enum
+		}
+		return destination;
 	}
 
 	public static TextAlignment apply(TextAlignment source, TextAlignment destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createPPrBaseTextAlignment();
+			destination.setVal(source.getVal()); //atomic
+		}
+		return destination;
 	}
 
 	public static TextDirection apply(TextDirection source, TextDirection destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createTextDirection();
+			destination.setVal(source.getVal()); //atomic
+		}
+		return destination;
 	}
 
 	public static Jc apply(Jc source, Jc destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null) 
+				destination = Context.getWmlObjectFactory().createJc();
+			destination.setVal(source.getVal()); //enum
+		}
+		return destination;
 	}
 
 	public static Ind apply(Ind source, Ind destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createPPrBaseInd();
+			
 			destination.setFirstLine(apply(source.getFirstLine(), destination.getFirstLine()));
 			destination.setFirstLineChars(apply(source.getFirstLineChars(), destination.getFirstLineChars()));
 			destination.setHanging(apply(source.getHanging(), destination.getHanging()));
@@ -1852,9 +1931,10 @@ public class StyleUtil {
 	}
 
 	public static Spacing apply(Spacing source, Spacing destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createPPrBaseSpacing();
+			
 			destination.setAfter(apply(source.getAfter(), destination.getAfter()));
 			destination.setAfterLines(apply(source.getAfterLines(), destination.getAfterLines()));
 			destination.setBefore(apply(source.getBefore(), destination.getBefore()));
@@ -1866,38 +1946,54 @@ public class StyleUtil {
 	}
 
 	public static Tabs apply(Tabs source, Tabs destination) {
+	CTTabStop sourceTabStop = null;
+	CTTabStop destinationTabStop = null;
 		//Tabs are relative to each other, therefore if there are any tabs in the source 
 		//they should replace those in the destination and not be added to the destination.
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTabs();
+			
 			destination.getTab().clear();
-			destination.getTab().addAll(source.getTab());
+			for (int i=0; i<source.getTab().size(); i++) {
+				sourceTabStop = source.getTab().get(i);
+				destinationTabStop = Context.getWmlObjectFactory().createCTTabStop();
+				destinationTabStop.setLeader(sourceTabStop.getLeader()); //enum
+				destinationTabStop.setPos(sourceTabStop.getPos()); //atomic
+				destinationTabStop.setVal(sourceTabStop.getVal()); //enum
+				
+				if (destinationTabStop != null) {
+					destination.getTab().add(destinationTabStop);
+				}
+			}
 		}
 		return destination;
 	}
 
 	public static CTShd apply(CTShd source, CTShd destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTShd();
+			
 			destination.setColor(apply(source.getColor(), destination.getColor()));
+			destination.setFill(apply(source.getFill(), destination.getFill()));
+			destination.setVal(apply(source.getVal(), destination.getVal()));
+			
 			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
 			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
-			destination.setFill(apply(source.getFill(), destination.getFill()));
 			destination.setThemeFillTint(apply(source.getThemeFillTint(), destination.getThemeFillTint()));
 			destination.setThemeFillShade(apply(source.getThemeFillShade(), destination.getThemeFillShade()));
-			destination.setThemeColor(source.getThemeColor());
-			destination.setThemeFill(source.getThemeFill());
-			destination.setVal(apply(source.getVal(), destination.getVal()));
+			destination.setThemeColor(source.getThemeColor()); //enum
+			destination.setThemeFill(source.getThemeFill()); //enum
 		}
 		return destination;
 	}
 
 	public static PBdr apply(PBdr source, PBdr destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createPPrBasePBdr();
+			
 			destination.setTop(apply(source.getTop(), destination.getTop())); 
 			destination.setLeft(apply(source.getLeft(), destination.getLeft()));
 			destination.setBottom(apply(source.getBottom(), destination.getBottom()));
@@ -1909,9 +2005,10 @@ public class StyleUtil {
 	}
 
 	public static CTBorder apply(CTBorder source, CTBorder destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTBorder();
+			
 			destination.setColor(apply(source.getColor(), destination.getColor()));
 			destination.setSpace(apply(source.getSpace(), destination.getSpace())); 
 			destination.setSz(apply(source.getSz(), destination.getSz())); 
@@ -1924,9 +2021,10 @@ public class StyleUtil {
 	}
 
 	public static NumPr apply(NumPr source, NumPr destination) {
-		if (isEmpty(destination))
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createPPrBaseNumPr();
+			
 			if ((source.getNumId() != null) || (source.getIlvl() != null)) {
 				destination.setNumId(source.getNumId());
 				destination.setIlvl(source.getIlvl());
@@ -1936,9 +2034,10 @@ public class StyleUtil {
 	}
 
 	public static CTFramePr apply(CTFramePr source, CTFramePr destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTFramePr();
+			
 			destination.setDropCap(source.getDropCap());
 			destination.setLines(apply(source.getLines(), destination.getLines()));
 			destination.setW(apply(source.getW(), destination.getW()));
@@ -1959,77 +2058,169 @@ public class StyleUtil {
 	}
 
 	public static CTCnf apply(CTCnf source, CTCnf destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTCnf();
+			destination.setVal(apply(source.getVal(), destination.getVal()));
+		}
+		return destination;
 	}
 
 	public static PStyle apply(PStyle source, PStyle destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createPPrBasePStyle();
+			destination.setVal(apply(source.getVal(), destination.getVal()));
+		}
+		return destination;
 	}
 
 	public static RFonts apply(RFonts source, RFonts destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
-			destination.setAscii(apply(source.getAscii(), destination.getAscii()));
-			destination.setCs(apply(source.getCs(), destination.getCs()));
-			destination.setEastAsia(apply(source.getEastAsia(), destination.getEastAsia()));
-			destination.setHAnsi(apply(source.getHAnsi(), destination.getHAnsi()));
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createRFonts();
+			
+			//i think, the values should be treated together
+			destination.setAscii(source.getAscii());
+			destination.setCs(source.getCs());
+			destination.setEastAsia(source.getEastAsia());
+			destination.setHAnsi(source.getHAnsi());
 		}
 		return destination;
 	}
 
 	public static RStyle apply(RStyle source, RStyle destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createRStyle();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTEm apply(CTEm source, CTEm destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTEm();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTVerticalAlignRun apply(CTVerticalAlignRun source, CTVerticalAlignRun destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTVerticalAlignRun();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTTextEffect apply(CTTextEffect source, CTTextEffect destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTextEffect();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static U apply(U source, U destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createU();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static Highlight apply(Highlight source, Highlight destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createHighlight();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTSignedHpsMeasure apply(CTSignedHpsMeasure source, CTSignedHpsMeasure destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTSignedHpsMeasure();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static HpsMeasure apply(HpsMeasure source, HpsMeasure destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createHpsMeasure();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTTextScale apply(CTTextScale source, CTTextScale destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTextScale();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTSignedTwipsMeasure apply(CTSignedTwipsMeasure source, CTSignedTwipsMeasure destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTSignedTwipsMeasure();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static Color apply(Color source, Color destination) {
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createColor();
+
+			destination.setThemeColor(apply(source.getThemeColor(), destination.getThemeColor()));
+			destination.setThemeShade(apply(source.getThemeShade(), destination.getThemeShade()));
+			destination.setThemeTint(apply(source.getThemeTint(), destination.getThemeTint()));
+			destination.setVal(apply(source.getVal(), destination.getVal()));
+		}
+		return destination;
+	}
+
+	private static STThemeColor apply(STThemeColor source, STThemeColor destination) {
 		return (isEmpty(source) ? destination : source);
 	}
 
 	public static CTTblLayoutType apply(CTTblLayoutType source, CTTblLayoutType destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblLayoutType();
+			
+			destination.setType(source.getType());
+		}
+		return destination;
 	}
 
 	public static CTTblCellMar apply(CTTblCellMar source, CTTblCellMar destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblCellMar();
+			
 			destination.setBottom(apply(source.getBottom(), destination.getBottom()));
 			destination.setLeft(apply(source.getLeft(), destination.getLeft()));
 			destination.setRight(apply(source.getRight(), destination.getRight()));
@@ -2039,9 +2230,10 @@ public class StyleUtil {
 	}
 
 	public static TblBorders apply(TblBorders source, TblBorders destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTblBorders();
+			
 			destination.setBottom(apply(source.getBottom(), destination.getBottom()));
 			destination.setLeft(apply(source.getLeft(), destination.getLeft()));
 			destination.setRight(apply(source.getRight(), destination.getRight()));
@@ -2053,21 +2245,40 @@ public class StyleUtil {
 	}
 
 	public static TblStyleColBandSize apply(TblStyleColBandSize source, TblStyleColBandSize destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblPrBaseTblStyleColBandSize();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static TblStyleRowBandSize apply(TblStyleRowBandSize source, TblStyleRowBandSize destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblPrBaseTblStyleRowBandSize();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTTblOverlap apply(CTTblOverlap source, CTTblOverlap destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblOverlap();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTTblPPr apply(CTTblPPr source, CTTblPPr destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblPPr();
+			
 			destination.setLeftFromText(apply(source.getLeftFromText(), destination.getLeftFromText()));
 			destination.setRightFromText(apply(source.getRightFromText(), destination.getRightFromText()));
 			destination.setTopFromText(apply(source.getTopFromText(), destination.getTopFromText()));
@@ -2083,17 +2294,30 @@ public class StyleUtil {
 	}
 
 	public static TblStyle apply(TblStyle source, TblStyle destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblPrBaseTblStyle();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static CTVerticalJc apply(CTVerticalJc source, CTVerticalJc destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTVerticalJc();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static TcMar apply(TcMar source, TcMar destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTcMar();
+			
 			destination.setBottom(apply(source.getBottom(), destination.getBottom()));
 			destination.setLeft(apply(source.getLeft(), destination.getLeft()));
 			destination.setRight(apply(source.getRight(), destination.getRight()));
@@ -2103,9 +2327,10 @@ public class StyleUtil {
 	}
 
 	public static TcBorders apply(TcBorders source, TcBorders destination) {
-		if (isEmpty(destination)) 
-			return source;
 		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTcPrInnerTcBorders();
+				
 			destination.setBottom(apply(source.getBottom(), destination.getBottom()));
 			destination.setLeft(apply(source.getLeft(), destination.getLeft()));
 			destination.setRight(apply(source.getRight(), destination.getRight()));
@@ -2114,22 +2339,38 @@ public class StyleUtil {
 			destination.setInsideV(apply(source.getInsideV(), destination.getInsideV()));
 			destination.setTl2Br(apply(source.getTl2Br(), destination.getTl2Br()));
 			destination.setTr2Bl(apply(source.getTr2Bl(), destination.getTr2Bl()));
-
-			
 		}
 		return destination;
 	}
 
 	public static VMerge apply(VMerge source, VMerge destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTcPrInnerVMerge();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static HMerge apply(HMerge source, HMerge destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTcPrInnerHMerge();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static GridSpan apply(GridSpan source, GridSpan destination) {
-		return (isEmpty(source) ? destination : source);
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTcPrInnerGridSpan();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	public static TrPr apply(TrPr source, TrPr destination) {
@@ -2150,7 +2391,7 @@ public class StyleUtil {
 						break;
 					}
 				}
-				defsDestination.add(defsSourceElement);
+				defsDestination.add(XmlUtils.deepCopy(defsSourceElement));
 			}
 		}
 		
@@ -2159,11 +2400,23 @@ public class StyleUtil {
 
 	public static TblWidth apply(TblWidth source, TblWidth destination) {
 		//Type gets ignored
-		return ((source == null) || isEmpty(source.getW()) ? destination : source);
+		if ((source != null) && (!isEmpty(source.getW()))) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createTblWidth();
+			
+			destination.setW(source.getW());
+		}
+		return destination;
 	}
 
 	public static CTShortHexNumber apply(CTShortHexNumber source, CTShortHexNumber destination) {
-		return ((source == null) || isEmpty(source.getVal()) ? destination : source);
+		if ((source != null) && (!isEmpty(source.getVal()))) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTShortHexNumber();
+			
+			destination.setVal(source.getVal());
+		}
+		return destination;
 	}
 
 	private static STBorder apply(STBorder source, STBorder destination) {

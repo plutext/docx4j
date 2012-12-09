@@ -21,10 +21,8 @@ package org.docx4j.model.properties.table.tc;
 
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.CTVerticalJc;
-import org.docx4j.wml.PPr;
 import org.docx4j.wml.STVerticalJc;
 import org.docx4j.wml.TcPr;
-import org.docx4j.wml.PPrBase.TextAlignment;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
@@ -38,6 +36,15 @@ public class TextAlignmentVertical extends AbstractTcProperty {
 	 */	
 	public String getCssName() {
 		return CSS_NAME;
+	}
+	
+	/**
+	 * @since 3.0.0
+	 */	
+	public TextAlignmentVertical() { //Default-Alignment Top
+	CTVerticalJc textAlignment = Context.getWmlObjectFactory().createCTVerticalJc();
+		textAlignment.setVal(STVerticalJc.TOP);
+		this.setObject(textAlignment);
 	}
 	
 	public TextAlignmentVertical(CTVerticalJc textAlignment) {

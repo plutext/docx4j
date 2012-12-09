@@ -26,7 +26,12 @@ import java.util.Locale;
 
 import org.apache.log4j.Logger;
 
+/**
+ * @author jharrop, azerolo
+ *
+ */
 public class UnitsOfMeasurement {
+	
 	private final static Logger log = Logger.getLogger(UnitsOfMeasurement.class);
 	
 	public final static DecimalFormat format2DP;
@@ -47,10 +52,31 @@ public class UnitsOfMeasurement {
 	public static float twipToInch(int twip) {
 		return twip/1440.00f;		
 	}
+
+	/**
+	 * @since 3.0.0
+	 */
+	public static float twipToMm(int twip) {
+		return twip / 56.6928f;		
+	}
 		
 	public static int mmToTwip(float mm  ) {		
 		float inch = mm*0.0394f;
 		return inchToTwip(inch);
+	}
+
+	/**
+	 * @since 3.0.0
+	 */
+	public static float twipToPoint(int twip) {
+		return twip / 20f;		
+	}
+		
+	/**
+	 * @since 3.0.0
+	 */
+	public static int pointToTwip(float point  ) {		
+		return Math.round(20 * point);
 	}
 	
 	
@@ -91,6 +117,51 @@ public class UnitsOfMeasurement {
 		} else {
 			return Integer.toHexString( i );
 		}
+	}
+
+	/**
+	 * @since 3.0.0
+	 */
+	public static String toHexColor(int color) {
+		String	ret = Integer.toHexString(color).toUpperCase();
+		return (ret.length() < 6 ?
+				"000000".substring(0, 6 - ret.length()) + ret :
+				ret);
+	}
+	
+	/**
+	 * @since 3.0.0
+	 */
+	public static int combineColors(int fgColor, int bgColor, int pctFg) {
+	int resColor = 0;
+		if (pctFg < 1) {
+			resColor = bgColor;
+		}
+		else if (pctFg == 100) {
+			resColor = fgColor;
+		}
+		else {
+			int pctBg = 100 - pctFg;
+			resColor = 
+					//Red
+					(((((((fgColor >> 16) & 0xff) * pctFg) +
+					    (((bgColor >> 16) & 0xff) * pctBg))) / 100) << 16) |
+					//Green
+					(((((((fgColor >> 8) & 0xff) * pctFg) +
+					    (((bgColor >> 8) & 0xff) * pctBg))) / 100) << 8) |
+					//Blue
+					(((((fgColor & 0xff) * pctFg) +
+					    ((bgColor & 0xff) * pctBg))) / 100);
+		}
+		
+		return resColor;
+	}
+	
+	private String calcHexColor(int value) {
+	String	ret = Integer.toHexString(value).toUpperCase();
+		return (ret.length() < 6 ?
+				"000000".substring(0, 6 - ret.length()) + ret :
+				ret);
 	}
 	
 //	public static void main(String[] args) throws Exception {

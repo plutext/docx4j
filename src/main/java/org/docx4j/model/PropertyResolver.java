@@ -1,7 +1,6 @@
 package org.docx4j.model;
 
 
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,8 +15,8 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
 import org.docx4j.model.properties.paragraph.AbstractParagraphProperty;
-import org.docx4j.model.properties.paragraph.Indent;
 import org.docx4j.model.properties.run.AbstractRunProperty;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.ThemePart;
@@ -25,19 +24,13 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
-import org.docx4j.wml.CTTblCellMar;
-import org.docx4j.wml.CTTblPrBase;
-import org.docx4j.wml.CTTblStylePr;
 import org.docx4j.wml.DocDefaults;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.NumId;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.TblBorders;
 import org.docx4j.wml.TblPr;
-import org.docx4j.wml.TcPr;
-import org.docx4j.wml.TrPr;
 
 /**
  * This class works out the actual set of properties (paragraph or run)
@@ -291,211 +284,13 @@ public class PropertyResolver {
 			}			
 		}
 		while (!tableStyleStack.empty() ) {
-			Style thisLevel = tableStyleStack.pop();
-			applyTableStyle(thisLevel, result);
+			StyleUtil.apply(tableStyleStack.pop(), result);
 		}
 		
 		// Finally apply the tblPr we were passed
-		if (result.getTblPr()==null) {
-			result.setTblPr(
-					Context.getWmlObjectFactory().createCTTblPrBase() );
-		}
-		applyTablePr(tblPr, result.getTblPr());
+		result.setTblPr(StyleUtil.apply(tblPr, result.getTblPr()));
 		
 		return result;
-	}
-	
-	private void applyTableStyle(Style thisLevel, Style result) { 
-		
-		// TblPr
-		if (thisLevel.getTblPr()!=null) {
-			log.debug("Applying tblPr..");
-			if (result.getTblPr()==null) {
-				result.setTblPr(
-						XmlUtils.deepCopy( thisLevel.getTblPr() ) );
-			} else {
-				applyTablePr(thisLevel.getTblPr(), result.getTblPr() );
-			}
-		}
-		
-		// TblStylePr - STTblStyleOverrideType stuff
-		if (thisLevel.getTblStylePr()!=null) {
-			log.debug("Applying tblStylePr.. TODO!");
-			// Its a list, created automatically
-			applyTableStylePr(thisLevel.getTblStylePr(), result.getTblStylePr() );
-		}
-		
-		
-		// TrPr - eg jc, trHeight, wAfter, tblCellSpacing
-		if (thisLevel.getTrPr()!=null) {
-			log.debug("Applying trPr.. TODO!");
-			if (result.getTrPr()==null) {
-				result.setTrPr(
-						XmlUtils.deepCopy( thisLevel.getTrPr() ));
-			} else {
-				applyTrPr(thisLevel.getTrPr(), result.getTrPr() );
-			}
-		}
-		
-		// TcPr - includes includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
-		if (thisLevel.getTcPr()!=null) {
-			log.debug("Applying tcPr.. TODO!");
-			if (result.getTcPr()==null) {
-				result.setTcPr(
-						XmlUtils.deepCopy( thisLevel.getTcPr() ));
-			} else {
-				applyTcPr(thisLevel.getTcPr(), result.getTcPr() );
-			}
-		}
-		
-		// pPr 
-		if (thisLevel.getPPr()!=null) {
-			log.debug("Applying pPr..");
-			if (result.getPPr()==null) {
-				result.setPPr(
-						XmlUtils.deepCopy( thisLevel.getPPr() ));
-			} else {
-				applyPPr(thisLevel.getPPr(), result.getPPr() );
-			}
-		}
-		
-		// rPr 
-		if (thisLevel.getRPr()!=null) {
-			log.debug("Applying rPr..");
-			if (result.getRPr()==null) {
-				result.setRPr(
-						XmlUtils.deepCopy( thisLevel.getRPr() ));
-			} else {
-				applyRPr(thisLevel.getRPr(), result.getRPr() );
-			}
-		}
-	}
-
-	private void applyTablePr(CTTblPrBase thisLevel, CTTblPrBase result) {
-		/*
-		 * eg
-               <w:tblInd w:w="0" w:type="dxa"/>
-                <w:tblBorders>
-                    <w:top w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
-                    <w:left w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
-                    <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
-                    <w:right w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
-                    <w:insideH w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
-                    <w:insideV w:val="single" w:sz="4" w:space="0" w:color="000000" w:themeColor="text1"/>
-                </w:tblBorders>
-                <w:tblCellMar>
-                    <w:top w:w="0" w:type="dxa"/>
-                    <w:left w:w="108" w:type="dxa"/>
-                    <w:bottom w:w="0" w:type="dxa"/>
-                    <w:right w:w="108" w:type="dxa"/>
-                </w:tblCellMar>
-                
-                PLUS OTHERS, TODO
-		 */
-
-		// w:tblInd
-		if (thisLevel.getTblInd()!=null ) {
-			if (result.getTblInd()==null) {
-				result.setTblInd(
-					XmlUtils.deepCopy(thisLevel.getTblInd()) );
-			} else {
-				result.getTblInd().setW( 
-					// clone
-					BigInteger.valueOf(thisLevel.getTblInd().getW().intValue())
-				);
-				result.getTblInd().setType(
-					thisLevel.getTblInd().getType()
-				);				
-			}			
-		}
-
-		// w:tblBorders
-		if (thisLevel.getTblBorders()!=null) {
-			if (result.getTblBorders()==null) {
-				result.setTblBorders(
-						XmlUtils.deepCopy(thisLevel.getTblBorders() ));
-			} else {
-				TblBorders thisLevelBorders = thisLevel.getTblBorders();
-				TblBorders resultBorders = result.getTblBorders();
-				
-				// child-by-child, copy if this level has a setting
-				
-				//top
-				if (thisLevelBorders.getTop()!=null) {
-					resultBorders.setTop( XmlUtils.deepCopy(thisLevelBorders.getTop() ));
-				}
-				//bottom
-				if (thisLevelBorders.getBottom()!=null) {
-					resultBorders.setBottom( XmlUtils.deepCopy(thisLevelBorders.getBottom() ));
-				}
-				//left
-				if (thisLevelBorders.getLeft()!=null) {
-					resultBorders.setLeft( XmlUtils.deepCopy(thisLevelBorders.getLeft() ));
-				}
-				//right
-				if (thisLevelBorders.getRight()!=null) {
-					resultBorders.setRight( XmlUtils.deepCopy(thisLevelBorders.getRight() ));
-				}
-				//insideH
-				if (thisLevelBorders.getInsideH()!=null) {
-					resultBorders.setInsideH( XmlUtils.deepCopy(thisLevelBorders.getInsideH() ));
-				}
-				//insideV
-				if (thisLevelBorders.getInsideV()!=null) {
-					resultBorders.setInsideV( XmlUtils.deepCopy(thisLevelBorders.getInsideV() ));
-				}
-			}
-		}
-		
-		
-		// w:tblCellMar
-		if (thisLevel.getTblCellMar()!=null) {
-			if (result.getTblCellMar()==null) {
-				result.setTblCellMar(
-						XmlUtils.deepCopy(thisLevel.getTblCellMar() ));
-			} else {
-				CTTblCellMar thisLevelCellMar = thisLevel.getTblCellMar();
-				CTTblCellMar resultCellMar = result.getTblCellMar();
-				
-				// child-by-child, copy if this level has a setting
-				
-				//top
-				if (thisLevelCellMar.getTop()!=null) {
-					resultCellMar.setTop( XmlUtils.deepCopy(thisLevelCellMar.getTop() ));
-				}
-				//bottom
-				if (thisLevelCellMar.getBottom()!=null) {
-					resultCellMar.setBottom( XmlUtils.deepCopy(thisLevelCellMar.getBottom() ));
-				}
-				//left
-				if (thisLevelCellMar.getLeft()!=null) {
-					resultCellMar.setLeft( XmlUtils.deepCopy(thisLevelCellMar.getLeft() ));
-				}
-				//right
-				if (thisLevelCellMar.getRight()!=null) {
-					resultCellMar.setRight( XmlUtils.deepCopy(thisLevelCellMar.getRight() ));
-				}
-			}
-		}
-		
-		if (thisLevel.getTblCellSpacing()!=null ) {
-			result.setTblCellSpacing(
-				XmlUtils.deepCopy(thisLevel.getTblCellSpacing()) );
-		}
-	}
-	
-	
-	private void applyTableStylePr(List<CTTblStylePr> thisLevel, List<CTTblStylePr> result) {
-		// STTblStyleOverrideType
-		
-		// TODO
-	}
-	private void applyTrPr(TrPr thisLevel, TrPr result) { 		
-		
-	}
-	private void applyTcPr(TcPr thisLevel, TcPr result) { 
-	    // includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc 
-		// TODO		
 	}
 	
 	/**
@@ -1421,7 +1216,7 @@ public class PropertyResolver {
     	}
     	
     	java.util.Map<String, org.docx4j.wml.Style> knownStyles 
-    		= styleDefinitionsPart.getKnownStyles();
+    		= StyleDefinitionsPart.getKnownStyles();
     	
     	org.docx4j.wml.Style s = knownStyles.get(styleId);
     	
@@ -1474,7 +1269,7 @@ public class PropertyResolver {
     		result1 = true;
     	} else {
     		
-    		log.warn("Expected " + s.getStyleId() + " to have <w:basedOn ??");
+    		log.error("Expected " + s.getStyleId() + " to have <w:basedOn ??");
     		// Not properly activated
     		result1 = false;
     	}

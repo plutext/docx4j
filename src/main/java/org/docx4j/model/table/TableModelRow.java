@@ -3,6 +3,7 @@ package org.docx4j.model.table;
 import java.util.List;
 import java.util.Vector;
 
+import org.docx4j.wml.CTTblPrEx;
 import org.docx4j.wml.Tr;
 import org.docx4j.wml.TrPr;
 
@@ -17,15 +18,24 @@ public class TableModelRow {
 	
 	public TableModelRow(Tr tr) {
 		
-		trPr = tr.getTrPr();		
+		trPr = tr.getTrPr();
+		tblPrEx = tr.getTblPrEx();
 	}
 	
 	private List<Cell> rowContents = new Vector<Cell>();	
 	
 	private TrPr trPr;
+	private CTTblPrEx tblPrEx;
 	
 	public TrPr getRowProperties() {
 		return trPr;
+	}
+	
+	/*
+	 * @since 3.0.0
+	 */
+	public CTTblPrEx getRowPropertiesExceptions() {
+		return tblPrEx;
 	}
 	
 	

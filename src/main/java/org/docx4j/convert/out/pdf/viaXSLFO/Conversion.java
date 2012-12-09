@@ -6,9 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -70,6 +68,7 @@ import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
+import org.docx4j.wml.TrPr;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -235,7 +234,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
 		// (reuse if you plan to render multiple documents!)
 		FopFactory fopFactory = FopFactory.newInstance();
-		
+
 //		FopFactory fopFactory = null;
 //		// in FOP r1356646 (after FOP 1.1),
 //		// FopFactory.newInstance() was replaced with FopFactory.newInstance(URI) 
@@ -291,7 +290,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				fopConfig = cfgBuilder.build(new ByteArrayInputStream(myConfig
 						.getBytes("UTF-8")));
 			}
-						
 
 			fopFactory.setUserConfig(fopConfig);
 
@@ -895,17 +893,31 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
 	}
 	
+	/*
+	 *  @since 3.0.0
+	 */
+	public static void applyFoAttributes(List<Property> properties, Element foElement) {
+		if ((properties != null) && (!properties.isEmpty())) {
+			for (int i=0; i<properties.size(); i++) {
+				properties.get(i).setXslFO(foElement);
+			}
+		}
+	}
+	
+    protected static void createFoAttributes(TrPr trPr, Element foBlockElement){
+    	if (trPr == null) {
+    		return;
+    	}
+    	applyFoAttributes(PropertyFactory.createProperties(trPr), foBlockElement);
+    }
+	
     protected static void createFoAttributes(TcPr tcPr, Element foBlockElement){
     	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
     	
 		if (tcPr==null) {
 			return;
 		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(tcPr);    	
-    	for( Property p :  properties ) {
-			p.setXslFO(foBlockElement);
-    	}    
+    	applyFoAttributes(PropertyFactory.createProperties(tcPr), foBlockElement);
     }
 	
 

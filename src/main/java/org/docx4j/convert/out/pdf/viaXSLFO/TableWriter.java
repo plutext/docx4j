@@ -1,264 +1,137 @@
+/*
+   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
+   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
-import java.util.*;
+import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
-import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.ModelConverter;
-import org.docx4j.model.Model;
+import org.docx4j.convert.out.AbstractTableWriter;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
-import org.docx4j.model.properties.PropertyFactory;
-import org.docx4j.model.properties.table.BorderBottom;
-import org.docx4j.model.properties.table.BorderLeft;
-import org.docx4j.model.properties.table.BorderRight;
-import org.docx4j.model.properties.table.BorderTop;
-import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
-import org.docx4j.model.table.TableModelRow;
-import org.docx4j.wml.CTBorder;
-import org.docx4j.wml.CTHeight;
-import org.docx4j.wml.CTTrPrBase;
-import org.docx4j.wml.STBorder;
-import org.docx4j.wml.Style;
-import org.docx4j.wml.TblBorders;
-import org.docx4j.wml.TblGridCol;
-import org.docx4j.wml.TrPr;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.apache.log4j.Logger;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlElementDecl;
-import javax.xml.transform.TransformerException;
 
 /*
- *  @author Adam Schmideg, Jason Harrop
+ *  @author Alberto Zerolo, Adam Schmideg, Jason Harrop
  *  
 */
-public class TableWriter extends ModelConverter {
+public class TableWriter extends AbstractTableWriter {
+	protected final static Logger logger = Logger.getLogger(TableWriter.class);
+	protected final static String TABLE_BORDER_MODEL = "border-collapse";
 	
-  private final static Logger logger = Logger.getLogger(TableWriter.class);
-  
-  public final static String TABLE_BORDER_MODEL = "border-collapse";
+	@Override
+	protected Logger getLog() {
+		return logger;
+	}
+	
+  	@Override
+	protected Element createNode(Document doc, int nodeType) {
+  	Element ret = null;
+  		switch (nodeType) {
+  			case NODE_TABLE:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table");
+  				break;
+  			case NODE_TABLE_COLUMN_GROUP:
+  				break;
+  			case NODE_TABLE_COLUMN:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table-column");
+  				break;
+  			case NODE_TABLE_HEADER:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table-header");
+				break;
+  			case NODE_TABLE_HEADER_ROW:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table-row");
+				break;
+  			case NODE_TABLE_HEADER_CELL:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table-cell");
+				break;
+  			case NODE_TABLE_BODY:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table-body");
+				break;
+  			case NODE_TABLE_BODY_ROW:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table-row");
+				break;
+  			case NODE_TABLE_BODY_CELL:
+  				ret = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table-cell");
+				break;
+  		}
+  		return ret;
+  	}
 
-  public Node toNode(Model tableModel, TransformState state) throws TransformerException {
-    TableModel table = (TableModel)tableModel;
-    logger.debug("Table asXML:\n" + table.debugStr());
-    
-    org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument();   
-	DocumentFragment docfrag = doc.createDocumentFragment();
-
-    Element foTable = doc.createElementNS("http://www.w3.org/1999/XSL/Format", "fo:table");
-    docfrag.appendChild(foTable);
-    
-	// Write effective table styles
-	List<Property> properties = PropertyFactory.createProperties(table.getEffectiveTableStyle().getTblPr());
-	// This handles:
-	// - position (tblPr/tblInd)
-	// - table-layout
-	for( Property p :  properties ) {
-		if (p!=null) {
-			p.setXslFO(foTable);
+	@Override
+	protected void applyAttributes(List<Property> properties, Element element) {
+		Conversion.applyFoAttributes(properties, element);
+	}
+	
+	@Override
+	protected void applyTableCustomAttributes(TableModel table, TransformState transformState, Element tableRoot) {
+	int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
+					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
+					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null) ?
+					   table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW().intValue() : 0);	   
+		// border model
+	    // borderConflictResolutionRequired in TableModel is correct, but xsl-fo only knows about a
+	    // cellSpacing (border-separation) on the table level. For this reason, cellSpacings on row-level
+	    // are ignored.
+		if (cellSpacing > 0) {
+			tableRoot.setAttribute(TABLE_BORDER_MODEL, "separate"); // this is the default in CSS
+			tableRoot.setAttribute("border-separation", 
+					//WW seems only to store cellSpacing/2 but displays and applies cellSpacing * 2
+					UnitsOfMeasurement.twipToBest(cellSpacing * 2));
+		}
+		else {
+			tableRoot.setAttribute(TABLE_BORDER_MODEL, "collapse");
+		}
+		// table width
+		if (table.getTableWidth() > 0) {
+			tableRoot.setAttribute("width", UnitsOfMeasurement.twipToBest(table.getTableWidth()) );		
 		}
 	}
-	// Borders, shading
-	if (table.getEffectiveTableStyle().getTcPr()!=null) {
-		properties = PropertyFactory.createProperties(table.getEffectiveTableStyle().getTcPr());
-		for( Property p :  properties ) {
-			if (p!=null) {
-				p.setXslFO(foTable);
-			}
+
+	@Override
+	protected void applyColumnCustomAttributes(TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
+        column.setAttribute("column-number", Integer.toString(columnIndex + 1));
+		if (columnWidth > -1) {
+	        column.setAttribute("column-width", UnitsOfMeasurement.twipToBest(columnWidth) );
 		}
 	}
-    // TODO 
-//	table.getEffectiveTableStyle().getPPr();
-//	table.getEffectiveTableStyle().getTblStylePr();
-    
-	TblBorders tblBorders = null;
-	if (table.getEffectiveTableStyle().getTblPr()!=null) {
-		tblBorders = table.getEffectiveTableStyle().getTblPr().getTblBorders();
-		// will apply these as a default on each td, and then override
-	} 
-//	if (tblBorders == null)
-//	{
-//		// Make up some defaults
-//		logger.warn("FIXME: handle properly case where tblBorders is null");
-//		tblBorders = new TblBorders();
-//		CTBorder border = new CTBorder();
-//		border.setVal(STBorder.DASHED);
-//		tblBorders.setTop(border);
-//		tblBorders.setBottom(border);
-//		tblBorders.setLeft(border);
-//		tblBorders.setRight(border);
-//	}
-	
-//	if (logger.isDebugEnabled()) {					
-//		logger.debug(XmlUtils.marshaltoString(tbl, true, true));					
-//	}
-
-	// vAlign fix: match Word's default of top
-	if (table.getEffectiveTableStyle().getTcPr()==null
-			|| table.getEffectiveTableStyle().getTcPr().getVAlign()==null) {
-		foTable.setAttribute(org.docx4j.model.properties.table.tc.TextAlignmentVertical.FO_NAME, 
-				"before");
-	}
-
-	// border model
-	if (table.isBorderConflictResolutionRequired() ) {
-		foTable.setAttribute(TABLE_BORDER_MODEL, "collapse");		
-	} else {
-		foTable.setAttribute(TABLE_BORDER_MODEL, "separate"); // this is the default in CSS				
-	}
-	
-	// column widths
-    int cols = table.getColCount();
-    int tWidth = 0;
-    if (table.getTblGrid()!=null) {
-    	int i = 1; // number from 1, or get FOUserAgent: Invalid property value encountered in column-number="1": org.apache.fop.fo.expr.PropertyException: fo:table-column overlaps in column 1. 
-    	for( TblGridCol gridCol : table.getTblGrid().getGridCol() ) {   
-	        String s = String.valueOf(i);
-	        Element foTableColumn = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
-	        		"fo:table-column");
-	        foTable.appendChild(foTableColumn);
-	        foTableColumn.setAttribute("column-number", s);
-
-	        int width = gridCol.getW().intValue();	 
-	        tWidth += width;
-	        
-	        foTableColumn.setAttribute("column-width", UnitsOfMeasurement.twipToBest(width) );
-	        //foTableColumn.setAttribute("colname", table.getColName(i));
-	        i++;
-    	}
-		foTable.setAttribute("width", UnitsOfMeasurement.twipToBest(tWidth) );		
-    	
-      } else {
-    	    for (int i = 1; i <= cols; i++) {
-    	        String s = String.valueOf(i);
-    	        Element foTableColumn = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
-    	        		"fo:table-column");
-    	        foTable.appendChild(foTableColumn);
-    	        foTableColumn.setAttribute("column-number", s);
-    	    }    	  
-      }
-	    
-	Element foTableBody = doc.createElementNS("http://www.w3.org/1999/XSL/Format", 
-	"fo:table-body");	
-	foTable.appendChild(foTableBody);
-	// table's start indent is inherited by tc 
-	// see http://wiki.apache.org/xmlgraphics-fop/IndentInheritance
-	// so reset here, so a sane value is inherited.
-	// TODO: find and use cell margin (or whatever) setting
-	String startIndent = "3mm";
-	String endIndent = "3mm";
-	org.docx4j.wml.CTTblPrBase tblPr = table.getEffectiveTableStyle().getTblPr();
-	if (tblPr != null) {
-		org.docx4j.wml.CTTblCellMar tblCellMargin = tblPr.getTblCellMar();
-		if (tblCellMargin != null && tblCellMargin.getLeft() != null) {
-			startIndent = UnitsOfMeasurement.twipToBest(tblCellMargin.getLeft().getW().intValue());
-		}
-		if (tblCellMargin != null && tblCellMargin.getRight() != null) {
-			endIndent = UnitsOfMeasurement.twipToBest(tblCellMargin.getRight().getW().intValue());
-		}
-	}
-	foTableBody.setAttribute("start-indent", startIndent);
-	foTableBody.setAttribute("end-indent", endIndent );		
-	
-	
-		for (TableModelRow tmr : table.getCells()) {
-			List<Cell> rows = tmr.getRowContents();
-			// Element row = doc.createElement("tr");
-			Element row = doc.createElementNS(
-					"http://www.w3.org/1999/XSL/Format", "fo:table-row");
+  	
+  	@Override
+	protected void applyTableCellCustomAttributes(TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
+  		if (isDummyCell) {
+			cellNode.setAttribute("border-style", "none");
+			cellNode.setAttribute("background-color", "transparent");
+			cellNode.appendChild(cellNode.getOwnerDocument().createElementNS("http://www.w3.org/1999/XSL/Format", "fo:block"));
+  		}
+  		
+		if (tableCell.getExtraCols() > 0) {
+			cellNode.setAttribute("number-columns-spanned", Integer.toString(tableCell.getExtraCols() + 1));
 			
-			String emptyCellHeight = "5mm";
-			TrPr trPr =tmr.getRowProperties(); 
-			if (trPr!=null) {
-				CTHeight height = this.getRowHeight(trPr);
-				if (height!=null
-						&& height.getVal()!=null) {
-					int x = height.getVal().intValue(); //twips
-					emptyCellHeight = UnitsOfMeasurement.twipToBest(x); // keep for later 
-					row.setAttribute("height", emptyCellHeight );
-				}
-			}
-			
-			foTableBody.appendChild(row);
-			for (Cell cell : rows) {
-				// process cell
-				if (!cell.isDummy()) {
-					int col = cell.getColumn();
-					// Element cellNode = doc.createElement("td");
-					Element cellNode = doc.createElementNS(
-							"http://www.w3.org/1999/XSL/Format",
-							"fo:table-cell");
-					row.appendChild(cellNode);
-
-					// style
-					// cellNode.setAttribute("border-style", "dashed");
-
-					if (tblBorders != null) {
-						if (tblBorders.getInsideH() != null) {
-							(new BorderTop(tblBorders.getTop()))
-									.setXslFO(cellNode);
-							(new BorderBottom(tblBorders.getBottom()))
-									.setXslFO(cellNode);
-						}
-						if (tblBorders.getInsideV() != null) {
-							(new BorderRight(tblBorders.getRight()))
-									.setXslFO(cellNode);
-							(new BorderLeft(tblBorders.getLeft()))
-									.setXslFO(cellNode);
-						}
-					}
-					// Ensure empty cells have a sensible height
-					cellNode.setAttribute("height", emptyCellHeight);
-
-					// now override the defaults
-					if (cell.getTcPr() != null) {
-						StringBuffer inlineStyle = new StringBuffer();
-						Conversion.createFoAttributes(cell.getTcPr(), cellNode);
-					}
-
-					if (cell.getExtraCols() > 0) {
-						cellNode.setAttribute("number-columns-spanned",
-								Integer.toString(cell.getExtraCols() + 1));
-
-					}
-					if (cell.getExtraRows() > 0) {
-						cellNode.setAttribute("number-rows-spanned",
-								Integer.toString(cell.getExtraRows() + 1));
-					}
-					// insert content into cell
-					// skipping w:tc node itself, insert only its children
-					if (cell.getContent() == null) {
-						logger.warn("model cell had no contents!");
-					} else {
-						logger.debug("copying cell contents..");
-						XmlUtils.treeCopy(cell.getContent().getChildNodes(),
-								cellNode);
-					}
-				}
-			}
 		}
-    return docfrag;
-  }
-  
-  private CTHeight getRowHeight(TrPr trPr) {
-//	    @XmlElementDecl(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", name = "trHeight", scope = CTTrPrBase.class)
-//	    public JAXBElement<CTHeight> createCTTrPrBaseTrHeight(CTHeight value) {
-//	        return new JAXBElement<CTHeight>(_CTTrPrBaseTrHeight_QNAME, CTHeight.class, CTTrPrBase.class, value);
-//	    }
-
-	  if (trPr==null) return null;
-	  for (JAXBElement o : trPr.getCnfStyleOrDivIdOrGridBefore() ) {
-		  if (o.getName().getLocalPart().equals("trHeight")) {
-			  return (CTHeight)XmlUtils.unwrap(o);
-		  }
-	  }
-	  return null;
-  }
+		if (tableCell.getExtraRows() > 0) {
+			cellNode.setAttribute("number-rows-spanned", Integer.toString(tableCell.getExtraRows() + 1));
+		}
+  	}
+	
+	
 }

@@ -55,6 +55,10 @@ import org.docx4j.model.properties.table.BorderBottom;
 import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
+import org.docx4j.model.properties.table.CellMarginBottom;
+import org.docx4j.model.properties.table.CellMarginLeft;
+import org.docx4j.model.properties.table.CellMarginRight;
+import org.docx4j.model.properties.table.CellMarginTop;
 import org.docx4j.model.properties.table.tc.Shading;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -66,9 +70,11 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.PBdr;
 import org.docx4j.wml.PPrBase.Spacing;
+import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.ParaRPr;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.TblBorders;
+import org.docx4j.wml.TcMar;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TcPrInner;
 import org.docx4j.wml.TrPr;
@@ -88,7 +94,7 @@ public class PropertyFactory {
 	public static List<Property> createProperties(CTTblPrBase  tblPr) {
 		
 		List<Property> properties = new ArrayList<Property>();
-		
+
 		if (tblPr.getTblInd()!=null ) 
 			properties.add(new org.docx4j.model.properties.table.Indent(tblPr.getTblInd()) );
 		
@@ -132,17 +138,9 @@ public class PropertyFactory {
     		} // otherwise the default 'auto' is implied
 		}
 		
-//		if (tblPr.getTblCellMar()!=null) {
-//			CTTblCellMar cellMar = tblPr.getTblCellMar();
-//			if (cellMar.getTop()!=null) {
-//			}
-//			if (cellMar.getBottom()!=null) {
-//			}
-//			if (cellMar.getLeft()!=null) {
-//			}
-//			if (cellMar.getRight()!=null) {
-//			}
-//		}
+		if (tblPr.getShd() != null) {
+			properties.add(new Shading(tblPr.getShd()));
+		}
 		
 		return properties;		
 	}
@@ -168,7 +166,10 @@ public class PropertyFactory {
 		return properties;		
 	}
 	
-	public static void createProperties(List<Property> properties, TcPr tcPr) {
+	/*
+	 *  @since 3.0.0
+	 */
+	public static void createPropertiesTable(List<Property> properties, TcPr tcPr) {
 		
 		if (tcPr.getTcBorders()!=null) {
 			TcPrInner.TcBorders tcBorders = tcPr.getTcBorders();
@@ -188,6 +189,22 @@ public class PropertyFactory {
 			properties.add(new Shading(tcPr.getShd())); 
 		}
 		
+	}
+	
+	public static void createProperties(List<Property> properties, TcPr tcPr) {
+		createPropertiesTable(properties, tcPr);
+
+		if (tcPr.getTcMar() != null) {
+			TcMar tcMar = tcPr.getTcMar();
+			if (tcMar.getTop() != null)
+				properties.add(new CellMarginTop(tcMar.getTop()));
+			if (tcMar.getBottom() != null)
+				properties.add(new CellMarginBottom(tcMar.getBottom()));
+			if (tcMar.getLeft() != null)
+				properties.add(new CellMarginLeft(tcMar.getLeft()));
+			if (tcMar.getRight() != null)
+				properties.add(new CellMarginRight(tcMar.getRight()));
+		}
 	}
 
 	public static List<Property> createProperties(OpcPackage wmlPackage, RPr rPr) {
