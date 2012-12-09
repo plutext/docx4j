@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -233,6 +235,28 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
 		// (reuse if you plan to render multiple documents!)
 		FopFactory fopFactory = FopFactory.newInstance();
+		
+//		FopFactory fopFactory = null;
+//		// in FOP r1356646 (after FOP 1.1),
+//		// FopFactory.newInstance() was replaced with FopFactory.newInstance(URI) 
+//		Method[] methods = FopFactory.class.getDeclaredMethods();		
+//		Method method;
+//		try {
+//			method = FopFactory.class.getDeclaredMethod("newInstance", new Class[0] );
+//			if (method==null) {
+//				Class[] params = new Class[1];
+//				params[0] = URI.class;
+//				method = FopFactory.class.getDeclaredMethod("newInstance", params );
+//				fopFactory = (FopFactory)method.invoke(null, new URI("http://") );
+//				// Also requires xmlgraphics-commons to be built from nightly 
+//				// for org/apache/xmlgraphics/image/loader/impl/AbstractImageSessionContext$FallbackResolver
+//				// which was introduced in r1391005 
+//			} else {
+//				fopFactory = (FopFactory)method.invoke(null);
+//			}
+//		} catch (Exception e1) {
+//			log.error(e1);
+//		} 
 
 		try {
 
@@ -267,6 +291,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				fopConfig = cfgBuilder.build(new ByteArrayInputStream(myConfig
 						.getBytes("UTF-8")));
 			}
+						
 
 			fopFactory.setUserConfig(fopConfig);
 
