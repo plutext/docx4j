@@ -26,12 +26,11 @@ import java.io.FileOutputStream;
 
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 
 /**
- * Convert a docx to 'Flat OPC XML' format,
- * which Word can happily read, and which 
+ * Convert a docx/pptx/xlsx to 'Flat OPC XML' format,
+ * which Word/Powerpoint can happily read, and which 
  * is convenient for editing in an XML editor.
  * 
  * @author jharrop
