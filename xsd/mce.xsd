@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+attributeFormDefault="unqualified" elementFormDefault="qualified" 
+targetNamespace="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+
+
+<!--  Generally, when docx4j encounters AlternateContent, it uses its mc-preprocessor.xslt to 
+      select the fallback content, which it then unmarshals.
+      
+      However, for a 2010 pptx containing a shockwave flash object, we need to keep the alternate
+      content (if PowerPoint 2010 is to be able to open it.
+      
+      Hence this schema.
+      
+        -->
+
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.docx4j.mce"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+
+
+  <xsd:element name="AlternateContent">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element name="Choice" minOccurs="1" maxOccurs="unbounded">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:any processContents="skip" minOccurs="1" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="Requires" type="xsd:string" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element name="Fallback" minOccurs="0" maxOccurs="1">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:any processContents="skip" minOccurs="1" maxOccurs="unbounded"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

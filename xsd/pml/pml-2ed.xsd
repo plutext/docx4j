@@ -5,6 +5,7 @@
 	xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	elementFormDefault="qualified"
 	targetNamespace="http://schemas.openxmlformats.org/presentationml/2006/main"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
@@ -95,6 +96,9 @@ PRINCIPLES:
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 		schemaLocation="../shared/shared-relationshipReference.xsd" />
 		
+	<xsd:import 
+		namespace="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		schemaLocation="../mce.xsd" />
 		
 	<xsd:simpleType name="ST_TransitionSideDirectionType">
 		<xsd:annotation>
@@ -2592,6 +2596,7 @@ PRINCIPLES:
 		</xsd:sequence>
 		<xsd:attributeGroup ref="AG_Ole"/>
 	</xsd:complexType>
+	<!-- ORIGINAL
 	<xsd:complexType name="CT_ControlList">
 		<xsd:sequence>
 			<xsd:element name="control" type="CT_Control" minOccurs="0" maxOccurs="unbounded">
@@ -2599,6 +2604,19 @@ PRINCIPLES:
 					<xsd:documentation>Embedded Control</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	 -->
+	<xsd:complexType name="CT_ControlList">
+		<xsd:sequence>
+			<xsd:choice>
+				<xsd:element name="control" type="CT_Control" minOccurs="0" maxOccurs="unbounded">
+					<xsd:annotation>
+						<xsd:documentation>Embedded Control</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+			<xsd:element ref="mc:AlternateContent" />
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:simpleType name="ST_SlideId">

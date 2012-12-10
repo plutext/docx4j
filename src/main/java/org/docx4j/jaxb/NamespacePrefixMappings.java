@@ -240,6 +240,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
     	if (namespaceUri.equals(Namespaces.XML_SCHEMA)) {
     		return "xs";
     	}
+    	if (namespaceUri.equals("http://schemas.openxmlformats.org/markup-compatibility/2006")) {
+    		return "mc";
+    	}
 		
     	return suggestion;
     }
@@ -335,6 +338,9 @@ public class NamespacePrefixMappings implements NamespaceContext {
 		if (prefix.equals("ds"))
 			return "http://schemas.openxmlformats.org/officeDocument/2006/customXml";
 
+		if (prefix.equals("mc"))
+			return "http://schemas.openxmlformats.org/markup-compatibility/2006";		
+		
 		// OpenDoPE
 		if (prefix.equals("odx"))
 			return "http://opendope.org/xpaths";
