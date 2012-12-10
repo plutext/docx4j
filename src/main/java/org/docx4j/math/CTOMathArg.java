@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012, Plutext Pty Ltd.
+ *  Copyright 2009-2012, Plutext Pty Ltd.
  *   
  *  This file is part of pptx4j, a component of docx4j.
 
@@ -78,51 +78,51 @@ public class CTOMathArg
 
     protected CTOMathArgPr argPr;
     @XmlElementRefs({
-        @XmlElementRef(name = "phant", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "limUpp", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "borderBox", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "box", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = ProofErr.class),
-        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "nary", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "rad", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = CommentRangeStart.class),
-        @XmlElementRef(name = "groupChr", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "oMathPara", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunIns.class),
+        @XmlElementRef(name = "limLow", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "f", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
         @XmlElementRef(name = "commentRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = CommentRangeEnd.class),
-        @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "acc", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "m", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sSub", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlMoveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "permEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunDel.class),
+        @XmlElementRef(name = "oMathPara", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "limUpp", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "groupChr", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "d", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "customXmlMoveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "sSup", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "func", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "nary", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "permStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "sSub", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
         @XmlElementRef(name = "sSubSup", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
         @XmlElementRef(name = "r", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "bookmarkStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "f", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "rad", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "phant", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "sPre", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "sSup", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "oMath", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "box", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
         @XmlElementRef(name = "moveTo", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "del", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunDel.class),
-        @XmlElementRef(name = "limLow", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "func", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "ins", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = RunIns.class),
-        @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "customXmlMoveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "eqArr", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "d", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "customXmlInsRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "borderBox", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFrom", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlDelRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "proofErr", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = ProofErr.class),
+        @XmlElementRef(name = "customXmlMoveToRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "customXmlInsRangeEnd", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
         @XmlElementRef(name = "bar", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
-        @XmlElementRef(name = "sPre", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class)
+        @XmlElementRef(name = "acc", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class),
+        @XmlElementRef(name = "moveFromRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = JAXBElement.class),
+        @XmlElementRef(name = "commentRangeStart", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", type = CommentRangeStart.class),
+        @XmlElementRef(name = "m", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math", type = JAXBElement.class)
     })
     protected List<Object> egoMathElements;
     protected CTCtrlPr ctrlPr;
@@ -171,51 +171,51 @@ public class CTOMathArg
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link CTPhant }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTLimUpp }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTBorderBox }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTBox }{@code >}
-     * {@link ProofErr }
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTRad }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTNary }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTOMath }{@code >}
-     * {@link CommentRangeStart }
-     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTGroupChr }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTOMathPara }{@code >}
-     * {@link CommentRangeEnd }
-     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
-     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTAcc }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTM }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSSub }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTPerm }{@code >}
-     * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSSup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTR }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTSSubSup }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTF }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTFunc }{@code >}
      * {@link JAXBElement }{@code <}{@link CTLimLow }{@code >}
-     * {@link RunDel }
-     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
      * {@link RunIns }
-     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTF }{@code >}
+     * {@link CommentRangeEnd }
      * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPerm }{@code >}
+     * {@link RunDel }
+     * {@link JAXBElement }{@code <}{@link CTGroupChr }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTLimUpp }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTOMathPara }{@code >}
      * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
      * {@link JAXBElement }{@code <}{@link CTD }{@code >}
-     * {@link JAXBElement }{@code <}{@link CTEqArr }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
      * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTFunc }{@code >}
+     * {@link JAXBElement }{@code <}{@link RangePermissionStart }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTNary }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTR }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSSubSup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSSub }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTRad }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTSSup }{@code >}
      * {@link JAXBElement }{@code <}{@link CTSPre }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTPhant }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTOMath }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBox }{@code >}
+     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTBorderBox }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTEqArr }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link RunTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMarkupRange }{@code >}
+     * {@link ProofErr }
+     * {@link JAXBElement }{@code <}{@link CTMarkup }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTTrackChange }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTAcc }{@code >}
      * {@link JAXBElement }{@code <}{@link CTBar }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTMoveBookmark }{@code >}
+     * {@link JAXBElement }{@code <}{@link CTM }{@code >}
+     * {@link CommentRangeStart }
      * 
      * 
      */

@@ -33,6 +33,59 @@
 		</xsd:appinfo>
 	</xsd:annotation>
 	
+<!--  Note about ST_OnOff:
+
+		In 1_ed, this was defined as:
+		
+		  <xsd:simpleType name="ST_OnOff">
+		    <xsd:annotation>
+		      <xsd:documentation>On Off</xsd:documentation>
+		    </xsd:annotation>
+		    <xsd:restriction base="xsd:string">
+		      <xsd:enumeration value="on">
+		        <xsd:annotation>
+		          <xsd:documentation>On</xsd:documentation>
+		        </xsd:annotation>
+		      </xsd:enumeration>
+		      <xsd:enumeration value="off">
+		        <xsd:annotation>
+		          <xsd:documentation>Off</xsd:documentation>
+		        </xsd:annotation>
+		      </xsd:enumeration>
+		    </xsd:restriction>
+		  </xsd:simpleType>
+		  <xsd:complexType name="CT_OnOff">
+		    <xsd:attribute name="val" type="ST_OnOff">
+		      <xsd:annotation>
+		        <xsd:documentation>value</xsd:documentation>
+		      </xsd:annotation>
+		    </xsd:attribute>
+		  </xsd:complexType>
+  
+	The problem with this is that Word (2010?) writes "1":
+
+		<m:radPr>
+		    <m:degHide m:val="1" />	   	
+		    
+    ECMA 376 2ed (= strict ISO 29500) uses xsd:boolean (shared-commonSimpleTypes).
+    
+    The problem with that is that Word 2007 writes 	
+
+	  <m:mathPr>
+	    :
+	    <m:smallFrac m:val="off"/>
+	    :
+	  </m:mathPr>
+
+	See http://stackoverflow.com/questions/10811078/xmldirectmapping-no-conversion-value-provided
+	and also http://www.adjb.net/post/OOXML-and-Office-2007-Conformance-a-Smoke-Test.aspx
+
+    http://www.itscj.ipsj.or.jp/sc34/open/1239.pdf at page 15 corrects this in ISO 29500
+    transitional shared-commonSimpleTypes
+    
+    But we use a slightly different formulation, which is more JAXB friendly
+ -->	
+	
 	<!--  
         Note: the preceding import statement may need to be modified depending on the W3C XML Schema validator you are using.
         If your validator requires the schemaLocation be present, you may use the following import statement:

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012, Plutext Pty Ltd.
+ *  Copyright 2009-2012, Plutext Pty Ltd.
  *   
  *  This file is part of pptx4j, a component of docx4j.
 

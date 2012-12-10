@@ -2,6 +2,9 @@
 <xsd:schema xmlns="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes" elementFormDefault="qualified"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!--  2012 12 10: Uses variation on ST_OnOff from ISO 29500 transitional, to address issue 
+	      documented in shared-math-2ed.xsd -->
 
 	<xsd:annotation>
 		<xsd:appinfo>
@@ -121,12 +124,65 @@
 			<xsd:pattern value="\{[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\}"/>
 		</xsd:restriction>
 	</xsd:simpleType>
+	
+	<!-- XJC doesn't do a great job with this, so
+	     use an enumeration
+	     
+	  <xsd:simpleType name="ST_OnOff">
+	    <xsd:union memberTypes="xsd:boolean ST_OnOff1"/>
+	  </xsd:simpleType>
+	  <xsd:simpleType name="ST_OnOff1">
+	    <xsd:restriction base="xsd:string">
+	      <xsd:enumeration value="on"/>
+	      <xsd:enumeration value="off"/>
+	    </xsd:restriction>
+	  </xsd:simpleType>
+ -->
+ 
 	<xsd:simpleType name="ST_OnOff">
 		<xsd:annotation>
 			<xsd:documentation>On/Off Value</xsd:documentation>
 		</xsd:annotation>
-		<xsd:restriction base="xsd:boolean"/>
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="true">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="false">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="on">
+				<xsd:annotation>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="off">
+				<xsd:annotation>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="0">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="ZERO"/>
+					</xsd:appinfo>
+					<xsd:documentation>False</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+			<xsd:enumeration value="1">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<jaxb:typesafeEnumMember name="ONE"/>
+					</xsd:appinfo>
+					<xsd:documentation>True</xsd:documentation>
+				</xsd:annotation>
+			</xsd:enumeration>
+		</xsd:restriction>
 	</xsd:simpleType>
+  
 	<xsd:simpleType name="ST_String">
 		<xsd:annotation>
 			<xsd:documentation>String</xsd:documentation>

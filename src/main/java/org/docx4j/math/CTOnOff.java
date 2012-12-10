@@ -1,5 +1,5 @@
 /*
- *  Copyright 2010-2012, Plutext Pty Ltd.
+ *  Copyright 2009-2012, Plutext Pty Ltd.
  *   
  *  This file is part of pptx4j, a component of docx4j.
 
@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.docx4j.sharedtypes.STOnOff;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -52,7 +53,7 @@ public class CTOnOff
 {
 
     @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/math")
-    protected Boolean val;
+    protected STOnOff val;
     @XmlTransient
     private Object parent;
 
@@ -61,10 +62,10 @@ public class CTOnOff
      * 
      * @return
      *     possible object is
-     *     {@link Boolean }
+     *     {@link STOnOff }
      *     
      */
-    public Boolean isVal() {
+    public STOnOff getVal() {
         return val;
     }
 
@@ -73,10 +74,10 @@ public class CTOnOff
      * 
      * @param value
      *     allowed object is
-     *     {@link Boolean }
+     *     {@link STOnOff }
      *     
      */
-    public void setVal(Boolean value) {
+    public void setVal(STOnOff value) {
         this.val = value;
     }
 
