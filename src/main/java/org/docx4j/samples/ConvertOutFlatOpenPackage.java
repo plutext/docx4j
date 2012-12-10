@@ -25,6 +25,7 @@ package org.docx4j.samples;
 import java.io.FileOutputStream;
 
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 
@@ -50,12 +51,12 @@ public class ConvertOutFlatOpenPackage extends AbstractSample {
 		}
 		
 		// Do we want to save output? 
-		boolean save = false;
+		boolean save = true;
 		// If so, whereto?
 		outputfilepath = System.getProperty("user.dir") + "/OUT_ConvertOutFlatOpenPackage.xml";
 		
 		// Open a document from the file system
-		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage.load(new java.io.File(inputfilepath));
+		OpcPackage wmlPackage = OpcPackage.load(new java.io.File(inputfilepath));
 		
 	   	// Create a org.docx4j.wml.Package object
 		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPackage);
