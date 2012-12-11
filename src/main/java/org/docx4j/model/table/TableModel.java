@@ -39,7 +39,6 @@ import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
-import org.docx4j.wml.CTTblPrEx;
 import org.docx4j.wml.CTTrPrBase;
 import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.P;
@@ -51,7 +50,6 @@ import org.docx4j.wml.TblPr;
 import org.docx4j.wml.TblWidth;
 import org.docx4j.wml.Tc;
 import org.docx4j.wml.TcPr;
-import org.docx4j.wml.TrPr;
 import org.docx4j.wml.TcPrInner.GridSpan;
 import org.docx4j.wml.TcPrInner.VMerge;
 import org.docx4j.wml.Tr;
@@ -86,7 +84,9 @@ import org.w3c.dom.NodeList;
  * - whether conflict resolution is required on cell borders (Word usually 
  *   does conflict resolution)
  * 
- *  @author Adam Schmideg, Alberto Zerolo
+ *  @author Adam Schmideg
+ *  @author Alberto Zerolo
+ *  @author Jason Harrop
  * 
  */
 public class TableModel extends Model {
@@ -94,8 +94,7 @@ public class TableModel extends Model {
 
 	public TableModel() {
 		resetIndexes();
-		cells = new ArrayList<List<Cell>>();
-		rows = new ArrayList<Tr>();
+		cells = new ArrayList<TableModelRow>();
 		headerMaxRow = -1;
 	}
 
@@ -105,12 +104,7 @@ public class TableModel extends Model {
 	/**
 	 * A list of rows
 	 */
-	protected List<List<Cell>> cells;
-	
-	/**
-	 * The Rows of the table for TrPr and TblPrEx
-	 */
-	protected List<Tr> rows;
+	protected List<TableModelRow> cells;
 	
 	private int headerMaxRow;
 	
@@ -157,11 +151,6 @@ public class TableModel extends Model {
 		return tblGrid;
 	}
 	
-
-	// TODO - we will eventually need a representation of row properties
-	// We could either store these in a list, or
-	// keep a reference to the w:tbl itself.
-
 	// We don't need this in our table model,
 	// at least for HTML. (PropertyFactory takes care of it)
 	
@@ -210,12 +199,8 @@ public class TableModel extends Model {
 		col = -1;
 	}
 
-	/*
-	 * @since 3.0.0
-	 */	
-	public void startRow() {
-		cells.add(new ArrayList<Cell>());
-		rows.add(null);
+	public void startRow(Tr tr) {
+		cells.add(new TableModelRow(tr));
 		row++;
 		col = -1;
 	}
@@ -259,28 +244,9 @@ public class TableModel extends Model {
 		return cells.get(0).size();
 	}
 
-	/*
-	 * @since 3.0.0
-	 */	
-	public List<List<Cell>> getCells() {
+	public List<TableModelRow> getCells() {
 		return cells;
 	}
-	
-	/*
-	 * @since 3.0.0
-	 */	
-	public TrPr getTrPr(int rowIndex) {
-	Tr tr = (rows.size() > rowIndex ? rows.get(rowIndex) : null);
-		return (tr != null ? tr.getTrPr() : null);
-	}
-	
-	/*
-	 * @since 3.0.0
-	 */	
-    public CTTblPrEx getTblPrEx(int rowIndex) {
-	Tr tr = (rows.size() > rowIndex ? rows.get(rowIndex) : null);
-		return (tr != null ? tr.getTblPrEx() : null);
-    }
 
     public int getHeaderMaxRow() {
     	return headerMaxRow;
@@ -361,7 +327,7 @@ public class TableModel extends Model {
 		
 		int r = 0;
 		for (Tr tr : trFinder.trList) {
-				startRow();
+				startRow(tr);
 				handleRow(cellContents, tr, r);
 				r++;
 		}
@@ -568,7 +534,6 @@ public class TableModel extends Model {
 			borderConflictResolutionRequired = false;
 		}
 		
-		rows.set(r, tr);
 		if (headerRow && (headerMaxRow < r)) {
 			headerMaxRow = r;
 		}
@@ -841,8 +806,9 @@ public class TableModel extends Model {
 
 	public String debugStr() {
 		StringBuffer buf = new StringBuffer();
-		for (List<Cell> rows : cells) {
-			for (Cell c : rows) {
+		for (TableModelRow row : cells) {
+			List<Cell> rowContents = row.getRowContents();
+			for (Cell c : rowContents) {
 				if (c==null) {
 					buf.append("null     ");
 				} else {

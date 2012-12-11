@@ -50,6 +50,7 @@ import org.docx4j.model.properties.table.tc.TextAlignmentVertical;
 import org.docx4j.model.properties.table.tr.TrHeight;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
+import org.docx4j.model.table.TableModelRow;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTHeight;
 import org.docx4j.wml.CTShd;
@@ -159,6 +160,7 @@ public abstract class AbstractTableWriter extends ModelConverter {
     int cellPropertiesRowSize = -1;
     boolean inHeader = (table.getHeaderMaxRow() > -1);
 
+	TableModelRow rowModel = null;
 	Element rowContainer = null;
 	Element row = null;
 	Element cellNode = null;
@@ -182,11 +184,9 @@ public abstract class AbstractTableWriter extends ModelConverter {
 	
 	applyTableRowContainerCustomAttributes(table, transformState, rowContainer, inHeader);
 	
-    int rowIndex = -1;
-    for (List<Cell> rows : table.getCells()) {
-			// Element row = doc.createElement("tr");
-					
-			rowIndex++;
+    for (int rowIndex = 0; rowIndex < table.getCells().size(); rowIndex++) {
+			rowModel = table.getCells().get(rowIndex);
+			
 			if ((inHeader) && (rowIndex > table.getHeaderMaxRow())) {
 				rowContainer = createNode(doc, tableRoot, NODE_TABLE_BODY);
 				tableRoot.appendChild(rowContainer);
@@ -194,8 +194,9 @@ public abstract class AbstractTableWriter extends ModelConverter {
 				applyTableRowContainerCustomAttributes(table, transformState, rowContainer, inHeader);
 			}
 			row = createNode(doc, rowContainer, (inHeader ? NODE_TABLE_HEADER_ROW : NODE_TABLE_BODY_ROW));
-			TrPr trPr = table.getTrPr(rowIndex);
-			CTTblPrEx tblPrEx = table.getTblPrEx(rowIndex);
+			TrPr trPr = rowModel.getRowProperties();
+			CTTblPrEx tblPrEx = rowModel.getRowPropertiesExceptions();
+			
 			createRowProperties(rowProperties, trPr, false);
 			processAttributes(rowProperties, row);
 			applyTableRowCustomAttributes(table, transformState, row, rowIndex, inHeader);
@@ -205,7 +206,7 @@ public abstract class AbstractTableWriter extends ModelConverter {
 			cellPropertiesRowSize = cellProperties.size();
 				
 			
-			for (Cell cell : rows) {
+			for (Cell cell : rowModel.getRowContents()) {
 				// process cell
 				
 				if (cell.isDummy()) {
