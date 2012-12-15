@@ -1,11 +1,15 @@
 package org.docx4j.openpackaging.parts.opendope;
 
+import java.util.List;
+
 import javax.xml.bind.JAXBContext;
 
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.PartName;
 import org.opendope.components.Components.Component;
+import org.w3c.dom.Node;
 
 public class ComponentsPart extends JaxbCustomXmlDataStoragePart<org.opendope.components.Components> {
 	
@@ -34,5 +38,6 @@ public class ComponentsPart extends JaxbCustomXmlDataStoragePart<org.opendope.co
 		log.warn("Component " + id + " is missing");
 		return null;
 	}
+
 
 }

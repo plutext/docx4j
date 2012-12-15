@@ -30,6 +30,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.AlternativeFormatInputPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
@@ -684,7 +685,7 @@ public class OpenDoPEHandler {
 			return newContent;
 		}
 
-		Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = wordMLPackage
+		Map<String, CustomXmlPart> customXmlDataStorageParts = wordMLPackage
 				.getCustomXmlDataStorageParts();
 
 		if (conditionId != null) {
@@ -828,7 +829,7 @@ public class OpenDoPEHandler {
 
 
 	private List<Object> processRepeat(Object sdt,
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			XPathsPart xPathsPart) {
 
 		Tag tag = getSdtPr(sdt).getTag();
@@ -1294,16 +1295,21 @@ public class OpenDoPEHandler {
 	// }
 
 	private List<Node> xpathGetNodes(
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			String storeItemId, String xpath, String prefixMappings) {
 
-		CustomXmlDataStoragePart part = customXmlDataStorageParts
+		CustomXmlPart part = customXmlDataStorageParts
 				.get(storeItemId.toLowerCase());
 		if (part == null) {
 			log.error("Couldn't locate part by storeItemId " + storeItemId);
 			return null;
 		}
-		return part.getData().xpathGetNodes(xpath, prefixMappings);
+		try {
+			return part.xpathGetNodes(xpath, prefixMappings);
+		} catch (Docx4JException e) {
+			log.error(e);
+			return null;
+		}
 	}
 
 	public static void main(String[] args) throws Exception {

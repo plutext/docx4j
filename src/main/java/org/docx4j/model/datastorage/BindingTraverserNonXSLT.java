@@ -23,6 +23,7 @@ import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPartAbstractImage;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
@@ -218,14 +219,14 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 			// Needs to be done once after BindingHandler has been done
 			// for all parts for which it is to be called (eg mdp, header parts etc).
 			
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = pkg.getCustomXmlDataStorageParts();
-			CustomXmlDataStoragePart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
+			Map<String, CustomXmlPart> customXmlDataStorageParts = pkg.getCustomXmlDataStorageParts();
+			CustomXmlPart part = customXmlDataStorageParts.get(dataBinding.getStoreItemID().toLowerCase());
 			if (part==null) {
 				log.error("Couldn't locate part by storeItemId " + dataBinding.getStoreItemID());
 				return null;
 			}
 			try {
-				String r = part.getData().xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
+				String r = part.xpathGetString(dataBinding.getXpath(), dataBinding.getPrefixMappings());
 				log.debug(dataBinding.getXpath() + " yielded result " + r);
 				
 				// Base64 decode it
@@ -393,7 +394,7 @@ public class BindingTraverserNonXSLT implements BindingTraverserInterface {
 			 * - inline and block level sdt
 			 */
 			
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts = pkg.getCustomXmlDataStorageParts();
+			Map<String, CustomXmlPart> customXmlDataStorageParts = pkg.getCustomXmlDataStorageParts();
 
 			String r = BindingHandler.xpathGetString(pkg, customXmlDataStorageParts, dataBinding);
 			if (r==null) return null;

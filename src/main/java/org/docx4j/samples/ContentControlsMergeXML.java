@@ -82,9 +82,10 @@ public class ContentControlsMergeXML {
 		String itemId = getCustomXmlItemId(wordMLPackage).toLowerCase();
 		System.out.println("Looking for item id: " + itemId);
 		
-		// Inject data_file.xml		
+		// Inject data_file.xml
+		// (this code assumes it is not a StandardisedAnswersPart)
 		CustomXmlDataStoragePart customXmlDataStoragePart 
-			= wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
+			= (CustomXmlDataStoragePart)wordMLPackage.getCustomXmlDataStorageParts().get(itemId);
 		if (customXmlDataStoragePart==null) {
 			System.out.println("Couldn't find CustomXmlDataStoragePart! exiting..");
 			return;			

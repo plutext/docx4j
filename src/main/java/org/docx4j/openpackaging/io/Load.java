@@ -42,6 +42,7 @@ import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BibliographyPart;
@@ -286,8 +287,8 @@ public class Load {
 		while( iterator.hasNext() ) {
 			Part entry = (Part)iterator.next();
 			
-			if (entry instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
-				log.debug("Found a CustomXmlDataStoragePart, named " + entry.getPartName().getName() );
+			if (entry instanceof CustomXmlPart) {
+				log.info("Found a CustomXmlPart, named " + entry.getPartName().getName() );
 				String itemId = null;
 				if (entry.getRelationshipsPart()==null) { 
 					continue; 
@@ -305,23 +306,25 @@ public class Load {
 					if (customXmlProps==null) {
 						log.error(".. but the target seems to be missing?");
 						
-						try {
-							org.w3c.dom.Document document = ((CustomXmlDataStoragePart)entry).getData().getDocument();
-							String localName = document.getDocumentElement().getLocalName();
-							log.debug(localName);
-							if (document.getDocumentElement().isDefaultNamespace("http://schemas.microsoft.com/?office/?2006/?coverPageProps")
-									|| localName.equals("CoverPageProperties" ) ) {
-								// Special case: CoverPageProperties
-								// See "Office Well Defined Custom XML Parts"; see documentinteropinitiative.org/additionalinfo/IS29500/sect5.aspx
-								// Has a rels part, but sometimes no target?  Sometimes it definitely does ...
-								// Give it the store item id, Word 2007 seems to consistently allocate  
-								itemId = BindingHandler.COVERPAGE_PROPERTIES_STOREITEMID.toLowerCase();
-							} else {
+						if (entry instanceof CustomXmlDataStoragePart) {
+							try {
+								org.w3c.dom.Document document = ((CustomXmlDataStoragePart)entry).getData().getDocument();
+								String localName = document.getDocumentElement().getLocalName();
+								log.debug(localName);
+								if (document.getDocumentElement().isDefaultNamespace("http://schemas.microsoft.com/?office/?2006/?coverPageProps")
+										|| localName.equals("CoverPageProperties" ) ) {
+									// Special case: CoverPageProperties
+									// See "Office Well Defined Custom XML Parts"; see documentinteropinitiative.org/additionalinfo/IS29500/sect5.aspx
+									// Has a rels part, but sometimes no target?  Sometimes it definitely does ...
+									// Give it the store item id, Word 2007 seems to consistently allocate  
+									itemId = BindingHandler.COVERPAGE_PROPERTIES_STOREITEMID.toLowerCase();
+								} else {
+									continue;
+								}
+							} catch (Docx4JException e) {
+								e.printStackTrace();
 								continue;
 							}
-						} catch (Docx4JException e) {
-							e.printStackTrace();
-							continue;
 						}
 					} else {
 						itemId = customXmlProps.getItemId().toLowerCase();
@@ -332,7 +335,7 @@ public class Load {
 					log.warn("Duplicate CustomXML itemId " + itemId + "; check your source docx!");
 				}
 				pkg.getCustomXmlDataStorageParts().put(itemId, 
-						(org.docx4j.openpackaging.parts.CustomXmlDataStoragePart)entry );
+						(CustomXmlPart)entry );
 			}
 		}			
 		

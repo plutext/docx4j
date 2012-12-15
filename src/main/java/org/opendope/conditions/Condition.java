@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 
 
@@ -112,7 +113,7 @@ public class Condition implements Evaluable {
     }
     
 	public boolean evaluate(WordprocessingMLPackage pkg, 
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			Conditions conditions,
 			org.opendope.xpaths.Xpaths xPaths) {
 

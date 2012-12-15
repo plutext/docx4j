@@ -41,6 +41,10 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart.AddPartBeh
  * https://github.com/plutext/OpenDoPE-WAR/blob/master/webapp-simple/src/main/java/org/opendope/webapp/SubmitBoth.java
  * for a servlet which injects XML into the supplied docx.
  * 
+ * See also org.docx4j.model.datastorage.migration.FromVariableReplacement
+ * for a neater way to do this, where the parts you want to add are
+ * the OpenDoPE parts.
+ * 
  * @author Jason Harrop
  */
 public class ContentControlsAddCustomXmlDataStoragePart {

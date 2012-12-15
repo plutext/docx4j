@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
@@ -155,7 +156,7 @@ public class BindingHandler {
 		
 
 		public static String xpathGetString(
-				WordprocessingMLPackage pkg, Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+				WordprocessingMLPackage pkg, Map<String, CustomXmlPart> customXmlDataStorageParts,
 				CTDataBinding db) {
 			
 			return xpathGetString(
@@ -174,7 +175,7 @@ public class BindingHandler {
 		 * @return
 		 */
 		public static String xpathGetString(
-				WordprocessingMLPackage pkg, Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+				WordprocessingMLPackage pkg, Map<String, CustomXmlPart> customXmlDataStorageParts,
 				String storeItemId, String xpath, String prefixMappings) {
 			
 			try {
@@ -188,7 +189,7 @@ public class BindingHandler {
 					return pkg.getDocPropsExtendedPart().xpathGetString(xpath, prefixMappings);
 				} 
 				
-				CustomXmlDataStoragePart part  = customXmlDataStorageParts.get(storeItemId.toLowerCase());
+				CustomXmlPart part  = customXmlDataStorageParts.get(storeItemId.toLowerCase());
 					// Also handles cover page properties (since we've allocated it a store item id)
 					// Note that Word does not create that part until the user provides one or more prop values
 				
@@ -198,11 +199,11 @@ public class BindingHandler {
 				}
 				
 				if (log.isDebugEnabled() ) {
-					String r = part.getData().xpathGetString(xpath, prefixMappings);
+					String r = part.xpathGetString(xpath, prefixMappings);
 					log.debug(xpath + " yielded result " + r);
 					return r;
 				} else {
-					return part.getData().xpathGetString(xpath, prefixMappings);
+					return part.xpathGetString(xpath, prefixMappings);
 				}
 			} catch (Docx4JException e) {
 				e.printStackTrace();

@@ -21,6 +21,7 @@ import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.sdt.QueryString;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.opendope.ConditionsPart;
 import org.docx4j.openpackaging.parts.opendope.XPathsPart;
 
@@ -79,7 +80,7 @@ public class Xpathref implements Evaluable {
     }
 
 	public boolean evaluate(WordprocessingMLPackage pkg, 
-			Map<String, CustomXmlDataStoragePart> customXmlDataStorageParts,
+			Map<String, CustomXmlPart> customXmlDataStorageParts,
 			Conditions conditions,
 			org.opendope.xpaths.Xpaths xPaths) {
 		

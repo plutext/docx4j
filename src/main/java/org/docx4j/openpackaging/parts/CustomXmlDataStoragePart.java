@@ -113,7 +113,7 @@ import org.w3c.dom.Node;
  * @author jharrop
  *
  */
-public final class CustomXmlDataStoragePart extends Part {
+public final class CustomXmlDataStoragePart extends Part implements CustomXmlPart {
 	
 	private static Logger log = Logger.getLogger(CustomXmlDataStoragePart.class);		
 	
@@ -186,6 +186,18 @@ public final class CustomXmlDataStoragePart extends Part {
     	return doc1.isEqualNode(doc2);
 
     }
-	
+
+	@Override
+	public String xpathGetString(String xpath, String prefixMappings)
+			throws Docx4JException {
+		return getData().xpathGetString(xpath, prefixMappings);
+	}
+
+	@Override
+	public List<Node> xpathGetNodes(String xpathString, String prefixMappings)
+			throws Docx4JException {
+		return getData().xpathGetNodes(xpathString, prefixMappings);
+	}
+
 	
 }

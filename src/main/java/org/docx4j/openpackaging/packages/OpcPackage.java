@@ -56,6 +56,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.LoadFromZipNG;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
 import org.docx4j.openpackaging.parts.DocPropsCustomPart;
 import org.docx4j.openpackaging.parts.DocPropsExtendedPart;
@@ -110,9 +111,9 @@ public class OpcPackage extends Base {
 		return externalResources;		
 	}	
 	
-	protected HashMap<String, CustomXmlDataStoragePart> customXmlDataStorageParts
-		= new HashMap<String, CustomXmlDataStoragePart>(); // NB key is lowercase
-	public HashMap<String, CustomXmlDataStoragePart> getCustomXmlDataStorageParts() {
+	protected HashMap<String, CustomXmlPart> customXmlDataStorageParts
+		= new HashMap<String, CustomXmlPart>(); // NB key is lowercase
+	public HashMap<String, CustomXmlPart> getCustomXmlDataStorageParts() {
 		return customXmlDataStorageParts;
 	}	
 	
