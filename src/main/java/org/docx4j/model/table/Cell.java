@@ -92,7 +92,7 @@ public class Cell {
 		
 		tcPr = tc.getTcPr();
 
-		logger.info("Cell content: " + XmlUtils.w3CDomNodeToString(content));
+		logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
 
 		/* xhtmlTc.appendChild(
 		   document.importNode(tcDoc, true) );
