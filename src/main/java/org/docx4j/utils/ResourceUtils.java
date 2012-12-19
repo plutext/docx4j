@@ -37,7 +37,7 @@ public class ResourceUtils {
         java.net.URL url = loader.getResource(filename);
                 
         if (url == null) {
-        	log.error("Couldn't get resource: " + filename);
+        	log.warn("Couldn't get resource: " + filename);
         }
         
         // Get the jar file
