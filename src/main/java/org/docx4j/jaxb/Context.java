@@ -71,13 +71,13 @@ public class Context {
 					MOXy_intended = true;
 				}
 			} catch (Exception e2) {
-				log.error(e2.getMessage());
+				log.warn(e2.getMessage());
 				try {
 					InputStream is = ResourceUtils.getResource("org/docx4j/wml/jaxb.properties");
 					log.info("MOXy JAXB implementation intended..");
 					MOXy_intended = true;
 				} catch (Exception e3) {
-					log.error(e3.getMessage());
+					log.warn(e3.getMessage());
 					if ( namespacePrefixMapper.getClass().getName().equals("org.docx4j.jaxb.NamespacePrefixMapperSunInternal") ) {
 						// Java 6
 						log.info("Using Java 6/7 JAXB implementation");
