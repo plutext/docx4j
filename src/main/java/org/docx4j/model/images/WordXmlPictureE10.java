@@ -268,6 +268,47 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	}
     }
     
+    /**
+     * For XSLFOExporterNonXSLT
+     * @since 3.0
+     * 
+     */
+    public static DocumentFragment createXslFoImgE10(
+    		WordprocessingMLPackage wmlPackage,
+    		ConversionImageHandler imageHandler,
+    		Object wpict,
+    		Part sourcePart) {
+    	
+    	WordXmlPictureE10 converter = createWordXmlPictureFromE10( wmlPackage,
+        		 imageHandler,
+        		 wpict, sourcePart);
+    	
+    	//log.debug("imageDirPath: " + imageDirPath);
+    	
+    	if (converter==null) {
+    		
+    		log.error("WordXmlPictureE10 object was null!");
+    		
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            Document d;
+			try {
+				d = factory.newDocumentBuilder().newDocument();
+	    		return d.createDocumentFragment();
+			} catch (ParserConfigurationException e) {
+				log.error(e);
+				return null;
+			}  
+			
+    	} else {
+    	
+	        Document d = converter.createXslFoImageElement();
+	
+			DocumentFragment docfrag = d.createDocumentFragment();
+			docfrag.appendChild(d.getDocumentElement());
+	
+			return docfrag;
+    	}
+    }
     
     // -----------------------------------------------------------------
     

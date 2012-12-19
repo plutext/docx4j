@@ -23,6 +23,7 @@ import org.plutext.jaxb.xslfo.RegionBody;
 import org.plutext.jaxb.xslfo.RepeatablePageMasterAlternatives;
 import org.plutext.jaxb.xslfo.SimplePageMaster;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Node;
 
 /**
  * A description of how this stuff works
@@ -45,6 +46,19 @@ public class LayoutMasterSetBuilder {
 		DocumentFragment docfrag = document.createDocumentFragment();
 		docfrag.appendChild(document.getDocumentElement());
 		return docfrag;		
+	}
+
+    /**
+     * For XSLFOExporterNonXSLT
+     * @since 3.0
+     * 
+     */	
+	public static void appendLayoutMasterSetFragment(WordprocessingMLPackage wordMLPackage, Node foRoot) {
+
+		LayoutMasterSet lms = getFoLayoutMasterSet(wordMLPackage);		
+		
+		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
+		XmlUtils.treeCopy(document.getDocumentElement(), foRoot);
 	}
 	
 	private static LayoutMasterSet getFoLayoutMasterSet(WordprocessingMLPackage wordMLPackage) {

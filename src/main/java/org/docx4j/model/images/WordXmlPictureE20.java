@@ -353,6 +353,26 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
 
 		return docfrag;
     }
+
+    /**
+     * for XSLFOExporterNonXSLT
+     * @since 3.0
+     */
+    public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
+    		ConversionImageHandler imageHandler,
+    		Object wpInline, 
+    		Part sourcePart) {
+    	
+    	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
+        		 imageHandler, wpInline, sourcePart);
+    	
+        Document d = converter.createXslFoImageElement();
+
+		DocumentFragment docfrag = d.createDocumentFragment();
+		docfrag.appendChild(d.getDocumentElement());
+
+		return docfrag;
+    }
     
     private void readDimensions() {
     	CTPositiveSize2D size2d = getExtent();
