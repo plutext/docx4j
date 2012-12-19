@@ -228,7 +228,6 @@ public class ContentTypeManager  {
 		overrideCT.setContentType(contentType );
 		
 		overrideContentType.put(partUri, overrideCT);
-		
 	}
 
 //	public String getOverrideContentType(URI partUri) {
