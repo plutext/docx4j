@@ -311,17 +311,22 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
 
 			// Don't change the user's Document object; create a tmp one
+			log.info("Creating temporary wml Document object..");
 			org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(wordMLPackage
 					.getMainDocumentPart().getJaxbElement());
+			log.info("groupAdjacentBorders..");
 			Containerization.groupAdjacentBorders(tmpDoc.getBody());
+			log.info("movePageBreaks..");
 			PageBreak.movePageBreaks(tmpDoc.getBody());
 
 			// log.info(XmlUtils.marshaltoString(mdp.getJaxbElement(), false));
 
+			log.info("createSectionContainers..");
 			Sections sections = createSectionContainers(tmpDoc);
+
+			log.info("Creating W3C DOM document ..");
 			Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections,
 					Context.jcSectionModel);
-
 			log.debug(XmlUtils.marshaltoString(sections, false, Context.jcSectionModel));
 			
 			if (settings == null) {
@@ -368,12 +373,17 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 
 			Converter.getInstance().start(wordMLPackage);
 
+			log.info("Starting transformation proper ..");			
 			if (saveFO != null || log.isDebugEnabled()) {
+				log.info(".. creating intermediate FO");			
 
 				ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
 				Result intermediateResult = new StreamResult(intermediate);
 
+				long startTime = System.currentTimeMillis();				
 				XmlUtils.transform(domDoc, xslt, settings.getSettings(), intermediateResult);
+				long endTime = System.currentTimeMillis();
+				log.info("XSL FO created;  elapsed time: " + Math.round((endTime-startTime)/1000) );
 
 				String fo = intermediate.toString("UTF-8");
 				log.debug(fo);
@@ -386,10 +396,17 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				Source src = new StreamSource(new StringReader(fo));
 
 				Transformer transformer = XmlUtils.getTransformerFactory().newTransformer();
+				startTime = System.currentTimeMillis();				
 				transformer.transform(src, result);
+				endTime = System.currentTimeMillis();
+				log.info("FOP converted FO to PDF in elapsed time: " + Math.round((endTime-startTime)/1000) );
 			} else {
+				log.info(".. efficient; no intermediate FO ..");			
 
+				long startTime = System.currentTimeMillis();				
 				XmlUtils.transform(domDoc, xslt, settings.getSettings(), result);
+				long endTime = System.currentTimeMillis();
+				log.info("done.  elapsed time: " + Math.round((endTime-startTime)/1000) );
 			}
 			
 			if (privateImageHandler) {
@@ -411,6 +428,8 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	}
     
 	private Sections createSectionContainers(org.docx4j.wml.Document doc) {
+		
+		int containersCreated=0;  // useful to know, since these become page-sequences, which help FOP
 				
 		ObjectFactory factory = new ObjectFactory();
 		
@@ -441,6 +460,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 							section.setName("s" +i); // name must match fo master
 							sections.getSection().add(section);	
 							i++;
+							containersCreated++;
 						}
 					}
 				}				
@@ -450,6 +470,7 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 				// we have to marshall each object separately.
 				// To fix this, next time wml is generated, include the section model there!
 		}
+		log.info("expected page-sequence count: " + containersCreated);
 		return sections;				
 	}
     
@@ -1185,7 +1206,10 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     public static String getPageNumberFormat(WordprocessingMLPackage wordmlPackage, int sectionNumber) {
     	
     	SectionWrapper sw = wordmlPackage.getDocumentModel().getSections().get(sectionNumber-1);
-    	
+    	// TODO FIXME. This will be wrong if the document contains continuous section
+    	// breaks, because the XSLT counts int sectionNumber using our tmp doc which only
+    	// creates sections for sectPr of type other than continuous!
+    
     	if (sw.getSectPr()==null) return "1";
     	
     	CTPageNumber pageNumber = sw.getSectPr().getPgNumType();
