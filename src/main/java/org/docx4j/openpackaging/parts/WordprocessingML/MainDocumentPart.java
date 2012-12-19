@@ -339,8 +339,8 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 	    		org.docx4j.wml.PPr pPr =  ((org.docx4j.wml.P)o).getPPr();
 				if (stylesInUse !=null && pPr.getPStyle() != null) {
 					// Note this paragraph style
-					log.debug("put style "
-							+ pPr.getPStyle().getVal());
+//					log.debug("put style "
+//							+ pPr.getPStyle().getVal());
 					stylesInUse.put(pPr.getPStyle().getVal(), 
 							pPr.getPStyle().getVal());
 				}
@@ -390,7 +390,7 @@ public class MainDocumentPart extends DocumentPart<org.docx4j.wml.Document> impl
 				org.docx4j.wml.Tbl tbl = (org.docx4j.wml.Tbl)o;
 				if (stylesInUse !=null && tbl.getTblPr()!=null 
 						&& tbl.getTblPr().getTblStyle()!=null) {
-					log.debug("Adding table style: " + tbl.getTblPr().getTblStyle().getVal() );
+//					log.debug("Adding table style: " + tbl.getTblPr().getTblStyle().getVal() );
 					stylesInUse.put(tbl.getTblPr().getTblStyle().getVal(),
 									tbl.getTblPr().getTblStyle().getVal() );
 				}
