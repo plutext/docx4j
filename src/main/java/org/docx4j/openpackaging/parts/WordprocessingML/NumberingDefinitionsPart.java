@@ -261,6 +261,10 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 		}
 		if (ilvl==null) ilvl = "0";
 		ListLevel ll = lnd.getLevel(ilvl);
+		if (ll==null) {
+			log.warn("No ListLevel defined for level " + ilvl + " in list " + numId);
+			return null;
+		}
 		
 		// OK, now on the JAXB plane
 		Lvl jaxbOverrideLvl = ll.getJaxbOverrideLvl();
