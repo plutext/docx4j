@@ -90,20 +90,14 @@ public class LayoutMasterSetBuilder {
 						(hf.getFirstFooter()!=null) ));
 			}
 			
-			// has default header or footer?
-			// if this is present, any "even" present is ignored! 
-			if (hf.getDefaultHeader()!=null 
-					|| hf.getDefaultFooter()!=null) {
-				
-				lms.getSimplePageMasterOrPageSequenceMaster().add(
-					createSimplePageMaster(sectionName + "-default",  
-							sw.getPageDimensions(), 
-							"default",
-						(hf.getDefaultHeader()!=null),
-						(hf.getDefaultFooter()!=null) ));				
-			}
 			// has even or odd header or footer?
-			else if (hf.getEvenHeader()!=null 
+    		/*
+    		 *       <w:headerReference w:type="even" r:id="rId12"/>
+    		 *       <w:headerReference w:type="default" r:id="rId13"/>
+    		 *       
+    		 *       the default one is treated as odd.
+    		 */
+			if (hf.getEvenHeader()!=null 
 					|| hf.getOddHeader()!=null
 					|| hf.getEvenFooter()!=null
 					|| hf.getOddFooter()!=null) {
@@ -118,9 +112,20 @@ public class LayoutMasterSetBuilder {
 				lms.getSimplePageMasterOrPageSequenceMaster().add(
 						createSimplePageMaster(sectionName + "-oddpage",  
 								sw.getPageDimensions(), 
-								"default",
+								"oddpage",
 							(hf.getOddHeader()!=null),
 							(hf.getOddFooter()!=null) ));				
+			}
+			
+			if (hf.getDefaultHeader()!=null 
+					|| hf.getDefaultFooter()!=null) {
+				
+				lms.getSimplePageMasterOrPageSequenceMaster().add(
+					createSimplePageMaster(sectionName + "-default",  
+							sw.getPageDimensions(), 
+							"default",
+						(hf.getDefaultHeader()!=null),
+						(hf.getDefaultFooter()!=null) ));				
 			}
 
 			
@@ -159,16 +164,7 @@ public class LayoutMasterSetBuilder {
 			rpma.getConditionalPageMasterReference().add(cpmr1);			
 		}
 
-		// has default header or footer?
-		// if this is present, any "even" present is ignored! 
-		if (hf.getDefaultHeader()!=null || hf.getDefaultFooter()!=null) {
-			
-			ConditionalPageMasterReference cpmr4 = factory.createConditionalPageMasterReference();
-			cpmr4.setMasterReference(sectionName+"-default");
-			//cpmr4.setPagePosition(PagePositionType.FIRST);
-			rpma.getConditionalPageMasterReference().add(cpmr4);			
-			
-		} else		
+		 else		
 		if (hf.getEvenHeader()!=null || hf.getEvenFooter()!=null) {
 
 			ConditionalPageMasterReference cpmr2 = factory.createConditionalPageMasterReference();
@@ -183,7 +179,14 @@ public class LayoutMasterSetBuilder {
 			cpmr3.setOddOrEven(OddOrEvenType.ODD);
 			rpma.getConditionalPageMasterReference().add(cpmr3);			
 			
-		} 
+		} else if (hf.getDefaultHeader()!=null || hf.getDefaultFooter()!=null) {
+			
+			ConditionalPageMasterReference cpmr4 = factory.createConditionalPageMasterReference();
+			cpmr4.setMasterReference(sectionName+"-default");
+			//cpmr4.setPagePosition(PagePositionType.FIRST);
+			rpma.getConditionalPageMasterReference().add(cpmr4);			
+			
+		}
 		
 			ConditionalPageMasterReference cpmr5 = factory.createConditionalPageMasterReference();
 			cpmr5.setMasterReference(sectionName+"-simple");

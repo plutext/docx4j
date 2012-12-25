@@ -61,17 +61,24 @@ import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.run.Font;
+import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.Br;
+import org.docx4j.wml.Ftr;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.docx4j.wml.Hdr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.STBrType;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TcPr;
@@ -126,7 +133,12 @@ public class XSLFOExporterNonXSLT {
 	protected static String outputfilepath;
 	
 	org.w3c.dom.Document document;
+	
+	Element foRoot;
+	Element pageSequence;
 	Element flow;
+	
+	int sectPrCounter = 0;
 	
 	WordprocessingMLPackage wmlPackage;
 	StyleTree styleTree;
@@ -157,41 +169,57 @@ public class XSLFOExporterNonXSLT {
 				
     	document = XmlUtils.neww3cDomDocument();
     	
-    	Element foRoot = document.createElementNS(XSL_FO, "root");
+    	foRoot = document.createElementNS(XSL_FO, "root");
     	document.appendChild(foRoot);
     	
     	LayoutMasterSetBuilder.appendLayoutMasterSetFragment( wmlPackage, foRoot);  	
     	
     	
 		// <fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" initial-page-number="{$pageNumberInitial}" >
-    	// TODO create a page-sequence for each section
-    	// and use the correct master-reference.
-    	// Doing this requires identifying the "sections" (ie sequence of
-    	// objects ending in a sectPr.
-    	// For the XSLT-based approach, we pre-processed to create section containers.
-    	// That is not necessary here, since we can create an initial page sequence
-    	// here.  Then, during the traverse, each time we hit a  sectPr, write the relevant 
-    	// values back to the page sequence element, then create the next page-sequence.
-    	// TODO add static content (region before and region after) each time we hit
-    	// a sectPr element .. see XSLT for logic
-    	
-    	Element pageSequence = document.createElementNS(XSL_FO, "page-sequence");
-    	foRoot.appendChild(pageSequence);
-    	pageSequence.setAttribute("master-reference", "s1");
-    	pageSequence.setAttribute("initial-page-number", "1");
-
-    	
-		// <fo:flow flow-name="xsl-region-body">
-    	flow = document.createElementNS(XSL_FO, "flow");
-    	pageSequence.appendChild(flow);
-    	flow.setAttribute("flow-name", "xsl-region-body");
+    	createPageSequence();
     	
 		List blockLevelContent = wmlPackage.getMainDocumentPart().getContent();
     	
 		XSLFOGenerator xslfoGenerator = new XSLFOGenerator();
 		new TraversalUtil(blockLevelContent, xslfoGenerator);
+		
+		if (pageSequence.getAttribute("master-reference")==null
+				|| pageSequence.getAttribute("master-reference").equals("") ) {
+
+			SectPr finalSectPr = wmlPackage.getMainDocumentPart().getJaxbElement().getBody().getSectPr(); 
+			if (finalSectPr==null) {
+				if (sectPrCounter == 0) {
+					// There was no sectPr in the docx
+			    	pageSequence.setAttribute("master-reference", "s1");
+			    	pageSequence.setAttribute("initial-page-number", "1");
+				} else {
+					// There are some sectPr in the docx, but no doc level one.
+					// TODO: What to do?					
+				}
+			} else {
+				handleSectPr(finalSectPr, false);
+			}
+		}
+		
+//		// Remove last page-sequence, if empty
+//		if (flow.getChildNodes().getLength()==0) {
+//			foRoot.removeChild(pageSequence);
+//		}
 
 		return document;
+	}
+	
+	private void createPageSequence() {
+		
+    	pageSequence = document.createElementNS(XSL_FO, "page-sequence");
+    	foRoot.appendChild(pageSequence);
+//    	pageSequence.setAttribute("master-reference", "s1");
+//    	pageSequence.setAttribute("initial-page-number", "1");
+    	
+		// <fo:flow flow-name="xsl-region-body">
+    	flow = document.createElementNS(XSL_FO, "flow");
+    	pageSequence.appendChild(flow);
+    	flow.setAttribute("flow-name", "xsl-region-body");
 	}
 	
 	
@@ -409,6 +437,12 @@ public class XSLFOExporterNonXSLT {
 				createFoAttributes( pPr, currentEl, inlist, ignoreBorders );
 			}
 
+			if (pPrDirect !=null 
+					&& pPrDirect.getSectPr()!=null) {  
+				
+				handleSectPr(pPrDirect.getSectPr(), true);
+				
+			} 				
 			
 			if (rPr!=null) {											
 				createFoAttributes(wmlPackage, rPr, currentEl );
@@ -420,6 +454,39 @@ public class XSLFOExporterNonXSLT {
 			System.out.println(e.toString() );
 			log.error(e);
 		} 
+    }
+    
+    private void handleSectPr(SectPr sectPr, boolean makeNextPageSequence) {
+    	
+		// Create a page-sequence for each section
+    	// and use the correct master-reference.
+    	// Doing this requires identifying the "sections" (ie sequence of
+    	// objects ending in a sectPr.
+    	// For the XSLT-based approach, we pre-processed to create section containers.
+    	// That is not necessary here, since we can create an initial page sequence.  
+		// Then, during the traverse, each time we hit a  sectPr, write the relevant 
+    	// values back to the page sequence element, then create the next page-sequence.
+    	// TODO add static content (region before and region after) each time we hit
+    	// a sectPr element .. see XSLT for logic
+
+    	sectPrCounter++;
+		if ( sectPr.getType()!=null
+			     && sectPr.getType().getVal().equals("continuous")) {
+			
+			// 	If its continuous, don't add a section
+
+		} else {
+			addPageSequenceAttributes(sectPrCounter);
+			handleStaticContent(sectPrCounter);
+			
+			// Set up next 
+			if (makeNextPageSequence) {
+				createPageSequence();
+			}
+			
+			// TODO: can a sectPr occur in a table cell?
+		}
+    	
     }
 
 	public  void createFoAttributes( PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
@@ -792,6 +859,23 @@ public class XSLFOExporterNonXSLT {
 				
 				currentP.appendChild( document.importNode(foreignFragment, true) );
 				
+			} else if (o instanceof org.docx4j.wml.Br) {
+				
+				currentP = document.createElementNS(XSL_FO, "block");
+				currentSpan = null;
+				flow.appendChild( currentP  );
+				
+				Br br = (Br)o;
+				if (br.getType()!=null 
+						&& br.getType().equals(STBrType.PAGE)) {
+					
+					currentP.setAttribute("break-before", "page");
+					
+				} else {
+					
+					currentP.setAttribute("white-space-treatment", "preserve");
+				}
+				
 			} else {
 				log.warn("Need to handle " + o.getClass().getName() );				
 			}
@@ -810,6 +894,179 @@ public class XSLFOExporterNonXSLT {
     	
     	
 	}
+    
+    private void addPageSequenceAttributes(int pos) {
+    	
+    	// master-reference="{@name}"
+		this.pageSequence.setAttribute("master-reference", "s"+pos);
+
+		// format="{$pageNumberFormat}" initial-page-number="{$pageNumberInitial}"
+    	
+		String pageNumberFormat = PageNumberHelper.getPageNumberFormat(wmlPackage, pos);
+		this.pageSequence.setAttribute("format", pageNumberFormat);
+	
+		String pageNumberInitial = PageNumberHelper.getPageNumberInitial(wmlPackage, pos);
+		this.pageSequence.setAttribute("initial-page-number", pageNumberInitial);
+    	
+    }
+    
+
+    /**
+     * Handle headers/footers, footnotes/endnotes
+     * @param pos
+     */
+    private void handleStaticContent(int pos) {
+    	
+    	Node firstChild = pageSequence.getFirstChild();
+    	    	
+    	// <!--  First Page Header -->
+		// <fo:static-content flow-name="xsl-region-before-firstpage">
+    	if (HeaderFooterPolicy.hasFirstHeader(wmlPackage, pos)) {
+    		
+        	flow = document.createElementNS(XSL_FO, "static-content");
+        	pageSequence.insertBefore(flow, firstChild); 
+        	flow.setAttribute("flow-name", "xsl-region-before-firstpage");
+
+    		Hdr hdr = (Hdr) wmlPackage.getDocumentModel().getSections().get(pos-1)
+    				.getHeaderFooterPolicy()
+    						.getFirstHeader().getJaxbElement();
+        	
+    		XSLFOGenerator xslfoGenerator = new XSLFOGenerator();
+    		new TraversalUtil(hdr.getContent(), xslfoGenerator);
+    	}
+    	
+
+    	// <!--  First Page Footer -->
+    	// <fo:static-content flow-name="xsl-region-after-firstpage">
+    	if (HeaderFooterPolicy.hasFirstFooter(wmlPackage, pos)) {
+    		
+        	flow = document.createElementNS(XSL_FO, "static-content");
+//        	pageSequence.appendChild(flow); // TODO insertBefore
+        	pageSequence.insertBefore(flow, firstChild); 
+        	flow.setAttribute("flow-name", "xsl-region-after-firstpage");
+
+    		Ftr ftr = (Ftr) wmlPackage.getDocumentModel().getSections().get(pos-1)
+    				.getHeaderFooterPolicy()
+    						.getFirstFooter().getJaxbElement();
+        	
+    		XSLFOGenerator xslfoGenerator = new XSLFOGenerator();
+    		new TraversalUtil(ftr.getContent(), xslfoGenerator);
+    	}
+    	
+    	boolean treatDefaultAsOdd = false;
+    	
+    	if (HeaderFooterPolicy.hasEvenHeader(wmlPackage, pos)
+    			|| HeaderFooterPolicy.hasEvenFooter(wmlPackage, pos)) {
+    		/*
+    		 *       <w:headerReference w:type="even" r:id="rId12"/>
+    		 *       <w:headerReference w:type="default" r:id="rId13"/>
+    		 *       
+    		 *       the default one is treated as odd.
+    		 */
+    		treatDefaultAsOdd = true;
+    		
+    		// <fo:static-content flow-name="xsl-region-before-evenpage">
+    		if (HeaderFooterPolicy.hasEvenHeader(wmlPackage, pos)) {
+    			
+    			flow = document.createElementNS(XSL_FO, "static-content");
+            	pageSequence.insertBefore(flow, firstChild); 
+            	flow.setAttribute("flow-name", "xsl-region-before-evenpage");
+
+        		Hdr hdr = (Hdr) wmlPackage.getDocumentModel().getSections().get(pos-1)
+        				.getHeaderFooterPolicy()
+        						.getEvenHeader().getJaxbElement();
+            	
+        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator();
+        		new TraversalUtil(hdr.getContent(), xslfoGenerator);
+    			
+    		}
+
+    		// <fo:static-content flow-name="xsl-region-after-evenpage">
+    		if (HeaderFooterPolicy.hasEvenFooter(wmlPackage, pos)) {
+    			
+    			flow = document.createElementNS(XSL_FO, "static-content");
+            	pageSequence.insertBefore(flow, firstChild); 
+            	flow.setAttribute("flow-name", "xsl-region-after-evenpage");
+
+        		Ftr ftr = (Ftr) wmlPackage.getDocumentModel().getSections().get(pos-1)
+        				.getHeaderFooterPolicy()
+        						.getEvenFooter().getJaxbElement();
+            	
+        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator();
+        		new TraversalUtil(ftr.getContent(), xslfoGenerator);
+    		}
+    		
+    	}
+    	    	
+    	if (HeaderFooterPolicy.hasDefaultHeaderOrFooter(wmlPackage, pos) ) {
+    		
+    		// <fo:static-content flow-name="xsl-region-before-default">
+    		if (HeaderFooterPolicy.hasDefaultHeader(wmlPackage, pos) ) {
+
+    			flow = document.createElementNS(XSL_FO, "static-content");
+            	pageSequence.insertBefore(flow, firstChild); 
+            	if (treatDefaultAsOdd) {
+            		flow.setAttribute("flow-name", "xsl-region-before-oddpage");            		
+            	} else {
+            		flow.setAttribute("flow-name", "xsl-region-before-default");
+            	}
+            	
+        		Hdr hdr = (Hdr) wmlPackage.getDocumentModel().getSections().get(pos-1)
+        				.getHeaderFooterPolicy()
+        						.getDefaultHeader().getJaxbElement();
+            	
+        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator();
+        		new TraversalUtil(hdr.getContent(), xslfoGenerator);
+    		}
+
+    		// <fo:static-content flow-name="xsl-region-after-default">
+    		if (HeaderFooterPolicy.hasDefaultFooter(wmlPackage, pos) ) {
+
+    			flow = document.createElementNS(XSL_FO, "static-content");
+            	pageSequence.insertBefore(flow, firstChild); 
+            	if (treatDefaultAsOdd) {
+            		flow.setAttribute("flow-name", "xsl-region-after-oddpage");            		
+            	} else {
+            		flow.setAttribute("flow-name", "xsl-region-after-default");
+            	}
+
+        		Ftr ftr = (Ftr) wmlPackage.getDocumentModel().getSections().get(pos-1)
+        				.getHeaderFooterPolicy()
+        						.getDefaultFooter().getJaxbElement();
+            	
+        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator();
+        		new TraversalUtil(ftr.getContent(), xslfoGenerator);
+    		}
+    		
+    		if (wmlPackage.getMainDocumentPart().getFootnotesPart()!=null) {
+    			// TODO
+//						<fo:static-content flow-name="xsl-footnote-separator">
+//						    <fo:block>
+//						      <fo:leader leader-pattern="rule"
+//						                 leader-length="100%"
+//						                 rule-style="solid"
+//						                 rule-thickness="0.5pt"/>
+//						    </fo:block>
+//						  </fo:static-content>				
+    		}
+    		
+    	} 
+    	
+    	// TODO
+//		<xsl:if
+//		test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
+//		
+//        <fo:block space-before="44pt" font-weight="bold" font-size="14pt">
+//          <xsl:text>Endnotes</xsl:text>
+//        </fo:block>
+//		
+//		<xsl:apply-templates
+//				select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
+//	</xsl:if>
+    	
+
+    }
+    
 
     class TableRowTraversor extends CallbackImpl {
 
@@ -890,10 +1147,11 @@ public class XSLFOExporterNonXSLT {
 
 
 		inputfilepath = System.getProperty("user.dir")
-				+ "/OpenXML_1ed_Part4_500_sections_none.docx";
+//				+ "/OpenXML_1ed_Part4_500_sections_none.docx";
 //		+ "/OpenXML_1ed_Part4.docx";
 //		+ "/sample-docs/word/sample-docx.xml";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
+				+ "/sample-docs/word/headers.docx";
 
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
@@ -911,13 +1169,19 @@ public class XSLFOExporterNonXSLT {
 		Document xslfo = withoutXSLT.export();
 		long endTime = System.currentTimeMillis();
 		log.info("done.  elapsed time: " + Math.round((endTime-startTime)/1000) );
+
+		System.out.println("\n\n" + XmlUtils.w3CDomNodeToString(xslfo));
 		
 		String outputfilepath = inputfilepath + "4.pdf";
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
 		
 		// OK, do it...
-		withoutXSLT.output(xslfo, os );
-		System.out.println("Saved " + outputfilepath);	
+		try {
+			withoutXSLT.output(xslfo, os );
+			System.out.println("Saved " + outputfilepath);	
+		} catch (Docx4JException e) {
+			log.error("FOP failed", e);
+		}
 		
 	}
 

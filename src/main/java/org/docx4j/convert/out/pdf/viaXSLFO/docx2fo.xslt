@@ -129,10 +129,10 @@
 	<xsl:template match="section">
 	
 			<xsl:variable name="pageNumberFormat" 
-				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberFormat($wmlPackage, position())" />
+				select="java:org.docx4j.convert.out.XSLFO.PageNumberHelper.getPageNumberFormat($wmlPackage, position())" />
 	
 			<xsl:variable name="pageNumberInitial" 
-				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberInitial($wmlPackage, position())" />
+				select="java:org.docx4j.convert.out.XSLFO.PageNumberHelper.getPageNumberInitial($wmlPackage, position())" />
 
 			<!-- start page-sequence
 				here comes the text (contained in flow objects)
@@ -172,101 +172,101 @@
 					</fo:static-content>
 				</xsl:if>
 
-			<xsl:choose>
-			
-				<xsl:when test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeaderOrFooter($wmlPackage, position() )">
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.inDefaultHeader($wmlPackage, $modelStates, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-before-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage, position() )" />
-								</fo:static-content>
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.inDefaultFooter($wmlPackage, $modelStates, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-after-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage, position() )" />
-								</fo:static-content>
-							</xsl:if>
-							
-							<xsl:if
-								test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasFootnotesPart($wmlPackage)">
-								<fo:static-content flow-name="xsl-footnote-separator">
-								    <fo:block>
-								      <fo:leader leader-pattern="rule"
-								                 leader-length="100%"
-								                 rule-style="solid"
-								                 rule-thickness="0.5pt"/>
-								    </fo:block>
-								  </fo:static-content>				
-									</xsl:if>
-				</xsl:when>
+				<xsl:choose>
 				
-				<xsl:otherwise>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeader($wmlPackage, position() )">
+					<xsl:when test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeaderOrFooter($wmlPackage, position() )">
+								<xsl:if
+									test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, position() )">
+									
+									<xsl:variable name="partname" 
+										select="java:org.docx4j.model.structure.HeaderFooterPolicy.inDefaultHeader($wmlPackage, $modelStates, position() )" />
+									
+									<fo:static-content
+										flow-name="xsl-region-before-default">
+										<xsl:apply-templates
+											select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage, position() )" />
+									</fo:static-content>
+								</xsl:if>
+								<xsl:if
+									test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, position() )">
+									
+									<xsl:variable name="partname" 
+										select="java:org.docx4j.model.structure.HeaderFooterPolicy.inDefaultFooter($wmlPackage, $modelStates, position() )" />
+									
+									<fo:static-content
+										flow-name="xsl-region-after-default">
+										<xsl:apply-templates
+											select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage, position() )" />
+									</fo:static-content>
+								</xsl:if>
 								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.inEvenHeader($wmlPackage, $modelStates, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-before-evenpage">
-									<xsl:apply-templates
-										select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenHeader($wmlPackage, position() )" />
-								</fo:static-content>
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenFooter($wmlPackage, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.inEvenFooter($wmlPackage, $modelStates, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-after-evenpage">
-									<xsl:apply-templates
-										select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenFooter($wmlPackage, position() )" />
-								</fo:static-content>
-							</xsl:if>
-			<!-- 				
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeader($wmlPackage, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.inOddHeader($wmlPackage, $modelStates, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-before-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddHeader($wmlPackage, position() )" />
-								</fo:static-content>
-							</xsl:if>				
-							<xsl:if
-								test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddFooter($wmlPackage, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.model.structure.HeaderFooterPolicy.inOddFooter($wmlPackage, $modelStates, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-after-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddFooter($wmlPackage, position() )" />
-								</fo:static-content>
-							</xsl:if>
-			 -->				
-				
-				</xsl:otherwise>
-			</xsl:choose>
+								<xsl:if
+									test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasFootnotesPart($wmlPackage)">
+									<fo:static-content flow-name="xsl-footnote-separator">
+									    <fo:block>
+									      <fo:leader leader-pattern="rule"
+									                 leader-length="100%"
+									                 rule-style="solid"
+									                 rule-thickness="0.5pt"/>
+									    </fo:block>
+									  </fo:static-content>				
+										</xsl:if>
+					</xsl:when>
+					
+					<xsl:otherwise>
+								<xsl:if
+									test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenHeader($wmlPackage, position() )">
+									
+									<xsl:variable name="partname" 
+										select="java:org.docx4j.model.structure.HeaderFooterPolicy.inEvenHeader($wmlPackage, $modelStates, position() )" />
+									
+									<fo:static-content
+										flow-name="xsl-region-before-evenpage">
+										<xsl:apply-templates
+											select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenHeader($wmlPackage, position() )" />
+									</fo:static-content>
+								</xsl:if>
+								<xsl:if
+									test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasEvenFooter($wmlPackage, position() )">
+									
+									<xsl:variable name="partname" 
+										select="java:org.docx4j.model.structure.HeaderFooterPolicy.inEvenFooter($wmlPackage, $modelStates, position() )" />
+									
+									<fo:static-content
+										flow-name="xsl-region-after-evenpage">
+										<xsl:apply-templates
+											select="java:org.docx4j.model.structure.HeaderFooterPolicy.getEvenFooter($wmlPackage, position() )" />
+									</fo:static-content>
+								</xsl:if>
+				<!-- 				
+								<xsl:if
+									test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddHeader($wmlPackage, position() )">
+									
+									<xsl:variable name="partname" 
+										select="java:org.docx4j.model.structure.HeaderFooterPolicy.inOddHeader($wmlPackage, $modelStates, position() )" />
+									
+									<fo:static-content
+										flow-name="xsl-region-before-default">
+										<xsl:apply-templates
+											select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddHeader($wmlPackage, position() )" />
+									</fo:static-content>
+								</xsl:if>				
+								<xsl:if
+									test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasOddFooter($wmlPackage, position() )">
+									
+									<xsl:variable name="partname" 
+										select="java:org.docx4j.model.structure.HeaderFooterPolicy.inOddFooter($wmlPackage, $modelStates, position() )" />
+									
+									<fo:static-content
+										flow-name="xsl-region-after-default">
+										<xsl:apply-templates
+											select="java:org.docx4j.model.structure.HeaderFooterPolicy.getOddFooter($wmlPackage, position() )" />
+									</fo:static-content>
+								</xsl:if>
+				 -->				
+					
+					</xsl:otherwise>
+				</xsl:choose>
 
 
 				<!-- start fo:flow
