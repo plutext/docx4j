@@ -62,6 +62,9 @@ import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.structure.HeaderFooterPolicy;
+import org.docx4j.model.structure.jaxb.ObjectFactory;
+import org.docx4j.model.structure.jaxb.Sections;
+import org.docx4j.model.structure.jaxb.Sections.Section;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.model.table.TableModel.TableModelTransformState;
@@ -87,6 +90,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
@@ -137,6 +141,7 @@ public class XSLFOExporterNonXSLT {
 	Element foRoot;
 	Element pageSequence;
 	Element flow;
+	Element flowPrevious;
 	
 	int sectPrCounter = 0;
 	
@@ -231,6 +236,43 @@ public class XSLFOExporterNonXSLT {
 //	 */
 //	public org.w3c.dom.Document export(Object blockLevelContent) {
 	
+
+//	/**
+//	 * If you define headers/footers, and then create a continuous
+//	 * section break, Word will put the headerReferences on the first 
+//	 * sectPr.  
+//	 */
+//	private void shuffleSectPr(org.docx4j.wml.Document doc) {
+//		
+//		//org.docx4j.wml.Document doc = (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
+//		
+//		int i = 2;
+//		for (Object o : doc.getBody().getEGBlockLevelElts() ) {
+//			
+//			if (o instanceof org.docx4j.wml.P) {
+//				if (((org.docx4j.wml.P)o).getPPr() != null ) {
+//					
+//					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
+//					if (ppr.getSectPr()!=null) {
+//
+//						// According to the ECMA-376 2ed, if type is not specified, read it as next page
+//						// However Word 2007 sometimes treats it as continuous, and sometimes doesn't??						
+//						
+//						if ( ppr.getSectPr().getType()!=null
+//								     && ppr.getSectPr().getType().getVal().equals("continuous")) {
+//							// If its continuous, don't add a section
+//						} else {
+//							section = factory.createSectionsSection();
+//							section.setName("s" +i); // name must match fo master
+//							sections.getSection().add(section);	
+//							i++;
+//							containersCreated++;
+//						}
+//					}
+//				}				
+//			} 
+//		}
+//	}
 	
 	
 // ========================================================================
@@ -460,32 +502,39 @@ public class XSLFOExporterNonXSLT {
     	
 		// Create a page-sequence for each section
     	// and use the correct master-reference.
-    	// Doing this requires identifying the "sections" (ie sequence of
-    	// objects ending in a sectPr.
-    	// For the XSLT-based approach, we pre-processed to create section containers.
-    	// That is not necessary here, since we can create an initial page sequence.  
-		// Then, during the traverse, each time we hit a  sectPr, write the relevant 
+    	// The general idea is to create an initial page sequence.  
+		// Then, during the traverse, each time we hit a sectPr, write the relevant 
     	// values back to the page sequence element, then create the next page-sequence.
-    	// TODO add static content (region before and region after) each time we hit
-    	// a sectPr element .. see XSLT for logic
 
     	sectPrCounter++;
 		if ( sectPr.getType()!=null
 			     && sectPr.getType().getVal().equals("continuous")) {
 			
-			// 	If its continuous, don't add a section
+			// If its continuous, add this content to the previous paged section
+			// and delete current page sequence
+			
+            NodeList children = flow.getChildNodes();
+            if (children != null) {
+                for (int i=0; i<children.getLength(); i++) {
+        			flowPrevious.appendChild(children.item(i));
+                }
+            }
+	    	foRoot.removeChild(pageSequence);
 
 		} else {
-			addPageSequenceAttributes(sectPrCounter);
-			handleStaticContent(sectPrCounter);
-			
-			// Set up next 
-			if (makeNextPageSequence) {
-				createPageSequence();
-			}
-			
-			// TODO: can a sectPr occur in a table cell?
+			flowPrevious= flow;
 		}
+		
+		addPageSequenceAttributes(sectPrCounter);
+		handleStaticContent(sectPrCounter);
+		
+		// Set up next 
+		if (makeNextPageSequence) {
+			createPageSequence();
+		}
+		
+		// TODO: can a sectPr occur in a table cell?
+		
     	
     }
 
