@@ -1527,7 +1527,7 @@ public class StyleUtil {
 	}
 
 	public static boolean isEmpty(BooleanDefaultTrue booleanDefaultTrue) {
-		return (booleanDefaultTrue == null) || booleanDefaultTrue.isVal();
+		return (booleanDefaultTrue == null) || (!booleanDefaultTrue.isVal());
 	}
 
 	public static boolean isEmpty(Boolean bool) {
