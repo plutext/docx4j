@@ -57,8 +57,9 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.LoadFromZipNG;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.io3.Load3;
-import org.docx4j.openpackaging.io3.PartStore;
-import org.docx4j.openpackaging.io3.ZipPartStore;
+import org.docx4j.openpackaging.io3.Save;
+import org.docx4j.openpackaging.io3.stores.PartStore;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
@@ -387,22 +388,22 @@ public class OpcPackage extends Base {
 	 * Convenience method to save a WordprocessingMLPackage
 	 * or PresentationMLPackage to a File.
      *
-	 * @param docxFile
+	 * @param file
 	 *            The docx file 
 	 */	
-	public void save(java.io.File docxFile) throws Docx4JException {
-		save(docxFile, null);
+	public void save(java.io.File file) throws Docx4JException {
+		save(file, null);
 	}	
 	/**
 	 * Convenience method to save a WordprocessingMLPackage
 	 * or PresentationMLPackage to a File.
      *
-	 * @param docxFile
+	 * @param file
 	 *            The docx file 
 	 */	
-	private void save(java.io.File docxFile, String password) throws Docx4JException {
+	private void save(java.io.File file, String password) throws Docx4JException {
 
-		if (docxFile.getName().endsWith(".xml")) {
+		if (file.getName().endsWith(".xml")) {
 			
 		   	// Create a org.docx4j.wml.Package object
 			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(this);
@@ -417,7 +418,7 @@ public class OpcPackage extends Base {
 				NamespacePrefixMapperUtils.setProperty(marshaller, 
 						NamespacePrefixMapperUtils.getPrefixMapper());			
 				
-				marshaller.marshal(pkg, new FileOutputStream(docxFile));
+				marshaller.marshal(pkg, new FileOutputStream(file));
 			} catch (Exception e) {
 				throw new Docx4JException("Error saving Flat OPC XML", e);
 			}	
@@ -425,8 +426,17 @@ public class OpcPackage extends Base {
 		}
 		
 		if (password==null) {
-			SaveToZipFile saver = new SaveToZipFile(this); 
-			saver.save(docxFile);
+			
+//			SaveToZipFile saver = new SaveToZipFile(this); 
+//			saver.save(file);
+			
+			Save saver = new Save(this); 
+			try {
+				saver.save(new FileOutputStream(file));
+			} catch (FileNotFoundException e) {
+				throw new Docx4JException("Couldn't save " + file.getPath(), e);
+			}
+			
 		} else {
 			// Create the compound file
 	        try {

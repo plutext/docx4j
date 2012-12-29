@@ -44,6 +44,8 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.io.ExternalResourceUtils;
 import org.docx4j.openpackaging.io.Load;
+import org.docx4j.openpackaging.io3.stores.PartStore;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -68,7 +70,10 @@ import org.docx4j.relationships.Relationship;
  * stored (that is PartLoader's problem).  
  * 
  * What this class knows how to do is to traverse the
- * opc, via its relationships.
+ * opc, via its relationships. It would be possible/interesting
+ * to have a design which lazily followed the rels, but
+ * we don't do that. All rel parts are unmarshalled
+ * and traversed when invoked.
  * 
  * @author jharrop
  * 
@@ -120,7 +125,7 @@ public class Load3 extends Load {
 		// 1. Get [Content_Types].xml
 		ContentTypeManager ctm = new ContentTypeManager();
 		try {
-			InputStream is = partStore.getInputStreamForPart("[Content_Types].xml");		
+			InputStream is = partStore.loadPart("[Content_Types].xml");		
 			ctm.parseContentTypesFile(is);
 		} catch (IOException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
@@ -172,7 +177,7 @@ public class Load3 extends Load {
 		
 		InputStream is = null;
 		try {
-			is =  partStore.getInputStreamForPart( partName);
+			is =  partStore.loadPart( partName);
 			//thePart = new RelationshipsPart( p, new PartName("/" + partName), is );
 			rp = new RelationshipsPart(new PartName("/" + partName) );
 			rp.setSourceP(p);
@@ -395,7 +400,7 @@ public class Load3 extends Load {
 		try {
 			try {
 				log.debug("resolved uri: " + resolvedPartUri);
-				is = partStore.getInputStreamForPart( resolvedPartUri);
+				is = partStore.loadPart( resolvedPartUri);
 				
 				// Get a subclass of Part appropriate for this content type	
 				// This will throw UnrecognisedPartException in the absence of
@@ -578,7 +583,7 @@ public class Load3 extends Load {
 		Part part = null;
 		InputStream in = null;					
 		try {
-			in = partStore.getInputStreamForPart(resolvedPartUri);
+			in = partStore.loadPart(resolvedPartUri);
 			//in = partByteArrays.get(resolvedPartUri).getInputStream();
 			part = new BinaryPart( new PartName("/" + resolvedPartUri));
 			

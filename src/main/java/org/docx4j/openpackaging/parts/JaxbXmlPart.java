@@ -40,7 +40,7 @@ import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.io3.PartStore;
+import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.wml.Numbering;
 
 /** OPC Parts are either XML, or binary (or text) documents.
@@ -109,7 +109,7 @@ public abstract class JaxbXmlPart<E> extends Part {
 			PartStore partStore = this.getPackage().getPartStore();
 			try {
 				String name = this.partName.getName();
-				InputStream is = partStore.getInputStreamForPart( 
+				InputStream is = partStore.loadPart( 
 						name.substring(1));
 				if (is==null) {
 					log.warn(name + " missing from part store");
@@ -133,6 +133,10 @@ public abstract class JaxbXmlPart<E> extends Part {
 	public void setJaxbElement(JAXBResult result) throws JAXBException {
 		
 		setJaxbElement((E)result.getResult());
+	}
+	
+	public boolean isUnmarshalled(){
+		return jaxbElement!=null;
 	}
 	
 	
