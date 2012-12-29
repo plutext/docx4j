@@ -18,14 +18,14 @@ import java.util.zip.ZipInputStream;
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 
-public class ZipPartLoader implements PartLoader {
+public class ZipPartStore implements PartStore {
 	
 	private static Logger log = Logger.getLogger(LoadNG2.class);
 	
 	
 	HashMap<String, ByteArray> partByteArrays;
 	
-	public ZipPartLoader(File f) throws Docx4JException {
+	public ZipPartStore(File f) throws Docx4JException {
 		log.info("Filepath = " + f.getPath() );
 		
 		ZipFile zf = null;
@@ -60,7 +60,7 @@ public class ZipPartLoader implements PartLoader {
 		 }
 	}
 
-	public ZipPartLoader(InputStream is) throws Docx4JException {
+	public ZipPartStore(InputStream is) throws Docx4JException {
 
 		partByteArrays = new HashMap<String, ByteArray>();	
        try {

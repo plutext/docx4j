@@ -3,7 +3,7 @@ package org.docx4j.openpackaging.io;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface PartLoader {
+public interface PartStore {
 	
 	public boolean partExists(String partName);
 	

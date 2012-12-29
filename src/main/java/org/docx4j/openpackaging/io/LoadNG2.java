@@ -76,9 +76,9 @@ public class LoadNG2 extends Load {
 	private static Logger log = Logger.getLogger(LoadNG2.class);
 
 
-	private PartLoader partLoader;	
+	private PartStore partLoader;	
 	
-	public LoadNG2(PartLoader partLoader) {
+	public LoadNG2(PartStore partLoader) {
 		this.partLoader = partLoader;
 	}
 
@@ -600,7 +600,7 @@ public class LoadNG2 extends Load {
 	public static void main(String[] args) throws Exception {
 		String filepath = System.getProperty("user.dir") + "/sample-docs/word/FontEmbedded.docx";
 		log.info("Path: " + filepath );
-		ZipPartLoader partLoader = new ZipPartLoader(new File(filepath));
+		ZipPartStore partLoader = new ZipPartStore(new File(filepath));
 		LoadNG2 loader = new LoadNG2(partLoader);
 		loader.get();		
 	}
