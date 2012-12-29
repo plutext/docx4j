@@ -281,7 +281,7 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		entry.setId( this.getSlideId() );
 		entry.setRid(rel.getId());
 		
-		this.jaxbElement.getSldIdLst().getSldId().add(entry);
+		this.getJaxbElement().getSldIdLst().getSldId().add(entry);
 		
 		return entry;
 		
@@ -297,7 +297,7 @@ public final class MainPresentationPart extends JaxbPmlPart<Presentation> {
 		entry.setId( new Long(this.getSlideLayoutOrMasterId()) );
 		entry.setRid(rel.getId());
 
-		this.jaxbElement.getSldMasterIdLst().getSldMasterId().add(entry);
+		this.getJaxbElement().getSldMasterIdLst().getSldMasterId().add(entry);
 		
 		return entry;
 			

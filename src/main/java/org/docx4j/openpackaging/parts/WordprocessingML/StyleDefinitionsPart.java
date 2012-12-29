@@ -199,7 +199,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     	pDefault.setType("paragraph");
     			
 		// Initialise docDefaults		
-		DocDefaults docDefaults = this.jaxbElement.getDocDefaults(); 		
+		DocDefaults docDefaults = this.getJaxbElement().getDocDefaults(); 		
 		
 		if (docDefaults == null) {
 			// The only way this can happen is if the
@@ -260,7 +260,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 			org.docx4j.wml.Style.Name n = Context.getWmlObjectFactory().createStyleName();
 			n.setVal("Normal");
 			normal.setName(n);
-			this.jaxbElement.getStyle().add(normal);			
+			this.getJaxbElement().getStyle().add(normal);			
 		}
 		
 		BasedOn based = Context.getWmlObjectFactory().createStyleBasedOn();
@@ -268,7 +268,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
 		normal.setBasedOn(based);
 		
 		// Finally, add it to styles
-		this.jaxbElement.getStyle().add(pDefault);
+		this.getJaxbElement().getStyle().add(pDefault);
 		log.debug("Added virtual style, id '" + pDefault.getStyleId() + "', name '"+ pDefault.getName() + "'");
 		
 		
@@ -282,7 +282,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
      */
     public Style getStyleById(String id) {
     	
-		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
 			if( s.getStyleId().equals(id) ) {
 				return s;
 			}
@@ -302,7 +302,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     	if (defaultCharacterStyle==null) {
     		try {
 				defaultCharacterStyle = (Style)XmlUtils.unmarshalString(DEFAULT_CHARACTER_STYLE_DEFAULT);
-				this.jaxbElement.getStyle().add(defaultCharacterStyle);
+				this.getJaxbElement().getStyle().add(defaultCharacterStyle);
 			} catch (JAXBException e) {
 				e.printStackTrace();
 			}
@@ -323,7 +323,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     	// doesn't set default, so use name
     	// (alternatively, could use id=style0)
     	if (defaultParagraphStyle==null) {
-    		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+    		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
     			if( s.getType().equals("paragraph")
     					&& s.getName().getVal().equals("Default") ) {
     				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
@@ -334,7 +334,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     	}
     	// try using id=style0
     	if (defaultParagraphStyle==null) {
-    		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+    		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
     			if( s.getType().equals("paragraph")
     					&& s.getStyleId().equals("style0") ) {
     				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
@@ -348,7 +348,7 @@ public final class StyleDefinitionsPart extends JaxbXmlPart<Styles> {
     }
     private Style getDefaultStyle(String type) {
     	
-		for ( org.docx4j.wml.Style s : this.jaxbElement.getStyle() ) {				
+		for ( org.docx4j.wml.Style s : this.getJaxbElement().getStyle() ) {				
 			if( s.isDefault() && s.getType().equals(type)) {
 				log.info("Style with name " + s.getName().getVal() + ", id '" + s.getStyleId() + "' is default " + s.getType() + " style");
 				return s;

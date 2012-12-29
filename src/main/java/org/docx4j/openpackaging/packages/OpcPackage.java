@@ -24,6 +24,7 @@ package org.docx4j.openpackaging.packages;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -55,6 +56,9 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.io.LoadFromZipNG;
 import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.io3.Load3;
+import org.docx4j.openpackaging.io3.PartStore;
+import org.docx4j.openpackaging.io3.ZipPartStore;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
 import org.docx4j.openpackaging.parts.DocPropsCorePart;
@@ -127,7 +131,24 @@ public class OpcPackage extends Base {
 		this.contentTypeManager = contentTypeManager;
 	}
 	
+	private PartStore partStore;	
 	
+	/**
+	 * @return the partStore
+	 * @since 3.0.
+	 */
+	public PartStore getPartStore() {
+		return partStore;
+	}
+
+	/**
+	 * @param partStore the partStore to set
+	 * @since 3.0.
+	 */
+	public void setPartStore(PartStore partStore) {
+		this.partStore = partStore;
+	}
+
 	/**
 	 * Constructor.  Also creates a new content type manager
 	 * 
@@ -301,10 +322,18 @@ public class OpcPackage extends Base {
 	 * @Since 2.8.0           
 	 */
 	public static OpcPackage load(final InputStream is, Filetype type, String password) throws Docx4JException {
+		
 		if (type.equals(Filetype.ZippedPackage)){
-			final LoadFromZipNG loader = new LoadFromZipNG();
-			return loader.get(is);
+			
+			final ZipPartStore partLoader = new ZipPartStore(is);
+			final Load3 loader = new Load3(partLoader);
+			return loader.get();
+			
+//			final LoadFromZipNG loader = new LoadFromZipNG();
+//			return loader.get(is);			
+			
 		} else if (type.equals(Filetype.Compound)){
+			
 	        try {
 				POIFSFileSystem fs = new POIFSFileSystem(is);
 				EncryptionInfo info = new EncryptionInfo(fs); 

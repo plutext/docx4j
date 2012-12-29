@@ -1,4 +1,4 @@
-package org.docx4j.openpackaging.io;
+package org.docx4j.openpackaging.io3;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -20,7 +20,7 @@ import org.docx4j.openpackaging.exceptions.Docx4JException;
 
 public class ZipPartStore implements PartStore {
 	
-	private static Logger log = Logger.getLogger(LoadNG2.class);
+	private static Logger log = Logger.getLogger(Load3.class);
 	
 	
 	HashMap<String, ByteArray> partByteArrays;

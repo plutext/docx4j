@@ -54,7 +54,7 @@ public final class CustomXmlDataStoragePropertiesPart extends JaxbXmlPart<Datast
 
 	public String getItemId() {
 		
-		return ((DatastoreItem)this.jaxbElement).getItemID();
+		return ((DatastoreItem)this.getJaxbElement()).getItemID();
 		
 	}
 }

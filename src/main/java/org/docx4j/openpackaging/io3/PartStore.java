@@ -1,4 +1,4 @@
-package org.docx4j.openpackaging.io;
+package org.docx4j.openpackaging.io3;
 
 import java.io.IOException;
 import java.io.InputStream;

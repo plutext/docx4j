@@ -18,7 +18,7 @@
 
  */
 
-package org.docx4j.openpackaging.io;
+package org.docx4j.openpackaging.io3;
 
 
 
@@ -42,6 +42,8 @@ import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
+import org.docx4j.openpackaging.io.ExternalResourceUtils;
+import org.docx4j.openpackaging.io.Load;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -71,18 +73,18 @@ import org.docx4j.relationships.Relationship;
  * @author jharrop
  * 
  */
-public class LoadNG2 extends Load {
+public class Load3 extends Load {
 		
-	private static Logger log = Logger.getLogger(LoadNG2.class);
+	private static Logger log = Logger.getLogger(Load3.class);
 
 
-	private PartStore partLoader;	
+	private PartStore partStore;	
 	
-	public LoadNG2(PartStore partLoader) {
-		this.partLoader = partLoader;
+	public Load3(PartStore partLoader) {
+		this.partStore = partLoader;
 	}
 
-	public LoadNG2() {
+	public Load3() {
 		throw new RuntimeException();
 	}
 	
@@ -112,11 +114,13 @@ public class LoadNG2 extends Load {
 //	}
 	
 	public OpcPackage get() throws Docx4JException {
+		
+		long startTime = System.currentTimeMillis();				
 
 		// 1. Get [Content_Types].xml
 		ContentTypeManager ctm = new ContentTypeManager();
 		try {
-			InputStream is = partLoader.getInputStreamForPart("[Content_Types].xml");		
+			InputStream is = partStore.getInputStreamForPart("[Content_Types].xml");		
 			ctm.parseContentTypesFile(is);
 		} catch (IOException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
@@ -128,6 +132,7 @@ public class LoadNG2 extends Load {
 		//		Eventually, you'll also be able to create an Excel package etc
 		//		but only the WordML package exists at present
 		OpcPackage p = ctm.createPackage();
+		p.setPartStore(partStore);
 
 		// 3. Start with _rels/.rels
 
@@ -152,6 +157,9 @@ public class LoadNG2 extends Load {
 
 		// 6.
 		registerCustomXmlDataStorageParts(p);
+		
+		long endTime = System.currentTimeMillis();
+		log.info("package read;  elapsed time: " + Math.round((endTime-startTime)) + " ms" );
 		 
 		 return p;
 	}
@@ -164,7 +172,7 @@ public class LoadNG2 extends Load {
 		
 		InputStream is = null;
 		try {
-			is =  partLoader.getInputStreamForPart( partName);
+			is =  partStore.getInputStreamForPart( partName);
 			//thePart = new RelationshipsPart( p, new PartName("/" + partName), is );
 			rp = new RelationshipsPart(new PartName("/" + partName) );
 			rp.setSourceP(p);
@@ -349,7 +357,7 @@ public class LoadNG2 extends Load {
 		String relPart = PartName.getRelationshipsPartName(
 				part.getPartName().getName().substring(1) );
 		
-		if (partLoader.partExists(relPart)) {
+		if (partStore.partExists(relPart)) {
 		//if (partByteArrays.get(relPart) !=null ) {
 			log.debug("Found relationships " + relPart );
 			rrp = getRelationshipsPartFromZip(part,  relPart);
@@ -387,7 +395,7 @@ public class LoadNG2 extends Load {
 		try {
 			try {
 				log.debug("resolved uri: " + resolvedPartUri);
-				is = partLoader.getInputStreamForPart( resolvedPartUri);
+				is = partStore.getInputStreamForPart( resolvedPartUri);
 				
 				// Get a subclass of Part appropriate for this content type	
 				// This will throw UnrecognisedPartException in the absence of
@@ -400,39 +408,39 @@ public class LoadNG2 extends Load {
 				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
 
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcThemePart);
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart ) {
 
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsCore);
-						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 						
 				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsCustomPart ) {
 
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsCustom);
-						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 						
 				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsExtendedPart ) {
 
 						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsExtended);
-						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart ) {
 
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
 
 					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 
 					// MainDocument part, Styles part, Font part etc
 					
 					//((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
@@ -570,7 +578,7 @@ public class LoadNG2 extends Load {
 		Part part = null;
 		InputStream in = null;					
 		try {
-			in = partLoader.getInputStreamForPart(resolvedPartUri);
+			in = partStore.getInputStreamForPart(resolvedPartUri);
 			//in = partByteArrays.get(resolvedPartUri).getInputStream();
 			part = new BinaryPart( new PartName("/" + resolvedPartUri));
 			
@@ -601,7 +609,7 @@ public class LoadNG2 extends Load {
 		String filepath = System.getProperty("user.dir") + "/sample-docs/word/FontEmbedded.docx";
 		log.info("Path: " + filepath );
 		ZipPartStore partLoader = new ZipPartStore(new File(filepath));
-		LoadNG2 loader = new LoadNG2(partLoader);
+		Load3 loader = new Load3(partLoader);
 		loader.get();		
 	}
 	

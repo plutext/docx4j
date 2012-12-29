@@ -110,7 +110,7 @@ public final class SlideMasterPart extends JaxbPmlPart<SldMaster> {
 		entry.setId( new Long(this.getSlideLayoutOrMasterId()) );
 		entry.setRid(rel.getId());
 		
-		this.jaxbElement.getSldLayoutIdLst().getSldLayoutId().add(entry);
+		this.getJaxbElement().getSldLayoutIdLst().getSldLayoutId().add(entry);
 		
 		return entry;
 	}

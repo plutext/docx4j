@@ -67,7 +67,7 @@ public abstract class JaxbCustomXmlDataStoragePart<E> extends JaxbXmlPart<E> imp
 	 */
 	public void readyXPath() {
 		
-		doc = XmlUtils.marshaltoW3CDomDocument(jaxbElement, getJAXBContext());
+		doc = XmlUtils.marshaltoW3CDomDocument(getJaxbElement(), getJAXBContext());
 	}
 	
 	public void updateJaxbElementFromDocument() {

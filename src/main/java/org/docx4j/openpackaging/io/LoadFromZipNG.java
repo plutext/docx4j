@@ -195,6 +195,8 @@ public class LoadFromZipNG extends Load {
 	}
 	
 	private OpcPackage process(HashMap<String, ByteArray> partByteArrays) throws Docx4JException {
+		
+		long startTime = System.currentTimeMillis();				
 
 		// 2. Create a new Package
 		//		Eventually, you'll also be able to create an Excel package etc
@@ -257,6 +259,9 @@ public class LoadFromZipNG extends Load {
 		
 		registerCustomXmlDataStorageParts(p);
 		 
+		long endTime = System.currentTimeMillis();				
+		log.info("package read;  elapsed time: " + Math.round((endTime-startTime)) + " ms" );
+		
 		 return p;
 	}
 	
