@@ -7,7 +7,7 @@
     <property name="source" value="1.5"/>
 	<property name="dist" value="./dist"/>
 	
-	<property name="version" value="2.8.1"/>
+	<property name="version" value="3.0.0-SNAPSHOT"/>
 
     <property name="src.main.java.dir" value="src/main/java"/>
 	
@@ -65,11 +65,13 @@
     <path id="Maven Dependencies.libraryclasspath">
     
     	<!--  Optional MOXy stuff adds about 5MB to jars; since org.eclipse.persistence.core is 4.5MB -->
+    	<!-- 
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.moxy/2.4.1/org.eclipse.persistence.moxy-2.4.1.jar"/>
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.core/2.4.1/org.eclipse.persistence.core-2.4.1.jar"/>
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.asm/3.3.1.v201206041142/org.eclipse.persistence.asm-3.3.1.v201206041142.jar"/>
         <pathelement location="${m2Repository}/org/eclipse/persistence/org.eclipse.persistence.antlr/3.2.0.v201206041011/org.eclipse.persistence.antlr-3.2.0.v201206041011.jar"/>
         <pathelement location="${m2Repository}/javax/mail/mail/1.4/mail-1.4.jar"/>
+        -->
         <!--  end MOXy -->
        
         <pathelement location="${m2Repository}/org/docx4j/xhtmlrenderer/1.0.0/xhtmlrenderer-1.0.0.jar"/>    
@@ -305,6 +307,7 @@
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/questions/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/SmartArt/dataHierarchy/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/xpaths/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/opendope/answers/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/pptx4j/java/org/pptx4j/pml/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/xlsx4j/java/org/xlsx4j/sml/jaxb.properties"/>
     
@@ -353,6 +356,7 @@
 		<delete file="src/main/java/org/opendope/questions/jaxb.properties"/>
 		<delete file="src/main/java/org/opendope/SmartArt/dataHierarchy/jaxb.properties"/>
 		<delete file="src/main/java/org/opendope/xpaths/jaxb.properties"/>
+		<delete file="src/main/java/org/opendope/answers/jaxb.properties"/>
 		<delete file="src/pptx4j/java/org/pptx4j/pml/jaxb.properties"/>
 		<delete file="src/xlsx4j/java/org/xlsx4j/sml/jaxb.properties"/>
     

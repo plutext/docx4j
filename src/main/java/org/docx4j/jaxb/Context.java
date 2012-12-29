@@ -21,7 +21,13 @@ package org.docx4j.jaxb;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -57,6 +63,14 @@ public class Context {
 		Log4jConfigurator.configure();
 		
 		// Display diagnostic info about version of JAXB being used.
+		log.info("java.vendor="+System.getProperty("java.vendor"));
+		log.info("java.version="+System.getProperty("java.version"));
+		
+		searchManifestsForJAXBImplementationInfo( ClassLoader.getSystemClassLoader());
+		if (ClassLoader.getSystemClassLoader()!=Thread.currentThread().getContextClassLoader()) {
+			searchManifestsForJAXBImplementationInfo(Thread.currentThread().getContextClassLoader());
+		}
+		
 		Object namespacePrefixMapper;
 		try {
 			namespacePrefixMapper = NamespacePrefixMapperUtils.getPrefixMapper();
@@ -163,4 +177,56 @@ public class Context {
 		}
 		return jcXslFo;		
 	}
+	
+	public static void searchManifestsForJAXBImplementationInfo(ClassLoader loader) {
+	    Enumeration resEnum;
+	    try {
+	        resEnum = loader.getResources(JarFile.MANIFEST_NAME);
+	        while (resEnum.hasMoreElements()) {
+	            try {
+	                URL url = (URL)resEnum.nextElement();
+//	                System.out.println("\n\n" + url);
+	                InputStream is = url.openStream();
+	                if (is != null) {
+	                    Manifest manifest = new Manifest(is);
+
+                    	Attributes mainAttribs = manifest.getMainAttributes();
+                    	String impTitle = mainAttribs.getValue("Implementation-Title");
+                    	if (impTitle!=null
+                    			&& impTitle.contains("JAXB Reference Implementation")
+                    					|| impTitle.contains("org.eclipse.persistence") ) {
+	                    
+        	                log.info("\n" + url);
+		                    for(Object key2  : mainAttribs.keySet() ) {
+		                    	
+		                    	log.info(key2 + " : " + mainAttribs.getValue((java.util.jar.Attributes.Name)key2));
+		                    }
+                    	}
+                    	
+	                    // In 2.1.3, it is in here
+	                    for(String key  :  manifest.getEntries().keySet() ) {
+	    	                //System.out.println(key);	                    
+	    	                if (key.equals("com.sun.xml.bind.v2.runtime")) {
+		    	                log.info("Found JAXB reference implementation in " + url);
+		                    	mainAttribs = manifest.getAttributes((String)key);
+		                    
+			                    for(Object key2  : mainAttribs.keySet() ) {
+			                    	log.info(key2 + " : " + mainAttribs.getValue((java.util.jar.Attributes.Name)key2));
+			                    }
+		                    }
+	                    }
+	                    
+	                }
+	            }
+	            catch (Exception e) {
+	                // Silently ignore 
+//	            	log.error(e);
+	            }
+	        }
+	    } catch (IOException e1) {
+	        // Silently ignore 
+//        	log.error(e1);
+	    }
+	     
+	}	
 }

@@ -35,6 +35,9 @@ import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.PhysicalFonts;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.wml.BooleanDefaultTrue;
+import org.docx4j.wml.P;
+import org.docx4j.wml.PPr;
 
 /**
  * Demo of PDF output.
@@ -72,7 +75,18 @@ public class ConvertOutPDF extends AbstractSample {
 		
     	//inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.xml";
     	//inputfilepath = System.getProperty("user.dir") + "/docs/Docx4j_GettingStarted.xml";
+    	//inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/tables.docx";
+    	
+//		inputfilepath = System.getProperty("user.dir") + "/OpenXML_1ed_Part4_500_sections_1.docx";
+//		inputfilepath = System.getProperty("user.dir") + "/OpenXML_1ed_Part4_500_sections_every_50p_no_TOC.docx";
+		inputfilepath = System.getProperty("user.dir") + "/NoSectPr.docx";
+		
+    	saveFO = false;
 	}
+	
+	// For demo/debugging purposes, save the intermediate XSL FO
+	// Don't do this in production!
+	static boolean saveFO;
 	
     public static void main(String[] args) 
             throws Exception {
@@ -107,6 +121,21 @@ public class ConvertOutPDF extends AbstractSample {
 		}
 		
 		
+		// Workaround for https://issues.apache.org/bugzilla/show_bug.cgi?id=54094 
+		// (apparently fixed post 1.1, but that's difficult to use right now)
+		Object o = wordMLPackage.getMainDocumentPart().getContent().get(0);
+		
+		System.out.println("First block: " + o.getClass().getName() );
+		
+		if (o instanceof P
+				&& ((P)o).getPPr()!=null) {
+			PPr pPr = ((P)o).getPPr();
+			BooleanDefaultTrue val = new BooleanDefaultTrue();
+			val.setVal(Boolean.FALSE);
+			pPr.setPageBreakBefore(val);
+		}
+		
+		
 		// Set up font mapper
 		Mapper fontMapper = new IdentityPlusMapper();
 		wordMLPackage.setFontMapper(fontMapper);
@@ -121,16 +150,17 @@ public class ConvertOutPDF extends AbstractSample {
 			= new org.docx4j.convert.out.pdf.viaXSLFO.Conversion(wordMLPackage);
 //				= new org.docx4j.convert.out.pdf.viaIText.Conversion(wordMLPackage);
 		
-		// for demo/debugging purposes, save the intermediate XSL FO
-		((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
-				new java.io.File(inputfilepath + ".fo"));
+		if (saveFO) {
+			((org.docx4j.convert.out.pdf.viaXSLFO.Conversion)c).setSaveFO(
+					new java.io.File(inputfilepath + ".fo"));
+		}
 		
 		// PdfConversion writes to an output stream
 		String outputfilepath;
 		if (inputfilepath==null) {
 			outputfilepath = System.getProperty("user.dir") + "/OUT_FontContent.pdf";			
 		} else {
-			outputfilepath = inputfilepath + ".pdf";
+			outputfilepath = inputfilepath + "2.pdf";
 		}
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
 		
