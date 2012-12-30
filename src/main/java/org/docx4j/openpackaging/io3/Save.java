@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2012, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -22,34 +22,19 @@ package org.docx4j.openpackaging.io3;
 
 
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
 import org.docx4j.Docx4jProperties;
-import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.CoreProperties;
 import org.docx4j.docProps.extended.Properties;
-import org.docx4j.jaxb.Context;
-import org.docx4j.jaxb.NamespacePrefixMapperUtils;
 import org.docx4j.openpackaging.URIHelper;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -63,13 +48,14 @@ import org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
-import org.w3c.dom.Document;
 
 
 /**
- * Save a Package object to a Zip file or output stream
+ * Save a Package object using the PartStore
+ * defined on the package.
+ * 
  * @author jharrop
- *
+ * @since 3.0
  */
 public class Save {
 	
@@ -78,11 +64,42 @@ public class Save {
 	public Save(OpcPackage p) {
 		
 		this.p = p;
+		sourcePartStore = p.getPartStore(); 
+		if (sourcePartStore==null) {
+			log.warn("sourcePartStore undefined");
+			targetPartStore = new ZipPartStore();
+			p.setPartStore(targetPartStore);
+		} else {
+			targetPartStore = sourcePartStore;
+		}
 		
 	}
+
+	public Save(OpcPackage p, PartStore targetPartStore) {
 		
+		this.p = p;
+		sourcePartStore = p.getPartStore(); 
+		if (sourcePartStore==null) {
+			log.warn("sourcePartStore undefined");
+		}
+		this.targetPartStore = targetPartStore;
+		p.setPartStore(targetPartStore);
+		
+	}
+	
 	// The package to save
 	public OpcPackage p;
+	
+	private PartStore sourcePartStore;	
+	private PartStore targetPartStore;	
+
+	/**
+	 * If we're writing to a different place
+	 */
+	public void setSourcePartStore(PartStore partStore) {
+		this.sourcePartStore = partStore;
+	}
+	
 	
 	/**
 	 * This HashMap is intended to prevent loops.
@@ -136,7 +153,11 @@ public class Save {
 //	}
 	
 	
-	/* Save a Package as a Zip file in the outputstream provided */
+	/**
+	 * @param realOS
+	 * @return
+	 * @throws Docx4JException
+	 */
 	public boolean save(OutputStream realOS) throws Docx4JException  {		
 		handled = new HashMap<String, String>();
 		 try {
@@ -169,7 +190,10 @@ public class Save {
 	    
 			
 			p.getPartStore().finishSave();
-	        realOS.close();
+			
+			if (realOS!=null) {
+				realOS.close();
+			}
 	    } catch (Exception e) {
 			e.printStackTrace() ;
 			if (e instanceof Docx4JException) {
@@ -206,7 +230,10 @@ public class Save {
 					
 					boolean dcWrite= Boolean.parseBoolean(
 							Docx4jProperties.getProperties().getProperty("docx4j.dc.write", "false"));
-					if (dcWrite) {					
+					if (dcWrite) {	
+						
+						p.setPartStore(sourcePartStore);
+						
 						CoreProperties cp = ((DocPropsCorePart)part).getJaxbElement();
 						
 						// Only set creator if not already present
@@ -219,12 +246,17 @@ public class Save {
 						
 						String modifier= Docx4jProperties.getProperties().getProperty("docx4j.dc.lastModifiedBy.value", "docx4j");
 						cp.setLastModifiedBy(modifier);
+						
+						p.setPartStore(targetPartStore);
+						
 					}
 				}				
 				if (part instanceof DocPropsExtendedPart) {
 					boolean appWrite= Boolean.parseBoolean(
 							Docx4jProperties.getProperties().getProperty("docx4j.App.write", "false"));
 					if (appWrite) {
+						p.setPartStore(sourcePartStore);
+
 						Properties cp = ((DocPropsExtendedPart)part).getJaxbElement();
 						
 						cp.setApplication( 
@@ -235,7 +267,8 @@ public class Save {
 						if ( version!=null ) {
 							cp.setAppVersion(version);
 						}
-						
+
+						p.setPartStore(targetPartStore);						
 					}
 				}
 
