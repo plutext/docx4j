@@ -87,7 +87,7 @@ public class DocPropsCustomPart extends JaxbXmlPart<Properties> {
 	
 	public void init() {
 		
-		jc = Context.jcDocPropsCustom;
+		setJAXBContext(Context.jcDocPropsCustom);
 		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 

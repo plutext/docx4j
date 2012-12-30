@@ -85,7 +85,7 @@ public class DocPropsExtendedPart extends JaxbXmlPart<Properties> {
 	
 	public void init() {
 		
-		jc = Context.jcDocPropsExtended;
+		setJAXBContext(Context.jcDocPropsExtended);
 		
 		// Used if this Part is added to [Content_Types].xml 
 		setContentType(new  org.docx4j.openpackaging.contenttype.ContentType( 

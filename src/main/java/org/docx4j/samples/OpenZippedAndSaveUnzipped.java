@@ -35,7 +35,7 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * Example of saving a docx unzipped.
  * 
  * @author jharrop
- *
+ * @since 3.0
  */
 public class OpenZippedAndSaveUnzipped extends AbstractSample {
 	

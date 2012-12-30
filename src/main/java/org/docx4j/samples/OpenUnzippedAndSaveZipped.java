@@ -39,6 +39,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
  * Example of loading an unzipped file from the file system.
  * 
  * @author jharrop
+ * @since 3.0
  *
  */
 public class OpenUnzippedAndSaveZipped extends AbstractSample {

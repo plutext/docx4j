@@ -400,7 +400,6 @@ public class Load3 extends Load {
 		try {
 			try {
 				log.debug("resolved uri: " + resolvedPartUri);
-				is = partStore.loadPart( resolvedPartUri);
 				
 				// Get a subclass of Part appropriate for this content type	
 				// This will throw UnrecognisedPartException in the absence of
@@ -410,51 +409,26 @@ public class Load3 extends Load {
 
 				log.info("ctm returned " + part.getClass().getName() );
 				
-				if (part instanceof org.docx4j.openpackaging.parts.ThemePart) {
-
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcThemePart);
-//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+				if (part instanceof org.docx4j.openpackaging.parts.ThemePart
+						|| part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart
+						|| part instanceof org.docx4j.openpackaging.parts.DocPropsCustomPart
+						|| part instanceof org.docx4j.openpackaging.parts.DocPropsExtendedPart
+						|| part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart
+						|| part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart
+						|| part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
 					
-				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsCorePart ) {
-
-						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsCore);
-//						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
-						
-				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsCustomPart ) {
-
-						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsCustom);
-//						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
-						
-				} else if (part instanceof org.docx4j.openpackaging.parts.DocPropsExtendedPart ) {
-
-						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcDocPropsExtended);
-//						((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
-					
-				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart ) {
-
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcCustomXmlProperties);
-//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
-
-				} else if (part instanceof org.docx4j.openpackaging.parts.digitalsignature.XmlSignaturePart ) {
-
-					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jcXmlDSig);
-//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
-					
-				} else if (part instanceof org.docx4j.openpackaging.parts.JaxbXmlPart) {
-
-					// MainDocument part, Styles part, Font part etc
-					
-					//((org.docx4j.openpackaging.parts.JaxbXmlPart)part).setJAXBContext(Context.jc);
-//					((org.docx4j.openpackaging.parts.JaxbXmlPart)part).unmarshal( is );
+					// Nothing to do here
 					
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
+					is = partStore.loadPart( resolvedPartUri);
 					((BinaryPart)part).setBinaryData(is);
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
 					
 					// Is it a part we know?
+					is = partStore.loadPart( resolvedPartUri);
 					try {
 						Unmarshaller u = Context.jc.createUnmarshaller();
 						Object o = u.unmarshal( is );						
@@ -521,6 +495,8 @@ public class Load3 extends Load {
 					}					
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart ) {
+
+					is = partStore.loadPart( resolvedPartUri);
 					
 //					try {
 						((XmlPart)part).setDocument(is);
@@ -552,6 +528,7 @@ public class Load3 extends Load {
 				part = getBinaryPart(ctm, resolvedPartUri);
 				log.warn("Using BinaryPart for " + resolvedPartUri);
 				
+				is = partStore.loadPart( resolvedPartUri);
 				((BinaryPart)part).setBinaryData(is);
 			}
 		} catch (Exception ex) {

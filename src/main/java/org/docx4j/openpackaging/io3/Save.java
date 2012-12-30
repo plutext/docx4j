@@ -65,12 +65,14 @@ public class Save {
 		
 		this.p = p;
 		sourcePartStore = p.getPartStore(); 
-		if (sourcePartStore==null) {
+		if (sourcePartStore==null) // eg a newly created package
+		{
 			log.warn("sourcePartStore undefined");
 			targetPartStore = new ZipPartStore();
 			p.setPartStore(targetPartStore);
 		} else {
 			targetPartStore = sourcePartStore;
+			targetPartStore.setSourcePartStore(sourcePartStore);
 		}
 		
 	}

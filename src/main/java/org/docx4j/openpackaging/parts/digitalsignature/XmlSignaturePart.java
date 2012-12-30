@@ -37,6 +37,7 @@ public class XmlSignaturePart extends JaxbXmlPart<JAXBElement<SignatureType>> {
 
 	public XmlSignaturePart(PartName partName) throws InvalidFormatException {
 		super(partName);
+		init();		
 	}
 
 	public XmlSignaturePart() throws InvalidFormatException {
