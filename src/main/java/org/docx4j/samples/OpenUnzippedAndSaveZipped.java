@@ -51,13 +51,13 @@ public class OpenUnzippedAndSaveZipped extends AbstractSample {
 		try {
 			getInputFilePath(args);
 		} catch (IllegalArgumentException e) {
-	    	inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/sample-docx.docx";
+	    	inputfilepath = System.getProperty("user.dir") + "/OUT";
 		}
 		System.out.println(inputfilepath);	    	
 		
 		
 		// Load the docx
-		File baseDir = new File(System.getProperty("user.dir") + "/OUT"); 
+		File baseDir = new File(inputfilepath); 
 		UnzippedPartStore partLoader = new UnzippedPartStore(baseDir);
 		final Load3 loader = new Load3(partLoader);
 		OpcPackage opc = loader.get();

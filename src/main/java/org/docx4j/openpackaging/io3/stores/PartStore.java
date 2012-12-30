@@ -45,7 +45,11 @@ public interface PartStore {
 	 *   part store, unless
 	 *   it has been unmarshalled (in which case
 	 *   it is that part's JaxbXmlElement)
-	 *   
+	 * 
+	 * - for a BinaryPart, whatever is in the
+	 *   part store, unless it has fetched (in which
+	 *   case it is that part's bytebuffer)
+	 *      
 	 * - for any other part (including BinaryPart,
 	 *   CustomXmlDataStoragePart, XmlPart), 
 	 *   as contained in that part.

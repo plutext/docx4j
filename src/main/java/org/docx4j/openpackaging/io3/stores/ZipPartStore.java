@@ -308,12 +308,41 @@ public class ZipPartStore implements PartStore {
 	        // Add ZIP entry to output stream.
 	        zos.putNextEntry(new ZipEntry(resolvedPartUri));
 	        	        
-            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-            byte[] bytes = null;
-            bytes = new byte[bb.limit()];
-            bb.get(bytes);	        
+	        if (((BinaryPart)part).isLoaded() ) {
+	        	
+	            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
+	            byte[] bytes = null;
+	            bytes = new byte[bb.limit()];
+	            bb.get(bytes);	        
+		        zos.write( bytes );
+
+	        } else {
 	        
-	        zos.write( bytes );
+	        	if (this.sourcePartStore==null) {
+	        		
+	        		throw new Docx4JException("part store has changed, and sourcePartStore not set");
+	        		
+	        	} else if (this.sourcePartStore==this) {
+	        		
+		        	// Just use the ByteArray
+		        	log.debug(part.getPartName() + " is clean" );
+		            ByteArray bytes = partByteArrays.get(
+		            		part.getPartName().getName().substring(1) );
+		            if (bytes == null) throw new IOException("part '" + part.getPartName() + "' not found");
+			        zos.write( bytes.getBytes() );
+
+	        	} else {
+	        		
+	        		InputStream is = sourcePartStore.loadPart(part.getPartName().getName().substring(1));
+	        		int read = 0;
+	        		byte[] bytes = new byte[1024];
+	        	 
+	        		while ((read = is.read(bytes)) != -1) {
+	        			zos.write(bytes, 0, read);
+	        		}
+	        		is.close();
+	        	}
+	        }
 
 			// Complete the entry
 	        zos.closeEntry();

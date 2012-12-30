@@ -422,8 +422,8 @@ public class Load3 extends Load {
 				} else if (part instanceof org.docx4j.openpackaging.parts.WordprocessingML.BinaryPart) {
 					
 					log.debug("Detected BinaryPart " + part.getClass().getName() );
-					is = partStore.loadPart( resolvedPartUri);
-					((BinaryPart)part).setBinaryData(is);
+//					is = partStore.loadPart( resolvedPartUri);
+//					((BinaryPart)part).setBinaryData(is);
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
 					
@@ -528,8 +528,8 @@ public class Load3 extends Load {
 				part = getBinaryPart(ctm, resolvedPartUri);
 				log.warn("Using BinaryPart for " + resolvedPartUri);
 				
-				is = partStore.loadPart( resolvedPartUri);
-				((BinaryPart)part).setBinaryData(is);
+//				is = partStore.loadPart( resolvedPartUri);
+//				((BinaryPart)part).setBinaryData(is);
 			}
 		} catch (Exception ex) {
 			// IOException, URISyntaxException

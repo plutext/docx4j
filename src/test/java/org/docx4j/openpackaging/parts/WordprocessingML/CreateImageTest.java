@@ -35,7 +35,7 @@ public class CreateImageTest {
         BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, file);
         assertTrue(imagePart instanceof ImagePngPart);
         
-        assertTrue( ((ImagePngPart)imagePart).bb.capacity()==1965 );
+        assertTrue( ((ImagePngPart)imagePart).getBuffer().capacity()==1965 );
         
 	}
 
@@ -69,7 +69,7 @@ public class CreateImageTest {
 		
         BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, bytes);
         assertTrue(imagePart instanceof ImagePngPart);
-        assertTrue( ((ImagePngPart)imagePart).bb.capacity()==1965 );
+        assertTrue( ((ImagePngPart)imagePart).getBuffer().capacity()==1965 );
         
 	}
 	

@@ -28,9 +28,12 @@ import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.zip.ZipFile;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.commons.io.IOUtils;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.parts.ExternalTarget;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
@@ -60,13 +63,7 @@ public class BinaryPart extends Part {
 		return this.externalTarget;
 	}
 	
-//	private InputStream binaryData;
-//
-//	public InputStream getBinaryData() {
-//		return binaryData;
-//	}
-
-	java.nio.ByteBuffer bb;
+	private java.nio.ByteBuffer bb;
 	public void setBinaryData(InputStream binaryData) {
 		log.debug("reading input stream");
 		try {
@@ -95,61 +92,67 @@ public class BinaryPart extends Part {
 		this.bb = bb;
 	}
 	
-	private String zipFileName = null;
-	private String resolvedPartUri = null;
+	
+	/**
+	 * Store buffer thru soft reference so it could be 
+	 * unloaded by the java vm if free memory is low.
+	 */
 	private Reference<ByteBuffer> bbRef = null;
 	
 	/**
-	 * Sets the values required to load part data on demand.
-	 * 
-	 * @param zipFileName the zip file name
-	 * @param resolvedPartUri the resolved part uri
+	 * @since 3.0
 	 */
-	public void setBinaryDataRef(String zipFileName, String resolvedPartUri) {
-		this.zipFileName = zipFileName;
-		this.resolvedPartUri = resolvedPartUri;
-		this.bbRef = null;		
-		log.debug("set binary part data reference: "
-				+ this.zipFileName + "!" + this.resolvedPartUri);
+	public boolean isLoaded() {
+		
+		if (this.bb != null) {
+			return true;
+		}
+		
+		return (this.bbRef != null);
 	}
-	
 	
 	public ByteBuffer getBuffer() {
 		ByteBuffer res = null;
+		
 		if (this.bb != null) {
 			// use buffer loaded during package load
+			// (if not using Load3)
 			res = this.bb;
 			
-		} else if ((this.zipFileName != null)
-				&& (this.resolvedPartUri != null)) {
-			// use on-demand buffer
+		} else {
+
 			res = (this.bbRef != null) ? this.bbRef.get() : null;
 			if (res == null) {
-				// no cached buffer, load part data now
-				log.debug("loading binary part data: "
-						+ this.zipFileName + "!" + this.resolvedPartUri);
-				ZipFile zf = null;
-				InputStream in = null;
+				// no cached buffer, load part data now			
+				PartStore partStore = this.getPackage().getPartStore();
+				InputStream in=null;
 				try {
-					zf = new ZipFile(this.zipFileName);
-					in = zf.getInputStream(zf.getEntry(this.resolvedPartUri));
-					res = BufferUtil.readInputStream(in);
-					// Store buffer thru soft reference so it could be
-					// unloaded by the java vm if free memory is low.
-					this.bbRef = new SoftReference<ByteBuffer>(res);
-				} catch (IOException ex) {
-					log.error(ex);
+					String name = this.partName.getName();
+					in = partStore.loadPart( 
+							name.substring(1));
+					if (in==null) {
+						log.warn(name + " missing from part store");
+					} else {
+						res = BufferUtil.readInputStream(in);
+						// Store buffer thru soft reference so it could be
+						// unloaded by the java vm if free memory is low.
+						this.bbRef = new SoftReference<ByteBuffer>(res);
+					}
+				} catch (IOException e) {
+					log.error(e);
 				} finally {
 					IOUtils.closeQuietly(in);
-					if (zf != null) {
-						try {
-							zf.close();
-						} catch (IOException ex) {
-							// ignored
-						}
-					}
+	//				if (zf != null) {
+	//					try {
+	//						zf.close();
+	//					} catch (IOException ex) {
+	//						// ignored
+	//					}
+	//				}
 				}
-			}
+			
+			}			
+			
 		}
 		
 		res.rewind(); // Don't forget this!

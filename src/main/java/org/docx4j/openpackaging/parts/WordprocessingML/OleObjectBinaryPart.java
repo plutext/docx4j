@@ -77,9 +77,9 @@ public class OleObjectBinaryPart extends BinaryPart {
 		// the above seems to be calling methods which aren't implemented,
 		// so, for now, brute force..
 		
-        bb.clear();
-        byte[] bytes = new byte[bb.capacity()];
-        bb.get(bytes, 0, bytes.length);
+		getBuffer().clear();
+        byte[] bytes = new byte[getBuffer().capacity()];
+        getBuffer().get(bytes, 0, bytes.length);
 		
 		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 		fs = new POIFSFileSystem(bais);
@@ -95,7 +95,7 @@ public class OleObjectBinaryPart extends BinaryPart {
 		// Need to put this is bb
 		byte[] bytes = baos.toByteArray();
 		
-		bb = ByteBuffer.wrap(bytes);
+		setBinaryData( ByteBuffer.wrap(bytes) );
 		
 	}
 	

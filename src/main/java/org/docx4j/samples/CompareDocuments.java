@@ -27,23 +27,16 @@ import java.util.Calendar;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.diff.Differencer;
 import org.docx4j.fonts.IdentityPlusMapper;
-import org.docx4j.openpackaging.io.LoadFromZipFile;
-import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
 import org.docx4j.wml.Body;
 import org.docx4j.wml.Document;
-import org.docx4j.wml.SdtContentBlock;
 
 
 /**

@@ -49,6 +49,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.openpackaging.contenttype.ContentTypeManager;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.io3.Load3;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore.ByteArray;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
@@ -265,17 +266,46 @@ public class UnzippedPartStore implements PartStore {
 
 
 		try {
-			FileOutputStream fos = new FileOutputStream(file);
+			FileOutputStream fos;
 	        	        
-            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
-            byte[] bytes = null;
-            bytes = new byte[bb.limit()];
-            bb.get(bytes);	        
-	        
-	        fos.write( bytes );
+	        if (((BinaryPart)part).isLoaded() ) {
+			
+	        	fos = new FileOutputStream(file);
+	            java.nio.ByteBuffer bb = ((BinaryPart)part).getBuffer();
+	            byte[] bytes = null;
+	            bytes = new byte[bb.limit()];
+	            bb.get(bytes);	        
+		        
+		        fos.write( bytes );
+			    fos.close();
+		        
+	        } else {
+		        
+	        	if (!file.exists() 
+	        			&& this.sourcePartStore==null) {
+	        		
+	        		throw new Docx4JException("part store has changed, and sourcePartStore not set");
+	        		
+	        	} else if (file.exists()
+	        			&& this.sourcePartStore==this) {
+	        		
+		        	// No need to save
 
-			// Complete the entry
-		    fos.close();
+	        	} else {
+	        		
+	        		InputStream is = sourcePartStore.loadPart(part.getPartName().getName().substring(1));
+	        		int read = 0;
+	        		byte[] bytes = new byte[1024];
+
+		        	fos = new FileOutputStream(file);
+	        		
+	        		while ((read = is.read(bytes)) != -1) {
+	        			fos.write(bytes, 0, read);
+	        		}
+	        		is.close();
+	        	}
+	        }
+
 			
 		} catch (Exception e ) {
 			throw new Docx4JException("Failed to put binary part", e);			

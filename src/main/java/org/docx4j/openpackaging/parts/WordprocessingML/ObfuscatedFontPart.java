@@ -109,9 +109,9 @@ public class ObfuscatedFontPart extends BinaryPart {
 		
 		byte[] fontData = null;
 				
-        bb.clear();
-        fontData = new byte[bb.capacity()];
-        bb.get(fontData, 0, fontData.length);
+		getBuffer().clear();
+        fontData = new byte[getBuffer().capacity()];
+        getBuffer().get(fontData, 0, fontData.length);
 		
 		log.debug("bytes: " + fontData.length);
 		
