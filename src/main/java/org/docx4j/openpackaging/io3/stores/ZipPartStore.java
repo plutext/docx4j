@@ -24,6 +24,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -125,6 +126,16 @@ public class ZipPartStore implements PartStore {
 	            
 	}
 	
+	private PartStore sourcePartStore;	
+
+	/**
+	 * Set this if its different to the target part store
+	 * (ie this object)
+	 */
+	public void setSourcePartStore(PartStore partStore) {
+		this.sourcePartStore = partStore;
+	}
+	
 	/////// Load methods
 
 	public boolean partExists(String partName) {
@@ -200,14 +211,32 @@ public class ZipPartStore implements PartStore {
 	        	log.debug("marshalling " + part.getPartName() );
 	        	part.marshal( zos );
 	        } else {
-	        	// Just use the ByteArray
-	        	log.debug(part.getPartName() + " is clean" );
-	            ByteArray bytes = partByteArrays.get(
-	            		part.getPartName().getName().substring(1) );
-	            if (bytes == null) throw new IOException("part '" + part.getPartName() + "' not found");
-		        zos.write( bytes.getBytes() );
 	        	
+	        	if (this.sourcePartStore==null) {
+	        		
+	        		throw new Docx4JException("part store has changed, and sourcePartStore not set");
+	        		
+	        	} else if (this.sourcePartStore==this) {
+	        		
+		        	// Just use the ByteArray
+		        	log.debug(part.getPartName() + " is clean" );
+		            ByteArray bytes = partByteArrays.get(
+		            		part.getPartName().getName().substring(1) );
+		            if (bytes == null) throw new IOException("part '" + part.getPartName() + "' not found");
+			        zos.write( bytes.getBytes() );
+
+	        	} else {
+	        		InputStream is = sourcePartStore.loadPart(part.getPartName().getName().substring(1));
+	        		int read = 0;
+	        		byte[] bytes = new byte[1024];
+	        	 
+	        		while ((read = is.read(bytes)) != -1) {
+	        			zos.write(bytes, 0, read);
+	        		}
+	        		is.close();
+	        	}
 	        }
+	        
 	        
 	        // Complete the entry
 	        zos.closeEntry();

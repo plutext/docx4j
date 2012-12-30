@@ -50,9 +50,13 @@ public interface PartStore {
 	 *   CustomXmlDataStoragePart, XmlPart), 
 	 *   as contained in that part.
 	 * 
-	 * @author jharrop
-	 *
 	 */
+	
+	/**
+	 * Set this if its different to the target part store
+	 * (ie this object)
+	 */
+	public void setSourcePartStore(PartStore partStore);
 	
 	public boolean partExists(String partName);
 	

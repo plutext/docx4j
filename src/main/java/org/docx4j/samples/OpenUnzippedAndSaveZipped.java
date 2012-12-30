@@ -22,22 +22,26 @@ package org.docx4j.samples;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 import javax.xml.bind.JAXBContext;
 
+import org.docx4j.openpackaging.exceptions.Docx4JException;
+import org.docx4j.openpackaging.io3.Load3;
 import org.docx4j.openpackaging.io3.Save;
 import org.docx4j.openpackaging.io3.stores.UnzippedPartStore;
+import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 
 /**
- * Example of saving a docx unzipped.
+ * Example of loading an unzipped file from the file system.
  * 
  * @author jharrop
  *
  */
-public class OpenZippedAndSaveUnzipped extends AbstractSample {
+public class OpenUnzippedAndSaveZipped extends AbstractSample {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
 
@@ -52,15 +56,24 @@ public class OpenZippedAndSaveUnzipped extends AbstractSample {
 		
 		
 		// Load the docx
-		WordprocessingMLPackage wordMLPackage = (WordprocessingMLPackage)OpcPackage.load(new java.io.File(inputfilepath));
-				
-		// Save it unzipped		
 		File baseDir = new File(System.getProperty("user.dir") + "/OUT"); 
-		UnzippedPartStore ups = new UnzippedPartStore(baseDir);
-		ups.setSourcePartStore(wordMLPackage.getPartStore());
-		Save saver = new Save(wordMLPackage, ups);
+		UnzippedPartStore partLoader = new UnzippedPartStore(baseDir);
+		final Load3 loader = new Load3(partLoader);
+		OpcPackage opc = loader.get();
 		
-		saver.save(null);
+		// Save it zipped
+		File docxFile = new File(System.getProperty("user.dir") + "/zip.docx"); 
+		
+		ZipPartStore zps = new ZipPartStore();
+		zps.setSourcePartStore(opc.getPartStore());
+		
+		Save saver = new Save(opc, zps);
+		try {
+			saver.save(new FileOutputStream(docxFile));
+		} catch (FileNotFoundException e) {
+			throw new Docx4JException("Couldn't save " + docxFile.getPath(), e);
+		}
+		
 	}
 		
 

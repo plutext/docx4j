@@ -80,10 +80,10 @@ public class UnzippedPartStore implements PartStore {
 	}
 
 	private PartStore sourcePartStore;	
-	
 
 	/**
-	 * If we're writing to a different place
+	 * Set this if its different to the target part store
+	 * (ie this object)
 	 */
 	public void setSourcePartStore(PartStore partStore) {
 		this.sourcePartStore = partStore;
