@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2012, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -22,7 +22,7 @@ package org.docx4j.samples;
 
 
 
-import java.io.FileOutputStream;
+import java.io.File;
 
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -57,14 +57,13 @@ public class ConvertOutFlatOpenPackage extends AbstractSample {
 		// Open a document from the file system
 		OpcPackage wmlPackage = OpcPackage.load(new java.io.File(inputfilepath));
 		
-	   	// Create a org.docx4j.wml.Package object
-		FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPackage);
-    	
-		// .. marshall it 
 		if (save) {
-			worker.marshal(new FileOutputStream(outputfilepath));				
+			wmlPackage.save(new File(outputfilepath));
 			System.out.println( "\n\n .. written to " + outputfilepath);
 		} else {
+		   	// Create a org.docx4j.wml.Package object
+			FlatOpcXmlCreator worker = new FlatOpcXmlCreator(wmlPackage);
+
 			// Display its contents 
 			worker.marshal(System.out);				
 		}

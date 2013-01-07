@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2012, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -22,9 +22,11 @@ package org.docx4j.samples;
 
 
 
+import java.io.File;
 import java.io.FileInputStream;
 
 import org.docx4j.openpackaging.io.SaveToZipFile;
+import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 
 /* 
@@ -51,10 +53,9 @@ public class ConvertInFlatOpenPackage extends AbstractSample {
 		
 		try {
 			// First, load Flat OPC Package from file
-			org.docx4j.convert.in.FlatOpcXmlImporter importer 
-				= new org.docx4j.convert.in.FlatOpcXmlImporter( new FileInputStream(inputfilepath) ); 
-
-			WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)importer.get(); 
+			WordprocessingMLPackage wmlPackage = 
+					(WordprocessingMLPackage)OpcPackage.load(
+							new File(inputfilepath)); 
 			
 			// All done ..  save the WordprocessingMLPackage
 			SaveToZipFile saver = new SaveToZipFile(wmlPackage);

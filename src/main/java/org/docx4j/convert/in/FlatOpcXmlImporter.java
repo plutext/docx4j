@@ -104,9 +104,13 @@ public class FlatOpcXmlImporter  {
 		Unmarshaller u = jc.createUnmarshaller();
 		u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
 
-		org.docx4j.xmlPackage.Package flatOpcXml = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-				new javax.xml.transform.stream.StreamSource(is))).getValue(); 
+//		org.docx4j.xmlPackage.Package flatOpcXml = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
+//				new javax.xml.transform.stream.StreamSource(is))).getValue(); 
 
+		// JAXB RI unmarshalls to JAXBElement; MOXy gives Package directly
+		org.docx4j.xmlPackage.Package flatOpcXml = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(
+				new javax.xml.transform.stream.StreamSource(is))); 
+		
 		init(flatOpcXml);
 		
 	}

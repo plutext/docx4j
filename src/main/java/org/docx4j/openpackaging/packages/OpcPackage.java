@@ -46,6 +46,7 @@ import org.apache.poi.poifs.crypt.EncryptionInfo;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.docx4j.TextUtils;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.in.FlatOpcXmlImporter;
 import org.docx4j.convert.out.flatOpcXml.FlatOpcXmlCreator;
 import org.docx4j.docProps.core.dc.elements.SimpleLiteral;
 import org.docx4j.jaxb.Context;
@@ -310,7 +311,8 @@ public class OpcPackage extends Base {
 	 */
 	public static OpcPackage load(final InputStream is, Filetype type) throws Docx4JException {
 		return load(is, type, null);
-	}	
+	}
+	
 	/**
 	 * convenience method to load a word2007 document 
 	 * from an existing inputstream (.docx/.docxm, .ppxtx or Flat OPC .xml).
@@ -364,24 +366,13 @@ public class OpcPackage extends Base {
 			}  			
 		}
 		
-		org.docx4j.convert.in.FlatOpcXmlImporter xmlPackage;
 		try {
-			final Unmarshaller u = Context.jcXmlPackage.createUnmarshaller();
-			u.setEventHandler(new org.docx4j.jaxb.JaxbValidationEventHandler());
-
-//			final org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)((JAXBElement)u.unmarshal(
-//					new javax.xml.transform.stream.StreamSource(is))).getValue(); 
-
-			// JAXB RI unmarshalls to JAXBElement; MOXy gives Package directly
-			final org.docx4j.xmlPackage.Package wmlPackageEl = (org.docx4j.xmlPackage.Package)XmlUtils.unwrap(u.unmarshal(
-					new javax.xml.transform.stream.StreamSource(is))); 
-			
-			xmlPackage = new org.docx4j.convert.in.FlatOpcXmlImporter( wmlPackageEl);
+			FlatOpcXmlImporter xmlPackage = new FlatOpcXmlImporter(is); 
+			return xmlPackage.get(); 
 		} catch (final Exception e) {
 			OpcPackage.log.error(e);
 			throw new Docx4JException("Couldn't load xml from stream ",e);
 		} 
-		return xmlPackage.get(); 
 	}
 
 	/**
@@ -410,15 +401,8 @@ public class OpcPackage extends Base {
 			org.docx4j.xmlPackage.Package pkg = worker.get();
 	    	
 	    	// Now marshall it
-			JAXBContext jc = Context.jcXmlPackage;
 			try {
-				Marshaller marshaller=jc.createMarshaller();
-				
-				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-				NamespacePrefixMapperUtils.setProperty(marshaller, 
-						NamespacePrefixMapperUtils.getPrefixMapper());			
-				
-				marshaller.marshal(pkg, new FileOutputStream(file));
+				worker.marshal(new FileOutputStream(file));
 			} catch (Exception e) {
 				throw new Docx4JException("Error saving Flat OPC XML", e);
 			}	
