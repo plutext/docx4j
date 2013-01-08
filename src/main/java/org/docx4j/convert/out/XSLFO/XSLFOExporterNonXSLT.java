@@ -176,7 +176,7 @@ public class XSLFOExporterNonXSLT {
     	
 		List blockLevelContent = conversionContext.getWmlPackage().getMainDocumentPart().getContent();
     	
-		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext);
+		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, flow);
 		new TraversalUtil(blockLevelContent, xslfoGenerator);
 
 		return document;
@@ -678,17 +678,24 @@ public class XSLFOExporterNonXSLT {
     class XSLFOGenerator extends CallbackImpl {
     	XSLFOConversionContextNonXSLT conversionContext = null;
     	
+    	Node blockContext; // the flow, or if in a table, the table fragment
+    	
     	Element currentP; 
     	Element currentSpan;
+    	
+		Element tr;		
+		Element tc; // will only get set in an XSLFOGenerator object created by this one
+    	
     	
     	PPr pPr;
     	
     	// E20 image
     	Object anchorOrInline;
     	
-    	XSLFOGenerator(XSLFOConversionContextNonXSLT conversionContext) {
+    	XSLFOGenerator(XSLFOConversionContextNonXSLT conversionContext, Node blockContext) {
 			super();
 			this.conversionContext = conversionContext;
+			this.blockContext = blockContext;
 		}
     	
     	@Override
@@ -698,7 +705,11 @@ public class XSLFOExporterNonXSLT {
 				
 				currentP = document.createElementNS(XSL_FO, "block");
 				currentSpan = null;
-				flow.appendChild( currentP  );
+				if (tc!=null) {
+					tc.appendChild( currentP  );
+				} else {
+					blockContext.appendChild( currentP  );					
+				}
 				
 				pPr = ((P)o).getPPr();
 				handlePPr(pPr, false, currentP);
@@ -729,29 +740,33 @@ public class XSLFOExporterNonXSLT {
 
 				Tbl tbl = (org.docx4j.wml.Tbl)o;
 				
-				// To use our existing model, first we need
-				// childResults
-				TableRowTraversor tableRowTraversor = new TableRowTraversor();
-				new TraversalUtil(
-						tbl.getContent(), tableRowTraversor);
+				// To use our existing model, first we need childResults.
+				// We get these using a new XSLFOGenerator object.
+				
+		    	DocumentFragment tableFragment = document.createDocumentFragment();
+				XSLFOGenerator tableRowTraversor = new XSLFOGenerator(conversionContext, tableFragment);
+				new TraversalUtil(tbl.getContent(), tableRowTraversor);
 				
 				Node foTable = 
 					 conversionContext.getModelRegistry().toNode(
 							 conversionContext, 
 							 tbl, 
 							 TableModel.MODEL_ID, 
-							 tableRowTraversor.tableFragment, 
+							 tableFragment, 
 							 document);
 				
 				if (foTable != null) {
-					if (currentP != null) {
+					if (currentP != null) { // ??
 						currentP.appendChild(foTable);
 					}
 					else {
 						//in case there isn't a paragraph 
-						flow.appendChild(foTable);
+						blockContext.appendChild(foTable);
 					}
 				}
+				
+				currentP=null;
+				currentSpan=null;
 				
 			} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline
 					|| o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
@@ -789,6 +804,18 @@ public class XSLFOExporterNonXSLT {
 				
 				currentP.appendChild( document.importNode(foreignFragment, true) );
 				
+			} else if (o instanceof org.docx4j.wml.Tr) {
+				
+				tr = document.createElementNS(Namespaces.NS_WORD12, "tr");
+				blockContext.appendChild(tr);
+				
+			} else if (o instanceof org.docx4j.wml.Tc) {
+				
+				tc = document.createElementNS(Namespaces.NS_WORD12, "tc");
+				tr.appendChild(tc);
+				// now the html p content will go temporarily go in w:tc,
+				// which is what we need for our existing table model.
+				
 			} else {
 				log.warn("Need to handle " + o.getClass().getName() );				
 			}
@@ -809,109 +836,6 @@ public class XSLFOExporterNonXSLT {
     	
 	}
 
-    class TableRowTraversor extends CallbackImpl {
-
-    	Element currentP; 
-    	Element currentSpan; 
-
-    	DocumentFragment tableFragment = document.createDocumentFragment();
-		Element tr;		
-		Element tc;
-		
-		PPr pPr;
-		
-    	@Override
-		public List<Object> apply(Object o) {
-			
-			if (o instanceof P) {
-				
-				currentP = document.createElementNS(XSL_FO, "block");
-				currentSpan = null;
-				tc.appendChild( currentP  );
-				
-				PPr pPr = ((P)o).getPPr();
-				handlePPr(pPr, false, currentP);
-				
-			} else if (o instanceof org.docx4j.wml.R) {
-				
-				RPr rPr = ((R)o).getRPr();
-
-				if ( rPr!=null ) {
-					// Convert run to span
-					Element spanEl = document.createElementNS(XSL_FO, "inline");
-					currentP.appendChild( spanEl  );
-					currentSpan = spanEl;
-					
-					handleRPr(pPr, rPr, currentSpan);
-				}
-								
-			} else if (o instanceof org.docx4j.wml.Text) {
-				
-				if (currentSpan!=null) {
-					currentSpan.appendChild(document.createTextNode(
-							((org.docx4j.wml.Text)o).getValue()));
-				} else {
-					currentP.appendChild(document.createTextNode(
-							((org.docx4j.wml.Text)o).getValue()));					
-				}
-
-
-			} else if (o instanceof org.docx4j.wml.Tbl) {
-				// A nested table
-
-				Tbl tbl = (org.docx4j.wml.Tbl)o;
-
-				TableRowTraversor tableRowTraversor = new TableRowTraversor();
-				new TraversalUtil(
-						tbl.getContent(), tableRowTraversor);
-				
-				Node foTable = 
-					 conversionContext.getModelRegistry().toNode(
-							 conversionContext, 
-							 tbl, 
-							 TableModel.MODEL_ID, 
-							 tableRowTraversor.tableFragment, 
-							 document);
-				
-				if (foTable != null) {
-					tc.appendChild(foTable);
-				}
-				
-				currentP=null;
-				currentSpan=null;
-				
-			} else if (o instanceof org.docx4j.wml.Tr) {
-				
-				tr = document.createElementNS(Namespaces.NS_WORD12, "tr");
-				tableFragment.appendChild(tr);
-				
-			} else if (o instanceof org.docx4j.wml.Tc) {
-				
-				tc = document.createElementNS(Namespaces.NS_WORD12, "tc");
-				tr.appendChild(tc);
-				// now the html p content will go temporarily go in w:tc,
-				// which is what we need for our existing table model.
-				
-			} else {
-				log.warn("Need to handle (in table)  " + o.getClass().getName() );				
-			}
-			
-			return null;
-		}
-    	
-    	@Override
-		public boolean shouldTraverse(Object o) {
-    		if (o instanceof org.docx4j.wml.Tbl) {
-    			// Don't traverse into the table,
-    			// since this is handled separately
-    			return false;
-    		} else {
-    			return true;
-    		}
-		}
-    	
-    	
-    }
 	
 	/**
 	 * @param args
@@ -943,7 +867,7 @@ public class XSLFOExporterNonXSLT {
 
 		log.info(XmlUtils.w3CDomNodeToString(xslfo));
 		
-		String outputfilepath = inputfilepath + "C.pdf";
+		String outputfilepath = inputfilepath + "H.pdf";
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
 		
 		// OK, do it...
