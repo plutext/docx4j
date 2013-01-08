@@ -60,8 +60,10 @@ public class HtmlExporterNonXSLT {
 	Element headEl;
 	Element bodyEl;
 	
-	public HtmlExporterNonXSLT(WordprocessingMLPackage wordMLPackage, ConversionImageHandler conversionImageHandler) {
-	HtmlSettings htmlSettings = new HtmlSettings();
+	public HtmlExporterNonXSLT(WordprocessingMLPackage wordMLPackage, 
+			ConversionImageHandler conversionImageHandler) {
+		
+		HtmlSettings htmlSettings = new HtmlSettings();
 		htmlSettings.setWmlPackage(wordMLPackage);
 		htmlSettings.setImageHandler(conversionImageHandler);
 		conversionContext = new HTMLConversionContextNonXSLT(htmlSettings);
@@ -425,8 +427,8 @@ public class HtmlExporterNonXSLT {
 
 
 		inputfilepath = System.getProperty("user.dir")
-				+ "/hr.docx";
-//		+ "/sample-docs/word/sample-docx.xml";
+//				+ "/hr.docx";
+		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage

@@ -888,9 +888,9 @@ public class XSLFOExporterNonXSLT {
 
 
 		inputfilepath = System.getProperty("user.dir")
-				+ "/OpenXML_1ed_Part4_500_sections_none.docx";
+//				+ "/OpenXML_1ed_Part4_500_sections_none.docx";
 //		+ "/OpenXML_1ed_Part4.docx";
-//		+ "/sample-docs/word/sample-docx.xml";
+		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
 
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage
