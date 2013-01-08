@@ -627,7 +627,7 @@ public class TableModel extends Model {
 	 * @return
 	 */
 	private Node getTc(Node wtrNode, int wanted, IntRef current) {
-		
+				
 		for (int i=0; i<wtrNode.getChildNodes().getLength(); i++ ) {
 			
 			Node thisChild = wtrNode.getChildNodes().item(i);
@@ -643,6 +643,8 @@ public class TableModel extends Model {
 				if (n!=null) return n;
 			}
 		}
+		log.error("Couldn't find tc in: " + XmlUtils.w3CDomNodeToString(wtrNode));
+		
 		return null;
 	}
 	

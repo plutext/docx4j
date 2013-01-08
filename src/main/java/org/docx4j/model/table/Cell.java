@@ -92,7 +92,12 @@ public class Cell {
 		
 		tcPr = tc.getTcPr();
 
-		logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
+		if (content==null) {
+			logger.error("No content for row " + row + ", col " + col + "\n" 
+							+ XmlUtils.marshaltoString(tc, true, true));
+		} else {
+			logger.debug("Cell content: " + XmlUtils.w3CDomNodeToString(content));
+		}
 
 		/* xhtmlTc.appendChild(
 		   document.importNode(tcDoc, true) );

@@ -708,6 +708,10 @@
 <!-- <w:bookmarkStart w:id="0" w:name="mybm"/>  -->
 <xsl:template match="w:bookmarkStart" >
         <xsl:choose>
+          <xsl:when test="preceding-sibling::w:tr or following-sibling::w:tr">
+          	<!-- Need to ignore this, since otherwise it is mistaken 
+          	     for a table row in TableModel's getTc -->
+          </xsl:when>          
           <xsl:when test="ancestor::w:p"><!--  TODO or other block element -->
 			<fo:inline id="{@w:name}"/>
           </xsl:when>
