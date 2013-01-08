@@ -21,32 +21,34 @@ package org.docx4j.model;
 
 import javax.xml.transform.TransformerException;
 
-import org.docx4j.convert.out.Converter;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public abstract class Model {
 	
-	protected WordprocessingMLPackage wordMLPackage;
+	private WordprocessingMLPackage wordMLPackage = null;
 	public void setWordMLPackage(WordprocessingMLPackage wordMLPackage) {
 		this.wordMLPackage = wordMLPackage;
 	}
 	
+	protected WordprocessingMLPackage getWordMLPackage() {
+		return wordMLPackage;
+	}
+	
 	/**
-	 * Build the model from a DOM node.
+	 * Build the model from the unmarshalled DOM node.
 	 * This is useful if the model is being built via
 	 * XSLT, for the purposes of conversion to some other format. 
 	 * 
-	 * It is assumed the children of the structure being transformed
+	 * It is assumed the content of the structure being transformed
 	 * have already been transformed, so they can be attached to
 	 * the resulting structure and returned as-is. 
 	 * 
-	 * @param node
-	 * @param children 
+	 * @param node the unmarshalled DOM node.
+	 * @param content 
 	 * @throws TransformerException
 	 */
-	public abstract void build(Node node,  NodeList children  ) 
+	public abstract void build(Object node,  Node content  ) 
 		throws TransformerException;
 	
 	/**

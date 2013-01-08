@@ -58,7 +58,7 @@ public class SdtWriter {
 		return n;
 	}
 	
-	public static Node toNode(WordprocessingMLPackage wmlPackage,
+	public static Node toNode(HTMLConversionContext context,
     		NodeIterator sdtPrNodeIt,
 			NodeIterator childResults) throws TransformerException {
 	
@@ -95,10 +95,10 @@ public class SdtWriter {
 			if (handlers.get("*")!=null) {
 				// handler '*' only gets applied if no other one has been				
 				handler = handlers.get("*");			
-				result = handler.toNode(wmlPackage, null, null, childResults);
+				result = handler.toNode(context.getWmlPackage(), null, null, childResults);
 			} else {
 				// Just return the contents!
-				result = identity.toNode(wmlPackage, null, null, childResults);
+				result = identity.toNode(context.getWmlPackage(), null, null, childResults);
 			}
 			return debug(result);
 		}
@@ -127,9 +127,9 @@ public class SdtWriter {
 			}
 			
 			if (result==null) {
-				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
+				result = handler.toNode(context.getWmlPackage(), sdtPr, map, childResults);
 			} else {
-				result = handler.toNode(wmlPackage, sdtPr, map, result);
+				result = handler.toNode(context.getWmlPackage(), sdtPr, map, result);
 			}			
 		}
 		
@@ -138,9 +138,9 @@ public class SdtWriter {
 			handler = handlers.get("**");			
 			log.info("applying handler '**' " );
 			if (result==null) {
-				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
+				result = handler.toNode(context.getWmlPackage(), sdtPr, map, childResults);
 			} else {
-				result = handler.toNode(wmlPackage, sdtPr, map, result);
+				result = handler.toNode(context.getWmlPackage(), sdtPr, map, result);
 			}			
 		}
 		
@@ -151,11 +151,11 @@ public class SdtWriter {
 				// handler '*' only gets applied if no other one has been				
 				log.info("applying handler '*' " );
 				handler = handlers.get("*");			
-				result = handler.toNode(wmlPackage, sdtPr, map, childResults);
+				result = handler.toNode(context.getWmlPackage(), sdtPr, map, childResults);
 			} else {
 				// Just return the contents!
 				log.info("using identity " );
-				result = identity.toNode(wmlPackage, sdtPr, map, childResults);
+				result = identity.toNode(context.getWmlPackage(), sdtPr, map, childResults);
 			}
 		}
 		

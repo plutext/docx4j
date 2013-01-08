@@ -3,15 +3,11 @@ package org.docx4j.convert.out.html;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
-import org.docx4j.UnitsOfMeasurement;
-import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.Output;
 import org.docx4j.fonts.Mapper;
@@ -21,38 +17,18 @@ import org.docx4j.model.listnumbering.Emulator.ResultTriple;
 import org.docx4j.model.properties.AdHocProperty;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.properties.PropertyFactory;
-import org.docx4j.model.properties.paragraph.PBorderBottom;
-import org.docx4j.model.properties.paragraph.PBorderTop;
-import org.docx4j.model.properties.paragraph.PShading;
-import org.docx4j.model.properties.run.Font;
 import org.docx4j.model.properties.table.BorderBottom;
 import org.docx4j.model.properties.table.BorderLeft;
 import org.docx4j.model.properties.table.BorderRight;
 import org.docx4j.model.properties.table.BorderTop;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.StyleTree.AugmentedStyle;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart;
-import org.docx4j.wml.CTShd;
-import org.docx4j.wml.CTTblPrBase;
-import org.docx4j.wml.CTTblStylePr;
-import org.docx4j.wml.PPr;
-import org.docx4j.wml.PPrBase.Ind;
-import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TblBorders;
-import org.docx4j.wml.TcPr;
-import org.docx4j.wml.TrPr;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
 
 public abstract class AbstractHtmlExporter implements Output {
@@ -104,45 +80,6 @@ public abstract class AbstractHtmlExporter implements Output {
     public abstract void html(WordprocessingMLPackage wmlPackage, 
     		javax.xml.transform.Result result, 
     		HtmlSettings htmlSettings) throws Exception;     
-
-    /* 
-    
-		<w:hyperlink r:id="rId4" w:history="true">
-			<w:r>
-				<w:rPr>
-				    <w:rStyle w:val="Hyperlink"/>
-				</w:rPr>
-				<w:t>hyperlink</w:t>
-			</w:r>
-		</w:hyperlink>
-	
-	  Micrososoft C# code replaces w:hyperlink with 
-	  a new node 
-	  
-	      <w:hlink w:dest=".." [other attributes cloned] />
-	      
-	  before the XSLT is called.
-	
-	  But we use an extension function instead.
-                    
-                    */    
-    public static String resolveHref( WordprocessingMLPackage wmlPackage, String id  )  {
-    	
-    	org.docx4j.relationships.Relationship rel = wmlPackage.getMainDocumentPart().getRelationshipsPart().getRelationshipByID(id);
-    	
-    	if ( rel != null) {
-    		
-        	// TODO resolve ServerRelativePath, if its not a full URL 
-
-    		return rel.getTarget();
-    		
-    	} else {
-    		
-    		log.error("Couldn't resolve hyperlink for rel " + id);    		
-    		return "";    		
-    	}
-    }
-    
     
 
     
@@ -156,7 +93,7 @@ public abstract class AbstractHtmlExporter implements Output {
 	 * @param numId
 	 * @return
 	 */
-    public static String getNumberXmlNode(WordprocessingMLPackage wmlPackage,
+    public static String getNumberXmlNode(HTMLConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, String numId, String levelId) {
     	
@@ -168,7 +105,7 @@ public abstract class AbstractHtmlExporter implements Output {
         try {
         	        	
         	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-        			wmlPackage, pStyleVal, numId, levelId);   
+        			context.getWmlPackage(), pStyleVal, numId, levelId);   
         	
 
 			if (triple==null) {
@@ -295,106 +232,18 @@ public abstract class AbstractHtmlExporter implements Output {
 		}
 	}
 	
-    public static String getCssForStyles(WordprocessingMLPackage wmlPackage) {
-    	
+    public static String getCssForStyles(HTMLConversionContext context) {
     	StringBuffer result = new StringBuffer();
     	
     	StyleTree styleTree = null;
 		try {
-			styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
+			styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
 		} catch (Exception e) {
 			log.error("Couldn't getStyleTree", e);
     		return result.toString();			
 		}
 
-		// First iteration - table styles
-		result.append("\n /* TABLE STYLES */ \n");    	
-		Tree<AugmentedStyle> tableTree = styleTree.getTableStylesTree();		
-    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : tableTree.toList() ) {
-    		Style s = n.getData().getStyle();
-
-    		result.append( "."+ s.getStyleId()  + " {display:table;" );
-    		
-    		// TblPr
-    		if (s.getTblPr()==null) {
-    		} else {
-    			log.debug("Applying tblPr..");
-            	createCss(s.getTblPr(), result);
-            	
-    		}
-    		
-    		// TblStylePr - STTblStyleOverrideType stuff
-    		if (s.getTblStylePr()==null) {
-    		} else {
-    			log.debug("Applying tblStylePr.. TODO!");
-    			// Its a list, created automatically
-            	createCss(s.getTblStylePr(), result);
-    		}
-    		
-    		
-    		// TrPr - eg jc, trHeight, wAfter, tblCellSpacing
-    		if (s.getTrPr()==null) {
-    		} else {
-    			log.debug("Applying trPr.. TODO!");
-            	createCss( s.getTrPr(), result);
-    		}
-    		
-    		// TcPr - includes includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
-    		if (s.getTcPr()==null) {
-    		} else {
-    			log.debug("Applying tcPr.. ");
-            	createCss( s.getTcPr(), result);
-    		}
-    		    		
-        	if (s.getPPr()==null) {
-        		log.debug("null pPr for style " + s.getStyleId());
-        	} else {
-        		createCss( wmlPackage, s.getPPr(), result, false );
-        	}
-        	if (s.getRPr()==null) {
-        		log.debug("null rPr for style " + s.getStyleId());
-        	} else {
-            	createCss(wmlPackage, s.getRPr(), result);
-        	}
-        	result.append( "}\n" );         	
-    	}
-		
-		// Second iteration - paragraph level pPr *and rPr*
-		result.append("\n /* PARAGRAPH STYLES */ \n");    	
-		Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
-    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : pTree.toList() ) {
-    		Style s = n.getData().getStyle();
-
-    		result.append( "."+ s.getStyleId()  + " {display:block;" );
-        	if (s.getPPr()==null) {
-        		log.debug("null pPr for style " + s.getStyleId());
-        	} else {
-        		createCss( wmlPackage, s.getPPr(), result, false );
-        	}
-        	if (s.getRPr()==null) {
-        		log.debug("null rPr for style " + s.getStyleId());
-        	} else {
-            	createCss(wmlPackage, s.getRPr(), result);
-        	}
-        	result.append( "}\n" );        	
-    	}
-		    	
-	    // Third iteration, character styles
-		result.append("\n /* CHARACTER STYLES */ ");
-		//result.append("\n /* These come last, so they have more weight than the paragraph _rPr component styles */ \n ");
-		
-		Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
-    	for (org.docx4j.model.styles.Node<AugmentedStyle> n : cTree.toList() ) {
-    		Style s = n.getData().getStyle();
-
-    		result.append( "."+ s.getStyleId()  + " {display:inline;" );
-        	if (s.getRPr()==null) {
-        		log.warn("! null rPr for character style " + s.getStyleId());
-        	} else {
-            	createCss(wmlPackage, s.getRPr(), result);
-        	}
-        	result.append( "}\n" );        	
-    	}	
+		HtmlCssHelper.createCssForStyles(context.getWmlPackage(), styleTree, result);
     	
     	if (log.isDebugEnabled()) {
     		return result.toString();
@@ -404,7 +253,7 @@ public abstract class AbstractHtmlExporter implements Output {
     	}
     }
     
-    public static String getCssForTableCells(WordprocessingMLPackage wmlPackage, 
+    public static String getCssForTableCells(HTMLConversionContext context, 
     		NodeIterator tables) {
     	
     	// The only way we seem to be able to make rules which
@@ -432,7 +281,7 @@ public abstract class AbstractHtmlExporter implements Output {
 					jaxb = u.unmarshal(n);
     				tbl =  (Tbl)jaxb;
     				
-    				result.append(getCssForTableCells(wmlPackage, tbl,  idx) );
+    				result.append(getCssForTableCells(context, tbl,  idx) );
     				
 				} catch (JAXBException e1) {
     		    	log.error("JAXB error", e1);
@@ -453,17 +302,11 @@ public abstract class AbstractHtmlExporter implements Output {
     }
     
     
-    public static String getCssForTableCells(WordprocessingMLPackage wmlPackage, 
+    public static String getCssForTableCells(HTMLConversionContext context, 
     		Tbl tbl, int idx) {
     	
     	StringBuffer result = new StringBuffer();		
-		PropertyResolver pr;
-		try {
-			pr = new PropertyResolver(wmlPackage);
-		} catch (Docx4JException e) {
-	    	log.error("docx4j error", e);
-	    	return e.getMessage();
-		} 
+		PropertyResolver pr = context.getPropertyResolver();
 		Style s = pr.getEffectiveTableStyle(tbl.getTblPr() );
 		
 		result.append("#" + TableWriter.getId(idx) + " td { ");
@@ -517,94 +360,5 @@ public abstract class AbstractHtmlExporter implements Output {
     	
     }
     
-    
-    protected static void createCss(CTTblPrBase  tblPr, StringBuffer result) {
-    	
-		if (tblPr==null) {
-			return;
-		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(tblPr);    	
-    	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
-    	}    
-    }
-    protected static void createCss(List<CTTblStylePr> tblStylePrList, StringBuffer result) {
-    	// STTblStyleOverrideType
-    	
-		if (tblStylePrList==null) {
-			return;
-		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(tblStylePrList);    	
-    	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
-    	}    
-    }
-    protected static void createCss(TrPr trPr, StringBuffer result) {
-    	// includes jc, trHeight, wAfter, tblCellSpacing
-    	
-		if (trPr==null) {
-			return;
-		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(trPr);    	
-    	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
-    	}    
-    }
-    protected static void createCss(TcPr tcPr, StringBuffer result) {
-    	// includes TcPrInner.TcBorders, CTShd, TcMar, CTVerticalJc
-    	
-		if (tcPr==null) {
-			return;
-		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(tcPr);    	
-    	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
-    	}    
-    }
-    
-    
-    public static void createCss(OpcPackage wmlPackage, PPr pPr, StringBuffer result, boolean ignoreBorders) {
-    	
-		if (pPr==null) {
-			return;
-		}
-    	
-    	List<Property> properties = PropertyFactory.createProperties(wmlPackage, pPr);    	
-    	for( Property p :  properties ) {
-    		
-			if (ignoreBorders &&
-					((p instanceof PBorderTop)
-							|| (p instanceof PBorderBottom))) {
-				continue;
-			}
-			
-			if (p instanceof PShading) {
-    	    	// To close the gap between divs, we need to avoid
-    	    	// CSS margin collapse.    	    	
-    	    	// To do that, we add a border the same color as 
-    	    	// the background color				
-				String fill = ((CTShd)p.getObject()).getFill();				
-				result.append("border-color: #" + fill + "; border-style:solid; border-width:1px;");
-			}
-    		
-    		result.append(p.getCssProperty());
-    	}    
-    }
-    
-    
-    public static void createCss(OpcPackage wmlPackage, RPr rPr, StringBuffer result) {
-
-    	List<Property> properties = PropertyFactory.createProperties(wmlPackage, rPr);
-    	
-    	for( Property p :  properties ) {
-    		result.append(p.getCssProperty());
-    	}
-    }
-    
- 
 
 }

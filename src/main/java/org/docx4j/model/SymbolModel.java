@@ -19,16 +19,15 @@
  */
 package org.docx4j.model;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
 import org.docx4j.wml.R.Sym;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class SymbolModel extends Model {
+	public static final String MODEL_ID = "w:sym";
+	
 	private final static Logger log = Logger.getLogger(SymbolModel.class);
 
 	private Sym sym;
@@ -40,13 +39,12 @@ public class SymbolModel extends Model {
 	}
 	
 	@Override
-	public void build(Node node, NodeList children) throws TransformerException {
+	public void build(Object unmarshalledNode, Node content) throws TransformerException {
 
 		try {
-			sym = (Sym) XmlUtils.unmarshal(node);
-		} catch (JAXBException e) {
-			throw new TransformerException("Node: " + node.getNodeName() + "="
-					+ node.getNodeValue(), e);
+			sym = (Sym)unmarshalledNode;
+		} catch (ClassCastException e) {
+			throw new TransformerException("Node is not of the type Sym it is " + unmarshalledNode.getClass().getName());
 		}
 		
 	}
@@ -56,7 +54,5 @@ public class SymbolModel extends Model {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	public static class SymbolModelTransformState implements TransformState { }
 
 }

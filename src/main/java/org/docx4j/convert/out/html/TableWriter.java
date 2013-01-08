@@ -6,12 +6,12 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.AbstractTableWriter;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.table.Cell;
 import org.docx4j.model.table.TableModel;
-import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.docx4j.model.styles.StyleTree;
@@ -77,7 +77,7 @@ public class TableWriter extends AbstractTableWriter {
   	}
 
 	@Override
-	protected void applyAttributes(List<Property> properties, Element element) {
+	protected void applyAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element) {
 	StringBuilder buffer = null;
 		if ((properties != null) && (!properties.isEmpty())) {
 			buffer = new StringBuilder();
@@ -93,7 +93,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
 	
 	@Override
-	protected void applyTableCustomAttributes(TableModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element tableRoot) {
 	int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
 			   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
 			   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null) ?
@@ -103,7 +103,7 @@ public class TableWriter extends AbstractTableWriter {
 	    if (table.getStyleId()==null) {
 	    	getLog().debug("table has no w:tblStyle?");
 	    } else {
-			StyleTree styleTree = wordMLPackage.getMainDocumentPart().getStyleTree();	
+			StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();	
 			Tree<AugmentedStyle> tTree = styleTree.getTableStylesTree();		
 			org.docx4j.model.styles.Node<AugmentedStyle> asn = tTree.get(table.getStyleId());
 			tableRoot.setAttribute("class", 
@@ -147,7 +147,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
 
 	@Override
-	protected void applyColumnCustomAttributes(TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
+	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
 		if ((table.getTableWidth() > 0) && (columnWidth > -1)) {
 			appendStyle(column, Property.composeCss("width", 
 					UnitsOfMeasurement.format2DP.format((100f * columnWidth)/table.getTableWidth()) + "%"));
@@ -155,7 +155,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
   	
   	@Override
-	protected void applyTableCellCustomAttributes(TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
+	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
   		if (isDummyCell) {
 			appendStyle(cellNode, Property.composeCss("border", "none"));
 			appendStyle(cellNode, Property.composeCss("background-color:", "transparent"));

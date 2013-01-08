@@ -8,10 +8,7 @@ import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTPoint2D;
 import org.docx4j.dml.CTPositiveSize2D;
 import org.docx4j.model.images.AbstractWordXmlPicture;
-import org.docx4j.model.images.ConversionImageHandler;
-import org.docx4j.openpackaging.packages.PresentationMLPackage;
 import org.docx4j.openpackaging.parts.Part;
-import org.pptx4j.model.ResolvedLayout;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -60,13 +57,10 @@ public class PictureExporter extends AbstractWordXmlPicture {
 	protected static Logger log = Logger.getLogger(PictureExporter.class);	
 
 	public static DocumentFragment createHtmlImg(
-    		PresentationMLPackage pmlPackage,
-    		ResolvedLayout rl,    		
-    		ConversionImageHandler imageHandler,
+			SvgConversionContext context,
     		NodeIterator wpInline) {
 
-    	PictureExporter converter = createPicture( pmlPackage,
-        		 imageHandler, wpInline, rl );
+    	PictureExporter converter = createPicture(context, wpInline);
     	
     	DocumentFragment df = getHtmlDocumentFragment(converter);
     	
@@ -118,10 +112,8 @@ public class PictureExporter extends AbstractWordXmlPicture {
 	
 	org.pptx4j.pml.Pic pic=null;
 	
-    public static PictureExporter createPicture(PresentationMLPackage pmlPackage,
-    		ConversionImageHandler imageHandler,
-    		NodeIterator anchorOrInline,
-    		ResolvedLayout rl) {
+    public static PictureExporter createPicture(SvgConversionContext context,
+    		NodeIterator anchorOrInline) {
     	
     	PictureExporter converter = new PictureExporter();
     	
@@ -147,9 +139,11 @@ public class PictureExporter extends AbstractWordXmlPicture {
     	
     	String imgRelId = blip.getEmbed();    	
     	if (imgRelId!=null) {
-    		converter.handleImageRel(imageHandler, imgRelId, (Part)rl.relationships.getSourceP());
+    		converter.handleImageRel(context.getImageHandler(), imgRelId, 
+    				(Part)context.getResolvedLayout().relationships.getSourceP());
     	} else if (blip.getLink()!=null) {
-    		converter.handleImageRel(imageHandler, blip.getLink(), (Part)rl.relationships.getSourceP());
+    		converter.handleImageRel(context.getImageHandler(), blip.getLink(), 
+    				(Part)context.getResolvedLayout().relationships.getSourceP());
     	} else {
     		log.error("not linked or embedded?!");
     	}

@@ -35,8 +35,6 @@ import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.TransformState;
-import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTTblPrBase;
 import org.docx4j.wml.CTTrPrBase;
@@ -90,6 +88,8 @@ import org.w3c.dom.NodeList;
  * 
  */
 public class TableModel extends Model {
+	public static final String MODEL_ID = "w:tbl";
+	
 	private final static Logger log = Logger.getLogger(TableModel.class);
 
 	public TableModel() {
@@ -257,24 +257,13 @@ public class TableModel extends Model {
 	 * Remember to set wordMLPackage before using this method!
 	 */
 	@Override
-	public void build(Node node, NodeList children) throws TransformerException {
-
+	public void build(Object node, Node content) throws TransformerException {
 		Tbl tbl = null;
 		try {
-			tbl = (Tbl) XmlUtils.unmarshal(node);
-		} catch (JAXBException e) {
-			throw new TransformerException("Node: " + node.getNodeName() + "="
-					+ node.getNodeValue(), e);
+			tbl = (Tbl)node;
+		} catch (ClassCastException e) {
+			throw new TransformerException("Node is not of the type Tbl it is " + node.getClass().getName());
 		}
-		build(tbl, children.item(0));
-		
-	}
-	
-	/**
-	 * Build a table representation from a <var>tbl</var> instance.
-	 * Remember to set wordMLPackage before using this method!
-	 */
-	public void build(Tbl tbl, Node content) throws TransformerException {
 
 		if (tbl.getTblPr()!=null
 				&& tbl.getTblPr().getTblStyle()!=null) {
@@ -286,12 +275,7 @@ public class TableModel extends Model {
 		
 		this.tblPr = tbl.getTblPr();
 		
-		PropertyResolver pr;
-			try {
-				pr = new PropertyResolver(wordMLPackage);
-			} catch (Docx4JException e) {
-				throw new TransformerException("Hmmm", e);
-			} 
+		PropertyResolver pr = getWordMLPackage().getMainDocumentPart().getPropertyResolver();
 			
 		effectiveTableStyle = pr.getEffectiveTableStyle(tbl.getTblPr() );
 //	    if (tblPr!=null
@@ -355,6 +339,13 @@ public class TableModel extends Model {
 			}			
 			return null; 
 		}
+		
+		@Override
+		public boolean shouldTraverse(Object o) {
+			
+			// Yes, unless its a nested Tbl
+			return !(o instanceof Tbl); 
+		}
 	}
 	
 	static class TcFinder extends CallbackImpl {
@@ -369,6 +360,13 @@ public class TableModel extends Model {
 				tcList.add((Tc)o);
 			}			
 			return null; 
+		}
+		
+		@Override
+		public boolean shouldTraverse(Object o) {
+			
+			// Yes, unless its a nested Tbl
+			return !(o instanceof Tbl); 
 		}
 	}
 	
@@ -819,39 +817,5 @@ public class TableModel extends Model {
 		}
 		return buf.toString();
 	}
-	
-	public static class TableModelTransformState implements TransformState {
-		
-		// The last table number, in document order,
-		// which we have processed. 
-		// The idea is to be able to write an id (unique within the document) to each
-		// table.
-		
-		int idx = 0;
-
-		/**
-		 * @return the idx
-		 */
-		public int getIdx() {
-			return idx;
-		}
-
-		/**
-		 * @param idx the idx to set
-		 */
-		public void incrementIdx() {
-			idx++;
-		}
-		
-//		/**
-//		 * @param idx the idx to set
-//		 */
-//		public void setIdx(int idx) {
-//			this.idx = idx;
-//		}
-		
-		
-	}
-
 
 }

@@ -22,12 +22,11 @@ package org.docx4j.convert.out.html;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.ModelConverter;
+import org.docx4j.convert.out.AbstractSymbolWriter;
+import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.model.Model;
-import org.docx4j.model.SymbolModel;
-import org.docx4j.model.TransformState;
+import org.docx4j.wml.R;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -40,14 +39,15 @@ import org.w3c.dom.Text;
  *  @author Jason Harrop
  *  
 */
-public class SymbolWriter extends ModelConverter {
+public class SymbolWriter extends AbstractSymbolWriter {
 	
   private final static Logger log = Logger.getLogger(SymbolWriter.class);
+
   
 
-  public Node toNode(Model symbolModel, TransformState state) throws TransformerException {
-    SymbolModel sm = (SymbolModel)symbolModel;
-    String value =  sm.getSym().getChar(); 
+  @Override
+  protected Node toNode(AbstractWmlConversionContext context, R.Sym sym, Document doc) throws TransformerException {
+    String value =  sym.getChar(); 
 
 	// Pre-process according to ECMA-376 2.3.3.29
 	if (value.startsWith("F0")
@@ -55,14 +55,12 @@ public class SymbolWriter extends ModelConverter {
 		value = value.substring(2);
 	}
     
-    org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument(); 
-    
     Text theChar = doc.createTextNode( new String(hexStringToByteArray(value) ) );
     
 	DocumentFragment docfrag = doc.createDocumentFragment();
 	
-	String fontName = sm.getSym().getFont();
-	PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
+	String fontName = sym.getFont();
+	PhysicalFont pf = context.getWmlPackage().getFontMapper().getFontMappings().get(fontName);
 
 	if (pf==null) {
 		log.warn("No physical font present for:" + fontName);		
@@ -80,7 +78,7 @@ public class SymbolWriter extends ModelConverter {
     return docfrag;
   }
   
-	public static byte[] hexStringToByteArray(String s) {
+	protected byte[] hexStringToByteArray(String s) {
 		// From http://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java
 	    int len = s.length();
 	    byte[] data = new byte[len / 2];

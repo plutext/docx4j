@@ -19,8 +19,6 @@
  */
 package org.docx4j.model.images;
 
-import java.util.HashMap;
-
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -28,9 +26,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.pdf.viaXSLFO.PartTracker;
+import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.vml.CTImageData;
@@ -206,14 +203,13 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
      * @return
      */
     public static DocumentFragment createHtmlImgE10(
-    		WordprocessingMLPackage wmlPackage,
-    		ConversionImageHandler imageHandler,
+    		AbstractWmlConversionContext context,
     		Object wpict) {
     	
 
-    	WordXmlPictureE10 converter = createWordXmlPictureFromE10( wmlPackage,
-        		 imageHandler,
-        		 wpict, wmlPackage.getMainDocumentPart());
+    	WordXmlPictureE10 converter = createWordXmlPictureFromE10(context.getWmlPackage(),
+        		 context.getImageHandler(),
+        		 wpict, context.getWmlPackage().getMainDocumentPart());
     	
     	return getHtmlDocumentFragment(converter);
     }
@@ -229,16 +225,14 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
      * @return
      */
     public static DocumentFragment createXslFoImgE10(
-    		WordprocessingMLPackage wmlPackage,
-    		ConversionImageHandler imageHandler,
-    		NodeIterator wpict,
-    		HashMap<String, TransformState> modelStates) {
+    		AbstractWmlConversionContext context,
+    		NodeIterator wpict) {
     	
 
-    	Part sourcePart = PartTracker.getPartTrackerState(modelStates);
+    	Part sourcePart = context.getCurrentPart();
     	
-    	WordXmlPictureE10 converter = createWordXmlPictureFromE10( wmlPackage,
-        		 imageHandler,
+    	WordXmlPictureE10 converter = createWordXmlPictureFromE10(context.getWmlPackage(),
+        		 context.getImageHandler(),
         		 wpict, sourcePart);
     	
     	//log.debug("imageDirPath: " + imageDirPath);
@@ -268,19 +262,20 @@ public class WordXmlPictureE10 extends AbstractWordXmlPicture {
     	}
     }
     
+    
     /**
      * For XSLFOExporterNonXSLT
      * @since 3.0
      * 
      */
     public static DocumentFragment createXslFoImgE10(
-    		WordprocessingMLPackage wmlPackage,
-    		ConversionImageHandler imageHandler,
+    		AbstractWmlConversionContext context,
     		Object wpict,
     		Part sourcePart) {
     	
-    	WordXmlPictureE10 converter = createWordXmlPictureFromE10( wmlPackage,
-        		 imageHandler,
+    	WordXmlPictureE10 converter = createWordXmlPictureFromE10(
+    			 context.getWmlPackage(),
+        		 context.getImageHandler(),
         		 wpict, sourcePart);
     	
     	//log.debug("imageDirPath: " + imageDirPath);

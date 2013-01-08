@@ -1,7 +1,6 @@
 package org.pptx4j.convert.out.svginhtml;
 
 import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -17,15 +16,13 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractConversionSettings;
-import org.docx4j.convert.out.html.AbstractHtmlExporter;
-import org.docx4j.convert.out.html.HTMLConversionImageHandler;
-import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
+import org.docx4j.convert.out.html.HtmlCssHelper;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.dml.CTTextParagraphProperties;
 import org.docx4j.dml.CTTransform2D;
 import org.docx4j.model.styles.StyleTree;
-import org.docx4j.model.styles.Tree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
+import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.packages.PresentationMLPackage;
@@ -50,7 +47,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
-import org.xml.sax.InputSource;
 
 public class SvgExporter {
 	
@@ -147,7 +143,7 @@ public class SvgExporter {
 	private static void svg(PresentationMLPackage presentationMLPackage,
 			ResolvedLayout layout, javax.xml.transform.Result result,
 			SvgSettings settings) throws Exception {
-    			
+    SvgConversionContext context = null;			
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(
 				layout.getShapeTree(),
 				Context.jcPML,
@@ -157,23 +153,11 @@ public class SvgExporter {
 			settings = new SvgSettings();
 		}
 		settings.setWmlPackage(presentationMLPackage);
-		settings.getSettings().put("resolvedLayout", layout);
 		if ((settings.getImageDirPath() == null) && (imageDirPath != null)) {
 			settings.setImageDirPath(imageDirPath);
 		}
-		boolean privateImageHandler = false;
-		if (settings.getImageHandler() == null) {
-			settings.setImageHandler(
-				new HTMLConversionImageHandler(settings.getImageDirPath(), 
-						   settings.getImageTargetUri(), 
-						   settings.isImageIncludeUUID()));
-			privateImageHandler = true;
-		}
-		org.docx4j.XmlUtils.transform(doc, xslt, settings.getSettings(), result);
-		if (privateImageHandler) {
-			//remove a locally created imageHandler in case the SvgSettings get reused
-			settings.getSettings().remove(HtmlSettings.IMAGE_HANDLER);
-		}
+		context = new SvgConversionContext(settings, layout);
+		org.docx4j.XmlUtils.transform(doc, xslt, context.getXsltParameters(), result);
 	}
 
 	public static boolean isDebugEnabled() {
@@ -181,57 +165,8 @@ public class SvgExporter {
 		return log.isDebugEnabled();
 	}
 	
-	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
-
-		Node n = nodes.nextNode();
-		log.warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "\n" + message);
-		
-		if (log.isDebugEnabled() ) {
-			
-			if (message==null) message="";
-			
-			log.debug( XmlUtils.w3CDomNodeToString(n)  );
-
-			// Return something which will show up in the output
-			return message("NOT IMPLEMENTED: support for " + n.getNodeName() + " - " + message);
-		} else {
-			
-			// Put it in a comment node instead?
-			
-			return null;
-		}
-	}
-	
-	public static DocumentFragment message(String message) {
-		
-		if (!log.isDebugEnabled()) return null;
-
-		String html = "<div style=\"color:red\" >"
-			+ message
-			+ "</div>";  
-
-		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
-				.newInstance();
-		dbf.setNamespaceAware(true);
-		StringReader reader = new StringReader(html);
-		InputSource inputSource = new InputSource(reader);
-		Document doc = null;
-		try {
-			doc = dbf.newDocumentBuilder().parse(inputSource);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		reader.close();
-
-		DocumentFragment docfrag = doc.createDocumentFragment();
-		docfrag.appendChild(doc.getDocumentElement());
-		return docfrag;		
-	}	
-	
     public static DocumentFragment createBlockForP( 
-    		PresentationMLPackage pmlPackage,
-    		ResolvedLayout rl,
+    		SvgConversionContext context,
     		String lvl,
     		String cNvPrName,
     		String phType, NodeIterator childResults, NodeIterator lvlNpPr ) {
@@ -239,7 +174,7 @@ public class SvgExporter {
     	
 		StyleTree styleTree = null;
 		try {
-			styleTree = pmlPackage.getStyleTree();
+			styleTree = context.getPmlPackage().getStyleTree();
 		} catch (InvalidFormatException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -259,13 +194,13 @@ public class SvgExporter {
 		if (cNvPrName.toLowerCase().indexOf("subtitle")>-1
 				|| phType.toLowerCase().indexOf("subtitle")>-1) {
 			// Subtitle on first page in default layout is styled as a Body.
-				pStyleVal = "Lvl" + level + "Master" + rl.getMasterNumber() + "Body";
+				pStyleVal = "Lvl" + level + "Master" + context.getResolvedLayout().getMasterNumber() + "Body";
 		} else if (cNvPrName.toLowerCase().indexOf("title")>-1
 			|| phType.toLowerCase().indexOf("title")>-1) {
-			pStyleVal = "Lvl" + level + "Master" + rl.getMasterNumber() + "Title";
+			pStyleVal = "Lvl" + level + "Master" + context.getResolvedLayout().getMasterNumber() + "Title";
 		} else {
 			// eg cNvPrName: TextBox 2; phType:
-			pStyleVal = "Lvl" + level + "Master" + rl.getMasterNumber() + "Other";			
+			pStyleVal = "Lvl" + level + "Master" + context.getResolvedLayout().getMasterNumber() + "Other";			
 		}
 		System.out.println("--> " + pStyleVal );
 		
@@ -305,7 +240,7 @@ public class SvgExporter {
 						);
 				PPr pPr = TextStyles.getWmlPPr(lvlPPr);
 				if (pPr!=null) {
-					AbstractHtmlExporter.createCss(pmlPackage, pPr, inlineStyle, false);				
+					HtmlCssHelper.createCss(context.getPmlPackage(), pPr, inlineStyle, false);				
 				}
 				// TODO RPR
 			}
@@ -424,7 +359,7 @@ public class SvgExporter {
 }
 
 	public static DocumentFragment createBlockForR(
-			PresentationMLPackage pmlPackage, NodeIterator rPrNodeIt,
+			SvgConversionContext context, NodeIterator rPrNodeIt,
 			NodeIterator childResults) {
 
 		DocumentFragment docfrag = null;
@@ -448,7 +383,7 @@ public class SvgExporter {
 
 			// Does our rPr contain anything else?
 			StringBuffer inlineStyle = new StringBuffer();
-			AbstractHtmlExporter.createCss(pmlPackage, rPr, inlineStyle);
+			HtmlCssHelper.createCss(context.getPmlPackage(), rPr, inlineStyle);
 			if (!inlineStyle.toString().equals("")) {
 				span.setAttribute("style", inlineStyle.toString());
 			}
@@ -495,13 +430,13 @@ public class SvgExporter {
 //    	
 //    }
 	
-    public static String getCssForStyles(PresentationMLPackage pmlPackage) {
+    public static String getCssForStyles(SvgConversionContext context) {
     	
     	StringBuffer result = new StringBuffer();
     	
 		StyleTree styleTree=null;
 		try {
-			styleTree = pmlPackage.getStyleTree();
+			styleTree = context.getPmlPackage().getStyleTree();
 		} catch (InvalidFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -517,12 +452,12 @@ public class SvgExporter {
         	if (s.getPPr()==null) {
         		log.debug("null pPr for style " + s.getStyleId());
         	} else {
-        		AbstractHtmlExporter.createCss(pmlPackage, s.getPPr(), result, false );
+        		HtmlCssHelper.createCss(context.getPmlPackage(), s.getPPr(), result, false );
         	}
         	if (s.getRPr()==null) {
         		log.debug("null rPr for style " + s.getStyleId());
         	} else {
-        		AbstractHtmlExporter.createCss(pmlPackage, s.getRPr(), result);
+        		HtmlCssHelper.createCss(context.getPmlPackage(), s.getRPr(), result);
         	}
         	result.append( "}\n" );        	
     	}
@@ -536,7 +471,7 @@ public class SvgExporter {
     }
     
     public static DocumentFragment shapeToSVG( 
-    		PresentationMLPackage pmlPackage,
+    		SvgConversionContext context,
     		NodeIterator shapeIt ) {
     	
     	DocumentFragment docfrag=null;

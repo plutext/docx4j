@@ -23,13 +23,16 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.AbstractSymbolWriter;
+import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.fop.fonts.Typeface;
 import org.docx4j.model.Model;
 import org.docx4j.model.SymbolModel;
 import org.docx4j.model.TransformState;
+import org.docx4j.wml.R;
+import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,8 +45,7 @@ import org.w3c.dom.Text;
  *  @author Jason Harrop, alberto
  *  
 */
-public class SymbolWriter extends ModelConverter {
-	
+public class SymbolWriter extends AbstractSymbolWriter {
 	private final static Logger log = Logger.getLogger(SymbolWriter.class);
 
 	/* 
@@ -82,13 +84,11 @@ public class SymbolWriter extends ModelConverter {
 		*/
 	
 	
-	public Node toNode(Model symbolModel, TransformState state) throws TransformerException {
-		
-		org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument(); 
-		SymbolModel sm = (SymbolModel)symbolModel;
-		String fontName = sm.getSym().getFont();
-		String textValue =  sm.getSym().getChar();
-		PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
+	@Override
+	protected Node toNode(AbstractWmlConversionContext context, R.Sym sym, Document doc) throws TransformerException {
+		String fontName = sym.getFont();
+		String textValue =  sym.getChar();
+		PhysicalFont pf = context.getWmlPackage().getFontMapper().getFontMappings().get(fontName);
 		char chValue = '\0';
 		Typeface typeface = null;
 	  

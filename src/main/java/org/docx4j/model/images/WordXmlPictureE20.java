@@ -19,15 +19,13 @@
  */
 package org.docx4j.model.images;
 
-import java.util.HashMap;
-
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.pdf.viaXSLFO.PartTracker;
+import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.dml.CTBlip;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.CTPositiveSize2D;
@@ -35,7 +33,6 @@ import org.docx4j.dml.picture.Pic;
 import org.docx4j.dml.wordprocessingDrawing.Anchor;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.relationships.Relationship;
@@ -234,7 +231,8 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static WordXmlPictureE20 createWordXmlPictureFromE20(WordprocessingMLPackage wmlPackage,
+    private static WordXmlPictureE20 createWordXmlPictureFromE20(
+    		WordprocessingMLPackage wmlPackage,
     		ConversionImageHandler imageHandler,
     		Object anchorOrInline,
     		Part sourcePart) {
@@ -306,20 +304,16 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * from "E2.0 images" 
      *      //w:drawing/wp:inline
      *     |//w:drawing/wp:anchor
-     * @param wmlPackage
-     * @param imageDirPath
-     * @param pictureData
-     * @param picSize
-     * @param picLink
-     * @param linkData
+     * @param context
+     * @param wpInline
      * @return
      */
-    public static DocumentFragment createHtmlImgE20(WordprocessingMLPackage wmlPackage,
-    		ConversionImageHandler imageHandler,
+    public static DocumentFragment createHtmlImgE20(
+    		AbstractWmlConversionContext context,
     		Object wpInline) {
 
-    	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
-        		 imageHandler, wpInline, wmlPackage.getMainDocumentPart() );
+    	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
+        		 context.getImageHandler(), wpInline, context.getWmlPackage().getMainDocumentPart() );
     	
     	return getHtmlDocumentFragment(converter);
     }
@@ -336,15 +330,14 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * @param linkData
      * @return
      */
-    public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
-    		ConversionImageHandler imageHandler,
-    		NodeIterator wpInline, 
-    		HashMap<String, TransformState> modelStates) {
+    public static DocumentFragment createXslFoImgE20(
+    		AbstractWmlConversionContext context,
+    		NodeIterator wpInline) {
 
-    	Part sourcePart = PartTracker.getPartTrackerState(modelStates);
+    	Part sourcePart = context.getCurrentPart();
     	
-    	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
-        		 imageHandler, wpInline, sourcePart);
+    	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
+        		 context.getImageHandler(), wpInline, sourcePart);
     	
         Document d = converter.createXslFoImageElement();
 
@@ -358,13 +351,13 @@ public class WordXmlPictureE20 extends AbstractWordXmlPicture {
      * for XSLFOExporterNonXSLT
      * @since 3.0
      */
-    public static DocumentFragment createXslFoImgE20(WordprocessingMLPackage wmlPackage,
-    		ConversionImageHandler imageHandler,
+    public static DocumentFragment createXslFoImgE20(
+    		AbstractWmlConversionContext context,
     		Object wpInline, 
     		Part sourcePart) {
     	
-    	WordXmlPictureE20 converter = createWordXmlPictureFromE20( wmlPackage,
-        		 imageHandler, wpInline, sourcePart);
+    	WordXmlPictureE20 converter = createWordXmlPictureFromE20(context.getWmlPackage(),
+        		 context.getImageHandler(), wpInline, sourcePart);
     	
         Document d = converter.createXslFoImageElement();
 

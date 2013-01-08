@@ -20,8 +20,6 @@
 package org.docx4j.convert.out.html;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -33,17 +31,13 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
-import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.PageBreak;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.SymbolModel.SymbolModelTransformState;
 import org.docx4j.model.PropertyResolver;
-import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
 import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
-import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -56,7 +50,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
-import org.xml.sax.InputSource;
 
 /**
  * HtmlExporterNG (now removed - see 
@@ -202,6 +195,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	public void html(WordprocessingMLPackage wmlPackage,
 			javax.xml.transform.Result result, HtmlSettings htmlSettings)
 			throws Exception {
+	HTMLConversionContext conversionContext = null;
 
 		// Containerization of borders/shading
 		MainDocumentPart mdp = wmlPackage.getMainDocumentPart();
@@ -223,123 +217,27 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			// possibly via an extension function in the XSLT
 		}
 
-		// Ensure that the imageHandler is set up
-		boolean privateImageHandler = false;
-		if (htmlSettings.getImageHandler() == null) {
-			htmlSettings.setImageHandler(
-				new HTMLConversionImageHandler(htmlSettings.getImageDirPath(), 
-											   htmlSettings.getImageTargetUri(), 
-											   htmlSettings.isImageIncludeUUID()));
-			privateImageHandler = true;
-		}
-		
-		if (htmlSettings.getFontMapper() == null) {
-			htmlSettings.setFontMapper(wmlPackage.getFontMapper());
-			log.debug("FontMapper set.. ");
-		}
-
 		htmlSettings.setWmlPackage(wmlPackage);
-
-		// Allow arbitrary objects to be passed to the converters.
-		// The objects are assumed to be specific to a particular converter (eg
-		// table),
-		// so assume there will be one object implementing TransformState per
-		// converter.
-		HashMap<String, TransformState> modelStates = new HashMap<String, TransformState>();
-		htmlSettings.getSettings().put("modelStates", modelStates);
-
-		// Converter c = new Converter();
-		Converter.getInstance().registerModelConverter("w:tbl",
-				new TableWriter());
-		Converter.getInstance().registerModelConverter("w:sym",
-				new SymbolWriter());
-
-		// By convention, the transform state object is stored by reference to
-		// the
-		// type of element to which its model applies
-		modelStates.put("w:tbl", new TableModelTransformState());
-		modelStates.put("w:sym", new SymbolModelTransformState());
-
-		// .. although that convention can be bent ..
-		modelStates.put("footnoteNumber", new FootnoteState());
-		modelStates.put("endnoteNumber", new EndnoteState());
-
-		Converter.getInstance().start(wmlPackage);
+		
+		//Setup the context
+		conversionContext = new HTMLConversionContext(htmlSettings);
 
 		// Now do the transformation
 		log.debug("About to transform...");
-		org.docx4j.XmlUtils.transform(doc, xslt, htmlSettings.getSettings(),
+		org.docx4j.XmlUtils.transform(doc, xslt, conversionContext.getXsltParameters(),
 				result);
-
-		if (privateImageHandler) {
-			//remove a locally created imageHandler in case the HtmlSettings get reused
-			htmlSettings.getSettings().remove(HtmlSettings.IMAGE_HANDLER);
-		}
 		log.info("wordDocument transformed to xhtml ..");
 
 	}
         
     /* ---------------Xalan XSLT Extension Functions ---------------- */
-
-	
-	public static DocumentFragment notImplemented(NodeIterator nodes, String message) {
-
-		Node n = nodes.nextNode();
-		log.warn("NOT IMPLEMENTED: support for "+ n.getNodeName() + "; " + message);
-		
-		if (log.isDebugEnabled() ) {
-			
-			if (message==null) message="";
-			
-			log.debug( XmlUtils.w3CDomNodeToString(n)  );
-
-			// Return something which will show up in the HTML
-			return message("NOT IMPLEMENTED: support for " + n.getNodeName() + " - " + message);
-		} else {
-			
-			// Put it in a comment node instead?
-			
-			return null;
-		}
-	}
-	
-	public static DocumentFragment message(String message) {
-		
-		if (!log.isDebugEnabled()) return null;
-
-		String html = "<div style=\"color:red\" >"
-			+ message
-			+ "</div>";  
-
-		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
-				.newInstance();
-		dbf.setNamespaceAware(true);
-		StringReader reader = new StringReader(html);
-		InputSource inputSource = new InputSource(reader);
-		Document doc = null;
-		try {
-			doc = dbf.newDocumentBuilder().parse(inputSource);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		reader.close();
-
-		DocumentFragment docfrag = doc.createDocumentFragment();
-		docfrag.appendChild(doc.getDocumentElement());
-		return docfrag;		
-	}
-	
-	
-	
-    
     
     public static DocumentFragment createBlockForSdt( 
-    		WordprocessingMLPackage wmlPackage,
+    		HTMLConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults, String tag) {
     	
-    	DocumentFragment docfrag = createBlock( wmlPackage,
+    	DocumentFragment docfrag = createBlock( context,
         		 pPrNodeIt,
         		 pStyleVal,  childResults,
         		 "div");
@@ -348,12 +246,12 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     }	    
 
     public static DocumentFragment createBlockForPPr( 
-    		WordprocessingMLPackage wmlPackage,
+    		HTMLConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults ) {
 
     	return createBlock( 
-        		 wmlPackage,
+        		 context,
         		 pPrNodeIt,
         		 pStyleVal,  childResults,
         		  "p" );
@@ -361,13 +259,13 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     }
     
     private static DocumentFragment createBlock( 
-    		WordprocessingMLPackage wmlPackage,
+    		HTMLConversionContext context,
     		NodeIterator pPrNodeIt,
     		String pStyleVal, NodeIterator childResults,
     		String htmlElementName ) {
     	
 
-		StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
+		StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
     	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
@@ -375,8 +273,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     	// which implements org.w3c.dom.traversal.NodeIterator
 
 		if ( pStyleVal ==null || pStyleVal.equals("") ) {
-//			pStyleVal = "Normal";
-			pStyleVal = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
+			pStyleVal = "Normal";
+			if (context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null) {
+				pStyleVal = context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
+			}
 		}
     	log.debug("style '" + pStyleVal );     		
     	
@@ -430,15 +330,14 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			boolean ignoreBorders = (htmlElementName.equals("p"));
 			if (pPr!=null) {
 				StringBuffer inlineStyle =  new StringBuffer();
-				createCss(wmlPackage, pPr, inlineStyle, ignoreBorders);				
+				HtmlCssHelper.createCss(context.getWmlPackage(), pPr, inlineStyle, ignoreBorders);				
 				if (!inlineStyle.toString().equals("") ) {
 					xhtmlBlock.setAttribute("style", inlineStyle.toString() );
 				}
 				if (!inlineStyle.toString().contains(SpaceBefore.CSS_NAME) ) {
 			    	// If there is no w:spacing/@w:before, it should be 0.
 			    	// unless it is set to anything in the effective style 
-			    	PropertyResolver propertyResolver = 
-			        		wmlPackage.getMainDocumentPart().getPropertyResolver();
+			    	PropertyResolver propertyResolver = context.getPropertyResolver();
 					PPr stylePPr = propertyResolver.getEffectivePPr(pStyleVal);
 					if (stylePPr.getSpacing()!=null 
 							&& stylePPr.getSpacing().getBefore()!=null) {
@@ -544,12 +443,12 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     }
 
     public static DocumentFragment createBlockForRPr( 
-    		WordprocessingMLPackage wmlPackage,
+    		HTMLConversionContext context,
     		String pStyleVal,
     		NodeIterator rPrNodeIt,
     		NodeIterator childResults ) {
     
-    	StyleTree styleTree = wmlPackage.getMainDocumentPart().getStyleTree();
+    	StyleTree styleTree = context.getWmlPackage().getMainDocumentPart().getStyleTree();
     	    	
     	// Note that this is invoked for every paragraph with a pPr node.
     	
@@ -599,8 +498,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				}
 				
 				if (pStyleVal==null || pStyleVal.equals("")) {
-//					pStyleVal = "Normal";
-					pStyleVal = wmlPackage.getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
+					pStyleVal = "Normal";
+					if (context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart() != null) {
+						pStyleVal = context.getWmlPackage().getMainDocumentPart().getStyleDefinitionsPart().getDefaultParagraphStyle().getStyleId();
+					}
 				}
 
 				// Set @class	
@@ -619,7 +520,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 				
 				// Does our rPr contain anything else?
 				StringBuffer inlineStyle =  new StringBuffer();
-				createCss(wmlPackage, rPr, inlineStyle);				
+				HtmlCssHelper.createCss(context.getWmlPackage(), rPr, inlineStyle);				
 				if (!inlineStyle.toString().equals("") ) {
 					((Element)span).setAttribute("style", inlineStyle.toString() );
 				}
@@ -646,38 +547,5 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
     	return null;
     	
     }
-    
-    public static int getNextFootnoteNumber(HashMap<String, TransformState> modelStates) {
-    	
-    	FootnoteState fs = (FootnoteState)modelStates.get("footnoteNumber");
-    	return fs.getNextFootnoteNumber();
-    }
-    
-    public static class FootnoteState implements TransformState {
-    
-	    int footnoteNumber=0;
-	    public int getNextFootnoteNumber() {
-	    	footnoteNumber++;
-	    	return footnoteNumber;
-	    	
-	    }
-    }
-
-    public static int getNextEndnoteNumber(HashMap<String, TransformState> modelStates) {
-    	
-    	EndnoteState fs = (EndnoteState)modelStates.get("endnoteNumber");
-    	return fs.getNextEndnoteNumber();
-    }
-    
-    public static class EndnoteState implements TransformState {
-    
-	    int endnoteNumber=0;
-	    public int getNextEndnoteNumber() {
-	    	endnoteNumber++;
-	    	return endnoteNumber;
-	    	
-	    }
-    }
-    
    
 }

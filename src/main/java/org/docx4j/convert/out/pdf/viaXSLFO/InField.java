@@ -1,29 +1,20 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
-import java.util.HashMap;
-
 import javax.xml.bind.JAXBException;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.TransformState;
 import org.docx4j.wml.STFldCharType;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
-public class InField  implements TransformState {
-	
+public class InField {
 	protected static Logger log = Logger.getLogger(InField.class);		
 	
-	boolean inField = false;
+	private boolean inField = false;
 	
-	public static void updateState( 
-			HashMap<String, TransformState> modelStates,
-			NodeIterator fldCharNodeIt) {
-
-		InField state = (InField)modelStates.get(Conversion.FIELD_TRACKER);
-		
+	public void updateState(NodeIterator fldCharNodeIt) {
     	org.docx4j.wml.FldChar field = null;
     	
     	Node node = fldCharNodeIt.nextNode();
@@ -46,17 +37,16 @@ public class InField  implements TransformState {
 		} else {
 			
 			if (fieldCharType==STFldCharType.BEGIN) {
-				state.inField= true;
+				inField= true;
 			} else if (fieldCharType==STFldCharType.END) {
-				state.inField= false;
+				inField= false;
 			} 
 			// else ignore STFldCharType.SEPARATE 			
 		}
 		
 	}
 	
-	public static boolean getState( HashMap<String, TransformState> modelStates) {
-		
-		return ((InField)modelStates.get(Conversion.FIELD_TRACKER)).inField;
+	public boolean getState() {
+		return inField;
 	}
 }

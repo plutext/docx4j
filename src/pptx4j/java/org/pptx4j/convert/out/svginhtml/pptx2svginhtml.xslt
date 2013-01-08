@@ -61,9 +61,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 -->
 
-	<xsl:param name="wmlPackage"/> <!--  really, its pml -->
-	<xsl:param name="resolvedLayout"/>
-	<xsl:param name="imageHandler"/>
+	<xsl:param name="conversionContext"/> <!-- select="'passed in'"-->	
 	
 
 
@@ -78,7 +76,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 							
 					/* Word style definitions */
 					<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.getCssForStyles( 
-	  											$wmlPackage)"/>
+	  											$conversionContext)"/>
 	
 	          </xsl:comment>
 	        </style>
@@ -152,7 +150,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		<xsl:variable name="shape" select="."/>
 
 	  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.shapeToSVG(
-	  		$wmlPackage, $shape)" />
+	  		$conversionContext, $shape)" />
  
  </xsl:template>
 
@@ -170,7 +168,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 			</xsl:choose>
 		</xsl:variable>
 	  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.createBlockForP(
-	  		$wmlPackage, $resolvedLayout,
+	  		$conversionContext,
 	  		$lvl,
 	  		$cNvPrName, $phType,
 	  		 $childResults, $lvlPPr)" />
@@ -180,7 +178,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		<xsl:variable name="rPr" select="a:rPr"/>
 		<xsl:variable name="childResults"><xsl:apply-templates select="a:t"/></xsl:variable>
 	  	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.SvgExporter.createBlockForR(
-	  		$wmlPackage, $rPr,
+	  		$conversionContext, $rPr,
 	  		 $childResults)" />
  </xsl:template>
 
@@ -196,8 +194,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   <xsl:template match="p:pic">
     		
   	<xsl:copy-of select="java:org.pptx4j.convert.out.svginhtml.PictureExporter.createHtmlImg( 
-  			$wmlPackage, $resolvedLayout,
-  			$imageHandler,
+  			$conversionContext,
   			.)" />
     
   </xsl:template>

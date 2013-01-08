@@ -38,9 +38,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 <!-- TODO strict dtd -->
 
 
-<xsl:param name="wmlPackage"/> <!-- select="'passed in'"-->	
-<xsl:param name="modelStates"/> <!-- select="'passed in'"-->	
-<xsl:param name="imageHandler"/>
+<xsl:param name="conversionContext"/> <!-- select="'passed in'"-->	
    
 <!-- Used in extension function for mapping fonts --> 		
 <xsl:param name="fontMapper"/> <!-- select="'passed in'"-->	
@@ -72,11 +70,11 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					/*paged media */ div.header {display: none }
 					div.footer {display: none } /*@media print { */
 					<xsl:if
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 1)">
+						test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext, 1)">
 						div.header {display: block; position: running(header) }
 					</xsl:if>
 					<xsl:if
-						test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 1)">
+						test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext, 1)">
 						div.footer {display: block; position: running(footer) }
 					</xsl:if>
 
@@ -102,13 +100,13 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					/* Word style definitions */
 					<xsl:copy-of
 						select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForStyles( 
-		  											$wmlPackage)" />
+		  											$conversionContext)" />
 
 					/* TABLE CELL STYLES */
 					<xsl:variable name="tables" select="./w:body//w:tbl" />
 					<xsl:copy-of
 						select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getCssForTableCells( 
-		  											$wmlPackage, $tables)" />
+		  											$conversionContext, $tables)" />
 
 					
 				</xsl:comment>
@@ -150,16 +148,16 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 				similar to the below already exist
 			-->
 			<xsl:if
-				test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultHeader($wmlPackage, 1)">
+				test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext, 1)">
 				<div class="header">
 					<xsl:apply-templates
-						select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultHeader($wmlPackage, 1)" />
+						select="java:org.docx4j.convert.out.Converter.getDefaultHeader($conversionContext, 1)" />
 				</div>
 			</xsl:if>
 
 			<!--  Info -->
 			<xsl:copy-of
-				select="java:org.docx4j.convert.out.html.HtmlExporterNG2.message( 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.html.HtmlExporterNG2 ' )" />
+				select="java:org.docx4j.convert.out.Converter.message($conversionContext, 'TO HIDE THESE MESSAGES, TURN OFF log4j debug level logging for org.docx4j.convert.out.Converter ' )" />
 
 			<xsl:call-template name="pretty-print-block" />
 
@@ -171,30 +169,30 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 			<!--  Footnotes and endnotes -->
 			<xsl:if
-				test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasFootnotesPart($wmlPackage)">
+				test="java:org.docx4j.convert.out.Converter.hasFootnotesPart($conversionContext)">
 				<div class="footnotes">
 					<xsl:apply-templates
-						select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getFootnotes($wmlPackage)" />
+						select="java:org.docx4j.convert.out.Converter.getFootnotes($conversionContext)" />
 				</div>
 			</xsl:if>
 
 			<xsl:call-template name="pretty-print-block" />
 
 			<xsl:if
-				test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
+				test="java:org.docx4j.convert.out.Converter.hasEndnotesPart($conversionContext)">
 				<div class="endnotes">
 					<xsl:apply-templates
-						select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
+						select="java:org.docx4j.convert.out.Converter.getEndnotes($conversionContext)" />
 				</div>
 			</xsl:if>
 
 			<xsl:call-template name="pretty-print-block" />
 
 			<xsl:if
-				test="java:org.docx4j.model.structure.HeaderFooterPolicy.hasDefaultFooter($wmlPackage, 1)">
+				test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext, 1)">
 				<div class="footer">
 					<xsl:apply-templates
-						select="java:org.docx4j.model.structure.HeaderFooterPolicy.getDefaultFooter($wmlPackage, 1)" />
+						select="java:org.docx4j.convert.out.Converter.getDefaultFooter($conversionContext, 1)" />
 				</div>
 			</xsl:if>
 			
@@ -257,7 +255,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					<!--  Do count an 'empty' paragraph (one with a w:pPr node only) -->
 					<xsl:value-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
-					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)"/>
+					  					$conversionContext, $pPrNode, $pStyleVal, $numId, $levelId)"/>
 					<!--  Don't apply templates, since there is nothing to do. -->
 				</xsl:when>				
 				<xsl:otherwise>
@@ -265,7 +263,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					      we'll do that when we have a document model to work from -->								
 					<xsl:value-of select="
 						java:org.docx4j.convert.out.html.AbstractHtmlExporter.getNumberXmlNode( 
-					  					$wmlPackage, $pPrNode, $pStyleVal, $numId, $levelId)" />		
+					  					$conversionContext, $pPrNode, $pStyleVal, $numId, $levelId)" />		
 					<xsl:apply-templates/>				
 				</xsl:otherwise>
 			</xsl:choose>
@@ -274,7 +272,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 		<xsl:variable name="pPrNode" select="w:pPr" />  
 		
 		<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForPPr( 
-	 							$wmlPackage, $pPrNode, $pStyleVal, $childResults)" />
+	 							$conversionContext, $pPrNode, $pStyleVal, $childResults)" />
 			
 		
   </xsl:template>
@@ -338,7 +336,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 			<xsl:variable name="rPrNode" select="w:rPr" />  	
 	
 		  	<xsl:copy-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.createBlockForRPr( 
-		  		$wmlPackage, $pStyleVal, $rPrNode, $childResults)" />
+		  		$conversionContext, $pStyleVal, $rPrNode, $childResults)" />
 	  		
 	  	</xsl:when>
 	  	<xsl:otherwise>
@@ -372,7 +370,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 		<xsl:copy-of
 			select="java:org.docx4j.convert.out.html.SdtWriter.toNode(
-  			$wmlPackage, $sdtPrNode, 
+  			$conversionContext, $sdtPrNode, 
   			$childResults)"  />
 
 	</xsl:template>
@@ -402,14 +400,13 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   		<xsl:when test="./a:graphic/a:graphicData/pic:pic">
   		
   	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE20.createHtmlImgE20( 
-  			$wmlPackage, 
-  			$imageHandler,
+  			$conversionContext, 
   			$wpinline)" />
   		</xsl:when>
   		<xsl:otherwise>
   		
 			<xsl:copy-of 
-				select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., ' without pic:pic ' )" />  	  		
+				select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., ' without pic:pic ' )" />  	  		
   		</xsl:otherwise>  	
   	</xsl:choose>
     
@@ -424,14 +421,13 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 			  	<xsl:variable name="wpict" select="."/>
 			  	
 			  	<xsl:copy-of select="java:org.docx4j.model.images.WordXmlPictureE10.createHtmlImgE10( 
-			  			$wmlPackage, 
-			  			$imageHandler,
+			  			$conversionContext, 
 			  			$wpict)" />
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:comment>TODO: handle w:pict containing other than ./v:shape/v:imagedata</xsl:comment>
 			<xsl:copy-of 
-				select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., ' without v:imagedata ' )" />  	  		
+				select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., ' without v:imagedata ' )" />  	  		
 			</xsl:otherwise>
 		</xsl:choose>  			
 	
@@ -476,7 +472,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   -->
   
 		<!--  Create the HTML table in Java --> 
-	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($tblNode, $childResults, $modelStates)"/>
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $tblNode, $childResults)"/>
 	  			  		
   </xsl:template>
 
@@ -543,8 +539,8 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 	<xsl:variable name="symNode" select="." />  			
 
-     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($symNode, 
-			$childResults, $modelStates)" />
+     <xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode($conversionContext, $symNode, 
+			$childResults)" />
   		  			
 </xsl:template>
   
@@ -603,8 +599,8 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 	<xsl:variable name="relId"><xsl:value-of select="string(@r:id)"/></xsl:variable>
       
 	<xsl:variable name="hTemp" 
-		select="java:org.docx4j.convert.out.html.AbstractHtmlExporter.resolveHref(
-		             $wmlPackage, $relId )" />
+		select="java:org.docx4j.convert.out.Converter.resolveHref(
+		             $conversionContext, $relId )" />
 		                   
       <xsl:variable name="href">
           <xsl:value-of select="$hTemp"/>
@@ -665,12 +661,12 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
   </xsl:template>  	
   
   <xsl:template match="w:footnoteReference">  
-    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getNextFootnoteNumber($modelStates)"/></xsl:variable>
+    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.Converter.getNextFootnoteNumber($conversionContext)"/></xsl:variable>
   	<span style="vertical-align: top; font-size: xx-small">
   		<!--  Bidirectional --><a name="fs{$fn}"><a href="#fn{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
   </xsl:template>
   <xsl:template match="w:endnoteReference ">  
-    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.html.HtmlExporterNG2.getNextEndnoteNumber($modelStates)"/></xsl:variable>
+    <xsl:variable name="fn"><xsl:value-of select="java:org.docx4j.convert.out.Converter.getNextEndnoteNumber($conversionContext)"/></xsl:variable>
   	<span style="vertical-align: top; font-size: xx-small">
   		<!--  Bidirectional --><a name="es{$fn}"><a href="#en{$fn}"><xsl:value-of select="$fn"/></a></a></span>  
   </xsl:template>
@@ -699,15 +695,15 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
   <xsl:template match="w:fldSimple" >
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., 'no support for fields' )" />  	
+			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., 'no support for fields' )" />  	
   </xsl:template>
   <xsl:template match="w:fldChar" >
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., '' )" />  	
+			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., '' )" />  	
   </xsl:template>
   <xsl:template match="w:instrText" >
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., 'no support for fields' )" />  	
+			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., 'no support for fields' )" />  	
   </xsl:template>
 
   <!--  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -716,7 +712,7 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
   <xsl:template match="*[ancestor::w:body]" priority="-1"> <!--  ignore eg page number field in footer -->
 		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.html.HtmlExporterNG2.notImplemented(., '' )" />  	      		 
+			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., '' )" />  	      		 
   </xsl:template>
    
 </xsl:stylesheet>

@@ -1,28 +1,10 @@
-/*
-   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
-   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.AbstractTableWriter;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
@@ -79,12 +61,12 @@ public class TableWriter extends AbstractTableWriter {
   	}
 
 	@Override
-	protected void applyAttributes(List<Property> properties, Element element) {
+	protected void applyAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element) {
 		Conversion.applyFoAttributes(properties, element);
 	}
 	
 	@Override
-	protected void applyTableCustomAttributes(TableModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element tableRoot) {
 	int cellSpacing = ((table.getEffectiveTableStyle().getTblPr() != null) &&
 					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing() != null) &&
 					   (table.getEffectiveTableStyle().getTblPr().getTblCellSpacing().getW() != null) ?
@@ -109,7 +91,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
 
 	@Override
-	protected void applyColumnCustomAttributes(TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
+	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
         column.setAttribute("column-number", Integer.toString(columnIndex + 1));
 		if (columnWidth > -1) {
 	        column.setAttribute("column-width", UnitsOfMeasurement.twipToBest(columnWidth) );
@@ -117,7 +99,7 @@ public class TableWriter extends AbstractTableWriter {
 	}
   	
   	@Override
-	protected void applyTableCellCustomAttributes(TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
+	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
   		if (isDummyCell) {
 			cellNode.setAttribute("border-style", "none");
 			cellNode.setAttribute("background-color", "transparent");

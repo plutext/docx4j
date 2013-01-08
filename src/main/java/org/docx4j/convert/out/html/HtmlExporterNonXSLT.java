@@ -5,13 +5,11 @@ package org.docx4j.convert.out.html;
 
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.transform.TransformerException;
-
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
@@ -20,7 +18,6 @@ import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.model.table.TableModel;
-import org.docx4j.model.table.TableModel.TableModelTransformState;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.P;
@@ -28,7 +25,6 @@ import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.Tbl;
-import org.w3c.dom.Attr;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,34 +50,21 @@ import org.w3c.dom.Node;
 public class HtmlExporterNonXSLT {
 
 	private static Logger log = Logger.getLogger(HtmlExporterNonXSLT.class);
-	
-	public static JAXBContext context = org.docx4j.jaxb.Context.jc;
 
 	protected static String inputfilepath;	
 	protected static String outputfilepath;
+	
+	protected HTMLConversionContextNonXSLT conversionContext = null;
 	
 	org.w3c.dom.Document htmlDoc;
 	Element headEl;
 	Element bodyEl;
 	
-	WordprocessingMLPackage wordMLPackage;
-	StyleTree styleTree;
-	
-	ConversionImageHandler conversionImageHandler;
-	
 	public HtmlExporterNonXSLT(WordprocessingMLPackage wordMLPackage, ConversionImageHandler conversionImageHandler) {
-		
-		this.wordMLPackage = wordMLPackage;
-		this.conversionImageHandler = conversionImageHandler;
-
-    	styleTree = null;
-		try {
-			styleTree = wordMLPackage.getMainDocumentPart().getStyleTree();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
-		
+	HtmlSettings htmlSettings = new HtmlSettings();
+		htmlSettings.setWmlPackage(wordMLPackage);
+		htmlSettings.setImageHandler(conversionImageHandler);
+		conversionContext = new HTMLConversionContextNonXSLT(htmlSettings);
 	}
 	
 	/**
@@ -107,21 +90,23 @@ public class HtmlExporterNonXSLT {
 		// css
     	Element styleEl = htmlDoc.createElement("style");
     	headEl.appendChild(styleEl);
-    	styleEl.appendChild(
-    			htmlDoc.createComment(AbstractHtmlExporter.getCssForStyles(wordMLPackage)));		
+    	styleEl.appendChild(htmlDoc.createComment(getCss()));		
 		
     	
-		List blockLevelContent = wordMLPackage.getMainDocumentPart().getContent();
+		List blockLevelContent = conversionContext.getWmlPackage().getMainDocumentPart().getContent();
     	
-		HTMLGenerator htmlGenerator = new HTMLGenerator();
+		HTMLGenerator htmlGenerator = new HTMLGenerator(conversionContext);
 		new TraversalUtil(blockLevelContent, htmlGenerator);
 
 		return htmlDoc;
 	}
 	
 	public String getCss() {
-		
-		return AbstractHtmlExporter.getCssForStyles(wordMLPackage);
+		StringBuffer buffer = new StringBuffer();
+		HtmlCssHelper.createCssForStyles(conversionContext.getWmlPackage(), 
+										 conversionContext.getStyleTree(), 
+										 buffer);
+		return buffer.toString();
 	}
 	
 	/**
@@ -143,7 +128,7 @@ public class HtmlExporterNonXSLT {
     	}
     	htmlDoc.appendChild(bodyEl);    	
 		
-		HTMLGenerator htmlGenerator = new HTMLGenerator();
+		HTMLGenerator htmlGenerator = new HTMLGenerator(conversionContext);
 		new TraversalUtil(blockLevelContent, htmlGenerator);
 
 		return htmlDoc;
@@ -160,7 +145,7 @@ public class HtmlExporterNonXSLT {
 					&& pPr.getPStyle().getVal()!=null) {
 
 				pStyleVal = pPr.getPStyle().getVal();						
-				Tree<AugmentedStyle> pTree = styleTree.getParagraphStylesTree();		
+				Tree<AugmentedStyle> pTree = conversionContext.getStyleTree().getParagraphStylesTree();		
 				org.docx4j.model.styles.Node<AugmentedStyle> asn = pTree.get(pStyleVal);
 				currentEl.setAttribute("class", 
 						StyleTree.getHtmlClassAttributeValue(pTree, asn)			
@@ -170,7 +155,7 @@ public class HtmlExporterNonXSLT {
 			// Does our pPr contain anything else?
 			boolean ignoreBorders = true;
 			StringBuffer inlineStyle =  new StringBuffer();
-			AbstractHtmlExporter.createCss(wordMLPackage, pPr, inlineStyle, ignoreBorders);				
+			HtmlCssHelper.createCss(conversionContext.getWmlPackage(), pPr, inlineStyle, ignoreBorders);				
 			if (!inlineStyle.toString().equals("") ) {
 				currentEl.setAttribute("style", inlineStyle.toString() );
 			}
@@ -185,7 +170,7 @@ public class HtmlExporterNonXSLT {
 			}
 			
         	ResultTriple triple = org.docx4j.model.listnumbering.Emulator.getNumber(
-        			wordMLPackage, pStyleVal, numId, levelId);   
+        			conversionContext.getWmlPackage(), pStyleVal, numId, levelId);   
         	
 
 			if (triple==null) {
@@ -213,7 +198,7 @@ public class HtmlExporterNonXSLT {
 		// Set @class	
 		if ( rPr.getRStyle()!=null) {
 			String rStyleVal = rPr.getRStyle().getVal();
-			Tree<AugmentedStyle> cTree = styleTree.getCharacterStylesTree();		
+			Tree<AugmentedStyle> cTree = conversionContext.getStyleTree().getCharacterStylesTree();		
 			org.docx4j.model.styles.Node<AugmentedStyle> asn = cTree.get(rStyleVal);
 			if (asn==null) {
 				log.warn("No style node for: " + rStyleVal);
@@ -226,16 +211,15 @@ public class HtmlExporterNonXSLT {
 		
 		// Does our rPr contain anything else?
 		StringBuffer inlineStyle =  new StringBuffer();
-		AbstractHtmlExporter.createCss(wordMLPackage, rPr, inlineStyle);				
+		HtmlCssHelper.createCss(conversionContext.getWmlPackage(), rPr, inlineStyle);				
 		if (!inlineStyle.toString().equals("") ) {
 			spanEl.setAttribute("style", inlineStyle.toString() );
 		}
 			
 	}
 	
-	TableModelTransformState tableModelTransformState = new TableModelTransformState();
-	
     class HTMLGenerator extends CallbackImpl {
+    	HTMLConversionContextNonXSLT conversionContext = null;
     	
     	Element currentP; 
     	Element currentSpan;
@@ -243,7 +227,13 @@ public class HtmlExporterNonXSLT {
     	// E20 image
     	Object anchorOrInline;
     	
-    	@Override
+    	
+    	HTMLGenerator(HTMLConversionContextNonXSLT conversionContext) {
+			super();
+			this.conversionContext = conversionContext;
+		}
+
+		@Override
 		public List<Object> apply(Object o) {
 			
 			if (o instanceof P) {
@@ -287,23 +277,26 @@ public class HtmlExporterNonXSLT {
 				new TraversalUtil(
 						tbl.getContent(), tableRowTraversor);
 				
-//				NodeList childResults = tableRowTraversor.tableFragment.getChildNodes();
+//				Node content = tableRowTraversor.tableFragment;
 				
-				try {
-					TableModel tm = new TableModel();
-					tm.setWordMLPackage(wordMLPackage);
-					tm.build(tbl, tableRowTraversor.tableFragment);
-					
-					TableWriter tableWriter = new TableWriter();
-					tableWriter.setWordMLPackage(wordMLPackage);
-					Node htmlTable = tableWriter.toNode(tm, tableModelTransformState, htmlDoc);
-					
-					currentP.appendChild(htmlTable);
-					
-				} catch (TransformerException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				Node htmlTable = 
+					 conversionContext.getModelRegistry().toNode(
+							 conversionContext, 
+							 tbl, 
+							 TableModel.MODEL_ID, 
+							 tableRowTraversor.tableFragment, 
+							 htmlDoc);
+				
+				if (htmlTable != null) {
+					if (currentP != null) {
+						currentP.appendChild(htmlTable);
+					}
+					else {
+						//in case there isn't a paragraph 
+						bodyEl.appendChild(htmlTable);
+					}
 				}
+				
 				
 			} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline
 					|| o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
@@ -319,8 +312,8 @@ public class HtmlExporterNonXSLT {
 	                        <pic:blipFill>
 	                          <a:blip r:embed="rId10" cstate="print"/> */
 				
-				DocumentFragment foreignFragment = WordXmlPictureE20.createHtmlImgE20(wordMLPackage, 
-						conversionImageHandler, anchorOrInline);
+				DocumentFragment foreignFragment = 
+						WordXmlPictureE20.createHtmlImgE20(conversionContext, anchorOrInline);
 				anchorOrInline = null;
 				
 				currentP.appendChild( htmlDoc.importNode(foreignFragment, true) );
@@ -331,8 +324,8 @@ public class HtmlExporterNonXSLT {
 		            <v:imagedata r:id="rId4" o:title=""/>
 		          </v:shape> */
 
-				DocumentFragment foreignFragment = WordXmlPictureE10.createHtmlImgE10(wordMLPackage, 
-						conversionImageHandler, o);
+				DocumentFragment foreignFragment = 
+						WordXmlPictureE10.createHtmlImgE10(conversionContext, o);
 				
 				currentP.appendChild( htmlDoc.importNode(foreignFragment, true) );
 				

@@ -172,24 +172,19 @@ public abstract class DocumentPart<E> extends JaxbXmlPartXPathAware<E> {
 	public EndnotesPart getEndNotesPart() {
 		return endNotesPart;
 	}
-	public static Node getEndnotes(WordprocessingMLPackage wmlPackage) {
-		return XmlUtils.marshaltoW3CDomDocument(
-				wmlPackage.getMainDocumentPart().getEndNotesPart().getJaxbElement());		
-	}
 	
 	/**
 	 * Does this package contain an endnotes part, with real endnotes
 	 * in it?
-	 * @param wmlPackage
 	 * @return
 	 */
-	public static boolean hasEndnotesPart(WordprocessingMLPackage wmlPackage) {
-		if (wmlPackage.getMainDocumentPart().getEndNotesPart()==null) {
+	public boolean hasEndnotesPart() {
+		if (getEndNotesPart()==null) {
 			return false;
 		} else {
 			// Word seems to add an endnotes part when it adds a footnotes part,
 			// so existence of part is not determinative
-			CTEndnotes endnotes = wmlPackage.getMainDocumentPart().getEndNotesPart().getJaxbElement();
+			CTEndnotes endnotes = getEndNotesPart().getJaxbElement();
 			
 			if (endnotes.getEndnote().size()<3) {
 				// id's 0 & 1 are:
@@ -204,14 +199,9 @@ public abstract class DocumentPart<E> extends JaxbXmlPartXPathAware<E> {
 	public FootnotesPart getFootnotesPart() {
 		return footnotesPart;
 	}
-
-	public static Node getFootnotes(WordprocessingMLPackage wmlPackage) {		
-		return XmlUtils.marshaltoW3CDomDocument(
-				wmlPackage.getMainDocumentPart().getFootnotesPart().getJaxbElement());		
-	}
 	
-	public static boolean hasFootnotesPart(WordprocessingMLPackage wmlPackage) {
-		if (wmlPackage.getMainDocumentPart().getFootnotesPart()==null) {
+	public boolean hasFootnotesPart() {
+		if (getFootnotesPart()==null) {
 			return false;
 		} else {
 			return true;

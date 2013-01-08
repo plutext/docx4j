@@ -74,7 +74,7 @@ import org.w3c.dom.Node;
  *  @since 3.0.0
  *  
 */
-public abstract class AbstractTableWriter extends ModelConverter {
+public abstract class AbstractTableWriter implements ModelConverter {
   
   protected static final int NODE_TABLE = 0;
   protected static final int NODE_TABLE_COLUMN_GROUP = 1;
@@ -139,14 +139,43 @@ public abstract class AbstractTableWriter extends ModelConverter {
 	  PATTERN_PERCENTAGES.put("solid", 100);
   }
 
-  
-  @Override
-  public Node toNode(Model tableModel, TransformState transformState) throws TransformerException {
-	    org.w3c.dom.Document doc = XmlUtils.neww3cDomDocument();   
-		return toNode(tableModel, transformState, doc);
+	
+	protected static class TableModelTransformState implements TransformState {
+		
+		// The last table number, in document order,
+		// which we have processed. 
+		// The idea is to be able to write an id (unique within the document) to each
+		// table.
+		int idx = 0;
+
+		/**
+		 * @return the idx
+		 */
+		public int getIdx() {
+			return idx;
+		}
+
+		/**
+		 * @param idx the idx to set
+		 */
+		public void incrementIdx() {
+			idx++;
+		}
+	}
+	  
+	
+	@Override
+	public String getID() {
+		return TableModel.MODEL_ID;
+	}
+
+@Override
+  public TransformState createTransformState() {
+	  return new TableModelTransformState();
   }
-  
-  public Node toNode(Model tableModel, TransformState transformState, Document doc) throws TransformerException {
+
+@Override
+  public Node toNode(AbstractWmlConversionContext context, Model tableModel, TransformState transformState, Document doc) throws TransformerException {
     TableModel table = (TableModel)tableModel;
     getLog().debug("Table asXML:\n" + table.debugStr());
     
@@ -174,15 +203,15 @@ public abstract class AbstractTableWriter extends ModelConverter {
     cellPropertiesTableSize = cellProperties.size();
     
     docfrag.appendChild(tableRoot);
-	applyTableStyles(table, transformState, tableRoot);
+	applyTableStyles(context, table, transformState, tableRoot);
 	
 	// setup column widths
-    createColumns(table, transformState, doc, tableRoot);
+    createColumns(context, table, transformState, doc, tableRoot);
 	
 	rowContainer = createNode(doc, tableRoot, (inHeader ? NODE_TABLE_HEADER : NODE_TABLE_BODY));
 	tableRoot.appendChild(rowContainer);
 	
-	applyTableRowContainerCustomAttributes(table, transformState, rowContainer, inHeader);
+	applyTableRowContainerCustomAttributes(context, table, transformState, rowContainer, inHeader);
 	
     for (int rowIndex = 0; rowIndex < table.getCells().size(); rowIndex++) {
 			rowModel = table.getCells().get(rowIndex);
@@ -191,15 +220,15 @@ public abstract class AbstractTableWriter extends ModelConverter {
 				rowContainer = createNode(doc, tableRoot, NODE_TABLE_BODY);
 				tableRoot.appendChild(rowContainer);
 				inHeader = false;
-				applyTableRowContainerCustomAttributes(table, transformState, rowContainer, inHeader);
+				applyTableRowContainerCustomAttributes(context, table, transformState, rowContainer, inHeader);
 			}
 			row = createNode(doc, rowContainer, (inHeader ? NODE_TABLE_HEADER_ROW : NODE_TABLE_BODY_ROW));
 			TrPr trPr = rowModel.getRowProperties();
 			CTTblPrEx tblPrEx = rowModel.getRowPropertiesExceptions();
 			
 			createRowProperties(rowProperties, trPr, false);
-			processAttributes(rowProperties, row);
-			applyTableRowCustomAttributes(table, transformState, row, rowIndex, inHeader);
+			processAttributes(context, rowProperties, row);
+			applyTableRowCustomAttributes(context, table, transformState, row, rowIndex, inHeader);
 			
 			createCellProperties(cellProperties, trPr);
 			createCellProperties(cellProperties, tblPrEx);
@@ -214,7 +243,7 @@ public abstract class AbstractTableWriter extends ModelConverter {
 						//Dummy-Cells resulting from vertical merged cells shouldn't be included
 						cellNode = createNode(doc, row, (inHeader ? NODE_TABLE_HEADER_CELL : NODE_TABLE_BODY_CELL));
 						row.appendChild(cellNode);
-						applyTableCellCustomAttributes(table, transformState, cell, cellNode, inHeader, true);
+						applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, true);
 					}
 				}
 				else {
@@ -223,8 +252,8 @@ public abstract class AbstractTableWriter extends ModelConverter {
 					row.appendChild(cellNode);
 					//Apply cell style
 					createCellProperties(cellProperties, cell.getTcPr());
-					processAttributes(cellProperties, cellNode);
-					applyTableCellCustomAttributes(table, transformState, cell, cellNode, inHeader, false);
+					processAttributes(context, cellProperties, cellNode);
+					applyTableCellCustomAttributes(context, table, transformState, cell, cellNode, inHeader, false);
 					//remove properties defined on cell level
 					resetProperties(cellProperties, cellPropertiesRowSize);
 					
@@ -254,27 +283,27 @@ public abstract class AbstractTableWriter extends ModelConverter {
   		return (ret != null ? ret : parent);
   	}
 	
-	protected void createColumns(TableModel table, TransformState transformState, Document doc, Element tableRoot) throws DOMException {
+	protected void createColumns(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Document doc, Element tableRoot) throws DOMException {
 		List<TblGridCol> gridCols = (table.getTblGrid() != null ? table.getTblGrid().getGridCol() : null);
 		Element columnGroup = createNode(doc, tableRoot, NODE_TABLE_COLUMN_GROUP);
 		Element column = null;
 		
-		applyColumnGroupCustomAttributes(table, transformState, columnGroup);
+		applyColumnGroupCustomAttributes(context, table, transformState, columnGroup);
     	if ((gridCols != null) && (!gridCols.isEmpty())) {
 	    	for(int i=0; i<gridCols.size(); i++) {
 		        column = createNode(doc, columnGroup, NODE_TABLE_COLUMN);
-	    		applyColumnCustomAttributes(table, transformState, column, i, gridCols.get(i).getW().intValue());
+	    		applyColumnCustomAttributes(context, table, transformState, column, i, gridCols.get(i).getW().intValue());
 	    	}
     	}
     	else {
 	    	for(int i=0; i<table.getColCount(); i++) {
 		        column = createNode(doc, columnGroup, NODE_TABLE_COLUMN);
-	    		applyColumnCustomAttributes(table, transformState, column, i, -1);
+	    		applyColumnCustomAttributes(context, table, transformState, column, i, -1);
 	    	}
     	}
 	}
 
-	protected void applyTableStyles(TableModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableStyles(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element tableRoot) {
 	List<Property> tableProperties = null;
 	int tblCellSpacing = -1;
 	
@@ -309,9 +338,9 @@ public abstract class AbstractTableWriter extends ModelConverter {
 			appendNoneBordersAndShading(tableProperties);
 		}
 		
-		processAttributes(tableProperties, tableRoot);
+		processAttributes(context, tableProperties, tableRoot);
 
-		applyTableCustomAttributes(table, transformState, tableRoot);
+		applyTableCustomAttributes(context, table, transformState, tableRoot);
 	}
 
 	protected void appendNoneBordersAndShading(List<Property> tableProperties) {
@@ -398,7 +427,7 @@ public abstract class AbstractTableWriter extends ModelConverter {
 		return null;
 	}
 
-	protected void processAttributes(List<Property> properties, Element element) {
+	protected void processAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element) {
 	CTShd shd = null;
 	Shading shading = null;
 	int bgColor = 0xffffff; //the background color of the page is assumed as white
@@ -425,11 +454,11 @@ public abstract class AbstractTableWriter extends ModelConverter {
 			}
 		}
 		if (pctPattern == -1) {
-			applyAttributes(properties, element);
+			applyAttributes(context, properties, element);
 		}
 		else {
 			properties.add(createShading(fgColor, bgColor, pctPattern));
-			applyAttributes(properties, element);
+			applyAttributes(context, properties, element);
 			properties.remove(properties.size() - 1);
 		}
 	}
@@ -481,25 +510,25 @@ public abstract class AbstractTableWriter extends ModelConverter {
 	
   	protected abstract Element createNode(Document doc, int nodeType);
 
-	protected abstract void applyAttributes(List<Property> properties, Element element);
+	protected abstract void applyAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element);
 	  
 	
-	protected void applyTableCustomAttributes(TableModel table, TransformState transformState, Element tableRoot) {
+	protected void applyTableCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element tableRoot) {
 	}
 	
-	protected void applyColumnGroupCustomAttributes(TableModel table, TransformState transformState, Element columnGroup) {
+	protected void applyColumnGroupCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element columnGroup) {
 	}
 
-	protected void applyColumnCustomAttributes(TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
+	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
 	}
 	
-  	protected void applyTableRowContainerCustomAttributes(TableModel table, TransformState transformState, Element rowContainer, boolean isHeader) {
+  	protected void applyTableRowContainerCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element rowContainer, boolean isHeader) {
   	}
     
-  	protected void applyTableRowCustomAttributes(TableModel table, TransformState transformState, Element row, int rowIndex, boolean isHeader) {  		
+  	protected void applyTableRowCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element row, int rowIndex, boolean isHeader) {  		
   	}
   	
-  	protected void applyTableCellCustomAttributes(TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
+  	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
   	}
 
 }
