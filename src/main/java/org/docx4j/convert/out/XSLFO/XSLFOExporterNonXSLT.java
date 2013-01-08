@@ -115,7 +115,7 @@ public class XSLFOExporterNonXSLT {
 
 	private static Logger log = Logger.getLogger(XSLFOExporterNonXSLT.class);
 	
-	public static JAXBContext context = org.docx4j.jaxb.Context.jc;
+//	public static JAXBContext context = org.docx4j.jaxb.Context.jc;
 	
 	private static String XSL_FO = "http://www.w3.org/1999/XSL/Format";
 
@@ -728,13 +728,12 @@ public class XSLFOExporterNonXSLT {
 			} else if (o instanceof org.docx4j.wml.Tbl) {
 
 				Tbl tbl = (org.docx4j.wml.Tbl)o;
+				
 				// To use our existing model, first we need
 				// childResults
 				TableRowTraversor tableRowTraversor = new TableRowTraversor();
 				new TraversalUtil(
 						tbl.getContent(), tableRowTraversor);
-				
-//				NodeList childResults = tableRowTraversor.tableFragment.getChildNodes();
 				
 				Node foTable = 
 					 conversionContext.getModelRegistry().toNode(
@@ -800,12 +799,13 @@ public class XSLFOExporterNonXSLT {
     	@Override
 		public boolean shouldTraverse(Object o) {
     		if (o instanceof org.docx4j.wml.Tbl) {
+    			// Don't traverse into the table,
+    			// since this is handled separately    			
     			return false;
     		} else {
     			return true;
     		}
 		}
-    	
     	
 	}
 
@@ -857,8 +857,28 @@ public class XSLFOExporterNonXSLT {
 
 
 			} else if (o instanceof org.docx4j.wml.Tbl) {
+				// A nested table
 
-				// TODO: haven't considered nested tables
+				Tbl tbl = (org.docx4j.wml.Tbl)o;
+
+				TableRowTraversor tableRowTraversor = new TableRowTraversor();
+				new TraversalUtil(
+						tbl.getContent(), tableRowTraversor);
+				
+				Node foTable = 
+					 conversionContext.getModelRegistry().toNode(
+							 conversionContext, 
+							 tbl, 
+							 TableModel.MODEL_ID, 
+							 tableRowTraversor.tableFragment, 
+							 document);
+				
+				if (foTable != null) {
+					tc.appendChild(foTable);
+				}
+				
+				currentP=null;
+				currentSpan=null;
 				
 			} else if (o instanceof org.docx4j.wml.Tr) {
 				
@@ -879,6 +899,18 @@ public class XSLFOExporterNonXSLT {
 			return null;
 		}
     	
+    	@Override
+		public boolean shouldTraverse(Object o) {
+    		if (o instanceof org.docx4j.wml.Tbl) {
+    			// Don't traverse into the table,
+    			// since this is handled separately
+    			return false;
+    		} else {
+    			return true;
+    		}
+		}
+    	
+    	
     }
 	
 	/**
@@ -890,8 +922,9 @@ public class XSLFOExporterNonXSLT {
 		inputfilepath = System.getProperty("user.dir")
 //				+ "/OpenXML_1ed_Part4_500_sections_none.docx";
 //		+ "/OpenXML_1ed_Part4.docx";
-		+ "/sample-docs/word/sample-docx.docx";
+//		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
+				+ "/table-nested.docx";
 
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
@@ -901,16 +934,16 @@ public class XSLFOExporterNonXSLT {
 //		new PDFConversionImageHandler(settings.getImageDirPath(), true) : 
 //				new HTMLConversionImageHandler("c:\\temp", "/bar", true) );
 		
-//		log.info(XmlUtils.w3CDomNodeToString(
-//				withoutXSLT.export()));
 
 		
 		long startTime = System.currentTimeMillis();				
 		Document xslfo = withoutXSLT.export();
 		long endTime = System.currentTimeMillis();
 		log.info("done.  elapsed time: " + Math.round((endTime-startTime)/1000) );
+
+		log.info(XmlUtils.w3CDomNodeToString(xslfo));
 		
-		String outputfilepath = inputfilepath + "4.pdf";
+		String outputfilepath = inputfilepath + "C.pdf";
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
 		
 		// OK, do it...
