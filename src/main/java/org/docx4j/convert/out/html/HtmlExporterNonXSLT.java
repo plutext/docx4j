@@ -97,7 +97,7 @@ public class HtmlExporterNonXSLT {
     	
 		List blockLevelContent = conversionContext.getWmlPackage().getMainDocumentPart().getContent();
     	
-		HTMLGenerator htmlGenerator = new HTMLGenerator(conversionContext);
+		HTMLGenerator htmlGenerator = new HTMLGenerator(conversionContext, bodyEl);
 		new TraversalUtil(blockLevelContent, htmlGenerator);
 
 		return htmlDoc;
@@ -130,7 +130,7 @@ public class HtmlExporterNonXSLT {
     	}
     	htmlDoc.appendChild(bodyEl);    	
 		
-		HTMLGenerator htmlGenerator = new HTMLGenerator(conversionContext);
+		HTMLGenerator htmlGenerator = new HTMLGenerator(conversionContext, bodyEl);
 		new TraversalUtil(blockLevelContent, htmlGenerator);
 
 		return htmlDoc;
@@ -223,16 +223,23 @@ public class HtmlExporterNonXSLT {
     class HTMLGenerator extends CallbackImpl {
     	HTMLConversionContextNonXSLT conversionContext = null;
     	
+    	Node blockContext;
+    	
     	Element currentP; 
     	Element currentSpan;
+    	
+		Element tr;		
+		Element tc;
+    	
     	
     	// E20 image
     	Object anchorOrInline;
     	
     	
-    	HTMLGenerator(HTMLConversionContextNonXSLT conversionContext) {
+    	HTMLGenerator(HTMLConversionContextNonXSLT conversionContext, Node blockContext) {
 			super();
 			this.conversionContext = conversionContext;
+			this.blockContext = blockContext;
 		}
 
 		@Override
@@ -242,7 +249,11 @@ public class HtmlExporterNonXSLT {
 				
 				currentP = htmlDoc.createElement("p");
 				currentSpan = null;
-				bodyEl.appendChild( currentP  );
+				if (tc!=null) {
+					tc.appendChild( currentP  );
+				} else {
+					blockContext.appendChild( currentP  );					
+				}
 				
 				PPr pPr = ((P)o).getPPr();
 				handlePPr(pPr, currentP);
@@ -273,11 +284,18 @@ public class HtmlExporterNonXSLT {
 			} else if (o instanceof org.docx4j.wml.Tbl) {
 
 				Tbl tbl = (org.docx4j.wml.Tbl)o;
-				// To use our existing model, first we need
-				// childResults
-				TableRowTraversor tableRowTraversor = new TableRowTraversor();
-				new TraversalUtil(
-						tbl.getContent(), tableRowTraversor);
+
+				// To use our existing model, first we need childResults.
+				// We get these using a new XSLFOGenerator object.
+				
+		    	DocumentFragment tableFragment = htmlDoc.createDocumentFragment();
+		    	HTMLGenerator tableRowTraversor = new HTMLGenerator(conversionContext, tableFragment);
+				new TraversalUtil(tbl.getContent(), tableRowTraversor);
+				
+				
+//				TableRowTraversor tableRowTraversor = new TableRowTraversor();
+//				new TraversalUtil(
+//						tbl.getContent(), tableRowTraversor);
 				
 //				Node content = tableRowTraversor.tableFragment;
 				
@@ -286,7 +304,7 @@ public class HtmlExporterNonXSLT {
 							 conversionContext, 
 							 tbl, 
 							 TableModel.MODEL_ID, 
-							 tableRowTraversor.tableFragment, 
+							 tableFragment, 
 							 htmlDoc);
 				
 				if (htmlTable != null) {
@@ -295,11 +313,25 @@ public class HtmlExporterNonXSLT {
 					}
 					else {
 						//in case there isn't a paragraph 
-						bodyEl.appendChild(htmlTable);
+						blockContext.appendChild(htmlTable);
 					}
 				}
 				
+				currentP=null;
+				currentSpan=null;
 				
+			} else if (o instanceof org.docx4j.wml.Tr) {
+				
+				tr = htmlDoc.createElementNS(Namespaces.NS_WORD12, "tr");
+				blockContext.appendChild(tr);
+				
+			} else if (o instanceof org.docx4j.wml.Tc) {
+				
+				tc = htmlDoc.createElementNS(Namespaces.NS_WORD12, "tc");
+				tr.appendChild(tc);
+				// now the html p content will go temporarily go in w:tc,
+				// which is what we need for our existing table model.
+								
 			} else if (o instanceof org.docx4j.dml.wordprocessingDrawing.Inline
 					|| o instanceof org.docx4j.dml.wordprocessingDrawing.Anchor) {
 				
@@ -350,75 +382,6 @@ public class HtmlExporterNonXSLT {
     	
 	}
 
-    class TableRowTraversor extends CallbackImpl {
-
-    	Element currentP; 
-    	Element currentSpan; 
-
-    	DocumentFragment tableFragment = htmlDoc.createDocumentFragment();
-		Element tr;		
-		Element tc;
-		
-    	@Override
-		public List<Object> apply(Object o) {
-			
-			if (o instanceof P) {
-				
-				currentP = htmlDoc.createElement("p");
-				currentSpan = null;
-				tc.appendChild( currentP  );
-				
-				PPr pPr = ((P)o).getPPr();
-				handlePPr(pPr, currentP);
-				
-			} else if (o instanceof org.docx4j.wml.R) {
-				
-				RPr rPr = ((R)o).getRPr();
-
-				if ( rPr!=null ) {
-					// Convert run to span
-					Element spanEl = htmlDoc.createElement("span");
-					currentP.appendChild( spanEl  );
-					currentSpan = spanEl;
-					
-					handleRPr(rPr, currentSpan);
-				}
-								
-			} else if (o instanceof org.docx4j.wml.Text) {
-				
-				if (currentSpan!=null) {
-					currentSpan.appendChild(htmlDoc.createTextNode(
-							((org.docx4j.wml.Text)o).getValue()));
-				} else {
-					currentP.appendChild(htmlDoc.createTextNode(
-							((org.docx4j.wml.Text)o).getValue()));					
-				}
-
-
-			} else if (o instanceof org.docx4j.wml.Tbl) {
-
-				// TODO: haven't considered nested tables
-				
-			} else if (o instanceof org.docx4j.wml.Tr) {
-				
-				tr = htmlDoc.createElementNS(Namespaces.NS_WORD12, "tr");
-				tableFragment.appendChild(tr);
-				
-			} else if (o instanceof org.docx4j.wml.Tc) {
-				
-				tc = htmlDoc.createElementNS(Namespaces.NS_WORD12, "tc");
-				tr.appendChild(tc);
-				// now the html p content will go temporarily go in w:tc,
-				// which is what we need for our existing table model.
-				
-			} else {
-				log.info("Encountered " + o.getClass().getName() );				
-			}
-			
-			return null;
-		}
-    	
-    }
 	
 	/**
 	 * @param args
@@ -428,8 +391,9 @@ public class HtmlExporterNonXSLT {
 
 		inputfilepath = System.getProperty("user.dir")
 //				+ "/hr.docx";
-		+ "/sample-docs/word/sample-docx.docx";
+//		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
+				+ "/table-nested.docx";
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
