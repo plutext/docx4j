@@ -292,13 +292,6 @@ public class HtmlExporterNonXSLT {
 		    	HTMLGenerator tableRowTraversor = new HTMLGenerator(conversionContext, tableFragment);
 				new TraversalUtil(tbl.getContent(), tableRowTraversor);
 				
-				
-//				TableRowTraversor tableRowTraversor = new TableRowTraversor();
-//				new TraversalUtil(
-//						tbl.getContent(), tableRowTraversor);
-				
-//				Node content = tableRowTraversor.tableFragment;
-				
 				Node htmlTable = 
 					 conversionContext.getModelRegistry().toNode(
 							 conversionContext, 
