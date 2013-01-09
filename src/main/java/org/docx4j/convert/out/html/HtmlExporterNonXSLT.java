@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
@@ -265,7 +266,12 @@ public class HtmlExporterNonXSLT {
 				if ( rPr!=null ) {
 					// Convert run to span
 					Element spanEl = htmlDoc.createElement("span");
-					currentP.appendChild( spanEl  );
+					if (currentP==null) {
+						// Hyperlink special case
+						blockContext.appendChild(spanEl);
+					} else {
+						currentP.appendChild( spanEl  );
+					}
 					currentSpan = spanEl;
 					
 					handleRPr(rPr, currentSpan);
@@ -356,6 +362,38 @@ public class HtmlExporterNonXSLT {
 				
 				currentP.appendChild( htmlDoc.importNode(foreignFragment, true) );
 				
+			} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
+				
+				P.Hyperlink hyperlink = (P.Hyperlink)o;
+				
+				Element spanEl = htmlDoc.createElement("a");
+				currentP.appendChild( spanEl  );
+				currentSpan = spanEl;
+								
+				String hTemp = Converter.resolveHref(conversionContext, hyperlink.getId() );
+				String href;
+				// @w:anchor
+				if (hyperlink.getAnchor() != null) {
+					href = hTemp + hyperlink.getAnchor();
+				} else {
+					href = hTemp;
+				}
+				// via XSLT also had @w:bookmark and @w:arbLocation,
+				// but these aren't in the P.Hyperlink object?
+				currentSpan.setAttribute("href", href);										
+				
+				// "Manually" get the contents of the hyperlink.
+				// If we don't do this, it'll be added as a span
+				// outside the hyperlink.
+				// This is a consequence of our simple minded
+				// two level hierarchy (ie div or span)
+		    	DocumentFragment hFragment = htmlDoc.createDocumentFragment();
+		    	HTMLGenerator hTraversor = new HTMLGenerator(conversionContext, hFragment);
+				new TraversalUtil(hyperlink.getContent(), hTraversor);
+				
+				currentSpan.appendChild(hFragment);
+				
+				
 			} else {
 				log.info("Encountered " + o.getClass().getName() );				
 			}
@@ -366,6 +404,9 @@ public class HtmlExporterNonXSLT {
     	@Override
 		public boolean shouldTraverse(Object o) {
     		if (o instanceof org.docx4j.wml.Tbl) {
+    			return false;
+    		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
+    			// this is handled separately    			
     			return false;
     		} else {
     			return true;
@@ -386,7 +427,8 @@ public class HtmlExporterNonXSLT {
 //				+ "/hr.docx";
 //		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
-				+ "/table-nested.docx";
+//				+ "/table-nested.docx";
+		+ "/hlink.docx";
 
 		WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));

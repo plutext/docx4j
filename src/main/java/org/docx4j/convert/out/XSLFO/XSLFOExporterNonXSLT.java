@@ -124,6 +124,23 @@ public class XSLFOExporterNonXSLT {
 	
 	// TODO put the XSL FO to PDF code somewhere else;
 	// implement the Conversion interface there
+	
+	/*
+	 * TODO in order for feature parity with via XSLT:
+	 * 
+	 * - footnotes/endnotes & w:footnote/endnoteReference
+	 * - w:bookmarkStart/w:bookmarkEnd
+	 * - fields
+	 * - w:ins
+	 * - w:proofErr
+	 * - w:softHyphen
+	 * - w:noBreakHyphen
+	 * - w:cr
+	 * - w:sym
+	 * - w:tab
+	 * - w:smartTag
+	 * - w:customXml
+	 */
 
 	private static Logger log = Logger.getLogger(XSLFOExporterNonXSLT.class);
 		
@@ -259,6 +276,11 @@ public class XSLFOExporterNonXSLT {
 	
 	
 // ========================================================================
+
+// 	createBlockForSdt is not required, except for Containerization.TAG_SHADING,
+//  and:
+//  (1) consider whether that should be standard behaviour, or optional
+//  (2) we don't do containerization for the NonXSLT case.
 	
 //    public DocumentFragment createBlockForSdt(     		
 //    		PPr pPrDirect,
@@ -518,7 +540,9 @@ public class XSLFOExporterNonXSLT {
 			createPageSequence();
 		}
 		
-		// TODO: can a sectPr occur in a table cell?
+		// Can a sectPr occur in a table cell?
+		// No, Word 2010 won't let you do that,
+		// so we don't need to handle this possibility :-)
 		
     	
     }
@@ -790,7 +814,7 @@ public class XSLFOExporterNonXSLT {
     class XSLFOGenerator extends CallbackImpl {
     	XSLFOConversionContextNonXSLT conversionContext = null;
     	
-    	Node tableContext; 
+    	Node tableContext; // used for tables and hyperlinks
     	
 		Element currentP; 
     	Element currentSpan;
@@ -830,7 +854,12 @@ public class XSLFOExporterNonXSLT {
 
 				// Convert run to span
 				Element spanEl = document.createElementNS(XSL_FO, "inline");
-				currentP.appendChild( spanEl  );
+				if (currentP==null) {
+					// Hyperlink special case
+					tableContext.appendChild(spanEl);
+				} else {
+					currentP.appendChild( spanEl  );
+				}
 				currentSpan = spanEl;
 				
 				RPr rPr = ((R)o).getRPr();
@@ -950,6 +979,46 @@ public class XSLFOExporterNonXSLT {
 					currentP.setAttribute("white-space-treatment", "preserve");
 				}
 				
+			} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
+				
+				P.Hyperlink hyperlink = (P.Hyperlink)o;
+				
+				Element spanEl = document.createElementNS(XSL_FO, "basic-link");
+				currentP.appendChild( spanEl  );
+				currentSpan = spanEl;
+				
+				currentSpan.setAttribute("color", "blue");
+				currentSpan.setAttribute("text-decoration", "underline");
+				
+				String hTemp = Converter.resolveHref(conversionContext, hyperlink.getId() );
+				String href;
+				// @w:anchor
+				if (hyperlink.getAnchor() != null) {
+					href = hTemp + hyperlink.getAnchor();
+				} else {
+					href = hTemp;
+				}
+				// via XSLT also had @w:bookmark and @w:arbLocation,
+				// but these aren't in the P.Hyperlink object?
+				
+				if (hyperlink.getAnchor() != null) {
+					currentSpan.setAttribute("internal-destination", href);					
+				} else {
+					currentSpan.setAttribute("external-destination", href);										
+				}
+				
+				// "Manually" get the contents of the hyperlink.
+				// If we don't do this, it'll be added as a span
+				// outside the hyperlink.
+				// This is a consequence of our simple minded
+				// two level hierarchy (ie block or inline)
+		    	DocumentFragment hFragment = document.createDocumentFragment();
+				XSLFOGenerator hTraversor = new XSLFOGenerator(conversionContext, hFragment);
+				new TraversalUtil(hyperlink.getContent(), hTraversor);
+				
+				currentSpan.appendChild(hFragment);
+				
+				
 			} else {
 				log.warn("Need to handle " + o.getClass().getName() );				
 			}
@@ -962,6 +1031,9 @@ public class XSLFOExporterNonXSLT {
     		if (o instanceof org.docx4j.wml.Tbl) {
     			// Don't traverse into the table,
     			// since this is handled separately    			
+    			return false;
+    		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
+    			// this is handled separately    			
     			return false;
     		} else {
     			return true;
@@ -1155,12 +1227,12 @@ public class XSLFOExporterNonXSLT {
 		String outputfilepath;		
 
 		inputfilepath = System.getProperty("user.dir")
-//				+ "/OpenXML_1ed_Part4_500_sections_none.docx";
+				+ "/hlink.docx";
 //		+ "/OpenXML_1ed_Part4.docx";
 //		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
 //				+ "/table-nested.docx";
-		+ "/sample-docs/word/headers.docx";
+//		+ "/sample-docs/word/headers.docx";
 		
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
