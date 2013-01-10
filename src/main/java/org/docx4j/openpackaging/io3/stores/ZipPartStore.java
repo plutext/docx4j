@@ -201,7 +201,14 @@ public class ZipPartStore implements PartStore {
 	
 	}
 	
-	public void saveJaxbXmlPart(JaxbXmlPart part, String targetName) throws Docx4JException {
+	public void saveJaxbXmlPart(JaxbXmlPart part) throws Docx4JException {
+		
+		String targetName;
+		if (part.getPartName().getName().equals("_rels/.rels")) {
+			targetName = part.getPartName().getName();			
+		} else {
+			targetName = part.getPartName().getName().substring(1);						
+		}
 		
 		try {
 	        // Add ZIP entry to output stream.
@@ -246,7 +253,9 @@ public class ZipPartStore implements PartStore {
 		}
 	}
 	
-	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part, String targetName) throws Docx4JException {
+	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part) throws Docx4JException {
+		
+		String targetName = part.getPartName().getName().substring(1);
 		
 		try {
 			
@@ -264,8 +273,10 @@ public class ZipPartStore implements PartStore {
 		
 	}
 	
-	public void saveXmlPart(XmlPart part, String targetName) throws Docx4JException {
+	public void saveXmlPart(XmlPart part) throws Docx4JException {
 	
+		String targetName = part.getPartName().getName().substring(1);
+		
 		try {
 			
 		    // Add ZIP entry to output stream.

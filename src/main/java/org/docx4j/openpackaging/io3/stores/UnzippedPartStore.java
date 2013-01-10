@@ -153,7 +153,14 @@ public class UnzippedPartStore implements PartStore {
 	
 	}
 	
-	public void saveJaxbXmlPart(JaxbXmlPart part, String targetName) throws Docx4JException {
+	public void saveJaxbXmlPart(JaxbXmlPart part) throws Docx4JException {
+		
+		String targetName;
+		if (part.getPartName().getName().equals("_rels/.rels")) {
+			targetName = part.getPartName().getName();			
+		} else {
+			targetName = part.getPartName().getName().substring(1);						
+		}
 		
 		String filePath = dir.getPath() + dir.separator + targetName;
 		System.out.println("Saving " + filePath);
@@ -198,7 +205,9 @@ public class UnzippedPartStore implements PartStore {
 		}
 	}
 	
-	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part, String targetName) throws Docx4JException {
+	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part) throws Docx4JException {
+		
+		String targetName = part.getPartName().getName().substring(1);
 		
 		String filePath = dir.getPath() + dir.separator + targetName;
 		
@@ -217,7 +226,9 @@ public class UnzippedPartStore implements PartStore {
 		
 	}
 	
-	public void saveXmlPart(XmlPart part, String targetName) throws Docx4JException {
+	public void saveXmlPart(XmlPart part) throws Docx4JException {
+		
+		String targetName = part.getPartName().getName().substring(1);
 	
 		String filePath = dir.getPath() + dir.separator + targetName;
 		File file = new File(filePath);

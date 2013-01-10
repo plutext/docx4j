@@ -181,10 +181,7 @@ public class Save {
 			
 			String partName = "_rels/.rels";
 			RelationshipsPart rp = p.getRelationshipsPart();
-			//deprecatedSaveRawXmlPart(out, partName, rp.getDocument() );
-			// 2008 06 12 - try this neater method
-			saveRawXmlPart(rp, partName );
-			
+			saveRawXmlPart(rp );
 			
 			// 5. Now recursively 
 //			addPartsFromRelationships(out, "", rp );
@@ -211,16 +208,16 @@ public class Save {
 	}
 
 
-	public void  saveRawXmlPart(Part part) throws Docx4JException {
-		
-		// This is a neater signature and should be used where possible!
-		
-		String partName = part.getPartName().getName().substring(1);
-
-		saveRawXmlPart(part, partName);
-	}
+//	public void  saveRawXmlPart(Part part) throws Docx4JException {
+//		
+//		// This is a neater signature and should be used where possible!
+//		
+//		String partName = part.getPartName().getName().substring(1);
+//
+//		saveRawXmlPart(part, partName);
+//	}
 	
-	public void  saveRawXmlPart(Part part, String zipEntryName) throws Docx4JException {
+	public void  saveRawXmlPart(Part part) throws Docx4JException {
 		
 		try {
 						
@@ -275,36 +272,35 @@ public class Save {
 				}
 
 				p.getPartStore().saveJaxbXmlPart(
-						((JaxbXmlPart)part), 
-						zipEntryName);
-				log.info( "success writing part: " +  zipEntryName);		
+						((JaxbXmlPart)part));
+//				log.info( "success writing part: " +  zipEntryName);		
 		        
 
 			} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart) {
 
 				p.getPartStore().saveCustomXmlDataStoragePart(
-						(CustomXmlDataStoragePart)part, zipEntryName);
-				log.info( "success writing part: " +  zipEntryName);		
+						(CustomXmlDataStoragePart)part);
+//				log.info( "success writing part: " +  zipEntryName);		
 
 			} else if (part instanceof org.docx4j.openpackaging.parts.XmlPart) {
 
 				p.getPartStore().saveXmlPart(
-						(XmlPart)part, zipEntryName);
+						(XmlPart)part);
 				
-				log.info( "success writing part: " + zipEntryName);		
+//				log.info( "success writing part: " + zipEntryName);		
 						
 			} else {
 				// Shouldn't happen, since ContentTypeManagerImpl should
 				// return an instance of one of the above, or throw an
 				// Exception.
 				
-				log.error("PROBLEM - No suitable part found for: " + zipEntryName);
+				log.error("PROBLEM - No suitable part found for: " + part.getPartName());
 			}		
 		
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e);
-			throw new Docx4JException("Problem saving part " + zipEntryName, e);
+			throw new Docx4JException("Problem saving part " + part.getPartName(), e);
 		} 
 		
 	}
@@ -432,10 +428,12 @@ public class Save {
 			// Only save it if it actually has rels in it
 			if (rrp.getRelationships().getRelationship().size()>0) {
 				
-				String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
-				//log.debug("Cf constructed name " + relPart );
-				
-				saveRawXmlPart(rrp, relPart );
+//				String relPart = PartName.getRelationshipsPartName(resolvedPartUri);
+//				//log.debug("Cf constructed name " + relPart );
+//				
+//				saveRawXmlPart(rrp, relPart );
+
+				saveRawXmlPart(rrp );
 				
 				addPartsFromRelationships(rrp );
 			}

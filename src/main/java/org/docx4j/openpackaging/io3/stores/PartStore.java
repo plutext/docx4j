@@ -71,11 +71,17 @@ public interface PartStore {
 	
 	public void saveContentTypes(ContentTypeManager ctm) throws Docx4JException;
 	
-	public void saveJaxbXmlPart(JaxbXmlPart part, String targetName) throws Docx4JException;
+//	public void saveJaxbXmlPart(JaxbXmlPart part, String targetName) throws Docx4JException;
+//	
+//	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part, String targetName) throws Docx4JException;	
+//	
+//	public void saveXmlPart(XmlPart part, String targetName) throws Docx4JException;
+
+	public void saveJaxbXmlPart(JaxbXmlPart part) throws Docx4JException;
 	
-	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part, String targetName) throws Docx4JException;	
+	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part) throws Docx4JException;	
 	
-	public void saveXmlPart(XmlPart part, String targetName) throws Docx4JException;
+	public void saveXmlPart(XmlPart part) throws Docx4JException;
 	
 	public void saveBinaryPart(Part part) throws Docx4JException;	
 	
