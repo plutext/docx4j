@@ -65,18 +65,11 @@ public interface PartStore {
 	public boolean partExists(String partName);
 	
 	public InputStream loadPart(String partName) throws IOException;
-	
-	
+		
 	public void setOutputStream(OutputStream os);
 	
 	public void saveContentTypes(ContentTypeManager ctm) throws Docx4JException;
 	
-//	public void saveJaxbXmlPart(JaxbXmlPart part, String targetName) throws Docx4JException;
-//	
-//	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part, String targetName) throws Docx4JException;	
-//	
-//	public void saveXmlPart(XmlPart part, String targetName) throws Docx4JException;
-
 	public void saveJaxbXmlPart(JaxbXmlPart part) throws Docx4JException;
 	
 	public void saveCustomXmlDataStoragePart(CustomXmlDataStoragePart part) throws Docx4JException;	
