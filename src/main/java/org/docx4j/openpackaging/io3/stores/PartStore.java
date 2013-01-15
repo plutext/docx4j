@@ -19,7 +19,6 @@
  */
 package org.docx4j.openpackaging.io3.stores;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -61,12 +60,10 @@ public interface PartStore {
 	 * (ie this object)
 	 */
 	public void setSourcePartStore(PartStore partStore);
-	
-	public boolean partExists(String partName);
-	
-	public InputStream loadPart(String partName) throws IOException;
 		
-	public void setOutputStream(OutputStream os);
+	public InputStream loadPart(String partName) throws Docx4JException;
+		
+	public void setOutputStream(OutputStream os) throws Docx4JException;
 	
 	public void saveContentTypes(ContentTypeManager ctm) throws Docx4JException;
 	

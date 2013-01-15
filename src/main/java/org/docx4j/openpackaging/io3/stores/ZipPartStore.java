@@ -169,10 +169,13 @@ public class ZipPartStore implements PartStore {
 //	}
 
 //	protected InputStream getInputStreamFromZippedPart(String partName) throws IOException {
-	public InputStream loadPart(String partName) throws IOException {
+	public InputStream loadPart(String partName) throws Docx4JException {
 		
         ByteArray bytes = partByteArrays.get(partName);
-        if (bytes == null) throw new IOException("part '" + partName + "' not found");
+        if (bytes == null) {
+        	return null;
+        	//throw new Docx4JException("part '" + partName + "' not found");
+        }
 		return bytes.getInputStream();
 	}
 

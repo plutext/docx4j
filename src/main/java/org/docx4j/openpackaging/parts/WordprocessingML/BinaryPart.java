@@ -138,6 +138,8 @@ public class BinaryPart extends Part {
 						// unloaded by the java vm if free memory is low.
 						this.bbRef = new SoftReference<ByteBuffer>(res);
 					}
+				} catch (Docx4JException e) {
+					log.error(e);
 				} catch (IOException e) {
 					log.error(e);
 				} finally {

@@ -127,7 +127,7 @@ public class Load3 extends Load {
 		try {
 			InputStream is = partStore.loadPart("[Content_Types].xml");		
 			ctm.parseContentTypesFile(is);
-		} catch (IOException e) {
+		} catch (Docx4JException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
 		} catch (NullPointerException e) {
 			throw new Docx4JException("Couldn't get [Content_Types].xml from ZipFile", e);
@@ -148,7 +148,10 @@ public class Load3 extends Load {
 //		</Relationships>		
 		
 		String partName = "_rels/.rels";
-		RelationshipsPart rp = getRelationshipsPartFromZip(p, partName);		
+		RelationshipsPart rp = getRelationshipsPartFromZip(p, partName);
+		if (rp==null) {
+			throw new Docx4JException("_rels/.rels appears to be missing from this package!");
+		}
 		p.setRelationships(rp);
 		
 		log.debug( "Object created for: " + partName);
@@ -178,6 +181,9 @@ public class Load3 extends Load {
 		InputStream is = null;
 		try {
 			is =  partStore.loadPart( partName);
+			if (is==null) {
+				return null; // that's ok
+			}
 			//thePart = new RelationshipsPart( p, new PartName("/" + partName), is );
 			rp = new RelationshipsPart(new PartName("/" + partName) );
 			rp.setSourceP(p);
@@ -361,16 +367,19 @@ public class Load3 extends Load {
 		//String relPart = PartName.getRelationshipsPartName(target);
 		String relPart = PartName.getRelationshipsPartName(
 				part.getPartName().getName().substring(1) );
+
+		rrp = getRelationshipsPartFromZip(part,  relPart);
+		part.setRelationships(rrp);
 		
-		if (partStore.partExists(relPart)) {
-		//if (partByteArrays.get(relPart) !=null ) {
-			log.debug("Found relationships " + relPart );
-			rrp = getRelationshipsPartFromZip(part,  relPart);
-			part.setRelationships(rrp);
-		} else {
-			log.debug("No relationships " + relPart );	
-			return null;
-		}
+//		if (partStore.partExists(relPart)) {
+//		//if (partByteArrays.get(relPart) !=null ) {
+//			log.debug("Found relationships " + relPart );
+//			rrp = getRelationshipsPartFromZip(part,  relPart);
+//			part.setRelationships(rrp);
+//		} else {
+//			log.debug("No relationships " + relPart );	
+//			return null;
+//		}
 		return rrp;
 	}
 	

@@ -117,9 +117,9 @@ public abstract class JaxbXmlPart<E> extends Part {
 					log.info("Lazily unmarshalling " + name);
 					unmarshal( is );
 				}
-			} catch (IOException e) {
-				log.error(e);
 			} catch (JAXBException e) {
+				log.error(e);
+			} catch (Docx4JException e) {
 				log.error(e);
 			}
 		}

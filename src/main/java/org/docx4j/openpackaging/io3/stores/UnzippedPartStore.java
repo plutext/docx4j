@@ -25,6 +25,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -92,13 +93,13 @@ public class UnzippedPartStore implements PartStore {
 	
 	/////// Load methods
 
-	public boolean partExists(String partName) {
-		
-		String filePath = dir.getPath() + dir.separator + partName;
-		
-		return (new File(filePath)).exists();
-		
-	}
+//	public boolean partExists(String partName) {
+//		
+//		String filePath = dir.getPath() + dir.separator + partName;
+//		
+//		return (new File(filePath)).exists();
+//		
+//	}
 	
 //	public static byte[] getBytesFromInputStream(InputStream is)
 //			throws Exception {
@@ -118,14 +119,20 @@ public class UnzippedPartStore implements PartStore {
 //			return baos.toByteArray();
 //		} 			
 	
-	public InputStream loadPart(String partName) throws IOException {
+	public InputStream loadPart(String partName) throws  Docx4JException {
 		
 		String filePath = dir.getPath() + dir.separator + partName;
 		
 		System.out.println("Using " + filePath);
 		
-		InputStream is = new FileInputStream(new File(filePath));
-        if (is == null) throw new IOException("part '" + partName + "' not found at " + filePath );
+		InputStream is;
+		try {
+			is = new FileInputStream(new File(filePath));
+		} catch (FileNotFoundException e) {
+			return null;
+//			throw new Docx4JException(e.getMessage(), e);
+		}
+//        if (is == null) throw new Docx4JException("part '" + partName + "' not found at " + filePath );
 		return is;
 	}
 
