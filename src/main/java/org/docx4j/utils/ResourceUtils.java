@@ -37,7 +37,11 @@ public class ResourceUtils {
         java.net.URL url = loader.getResource(filename);
                 
         if (url == null) {
-        	log.warn("Couldn't get resource: " + filename);
+        	if (filename.contains("jaxb.properties")){
+        		log.info("Not using MOXy, since no resource: " + filename);        		
+        	} else {
+        		log.warn("Couldn't get resource: " + filename);
+        	}
         }
         
         // Get the jar file
