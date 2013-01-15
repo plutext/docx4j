@@ -49,6 +49,14 @@ public class EditEmbeddedCharts
 		// Input file
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/pptx/pptx-chart.pptx";
 		
+		// The names of the parts which will be edited
+		// Alter these to match what is in your input pptx
+		// .. the chart
+		String chartPartName = "/ppt/charts/chart1.xml";
+		// .. the xlsx
+		String xlsPartName = "/ppt/embeddings/Microsoft_Excel_Sheet1.xlsx";
+//		String xlsPartName = "/ppt/embeddings/Microsoft_Office_Excel_Worksheet1.xlsx";
+		
 		// Output file
 		String outputfilepath = System.getProperty("user.dir") 
 				+ "/OUT_EditEmbeddedCharts-" 
@@ -68,7 +76,7 @@ public class EditEmbeddedCharts
 		 * Get the Chart object and update the values. Afterwards, we'll update 
 		 * the associated spreadsheet so that the data is synchronized.
 		 */
-		Chart chart = (Chart) ppt.getParts().get(new PartName("/ppt/charts/chart1.xml"));
+		Chart chart = (Chart) ppt.getParts().get(new PartName(chartPartName));
 		
 		List<Object> objects = chart.getJaxbElement().getChart().getPlotArea()
 				.getAreaChartOrArea3DChartOrLineChart();
@@ -100,10 +108,13 @@ public class EditEmbeddedCharts
 		/*
 		 * Get the spreadsheet and find the cell values that need to be updated
 		 */
-		String xlsPartName = "/ppt/embeddings/Microsoft_Excel_Sheet1.xlsx";
 		
 		EmbeddedPackagePart epp  = (EmbeddedPackagePart) ppt
 			.getParts().get(new PartName(xlsPartName));
+		
+		if (epp==null) {
+			throw new Docx4JException("Could find EmbeddedPackagePart: " + xlsPartName);
+		}
 		
 		InputStream is = BufferUtil.newInputStream(epp.getBuffer());
 		
