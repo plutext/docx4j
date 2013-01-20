@@ -23,6 +23,7 @@ import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.AbstractConversionSettings;
 import org.docx4j.convert.out.AbstractMessageWriter;
 import org.docx4j.convert.out.AbstractModelRegistry;
+import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.model.images.ConversionImageHandler;
@@ -59,8 +60,8 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 		}
 	};		
 	
-	public HTMLConversionContext(HtmlSettings settings) {
-		super(HTML_MODEL_REGISTRY, HTML_MESSAGE_WRITER, settings);
+	public HTMLConversionContext(HtmlSettings settings, ConversionSectionWrappers conversionSectionWrappers) {
+		super(HTML_MODEL_REGISTRY, HTML_MESSAGE_WRITER, settings, conversionSectionWrappers);
 	}
 
 	@Override

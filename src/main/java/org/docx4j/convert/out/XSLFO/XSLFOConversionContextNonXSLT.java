@@ -19,6 +19,7 @@
  */
 package org.docx4j.convert.out.XSLFO;
 
+import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfConversionContext;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.model.styles.StyleTree;
@@ -33,8 +34,8 @@ import org.docx4j.model.styles.StyleTree;
 public class XSLFOConversionContextNonXSLT extends PdfConversionContext {
 	protected StyleTree styleTree;
 
-	public XSLFOConversionContextNonXSLT(PdfSettings settings) {
-		super(settings);
+	public XSLFOConversionContextNonXSLT(PdfSettings settings, ConversionSectionWrappers conversionSectionWrappers) {
+		super(settings, conversionSectionWrappers);
 		this.styleTree = initializeStyleTree(settings);
 	}
 

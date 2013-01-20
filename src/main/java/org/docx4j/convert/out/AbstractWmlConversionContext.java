@@ -46,12 +46,15 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	protected int footnoteNumberCounter = 0;
 	protected int endnoteNumberCounter = 0;
 	
+	//The section information that gets converted
+	protected ConversionSectionWrappers conversionSectionWrappers = null;
 	
 
-	protected AbstractWmlConversionContext(AbstractModelRegistry modelRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings) {
+	protected AbstractWmlConversionContext(AbstractModelRegistry modelRegistry, AbstractMessageWriter messageWriter, AbstractConversionSettings conversionSettings, ConversionSectionWrappers conversionSectionWrappers) {
 		super(messageWriter, conversionSettings);
 		this.modelRegistry = initializeModelRegistry(modelRegistry);
 		this.transformStates = initializeTransformStates();
+		this.conversionSectionWrappers = conversionSectionWrappers;
 	}
 
 	@Override
@@ -105,5 +108,9 @@ public abstract class AbstractWmlConversionContext extends AbstractConversionCon
 	
 	public void setCurrentPartMainDocument() {
 		setCurrentPart(getWmlPackage().getMainDocumentPart());
+	}
+	
+	public ConversionSectionWrappers getSections() {
+		return conversionSectionWrappers;
 	}
 }

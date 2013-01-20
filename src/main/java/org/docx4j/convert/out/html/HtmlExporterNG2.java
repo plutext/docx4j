@@ -31,6 +31,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
+import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.PageBreak;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -202,8 +203,12 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		// Don't change the user's Document object; create a tmp one
 		org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(wmlPackage
 				.getMainDocumentPart().getJaxbElement());
+		
 		Containerization.groupAdjacentBorders(tmpDoc.getBody());
 		PageBreak.movePageBreaks(tmpDoc.getBody());
+		//the html xslt does access the header/footer logic, therefore we need here the sectionWrappers
+		ConversionSectionWrappers conversionSectionWrappers = 
+				ConversionSectionWrappers.build(tmpDoc, wmlPackage);
 
 		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(tmpDoc);
 
@@ -220,7 +225,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 		htmlSettings.setWmlPackage(wmlPackage);
 		
 		//Setup the context
-		conversionContext = new HTMLConversionContext(htmlSettings);
+		conversionContext = new HTMLConversionContext(htmlSettings, conversionSectionWrappers);
 
 		// Now do the transformation
 		log.debug("About to transform...");

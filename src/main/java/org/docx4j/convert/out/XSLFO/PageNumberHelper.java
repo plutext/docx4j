@@ -3,26 +3,20 @@ package org.docx4j.convert.out.XSLFO;
 import java.math.BigInteger;
 
 import org.apache.log4j.Logger;
-import org.docx4j.model.structure.SectionWrapper;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.NumberFormat;
+import org.docx4j.wml.SectPr;
 
 public class PageNumberHelper {
 	
 	public static Logger log = Logger.getLogger(PageNumberHelper.class);	
 	
 
-    public static String getPageNumberFormat(WordprocessingMLPackage wordmlPackage, int sectionNumber) {
+    public static String getPageNumberFormat(SectPr sectPr) {
     	
-    	SectionWrapper sw = wordmlPackage.getDocumentModel().getSections().get(sectionNumber-1);
-    	// TODO FIXME. This will be wrong if the document contains continuous section
-    	// breaks, because the XSLT counts int sectionNumber using our tmp doc which only
-    	// creates sections for sectPr of type other than continuous!
-    
-    	if (sw.getSectPr()==null) return "1";
+    	if (sectPr==null) return "1";
     	
-    	CTPageNumber pageNumber = sw.getSectPr().getPgNumType();
+    	CTPageNumber pageNumber = sectPr.getPgNumType();
     	
     	if (pageNumber==null) return "1";
     	
@@ -54,13 +48,11 @@ public class PageNumberHelper {
     	return "1";
     }
 	
-    public static String getPageNumberInitial(WordprocessingMLPackage wordmlPackage, int sectionNumber) {
+    public static String getPageNumberInitial(SectPr sectPr) {
 
-    	SectionWrapper sw = wordmlPackage.getDocumentModel().getSections().get(sectionNumber-1);
-
-    	if (sw.getSectPr()==null) return "1";
+    	if (sectPr==null) return "1";
     	
-    	CTPageNumber pageNumber = sw.getSectPr().getPgNumType();
+    	CTPageNumber pageNumber = sectPr.getPgNumType();
     	
     	if (pageNumber==null) {
     		log.debug("No PgNumType");

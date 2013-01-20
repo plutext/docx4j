@@ -67,7 +67,9 @@ public class HtmlExporterNonXSLT {
 		HtmlSettings htmlSettings = new HtmlSettings();
 		htmlSettings.setWmlPackage(wordMLPackage);
 		htmlSettings.setImageHandler(conversionImageHandler);
-		conversionContext = new HTMLConversionContextNonXSLT(htmlSettings);
+		//The HtmlExporterNonXSLT seems to ignore header and footers,
+		//therefore the ConversionSectionWrapper can be null
+		conversionContext = new HTMLConversionContextNonXSLT(htmlSettings, null);
 	}
 	
 	/**

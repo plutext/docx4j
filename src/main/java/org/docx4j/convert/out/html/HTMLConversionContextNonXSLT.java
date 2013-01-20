@@ -19,6 +19,7 @@
  */
 package org.docx4j.convert.out.html;
 
+import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
 import org.docx4j.model.styles.StyleTree;
 
@@ -32,8 +33,8 @@ import org.docx4j.model.styles.StyleTree;
 public class HTMLConversionContextNonXSLT extends HTMLConversionContext {
 	protected StyleTree styleTree;
 
-	public HTMLConversionContextNonXSLT(HtmlSettings settings) {
-		super(settings);
+	public HTMLConversionContextNonXSLT(HtmlSettings settings, ConversionSectionWrappers conversionSectionWrappers) {
+		super(settings, conversionSectionWrappers);
 		this.styleTree = initializeStyleTree(settings);
 	}
 

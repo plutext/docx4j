@@ -1,15 +1,11 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.math.BigInteger;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -17,25 +13,18 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.avalon.framework.configuration.Configuration;
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
 import org.apache.commons.io.FileUtils;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
+import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.PageBreak;
-import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.fonts.PhysicalFonts;
-import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.listnumbering.Emulator.ResultTriple;
@@ -46,20 +35,17 @@ import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.run.Font;
-import org.docx4j.model.structure.SectionWrapper;
-import org.docx4j.model.structure.jaxb.ObjectFactory;
-import org.docx4j.model.structure.jaxb.Sections;
-import org.docx4j.model.structure.jaxb.Sections.Section;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
+import org.docx4j.utils.FopUtils;
 import org.docx4j.wml.CTPageNumber;
 import org.docx4j.wml.CTSimpleField;
 import org.docx4j.wml.NumberFormat;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
 import org.docx4j.wml.RPr;
+import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
@@ -101,93 +87,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		saveFO = save;
 	}
 	
-
-	/**
-	 * Create a FOP font configuration for each font used in the
-	 * document.
-	 * 
-	 * @return
-	 */
-	private String declareFonts() {
-		
-		StringBuffer result = new StringBuffer();
-		Map fontsInUse = wordMLPackage.getMainDocumentPart().fontsInUse();
-		Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
-		while (fontMappingsIterator.hasNext()) {
-		    Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
-		    if(pairs.getKey()==null) {
-		    	log.info("Skipped null key");
-//		    	pairs = (Map.Entry)fontMappingsIterator.next();
-		    	continue;
-		    }
-		    
-		    String fontName = (String)pairs.getKey();		    
-		    
-		    PhysicalFont pf = wordMLPackage.getFontMapper().getFontMappings().get(fontName);
-		    
-		    if (pf==null) {
-		    	log.error("Document font " + fontName + " is not mapped to a physical font!");
-		    	continue;
-		    }
-		    
-		    String subFontAtt = "";
-		    if (pf.getEmbedFontInfo().getSubFontName()!=null)
-		    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
-		    
-		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	// now add the first font triplet
-			    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-			    addFontTriplet(result, fontTriplet);
-		    result.append("</font>" );
-		    
-		    // bold, italic etc
-		    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
-		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "normal", "bold");
-			    result.append("</font>" );
-		    }
-		    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
-		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "italic", "bold");
-			    result.append("</font>" );
-		    }
-		    pfVariation = PhysicalFonts.getItalicForm(pf);
-		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "italic", "normal");
-			    result.append("</font>" );
-		    }
-			    
-		}
-		
-		return result.toString();
-		
-	}
-		
-	private void addFontTriplet(StringBuffer result, FontTriplet fontTriplet) {
-	    result.append("<font-triplet name=\"" + fontTriplet.getName() + "\""
-				+ " style=\"" + fontTriplet.getStyle() + "\""
-				+ " weight=\"" + weightToCSS2FontWeight(fontTriplet.getWeight()) + "\""
-						+ "/>" );		
-	}
-	private void addFontTriplet(StringBuffer result, String familyName, String style, String weight) {
-	    result.append("<font-triplet name=\"" + familyName + "\""
-				+ " style=\"" + style + "\""
-				+ " weight=\"" + weight + "\""
-						+ "/>" );		
-	}
-	
-	private String weightToCSS2FontWeight(int i) {
-		
-		if (i>=700) {
-			return "bold";
-		} else {
-			return "normal";
-		}
-		
-	}
 	
 	Configuration fopConfig;
 	/**
@@ -214,74 +113,21 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 	@Override
 	public void output(OutputStream os, PdfSettings settings) throws Docx4JException {
 	PdfConversionContext conversionContext = null;
+	Configuration localFopConfiguration = fopConfig;
+	WordprocessingMLPackage localWmlPackage = (wordMLPackage != null ? 
+			wordMLPackage : (WordprocessingMLPackage)settings.getWmlPackage());
 
-		// Refresh the document model, in case
-		// the user has added headers or footers
-		wordMLPackage.getDocumentModel().refresh();
+		if (settings == null) {
+			settings = new PdfSettings();
+		}
+		settings.setWmlPackage(localWmlPackage);
+	
 		
-		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
-		// (reuse if you plan to render multiple documents!)
-		FopFactory fopFactory = FopFactory.newInstance();
-
-//		FopFactory fopFactory = null;
-//		// in FOP r1356646 (after FOP 1.1),
-//		// FopFactory.newInstance() was replaced with FopFactory.newInstance(URI) 
-//		Method[] methods = FopFactory.class.getDeclaredMethods();		
-//		Method method;
-//		try {
-//			method = FopFactory.class.getDeclaredMethod("newInstance", new Class[0] );
-//			if (method==null) {
-//				Class[] params = new Class[1];
-//				params[0] = URI.class;
-//				method = FopFactory.class.getDeclaredMethod("newInstance", params );
-//				fopFactory = (FopFactory)method.invoke(null, new URI("http://") );
-//				// Also requires xmlgraphics-commons to be built from nightly 
-//				// for org/apache/xmlgraphics/image/loader/impl/AbstractImageSessionContext$FallbackResolver
-//				// which was introduced in r1391005 
-//			} else {
-//				fopFactory = (FopFactory)method.invoke(null);
-//			}
-//		} catch (Exception e1) {
-//			log.error(e1);
-//		} 
-
+		if (localWmlPackage == null) {
+			throw new Docx4JException("The WordprocessingMLPackage is missing.");
+		}
+		
 		try {
-
-			if (fopConfig == null) {
-
-				DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-				String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>"
-						+ "<renderers><renderer mime=\"application/pdf\">"
-						+ "<fonts>" + declareFonts() +
-						// <directory>/home/dev/fonts</directory>" +
-						// "<directory>/usr/share/fonts/truetype/ttf-lucida</directory>"
-						// +
-						// "<directory>/var/lib/defoma/fontconfig.d/D</directory>"
-						// +
-						// "<directory>/var/lib/defoma/fontconfig.d/L</directory>"
-						// +
-						// "<auto-detect/>" +
-						"</fonts></renderer></renderers></fop>";
-
-				log.debug("\nUsing config:\n " + myConfig + "\n");
-
-				// See FOP's PrintRendererConfigurator
-				// String myConfig = "<fop
-				// version=\"1.0\"><strict-configuration>true</strict-configuration>"
-				// +
-				// "<renderers><renderer mime=\"application/pdf\">" +
-				// "<fonts><directory
-				// recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
-				// "<auto-detect/>" +
-				// "</fonts></renderer></renderers></fop>";
-
-				fopConfig = cfgBuilder.build(new ByteArrayInputStream(myConfig
-						.getBytes("UTF-8")));
-			}
-
-			fopFactory.setUserConfig(fopConfig);
-
-			Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
 
 			/*
 			 * Based on the principle that we'll do all the smarts via extension
@@ -295,33 +141,31 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			// Document domDoc =
 			// XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
 
-			// Containerization of borders/shading
-			MainDocumentPart mdp = wordMLPackage.getMainDocumentPart();
-
 			// Don't change the user's Document object; create a tmp one
-			org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(wordMLPackage
+			org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(localWmlPackage
 					.getMainDocumentPart().getJaxbElement());
+			
+			
+			// Preprocessing
 			Containerization.groupAdjacentBorders(tmpDoc.getBody());
 			PageBreak.movePageBreaks(tmpDoc.getBody());
+			ConversionSectionWrappers conversionSectionWrappers = 
+					ConversionSectionWrappers.build(tmpDoc, localWmlPackage);
 
-			// log.info(XmlUtils.marshaltoString(mdp.getJaxbElement(), false));
-
-			Sections sections = createSectionContainers(tmpDoc);
-			Document domDoc = XmlUtils.marshaltoW3CDomDocument(sections,
-					Context.jcSectionModel);
-
-			log.debug(XmlUtils.marshaltoString(sections, false, Context.jcSectionModel));
+			conversionContext = new PdfConversionContext(settings, conversionSectionWrappers);
 			
-			if (settings == null) {
-				settings = new PdfSettings();
+			Document domDoc = XmlUtils.marshaltoW3CDomDocument(conversionSectionWrappers.createSections(),
+					Context.jcSectionModel);
+				
+			if (log.isDebugEnabled()) {
+				log.debug(XmlUtils.w3CDomNodeToString(domDoc));
 			}
-			settings.setWmlPackage(wordMLPackage);
-			conversionContext = new PdfConversionContext(settings);
 
-			// Resulting SAX events (the generated FO) must be piped through to
-			// FOP
-			Result result = new SAXResult(fop.getDefaultHandler());
-
+			if (localFopConfiguration == null) {
+				localFopConfiguration = 
+						FopUtils.createDefaultConfiguration(localWmlPackage.getFontMapper(), 
+															localWmlPackage.getMainDocumentPart().fontsInUse());
+			}
 			if (saveFO != null || log.isDebugEnabled()) {
 
 				ByteArrayOutputStream intermediate = new ByteArrayOutputStream();
@@ -337,13 +181,9 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 					log.info("Saved " + saveFO.getPath());
 				}
 
-				Source src = new StreamSource(new StringReader(fo));
-
-				Transformer transformer = XmlUtils.getTransformerFactory().newTransformer();
-				transformer.transform(src, result);
+				FopUtils.render(localFopConfiguration, MimeConstants.MIME_PDF, fo, null, os);
 			} else {
-
-				XmlUtils.transform(domDoc, xslt, conversionContext.getXsltParameters(), result);
+				FopUtils.render(localFopConfiguration, MimeConstants.MIME_PDF, domDoc, xslt, conversionContext.getXsltParameters(), os);
 			}
 
 		} catch (Exception e) {
@@ -358,84 +198,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		}
 
 	}
-    
-	private Sections createSectionContainers(org.docx4j.wml.Document doc) {
-				
-		ObjectFactory factory = new ObjectFactory();
-		
-		Sections sections = factory.createSections();
-		Section section = factory.createSectionsSection();
-		section.setName("s1"); // name must match fo master
-		
-		sections.getSection().add(section);
-						
-		//org.docx4j.wml.Document doc = (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
-		
-		int i = 2;
-		for (Object o : doc.getBody().getContent() ) {
-			
-			if (o instanceof org.docx4j.wml.P) {
-				if (((org.docx4j.wml.P)o).getPPr() != null ) {
-					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
-					if (ppr.getSectPr()!=null) {
-
-						// According to the ECMA-376 2ed, if type is not specified, read it as next page
-						// However Word 2007 sometimes treats it as continuous, and sometimes doesn't??						
-						
-						if ( ppr.getSectPr().getType()!=null
-								     && ppr.getSectPr().getType().getVal().equals("continuous")) {
-							// If its continuous, don't add a section
-						} else {
-							section = factory.createSectionsSection();
-							section.setName("s" +i); // name must match fo master
-							sections.getSection().add(section);	
-							i++;
-						}
-					}
-				}				
-			} 
-			section.getAny().add( marshall(o) );
-				// TODO: since the section model knows nothing about WML,
-				// we have to marshall each object separately.
-				// To fix this, next time wml is generated, include the section model there!
-		}
-		return sections;				
-	}
-    
-	private Element marshall(Object o) {
-		
-		try {
-			org.w3c.dom.Document w3cDoc = 
-				XmlUtils.marshaltoW3CDomDocument(o);
-			
-			
-				/* Force the RelationshipsPart to be marshalled using
-				 * the normal non-rels part NamespacePrefixMapper,
-				 * since otherwise (because we'd be using 2 namespace
-				 * prefix mappers?) we end up with errant xmlns="",
-				 * which is wrong and stops Word 2007 from loading the
-				 * document.
-				 * 
-				 * Note that xmlPackage.xsd defines:
-				 * 	<xsd:complexType name="CT_XmlData">
-						<xsd:sequence>
-							<xsd:any processContents="skip" />
-						</xsd:sequence>
-				 *
-				 * Note also that marshaltoString uses 
-				 * just the normal non-rels part NamespacePrefixMapper,
-				 * so if/when this is marshalled again, that could
-				 * have been causing problems as well?? 
-				 */
-	        return w3cDoc.getDocumentElement();		        
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 		        
-		return null;
-		
-	}
-	
 	
 
     /* ---------------Xalan XSLT Extension Functions ---------------- */
@@ -1076,13 +838,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	
     }
     
-    public static String getPageNumberFormat(PdfConversionContext context, int sectionNumber) {
+    public static String getPageNumberFormat(PdfConversionContext context) {
     	
-    	SectionWrapper sw = context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1);
+    	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
     	
-    	if (sw.getSectPr()==null) return "1";
+    	if (sectPr==null) return "1";
     	
-    	CTPageNumber pageNumber = sw.getSectPr().getPgNumType();
+    	CTPageNumber pageNumber = sectPr.getPgNumType();
     	
     	if (pageNumber==null) return "1";
     	
@@ -1114,13 +876,13 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
     	return "1";
     }
 	
-    public static String getPageNumberInitial(PdfConversionContext context, int sectionNumber) {
-
-    	SectionWrapper sw = context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1);
-
-    	if (sw.getSectPr()==null) return "1";
+    public static String getPageNumberInitial(PdfConversionContext context) {
     	
-    	CTPageNumber pageNumber = sw.getSectPr().getPgNumType();
+    	SectPr sectPr = context.getSections().getCurrentSection().getSectPr();
+
+    	if (sectPr==null) return "1";
+    	
+    	CTPageNumber pageNumber = sectPr.getPgNumType();
     	
     	if (pageNumber==null) {
     		log.debug("No PgNumType");

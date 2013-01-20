@@ -122,6 +122,22 @@ public class HeaderFooterPolicy {
 			defaultFooter = previousHF.defaultFooter;
 			evenFooter    =  previousHF.evenFooter; 
 		}
+		
+		/* If there is an even and odd(default) Header but only a default Footer
+		 * then let the even Footer reference the default Footer.
+		 * Or if there is an even and odd(default) Footer but only a default Header
+		 * then let the even Header reference the default Header.
+		 * In Word the headers and footers are independent, but the xslfo-structure 
+		 * only knows about a simple page (with only default Header/Footers) or an 
+		 * even/odd page (with an even and an odd Header and Footer).
+		 */
+		
+		if ((evenHeader != null) && (defaultHeader != null) && (evenFooter == null)) {
+			evenFooter = defaultFooter;
+		}
+		else if ((evenFooter != null) && (defaultFooter != null) && (evenHeader == null)) {
+			evenHeader = defaultHeader;
+		}
 	}
 
 	private boolean hasHdrRef(List<CTRel> hdrFtrRefs) {
@@ -205,29 +221,21 @@ public class HeaderFooterPolicy {
 	public FooterPart getFirstFooter() {
 		return firstFooterActive;
 	}
-	/**
-	 * Returns the odd page header. This is
-	 *  also the same as the default one...
-	 */
-	public HeaderPart getOddHeader() {
-		return defaultHeader;
-	}
-	/**
-	 * Returns the odd page footer. This is
-	 *  also the same as the default one...
-	 */
-	public FooterPart getOddFooter() {
-		return defaultFooter;
-	}
 	public HeaderPart getEvenHeader() {
 		return evenHeader;
 	}
 	public FooterPart getEvenFooter() {
 		return evenFooter;
 	}
+	/** If an even header is present this is the odd header 
+	 *  otherwise it is both, even and odd header
+	 */
 	public HeaderPart getDefaultHeader() {
 		return defaultHeader;
 	}
+	/** If an even footer is present this is the odd footer 
+	 *  otherwise it is both, even and odd footer
+	 */
 	public FooterPart getDefaultFooter() {
 		return defaultFooter;
 	}

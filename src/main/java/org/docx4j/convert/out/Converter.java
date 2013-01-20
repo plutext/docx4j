@@ -92,199 +92,113 @@ public class Converter {
 	
 	// Yuck! Getting rid of as many of these as possible ....
 	
-//	public static boolean hasFirstHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
-//		return (wordmlPackage.getHeaderFooterPolicy().getFirstHeader()==null && 
-//				wordmlPackage.getHeaderFooterPolicy().getFirstFooter() ==null? false : true);     		
-//	}
-//	public static boolean hasEvenOrOddHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
-//		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader()==null && 
-//				wordmlPackage.getHeaderFooterPolicy().getOddFooter() ==null && 
-//				wordmlPackage.getHeaderFooterPolicy().getEvenHeader()==null && 
-//				wordmlPackage.getHeaderFooterPolicy().getEvenFooter() ==null? false : true);     		
-//	}
-//	public static boolean hasEvenHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
-//		return (wordmlPackage.getHeaderFooterPolicy().getEvenHeader()==null && 
-//				wordmlPackage.getHeaderFooterPolicy().getEvenFooter() ==null? false : true);     		
-//	}
-//	public static boolean hasOddHeaderOrFooter(WordprocessingMLPackage wordmlPackage) {    		
-//		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader()==null && 
-//				wordmlPackage.getHeaderFooterPolicy().getOddFooter() ==null ? false : true);     		
-//	}
-	public static boolean hasDefaultHeaderOrFooter(AbstractWmlConversionContext context, int sectionNumber) {    		
-		return (context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getDefaultHeader()==null && 
-				context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getDefaultFooter() ==null ? false : true);     		
-	}
-
-	public static boolean hasFirstHeader(AbstractWmlConversionContext context, int sectionNumber) {
-		return (context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getFirstHeader() == null ? false
-				: true);
-	}
-
-//	public static boolean hasOddHeader(WordprocessingMLPackage wordmlPackage) {
-//		return (wordmlPackage.getHeaderFooterPolicy().getOddHeader() == null ? false
-//				: true);
-//	}
-
-	public static boolean hasEvenHeader(AbstractWmlConversionContext context, int sectionNumber) {
-		return (context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getEvenHeader() == null ? false
-				: true);
-	}
-
-	public static boolean hasDefaultHeader(AbstractWmlConversionContext context, int sectionNumber) {
-		return (context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getDefaultHeader() == null ? false
-				: true);
-	}
-
-	public static boolean hasFirstFooter(AbstractWmlConversionContext context, int sectionNumber) {
-		return (context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getFirstFooter() == null ? false
-				: true);
-	}
-
-//	public static boolean hasOddFooter(WordprocessingMLPackage wordmlPackage) {
-//		return (wordmlPackage.getHeaderFooterPolicy().getOddFooter() == null ? false
-//				: true);
-//	}
-
-	public static boolean hasEvenFooter(AbstractWmlConversionContext context, int sectionNumber) {
-		return (context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getEvenFooter() == null ? false
-				: true);
-	}
-
-	public static boolean hasDefaultFooter(AbstractWmlConversionContext context, int sectionNumber) {
-		
-		log.debug("section number: " + sectionNumber);
-		
-		return (context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getDefaultFooter() == null ? false
-				: true);
-	}
-
-	public static Node getFirstHeader(AbstractWmlConversionContext context, int sectionNumber) {
-
-		Hdr hdr = (Hdr)context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-		.getHeaderFooterPolicy()
-				.getFirstHeader().getJaxbElement();
-		return XmlUtils.marshaltoW3CDomDocument(hdr);
-	}
-
-	public static Node getFirstFooter(AbstractWmlConversionContext context, int sectionNumber) {
-
-		Ftr ftr = (Ftr)context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-		.getHeaderFooterPolicy()
-				.getFirstFooter().getJaxbElement();
-		return XmlUtils.marshaltoW3CDomDocument(ftr);
-
-	}
-
-//	public static Node getOddHeader(WordprocessingMLPackage wordmlPackage) {
-//
-//		Hdr hdr = (Hdr) wordmlPackage.getHeaderFooterPolicy()
-//				.getOddHeader().getJaxbElement();
-//		return XmlUtils.marshaltoW3CDomDocument(hdr);
-//
-//	}
-//
-//	public static Node getOddFooter(WordprocessingMLPackage wordmlPackage) {
-//
-//		Ftr ftr = (Ftr) wordmlPackage.getHeaderFooterPolicy()
-//				.getOddFooter().getJaxbElement();
-//		return XmlUtils.marshaltoW3CDomDocument(ftr);
-//
-//	}
-
-	public static Node getEvenHeader(AbstractWmlConversionContext context, int sectionNumber) {
-
-		Hdr hdr = (Hdr)context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-		.getHeaderFooterPolicy()
-				.getEvenHeader().getJaxbElement();
-		return XmlUtils.marshaltoW3CDomDocument(hdr);
-
-	}
-
-	public static Node getEvenFooter(AbstractWmlConversionContext context, int sectionNumber) {
-
-		Ftr ftr = (Ftr)context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-		.getHeaderFooterPolicy()
-				.getEvenFooter().getJaxbElement();
-		return XmlUtils.marshaltoW3CDomDocument(ftr);
-
-	}
-
-	public static Node getDefaultHeader(AbstractWmlConversionContext context, int sectionNumber) {		
-		
-		Hdr hdr = (Hdr)context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-		.getHeaderFooterPolicy()
-				.getDefaultHeader().getJaxbElement();
-		return XmlUtils.marshaltoW3CDomDocument(hdr);
-
-	}
-
-	public static Node getDefaultFooter(AbstractWmlConversionContext context, int sectionNumber) {
-
-		Ftr ftr = (Ftr)context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-		.getHeaderFooterPolicy()
-				.getDefaultFooter().getJaxbElement();
-		return XmlUtils.marshaltoW3CDomDocument(ftr);
-
-	}
-
-	public static void inFirstHeader(AbstractWmlConversionContext context, int sectionNumber) {
-		setCurrentPart(context, 
-				context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getFirstHeader());
-		// TODO: store current section in model states, and use it to get
-		// appropriate header/footer
+	public static void moveNextSection(AbstractWmlConversionContext context) {
+		context.getSections().next();
 	}
 	
-//	public static void inOddHeader(WordprocessingMLPackage wordmlPackage,
-//			HashMap<String, TransformState> modelStates) {
-//		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(sectionNumber-1)
-//				.getHeaderFooterPolicy().getOddHeader(),
-//				modelStates);
-//	}
-
-	public static void inEvenHeader(AbstractWmlConversionContext context, int sectionNumber) {
-		setCurrentPart(context,
-				context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getEvenHeader());
+	public static boolean hasDefaultHeaderOrFooter(AbstractWmlConversionContext context) {
+	ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		return (currentSection.getHeaderFooterPolicy().getDefaultHeader()!=null) || 
+			   (currentSection.getHeaderFooterPolicy().getDefaultFooter()!=null);     		
 	}
 
-	public static void inDefaultHeader(AbstractWmlConversionContext context, int sectionNumber) {
-		setCurrentPart(context,
-				context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getDefaultHeader());
+	public static boolean hasFirstHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		return (currentSection.getHeaderFooterPolicy().getFirstHeader() != null);
 	}
 
-	public static void inFirstFooter(AbstractWmlConversionContext context, int sectionNumber) {
-		setCurrentPart(context,
-				context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getFirstFooter());
+	public static boolean hasEvenHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		return (currentSection.getHeaderFooterPolicy().getEvenHeader() != null);
 	}
 
-//	public static void inOddFooter(WordprocessingMLPackage wordmlPackage,
-//			HashMap<String, TransformState> modelStates) {
-//		PartTracker.setPartTrackerState(wordmlPackage.getDocumentModel().getSections().get(sectionNumber-1)
-//				.getHeaderFooterPolicy().getOddFooter(),
-//				modelStates);
-//	}
-
-	public static void inEvenFooter(AbstractWmlConversionContext context, int sectionNumber) {
-		setCurrentPart(context,
-				context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-				.getHeaderFooterPolicy().getEvenFooter());
+	public static boolean hasDefaultHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		return (currentSection.getHeaderFooterPolicy().getDefaultHeader() != null);
 	}
 
-	public static void inDefaultFooter(AbstractWmlConversionContext context, int sectionNumber) {
-		setCurrentPart(context,
-			context.getWmlPackage().getDocumentModel().getSections().get(sectionNumber-1)
-			.getHeaderFooterPolicy().getDefaultFooter());
+	public static boolean hasFirstFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		return (currentSection.getHeaderFooterPolicy().getFirstFooter() != null);
+	}
+
+	public static boolean hasEvenFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		return (currentSection.getHeaderFooterPolicy().getEvenFooter() != null);
+	}
+
+	public static boolean hasDefaultFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		return (currentSection.getHeaderFooterPolicy().getDefaultFooter() != null);
+	}
+
+	public static Node getFirstHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		Hdr hdr = (Hdr)currentSection.getHeaderFooterPolicy().getFirstHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+	}
+
+	public static Node getFirstFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		Ftr ftr = (Ftr)currentSection.getHeaderFooterPolicy().getFirstFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+	}
+
+	public static Node getEvenHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		Hdr hdr = (Hdr)currentSection.getHeaderFooterPolicy().getEvenHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+	}
+
+	public static Node getEvenFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		Ftr ftr = (Ftr)currentSection.getHeaderFooterPolicy().getEvenFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static Node getDefaultHeader(AbstractWmlConversionContext context) {		
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		Hdr hdr = currentSection.getHeaderFooterPolicy().getDefaultHeader().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(hdr);
+
+	}
+
+	public static Node getDefaultFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		Ftr ftr = (Ftr)currentSection.getHeaderFooterPolicy().getDefaultFooter().getJaxbElement();
+		return XmlUtils.marshaltoW3CDomDocument(ftr);
+
+	}
+
+	public static void inFirstHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		setCurrentPart(context, currentSection.getHeaderFooterPolicy().getFirstHeader());
+	}
+
+	public static void inEvenHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		setCurrentPart(context, currentSection.getHeaderFooterPolicy().getEvenHeader());
+	}
+
+	public static void inDefaultHeader(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		setCurrentPart(context, currentSection.getHeaderFooterPolicy().getDefaultHeader());
+	}
+
+	public static void inFirstFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		setCurrentPart(context, currentSection.getHeaderFooterPolicy().getFirstFooter());
+	}
+
+	public static void inEvenFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		setCurrentPart(context, currentSection.getHeaderFooterPolicy().getEvenFooter());
+	}
+
+	public static void inDefaultFooter(AbstractWmlConversionContext context) {
+		ConversionSectionWrapper currentSection = context.getSections().getCurrentSection();
+		setCurrentPart(context, currentSection.getHeaderFooterPolicy().getDefaultFooter());
 	}
 
     //=====================================================

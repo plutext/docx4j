@@ -147,12 +147,14 @@
 
 
 	<xsl:template match="section">
+			<xsl:variable name="dummy"
+				select="java:org.docx4j.convert.out.Converter.moveNextSection($conversionContext)" />
 	
 			<xsl:variable name="pageNumberFormat" 
-				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberFormat($conversionContext, position())" />
+				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberFormat($conversionContext)" />
 	
 			<xsl:variable name="pageNumberInitial" 
-				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberInitial($conversionContext, position())" />
+				select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.getPageNumberInitial($conversionContext)" />
 
 			<!-- start page-sequence
 				here comes the text (contained in flow objects)
@@ -165,129 +167,102 @@
 
 				<!--  First Page Header -->
 				<xsl:if
-					test="java:org.docx4j.convert.out.Converter.hasFirstHeader($conversionContext, position() )">
+					test="java:org.docx4j.convert.out.Converter.hasFirstHeader($conversionContext)">
 					
 					<xsl:variable name="partname" 
-						select="java:org.docx4j.convert.out.Converter.inFirstHeader($conversionContext, position())" />
+						select="java:org.docx4j.convert.out.Converter.inFirstHeader($conversionContext)" />
 					
 					<fo:static-content
 						flow-name="xsl-region-before-firstpage">
 
 						<xsl:apply-templates
-							select="java:org.docx4j.convert.out.Converter.getFirstHeader($conversionContext, position())" />
+							select="java:org.docx4j.convert.out.Converter.getFirstHeader($conversionContext)" />
 
 					</fo:static-content>
 				</xsl:if>
+				
 				<!--  First Page Footer -->
 				<xsl:if
-					test="java:org.docx4j.convert.out.Converter.hasFirstFooter($conversionContext, position() )">
+					test="java:org.docx4j.convert.out.Converter.hasFirstFooter($conversionContext)">
 
 					<xsl:variable name="partname" 
-						select="java:org.docx4j.convert.out.Converter.inFirstFooter($conversionContext, position() )" />
+						select="java:org.docx4j.convert.out.Converter.inFirstFooter($conversionContext)" />
 
 					<fo:static-content
 						flow-name="xsl-region-after-firstpage">
 						<xsl:apply-templates
-							select="java:org.docx4j.convert.out.Converter.getFirstFooter($conversionContext, position() )" />
+							select="java:org.docx4j.convert.out.Converter.getFirstFooter($conversionContext)" />
 					</fo:static-content>
 				</xsl:if>
 
-			<xsl:choose>
-			
-				<xsl:when test="java:org.docx4j.convert.out.Converter.hasDefaultHeaderOrFooter($conversionContext, position() )">
-							<xsl:if
-								test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.convert.out.Converter.inDefaultHeader($conversionContext, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-before-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.convert.out.Converter.getDefaultHeader($conversionContext, position() )" />
-								</fo:static-content>
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.convert.out.Converter.inDefaultFooter($conversionContext, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-after-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.convert.out.Converter.getDefaultFooter($conversionContext, position() )" />
-								</fo:static-content>
-							</xsl:if>
-							
-							<xsl:if
-								test="java:org.docx4j.convert.out.Converter.hasFootnotesPart($conversionContext)">
-								<fo:static-content flow-name="xsl-footnote-separator">
-								    <fo:block>
-								      <fo:leader leader-pattern="rule"
-								                 leader-length="100%"
-								                 rule-style="solid"
-								                 rule-thickness="0.5pt"/>
-								    </fo:block>
-								  </fo:static-content>				
-									</xsl:if>
-				</xsl:when>
-				
-				<xsl:otherwise>
-							<xsl:if
-								test="java:org.docx4j.convert.out.Converter.hasEvenHeader($conversionContext, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.convert.out.Converter.inEvenHeader($conversionContext, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-before-evenpage">
-									<xsl:apply-templates
-										select="java:org.docx4j.convert.out.Converter.getEvenHeader($conversionContext, position() )" />
-								</fo:static-content>
-							</xsl:if>
-							<xsl:if
-								test="java:org.docx4j.convert.out.Converter.hasEvenFooter($conversionContext, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.convert.out.Converter.inEvenFooter($conversionContext, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-after-evenpage">
-									<xsl:apply-templates
-										select="java:org.docx4j.convert.out.Converter.getEvenFooter($conversionContext, position() )" />
-								</fo:static-content>
-							</xsl:if>
-			<!-- 				
-							<xsl:if
-								test="java:org.docx4j.convert.out.Converter.hasOddHeader($conversionContext, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.convert.out.Converter.inOddHeader($conversionContext, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-before-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.convert.out.Converter.getOddHeader($conversionContext, position() )" />
-								</fo:static-content>
-							</xsl:if>				
-							<xsl:if
-								test="java:org.docx4j.convert.out.Converter.hasOddFooter($conversionContext, position() )">
-								
-								<xsl:variable name="partname" 
-									select="java:org.docx4j.convert.out.Converter.inOddFooter($conversionContext, position() )" />
-								
-								<fo:static-content
-									flow-name="xsl-region-after-default">
-									<xsl:apply-templates
-										select="java:org.docx4j.convert.out.Converter.getOddFooter($conversionContext, position() )" />
-								</fo:static-content>
-							</xsl:if>
-			 -->				
-				
-				</xsl:otherwise>
-			</xsl:choose>
+				<!--  Default/Odd Page Header -->
+				<xsl:if
+					test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.convert.out.Converter.inDefaultHeader($conversionContext)" />
+					
+					<fo:static-content
+						flow-name="xsl-region-before-default">
+						<xsl:apply-templates
+							select="java:org.docx4j.convert.out.Converter.getDefaultHeader($conversionContext)" />
+					</fo:static-content>
+				</xsl:if>
 
+				<!--  Default/Odd Page Footer -->
+				<xsl:if
+					test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.convert.out.Converter.inDefaultFooter($conversionContext)" />
+					
+					<fo:static-content
+						flow-name="xsl-region-after-default">
+						<xsl:apply-templates
+							select="java:org.docx4j.convert.out.Converter.getDefaultFooter($conversionContext)" />
+					</fo:static-content>
+				</xsl:if>
+							
+				<!--  Footnotes Part -->
+				<xsl:if
+					test="java:org.docx4j.convert.out.Converter.hasFootnotesPart($conversionContext)">
+					<fo:static-content flow-name="xsl-footnote-separator">
+					    <fo:block>
+					      <fo:leader leader-pattern="rule"
+					                 leader-length="100%"
+					                 rule-style="solid"
+					                 rule-thickness="0.5pt"/>
+					    </fo:block>
+					  </fo:static-content>				
+				</xsl:if>
+				
+				<!--  Even Page Header -->
+				<xsl:if
+					test="java:org.docx4j.convert.out.Converter.hasEvenHeader($conversionContext)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.convert.out.Converter.inEvenHeader($conversionContext)" />
+					
+					<fo:static-content
+						flow-name="xsl-region-before-evenpage">
+						<xsl:apply-templates
+							select="java:org.docx4j.convert.out.Converter.getEvenHeader($conversionContext)" />
+					</fo:static-content>
+				</xsl:if>
+				
+				<!--  Even Page Footer -->
+				<xsl:if
+					test="java:org.docx4j.convert.out.Converter.hasEvenFooter($conversionContext)">
+					
+					<xsl:variable name="partname" 
+						select="java:org.docx4j.convert.out.Converter.inEvenFooter($conversionContext)" />
+					
+					<fo:static-content
+						flow-name="xsl-region-after-evenpage">
+						<xsl:apply-templates
+							select="java:org.docx4j.convert.out.Converter.getEvenFooter($conversionContext)" />
+					</fo:static-content>
+				</xsl:if>
 
 				<!-- start fo:flow
 					each flow is targeted

@@ -60,6 +60,8 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 
 	<xsl:variable name="dummy"
 		select="java:org.docx4j.convert.out.html.HtmlExporterNG2.log('/pkg:package')" />
+	<xsl:variable name="dummy2"
+		select="java:org.docx4j.convert.out.Converter.moveNextSection($conversionContext)" />
 		
 		
 	<html>
@@ -70,11 +72,11 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 					/*paged media */ div.header {display: none }
 					div.footer {display: none } /*@media print { */
 					<xsl:if
-						test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext, 1)">
+						test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext)">
 						div.header {display: block; position: running(header) }
 					</xsl:if>
 					<xsl:if
-						test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext, 1)">
+						test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext)">
 						div.footer {display: block; position: running(footer) }
 					</xsl:if>
 
@@ -148,10 +150,10 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 				similar to the below already exist
 			-->
 			<xsl:if
-				test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext, 1)">
+				test="java:org.docx4j.convert.out.Converter.hasDefaultHeader($conversionContext)">
 				<div class="header">
 					<xsl:apply-templates
-						select="java:org.docx4j.convert.out.Converter.getDefaultHeader($conversionContext, 1)" />
+						select="java:org.docx4j.convert.out.Converter.getDefaultHeader($conversionContext)" />
 				</div>
 			</xsl:if>
 
@@ -189,10 +191,10 @@ doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
 			<xsl:call-template name="pretty-print-block" />
 
 			<xsl:if
-				test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext, 1)">
+				test="java:org.docx4j.convert.out.Converter.hasDefaultFooter($conversionContext)">
 				<div class="footer">
 					<xsl:apply-templates
-						select="java:org.docx4j.convert.out.Converter.getDefaultFooter($conversionContext, 1)" />
+						select="java:org.docx4j.convert.out.Converter.getDefaultFooter($conversionContext)" />
 				</div>
 			</xsl:if>
 			

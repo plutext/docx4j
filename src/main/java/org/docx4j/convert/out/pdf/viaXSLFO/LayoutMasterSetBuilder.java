@@ -6,12 +6,10 @@ import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.ConversionSectionWrapper;
 import org.docx4j.jaxb.Context;
-import org.docx4j.model.structure.DocumentModel;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.PageDimensions;
-import org.docx4j.model.structure.SectionWrapper;
-import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.plutext.jaxb.xslfo.ConditionalPageMasterReference;
 import org.plutext.jaxb.xslfo.LayoutMasterSet;
 import org.plutext.jaxb.xslfo.ObjectFactory;
@@ -41,7 +39,7 @@ public class LayoutMasterSetBuilder {
 		
 	public static DocumentFragment getLayoutMasterSetFragment(AbstractWmlConversionContext context) {
 
-		LayoutMasterSet lms = getFoLayoutMasterSet(context.getWmlPackage());		
+		LayoutMasterSet lms = getFoLayoutMasterSet(context);		
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		DocumentFragment docfrag = document.createDocumentFragment();
@@ -56,36 +54,29 @@ public class LayoutMasterSetBuilder {
      */	
 	public static void appendLayoutMasterSetFragment(AbstractWmlConversionContext context, Node foRoot) {
 
-		LayoutMasterSet lms = getFoLayoutMasterSet(context.getWmlPackage());		
+		LayoutMasterSet lms = getFoLayoutMasterSet(context);		
 		
 		org.w3c.dom.Document document = XmlUtils.marshaltoW3CDomDocument(lms, Context.getXslFoContext() );
 		XmlUtils.treeCopy(document.getDocumentElement(), foRoot);
 	}
 	
-	private static LayoutMasterSet getFoLayoutMasterSet(WordprocessingMLPackage wordMLPackage) {
-
-		factory = new ObjectFactory();		
-		LayoutMasterSet lms = factory.createLayoutMasterSet();
+	private static LayoutMasterSet getFoLayoutMasterSet(AbstractWmlConversionContext context) {
+		LayoutMasterSet lms = getFactory().createLayoutMasterSet();
+		List<ConversionSectionWrapper> sections = context.getSections().getList();
+		ConversionSectionWrapper section = null;
 		
-		// For each sectPr
-		DocumentModel documentModel = wordMLPackage.getDocumentModel();		
-		List<SectionWrapper> sections = documentModel.getSections();
-		
-		int i = 1;
-		for( SectionWrapper sw : sections) {
-			
-			HeaderFooterPolicy hf = sw.getHeaderFooterPolicy();
-			
-			String sectionName = "s" + i;
+		for(int i=0; i<sections.size(); i++) {
+			section = sections.get(i);
+			HeaderFooterPolicy hf = section.getHeaderFooterPolicy();
+			String sectionName = "s" + Integer.toString(i + 1);
 			
 			// FIRST, create simple-page-masters
-			
 			// has first header or footer?
 			if (hf.getFirstHeader()!=null || hf.getFirstFooter()!=null) {
 				
 				lms.getSimplePageMasterOrPageSequenceMaster().add(
 					createSimplePageMaster(sectionName + "-firstpage", 
-							sw.getPageDimensions(), 
+							section.getPageDimensions(), 
 							"firstpage",
 						(hf.getFirstHeader()!=null),
 						(hf.getFirstFooter()!=null) ));
@@ -98,24 +89,16 @@ public class LayoutMasterSetBuilder {
     		 *       
     		 *       the default one is treated as odd.
     		 */
-			if (hf.getEvenHeader()!=null 
-					|| hf.getOddHeader()!=null
-					|| hf.getEvenFooter()!=null
-					|| hf.getOddFooter()!=null) {
+			if (hf.getEvenHeader()!=null || hf.getEvenFooter()!=null) {
 				
 				lms.getSimplePageMasterOrPageSequenceMaster().add(
 					createSimplePageMaster(sectionName + "-evenpage",  
-							sw.getPageDimensions(), 
+							section.getPageDimensions(), 
 							"evenpage",
 						(hf.getEvenHeader()!=null),
 						(hf.getEvenFooter()!=null) ));
 				
-				lms.getSimplePageMasterOrPageSequenceMaster().add(
-						createSimplePageMaster(sectionName + "-oddpage",  
-								sw.getPageDimensions(), 
-								"oddpage",
-							(hf.getOddHeader()!=null),
-							(hf.getOddFooter()!=null) ));				
+				// the xslt outputs a "-default" page as the odd-page
 			}
 			
 			if (hf.getDefaultHeader()!=null 
@@ -123,25 +106,26 @@ public class LayoutMasterSetBuilder {
 				
 				lms.getSimplePageMasterOrPageSequenceMaster().add(
 					createSimplePageMaster(sectionName + "-default",  
-							sw.getPageDimensions(), 
+							section.getPageDimensions(), 
 							"default",
 						(hf.getDefaultHeader()!=null),
 						(hf.getDefaultFooter()!=null) ));				
 			}
 
-			
-			// simple
-			lms.getSimplePageMasterOrPageSequenceMaster().add(
-					createSimplePageMaster(sectionName + "-simple",  
-							sw.getPageDimensions(), 
-							"simple",
-						true, true));
+			// simple (no headers and footers)
+			if ((hf.getFirstHeader() == null) && (hf.getFirstFooter() == null) &&
+				(hf.getDefaultHeader() == null) && (hf.getDefaultFooter() == null) &&
+				(hf.getEvenHeader() == null) && (hf.getEvenFooter() == null)) {
+				lms.getSimplePageMasterOrPageSequenceMaster().add(
+						createSimplePageMaster(sectionName + "-simple",  
+								section.getPageDimensions(), 
+								"simple",
+							true, true));
+			}
 			
 			// SECOND, create page-sequence-masters
 			lms.getSimplePageMasterOrPageSequenceMaster().add(
 					createPageSequenceMaster(hf, sectionName )  );
-			
-			i++;
 		}	
 		
 		return lms;
@@ -149,50 +133,56 @@ public class LayoutMasterSetBuilder {
 	
 	private static PageSequenceMaster createPageSequenceMaster(HeaderFooterPolicy hf, 
 			String sectionName ) {
+		boolean noHeadersFooters = true;
 		
-		PageSequenceMaster psm = factory.createPageSequenceMaster();
+		PageSequenceMaster psm = getFactory().createPageSequenceMaster();
 		psm.setMasterName(sectionName);
 		
-		RepeatablePageMasterAlternatives rpma = factory.createRepeatablePageMasterAlternatives();
+		RepeatablePageMasterAlternatives rpma = getFactory().createRepeatablePageMasterAlternatives();
 		
 		psm.getSinglePageMasterReferenceOrRepeatablePageMasterReferenceOrRepeatablePageMasterAlternatives().add(rpma);
 		
 		// has first header or footer?
 		if (hf.getFirstHeader()!=null || hf.getFirstFooter()!=null) {			
-			ConditionalPageMasterReference cpmr1 = factory.createConditionalPageMasterReference();
+			ConditionalPageMasterReference cpmr1 = getFactory().createConditionalPageMasterReference();
 			cpmr1.setMasterReference(sectionName+"-firstpage");
 			cpmr1.setPagePosition(PagePositionType.FIRST);
-			rpma.getConditionalPageMasterReference().add(cpmr1);			
+			rpma.getConditionalPageMasterReference().add(cpmr1);
+			noHeadersFooters = false;
 		}
 
-		 else		
 		if (hf.getEvenHeader()!=null || hf.getEvenFooter()!=null) {
 
-			ConditionalPageMasterReference cpmr2 = factory.createConditionalPageMasterReference();
+			ConditionalPageMasterReference cpmr2 = getFactory().createConditionalPageMasterReference();
 			cpmr2.setMasterReference(sectionName+"-evenpage");
 			//cpmr2.setPagePosition(PagePositionType.FIRST);
 			cpmr2.setOddOrEven(OddOrEvenType.EVEN);
 			rpma.getConditionalPageMasterReference().add(cpmr2);			
 			
-			ConditionalPageMasterReference cpmr3 = factory.createConditionalPageMasterReference();
-			cpmr3.setMasterReference(sectionName+"-oddpage");
+			// the xslt outputs a "-default" page as the odd-page
+			ConditionalPageMasterReference cpmr3 = getFactory().createConditionalPageMasterReference();
+			cpmr3.setMasterReference(sectionName+"-default");
 			//cpmr3.setPagePosition(PagePositionType.FIRST);
 			cpmr3.setOddOrEven(OddOrEvenType.ODD);
 			rpma.getConditionalPageMasterReference().add(cpmr3);			
 			
+			noHeadersFooters = false;
 		} else if (hf.getDefaultHeader()!=null || hf.getDefaultFooter()!=null) {
 			
-			ConditionalPageMasterReference cpmr4 = factory.createConditionalPageMasterReference();
+			ConditionalPageMasterReference cpmr4 = getFactory().createConditionalPageMasterReference();
 			cpmr4.setMasterReference(sectionName+"-default");
 			//cpmr4.setPagePosition(PagePositionType.FIRST);
 			rpma.getConditionalPageMasterReference().add(cpmr4);			
 			
+			noHeadersFooters = false;
 		}
 		
-			ConditionalPageMasterReference cpmr5 = factory.createConditionalPageMasterReference();
+		if (noHeadersFooters) {
+			ConditionalPageMasterReference cpmr5 = getFactory().createConditionalPageMasterReference();
 			cpmr5.setMasterReference(sectionName+"-simple");
 			//cpmr5.setPagePosition(PagePositionType.FIRST);
 			rpma.getConditionalPageMasterReference().add(cpmr5);						
+		}
 		
 		return psm;
 	}
@@ -205,7 +195,7 @@ public class LayoutMasterSetBuilder {
 			String masterName, PageDimensions page, String appendRegionName, 
 			boolean needBefore, boolean needAfter) {
 		
-		SimplePageMaster spm = factory.createSimplePageMaster();
+		SimplePageMaster spm = getFactory().createSimplePageMaster();
 		spm.setMasterName(masterName);
 		
 		// dimensions.  
@@ -237,7 +227,7 @@ public class LayoutMasterSetBuilder {
 		 * the relevant extent trait on the side regions from the trait that corresponds to the "margin-x" 
 		 * property on the fo:region-body.
 		 */
-		RegionBody rb = factory.createRegionBody();		
+		RegionBody rb = getFactory().createRegionBody();		
 		rb.setMarginLeft("0mm");
 		rb.setMarginRight("0mm");
 		
@@ -246,7 +236,7 @@ public class LayoutMasterSetBuilder {
 		
 		if (needBefore) {
 			//Header
-			RegionBefore rBefore = factory.createRegionBefore();
+			RegionBefore rBefore = getFactory().createRegionBefore();
 			rBefore.setRegionName("xsl-region-before-"+appendRegionName);
 			spm.setRegionBefore(rBefore);
 
@@ -270,7 +260,7 @@ public class LayoutMasterSetBuilder {
 
 		if (needAfter) {
 			// Footer
-			RegionAfter rAfter = factory.createRegionAfter();
+			RegionAfter rAfter = getFactory().createRegionAfter();
 			rAfter.setRegionName("xsl-region-after-"+appendRegionName);
 			spm.setRegionAfter(rAfter);
 			
@@ -296,5 +286,10 @@ public class LayoutMasterSetBuilder {
 		return spm;
 	}
 	
+	
+	private static ObjectFactory getFactory() {
+		if (factory == null) factory = new ObjectFactory();
+		return factory;
+	}
 
 }

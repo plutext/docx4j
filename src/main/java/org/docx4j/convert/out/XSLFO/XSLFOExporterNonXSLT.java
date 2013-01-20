@@ -19,36 +19,24 @@
  */
 package org.docx4j.convert.out.XSLFO;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXResult;
 
 import org.apache.avalon.framework.configuration.Configuration;
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder;
-import org.apache.fop.apps.Fop;
-import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.Containerization;
+import org.docx4j.convert.out.ConversionSectionWrapper;
+import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.Converter;
+import org.docx4j.convert.out.PageBreak;
 import org.docx4j.convert.out.pdf.viaXSLFO.LayoutMasterSetBuilder;
 import org.docx4j.convert.out.pdf.viaXSLFO.PDFConversionImageHandler;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
-import org.docx4j.fonts.PhysicalFont;
-import org.docx4j.fonts.PhysicalFonts;
-import org.docx4j.fonts.fop.fonts.FontTriplet;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
@@ -61,25 +49,18 @@ import org.docx4j.model.properties.paragraph.PBorderBottom;
 import org.docx4j.model.properties.paragraph.PBorderTop;
 import org.docx4j.model.properties.paragraph.PShading;
 import org.docx4j.model.properties.run.Font;
-import org.docx4j.model.structure.HeaderFooterPolicy;
-import org.docx4j.model.structure.jaxb.ObjectFactory;
-import org.docx4j.model.structure.jaxb.Sections;
-import org.docx4j.model.structure.jaxb.Sections.Section;
-import org.docx4j.model.styles.StyleTree;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.utils.FopUtils;
 import org.docx4j.wml.Br;
-import org.docx4j.wml.Ftr;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
-import org.docx4j.wml.Hdr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBrType;
-import org.docx4j.wml.SectPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TcPr;
@@ -88,7 +69,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 /**
@@ -148,22 +128,14 @@ public class XSLFOExporterNonXSLT {
 
 	org.w3c.dom.Document document;
 	
-	Element foRoot;
-	Element pageSequence;
-	Element flow;
-	Element flowPrevious;
-
-	int sectPrCounter = 0;
-	
-	protected XSLFOConversionContextNonXSLT conversionContext = null;
+	PdfSettings pdfSettings = null;
 	
 	public XSLFOExporterNonXSLT(WordprocessingMLPackage wmlPackage, 
 			ConversionImageHandler conversionImageHandler) {
 
-		PdfSettings pdfSettings = new PdfSettings();
+		pdfSettings = new PdfSettings();
 		pdfSettings.setWmlPackage(wmlPackage);
 		pdfSettings.setImageHandler(conversionImageHandler);
-		conversionContext = new XSLFOConversionContextNonXSLT(pdfSettings);
 	}
 	
 	/**
@@ -171,7 +143,23 @@ public class XSLFOExporterNonXSLT {
 	 * @return
 	 */
 	public org.w3c.dom.Document export() {
-				
+		Element foRoot = null;
+		Element pageSequence = null;
+		Element flow = null;
+		
+		//XSLFOExporterNonXSLT didn't do a deep copy
+		org.docx4j.wml.Document tmpDoc = 
+				((WordprocessingMLPackage)pdfSettings.getWmlPackage()).getMainDocumentPart().getJaxbElement();
+
+		
+		// Preprocessing
+		Containerization.groupAdjacentBorders(tmpDoc.getBody());
+		PageBreak.movePageBreaks(tmpDoc.getBody());
+		ConversionSectionWrappers conversionSectionWrappers = 
+				ConversionSectionWrappers.build(tmpDoc, (WordprocessingMLPackage)pdfSettings.getWmlPackage());
+
+		XSLFOConversionContextNonXSLT conversionContext = new XSLFOConversionContextNonXSLT(pdfSettings, conversionSectionWrappers);
+		
     	document = XmlUtils.neww3cDomDocument();
     	
     	foRoot = document.createElementNS(XSL_FO, "root");
@@ -179,54 +167,130 @@ public class XSLFOExporterNonXSLT {
     	
     	LayoutMasterSetBuilder.appendLayoutMasterSetFragment( conversionContext, foRoot);  	
     	
-    	
-		// <fo:page-sequence master-reference="{@name}" format="{$pageNumberFormat}" initial-page-number="{$pageNumberInitial}" >
-    	createPageSequence();
-    	
-		List blockLevelContent = conversionContext.getWmlPackage().getMainDocumentPart().getContent();
-    	
-		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, null);
-		new TraversalUtil(blockLevelContent, xslfoGenerator);
-		
-		if (pageSequence.getAttribute("master-reference")==null
-				|| pageSequence.getAttribute("master-reference").equals("") ) {
-    	
-			SectPr finalSectPr = conversionContext.getWmlPackage().getMainDocumentPart().getJaxbElement().getBody().getSectPr(); 
-			if (finalSectPr==null) {
-				if (sectPrCounter == 0) {
-					// There was no sectPr in the docx
-			    	pageSequence.setAttribute("master-reference", "s1");
-			    	pageSequence.setAttribute("initial-page-number", "1");
-				} else {
-					// There are some sectPr in the docx, but no doc level one.
-					// TODO: What to do?					
-				}
-			} else {
-				handleSectPr(finalSectPr, false);
-			}
-		}
-
-//		// Remove last page-sequence, if empty
-//		if (flow.getChildNodes().getLength()==0) {
-//			foRoot.removeChild(pageSequence);
-//		}
+    	List<ConversionSectionWrapper> sectionWrappers = conversionContext.getSections().getList();
+    	for (int secindex=0; secindex < sectionWrappers.size(); secindex++) {
+    		ConversionSectionWrapper sectionWrapper = sectionWrappers.get(secindex);
+    		conversionContext.getSections().next();
+    		pageSequence = createPageSequence(foRoot, sectionWrapper);
+    		appendStaticContent(conversionContext, sectionWrapper, pageSequence);
+    		
+        	
+    		// <fo:flow flow-name="xsl-region-body">
+        	flow = document.createElementNS(XSL_FO, "flow");
+        	pageSequence.appendChild(flow);
+        	flow.setAttribute("flow-name", "xsl-region-body");
+    		
+    		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, flow);
+    		new TraversalUtil(sectionWrapper.getContent(), xslfoGenerator);
+    	}
 
 		return document;
 	}
 	
-	private void createPageSequence() {
-		
-    	pageSequence = document.createElementNS(XSL_FO, "page-sequence");
-    	foRoot.appendChild(pageSequence);
-//    	pageSequence.setAttribute("master-reference", "s1");
-//    	pageSequence.setAttribute("initial-page-number", "1");
+	protected Element createPageSequence(Element root, ConversionSectionWrapper sectionWrapper) {
+	Element pageSequence = document.createElementNS(XSL_FO, "page-sequence");
+    	root.appendChild(pageSequence);
+    	pageSequence.setAttribute("master-reference", sectionWrapper.getId());
+    	pageSequence.setAttribute("initial-page-number", 
+    			PageNumberHelper.getPageNumberInitial(sectionWrapper.getSectPr()));
+    	pageSequence.setAttribute("format", 
+    			PageNumberHelper.getPageNumberFormat(sectionWrapper.getSectPr()));
     	
-		// <fo:flow flow-name="xsl-region-body">
-    	flow = document.createElementNS(XSL_FO, "flow");
-    	pageSequence.appendChild(flow);
-    	flow.setAttribute("flow-name", "xsl-region-body");
+    	return pageSequence;
 	}
-	
+
+    /**
+     * Handle headers/footers, footnotes/endnotes
+     * @param pos
+     */
+    protected void appendStaticContent(XSLFOConversionContextNonXSLT conversionContext, ConversionSectionWrapper sectionWrapper, Element pageSequence) {
+    Element staticContent = null;
+    	    	
+    	// <!--  First Page Header -->
+		// <fo:static-content flow-name="xsl-region-before-firstpage">
+    	if (Converter.hasFirstHeader(conversionContext)) {
+    		appendHeaderFooter(
+    			conversionContext,
+    			pageSequence,
+    			"xsl-region-before-firstpage",
+    			sectionWrapper.getHeaderFooterPolicy().getFirstHeader().getJaxbElement().getContent());
+    	}
+    	
+    	// <!--  First Page Footer -->
+    	// <fo:static-content flow-name="xsl-region-after-firstpage">
+    	if (Converter.hasFirstFooter(conversionContext)) {
+    		appendHeaderFooter(
+    			conversionContext,
+    			pageSequence,
+    			"xsl-region-after-firstpage",
+    			sectionWrapper.getHeaderFooterPolicy().getFirstFooter().getJaxbElement().getContent());
+    	}
+    	
+		// <!--  Even Page Header -->
+		// <fo:static-content flow-name="xsl-region-before-evenpage">
+		if (Converter.hasEvenHeader(conversionContext)) {
+			appendHeaderFooter(
+				conversionContext,
+				pageSequence,
+				"xsl-region-before-evenpage",
+				sectionWrapper.getHeaderFooterPolicy().getEvenHeader().getJaxbElement().getContent());
+		}
+		
+		// <!--  Even Page Footer -->
+		// <fo:static-content flow-name="xsl-region-after-evenpage">
+		if (Converter.hasEvenFooter(conversionContext)) {
+			appendHeaderFooter(
+				conversionContext,
+				pageSequence,
+				"xsl-region-after-evenpage",
+				sectionWrapper.getHeaderFooterPolicy().getEvenFooter().getJaxbElement().getContent());
+		}
+    	
+    	
+		// <!--  Default/Odd Page Header -->
+		// <fo:static-content flow-name="xsl-region-before-firstpage">
+		if (Converter.hasDefaultHeader(conversionContext)) {
+			appendHeaderFooter(
+				conversionContext,
+				pageSequence,
+				"xsl-region-before-default",
+				sectionWrapper.getHeaderFooterPolicy().getDefaultHeader().getJaxbElement().getContent());
+		}
+		
+		// <!--  Default/Odd Page Footer -->
+		// <fo:static-content flow-name="xsl-region-after-firstpage">
+		if (Converter.hasDefaultFooter(conversionContext)) {
+			appendHeaderFooter(
+				conversionContext,
+				pageSequence,
+				"xsl-region-after-default",
+				sectionWrapper.getHeaderFooterPolicy().getDefaultFooter().getJaxbElement().getContent());
+		}
+    	
+    	// TODO
+//		<xsl:if
+//		test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
+//		
+//        <fo:block space-before="44pt" font-weight="bold" font-size="14pt">
+//          <xsl:text>Endnotes</xsl:text>
+//        </fo:block>
+//		
+//		<xsl:apply-templates
+//				select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
+//	</xsl:if>
+    	
+
+    }
+
+
+	protected void appendHeaderFooter(XSLFOConversionContextNonXSLT conversionContext, Element pageSequence, String name, List<Object> content) {
+    Element	flow = document.createElementNS(XSL_FO, "static-content");    	
+    	pageSequence.appendChild(flow); 
+    	flow.setAttribute("flow-name", name);
+    	
+		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, flow);
+		new TraversalUtil(content, xslfoGenerator);
+	}	
 	
 //	/**
 //	 * Generate XSL FO for the specified content.
@@ -276,11 +340,6 @@ public class XSLFOExporterNonXSLT {
 	
 	
 // ========================================================================
-
-// 	createBlockForSdt is not required, except for Containerization.TAG_SHADING,
-//  and:
-//  (1) consider whether that should be standard behaviour, or optional
-//  (2) we don't do containerization for the NonXSLT case.
 	
 //    public DocumentFragment createBlockForSdt(     		
 //    		PPr pPrDirect,
@@ -333,7 +392,7 @@ public class XSLFOExporterNonXSLT {
 //		return createBlock(pPrDirect, pStyleVal, childResults, false);
 //	}
     
-    public  void handlePPr(PPr pPrDirect, boolean sdt, Element currentEl) {
+    protected void handlePPr(XSLFOConversionContextNonXSLT conversionContext, PPr pPrDirect, boolean sdt, Element currentEl) {
 
     	PropertyResolver propertyResolver = conversionContext.getPropertyResolver();
     	
@@ -482,15 +541,8 @@ public class XSLFOExporterNonXSLT {
 				// Ignore paragraph borders once inside the container
 				boolean ignoreBorders = !sdt;
 
-				createFoAttributes( pPr, currentEl, inlist, ignoreBorders );
+				createFoAttributes(conversionContext, pPr, currentEl, inlist, ignoreBorders );
 			}
-
-			if (pPrDirect !=null 
-					&& pPrDirect.getSectPr()!=null) {  
-				
-				handleSectPr(pPrDirect.getSectPr(), true);
-			
-			} 				
 			
 			if (rPr!=null) {											
 				createFoAttributes(conversionContext.getWmlPackage(), rPr, currentEl );
@@ -504,50 +556,7 @@ public class XSLFOExporterNonXSLT {
 		} 
     }
 
-    private void handleSectPr(SectPr sectPr, boolean makeNextPageSequence) {
-    	
-		// Create a page-sequence for each section
-    	// and use the correct master-reference.
-    	// The general idea is to create an initial page sequence.  
-		// Then, during the traverse, each time we hit a sectPr, write the relevant 
-    	// values back to the page sequence element, then create the next page-sequence.
-
-    	sectPrCounter++;
-		if ( sectPr.getType()!=null
-			     && sectPr.getType().getVal().equals("continuous")) {
-			
-			// If its continuous, add this content to the previous paged section
-			// and delete current page sequence
-			
-            NodeList children = flow.getChildNodes();
-            if (children != null) {
-                for (int i=0; i<children.getLength(); i++) {
-        			flowPrevious.appendChild(children.item(i).cloneNode(true));  // note cloneNode!
-                }
-            }
-            log.debug("Removing " + XmlUtils.w3CDomNodeToString(pageSequence));
-	    	foRoot.removeChild(pageSequence);
-
-		} else {
-			flowPrevious= flow;
-		}
-		
-		addPageSequenceAttributes(sectPrCounter);
-		handleStaticContent(sectPrCounter);
-		
-		// Set up next 
-		if (makeNextPageSequence) {
-			createPageSequence();
-		}
-		
-		// Can a sectPr occur in a table cell?
-		// No, Word 2010 won't let you do that,
-		// so we don't need to handle this possibility :-)
-		
-    	
-    }
-
-	public  void createFoAttributes( PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
+	protected void createFoAttributes(XSLFOConversionContextNonXSLT conversionContext, PPr pPr, Element foBlockElement, boolean inList, boolean ignoreBorders){
 		
     	List<Property> properties = PropertyFactory.createProperties(conversionContext.getWmlPackage(), pPr);
     	
@@ -615,7 +624,8 @@ public class XSLFOExporterNonXSLT {
      * @param childResults
      * @return
      */
-    public void handleRPr( 
+    protected void handleRPr(
+    		XSLFOConversionContextNonXSLT conversionContext,
     		PPr pPrDirect,
     		RPr rPrDirect, Element foInlineElement ) {
 
@@ -814,7 +824,7 @@ public class XSLFOExporterNonXSLT {
     class XSLFOGenerator extends CallbackImpl {
     	XSLFOConversionContextNonXSLT conversionContext = null;
     	
-    	Node tableContext; // used for tables and hyperlinks
+    	Node parentNode;
     	
 		Element currentP; 
     	Element currentSpan;
@@ -828,10 +838,10 @@ public class XSLFOExporterNonXSLT {
     	// E20 image
     	Object anchorOrInline;
     	
-    	XSLFOGenerator(XSLFOConversionContextNonXSLT conversionContext, Node tableContext) {
+    	XSLFOGenerator(XSLFOConversionContextNonXSLT conversionContext, Node parentNode) {
 			super();
+			this.parentNode = parentNode;
 			this.conversionContext = conversionContext;
-			this.tableContext = tableContext;
 		}
     	
     	@Override
@@ -844,11 +854,11 @@ public class XSLFOExporterNonXSLT {
 				if (tc!=null) {
 					tc.appendChild( currentP  );
 				} else {
-					flow.appendChild( currentP  );					
+					parentNode.appendChild( currentP  );					
 				}
 				
 				pPr = ((P)o).getPPr();
-				handlePPr(pPr, false, currentP);
+				handlePPr(conversionContext, pPr, false, currentP);
 				
 			} else if (o instanceof org.docx4j.wml.R) {
 
@@ -856,7 +866,7 @@ public class XSLFOExporterNonXSLT {
 				Element spanEl = document.createElementNS(XSL_FO, "inline");
 				if (currentP==null) {
 					// Hyperlink special case
-					tableContext.appendChild(spanEl);
+					parentNode.appendChild(spanEl);
 				} else {
 					currentP.appendChild( spanEl  );
 				}
@@ -864,7 +874,7 @@ public class XSLFOExporterNonXSLT {
 				
 				RPr rPr = ((R)o).getRPr();
 				if ( rPr!=null ) {
-					handleRPr(pPr, rPr, currentSpan);
+					handleRPr(conversionContext, pPr, rPr, currentSpan);
 				}
 								
 			} else if (o instanceof org.docx4j.wml.Text) {
@@ -907,7 +917,7 @@ public class XSLFOExporterNonXSLT {
 					}
 					else {
 						//in case there isn't a paragraph 
-						tableContext.appendChild(foTable);
+						parentNode.appendChild(foTable);
 					}
 				}
 				
@@ -917,7 +927,9 @@ public class XSLFOExporterNonXSLT {
 			} else if (o instanceof org.docx4j.wml.Tr) {
 				
 				tr = document.createElementNS(Namespaces.NS_WORD12, "tr");
-				tableContext.appendChild(tr);
+				//parentNode is in this case the DocumentFragment, that get's passed 
+				//to the TableModel/TableModelWriter
+				parentNode.appendChild(tr);
 				
 			} else if (o instanceof org.docx4j.wml.Tc) {
 				
@@ -966,7 +978,7 @@ public class XSLFOExporterNonXSLT {
 				
 				currentP = document.createElementNS(XSL_FO, "block");
 				currentSpan = null;
-				flow.appendChild( currentP  );
+				parentNode.appendChild( currentP  );
 				
 				Br br = (Br)o;
 				if (br.getType()!=null 
@@ -1042,181 +1054,6 @@ public class XSLFOExporterNonXSLT {
     	
     	
 	}
-    
-    private void addPageSequenceAttributes(int pos) {
-    	
-    	// master-reference="{@name}"
-		this.pageSequence.setAttribute("master-reference", "s"+pos);
-
-		// format="{$pageNumberFormat}" initial-page-number="{$pageNumberInitial}"
-    	
-		String pageNumberFormat = PageNumberHelper.getPageNumberFormat(conversionContext.getWmlPackage(), pos);
-		this.pageSequence.setAttribute("format", pageNumberFormat);
-	
-		String pageNumberInitial = PageNumberHelper.getPageNumberInitial(conversionContext.getWmlPackage(), pos);
-		this.pageSequence.setAttribute("initial-page-number", pageNumberInitial);
-    	
-    }
-    
-
-    /**
-     * Handle headers/footers, footnotes/endnotes
-     * @param pos
-     */
-    private void handleStaticContent(int pos) {
-    	
-    	Node firstChild = pageSequence.getFirstChild();
-    	    	
-    	// <!--  First Page Header -->
-		// <fo:static-content flow-name="xsl-region-before-firstpage">
-    	if (Converter.hasFirstHeader(conversionContext, pos)) {
-    		
-        	flow = document.createElementNS(XSL_FO, "static-content");
-        	pageSequence.insertBefore(flow, firstChild); 
-        	flow.setAttribute("flow-name", "xsl-region-before-firstpage");
-
-    		Hdr hdr = (Hdr) conversionContext.getWmlPackage().getDocumentModel().getSections().get(pos-1)
-    				.getHeaderFooterPolicy()
-    						.getFirstHeader().getJaxbElement();
-        	
-    		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, null);
-    		new TraversalUtil(hdr.getContent(), xslfoGenerator);
-    	}
-    	
-
-    	// <!--  First Page Footer -->
-    	// <fo:static-content flow-name="xsl-region-after-firstpage">
-    	if (Converter.hasFirstFooter(conversionContext, pos)) {
-    		
-        	flow = document.createElementNS(XSL_FO, "static-content");
-//        	pageSequence.appendChild(flow); // TODO insertBefore
-        	pageSequence.insertBefore(flow, firstChild); 
-        	flow.setAttribute("flow-name", "xsl-region-after-firstpage");
-
-    		Ftr ftr = (Ftr) conversionContext.getWmlPackage().getDocumentModel().getSections().get(pos-1)
-    				.getHeaderFooterPolicy()
-    						.getFirstFooter().getJaxbElement();
-        	
-    		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, null);
-    		new TraversalUtil(ftr.getContent(), xslfoGenerator);
-    	}
-    	
-    	boolean treatDefaultAsOdd = false;
-    	
-    	if (Converter.hasEvenHeader(conversionContext, pos)
-    			|| Converter.hasEvenFooter(conversionContext, pos)) {
-    		/*
-    		 *       <w:headerReference w:type="even" r:id="rId12"/>
-    		 *       <w:headerReference w:type="default" r:id="rId13"/>
-    		 *       
-    		 *       the default one is treated as odd.
-    		 */
-    		treatDefaultAsOdd = true;
-    		
-    		// <fo:static-content flow-name="xsl-region-before-evenpage">
-    		if (Converter.hasEvenHeader(conversionContext, pos)) {
-    			
-    			flow = document.createElementNS(XSL_FO, "static-content");
-            	pageSequence.insertBefore(flow, firstChild); 
-            	flow.setAttribute("flow-name", "xsl-region-before-evenpage");
-
-        		Hdr hdr = (Hdr) conversionContext.getWmlPackage().getDocumentModel().getSections().get(pos-1)
-        				.getHeaderFooterPolicy()
-        						.getEvenHeader().getJaxbElement();
-            	
-        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, null);
-        		new TraversalUtil(hdr.getContent(), xslfoGenerator);
-    			
-    		}
-
-    		// <fo:static-content flow-name="xsl-region-after-evenpage">
-    		if (Converter.hasEvenFooter(conversionContext, pos)) {
-    			
-    			flow = document.createElementNS(XSL_FO, "static-content");
-            	pageSequence.insertBefore(flow, firstChild); 
-            	flow.setAttribute("flow-name", "xsl-region-after-evenpage");
-
-        		Ftr ftr = (Ftr) conversionContext.getWmlPackage().getDocumentModel().getSections().get(pos-1)
-        				.getHeaderFooterPolicy()
-        						.getEvenFooter().getJaxbElement();
-            	
-        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, null);
-        		new TraversalUtil(ftr.getContent(), xslfoGenerator);
-    		}
-    		
-    	}
-    	    	
-    	if (Converter.hasDefaultHeaderOrFooter(conversionContext, pos) ) {
-    		
-    		// <fo:static-content flow-name="xsl-region-before-default">
-    		if (Converter.hasDefaultHeader(conversionContext, pos) ) {
-
-    			flow = document.createElementNS(XSL_FO, "static-content");
-            	pageSequence.insertBefore(flow, firstChild); 
-            	if (treatDefaultAsOdd) {
-            		flow.setAttribute("flow-name", "xsl-region-before-oddpage");            		
-            	} else {
-            		flow.setAttribute("flow-name", "xsl-region-before-default");
-            	}
-            	
-        		Hdr hdr = (Hdr) conversionContext.getWmlPackage().getDocumentModel().getSections().get(pos-1)
-        				.getHeaderFooterPolicy()
-        						.getDefaultHeader().getJaxbElement();
-            	
-        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, null);
-        		new TraversalUtil(hdr.getContent(), xslfoGenerator);
-    		}
-
-    		// <fo:static-content flow-name="xsl-region-after-default">
-    		if (Converter.hasDefaultFooter(conversionContext, pos) ) {
-
-    			flow = document.createElementNS(XSL_FO, "static-content");
-            	pageSequence.insertBefore(flow, firstChild); 
-            	if (treatDefaultAsOdd) {
-            		flow.setAttribute("flow-name", "xsl-region-after-oddpage");            		
-            	} else {
-            		flow.setAttribute("flow-name", "xsl-region-after-default");
-            	}
-
-        		Ftr ftr = (Ftr) conversionContext.getWmlPackage().getDocumentModel().getSections().get(pos-1)
-        				.getHeaderFooterPolicy()
-        						.getDefaultFooter().getJaxbElement();
-            	
-        		XSLFOGenerator xslfoGenerator = new XSLFOGenerator(conversionContext, null);
-        		new TraversalUtil(ftr.getContent(), xslfoGenerator);
-    		}
-    		
-    		if (conversionContext.getWmlPackage().getMainDocumentPart().getFootnotesPart()!=null) {
-    			// TODO
-//						<fo:static-content flow-name="xsl-footnote-separator">
-//						    <fo:block>
-//						      <fo:leader leader-pattern="rule"
-//						                 leader-length="100%"
-//						                 rule-style="solid"
-//						                 rule-thickness="0.5pt"/>
-//						    </fo:block>
-//						  </fo:static-content>				
-    		}
-    		
-    	} 
-    	
-    	// TODO
-//		<xsl:if
-//		test="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.hasEndnotesPart($wmlPackage)">
-//		
-//        <fo:block space-before="44pt" font-weight="bold" font-size="14pt">
-//          <xsl:text>Endnotes</xsl:text>
-//        </fo:block>
-//		
-//		<xsl:apply-templates
-//				select="java:org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart.getEndnotes($wmlPackage)" />
-//	</xsl:if>
-    	
-
-    }
-    
-
-
 	
 	/**
 	 * @param args
@@ -1255,181 +1092,34 @@ public class XSLFOExporterNonXSLT {
 		OutputStream os = new java.io.FileOutputStream(outputfilepath);
 		
 		// OK, do it...
-		withoutXSLT.output(xslfo, os );
+		withoutXSLT.output(xslfo, os, null);
 		System.out.println("Saved " + outputfilepath);	
 		
 	}
 
 // ========================================================================	
-// TODO: what follows is duplicated code. Refactor/remove.
 	
-	
-	public void output(Document xslfo, OutputStream os) throws Docx4JException {
+	public void output(Document xslfo, OutputStream os, Configuration fopConfig) throws Docx4JException {
+	WordprocessingMLPackage wmlPackage = (WordprocessingMLPackage)pdfSettings.getWmlPackage();
 
-		// Refresh the document model, in case
-		// the user has added headers or footers
-		conversionContext.getWmlPackage().getDocumentModel().refresh();
-		
-		// See http://xmlgraphics.apache.org/fop/0.95/embedding.html
-		// (reuse if you plan to render multiple documents!)
-		FopFactory fopFactory = FopFactory.newInstance();
-
+		if (fopConfig == null) {
+			fopConfig = FopUtils.createDefaultConfiguration(wmlPackage.getFontMapper(), 
+							wmlPackage.getMainDocumentPart().fontsInUse());
+		}
 
 		try {
-
-			if (fopConfig == null) {
-
-				DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder();
-				String myConfig = "<fop version=\"1.0\"><strict-configuration>true</strict-configuration>"
-						+ "<renderers><renderer mime=\"application/pdf\">"
-						+ "<fonts>" + declareFonts() +
-						// <directory>/home/dev/fonts</directory>" +
-						// "<directory>/usr/share/fonts/truetype/ttf-lucida</directory>"
-						// +
-						// "<directory>/var/lib/defoma/fontconfig.d/D</directory>"
-						// +
-						// "<directory>/var/lib/defoma/fontconfig.d/L</directory>"
-						// +
-						// "<auto-detect/>" +
-						"</fonts></renderer></renderers></fop>";
-
-				log.debug("\nUsing config:\n " + myConfig + "\n");
-
-				// See FOP's PrintRendererConfigurator
-				// String myConfig = "<fop
-				// version=\"1.0\"><strict-configuration>true</strict-configuration>"
-				// +
-				// "<renderers><renderer mime=\"application/pdf\">" +
-				// "<fonts><directory
-				// recursive=\"true\">C:\\WINDOWS\\Fonts</directory>" +
-				// "<auto-detect/>" +
-				// "</fonts></renderer></renderers></fop>";
-
-				fopConfig = cfgBuilder.build(new ByteArrayInputStream(myConfig
-						.getBytes("UTF-8")));
-			}
-
-			fopFactory.setUserConfig(fopConfig);
-
-			Fop fop = fopFactory.newFop(MimeConstants.MIME_PDF, os);
-
-			// Resulting SAX events (the generated FO) must be piped through to
-			// FOP
-			Result result = new SAXResult(fop.getDefaultHandler());
-
-
-			Source src = new DOMSource (xslfo);
-
-			Transformer transformer = XmlUtils.getTransformerFactory().newTransformer();
 			long startTime = System.currentTimeMillis();				
-			transformer.transform(src, result);
+			FopUtils.render(fopConfig, MimeConstants.MIME_PDF, xslfo, null, os);
 			long endTime = System.currentTimeMillis();
 			log.info("FOP converted FO to PDF in elapsed time: " + Math.round((endTime-startTime)/1000) );
-			//settings.getSettings().remove(PdfSettings.IMAGE_HANDLER);
-
-				
-		} catch (Exception e) {
-			throw new Docx4JException("FOP issues", e);
-		} finally {
 			// Clean-up
+		}
+		finally {
 			try {
 				os.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-
 	}
-	
-	/**
-	 * Create a FOP font configuration for each font used in the
-	 * document.
-	 * 
-	 * @return
-	 */
-	private String declareFonts() {
-		
-		StringBuffer result = new StringBuffer();
-		Map fontsInUse = conversionContext.getWmlPackage().getMainDocumentPart().fontsInUse();
-		Iterator fontMappingsIterator = fontsInUse.entrySet().iterator();
-		while (fontMappingsIterator.hasNext()) {
-		    Map.Entry pairs = (Map.Entry)fontMappingsIterator.next();
-		    if(pairs.getKey()==null) {
-		    	log.info("Skipped null key");
-//		    	pairs = (Map.Entry)fontMappingsIterator.next();
-		    	continue;
-		    }
-		    
-		    String fontName = (String)pairs.getKey();		    
-		    
-		    PhysicalFont pf = conversionContext.getWmlPackage().getFontMapper().getFontMappings().get(fontName);
-		    
-		    if (pf==null) {
-		    	log.error("Document font " + fontName + " is not mapped to a physical font!");
-		    	continue;
-		    }
-		    
-		    String subFontAtt = "";
-		    if (pf.getEmbedFontInfo().getSubFontName()!=null)
-		    	subFontAtt= " sub-font=\"" + pf.getEmbedFontInfo().getSubFontName() + "\"";
-		    
-		    result.append("<font embed-url=\"" +pf.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	// now add the first font triplet
-			    FontTriplet fontTriplet = (FontTriplet)pf.getEmbedFontInfo().getFontTriplets().get(0);
-			    addFontTriplet(result, fontTriplet);
-		    result.append("</font>" );
-		    
-		    // bold, italic etc
-		    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
-		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "normal", "bold");
-			    result.append("</font>" );
-		    }
-		    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
-		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "italic", "bold");
-			    result.append("</font>" );
-		    }
-		    pfVariation = PhysicalFonts.getItalicForm(pf);
-		    if (pfVariation!=null) {
-			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
-		    	addFontTriplet(result, pf.getName(), "italic", "normal");
-			    result.append("</font>" );
-		    }
-			    
-		}
-		
-		return result.toString();
-		
-	}
-		
-	private void addFontTriplet(StringBuffer result, FontTriplet fontTriplet) {
-	    result.append("<font-triplet name=\"" + fontTriplet.getName() + "\""
-				+ " style=\"" + fontTriplet.getStyle() + "\""
-				+ " weight=\"" + weightToCSS2FontWeight(fontTriplet.getWeight()) + "\""
-						+ "/>" );		
-	}
-	private void addFontTriplet(StringBuffer result, String familyName, String style, String weight) {
-	    result.append("<font-triplet name=\"" + familyName + "\""
-				+ " style=\"" + style + "\""
-				+ " weight=\"" + weight + "\""
-						+ "/>" );		
-	}
-	
-	private String weightToCSS2FontWeight(int i) {
-		
-		if (i>=700) {
-			return "bold";
-		} else {
-			return "normal";
-		}
-		
-	}
-	
-	Configuration fopConfig;
-	
-	
-	
 }
