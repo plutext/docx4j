@@ -1,33 +1,16 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -59,20 +42,20 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_ExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}AG_AutoFormat"/>
- *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="cacheId" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
  *       &lt;attribute name="dataOnRows" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="dataPosition" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
- *       &lt;attribute name="dataCaption" use="required" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="grandTotalCaption" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="errorCaption" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="dataCaption" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="grandTotalCaption" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="errorCaption" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="showError" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="missingCaption" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="missingCaption" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="showMissing" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="pageStyle" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="pivotTableStyle" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="vacatedStyle" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="tag" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="pageStyle" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="pivotTableStyle" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="vacatedStyle" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="tag" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="updatedVersion" type="{http://www.w3.org/2001/XMLSchema}unsignedByte" default="0" />
  *       &lt;attribute name="minRefreshableVersion" type="{http://www.w3.org/2001/XMLSchema}unsignedByte" default="0" />
  *       &lt;attribute name="asteriskTotals" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
@@ -115,8 +98,8 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;attribute name="immersive" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="multipleFieldFilters" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="chartFormat" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="0" />
- *       &lt;attribute name="rowHeaderCaption" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="colHeaderCaption" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="rowHeaderCaption" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="colHeaderCaption" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="fieldListSortAscending" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="mdxSubqueries" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="customListSort" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
@@ -148,7 +131,8 @@ import javax.xml.bind.annotation.XmlType;
     "extLst"
 })
 @XmlRootElement(name = "pivotTableDefinition")
-public class CTPivotTableDefinition {
+public class CTPivotTableDefinition implements Child
+{
 
     @XmlElement(required = true)
     protected CTLocation location;
@@ -168,151 +152,153 @@ public class CTPivotTableDefinition {
     protected CTRowHierarchiesUsage rowHierarchiesUsage;
     protected CTColHierarchiesUsage colHierarchiesUsage;
     protected CTExtensionList extLst;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "name", required = true)
     protected String name;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "cacheId", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long cacheId;
-    @XmlAttribute
+    @XmlAttribute(name = "dataOnRows")
     protected Boolean dataOnRows;
-    @XmlAttribute
+    @XmlAttribute(name = "dataPosition")
     @XmlSchemaType(name = "unsignedInt")
     protected Long dataPosition;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "dataCaption", required = true)
     protected String dataCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "grandTotalCaption")
     protected String grandTotalCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "errorCaption")
     protected String errorCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "showError")
     protected Boolean showError;
-    @XmlAttribute
+    @XmlAttribute(name = "missingCaption")
     protected String missingCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "showMissing")
     protected Boolean showMissing;
-    @XmlAttribute
+    @XmlAttribute(name = "pageStyle")
     protected String pageStyle;
-    @XmlAttribute
+    @XmlAttribute(name = "pivotTableStyle")
     protected String pivotTableStyle;
-    @XmlAttribute
+    @XmlAttribute(name = "vacatedStyle")
     protected String vacatedStyle;
-    @XmlAttribute
+    @XmlAttribute(name = "tag")
     protected String tag;
-    @XmlAttribute
+    @XmlAttribute(name = "updatedVersion")
     @XmlSchemaType(name = "unsignedByte")
     protected Short updatedVersion;
-    @XmlAttribute
+    @XmlAttribute(name = "minRefreshableVersion")
     @XmlSchemaType(name = "unsignedByte")
     protected Short minRefreshableVersion;
-    @XmlAttribute
+    @XmlAttribute(name = "asteriskTotals")
     protected Boolean asteriskTotals;
-    @XmlAttribute
+    @XmlAttribute(name = "showItems")
     protected Boolean showItems;
-    @XmlAttribute
+    @XmlAttribute(name = "editData")
     protected Boolean editData;
-    @XmlAttribute
+    @XmlAttribute(name = "disableFieldList")
     protected Boolean disableFieldList;
-    @XmlAttribute
+    @XmlAttribute(name = "showCalcMbrs")
     protected Boolean showCalcMbrs;
-    @XmlAttribute
+    @XmlAttribute(name = "visualTotals")
     protected Boolean visualTotals;
-    @XmlAttribute
+    @XmlAttribute(name = "showMultipleLabel")
     protected Boolean showMultipleLabel;
-    @XmlAttribute
+    @XmlAttribute(name = "showDataDropDown")
     protected Boolean showDataDropDown;
-    @XmlAttribute
+    @XmlAttribute(name = "showDrill")
     protected Boolean showDrill;
-    @XmlAttribute
+    @XmlAttribute(name = "printDrill")
     protected Boolean printDrill;
-    @XmlAttribute
+    @XmlAttribute(name = "showMemberPropertyTips")
     protected Boolean showMemberPropertyTips;
-    @XmlAttribute
+    @XmlAttribute(name = "showDataTips")
     protected Boolean showDataTips;
-    @XmlAttribute
+    @XmlAttribute(name = "enableWizard")
     protected Boolean enableWizard;
-    @XmlAttribute
+    @XmlAttribute(name = "enableDrill")
     protected Boolean enableDrill;
-    @XmlAttribute
+    @XmlAttribute(name = "enableFieldProperties")
     protected Boolean enableFieldProperties;
-    @XmlAttribute
+    @XmlAttribute(name = "preserveFormatting")
     protected Boolean preserveFormatting;
-    @XmlAttribute
+    @XmlAttribute(name = "useAutoFormatting")
     protected Boolean useAutoFormatting;
-    @XmlAttribute
+    @XmlAttribute(name = "pageWrap")
     @XmlSchemaType(name = "unsignedInt")
     protected Long pageWrap;
-    @XmlAttribute
+    @XmlAttribute(name = "pageOverThenDown")
     protected Boolean pageOverThenDown;
-    @XmlAttribute
+    @XmlAttribute(name = "subtotalHiddenItems")
     protected Boolean subtotalHiddenItems;
-    @XmlAttribute
+    @XmlAttribute(name = "rowGrandTotals")
     protected Boolean rowGrandTotals;
-    @XmlAttribute
+    @XmlAttribute(name = "colGrandTotals")
     protected Boolean colGrandTotals;
-    @XmlAttribute
+    @XmlAttribute(name = "fieldPrintTitles")
     protected Boolean fieldPrintTitles;
-    @XmlAttribute
+    @XmlAttribute(name = "itemPrintTitles")
     protected Boolean itemPrintTitles;
-    @XmlAttribute
+    @XmlAttribute(name = "mergeItem")
     protected Boolean mergeItem;
-    @XmlAttribute
+    @XmlAttribute(name = "showDropZones")
     protected Boolean showDropZones;
-    @XmlAttribute
+    @XmlAttribute(name = "createdVersion")
     @XmlSchemaType(name = "unsignedByte")
     protected Short createdVersion;
-    @XmlAttribute
+    @XmlAttribute(name = "indent")
     @XmlSchemaType(name = "unsignedInt")
     protected Long indent;
-    @XmlAttribute
+    @XmlAttribute(name = "showEmptyRow")
     protected Boolean showEmptyRow;
-    @XmlAttribute
+    @XmlAttribute(name = "showEmptyCol")
     protected Boolean showEmptyCol;
-    @XmlAttribute
+    @XmlAttribute(name = "showHeaders")
     protected Boolean showHeaders;
-    @XmlAttribute
+    @XmlAttribute(name = "compact")
     protected Boolean compact;
-    @XmlAttribute
+    @XmlAttribute(name = "outline")
     protected Boolean outline;
-    @XmlAttribute
+    @XmlAttribute(name = "outlineData")
     protected Boolean outlineData;
-    @XmlAttribute
+    @XmlAttribute(name = "compactData")
     protected Boolean compactData;
-    @XmlAttribute
+    @XmlAttribute(name = "published")
     protected Boolean published;
-    @XmlAttribute
+    @XmlAttribute(name = "gridDropZones")
     protected Boolean gridDropZones;
-    @XmlAttribute
+    @XmlAttribute(name = "immersive")
     protected Boolean immersive;
-    @XmlAttribute
+    @XmlAttribute(name = "multipleFieldFilters")
     protected Boolean multipleFieldFilters;
-    @XmlAttribute
+    @XmlAttribute(name = "chartFormat")
     @XmlSchemaType(name = "unsignedInt")
     protected Long chartFormat;
-    @XmlAttribute
+    @XmlAttribute(name = "rowHeaderCaption")
     protected String rowHeaderCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "colHeaderCaption")
     protected String colHeaderCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "fieldListSortAscending")
     protected Boolean fieldListSortAscending;
-    @XmlAttribute
+    @XmlAttribute(name = "mdxSubqueries")
     protected Boolean mdxSubqueries;
-    @XmlAttribute
+    @XmlAttribute(name = "customListSort")
     protected Boolean customListSort;
-    @XmlAttribute
+    @XmlAttribute(name = "autoFormatId")
     @XmlSchemaType(name = "unsignedInt")
     protected Long autoFormatId;
-    @XmlAttribute
+    @XmlAttribute(name = "applyNumberFormats")
     protected Boolean applyNumberFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyBorderFormats")
     protected Boolean applyBorderFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyFontFormats")
     protected Boolean applyFontFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyPatternFormats")
     protected Boolean applyPatternFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyAlignmentFormats")
     protected Boolean applyAlignmentFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyWidthHeightFormats")
     protected Boolean applyWidthHeightFormats;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the location property.
@@ -2536,6 +2522,32 @@ public class CTPivotTableDefinition {
      */
     public void setApplyWidthHeightFormats(Boolean value) {
         this.applyWidthHeightFormats = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

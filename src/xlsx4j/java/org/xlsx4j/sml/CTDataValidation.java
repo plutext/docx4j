@@ -1,32 +1,15 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -50,10 +33,10 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;attribute name="showDropDown" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="showInputMessage" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="showErrorMessage" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="errorTitle" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="error" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="promptTitle" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
- *       &lt;attribute name="prompt" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="errorTitle" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="error" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="promptTitle" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
+ *       &lt;attribute name="prompt" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="sqref" use="required" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Sqref" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -67,36 +50,39 @@ import javax.xml.bind.annotation.XmlType;
     "formula1",
     "formula2"
 })
-public class CTDataValidation {
+public class CTDataValidation implements Child
+{
 
     protected String formula1;
     protected String formula2;
-    @XmlAttribute
+    @XmlAttribute(name = "type")
     protected STDataValidationType type;
-    @XmlAttribute
+    @XmlAttribute(name = "errorStyle")
     protected STDataValidationErrorStyle errorStyle;
-    @XmlAttribute
+    @XmlAttribute(name = "imeMode")
     protected STDataValidationImeMode imeMode;
-    @XmlAttribute
+    @XmlAttribute(name = "operator")
     protected STDataValidationOperator operator;
-    @XmlAttribute
+    @XmlAttribute(name = "allowBlank")
     protected Boolean allowBlank;
-    @XmlAttribute
+    @XmlAttribute(name = "showDropDown")
     protected Boolean showDropDown;
-    @XmlAttribute
+    @XmlAttribute(name = "showInputMessage")
     protected Boolean showInputMessage;
-    @XmlAttribute
+    @XmlAttribute(name = "showErrorMessage")
     protected Boolean showErrorMessage;
-    @XmlAttribute
+    @XmlAttribute(name = "errorTitle")
     protected String errorTitle;
-    @XmlAttribute
+    @XmlAttribute(name = "error")
     protected String error;
-    @XmlAttribute
+    @XmlAttribute(name = "promptTitle")
     protected String promptTitle;
-    @XmlAttribute
+    @XmlAttribute(name = "prompt")
     protected String prompt;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "sqref", required = true)
     protected List<String> sqref;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the formula1 property.
@@ -493,6 +479,32 @@ public class CTDataValidation {
             sqref = new ArrayList<String>();
         }
         return this.sqref;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

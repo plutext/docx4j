@@ -1,31 +1,14 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -37,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;complexType name="CT_MetadataType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="minSupportedVersion" use="required" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" />
  *       &lt;attribute name="ghostRow" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="ghostCol" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
@@ -74,65 +57,68 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_MetadataType")
-public class CTMetadataType {
+public class CTMetadataType implements Child
+{
 
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "name", required = true)
     protected String name;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "minSupportedVersion", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long minSupportedVersion;
-    @XmlAttribute
+    @XmlAttribute(name = "ghostRow")
     protected Boolean ghostRow;
-    @XmlAttribute
+    @XmlAttribute(name = "ghostCol")
     protected Boolean ghostCol;
-    @XmlAttribute
+    @XmlAttribute(name = "edit")
     protected Boolean edit;
-    @XmlAttribute
+    @XmlAttribute(name = "delete")
     protected Boolean delete;
-    @XmlAttribute
+    @XmlAttribute(name = "copy")
     protected Boolean copy;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteAll")
     protected Boolean pasteAll;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteFormulas")
     protected Boolean pasteFormulas;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteValues")
     protected Boolean pasteValues;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteFormats")
     protected Boolean pasteFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteComments")
     protected Boolean pasteComments;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteDataValidation")
     protected Boolean pasteDataValidation;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteBorders")
     protected Boolean pasteBorders;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteColWidths")
     protected Boolean pasteColWidths;
-    @XmlAttribute
+    @XmlAttribute(name = "pasteNumberFormats")
     protected Boolean pasteNumberFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "merge")
     protected Boolean merge;
-    @XmlAttribute
+    @XmlAttribute(name = "splitFirst")
     protected Boolean splitFirst;
-    @XmlAttribute
+    @XmlAttribute(name = "splitAll")
     protected Boolean splitAll;
-    @XmlAttribute
+    @XmlAttribute(name = "rowColShift")
     protected Boolean rowColShift;
-    @XmlAttribute
+    @XmlAttribute(name = "clearAll")
     protected Boolean clearAll;
-    @XmlAttribute
+    @XmlAttribute(name = "clearFormats")
     protected Boolean clearFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "clearContents")
     protected Boolean clearContents;
-    @XmlAttribute
+    @XmlAttribute(name = "clearComments")
     protected Boolean clearComments;
-    @XmlAttribute
+    @XmlAttribute(name = "assign")
     protected Boolean assign;
-    @XmlAttribute
+    @XmlAttribute(name = "coerce")
     protected Boolean coerce;
-    @XmlAttribute
+    @XmlAttribute(name = "adjust")
     protected Boolean adjust;
-    @XmlAttribute
+    @XmlAttribute(name = "cellMeta")
     protected Boolean cellMeta;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the name property.
@@ -900,6 +886,32 @@ public class CTMetadataType {
      */
     public void setCellMeta(Boolean value) {
         this.cellMeta = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

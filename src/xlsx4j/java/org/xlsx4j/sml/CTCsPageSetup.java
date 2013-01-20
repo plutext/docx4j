@@ -1,31 +1,14 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -38,6 +21,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;attribute name="paperSize" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="1" />
+ *       &lt;attribute name="paperHeight" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_PositiveUniversalMeasure" />
+ *       &lt;attribute name="paperWidth" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_PositiveUniversalMeasure" />
  *       &lt;attribute name="firstPageNumber" type="{http://www.w3.org/2001/XMLSchema}unsignedInt" default="1" />
  *       &lt;attribute name="orientation" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Orientation" default="default" />
  *       &lt;attribute name="usePrinterDefaults" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
@@ -57,35 +42,42 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CT_CsPageSetup")
-public class CTCsPageSetup {
+public class CTCsPageSetup implements Child
+{
 
-    @XmlAttribute
+    @XmlAttribute(name = "paperSize")
     @XmlSchemaType(name = "unsignedInt")
     protected Long paperSize;
-    @XmlAttribute
+    @XmlAttribute(name = "paperHeight")
+    protected String paperHeight;
+    @XmlAttribute(name = "paperWidth")
+    protected String paperWidth;
+    @XmlAttribute(name = "firstPageNumber")
     @XmlSchemaType(name = "unsignedInt")
     protected Long firstPageNumber;
-    @XmlAttribute
+    @XmlAttribute(name = "orientation")
     protected STOrientation orientation;
-    @XmlAttribute
+    @XmlAttribute(name = "usePrinterDefaults")
     protected Boolean usePrinterDefaults;
-    @XmlAttribute
+    @XmlAttribute(name = "blackAndWhite")
     protected Boolean blackAndWhite;
-    @XmlAttribute
+    @XmlAttribute(name = "draft")
     protected Boolean draft;
-    @XmlAttribute
+    @XmlAttribute(name = "useFirstPageNumber")
     protected Boolean useFirstPageNumber;
-    @XmlAttribute
+    @XmlAttribute(name = "horizontalDpi")
     @XmlSchemaType(name = "unsignedInt")
     protected Long horizontalDpi;
-    @XmlAttribute
+    @XmlAttribute(name = "verticalDpi")
     @XmlSchemaType(name = "unsignedInt")
     protected Long verticalDpi;
-    @XmlAttribute
+    @XmlAttribute(name = "copies")
     @XmlSchemaType(name = "unsignedInt")
     protected Long copies;
-    @XmlAttribute(namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
+    @XmlAttribute(name = "id", namespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships")
     protected String id;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the paperSize property.
@@ -113,6 +105,54 @@ public class CTCsPageSetup {
      */
     public void setPaperSize(Long value) {
         this.paperSize = value;
+    }
+
+    /**
+     * Gets the value of the paperHeight property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPaperHeight() {
+        return paperHeight;
+    }
+
+    /**
+     * Sets the value of the paperHeight property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPaperHeight(String value) {
+        this.paperHeight = value;
+    }
+
+    /**
+     * Gets the value of the paperWidth property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getPaperWidth() {
+        return paperWidth;
+    }
+
+    /**
+     * Sets the value of the paperWidth property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setPaperWidth(String value) {
+        this.paperWidth = value;
     }
 
     /**
@@ -368,7 +408,7 @@ public class CTCsPageSetup {
     }
 
     /**
-     * Id
+     * Gets the value of the id property.
      * 
      * @return
      *     possible object is
@@ -389,6 +429,32 @@ public class CTCsPageSetup {
      */
     public void setId(String value) {
         this.id = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

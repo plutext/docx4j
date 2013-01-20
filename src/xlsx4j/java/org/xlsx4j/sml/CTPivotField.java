@@ -1,31 +1,14 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -42,13 +25,13 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="autoSortScope" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_AutoSortScope" minOccurs="0"/>
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_ExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="name" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="name" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="axis" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Axis" />
  *       &lt;attribute name="dataField" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="subtotalCaption" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="subtotalCaption" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="showDropDowns" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="hiddenLevel" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
- *       &lt;attribute name="uniqueMemberProperty" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="uniqueMemberProperty" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="compact" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="allDrilled" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="numFmtId" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_NumFmtId" />
@@ -103,109 +86,112 @@ import javax.xml.bind.annotation.XmlType;
     "autoSortScope",
     "extLst"
 })
-public class CTPivotField {
+public class CTPivotField implements Child
+{
 
     protected CTItems items;
     protected CTAutoSortScope autoSortScope;
     protected CTExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "name")
     protected String name;
-    @XmlAttribute
+    @XmlAttribute(name = "axis")
     protected STAxis axis;
-    @XmlAttribute
+    @XmlAttribute(name = "dataField")
     protected Boolean dataField;
-    @XmlAttribute
+    @XmlAttribute(name = "subtotalCaption")
     protected String subtotalCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "showDropDowns")
     protected Boolean showDropDowns;
-    @XmlAttribute
+    @XmlAttribute(name = "hiddenLevel")
     protected Boolean hiddenLevel;
-    @XmlAttribute
+    @XmlAttribute(name = "uniqueMemberProperty")
     protected String uniqueMemberProperty;
-    @XmlAttribute
+    @XmlAttribute(name = "compact")
     protected Boolean compact;
-    @XmlAttribute
+    @XmlAttribute(name = "allDrilled")
     protected Boolean allDrilled;
-    @XmlAttribute
+    @XmlAttribute(name = "numFmtId")
     protected Long numFmtId;
-    @XmlAttribute
+    @XmlAttribute(name = "outline")
     protected Boolean outline;
-    @XmlAttribute
+    @XmlAttribute(name = "subtotalTop")
     protected Boolean subtotalTop;
-    @XmlAttribute
+    @XmlAttribute(name = "dragToRow")
     protected Boolean dragToRow;
-    @XmlAttribute
+    @XmlAttribute(name = "dragToCol")
     protected Boolean dragToCol;
-    @XmlAttribute
+    @XmlAttribute(name = "multipleItemSelectionAllowed")
     protected Boolean multipleItemSelectionAllowed;
-    @XmlAttribute
+    @XmlAttribute(name = "dragToPage")
     protected Boolean dragToPage;
-    @XmlAttribute
+    @XmlAttribute(name = "dragToData")
     protected Boolean dragToData;
-    @XmlAttribute
+    @XmlAttribute(name = "dragOff")
     protected Boolean dragOff;
-    @XmlAttribute
+    @XmlAttribute(name = "showAll")
     protected Boolean showAll;
-    @XmlAttribute
+    @XmlAttribute(name = "insertBlankRow")
     protected Boolean insertBlankRow;
-    @XmlAttribute
+    @XmlAttribute(name = "serverField")
     protected Boolean serverField;
-    @XmlAttribute
+    @XmlAttribute(name = "insertPageBreak")
     protected Boolean insertPageBreak;
-    @XmlAttribute
+    @XmlAttribute(name = "autoShow")
     protected Boolean autoShow;
-    @XmlAttribute
+    @XmlAttribute(name = "topAutoShow")
     protected Boolean topAutoShow;
-    @XmlAttribute
+    @XmlAttribute(name = "hideNewItems")
     protected Boolean hideNewItems;
-    @XmlAttribute
+    @XmlAttribute(name = "measureFilter")
     protected Boolean measureFilter;
-    @XmlAttribute
+    @XmlAttribute(name = "includeNewItemsInFilter")
     protected Boolean includeNewItemsInFilter;
-    @XmlAttribute
+    @XmlAttribute(name = "itemPageCount")
     @XmlSchemaType(name = "unsignedInt")
     protected Long itemPageCount;
-    @XmlAttribute
+    @XmlAttribute(name = "sortType")
     protected STFieldSortType sortType;
-    @XmlAttribute
+    @XmlAttribute(name = "dataSourceSort")
     protected Boolean dataSourceSort;
-    @XmlAttribute
+    @XmlAttribute(name = "nonAutoSortDefault")
     protected Boolean nonAutoSortDefault;
-    @XmlAttribute
+    @XmlAttribute(name = "rankBy")
     @XmlSchemaType(name = "unsignedInt")
     protected Long rankBy;
-    @XmlAttribute
+    @XmlAttribute(name = "defaultSubtotal")
     protected Boolean defaultSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "sumSubtotal")
     protected Boolean sumSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "countASubtotal")
     protected Boolean countASubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "avgSubtotal")
     protected Boolean avgSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "maxSubtotal")
     protected Boolean maxSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "minSubtotal")
     protected Boolean minSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "productSubtotal")
     protected Boolean productSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "countSubtotal")
     protected Boolean countSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "stdDevSubtotal")
     protected Boolean stdDevSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "stdDevPSubtotal")
     protected Boolean stdDevPSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "varSubtotal")
     protected Boolean varSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "varPSubtotal")
     protected Boolean varPSubtotal;
-    @XmlAttribute
+    @XmlAttribute(name = "showPropCell")
     protected Boolean showPropCell;
-    @XmlAttribute
+    @XmlAttribute(name = "showPropTip")
     protected Boolean showPropTip;
-    @XmlAttribute
+    @XmlAttribute(name = "showPropAsCaption")
     protected Boolean showPropAsCaption;
-    @XmlAttribute
+    @XmlAttribute(name = "defaultAttributeDrillState")
     protected Boolean defaultAttributeDrillState;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the items property.
@@ -1593,6 +1579,32 @@ public class CTPivotField {
      */
     public void setDefaultAttributeDrillState(Boolean value) {
         this.defaultAttributeDrillState = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

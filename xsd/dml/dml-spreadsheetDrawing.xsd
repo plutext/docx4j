@@ -22,6 +22,11 @@
   <xsd:import schemaLocation="dml-documentProperties.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
   <xsd:import schemaLocation="dml-graphicalObject.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
   <xsd:import schemaLocation="dml-text.xsd" namespace="http://schemas.openxmlformats.org/drawingml/2006/main" />
+  
+  <!--  Added from/to from 4ed, since sml_4ed_transitional requires these -->
+  <xsd:element name="from" type="CT_Marker"/>
+  <xsd:element name="to" type="CT_Marker"/>  
+  
   <xsd:complexType name="CT_AnchorClientData">
     <xsd:attribute name="fLocksWithSheet" type="xsd:boolean" use="optional" default="true">
       <xsd:annotation>

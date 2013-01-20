@@ -5,14 +5,56 @@
   xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
   xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
   targetNamespace="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-  elementFormDefault="qualified">
+  elementFormDefault="qualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+<!--
+	Don't use xjc on this file; use it on sml_root instead
+-->	
+  
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+    </xsd:documentation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<jaxb:package name="org.xlsx4j.sml"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+  </xsd:annotation>
+  
+	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace"
+		schemaLocation="../wml/xml.xsd"/>
+  
   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-    schemaLocation="shared-relationshipReference.xsd"/>
+    schemaLocation="../shared/shared-relationshipReference.xsd"/>
   <xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
-    schemaLocation="shared-commonSimpleTypes.xsd"/>
+    schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
   <xsd:import 
     namespace="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing"
-    schemaLocation="dml-spreadsheetDrawing.xsd"/>
+    schemaLocation="../dml/dml-spreadsheetDrawing.xsd"/>
+    
+	<xsd:complexType name="CT_Xstring_Whitespace">
+	    <xsd:annotation>
+	      <xsd:documentation>Escaped String</xsd:documentation>
+	    </xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute ref="xml:space" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>Content Contains Significant
+							Whitespace</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+    
+    
   <xsd:complexType name="CT_AutoFilter">
     <xsd:sequence>
       <xsd:element name="filterColumn" minOccurs="0" maxOccurs="unbounded" type="CT_FilterColumn"/>
@@ -587,7 +629,14 @@
     <xsd:attribute name="minRefreshableVersion" type="xsd:unsignedByte" use="optional" default="0"/>
     <xsd:attribute name="recordCount" type="xsd:unsignedInt" use="optional"/>
     <xsd:attribute name="upgradeOnRefresh" type="xsd:boolean" use="optional" default="false"/>
-    <xsd:attribute name="tupleCache" type="xsd:boolean" use="optional" default="false"/>
+    <xsd:attribute name="tupleCache" type="xsd:boolean" use="optional" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Stores Cache for OLAP Functions</xsd:documentation>
+				<xsd:appinfo>
+					<jaxb:property name="tupleCacheQ"/>
+				</xsd:appinfo>        
+      </xsd:annotation>    
+    </xsd:attribute>
     <xsd:attribute name="supportSubquery" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="supportAdvancedDrill" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
@@ -1812,7 +1861,7 @@
   </xsd:simpleType>
   <xsd:complexType name="CT_PhoneticRun">
     <xsd:sequence>
-      <xsd:element name="t" type="s:ST_Xstring" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="t" type="CT_Xstring_Whitespace" minOccurs="1" maxOccurs="1" />
     </xsd:sequence>
     <xsd:attribute name="sb" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="eb" type="xsd:unsignedInt" use="required"/>
@@ -1820,7 +1869,7 @@
   <xsd:complexType name="CT_RElt">
     <xsd:sequence>
       <xsd:element name="rPr" type="CT_RPrElt" minOccurs="0" maxOccurs="1"/>
-      <xsd:element name="t" type="s:ST_Xstring" minOccurs="1" maxOccurs="1"/>
+      <xsd:element name="t" type="CT_Xstring_Whitespace" minOccurs="1" maxOccurs="1"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_RPrElt">
@@ -1844,7 +1893,7 @@
   </xsd:complexType>
   <xsd:complexType name="CT_Rst">
     <xsd:sequence>
-      <xsd:element name="t" type="s:ST_Xstring" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="t" type="CT_Xstring_Whitespace" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="r" type="CT_RElt" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="rPh" type="CT_PhoneticRun" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="phoneticPr" minOccurs="0" maxOccurs="1" type="CT_PhoneticPr"/>
@@ -1994,7 +2043,14 @@
     </xsd:sequence>
     <xsd:attributeGroup ref="AG_RevData"/>
     <xsd:attribute name="sId" type="xsd:unsignedInt" use="required"/>
-    <xsd:attribute name="odxf" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="odxf" type="xsd:boolean" default="false">
+      <xsd:annotation>
+        <xsd:documentation>Old Formatting</xsd:documentation>
+				<xsd:appinfo>
+					<jaxb:property name="odxfQ"/>
+				</xsd:appinfo>        
+      </xsd:annotation>
+    </xsd:attribute>
     <xsd:attribute name="xfDxf" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="s" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="dxf" type="xsd:boolean" default="false"/>
@@ -2116,6 +2172,11 @@
   <xsd:element name="chartsheet" type="CT_Chartsheet"/>
   <xsd:element name="dialogsheet" type="CT_Dialogsheet"/>
   <xsd:complexType name="CT_Macrosheet">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Macrosheet"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="sheetPr" type="CT_SheetPr" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="dimension" type="CT_SheetDimension" minOccurs="0" maxOccurs="1"/>
@@ -2148,6 +2209,11 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_Dialogsheet">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Dialogsheet"/>
+			</xsd:appinfo>
+		</xsd:annotation>    
     <xsd:sequence>
       <xsd:element name="sheetPr" minOccurs="0" type="CT_SheetPr"/>
       <xsd:element name="sheetViews" minOccurs="0" type="CT_SheetViews"/>
@@ -2168,6 +2234,11 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_Worksheet">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Worksheet"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="sheetPr" type="CT_SheetPr" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="dimension" type="CT_SheetDimension" minOccurs="0" maxOccurs="1"/>
@@ -2212,6 +2283,11 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_SheetData">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SheetData"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="row" type="CT_Row" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>
@@ -2231,11 +2307,21 @@
     <xsd:attribute name="outlineLevelCol" type="xsd:unsignedByte" use="optional" default="0"/>
   </xsd:complexType>
   <xsd:complexType name="CT_Cols">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Cols"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="col" type="CT_Col" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_Col">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Col"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:attribute name="min" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="max" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="width" type="xsd:double" use="optional"/>
@@ -2254,6 +2340,11 @@
     <xsd:list itemType="ST_CellSpan"/>
   </xsd:simpleType>
   <xsd:complexType name="CT_Row">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Row"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="c" type="CT_Cell" minOccurs="0" maxOccurs="unbounded"/>
       <xsd:element name="extLst" minOccurs="0" type="CT_ExtensionList"/>
@@ -2272,6 +2363,11 @@
     <xsd:attribute name="ph" type="xsd:boolean" use="optional" default="false"/>
   </xsd:complexType>
   <xsd:complexType name="CT_Cell">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Cell"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="f" type="CT_CellFormula" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="v" type="s:ST_Xstring" minOccurs="0" maxOccurs="1"/>
@@ -2324,12 +2420,22 @@
     <xsd:attribute name="ref" type="ST_Ref" use="required"/>
   </xsd:complexType>
   <xsd:complexType name="CT_SheetViews">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SheetViews"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="sheetView" type="CT_SheetView" minOccurs="1" maxOccurs="unbounded"/>
       <xsd:element name="extLst" type="CT_ExtensionList" minOccurs="0" maxOccurs="1"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_SheetView">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="SheetView"/>
+			</xsd:appinfo>
+		</xsd:annotation>      
     <xsd:sequence>
       <xsd:element name="pane" type="CT_Pane" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="selection" type="CT_Selection" minOccurs="0" maxOccurs="4"/>
@@ -2920,7 +3026,13 @@
     <xsd:attribute name="password" type="ST_UnsignedShortHex" use="optional"/>
     <xsd:attribute name="sqref" type="ST_Sqref" use="required"/>
     <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
-    <xsd:attribute name="securityDescriptor" type="xsd:string" use="optional"/>
+    <xsd:attribute name="securityDescriptor" type="xsd:string" use="optional">
+      <xsd:annotation>
+		<xsd:appinfo>
+			<jaxb:property name="securityDescriptorAttr"/>
+		</xsd:appinfo>        
+      </xsd:annotation>    
+    </xsd:attribute>
     <xsd:attribute name="algorithmName" type="s:ST_Xstring" use="optional"/>
     <xsd:attribute name="hashValue" type="xsd:base64Binary" use="optional"/>
     <xsd:attribute name="saltValue" type="xsd:base64Binary" use="optional"/>
@@ -4081,6 +4193,11 @@
   </xsd:simpleType>
   <xsd:element name="workbook" type="CT_Workbook"/>
   <xsd:complexType name="CT_Workbook">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Workbook"/>
+			</xsd:appinfo>
+		</xsd:annotation>    
     <xsd:sequence>
       <xsd:element name="fileVersion" type="CT_FileVersion" minOccurs="0" maxOccurs="1"/>
       <xsd:element name="fileSharing" type="CT_FileSharing" minOccurs="0" maxOccurs="1"/>
@@ -4109,6 +4226,11 @@
     <xsd:attribute name="conformance" type="s:ST_ConformanceClass"/>
   </xsd:complexType>
   <xsd:complexType name="CT_FileVersion">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="FileVersion"/>
+			</xsd:appinfo>
+		</xsd:annotation>  
     <xsd:attribute name="appName" type="xsd:string" use="optional"/>
     <xsd:attribute name="lastEdited" type="xsd:string" use="optional"/>
     <xsd:attribute name="lowestEdited" type="xsd:string" use="optional"/>
@@ -4116,6 +4238,11 @@
     <xsd:attribute name="codeName" type="s:ST_Guid" use="optional"/>
   </xsd:complexType>
   <xsd:complexType name="CT_BookViews">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="BookViews"/>
+			</xsd:appinfo>
+		</xsd:annotation>    
     <xsd:sequence>
       <xsd:element name="workbookView" type="CT_BookView" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
@@ -4195,11 +4322,21 @@
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:complexType name="CT_Sheets">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Sheets"/>
+			</xsd:appinfo>
+		</xsd:annotation>    
     <xsd:sequence>
       <xsd:element name="sheet" type="CT_Sheet" minOccurs="1" maxOccurs="unbounded"/>
     </xsd:sequence>
   </xsd:complexType>
   <xsd:complexType name="CT_Sheet">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="Sheet"/>
+			</xsd:appinfo>
+		</xsd:annotation>    
     <xsd:attribute name="name" type="s:ST_Xstring" use="required"/>
     <xsd:attribute name="sheetId" type="xsd:unsignedInt" use="required"/>
     <xsd:attribute name="state" type="ST_SheetState" use="optional" default="visible"/>
@@ -4213,6 +4350,11 @@
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:complexType name="CT_WorkbookPr">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="WorkbookPr"/>
+			</xsd:appinfo>
+		</xsd:annotation>    
     <xsd:attribute name="date1904" type="xsd:boolean" use="optional" default="false"/>
     <xsd:attribute name="showObjects" type="ST_Objects" use="optional" default="all"/>
     <xsd:attribute name="showBorderUnselectedTables" type="xsd:boolean" use="optional"
@@ -4296,6 +4438,11 @@
     </xsd:restriction>
   </xsd:simpleType>
   <xsd:complexType name="CT_DefinedNames">
+		<xsd:annotation>
+			<xsd:appinfo>
+				<jaxb:class name="DefinedNames"/>
+			</xsd:appinfo>
+		</xsd:annotation>    
     <xsd:sequence>
       <xsd:element name="definedName" type="CT_DefinedName" minOccurs="0" maxOccurs="unbounded"/>
     </xsd:sequence>

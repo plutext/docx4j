@@ -1,23 +1,3 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
@@ -50,53 +30,18 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum STMdxFunctionType {
 
-
-    /**
-     * Cube Member
-     * 
-     */
     @XmlEnumValue("m")
     M("m"),
-
-    /**
-     * Cube Value
-     * 
-     */
     @XmlEnumValue("v")
     V("v"),
-
-    /**
-     * Cube Set
-     * 
-     */
     @XmlEnumValue("s")
     S("s"),
-
-    /**
-     * Cube Set Count
-     * 
-     */
     @XmlEnumValue("c")
     C("c"),
-
-    /**
-     * Cube Ranked Member
-     * 
-     */
     @XmlEnumValue("r")
     R("r"),
-
-    /**
-     * Cube Member Property
-     * 
-     */
     @XmlEnumValue("p")
     P("p"),
-
-    /**
-     * Cube KPI Member
-     * 
-     */
     @XmlEnumValue("k")
     K("k");
     private final String value;

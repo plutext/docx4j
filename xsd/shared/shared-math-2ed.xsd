@@ -84,6 +84,7 @@
     transitional shared-commonSimpleTypes
     
     But we use a slightly different formulation, which is more JAXB friendly
+    (see our xsd:simpleType/@name="ST_OnOff" in shared-commonSimpleTypes.xsd)
  -->	
 	
 	<!--  

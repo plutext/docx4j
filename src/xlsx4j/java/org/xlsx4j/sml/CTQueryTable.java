@@ -1,31 +1,14 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -42,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="extLst" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}CT_ExtensionList" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attGroup ref="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}AG_AutoFormat"/>
- *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/spreadsheetml/2006/main}ST_Xstring" />
+ *       &lt;attribute name="name" use="required" type="{http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes}ST_Xstring" />
  *       &lt;attribute name="headers" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
  *       &lt;attribute name="rowNumbers" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
  *       &lt;attribute name="disableRefresh" type="{http://www.w3.org/2001/XMLSchema}boolean" default="false" />
@@ -69,56 +52,59 @@ import javax.xml.bind.annotation.XmlType;
     "queryTableRefresh",
     "extLst"
 })
-public class CTQueryTable {
+public class CTQueryTable implements Child
+{
 
     protected CTQueryTableRefresh queryTableRefresh;
     protected CTExtensionList extLst;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "name", required = true)
     protected String name;
-    @XmlAttribute
+    @XmlAttribute(name = "headers")
     protected Boolean headers;
-    @XmlAttribute
+    @XmlAttribute(name = "rowNumbers")
     protected Boolean rowNumbers;
-    @XmlAttribute
+    @XmlAttribute(name = "disableRefresh")
     protected Boolean disableRefresh;
-    @XmlAttribute
+    @XmlAttribute(name = "backgroundRefresh")
     protected Boolean backgroundRefresh;
-    @XmlAttribute
+    @XmlAttribute(name = "firstBackgroundRefresh")
     protected Boolean firstBackgroundRefresh;
-    @XmlAttribute
+    @XmlAttribute(name = "refreshOnLoad")
     protected Boolean refreshOnLoad;
-    @XmlAttribute
+    @XmlAttribute(name = "growShrinkType")
     protected STGrowShrinkType growShrinkType;
-    @XmlAttribute
+    @XmlAttribute(name = "fillFormulas")
     protected Boolean fillFormulas;
-    @XmlAttribute
+    @XmlAttribute(name = "removeDataOnSave")
     protected Boolean removeDataOnSave;
-    @XmlAttribute
+    @XmlAttribute(name = "disableEdit")
     protected Boolean disableEdit;
-    @XmlAttribute
+    @XmlAttribute(name = "preserveFormatting")
     protected Boolean preserveFormatting;
-    @XmlAttribute
+    @XmlAttribute(name = "adjustColumnWidth")
     protected Boolean adjustColumnWidth;
-    @XmlAttribute
+    @XmlAttribute(name = "intermediate")
     protected Boolean intermediate;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "connectionId", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long connectionId;
-    @XmlAttribute
+    @XmlAttribute(name = "autoFormatId")
     @XmlSchemaType(name = "unsignedInt")
     protected Long autoFormatId;
-    @XmlAttribute
+    @XmlAttribute(name = "applyNumberFormats")
     protected Boolean applyNumberFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyBorderFormats")
     protected Boolean applyBorderFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyFontFormats")
     protected Boolean applyFontFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyPatternFormats")
     protected Boolean applyPatternFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyAlignmentFormats")
     protected Boolean applyAlignmentFormats;
-    @XmlAttribute
+    @XmlAttribute(name = "applyWidthHeightFormats")
     protected Boolean applyWidthHeightFormats;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the queryTableRefresh property.
@@ -738,6 +724,32 @@ public class CTQueryTable {
      */
     public void setApplyWidthHeightFormats(Boolean value) {
         this.applyWidthHeightFormats = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

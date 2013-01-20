@@ -1,31 +1,14 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -64,40 +47,43 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_BookView", propOrder = {
     "extLst"
 })
-public class CTBookView {
+public class CTBookView implements Child
+{
 
     protected CTExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "visibility")
     protected STVisibility visibility;
-    @XmlAttribute
+    @XmlAttribute(name = "minimized")
     protected Boolean minimized;
-    @XmlAttribute
+    @XmlAttribute(name = "showHorizontalScroll")
     protected Boolean showHorizontalScroll;
-    @XmlAttribute
+    @XmlAttribute(name = "showVerticalScroll")
     protected Boolean showVerticalScroll;
-    @XmlAttribute
+    @XmlAttribute(name = "showSheetTabs")
     protected Boolean showSheetTabs;
-    @XmlAttribute
+    @XmlAttribute(name = "xWindow")
     protected Integer xWindow;
-    @XmlAttribute
+    @XmlAttribute(name = "yWindow")
     protected Integer yWindow;
-    @XmlAttribute
+    @XmlAttribute(name = "windowWidth")
     @XmlSchemaType(name = "unsignedInt")
     protected Long windowWidth;
-    @XmlAttribute
+    @XmlAttribute(name = "windowHeight")
     @XmlSchemaType(name = "unsignedInt")
     protected Long windowHeight;
-    @XmlAttribute
+    @XmlAttribute(name = "tabRatio")
     @XmlSchemaType(name = "unsignedInt")
     protected Long tabRatio;
-    @XmlAttribute
+    @XmlAttribute(name = "firstSheet")
     @XmlSchemaType(name = "unsignedInt")
     protected Long firstSheet;
-    @XmlAttribute
+    @XmlAttribute(name = "activeTab")
     @XmlSchemaType(name = "unsignedInt")
     protected Long activeTab;
-    @XmlAttribute
+    @XmlAttribute(name = "autoFilterDateGrouping")
     protected Boolean autoFilterDateGrouping;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the extLst property.
@@ -469,6 +455,32 @@ public class CTBookView {
      */
     public void setAutoFilterDateGrouping(Boolean value) {
         this.autoFilterDateGrouping = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

@@ -1,35 +1,18 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -63,32 +46,35 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "CT_RevisionRowColumn", propOrder = {
     "undoOrRccOrRfmt"
 })
-public class CTRevisionRowColumn {
+public class CTRevisionRowColumn implements Child
+{
 
     @XmlElements({
+        @XmlElement(name = "undo", type = CTUndoInfo.class),
         @XmlElement(name = "rcc", type = CTRevisionCellChange.class),
-        @XmlElement(name = "rfmt", type = CTRevisionFormatting.class),
-        @XmlElement(name = "undo", type = CTUndoInfo.class)
+        @XmlElement(name = "rfmt", type = CTRevisionFormatting.class)
     })
     protected List<Object> undoOrRccOrRfmt;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "sId", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long sId;
-    @XmlAttribute
+    @XmlAttribute(name = "eol")
     protected Boolean eol;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "ref", required = true)
     protected String ref;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "action", required = true)
     protected STRwColActionType action;
-    @XmlAttribute
+    @XmlAttribute(name = "edge")
     protected Boolean edge;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "rId", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long rId;
-    @XmlAttribute
+    @XmlAttribute(name = "ua")
     protected Boolean ua;
-    @XmlAttribute
+    @XmlAttribute(name = "ra")
     protected Boolean ra;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the undoOrRccOrRfmt property.
@@ -108,9 +94,9 @@ public class CTRevisionRowColumn {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
+     * {@link CTUndoInfo }
      * {@link CTRevisionCellChange }
      * {@link CTRevisionFormatting }
-     * {@link CTUndoInfo }
      * 
      * 
      */
@@ -311,6 +297,32 @@ public class CTRevisionRowColumn {
      */
     public void setRa(Boolean value) {
         this.ra = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

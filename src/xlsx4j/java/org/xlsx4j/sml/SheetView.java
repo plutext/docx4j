@@ -1,33 +1,16 @@
-/*
- *  Copyright 2010, Plutext Pty Ltd.
- *   
- *  This file is part of docx4j.
-
-    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
-    you may not use this file except in compliance with the License. 
-
-    You may obtain a copy of the License at 
-
-        http://www.apache.org/licenses/LICENSE-2.0 
-
-    Unless required by applicable law or agreed to in writing, software 
-    distributed under the License is distributed on an "AS IS" BASIS, 
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-    See the License for the specific language governing permissions and 
-    limitations under the License.
-
- */
-
 
 package org.xlsx4j.sml;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import org.jvnet.jaxb2_commons.ppp.Child;
 
 
 /**
@@ -78,56 +61,59 @@ import javax.xml.bind.annotation.XmlType;
     "pivotSelection",
     "extLst"
 })
-public class SheetView {
+public class SheetView implements Child
+{
 
     protected CTPane pane;
     protected List<CTSelection> selection;
     protected List<CTPivotSelection> pivotSelection;
     protected CTExtensionList extLst;
-    @XmlAttribute
+    @XmlAttribute(name = "windowProtection")
     protected Boolean windowProtection;
-    @XmlAttribute
+    @XmlAttribute(name = "showFormulas")
     protected Boolean showFormulas;
-    @XmlAttribute
+    @XmlAttribute(name = "showGridLines")
     protected Boolean showGridLines;
-    @XmlAttribute
+    @XmlAttribute(name = "showRowColHeaders")
     protected Boolean showRowColHeaders;
-    @XmlAttribute
+    @XmlAttribute(name = "showZeros")
     protected Boolean showZeros;
-    @XmlAttribute
+    @XmlAttribute(name = "rightToLeft")
     protected Boolean rightToLeft;
-    @XmlAttribute
+    @XmlAttribute(name = "tabSelected")
     protected Boolean tabSelected;
-    @XmlAttribute
+    @XmlAttribute(name = "showRuler")
     protected Boolean showRuler;
-    @XmlAttribute
+    @XmlAttribute(name = "showOutlineSymbols")
     protected Boolean showOutlineSymbols;
-    @XmlAttribute
+    @XmlAttribute(name = "defaultGridColor")
     protected Boolean defaultGridColor;
-    @XmlAttribute
+    @XmlAttribute(name = "showWhiteSpace")
     protected Boolean showWhiteSpace;
-    @XmlAttribute
+    @XmlAttribute(name = "view")
     protected STSheetViewType view;
-    @XmlAttribute
+    @XmlAttribute(name = "topLeftCell")
     protected String topLeftCell;
-    @XmlAttribute
+    @XmlAttribute(name = "colorId")
     @XmlSchemaType(name = "unsignedInt")
     protected Long colorId;
-    @XmlAttribute
+    @XmlAttribute(name = "zoomScale")
     @XmlSchemaType(name = "unsignedInt")
     protected Long zoomScale;
-    @XmlAttribute
+    @XmlAttribute(name = "zoomScaleNormal")
     @XmlSchemaType(name = "unsignedInt")
     protected Long zoomScaleNormal;
-    @XmlAttribute
+    @XmlAttribute(name = "zoomScaleSheetLayoutView")
     @XmlSchemaType(name = "unsignedInt")
     protected Long zoomScaleSheetLayoutView;
-    @XmlAttribute
+    @XmlAttribute(name = "zoomScalePageLayoutView")
     @XmlSchemaType(name = "unsignedInt")
     protected Long zoomScalePageLayoutView;
-    @XmlAttribute(required = true)
+    @XmlAttribute(name = "workbookViewId", required = true)
     @XmlSchemaType(name = "unsignedInt")
     protected long workbookViewId;
+    @XmlTransient
+    private Object parent;
 
     /**
      * Gets the value of the pane property.
@@ -749,6 +735,32 @@ public class SheetView {
      */
     public void setWorkbookViewId(long value) {
         this.workbookViewId = value;
+    }
+
+    /**
+     * Gets the parent object in the object tree representing the unmarshalled xml document.
+     * 
+     * @return
+     *     The parent object.
+     */
+    public Object getParent() {
+        return this.parent;
+    }
+
+    public void setParent(Object parent) {
+        this.parent = parent;
+    }
+
+    /**
+     * This method is invoked by the JAXB implementation on each instance when unmarshalling completes.
+     * 
+     * @param parent
+     *     The parent object in the object tree.
+     * @param unmarshaller
+     *     The unmarshaller that generated the instance.
+     */
+    public void afterUnmarshal(Unmarshaller unmarshaller, Object parent) {
+        setParent(parent);
     }
 
 }

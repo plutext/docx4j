@@ -8,17 +8,9 @@
 	
 <!--
 	
-	The other XSDs in this dir were obtained from OfficeOpenXML-XMLSchema.zip
-	v1.0 final
-		 
-	http://www.ecma-international.org/publications/standards/Ecma-376.htm says
-	"Copy these file(s), free of charge"
-	
 WHICH VERSION?
 
-This is based on ECMA-376, first edition (as opposed to 2ed, which was not then available,
-and in any case is not supported by Office 2007).	
-
+This is based on ECMA-376, fourth edition 
 	
 USAGE INSTRUCTIONS
 	  
@@ -48,12 +40,24 @@ parsing a schema...
 compiling a schema...
 Exception in thread "main" java.lang.IllegalArgumentException: trying to create the same field twice: parent
 	
-Do we blame 2.2.6 for that?	 For now, use 
+That's because there is a name collision in:
+
+  org.xlsx4j.sml.CTCalculatedMember
+  org.xlsx4j.sml.CTPCDKPI	
+
+You can use 
 
 \Java\jaxb-ri-2.2.6\bin\xjc  sml_root.xsd -d tmp -no-header -target 2.0	
 	
+or better, you can use ppp 1.2, 
+
+\Java\jaxb-ri-20110601\bin\xjc  -classpath \Java\parent-pointer-plugin-1.2.jar -Xparent-pointer sml_root.xsd -d tmp  -no-header -target 2.0
+
+(still a bit of manual handling with that though)
+	
 REVISION HISTORY
 
+2013 01 20 - moved to ECMA 376 4ed; add parent pointer
 2013 01 20 - added @xml:space in shared strings
 2010 09 06 - First compiled and added to docx4j
 
@@ -61,41 +65,10 @@ REVISION HISTORY
 	
 	
 -->
-	   
-	   
-  <xsd:annotation>
-    <xsd:documentation xml:lang="en">
-    </xsd:documentation>
-		<xsd:appinfo>
-			<xsd:appinfo>
-				<jaxb:globalBindings>
-				</jaxb:globalBindings>
-			</xsd:appinfo>
-			<jaxb:schemaBindings>
-				<jaxb:package name="org.xlsx4j.sml"/>
-			</jaxb:schemaBindings>
-		</xsd:appinfo>
-  </xsd:annotation>
+ 
+  <!--  DML stuff required by SML -->
+  <xsd:import namespace="http://schemas.openxmlformats.org/drawingml/2006/main" schemaLocation="../dml/dml__ROOT.xsd" />
 
-  <xsd:include schemaLocation="sml-autoFilter.xsd" />
-  <xsd:include schemaLocation="sml-baseTypes.xsd" />
-  <xsd:include schemaLocation="sml-calculationChain.xsd" />
-  <xsd:include schemaLocation="sml-comments.xsd" />
-  <xsd:include schemaLocation="sml-customXmlMappings.xsd" />
-  <xsd:include schemaLocation="sml-externalConnections.xsd" />
-  <xsd:include schemaLocation="sml-pivotTableShared.xsd" />
-  <xsd:include schemaLocation="sml-pivotTable.xsd" />
-  <xsd:include schemaLocation="sml-queryTable.xsd" />
-  <xsd:include schemaLocation="sml-sharedStringTable.xsd" />
-  <xsd:include schemaLocation="sml-sharedWorkbookRevisions.xsd" />
-  <xsd:include schemaLocation="sml-sharedWorkbookUserNames.xsd" />
-  <xsd:include schemaLocation="sml-sheetMetadata.xsd" />
-  <xsd:include schemaLocation="sml-sheet.xsd" />
-  <xsd:include schemaLocation="sml-singleCellTable.xsd" />
-  <xsd:include schemaLocation="sml-styles.xsd" />
-  <xsd:include schemaLocation="sml-supplementaryWorkbooks.xsd" />
-  <xsd:include schemaLocation="sml-table.xsd" />
-  <xsd:include schemaLocation="sml-volatileDependencies.xsd" />
-  <xsd:include schemaLocation="sml-workbook.xsd" />
+  <xsd:include schemaLocation="sml_ECMA376_4ed_transitional.xsd" />
   
 </xsd:schema>
