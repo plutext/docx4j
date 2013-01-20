@@ -40,9 +40,21 @@ USAGE INSTRUCTIONS
 	Then add the copyright notice:
 	
 	 sed -s -i -f script *.java
+	 
+
+Windowa \Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer sml_root.xsd -d tmp
+ -no-header -target 2.0
+parsing a schema...
+compiling a schema...
+Exception in thread "main" java.lang.IllegalArgumentException: trying to create the same field twice: parent
+	
+Do we blame 2.2.6 for that?	 For now, use 
+
+\Java\jaxb-ri-2.2.6\bin\xjc  sml_root.xsd -d tmp -no-header -target 2.0	
 	
 REVISION HISTORY
 
+2013 01 20 - added @xml:space in shared strings
 2010 09 06 - First compiled and added to docx4j
 
 	 Used &lt;jaxb:property> to resolve several Property xxx is already defined conflicts. 
@@ -64,7 +76,6 @@ REVISION HISTORY
 			</jaxb:schemaBindings>
 		</xsd:appinfo>
   </xsd:annotation>
-
 
   <xsd:include schemaLocation="sml-autoFilter.xsd" />
   <xsd:include schemaLocation="sml-baseTypes.xsd" />

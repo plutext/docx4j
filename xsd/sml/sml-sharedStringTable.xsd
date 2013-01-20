@@ -3,6 +3,9 @@
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
 	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
 
+	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace"
+		schemaLocation="../wml/xml.xsd"/>
+
   <xsd:include schemaLocation="sml-baseTypes.xsd" />
   <xsd:include schemaLocation="sml-styles.xsd" />
   <xsd:element name="sst" type="CT_Sst">
@@ -10,6 +13,26 @@
       <xsd:documentation>Shared String Table</xsd:documentation>
     </xsd:annotation>
   </xsd:element>
+  
+	<xsd:complexType name="CT_Xstring_Whitespace">
+	    <xsd:annotation>
+	      <xsd:documentation>Escaped String</xsd:documentation>
+	    </xsd:annotation>
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute ref="xml:space" use="optional">
+					<xsd:annotation>
+						<xsd:documentation>Content Contains Significant
+							Whitespace</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+  
+  
+  
+  
   <xsd:complexType name="CT_Sst">
     <xsd:sequence>
       <xsd:element name="si" type="CT_Rst" minOccurs="0" maxOccurs="unbounded">
@@ -86,7 +109,7 @@
   </xsd:simpleType>
   <xsd:complexType name="CT_PhoneticRun">
     <xsd:sequence>
-      <xsd:element name="t" type="ST_Xstring" minOccurs="1" maxOccurs="1">
+      <xsd:element name="t" type="CT_Xstring_Whitespace" minOccurs="1" maxOccurs="1">
         <xsd:annotation>
           <xsd:documentation>Text</xsd:documentation>
         </xsd:annotation>
@@ -110,7 +133,7 @@
           <xsd:documentation>Run Properties</xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="t" type="ST_Xstring" minOccurs="1" maxOccurs="1">
+      <xsd:element name="t" type="CT_Xstring_Whitespace" minOccurs="1" maxOccurs="1">
         <xsd:annotation>
           <xsd:documentation>Text</xsd:documentation>
         </xsd:annotation>
@@ -198,7 +221,7 @@
   </xsd:complexType>
   <xsd:complexType name="CT_Rst">
     <xsd:sequence>
-      <xsd:element name="t" type="ST_Xstring" minOccurs="0" maxOccurs="1">
+      <xsd:element name="t" type="CT_Xstring_Whitespace" minOccurs="0" maxOccurs="1">
         <xsd:annotation>
           <xsd:documentation>Text</xsd:documentation>
         </xsd:annotation>
