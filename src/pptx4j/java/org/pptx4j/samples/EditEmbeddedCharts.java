@@ -26,8 +26,10 @@ import org.docx4j.openpackaging.parts.DrawingML.Chart;
 import org.docx4j.openpackaging.parts.SpreadsheetML.WorksheetPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EmbeddedPackagePart;
 import org.docx4j.utils.BufferUtil;
+import org.xlsx4j.sml.CTRst;
 import org.xlsx4j.sml.Cell;
 import org.xlsx4j.sml.Row;
+import org.xlsx4j.sml.STCellType;
 
 /**
  * Simple demonstration of editing charts in a PowerPoint deck
@@ -55,7 +57,6 @@ public class EditEmbeddedCharts
 		String chartPartName = "/ppt/charts/chart1.xml";
 		// .. the xlsx
 		String xlsPartName = "/ppt/embeddings/Microsoft_Excel_Sheet1.xlsx";
-//		String xlsPartName = "/ppt/embeddings/Microsoft_Office_Excel_Worksheet1.xlsx";
 		
 		// Output file
 		String outputfilepath = System.getProperty("user.dir") 
@@ -139,12 +140,14 @@ public class EditEmbeddedCharts
 						if (cell.getR().equals("B2") && cell.getV() != null) {
 							System.out.println("B2 CELL VAL: " + cell.getV());
 							// change the B2 cell value
+							cell.setT(STCellType.STR);
 							cell.setV(firstValue);
 						}
 						else if (cell.getR().equals("B3") && cell.getV() != null) {
 							System.out.println("B3 CELL VAL: " + cell.getV());
 							// Change the B3 cell value
-							cell.setV(secondValue); 
+							cell.setT(STCellType.STR);
+							cell.setV(secondValue);
 						}
 					}					
 				}
@@ -162,8 +165,6 @@ public class EditEmbeddedCharts
 
 		saver.save(baos);
 		epp.setBinaryData(baos.toByteArray());
-
-		ppt.addTargetPart(epp);
 
 		// Write the new file to disk
 		ppt.save(new java.io.File(outputfilepath));
