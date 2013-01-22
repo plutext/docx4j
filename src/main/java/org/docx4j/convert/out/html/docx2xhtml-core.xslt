@@ -19,24 +19,6 @@
               from the definition in an _rels file
               (where it is http://schemas.openxmlformats.org/package/2006/relationships)  -->
 
-<!--  <xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/> -->
-   <!-- Use method="html" if you need IE9 to display quotes properly (it
-   		still doesn't use UTF 8 though!). Chrome works either way. 
-   		NB, with IE9, and XML output, 
-   		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-   		doesn't help.-->
-   		
-<xsl:output method="html" encoding="utf-8" omit-xml-declaration="no" indent="no" 
-doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-      doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/>
-   
-<!--  <xsl:output method="xml" encoding="utf-8" omit-xml-declaration="no" indent="no" 
-doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN"
-      doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"/> -->
-<!--  indent="no" gives a better result for things like subscripts, because it stops
-      the user-agent from replacing a carriage return in the HTML with a space in the output. -->
-<!-- TODO strict dtd -->
-
 
 <xsl:param name="conversionContext"/> <!-- select="'passed in'"-->	
    

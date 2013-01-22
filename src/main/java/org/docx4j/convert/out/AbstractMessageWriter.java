@@ -70,6 +70,8 @@ public abstract class AbstractMessageWriter {
 		String documentFragment = getOutputPrefix() 
 			+ message
 			+ getOutputSuffix();  
+		
+		System.out.println(documentFragment);
 
 		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
 				.newInstance();

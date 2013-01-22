@@ -26,9 +26,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.log4j.Logger;
+import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.ConversionSectionWrappers;
@@ -51,6 +54,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
+import org.xml.sax.InputSource;
 
 /**
  * HtmlExporterNG (now removed - see 
@@ -116,9 +120,19 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	
 	static {
 		try {
-			Source xsltSource = new StreamSource(
-						org.docx4j.utils.ResourceUtils.getResource(
-								"org/docx4j/convert/out/html/docx2xhtmlNG2.xslt"));
+			XmlUtils.getTransformerFactory().setURIResolver(new OutHtmlURIResolver());
+			// TODO FIXME - not thread safe, which would be an issue
+			// if eg PDF output were to implement a URIResolver
+			Source xsltSource; 
+			if (Docx4jProperties.getProperty("docx4j.Convert.Out.HTML.OutputMethodXML", true)){
+				log.info("Outputting well-formed XHTML..");
+				xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils.getResource(
+								"org/docx4j/convert/out/html/docx2xhtml.xslt"));
+			} else {
+				log.info("Outputting HTML tag soup..");
+				xsltSource = new StreamSource(org.docx4j.utils.ResourceUtils.getResource(
+								"org/docx4j/convert/out/html/docx2html.xslt"));				
+			}
 			xslt = XmlUtils.getTransformerTemplate(xsltSource);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -126,6 +140,20 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			e.printStackTrace();
 		}
 	}
+	
+	static class OutHtmlURIResolver implements URIResolver {
+		@Override
+		public Source resolve(String href, String base) throws TransformerException {
+		  try {
+			return new StreamSource(
+						org.docx4j.utils.ResourceUtils.getResource(
+								"org/docx4j/convert/out/html/" + href));
+		} catch (IOException e) {
+			throw new TransformerException(e);
+		}  
+		}
+	}
+	
 	
 	
 	// Implement the interface.  	

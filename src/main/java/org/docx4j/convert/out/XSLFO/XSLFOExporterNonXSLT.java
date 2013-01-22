@@ -1064,12 +1064,12 @@ public class XSLFOExporterNonXSLT {
 		String outputfilepath;		
 
 		inputfilepath = System.getProperty("user.dir")
-				+ "/hlink.docx";
+//				+ "/hlink.docx";
 //		+ "/OpenXML_1ed_Part4.docx";
 //		+ "/sample-docs/word/sample-docx.docx";
 //		+ "/sample-docs/word/2003/word2003-vml.docx";
 //				+ "/table-nested.docx";
-//		+ "/sample-docs/word/headers.docx";
+		+ "/sample-docs/word/headers.docx";
 		
 		WordprocessingMLPackage wmlPackage = WordprocessingMLPackage
 				.load(new java.io.File(inputfilepath));
