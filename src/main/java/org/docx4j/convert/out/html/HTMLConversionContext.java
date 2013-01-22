@@ -49,16 +49,18 @@ public class HTMLConversionContext extends AbstractWmlConversionContext {
 		};
 
 	//The message writer for html	
-	protected static final AbstractMessageWriter HTML_MESSAGE_WRITER = new AbstractMessageWriter() {
-		@Override
-		protected String getOutputSuffix() {
-			return "<div style=\"color:red\" >";
-		}
-		@Override
-		protected String getOutputPrefix() {
-			return "</div>";
-		}
-	};		
+	protected static final AbstractMessageWriter HTML_MESSAGE_WRITER = 
+		new AbstractMessageWriter() {
+		
+			@Override
+			protected String getOutputPrefix() {
+				return "<div style=\"color:red\" >";
+			}
+			@Override
+			protected String getOutputSuffix() {
+				return "</div>";
+			}
+		};		
 	
 	public HTMLConversionContext(HtmlSettings settings, ConversionSectionWrappers conversionSectionWrappers) {
 		super(HTML_MODEL_REGISTRY, HTML_MESSAGE_WRITER, settings, conversionSectionWrappers);
