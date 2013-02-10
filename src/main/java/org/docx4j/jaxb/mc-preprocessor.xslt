@@ -54,9 +54,10 @@
   		</xsl:when>
   		<xsl:otherwise> 
 			<xsl:variable name="logging" 
-				select="java:org.docx4j.utils.XSLTUtils.logWarn('Missing mc:Fallback!  What to do?')" />
-			<!--  Hope for the best.. -->
-  			<xsl:copy-of select="mc:Choice[1]/*"/>
+				select="java:org.docx4j.utils.XSLTUtils.logWarn('Missing mc:Fallback!  Dropping the mc:AlternateContent entirely.')" />
+			<!--   
+  			    <xsl:copy-of select="mc:Choice[1]/*"/>
+  			-->
   		</xsl:otherwise>  		
   	</xsl:choose>    
   </xsl:template>
