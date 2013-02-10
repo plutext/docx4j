@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -982,75 +983,71 @@ public class XHTMLImporter {
 		tcPr.setTcW(tblW);    	
     }
 
-	private void addImage(Element e)  {
-
-		byte[] imageBytes = null;
-		
-		if (e.getAttribute("src").startsWith("data:image" ) ) {
-			// Supports 
-			//   data:[<MIME-type>][;charset=<encoding>][;base64],<data>
-			// eg data:image/png;base64,iVBORw0KGgo...
-			// http://www.greywyvern.com/code/php/binary2base64 is a convenient online encoder
-			String base64String = e.getAttribute("src");
-			int commaPos = base64String.indexOf(",");
-			if (commaPos<6) { // or so ...
-				// .. its broken
-				org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-				currentP.getContent().add(run);        
-
-				org.docx4j.wml.Text  text = Context.getWmlObjectFactory().createText();		
-				text.setValue("[INVALID DATA URI: " + e.getAttribute("src") );
-				
-				run.getContent().add(text);
-				
-			    paraStillEmpty = false;
-			    return;
-			}
-			base64String = base64String.substring( commaPos+1 );
-			System.out.println(base64String);
-			try {
-				imageBytes = Base64.decodeBase64( base64String.getBytes("UTF8") );
-			} catch (UnsupportedEncodingException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}			
-		} else {
-			Docx4jUserAgent docx4jUserAgent = renderer.getDocx4jUserAgent();
-			Docx4JFSImage docx4JFSImage = docx4jUserAgent.getDocx4JImageResource( e.getAttribute("src") );
-			imageBytes = docx4JFSImage.getBytes();			
-		}
-		
-				
-		BinaryPartAbstractImage imagePart;
-		Inline inline = null;
+		private void addImage(Element e) {
+		boolean isError = false;
 		try {
-			
-			imagePart = BinaryPartAbstractImage.createImagePart(
-					wordMLPackage, 
-					imageBytes);
-		    inline = imagePart.createImageInline( null, null, 0, 1, false);
+			byte[] imageBytes = null;
 
-			// Now add the inline in w:p/w:r/w:drawing
-			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-			currentP.getContent().add(run);        
-			org.docx4j.wml.Drawing drawing = Context.getWmlObjectFactory().createDrawing();		
-			run.getContent().add(drawing);		
-			drawing.getAnchorOrInline().add(inline);
-		    
+			if (e.getAttribute("src").startsWith("data:image")) {
+				// Supports 
+				//   data:[<MIME-type>][;charset=<encoding>][;base64],<data>
+				// eg data:image/png;base64,iVBORw0KGgo...
+				// http://www.greywyvern.com/code/php/binary2base64 is a convenient online encoder
+				String base64String = e.getAttribute("src");
+				int commaPos = base64String.indexOf(",");
+				if (commaPos < 6) { // or so ...
+					// .. its broken
+					org.docx4j.wml.R run = Context.getWmlObjectFactory().createR();
+					currentP.getContent().add(run);
+
+					org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
+					text.setValue("[INVALID DATA URI: " + e.getAttribute("src"));
+
+					run.getContent().add(text);
+
+					paraStillEmpty = false;
+					return;
+				}
+				base64String = base64String.substring(commaPos + 1);
+				System.out.println(base64String);
+				imageBytes = Base64.decodeBase64(base64String.getBytes("UTF8"));
+			} else {
+				Docx4jUserAgent docx4jUserAgent = renderer.getDocx4jUserAgent();
+				Docx4JFSImage docx4JFSImage = docx4jUserAgent.getDocx4JImageResource(e.getAttribute("src"));
+				if (docx4JFSImage != null) {// in case of wrong URL - docx4JFSImage will be null
+					imageBytes = docx4JFSImage.getBytes();
+				}
+			}
+			if (imageBytes == null) {
+				isError = true;
+			} else {
+				BinaryPartAbstractImage imagePart = BinaryPartAbstractImage.createImagePart(wordMLPackage, imageBytes);
+				Inline inline = imagePart.createImageInline(null, null, 0, 1, false);
+
+				// Now add the inline in w:p/w:r/w:drawing
+				org.docx4j.wml.R run = Context.getWmlObjectFactory().createR();
+				currentP.getContent().add(run);
+				org.docx4j.wml.Drawing drawing = Context.getWmlObjectFactory().createDrawing();
+				run.getContent().add(drawing);
+				drawing.getAnchorOrInline().add(inline);
+			}
 		} catch (Exception e1) {
+			log.error(MessageFormat.format("Error during image processing: ''{0}'', insert default text.", new Object[] {e.getAttribute("alt")}), e1);
+			isError = true;
+		}
 
-			org.docx4j.wml.R  run = Context.getWmlObjectFactory().createR();		
-			currentP.getContent().add(run);        
+		if (isError) {
+			org.docx4j.wml.R run = Context.getWmlObjectFactory().createR();
+			currentP.getContent().add(run);
 
-			org.docx4j.wml.Text  text = Context.getWmlObjectFactory().createText();		
-			text.setValue("[MISSING IMAGE: " + e.getAttribute("src") );
-			
+			org.docx4j.wml.Text text = Context.getWmlObjectFactory().createText();
+			text.setValue("[MISSING IMAGE: " + e.getAttribute("alt") + " ]");
+
 			run.getContent().add(text);
-		}		        		
-		
-		
-	    paraStillEmpty = false;
-		
+		}
+
+		paraStillEmpty = false;
+
 	}
 
 	private void addNumbering(Element e, Map<String, CSSValue> cssMap) {
