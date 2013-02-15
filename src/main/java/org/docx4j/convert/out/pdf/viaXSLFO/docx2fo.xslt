@@ -730,6 +730,8 @@
         </xsl:choose>
 </xsl:template>
 
+<xsl:template match="w:bookmarkStart[@w:name='_GoBack']" />
+
 <xsl:template match="w:bookmarkEnd" />
 
 

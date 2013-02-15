@@ -625,6 +625,8 @@
   <xsl:template match="w:bookmarkStart">
     <a name="{@w:name}"/>
   </xsl:template>
+  
+<xsl:template match="w:bookmarkStart[@w:name='_GoBack']" />  
    
 <xsl:template match="w:bookmarkEnd" />
 
