@@ -48,6 +48,7 @@ import org.docx4j.wml.CTObject;
 import org.docx4j.wml.FldChar;
 import org.docx4j.wml.Pict;
 import org.docx4j.wml.Comments.Comment;
+import org.docx4j.wml.SdtBlock;
 import org.jvnet.jaxb2_commons.ppp.Child;
 
 
@@ -119,7 +120,13 @@ public class TraversalUtil {
 					
 					// workaround for broken getParent (since 3.0.0)
 					if (o instanceof Child) {
-						((Child)o).setParent(parent);
+						if (parent instanceof SdtBlock) {
+							((Child)o).setParent( ((SdtBlock)parent).getSdtContent().getContent() );
+								// Is that the right semantics for parent object?
+						// TODO: other corrections
+						} else {
+							((Child)o).setParent(parent);
+						}
 					}
 					
 					this.apply(o);

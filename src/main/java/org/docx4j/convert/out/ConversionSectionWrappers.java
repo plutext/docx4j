@@ -22,6 +22,9 @@ package org.docx4j.convert.out;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+import org.docx4j.TraversalUtil.CallbackImpl;
+import org.docx4j.TraversalUtil;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.structure.HeaderFooterPolicy;
 import org.docx4j.model.structure.jaxb.ObjectFactory;
@@ -32,11 +35,14 @@ import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
 import org.docx4j.wml.STPageOrientation;
+import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.SectPr.PgSz;
 import org.w3c.dom.Element;
 
 public class ConversionSectionWrappers {
+	
+	protected static Logger log = Logger.getLogger(ConversionSectionWrappers.class);
 	
 	protected List<ConversionSectionWrapper> conversionSections = null;
 	protected int currentSectionIndex = -1;
@@ -45,6 +51,21 @@ public class ConversionSectionWrappers {
 	protected ConversionSectionWrappers(List<ConversionSectionWrapper> conversionSections) {
 		this.conversionSections = conversionSections;
 	}
+	
+	public static class SdtBlockFinder extends CallbackImpl {
+
+		List<SdtBlock> sdtBlocks = new ArrayList<SdtBlock>();
+		
+		@Override
+		public List<Object> apply(Object o) {
+
+			if (o instanceof SdtBlock) {
+				sdtBlocks.add((SdtBlock)o);
+			}
+			return null;
+		}
+	}
+	
     
 	public static ConversionSectionWrappers build(Document doc, WordprocessingMLPackage wmlPackage) {
 		
@@ -66,6 +87,30 @@ public class ConversionSectionWrappers {
 		// 20130216 Review above comment: !  In the Word UI, the Word "continuous" is shown where it is effective.  
 		// In the XML, it is stored in the next following sectPr.
 
+		// First, remove content controls, 
+		// since the P could be in a content control.
+		// (It is easier to remove content controls, than
+		//  to make the code below TraversalUtil based)
+		SdtBlockFinder sbr = new SdtBlockFinder();
+		new TraversalUtil(doc.getContent(), sbr);
+		for( int i=sbr.sdtBlocks.size()-1 ; i>=0; i--) {
+			// Have to process in reverse order
+			// so that parentList is correct for nested sdt
+			
+			SdtBlock sdtBlock = sbr.sdtBlocks.get(i);
+			List<Object> parentList = null;
+			if (sdtBlock.getParent() instanceof ArrayList) {
+				parentList = (ArrayList)sdtBlock.getParent();
+			} else {
+				log.error("Handle " + sdtBlock.getParent().getClass().getName());
+			}
+			int index = parentList.indexOf(sdtBlock);
+			parentList.remove(index);
+			parentList.addAll(index, sdtBlock.getSdtContent().getContent());				
+		}
+		
+		System.out.println(XmlUtils.marshaltoString(doc, true, true));
+		
 		// Make a list, so it is easy to look at the following sectPr,
 		// which we need to do to handle continuous sections properly
 		List<SectPr> sectPrs = new ArrayList<SectPr>();
@@ -86,8 +131,6 @@ public class ConversionSectionWrappers {
 		for (Object o : doc.getBody().getContent() ) {
 			
 			if (o instanceof org.docx4j.wml.P) {
-				// TODO replace this with a TraversalUtil sectPr finder,
-				// since the P could be in a content control!
 				
 				if (((org.docx4j.wml.P)o).getPPr() != null ) {
 					
