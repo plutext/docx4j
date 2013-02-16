@@ -10,6 +10,7 @@ import org.docx4j.model.structure.jaxb.Sections;
 import org.docx4j.model.structure.jaxb.Sections.Section;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
+import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
 import org.w3c.dom.Element;
 
@@ -28,9 +29,14 @@ public class ConversionSectionWrappers {
 		ConversionSectionWrapper currentSectionWrapper = null;
 		RelationshipsPart rels = wmlPackage.getMainDocumentPart().getRelationshipsPart();
 		HeaderFooterPolicy previousHF = null;
-				
+		BooleanDefaultTrue evenAndOddHeaders = null;				
 		int conversionSectionIndex = 0;
 
+		if ((wmlPackage.getMainDocumentPart().getDocumentSettingsPart() != null) &&
+			(wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement() != null)) {
+			evenAndOddHeaders = wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement().getEvenAndOddHeaders();
+		}
+		
 		//org.docx4j.wml.Document doc = (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
 		for (Object o : doc.getBody().getContent() ) {
 			
@@ -45,11 +51,11 @@ public class ConversionSectionWrappers {
 						if ( ppr.getSectPr().getType()!=null
 								     && ppr.getSectPr().getType().getVal().equals("continuous")) {
 							// In case there are some headers/footers that get inherited by the next section
-							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels);
+							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders);
 							// If its continuous, don't add a section
 						} else {
 							currentSectionWrapper = new ConversionSectionWrapper(
-									ppr.getSectPr(), previousHF, rels, 
+									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders, 
 									"s" + Integer.toString(++conversionSectionIndex), 
 									sectionContent); 
 							conversionSections.add(currentSectionWrapper);
@@ -63,7 +69,7 @@ public class ConversionSectionWrappers {
 		}
 		
 		currentSectionWrapper = new ConversionSectionWrapper(
-				doc.getBody().getSectPr(), previousHF, rels, 
+				doc.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders, 
 				"s" + Integer.toString(++conversionSectionIndex), 
 				sectionContent); 
 		

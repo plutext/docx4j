@@ -25,7 +25,9 @@ limitations under the License.
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.Part;
+import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.HeaderPart;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
@@ -34,6 +36,7 @@ import org.docx4j.wml.CTRel;
 import org.docx4j.wml.FooterReference;
 import org.docx4j.wml.HdrFtrRef;
 import org.docx4j.wml.HeaderReference;
+import org.docx4j.wml.ObjectFactory;
 import org.docx4j.wml.SectPr;
 
 public class HeaderFooterPolicy {
@@ -41,15 +44,22 @@ public class HeaderFooterPolicy {
 	protected static Logger log = Logger.getLogger(HeaderFooterPolicy.class);	
 	
 	private HeaderPart firstHeaderActive;
-	private HeaderPart firstHeaderActual;  // Need this so it can be copied in next section, even if not used in this one
+	private HeaderPart firstHeader;  // Need this so it can be copied in next section, even if not used in this one
 	private FooterPart firstFooterActive;
-	private FooterPart firstFooterActual;
+	private FooterPart firstFooter;
 	
 	private HeaderPart evenHeader;
 	private FooterPart evenFooter;
 	
 	private HeaderPart defaultHeader;
 	private FooterPart defaultFooter;
+
+	//dummyHeader and dummyFooter are only used when evenAndOddHeaders == true.
+	//they should only be used in "read-mode" and never changed
+	//they are not added to the rels
+	private static Object dummyHeaderFooterMutex = new Object();
+	private static HeaderPart dummyHeader;
+	private static FooterPart dummyFooter;
 	
 	/* "same as previous" functionality:
 	 * 
@@ -82,8 +92,8 @@ public class HeaderFooterPolicy {
 	 *  and creates any header and footer objects
 	 *  as required.
 	 */
-	public HeaderFooterPolicy(SectPr sectPr, HeaderFooterPolicy previousHF,
-			RelationshipsPart rels) 
+	public HeaderFooterPolicy(SectPr sectPr, HeaderFooterPolicy previousHF, 
+			RelationshipsPart rels, BooleanDefaultTrue evenAndOddHeaders) 
 //		throws Exception
 		{
 		// Grab what headers and footers have been defined		
@@ -102,9 +112,9 @@ public class HeaderFooterPolicy {
 			setHeaderReferences(hdrFtrRefs, rels, titlePage );
 		} else {
 			// If not, get them from previousHF
-			firstHeaderActual   = previousHF.firstHeaderActual;
+			firstHeader   = previousHF.firstHeader;
 			if (titlePage!=null && titlePage.isVal() ) {
-				firstHeaderActive   = previousHF.firstHeaderActual;
+				firstHeaderActive   = previousHF.firstHeader;
 			}
 			defaultHeader = previousHF.defaultHeader;
 			evenHeader    =  previousHF.evenHeader; 
@@ -115,28 +125,92 @@ public class HeaderFooterPolicy {
 			setFooterReferences(hdrFtrRefs, rels, titlePage );
 		} else {
 			// If not, get them from previousHF
-			firstFooterActual   = previousHF.firstFooterActual;
+			firstFooter   = previousHF.firstFooter;
 			if (titlePage!=null && titlePage.isVal() ) {
-				firstFooterActive   = previousHF.firstFooterActual;
+				firstFooterActive   = previousHF.firstFooter;
 			}
 			defaultFooter = previousHF.defaultFooter;
 			evenFooter    =  previousHF.evenFooter; 
 		}
 		
-		/* If there is an even and odd(default) Header but only a default Footer
-		 * then let the even Footer reference the default Footer.
-		 * Or if there is an even and odd(default) Footer but only a default Header
-		 * then let the even Header reference the default Header.
-		 * In Word the headers and footers are independent, but the xslfo-structure 
-		 * only knows about a simple page (with only default Header/Footers) or an 
-		 * even/odd page (with an even and an odd Header and Footer).
-		 */
-		
-		if ((evenHeader != null) && (defaultHeader != null) && (evenFooter == null)) {
-			evenFooter = defaultFooter;
+		if ((titlePage != null) && (titlePage.isVal())) {
+			if (firstHeaderActive == null) {
+				firstHeaderActive = getDummyHeader();
+			}
+			if (firstFooterActive == null) {
+				firstFooterActive = getDummyFooter();
+			}
 		}
-		else if ((evenFooter != null) && (defaultFooter != null) && (evenHeader == null)) {
-			evenHeader = defaultHeader;
+		
+		if (evenAndOddHeaders != null) {
+			if (evenAndOddHeaders.isVal()) {
+				//If there is only a default/odd header/footer present, then 
+				//the even header/footer is always a dummy empty header/footer
+				if (evenHeader == null) {
+					evenHeader = getDummyHeader();
+				}
+				if (evenFooter == null) {
+					evenFooter = getDummyFooter();
+				}
+			}
+			else {
+				//Any even header/footer will be ignored
+				//As the setting is on the document level it is not necessary to
+				//keep any defined header/footer for inheritance
+				evenHeader = null;
+				evenFooter = null;
+			}
+		}
+		else {
+			/* If there is an even and odd(default) Header but only a default Footer
+			 * then let the even Footer reference the default Footer.
+			 * Or if there is an even and odd(default) Footer but only a default Header
+			 * then let the even Header reference the default Header.
+			 * In Word the headers and footers are independent, but the xslfo-structure 
+			 * only knows about a simple page (with only default Header/Footers) or an 
+			 * even/odd page (with an even and an odd Header and Footer).
+			 */
+			
+			if ((evenHeader != null) && (defaultHeader != null) && (evenFooter == null)) {
+				evenFooter = defaultFooter;
+			}
+			else if ((evenFooter != null) && (defaultFooter != null) && (evenHeader == null)) {
+				evenHeader = defaultHeader;
+			}
+		}
+	}
+
+	private HeaderPart getDummyHeader() {
+		if (dummyHeader == null) {
+			createDummyHeaderFooter();
+		}
+		return dummyHeader;
+	}
+
+	private FooterPart getDummyFooter() {
+		if (dummyFooter == null) {
+			createDummyHeaderFooter();
+		}
+		return dummyFooter;
+	}
+	
+	
+
+	private void createDummyHeaderFooter() {
+		synchronized (dummyHeaderFooterMutex) {
+			if (dummyHeader == null) {
+				ObjectFactory factory = new ObjectFactory();
+				try {
+					dummyHeader = new HeaderPart(new PartName("/word/dummyheader.xml"));
+					dummyFooter = new FooterPart(new PartName("/word/dummyfooter.xml"));
+				} catch (InvalidFormatException e) {
+					//should not happen
+				}
+				dummyHeader.setJaxbElement(factory.createHdr());
+				dummyHeader.getJaxbElement().getContent().add(factory.createP());
+				dummyFooter.setJaxbElement(factory.createFtr());
+				dummyFooter.getJaxbElement().getContent().add(factory.createP());
+			}
 		}
 	}
 
@@ -170,7 +244,7 @@ public class HeaderFooterPolicy {
 				HeaderReference headerReference = (HeaderReference)rel;
 				
 				if (headerReference.getType() == HdrFtrRef.FIRST) {
-					firstHeaderActual = (HeaderPart)part;
+					firstHeader = (HeaderPart)part;
 					if (titlePage!=null && titlePage.isVal()) {
 						log.debug("setting first page header");
 						firstHeaderActive = (HeaderPart)part;
@@ -199,7 +273,7 @@ public class HeaderFooterPolicy {
 				FooterReference footerReference = (FooterReference)rel;
 				
 				if (footerReference.getType() == HdrFtrRef.FIRST) {
-					firstFooterActual = (FooterPart)part;
+					firstFooter = (FooterPart)part;
 					if (titlePage!=null && titlePage.isVal()) {								
 						log.debug("setting first page footer");
 						firstFooterActive = (FooterPart)part;
