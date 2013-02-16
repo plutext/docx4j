@@ -1,3 +1,22 @@
+/*
+   Licensed to Plutext Pty Ltd under one or more contributor license agreements.  
+   
+ *  This file is part of docx4j.
+
+    docx4j is licensed under the Apache License, Version 2.0 (the "License"); 
+    you may not use this file except in compliance with the License. 
+
+    You may obtain a copy of the License at 
+
+        http://www.apache.org/licenses/LICENSE-2.0 
+
+    Unless required by applicable law or agreed to in writing, software 
+    distributed under the License is distributed on an "AS IS" BASIS, 
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+    See the License for the specific language governing permissions and 
+    limitations under the License.
+
+ */
 package org.docx4j.convert.out;
 
 import java.util.ArrayList;
@@ -12,9 +31,13 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.Document;
+import org.docx4j.wml.STPageOrientation;
+import org.docx4j.wml.SectPr;
+import org.docx4j.wml.SectPr.PgSz;
 import org.w3c.dom.Element;
 
 public class ConversionSectionWrappers {
+	
 	protected List<ConversionSectionWrapper> conversionSections = null;
 	protected int currentSectionIndex = -1;
 	protected ConversionSectionWrapper currentSection = null;
@@ -24,6 +47,7 @@ public class ConversionSectionWrappers {
 	}
     
 	public static ConversionSectionWrappers build(Document doc, WordprocessingMLPackage wmlPackage) {
+		
 		List<ConversionSectionWrapper> conversionSections = new ArrayList<ConversionSectionWrapper>();
 		List<Object> sectionContent = new ArrayList<Object>();
 		ConversionSectionWrapper currentSectionWrapper = null;
@@ -37,22 +61,88 @@ public class ConversionSectionWrappers {
 			evenAndOddHeaders = wmlPackage.getMainDocumentPart().getDocumentSettingsPart().getJaxbElement().getEvenAndOddHeaders();
 		}
 		
-		//org.docx4j.wml.Document doc = (org.docx4j.wml.Document)wordMLPackage.getMainDocumentPart().getJaxbElement();
+		// According to the ECMA-376 2ed, if type is not specified, read it as next page
+		// However Word 2007 sometimes treats it as continuous, and sometimes doesn't??	
+		// 20130216 Review above comment: !  In the Word UI, the Word "continuous" is shown where it is effective.  
+		// In the XML, it is stored in the next following sectPr.
+
+		// Make a list, so it is easy to look at the following sectPr,
+		// which we need to do to handle continuous sections properly
+		List<SectPr> sectPrs = new ArrayList<SectPr>();
 		for (Object o : doc.getBody().getContent() ) {
 			
 			if (o instanceof org.docx4j.wml.P) {
 				if (((org.docx4j.wml.P)o).getPPr() != null ) {
 					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
 					if (ppr.getSectPr()!=null) {
+						sectPrs.add(ppr.getSectPr());
+					}
+				}				
+			} 
+		}
+		sectPrs.add(doc.getBody().getSectPr());
+		
+		int sectPrIndex = 0; // includes continuous ones
+		for (Object o : doc.getBody().getContent() ) {
+			
+			if (o instanceof org.docx4j.wml.P) {
+				// TODO replace this with a TraversalUtil sectPr finder,
+				// since the P could be in a content control!
+				
+				if (((org.docx4j.wml.P)o).getPPr() != null ) {
+					
+					org.docx4j.wml.PPr ppr = ((org.docx4j.wml.P)o).getPPr();
+					if (ppr.getSectPr()!=null) {
 
-						// According to the ECMA-376 2ed, if type is not specified, read it as next page
-						// However Word 2007 sometimes treats it as continuous, and sometimes doesn't??						
+						// If the *following* section is continuous, don't add *this* section
+						boolean ignoreThisSection = false;
+						SectPr followingSectPr = sectPrs.get(++sectPrIndex);
+						if ( followingSectPr.getType()!=null
+								     && followingSectPr.getType().getVal().equals("continuous")) {
+							
+							ignoreThisSection = true;
+							
+							// If the w:pgSz on the two sections differs, 
+							// then Word inserts a page break (ie doesn't treat it as continuous).
+							// If no w:pgSz element is present, then Word defaults
+							// (presumably to Legal? TODO CHECK. There is no default setting in the docx).
+							// Word always inserts a w:pgSz element?
+
+							PgSz pgSzThis = ppr.getSectPr().getPgSz();
+							PgSz pgSzNext = followingSectPr.getPgSz();
+							
+							if (pgSzThis!=null && pgSzNext!=null) {
+								
+								if (pgSzThis.getH().compareTo(pgSzNext.getH())!=0) {
+									ignoreThisSection = false;
+								}
+								if (pgSzThis.getW().compareTo(pgSzNext.getW())!=0) {
+									ignoreThisSection = false;
+								}
+								
+								// Orientation:default is portrait
+								boolean portraitThis = true;
+								if (pgSzThis.getOrient()!=null) {
+									portraitThis=pgSzThis.getOrient().equals(STPageOrientation.PORTRAIT);
+								}
+								boolean portraitNext = true;
+								if (pgSzNext.getOrient()!=null) {
+									portraitNext=pgSzNext.getOrient().equals(STPageOrientation.PORTRAIT);
+								}
+								if (portraitThis!=portraitNext) {
+									ignoreThisSection = false;									
+								}
+								
+							}
+							// TODO: handle cases where one or both pgSz elements are missing,
+							// or H or W is missing.
+							// Treat pgSz element missing as Legal size?
+						} 
 						
-						if ( ppr.getSectPr().getType()!=null
-								     && ppr.getSectPr().getType().getVal().equals("continuous")) {
+						if (ignoreThisSection) {
 							// In case there are some headers/footers that get inherited by the next section
 							previousHF = new HeaderFooterPolicy(ppr.getSectPr(), previousHF, rels, evenAndOddHeaders);
-							// If its continuous, don't add a section
+							
 						} else {
 							currentSectionWrapper = new ConversionSectionWrapper(
 									ppr.getSectPr(), previousHF, rels, evenAndOddHeaders, 
@@ -61,24 +151,28 @@ public class ConversionSectionWrappers {
 							conversionSections.add(currentSectionWrapper);
 							previousHF = currentSectionWrapper.getHeaderFooterPolicy();
 							sectionContent = new ArrayList<Object>();
+							
 						}
 					}
 				}				
 			} 
 			sectionContent.add(o);
+			System.out.println(XmlUtils.marshaltoString(o, true));
 		}
 		
 		currentSectionWrapper = new ConversionSectionWrapper(
 				doc.getBody().getSectPr(), previousHF, rels, evenAndOddHeaders, 
 				"s" + Integer.toString(++conversionSectionIndex), 
-				sectionContent); 
-		
+				sectionContent); 		
 		conversionSections.add(currentSectionWrapper);
+
+		
 		return new ConversionSectionWrappers(conversionSections);				
 	}
 
 	public Sections createSections() {
-	ObjectFactory factory = new ObjectFactory();
+		
+		ObjectFactory factory = new ObjectFactory();
 		
 		Sections ret = factory.createSections();
 		for (int i=0; i<conversionSections.size(); i++) {
@@ -88,7 +182,8 @@ public class ConversionSectionWrappers {
 	}
     
 	private Section createSection(ObjectFactory factory, ConversionSectionWrapper conversionSectionWrapper) {
-	Section ret = factory.createSectionsSection();
+		
+		Section ret = factory.createSectionsSection();
 		ret.setName(conversionSectionWrapper.getId());
 		for (int i=0; i<conversionSectionWrapper.getContent().size(); i++) {
 			// TODO: since the section model knows nothing about WML,
@@ -142,6 +237,7 @@ public class ConversionSectionWrappers {
 	}
 	
 	public void next() {
+		
 		currentSectionIndex++;
 		currentSection = null;
 		if ((currentSectionIndex >= 0) && (currentSectionIndex < conversionSections.size())) {
@@ -151,6 +247,7 @@ public class ConversionSectionWrappers {
 	}
 	
 	public ConversionSectionWrapper getCurrentSection() {
+		
 		if (currentSection != null) 
 			return currentSection;
 		if (currentSectionIndex < 0) {
