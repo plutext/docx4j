@@ -20,6 +20,7 @@
 package org.docx4j.convert.out;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -38,6 +39,7 @@ import org.docx4j.wml.STPageOrientation;
 import org.docx4j.wml.SdtBlock;
 import org.docx4j.wml.SectPr;
 import org.docx4j.wml.SectPr.PgSz;
+import org.jvnet.jaxb2_commons.ppp.Child;
 import org.w3c.dom.Element;
 
 public class ConversionSectionWrappers {
@@ -56,14 +58,72 @@ public class ConversionSectionWrappers {
 
 		List<SdtBlock> sdtBlocks = new ArrayList<SdtBlock>();
 		
+		// Need a stack of these; only if we encounter a sectPr,
+		// then copy contents of stack to list we remove.
+		LinkedList<SdtBlock> ll = new LinkedList<SdtBlock>();
+		
 		@Override
 		public List<Object> apply(Object o) {
-
-			if (o instanceof SdtBlock) {
-				sdtBlocks.add((SdtBlock)o);
+			
+			if (o instanceof org.docx4j.wml.P
+				&& ((org.docx4j.wml.P)o).getPPr() != null 
+				&& ((org.docx4j.wml.P)o).getPPr().getSectPr() != null ) {
+				
+				// this sdt contains a sectPr, so add it
+				// and all its ancestor sdts to the ones we need to delete
+				
+				for (SdtBlock sdt : ll) {
+					if (!sdtBlocks.contains(sdt) ) {
+						sdtBlocks.add((SdtBlock)sdt);
+					}
+				}
+				
 			}
+
 			return null;
 		}
+		
+		public void walkJAXBElements(Object parent) {
+			
+			List children = getChildren(parent);
+			if (children != null) {
+
+				for (Object o : children) {
+					
+					// if its wrapped in javax.xml.bind.JAXBElement, get its
+					// value; this is ok, provided the results of the Callback
+					// won't be marshalled
+					o = XmlUtils.unwrap(o);
+					
+					// workaround for broken getParent (since 3.0.0)
+					if (o instanceof Child) {
+						if (parent instanceof SdtBlock) {
+							((Child)o).setParent( ((SdtBlock)parent).getSdtContent().getContent() );
+								// Is that the right semantics for parent object?
+						// TODO: other corrections
+						} else {
+							((Child)o).setParent(parent);
+						}
+					}
+					
+					this.apply(o);
+					
+					if (o instanceof SdtBlock) {
+						ll.addLast((SdtBlock)o);
+					}
+
+					if (this.shouldTraverse(o)) {
+						walkJAXBElements(o);
+					}
+
+					if (o instanceof SdtBlock) {
+						ll.removeLast();
+					}
+					
+				}
+			}
+		}
+		
 	}
 	
     
@@ -91,6 +151,9 @@ public class ConversionSectionWrappers {
 		// since the P could be in a content control.
 		// (It is easier to remove content controls, than
 		//  to make the code below TraversalUtil based)
+		// RemovalHandler is an XSLT-based way of doing this,
+		// but here we avoid introducing a dependency on
+		// XSLT (Xalan) for PDF output.
 		SdtBlockFinder sbr = new SdtBlockFinder();
 		new TraversalUtil(doc.getContent(), sbr);
 		for( int i=sbr.sdtBlocks.size()-1 ; i>=0; i--) {
