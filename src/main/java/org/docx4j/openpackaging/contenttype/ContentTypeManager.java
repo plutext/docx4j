@@ -237,25 +237,65 @@ public class ContentTypeManager  {
 
 	/* Given a content type, return the Part Name URI is it
 	 * overridden by.
-	 */ 
+	 * @DEPRECATED
+	 */
 	public URI getPartNameOverridenByContentType(String contentType) {
-		
+
 		// hmm, can there only be one instance of a given
 		// content type?
-		
+
+		log.debug("getPartNameOverridenByContentType: " + contentType);
 		Iterator i = overrideContentType.entrySet().iterator();
 		while (i.hasNext()) {
 			Map.Entry e = (Map.Entry)i.next();
 			if (e != null) {
-				log.debug("Inspecting " + e.getValue());
+				log.debug("Inspecting " + ((CTOverride) e.getValue()).getContentType());
 				if ( ((CTOverride)e.getValue()).getContentType().equals(contentType) ) {
 					log.debug("Matched!");
 					return (URI)e.getKey(); 
 				}
 			} 
-		} 		
+		}
 		return null;
-		
+	}
+
+	/**
+	 * Given a content type, return the Part Name URI is it
+	 * overridden by or the default specified by any file extension
+	 */
+	public URI getPartNameByContentType(String contentType) {
+
+		// hmm, can there only be one instance of a given
+		// content type?
+
+		Iterator i = overrideContentType.entrySet().iterator();
+		while (i.hasNext()) {
+			Map.Entry e = (Map.Entry)i.next();
+			if (e != null) {
+				log.debug("Inspecting " + ((CTOverride) e.getValue()).getContentType());
+				if ( ((CTOverride)e.getValue()).getContentType().equals(contentType) ) {
+					log.debug("Matched!");
+					return (URI)e.getKey(); 
+				}
+			}
+		}
+		i = defaultContentType.entrySet().iterator();
+		while (i.hasNext()) {
+			Map.Entry e = (Map.Entry)i.next();
+			if (e != null) {
+				log.debug("Inspecting " + ((CTDefault) e.getValue()).getContentType());
+				if ( ((CTDefault)e.getValue()).getContentType().equals(contentType) ) {
+					log.debug("Matched!");
+					try {
+						return new URI((String)e.getKey());
+					} catch (java.net.URISyntaxException ex) {
+						log.debug("URI Syntax exception: "+ e.getKey());
+						//continue;
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	/* Return a part of the appropriate sub class */
@@ -805,28 +845,28 @@ public class ContentTypeManager  {
 		
 		  
 		
-		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
-				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) != null ) {
+		if (getPartNameByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
+				|| getPartNameByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
+				|| getPartNameByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
+				|| getPartNameByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) != null ) {
 			log.info("Detected WordProcessingML package ");
 			p = new WordprocessingMLPackage(this);
 			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_MAIN) != null
-				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_TEMPLATE) != null
-				|| getPartNameOverridenByContentType(ContentTypes.PRESENTATIONML_SLIDESHOW) != null) {
+		} else if (getPartNameByContentType(ContentTypes.PRESENTATIONML_MAIN) != null
+				|| getPartNameByContentType(ContentTypes.PRESENTATIONML_TEMPLATE) != null
+				|| getPartNameByContentType(ContentTypes.PRESENTATIONML_SLIDESHOW) != null) {
 			log.info("Detected PresentationMLPackage package ");
 			p = new PresentationMLPackage(this);
 			return p;
-		} else if (getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE) != null
-				|| getPartNameOverridenByContentType(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) != null) {
+		} else if (getPartNameByContentType(ContentTypes.SPREADSHEETML_WORKBOOK) != null
+				|| getPartNameByContentType(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) != null
+				|| getPartNameByContentType(ContentTypes.SPREADSHEETML_TEMPLATE) != null
+				|| getPartNameByContentType(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) != null) {
 			//  "xlam", "xlsb" ?
 			log.info("Detected SpreadhseetMLPackage package ");
 			p = new SpreadsheetMLPackage(this);
 			return p;			
-		} else if (getPartNameOverridenByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
+		} else if (getPartNameByContentType(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) != null) {
 			log.info("Detected Glox file ");
 			p = new GloxPackage(this);
 			return p;						
