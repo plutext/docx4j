@@ -64,6 +64,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart;
 import org.docx4j.relationships.Relationship;
+import org.pptx4j.pml.Presentation.SldSz;
 
 public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
@@ -956,6 +957,8 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 	
 	
 	public static class CxCy {
+
+		private static final int EMU_RATIO = 914400;
 		
 		long cx;
 
@@ -1027,6 +1030,63 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 			return new CxCy(cx, cy, scaled);
 			
 			
+		}
+		
+		public static CxCy scale(ImageInfo imageInfo, SldSz sldSz) {
+			ImageSize size = imageInfo.getSize();
+			double iwEmu = toEmu(size.getWidthPx(), size.getDpiHorizontal());
+			double ihEmu = toEmu(size.getHeightPx(), size.getDpiVertical());
+			double swEmu = sldSz.getCx();
+			double shEmu = sldSz.getCy();
+		
+			return scaleToFit(iwEmu, ihEmu, swEmu, shEmu);
+		}
+		
+		private static double toEmu(double widthPx, double dpi) {
+			return widthPx * EMU_RATIO / dpi;
+		}
+		
+		/**
+		 * 
+		 * @param iwEmu image width in EMU
+		 * @param ihEmu image height in EMU
+		 * @param swEmu slide width in EMU
+		 * @param shEmu slide height in EMU
+		 * @return
+		 */
+		public static CxCy scaleToFit(double iwEmu, double ihEmu, double swEmu, double shEmu) {
+			double ir = iwEmu / ihEmu;
+			double sr = swEmu / shEmu;
+			double xr = Math.max( iwEmu/swEmu, ihEmu/shEmu);
+
+			double cx;
+			double cy;
+			boolean scaled;
+
+			if(xr <= 1) {
+				log.debug("Scaling image - not necessary");
+
+				scaled = false;
+				cx = iwEmu;
+				cy = ihEmu;
+			} else if (sr > ir) {
+				log.debug("Scaling image to fit width");
+
+				scaled = true;
+				cx = iwEmu * shEmu / ihEmu;
+				cy = shEmu;
+			} else {
+				log.debug("Scaling image to fit height");
+
+				scaled = true;
+				cx = swEmu;
+				cy = ihEmu * swEmu / iwEmu;
+			}
+
+			log.trace(String.format("iw: %4.1f; ih: %4.1f; sw: %4.1f; sh: %4.1f; ir: %4.1f; sr: %4.1f; xr: %4.1f; cx: %4.1f; cy: %4.1f", iwEmu, ihEmu, swEmu, shEmu, ir, sr, xr, cx, cy));
+
+			return new CxCy(Math.round(cx), Math.round(cy), scaled);
+
 		}
 	}
 

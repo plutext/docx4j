@@ -45,6 +45,7 @@ import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.ThemePart;
 import org.docx4j.openpackaging.parts.PresentationML.MainPresentationPart;
+import org.docx4j.openpackaging.parts.PresentationML.NotesSlidePart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideLayoutPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlideMasterPart;
 import org.docx4j.openpackaging.parts.PresentationML.SlidePart;
@@ -237,6 +238,28 @@ public class PresentationMLPackage  extends OpcPackage {
 		
 		return slidePart;
 	}
+  
+	/**
+	 * Create a notes slide and add it to slide relationships
+	 * 
+	 * @param sourcePart
+	 * @param partName
+	 * @return the notes slide
+	 * @throws InvalidFormatException
+	 * @throws JAXBException
+	 */
+	public static NotesSlidePart createNotesSlidePart(Part sourcePart, PartName partName) throws Exception {
+
+        String proposedRelId = sourcePart.getRelationshipsPart().getNextId();
+
+        NotesSlidePart notesSlidePart = new NotesSlidePart(partName);
+
+        notesSlidePart.getSourceRelationships().add(sourcePart.addTargetPart(notesSlidePart, proposedRelId));
+        notesSlidePart.setJaxbElement(NotesSlidePart.createNotes());
+
+        return notesSlidePart;
+
+    }
 	
 	
 	private static String SAMPLE_SHAPE = 			
