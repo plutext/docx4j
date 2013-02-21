@@ -788,23 +788,17 @@ public class ContentTypeManager  {
 		/*
 		 * How do we know what type of Package this is?
 		 * 
-		 * In principle, either:
-		 * 
-		 * 1. We were told its file extension or mime type in the
-		 * constructor/method parameters, or
-		 * 
-		 * 2. Because [Content_Types].xml contains an override for PartName
+		 * Because [Content_Types].xml contains an entry for PartName
 		 * /document.xml of content type
 		 * application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml
-		 * 
-		 * The latter approach is more reliable, so ..
+		 * or equivalent for pptx, xlsx.		 * The latter approach is more reliable, so ..
 		 * 
 		 */
 // debugPrint(ctmDocument);
 		OpcPackage p;
 		
 		  
-		
+		// Check overrides first
 		if (getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT) != null
 				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) != null
 				|| getPartNameOverridenByContentType(ContentTypes.WORDPROCESSINGML_TEMPLATE ) != null
@@ -830,13 +824,48 @@ public class ContentTypeManager  {
 			log.info("Detected Glox file ");
 			p = new GloxPackage(this);
 			return p;						
-		} else {
-			throw new InvalidFormatException("Unexpected package (docx4j supports docx/docxm and pptx only");
+		} 
+		
+		// Check defaults; POI apparently writes something like:
+		// <Default Extension="xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+		// See http://stackoverflow.com/questions/15007550/dox4j-cannot-read-poi-saved-files-who-is-at-fault
+		// and https://github.com/plutext/docx4j/issues/46
+		String defaultContentTypeForXML = this.defaultContentType.get("xml").getContentType();
+		if (defaultContentTypeForXML!=null) {
+			if (defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT)
+					|| defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_DOCUMENT_MACROENABLED) 
+					|| defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE ) 
+					|| defaultContentTypeForXML.equals(ContentTypes.WORDPROCESSINGML_TEMPLATE_MACROENABLED) ) {
+				log.info("Detected WordProcessingML package ");
+				p = new WordprocessingMLPackage(this);
+				return p;
+			} else if (defaultContentTypeForXML.equals(ContentTypes.PRESENTATIONML_MAIN)
+					|| defaultContentTypeForXML.equals(ContentTypes.PRESENTATIONML_TEMPLATE) 
+					|| defaultContentTypeForXML.equals(ContentTypes.PRESENTATIONML_SLIDESHOW) ) {
+				log.info("Detected PresentationMLPackage package ");
+				p = new PresentationMLPackage(this);
+				return p;
+			} else if (defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_WORKBOOK) 
+					|| defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_WORKBOOK_MACROENABLED) 
+					|| defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_TEMPLATE) 
+					|| defaultContentTypeForXML.equals(ContentTypes.SPREADSHEETML_TEMPLATE_MACROENABLED) ) {
+				//  "xlam", "xlsb" ?
+				log.info("Detected SpreadhseetMLPackage package ");
+				p = new SpreadsheetMLPackage(this);
+				return p;			
+			} else if (defaultContentTypeForXML.equals(ContentTypes.DRAWINGML_DIAGRAM_LAYOUT) ) {
+				log.info("Detected Glox file ");
+				p = new GloxPackage(this);
+				return p;						
+			} 
+		}
+				
+		// Nothing in overrides or defaults
+		throw new InvalidFormatException("Couldn't identify package from " + toString());
 //			log.warn("No part in [Content_Types].xml for content type"
 //					+ ContentTypes.WORDPROCESSINGML_DOCUMENT);
 //			// TODO - what content type in this case?
 //			return new Package(this);
-		}
 	}
 
 	/*
