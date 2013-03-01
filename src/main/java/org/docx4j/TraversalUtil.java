@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.docx4j.dml.CTHyperlink;
 import org.docx4j.dml.CTNonVisualDrawingProps;
 import org.docx4j.dml.diagram.CTDataModel;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.CommentsPart;
 import org.docx4j.openpackaging.parts.WordprocessingML.EndnotesPart;
@@ -46,7 +47,9 @@ import org.docx4j.wml.Body;
 import org.docx4j.wml.CTFtnEdn;
 import org.docx4j.wml.CTObject;
 import org.docx4j.wml.FldChar;
+import org.docx4j.wml.P;
 import org.docx4j.wml.Pict;
+import org.docx4j.wml.SdtContentBlock;
 import org.docx4j.wml.Comments.Comment;
 import org.docx4j.wml.SdtBlock;
 import org.jvnet.jaxb2_commons.ppp.Child;
@@ -121,8 +124,32 @@ public class TraversalUtil {
 					// workaround for broken getParent (since 3.0.0)
 					if (o instanceof Child) {
 						if (parent instanceof SdtBlock) {
-							((Child)o).setParent( ((SdtBlock)parent).getSdtContent().getContent() );
-								// Is that the right semantics for parent object?
+							((Child)o).setParent( ((SdtBlock)parent).getSdtContent() );
+								/*
+								 * getParent on eg a P in a SdtBlock should return SdtContentBlock, as
+								 * illustrated by the following code:
+								 * 
+										SdtBlock sdtBloc = Context.getWmlObjectFactory().createSdtBlock();
+										SdtContentBlock sdtContentBloc = Context.getWmlObjectFactory().createSdtContentBlock();
+										sdtBloc.setSdtContent(sdtContentBloc);
+										P p = Context.getWmlObjectFactory().createP();
+										sdtContentBloc.getContent().add(p);
+										String result = XmlUtils.marshaltoString(sdtBloc, true);
+										System.out.println(result);
+										SdtBlock rtp = (SdtBlock)XmlUtils.unmarshalString(result, Context.jc, SdtBlock.class);
+										P rtr = (P)rtp.getSdtContent().getContent().get(0);
+										System.out.println(rtr.getParent().getClass().getName() );
+								 * 
+								 * Similarly, P is the parent of R; the p.getContent() list is not the parent
+								 * 
+										P p = Context.getWmlObjectFactory().createP();
+										R r = Context.getWmlObjectFactory().createR();
+										p.getContent().add(r);
+										String result = XmlUtils.marshaltoString(p, true);
+										P rtp = (P)XmlUtils.unmarshalString(result);
+										R rtr = (R)rtp.getContent().get(0);
+										System.out.println(rtr.getParent().getClass().getName() );
+								 */
 						// TODO: other corrections
 						} else {
 							((Child)o).setParent(parent);
