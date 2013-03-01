@@ -368,14 +368,22 @@ public class MailMerger {
 						|| r.getType().equals(Namespaces.FOOTER)) {
 					
 					JaxbXmlPart part = (JaxbXmlPart)rp.getPart(r);
+
+					log.debug("\n\n BEFORE " + part.getPartName().getName() + "\n\n"
+							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
 					
 					FieldsPreprocessor.complexifyFields(part );
+					
+					log.debug("\n\n COMPLEXIFIED " + part.getPartName().getName() + "\n\n"
+							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
+					
 					List<Object> results = performOnInstance(
 							((ContentAccessor)part).getContent(), data );
 					((ContentAccessor)part).getContent().clear();
 					((ContentAccessor)part).getContent().addAll(results);
 					
-					System.out.println(XmlUtils.marshaltoString(part.getJaxbElement(), true));
+					log.debug("\n\n AFTER " + part.getPartName().getName() + "\n\n"
+							+ XmlUtils.marshaltoString(part.getJaxbElement(), true, true) + "\n");
 					
 				}			
 			}		
@@ -431,10 +439,20 @@ public class MailMerger {
 		// canonicalise and setup fieldRefs 
 		List<FieldRef> fieldRefs = new ArrayList<FieldRef>();
 		for( P p : fl.getStarts() ) {
-			int index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
-			P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-			System.out.println("NewP length: " + newP.getContent().size() );
-			((ContentAccessor)p.getParent()).getContent().set(index, newP);
+			int index;
+			if (p.getParent() instanceof ContentAccessor) {
+				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
+				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+				log.debug("NewP length: " + newP.getContent().size() );
+				((ContentAccessor)p.getParent()).getContent().set(index, newP);
+//			} else if (p.getParent() instanceof java.util.List) {
+//				index = ((java.util.List)p.getParent()).indexOf(p);
+//				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
+//				log.debug("NewP length: " + newP.getContent().size() );
+//				((java.util.List)p.getParent()).set(index, newP);				
+			} else {
+				throw new Docx4JException ("Unexpected parent: " + p.getParent().getClass().getName() );
+			}
 		}
 		
 		// Populate
