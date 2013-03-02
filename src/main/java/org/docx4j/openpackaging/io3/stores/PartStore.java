@@ -49,7 +49,7 @@ public interface PartStore {
 	 *   part store, unless it has fetched (in which
 	 *   case it is that part's bytebuffer)
 	 *      
-	 * - for any other part (including BinaryPart,
+	 * - for any other part (including
 	 *   CustomXmlDataStoragePart, XmlPart), 
 	 *   as contained in that part.
 	 * 
