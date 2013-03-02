@@ -443,7 +443,7 @@ public class MailMerger {
 			if (p.getParent() instanceof ContentAccessor) {
 				index = ((ContentAccessor)p.getParent()).getContent().indexOf(p);
 				P newP = FieldsPreprocessor.canonicalise(p, fieldRefs);
-				log.debug("NewP length: " + newP.getContent().size() );
+//				log.debug("NewP length: " + newP.getContent().size() );
 				((ContentAccessor)p.getParent()).getContent().set(index, newP);
 //			} else if (p.getParent() instanceof java.util.List) {
 //				index = ((java.util.List)p.getParent()).indexOf(p);
