@@ -106,6 +106,9 @@
 		<contributor>
 			<name>y.rolland</name>
 		</contributor>
+		<contributor>
+			<name>denys.zhosan</name>
+		</contributor>
 	</contributors>
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
@@ -400,7 +403,7 @@
 		<dependency>
 			<groupId>org.docx4j</groupId>
 			<artifactId>xhtmlrenderer</artifactId><!--  supports xhtml import -->
-			<version>1.0.0</version>
+			<version>1.0.1-SNAPSHOT</version> 
 			<!-- currently itext is required (fonts for width calculations)
 				<exclusions>
 					<exclusion>
