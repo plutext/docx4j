@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+Version 2.8.1.1
+===============
+
+2 March 2013
+
+- FieldsPreprocessor canonicalise retain pPr
+
+
 Version 2.8.1
 =============
 
