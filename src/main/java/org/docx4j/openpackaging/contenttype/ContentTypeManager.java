@@ -791,7 +791,7 @@ public class ContentTypeManager  {
 		 * Because [Content_Types].xml contains an entry for PartName
 		 * /document.xml of content type
 		 * application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml
-		 * or equivalent for pptx, xlsx.		 * The latter approach is more reliable, so ..
+		 * or equivalent for pptx, xlsx.	
 		 * 
 		 */
 // debugPrint(ctmDocument);
