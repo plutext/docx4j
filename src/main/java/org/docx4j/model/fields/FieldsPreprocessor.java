@@ -122,6 +122,7 @@ public class FieldsPreprocessor {
 		// TODO merge adjacent instrText elements
 
 		P newP = Context.getWmlObjectFactory().createP();
+		newP.setPPr(p.getPPr());
 		
 		int depth = 0;
 		R newR = Context.getWmlObjectFactory().createR();
@@ -147,12 +148,15 @@ public class FieldsPreprocessor {
 						depth++;
 						if (depth==1 ) { 
 						
+// CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
+// comments out:							
+							
 							// Add any content the run contains before the BEGIN
-							if (newR.getContent().size()>0) {
-								newP.getContent().add(newR);
-								
-								newR.setRPr(existingRun.getRPr() ); // if any
-							}
+//							if (newR.getContent().size()>0) {
+//								newP.getContent().add(newR);
+//
+//								newR.setRPr(existingRun.getRPr() ); // if any
+//							}
 
 							newR = Context.getWmlObjectFactory().createR();
 							newR.getContent().add(o2);
@@ -233,9 +237,14 @@ public class FieldsPreprocessor {
 						newR.setRPr(fieldRPr);
 						
 					} else {
-						newR.getContent().add(o2);													
-					}
-					
+						newR.getContent().add(o2);
+
+// CONTRIB https://github.com/meletis/docx4j/commit/85455e6815b7b8eb73142a1821add3a39087c70e
+// adds:							
+						newR.setRPr(existingRun.getRPr());
+			            newP.getContent().add(newR);
+			            newR = Context.getWmlObjectFactory().createR();
+          }
 				}
 				
 			} else {
