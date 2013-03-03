@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -50,6 +50,7 @@ import javax.xml.bind.annotation.XmlType;
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                           &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                           &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -59,6 +60,7 @@ import javax.xml.bind.annotation.XmlType;
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                           &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                           &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -68,6 +70,7 @@ import javax.xml.bind.annotation.XmlType;
  *                       &lt;complexContent>
  *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *                           &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                           &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                         &lt;/restriction>
  *                       &lt;/complexContent>
  *                     &lt;/complexType>
@@ -75,6 +78,7 @@ import javax.xml.bind.annotation.XmlType;
  *                 &lt;/sequence>
  *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *                 &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
  *                 &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *                 &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *                 &lt;attribute name="secondary" type="{http://www.w3.org/2001/XMLSchema}boolean" />
@@ -145,6 +149,7 @@ public class MicrosoftFonts {
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *                 &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -154,6 +159,7 @@ public class MicrosoftFonts {
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *                 &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -163,6 +169,7 @@ public class MicrosoftFonts {
      *             &lt;complexContent>
      *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
      *                 &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *                 &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
      *               &lt;/restriction>
      *             &lt;/complexContent>
      *           &lt;/complexType>
@@ -170,6 +177,7 @@ public class MicrosoftFonts {
      *       &lt;/sequence>
      *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+     *       &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
      *       &lt;attribute name="coreWebFont" type="{http://www.w3.org/2001/XMLSchema}boolean" />
      *       &lt;attribute name="clearTypeCollection" type="{http://www.w3.org/2001/XMLSchema}boolean" />
      *       &lt;attribute name="secondary" type="{http://www.w3.org/2001/XMLSchema}boolean" />
@@ -191,15 +199,17 @@ public class MicrosoftFonts {
         protected MicrosoftFonts.Font.Bold bold;
         protected MicrosoftFonts.Font.Italic italic;
         protected MicrosoftFonts.Font.Bolditalic bolditalic;
-        @XmlAttribute(required = true)
+        @XmlAttribute(name = "name", required = true)
         protected String name;
-        @XmlAttribute(required = true)
+        @XmlAttribute(name = "filename", required = true)
         protected String filename;
-        @XmlAttribute
+        @XmlAttribute(name = "mac")
+        protected String mac;
+        @XmlAttribute(name = "coreWebFont")
         protected Boolean coreWebFont;
-        @XmlAttribute
+        @XmlAttribute(name = "clearTypeCollection")
         protected Boolean clearTypeCollection;
-        @XmlAttribute
+        @XmlAttribute(name = "secondary")
         protected Boolean secondary;
 
         /**
@@ -323,6 +333,30 @@ public class MicrosoftFonts {
         }
 
         /**
+         * Gets the value of the mac property.
+         * 
+         * @return
+         *     possible object is
+         *     {@link String }
+         *     
+         */
+        public String getMac() {
+            return mac;
+        }
+
+        /**
+         * Sets the value of the mac property.
+         * 
+         * @param value
+         *     allowed object is
+         *     {@link String }
+         *     
+         */
+        public void setMac(String value) {
+            this.mac = value;
+        }
+
+        /**
          * Gets the value of the coreWebFont property.
          * 
          * @return
@@ -405,6 +439,7 @@ public class MicrosoftFonts {
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *       &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -416,8 +451,10 @@ public class MicrosoftFonts {
         @XmlType(name = "")
         public static class Bold {
 
-            @XmlAttribute(required = true)
+            @XmlAttribute(name = "filename", required = true)
             protected String filename;
+            @XmlAttribute(name = "mac")
+            protected String mac;
 
             /**
              * Gets the value of the filename property.
@@ -443,6 +480,30 @@ public class MicrosoftFonts {
                 this.filename = value;
             }
 
+            /**
+             * Gets the value of the mac property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getMac() {
+                return mac;
+            }
+
+            /**
+             * Sets the value of the mac property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setMac(String value) {
+                this.mac = value;
+            }
+
         }
 
 
@@ -456,6 +517,7 @@ public class MicrosoftFonts {
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *       &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -467,8 +529,10 @@ public class MicrosoftFonts {
         @XmlType(name = "")
         public static class Bolditalic {
 
-            @XmlAttribute(required = true)
+            @XmlAttribute(name = "filename", required = true)
             protected String filename;
+            @XmlAttribute(name = "mac")
+            protected String mac;
 
             /**
              * Gets the value of the filename property.
@@ -492,6 +556,30 @@ public class MicrosoftFonts {
              */
             public void setFilename(String value) {
                 this.filename = value;
+            }
+
+            /**
+             * Gets the value of the mac property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getMac() {
+                return mac;
+            }
+
+            /**
+             * Sets the value of the mac property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setMac(String value) {
+                this.mac = value;
             }
 
         }
@@ -507,6 +595,7 @@ public class MicrosoftFonts {
          *   &lt;complexContent>
          *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
          *       &lt;attribute name="filename" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
+         *       &lt;attribute name="mac" type="{http://www.w3.org/2001/XMLSchema}string" />
          *     &lt;/restriction>
          *   &lt;/complexContent>
          * &lt;/complexType>
@@ -518,8 +607,10 @@ public class MicrosoftFonts {
         @XmlType(name = "")
         public static class Italic {
 
-            @XmlAttribute(required = true)
+            @XmlAttribute(name = "filename", required = true)
             protected String filename;
+            @XmlAttribute(name = "mac")
+            protected String mac;
 
             /**
              * Gets the value of the filename property.
@@ -543,6 +634,30 @@ public class MicrosoftFonts {
              */
             public void setFilename(String value) {
                 this.filename = value;
+            }
+
+            /**
+             * Gets the value of the mac property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getMac() {
+                return mac;
+            }
+
+            /**
+             * Sets the value of the mac property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setMac(String value) {
+                this.mac = value;
             }
 
         }

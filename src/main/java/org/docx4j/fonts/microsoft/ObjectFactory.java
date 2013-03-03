@@ -1,5 +1,5 @@
 /*
- *  Copyright 2007-2008, Plutext Pty Ltd.
+ *  Copyright 2007-2013, Plutext Pty Ltd.
  *   
  *  This file is part of docx4j.
 
@@ -49,19 +49,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link MicrosoftFonts.Font.Bolditalic }
+     * Create an instance of {@link MicrosoftFonts }
      * 
      */
-    public MicrosoftFonts.Font.Bolditalic createMicrosoftFontsFontBolditalic() {
-        return new MicrosoftFonts.Font.Bolditalic();
-    }
-
-    /**
-     * Create an instance of {@link MicrosoftFonts.Font.Bold }
-     * 
-     */
-    public MicrosoftFonts.Font.Bold createMicrosoftFontsFontBold() {
-        return new MicrosoftFonts.Font.Bold();
+    public MicrosoftFonts createMicrosoftFonts() {
+        return new MicrosoftFonts();
     }
 
     /**
@@ -73,11 +65,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link MicrosoftFonts }
+     * Create an instance of {@link MicrosoftFonts.Font.Bold }
      * 
      */
-    public MicrosoftFonts createMicrosoftFonts() {
-        return new MicrosoftFonts();
+    public MicrosoftFonts.Font.Bold createMicrosoftFontsFontBold() {
+        return new MicrosoftFonts.Font.Bold();
     }
 
     /**
@@ -86,6 +78,14 @@ public class ObjectFactory {
      */
     public MicrosoftFonts.Font.Italic createMicrosoftFontsFontItalic() {
         return new MicrosoftFonts.Font.Italic();
+    }
+
+    /**
+     * Create an instance of {@link MicrosoftFonts.Font.Bolditalic }
+     * 
+     */
+    public MicrosoftFonts.Font.Bolditalic createMicrosoftFontsFontBolditalic() {
+        return new MicrosoftFonts.Font.Bolditalic();
     }
 
 }

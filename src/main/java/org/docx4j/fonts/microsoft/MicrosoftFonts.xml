@@ -2,7 +2,7 @@
 <MicrosoftFonts>
 
 <!-- 
-    Copyright 2008, Plutext Pty Ltd.
+    Copyright 2008-2013, Plutext Pty Ltd.
     
     This file is part of docx4j.
 
@@ -63,6 +63,38 @@
 	
 	 Note also that the file names included below aren't actually used (as at 2008 03 21)
 	 since we use the panose matching, even on Windows.
+	 
+	 2013 3 March.  @mac gives the OSX filename, where available.
+	 
+	 Here are Microsoft fonts largely unique to OSX (ie not mapped below):
+	 
+		mac="Franklin Gothic Book Italic.ttf" 
+		mac="Franklin Gothic Book.ttf" 
+		
+		mac="Gabriola.ttf" 
+		
+		mac="Gill Sans MT Bold Italic.ttf" 
+		mac="Gill Sans MT Bold.ttf" 
+		mac="Gill Sans MT Italic.ttf" 
+		mac="Gill Sans MT.ttf" 
+		
+		
+		mac="Meiryo Bold Italic.ttf" 
+		mac="Meiryo Bold.ttf" 
+		mac="Meiryo Italic.ttf" 
+		mac="Meiryo.ttf" 
+		
+		mac="Perpetua Bold Italic.ttf" 
+		mac="Perpetua Bold.ttf" 
+		mac="Perpetua Italic.ttf" 
+		mac="Perpetua.ttf" 
+		
+		mac="Tw Cen MT Bold Italic.ttf" 
+		mac="Tw Cen MT Bold.ttf" 
+		mac="Tw Cen MT Italic.ttf" 
+		mac="Tw Cen MT.ttf" 
+	 
+	 
 -->
 
 <!-- "When a user starts the 2007 Microsoft Office system application 
@@ -85,10 +117,10 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 	
 <!-- Core Web fonts --> 	
 	
-<font name="Arial" filename="arial.ttf" coreWebFont="true">
-		<bold filename="arialbd.ttf"/>
-		<italic filename="ariali.ttf"/>
-		<bolditalic filename="arialbi.ttf"/>
+<font name="Arial" filename="arial.ttf"  mac="Arial.ttf" coreWebFont="true">
+		<bold filename="arialbd.ttf" mac="Arial Bold.ttf" />
+		<italic filename="ariali.ttf" mac="Arial Italic.ttf" />
+		<bolditalic filename="arialbi.ttf" mac="Arial Bold Italic.ttf"/>
 	</font>
 
 <font name="Arial Black" filename="ariblk.ttf"/>
@@ -111,24 +143,24 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 	
 <font name="Impact" filename="impact.ttf" coreWebFont="true"/>
 		
-<font name="Times New Roman" filename="times.ttf"  coreWebFont="true">
-		<bold filename="timesbd.ttf"/>
-		<italic filename="timesi.ttf"/>
-		<bolditalic filename="timesbi.ttf"/>
+<font name="Times New Roman" filename="times.ttf"  mac="Times New Roman.ttf"  coreWebFont="true">
+		<bold filename="timesbd.ttf" mac="Times New Roman Bold.ttf" />
+		<italic filename="timesi.ttf" mac="Times New Roman Italic.ttf" />
+		<bolditalic filename="timesbi.ttf" mac="Times New Roman Bold Italic.ttf" />
 	</font>
-	
+
 <font name="Trebuchet MS" filename="trebuc.ttf" coreWebFont="true">
 		<bold filename="trebucbd.ttf"/>
 		<italic filename="trebucit.ttf"/>
 		<bolditalic filename="trebucbi.ttf"/>
 	</font>
 		
-<font name="Verdana" filename="verdana.ttf" coreWebFont="true">
-		<bold filename="verdanab.ttf"/>
-		<italic filename="verdanai.ttf"/>
-		<bolditalic filename="verdanaz.ttf"/>
+<font name="Verdana" filename="verdana.ttf"  mac="Verdana.ttf" coreWebFont="true">
+		<bold filename="verdanab.ttf" mac="Verdana Bold.ttf" />
+		<italic filename="verdanai.ttf" mac="Verdana Italic.ttf" />
+		<bolditalic filename="verdanaz.ttf" mac="Verdana Bold Italic.ttf" />
 	</font>	
-	
+
 <font name="Webdings" filename="webdings.ttf" coreWebFont="true"/>	
 
 <!-- Core UI fonts -->
@@ -147,58 +179,60 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 
 <!-- ClearType Collection fonts -->
 
-<font name="Calibri" filename="CALIBRI.TTF" clearTypeCollection="true">
-		<bold filename="CALIBRIB.TTF"/>
-		<italic filename="CALIBRII.TTF"/>
-		<bolditalic filename="CALIBRIZ.TTF"/>
+<font name="Calibri" filename="CALIBRI.TTF"  mac="Calibri.ttf" clearTypeCollection="true">
+		<bold filename="CALIBRIB.TTF" mac="Calibri Bold.ttf" />
+		<italic filename="CALIBRII.TTF" mac="Calibri Italic.ttf" />
+		<bolditalic filename="CALIBRIZ.TTF" mac="Calibri Bold Italic.ttf" />
 	</font>
 		
-<font name="Cambria" filename="CAMBRIA.TTC" clearTypeCollection="true">
-		<bold filename="CAMBRIAB.TTF"/>
-		<italic filename="CAMBRIAI.TTF"/>
-		<bolditalic filename="CAMBRIAZ.TTF"/>
+<font name="Cambria" filename="CAMBRIA.TTC"  mac="Cambria.ttf" clearTypeCollection="true">
+		<bold filename="CAMBRIAB.TTF" mac="Cambria Bold.ttf" />
+		<italic filename="CAMBRIAI.TTF" mac="Cambria Italic.ttf" />
+		<bolditalic filename="CAMBRIAZ.TTF" mac="Cambria Bold Italic.ttf"/>
 	</font>
 
-<font name="Candara" filename="CANDARA.TTF" clearTypeCollection="true">
-		<bold filename="CANDARAB.TTF"/>
-		<italic filename="CANDARAI.TTF"/>
-		<bolditalic filename="CANDARAZ.TTF"/>
-	</font>
-
-<font name="Consolas" filename="CONSOLA.TTF" clearTypeCollection="true">
-		<bold filename="CONSOLAB.TTF"/>
-		<italic filename="CONSOLAI.TTF"/>
-		<bolditalic filename="CONSOLAZ.TTF"/>
-	</font>
-
-<font name="Constantia" filename="CONSTAN.TTF" clearTypeCollection="true">
-		<bold filename="CONSTANB.TTF"/>
-		<italic filename="CONSTANI.TTF"/>
-		<bolditalic filename="CONSTANZ.TTF"/>
+<font name="Candara" filename="CANDARA.TTF" mac="Candara.ttf" clearTypeCollection="true">
+		<bold filename="CANDARAB.TTF" mac="Candara Bold.ttf" />
+		<italic filename="CANDARAI.TTF" mac="Candara Italic.ttf" />
+		<bolditalic filename="CANDARAZ.TTF" mac="Candara Bold Italic.ttf" />
 	</font>
 	
-<font name="Corbel" filename="CORBEL.TTF" clearTypeCollection="true">
-		<bold filename="CORBELB.TTF"/>
-		<italic filename="CORBELI.TTF"/>
-		<bolditalic filename="CORBELZ.TTF"/>
+<font name="Consolas" filename="CONSOLA.TTF"  mac="Consolas.ttf" clearTypeCollection="true">
+		<bold filename="CONSOLAB.TTF" mac="Consolas Bold.ttf" />
+		<italic filename="CONSOLAI.TTF" mac="Consolas Italic.ttf" />
+		<bolditalic filename="CONSOLAZ.TTF" mac="Consolas Bold Italic.ttf" />
+	</font>
+
+<font name="Constantia" filename="CONSTAN.TTF"  mac="Constantia.ttf" clearTypeCollection="true">
+		<bold filename="CONSTANB.TTF" mac="Constantia Bold.ttf" />
+		<italic filename="CONSTANI.TTF" mac="Constantia Italic.ttf" />
+		<bolditalic filename="CONSTANZ.TTF" mac="Constantia Bold Italic.ttf" />
+	</font>
+
+<font name="Corbel" filename="CORBEL.TTF"  mac="Corbel.ttf" clearTypeCollection="true">
+		<bold filename="CORBELB.TTF" mac="Corbel Bold.ttf" />
+		<italic filename="CORBELI.TTF" mac="Corbel Italic.ttf" />
+		<bolditalic filename="CORBELZ.TTF" mac="Corbel Bold Italic.ttf" />
 	</font>
 
 <!-- Other 'Western' fonts -->
 						
-<font name="Franklin Gothic Medium" filename="framd.ttf" secondary="true">
-		<italic filename="framdit.ttf"/>
+<font name="Franklin Gothic Medium" filename="framd.ttf"  mac="Franklin Gothic Medium.ttf" secondary="true">
+		<italic filename="framdit.ttf" mac="Franklin Gothic Medium Italic.ttf"/>
 	</font>
 			
-<font name="Lucida Console" filename="lucon.ttf" secondary="true"/>
-
-<!-- What is Lucida Sans Console?  Lucida Sans is missing on Vista -->	
-		
+<font name="Lucida Console" filename="lucon.ttf" mac="Lucida Console.ttf" secondary="true"/>
+ 
+<!-- What is Lucida Sans Console?  Lucida Sans is missing on Vista.
+but present on OSX  mac="Lucida Sans Unicode.ttf" 
+ -->	
 	
-<font name="Palatino Linotype" filename="pala.ttf" secondary="true">
-		<bold filename="palab.ttf"/>
-		<italic filename="palai.ttf"/>
-		<bolditalic filename="palabi.ttf"/>
+<font name="Palatino Linotype" filename="pala.ttf"  mac="Palatino Linotype.ttf" secondary="true">
+		<bold filename="palab.ttf" mac="Palatino Linotype Bold.ttf" />
+		<italic filename="palai.ttf" mac="Palatino Linotype Italic.ttf" />
+		<bolditalic filename="palabi.ttf" mac="Palatino Linotype Bold Italic.ttf" />
 	</font>
+	
 		
 <!-- Segoe Print?  Segoe Script? -->
 
@@ -211,13 +245,14 @@ See also http://blogs.msdn.com/michkap/archive/2005/06/18/430507.aspx
 
  -->
 
-<font name="Marlett" filename="marlett.ttf" /> 
+<font name="Marlett" filename="marlett.ttf"  mac="Marlett.ttf" /> 
 <!-- Marlett filename is a guess.
-	 It is not listed in kb/924623, so not installed with Office 2007? -->
+	 It is not listed in kb/924623, so not installed with Office 2007? 
+	 Present on OSX though -->
 
 <font name="Symbol" filename="symbol.ttf" />
 		
-<font name="Wingdings" filename="wingding.ttf" />
+<font name="Wingdings" filename="wingding.ttf"  mac="Wingdings.ttf" />
 
 <!-- ===================================================== -->	
 <!-- Ignore all these other fonts, unless they are already
@@ -241,7 +276,7 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Baskerville Old Face" filename="BASKVILL.TTF"/>
 
-<font name="Batang" filename="batang.ttc"/>
+<font name="Batang" filename="batang.ttc"  mac="Batang.ttf" />
 <font name="BatangChe"  filename="batang.ttc"/>
 <font name="Gungsuh"  filename="batang.ttc"/>
 <font name="GungsuhChe" filename="batang.ttc"/>
@@ -272,13 +307,13 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 		<bolditalic filename="BOOKOSBI.TTF"/>
 	</font>
 
-<font name="Bookshelf Symbol 7" filename="BSSYM7.TTF"/>
+<font name="Bookshelf Symbol 7" filename="BSSYM7.TTF" mac="Bookshelf Symbol 7.ttf" />
 
 <font name="Britannic Bold" filename="BRITANIC.TTF"/>
 
 <font name="Broadway" filename="BROADW.TTF"/>
 
-<font name="Brush Script MT" filename="BRUSHSCI.TTF"/>
+<font name="Brush Script MT" filename="BRUSHSCI.TTF" mac="Brush Script.ttf"/>
 
 
 <font name="Californian FB" filename="CALIFR.TTF">
@@ -287,7 +322,7 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 	</font>
 
 
-<font name="Cambria Math" filename="CAMBRIA.TTC"/>
+<font name="Cambria Math" filename="CAMBRIA.TTC"  mac="Cambria Math.ttf" />
 
 
 <font name="Centaur" filename="CENTAUR.TTF"/>
@@ -304,18 +339,11 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Colonna MT" filename="COLONNA.TTF"/>
 
-
-
-
 <font name="Cooper Black" filename="COOPBL.TTF"/>
-
-
-
 
 <font name="Estrangelo Edessa" filename="estre.ttf"/>
 
 <font name="Footlight MT Light" filename="FTLTLT.TTF"/>
-
 
 <font name="Freestyle Script" filename="FREESCPT.TTF"/>
 
@@ -326,8 +354,7 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Gautami" filename="gautami.ttf"/>
 
-
-<font name="Gulim" filename="gulim.ttc"/>
+<font name="Gulim" filename="gulim.ttc" mac="Gulim.ttf" />
 <font name="GulimChe" filename="gulim.ttc"/>
 <font name="Dotum" filename="gulim.ttc"/>
 <font name="DotumChe" filename="gulim.ttc"/>
@@ -401,7 +428,7 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 
 <font name="MingLiU" filename="mingliu.ttc"/>
-<font name="PMingLiU" filename="mingliu.ttc"/>
+<font name="PMingLiU" filename="mingliu.ttc" mac="PMingLiU.ttf" />
 
 <font name="Mistral" filename="MISTRAL.TTF"/>
 
@@ -409,17 +436,17 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="Monotype Corsiva" filename="MTCORSVA.TTF"/>
 
-<font name="MS Gothic" filename="msgothic.ttc"/>
-<font name="MS PGothic" filename="msgothic.ttc"/>
+<font name="MS Gothic" filename="msgothic.ttc" mac="MS Gothic.ttf" />
+<font name="MS PGothic" filename="msgothic.ttc" mac="MS PGothic.ttf" />
 <font name="MS UI Gothic" filename="msgothic.ttc"/>
 
-<font name="MS Mincho" filename="msmincho.ttc"/>
+<font name="MS Mincho" filename="msmincho.ttc" mac="MS Mincho.ttf" />
 
-<font name="MS PMincho" filename="MSMINCHO.TTF"/>
+<font name="MS PMincho" filename="MSMINCHO.TTF" mac="MS PMincho.ttf" />
 
-<font name="MS Reference Sans Serif" filename="REFSAN.TTF"/>
+<font name="MS Reference Sans Serif" filename="REFSAN.TTF" mac="MS Reference Sans Serif.ttf" />
 
-<font name="MS Reference Specialty" filename="REFSPCL.TTF"/>
+<font name="MS Reference Specialty" filename="REFSPCL.TTF" mac="MS Reference Specialty.ttf" />
 
 <font name="MT Extra" filename="MTEXTRA.TTF"/> <!-- This is a link to another directory  -->
 
@@ -459,7 +486,7 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 
 <font name="SimHei" filename="simhei.ttf"/>
 
-<font name="SimSun" filename="simsun.ttc"/>
+<font name="SimSun" filename="simsun.ttc" mac="SimSun.ttf" />
 <font name="NSimSun" filename="simsun.ttc"/>
 
 <font name="Snap ITC" filename="SNAP____.TTF"/>
@@ -493,9 +520,9 @@ TODO: this is not all the fonts from http://support.microsoft.com/kb/924623
 <font name="Wide Latin" filename="LATINWD.TTF"/>
 
 
-<font name="Wingdings 2" filename="WINGDNG2.TTF"/>
+<font name="Wingdings 2" filename="WINGDNG2.TTF" mac="Wingdings 2.ttf"/>
 
-<font name="Wingdings 3" filename="WINGDNG3.TTF"/>
+<font name="Wingdings 3" filename="WINGDNG3.TTF" mac="Wingdings 3.ttf" />
 
 <!-- 
 

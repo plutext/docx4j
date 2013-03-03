@@ -1,4 +1,4 @@
-package org.docx4j.utils;
+package org.docx4j.fonts.fop.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -53,6 +53,8 @@ public class FopUtils {
 		buffer.append("<fonts>");
 		declareFonts(fontMapper, fontsInUse, buffer);
 		buffer.append("</fonts></renderer></renderers></fop>");
+		
+		System.out.println(buffer.toString());
 
 		if (log.isDebugEnabled()) {
 			log.debug("\nUsing fop config:\n " + buffer.toString() + "\n");
@@ -125,19 +127,25 @@ public class FopUtils {
 		    
 		    // bold, italic etc
 		    PhysicalFont pfVariation = PhysicalFonts.getBoldForm(pf);
-		    if (pfVariation!=null) {
+		    if (pfVariation==null) {
+		    	log.debug(fontName + " no bold form");
+		    } else {
 			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
 		    	addFontTriplet(result, pf.getName(), "normal", "bold");
 			    result.append("</font>" );
 		    }
 		    pfVariation = PhysicalFonts.getBoldItalicForm(pf);
-		    if (pfVariation!=null) {
+		    if (pfVariation==null) {
+		    	log.debug(fontName + " no bold italic form");
+		    } else {
 			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
 		    	addFontTriplet(result, pf.getName(), "italic", "bold");
 			    result.append("</font>" );
 		    }
 		    pfVariation = PhysicalFonts.getItalicForm(pf);
-		    if (pfVariation!=null) {
+		    if (pfVariation==null) {
+		    	log.debug(fontName + " no italic form");
+		    } else {
 			    result.append("<font embed-url=\"" +pfVariation.getEmbeddedFile() + "\""+ subFontAtt +">" );
 		    	addFontTriplet(result, pf.getName(), "italic", "normal");
 			    result.append("</font>" );

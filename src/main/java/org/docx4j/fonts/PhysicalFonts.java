@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -64,9 +63,13 @@ public class PhysicalFonts {
     // parse font to ascertain font info
     private static FontInfoFinder fontInfoFinder; 
 
+    private static String osName;
+    
     static {
 		
 		try {
+
+		    osName = System.getProperty("os.name");
 
 	        fontCache = FontCache.load();
 	        if (fontCache == null) {
@@ -388,6 +391,10 @@ public class PhysicalFonts {
 		    		// We also need to add it to map by filename
 		    		String filename = pf.getEmbeddedFile();
 		    		filename = filename.substring( filename.lastIndexOf("/")+1).toLowerCase();
+		    		
+		    		if (osName.startsWith("Mac")) {
+		    			filename = filename.replace("%20", " "); 
+		    		}
 		    		physicalFontMapByFilenameLowercase.put(filename, pf);
 		    		log.debug("added to filename map: " + filename);
 		        	
@@ -426,7 +433,13 @@ public class PhysicalFonts {
 			
 			// We have to go via the file name, grrr..
 			// since MicrosoftFonts.xml doesn't give the associate font name
-			String filename = msFont.getBold().getFilename().toLowerCase();
+
+			String filename;
+		    if (osName.startsWith("Mac")) {
+		    	filename = msFont.getBold().getMac().toLowerCase();
+		    } else {
+		    	filename = msFont.getBold().getFilename().toLowerCase();
+		    }
 			log.debug("Fetching: " + filename);
 			return physicalFontMapByFilenameLowercase.get(filename);
 		}		
@@ -449,7 +462,12 @@ public class PhysicalFonts {
 			
 			// We have to go via the file name, grrr..
 			// since MicrosoftFonts.xml doesn't give the associate font name
-			String filename = msFont.getBolditalic().getFilename().toLowerCase();
+			String filename;
+		    if (osName.startsWith("Mac")) {
+		    	filename = msFont.getBolditalic().getMac().toLowerCase();
+		    } else {
+		    	filename = msFont.getBolditalic().getFilename().toLowerCase();
+		    }	
 			log.debug("Fetching: " + filename);
 			return physicalFontMapByFilenameLowercase.get(filename);
 		}		
@@ -472,7 +490,12 @@ public class PhysicalFonts {
 			
 			// We have to go via the file name, grrr..
 			// since MicrosoftFonts.xml doesn't give the associate font name
-			String filename = msFont.getItalic().getFilename().toLowerCase();
+			String filename;
+		    if (osName.startsWith("Mac")) {
+		    	filename = msFont.getItalic().getMac().toLowerCase();
+		    } else {
+		    	filename = msFont.getItalic().getFilename().toLowerCase();
+		    }	
 			log.debug("Fetching: " + filename);
 			return physicalFontMapByFilenameLowercase.get(filename);
 		}

@@ -3,7 +3,7 @@
     xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.0">
 
 <!-- 
-    Copyright 2007, Plutext Pty Ltd.
+    Copyright 2007-2013, Plutext Pty Ltd.
     
     This file is part of docx4j.
 
@@ -43,37 +43,46 @@
             </jaxb:schemaBindings>
         </xs:appinfo>
     </xs:annotation>
-    
-  <xs:element name="MicrosoftFonts">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" name="font">
-          <xs:complexType>
-            <xs:sequence minOccurs="0">
-              <xs:element minOccurs="0" name="bold">
-                <xs:complexType>
-                  <xs:attribute name="filename" type="xs:string" use="required" />
-                </xs:complexType>
-              </xs:element>
-              <xs:element minOccurs="0" name="italic">
-                <xs:complexType>
-                  <xs:attribute name="filename" type="xs:string" use="required" />
-                </xs:complexType>
-              </xs:element>
-              <xs:element minOccurs="0" name="bolditalic">
-                <xs:complexType>
-                  <xs:attribute name="filename" type="xs:string" use="required" />
-                </xs:complexType>
-              </xs:element>
-            </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="required" />
-            <xs:attribute name="filename" type="xs:string" use="required" />
-            <xs:attribute name="coreWebFont" type="xs:boolean" use="optional" />
-            <xs:attribute name="clearTypeCollection" type="xs:boolean" use="optional" />
-            <xs:attribute name="secondary" type="xs:boolean" use="optional" />
-          </xs:complexType>
-        </xs:element>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+
+	<xs:element name="MicrosoftFonts">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element maxOccurs="unbounded" name="font">
+					<xs:complexType>
+						<xs:sequence minOccurs="0">
+							<xs:element minOccurs="0" name="bold">
+								<xs:complexType>
+									<xs:attribute name="filename" type="xs:string"
+										use="required" />
+									<xs:attribute name="mac" type="xs:string" use="optional" />
+								</xs:complexType>
+							</xs:element>
+							<xs:element minOccurs="0" name="italic">
+								<xs:complexType>
+									<xs:attribute name="filename" type="xs:string"
+										use="required" />
+									<xs:attribute name="mac" type="xs:string" use="optional" />
+								</xs:complexType>
+							</xs:element>
+							<xs:element minOccurs="0" name="bolditalic">
+								<xs:complexType>
+									<xs:attribute name="filename" type="xs:string"
+										use="required" />
+									<xs:attribute name="mac" type="xs:string" use="optional" />
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+						<xs:attribute name="name" type="xs:string" use="required" />
+						<xs:attribute name="filename" type="xs:string" use="required" />
+						<xs:attribute name="mac" type="xs:string" use="optional" />
+						<xs:attribute name="coreWebFont" type="xs:boolean"
+							use="optional" />
+						<xs:attribute name="clearTypeCollection" type="xs:boolean"
+							use="optional" />
+						<xs:attribute name="secondary" type="xs:boolean" use="optional" />
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
 </xs:schema>
