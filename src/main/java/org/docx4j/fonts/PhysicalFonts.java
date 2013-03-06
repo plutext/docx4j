@@ -122,12 +122,8 @@ public class PhysicalFonts {
 		
 		// Currently we use FOP - inspired by org.apache.fop.render.PrintRendererConfigurator
 		// iText also has a font discoverer (which we could use
-		// instead, but don't).  
-		// It remains to be seen which of XSL FO or iText
-		// PDF generation becomes the most popular.
-		// (If it is iText, then there _may_ be something
-		//  to be said for using their font discovery instead)
-		
+		// instead, but don't, since in docx4j we're settled on
+		// PDF output via XSL FO)		
 		
         FontFileFinder fontFileFinder = new FontFileFinder();
         
