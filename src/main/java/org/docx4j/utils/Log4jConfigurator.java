@@ -43,6 +43,7 @@ public class Log4jConfigurator {
 	        
 	        Logger log = Logger.getLogger(Log4jConfigurator.class);
 	        log.info("Since your log4j configuration (if any) was not found, docx4j has configured log4j automatically.");
+	        log.info("Don't want this?  Set docx4j property: docx4j.Log4j.Configurator.disabled=true");
 	        
 	        try {
 	        	org.docx4j.convert.out.pdf.viaXSLFO.Conversion.log.setLevel(Level.DEBUG);
