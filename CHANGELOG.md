@@ -1,12 +1,11 @@
 CHANGELOG
 =========
 
-Version 2.8.1.1
-===============
+Version 2.8.1.2 (6 March 2013)
+- traverse into w:object/w:control (backport)
 
-2 March 2013
-
-- FieldsPreprocessor canonicalise retain pPr
+Version 2.8.1.1 (2 March 2013)
+- FieldsPreprocessor canonicalise retain pPr (backport)
 
 
 Version 2.8.1

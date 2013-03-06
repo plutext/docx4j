@@ -267,7 +267,14 @@ public class TraversalUtil {
 //		} else if (o instanceof org.docx4j.wml.CTTxbxContent) {				
 //			return ((org.docx4j.wml.CTTxbxContent)o).getEGBlockLevelElts();
 		} else if (o instanceof CTObject) {
-			return ((CTObject)o).getAnyAndAny();
+			
+			CTObject ctObject = (CTObject)o;
+			List<Object> artificialList = new ArrayList<Object>();
+			artificialList.addAll(ctObject.getAnyAndAny());
+			if (ctObject.getControl()!=null) {
+				artificialList.add(ctObject.getControl() ); // CTControl
+			}
+			return artificialList;
 		} else if (o instanceof org.docx4j.dml.CTGvmlGroupShape) {
 			return ((org.docx4j.dml.CTGvmlGroupShape)o).getTxSpOrSpOrCxnSp();
 		} else if(o instanceof FldChar) {
