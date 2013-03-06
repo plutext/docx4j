@@ -48,14 +48,19 @@ import org.docx4j.wml.Document;
  * 
  * You're encouraged to investigate binding content controls
  * to an XML part.
+ * 
+ * OK, enough preaching.  If you want to use VariableReplace,
+ * your variables should be appear like so: ${key1}, ${key2} 
  *
  */
 public class VariableReplace {
 	
 	public static void main(String[] args) throws Exception {
 
+		// Input docx has variables in it: ${colour}, ${icecream}
 		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateExample.docx";
 
+		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir")
 				+ "/OUT_VariableReplace.docx";
