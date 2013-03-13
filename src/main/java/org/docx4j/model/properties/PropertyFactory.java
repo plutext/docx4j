@@ -585,6 +585,9 @@ public class PropertyFactory {
 			} else if (name.equals(TextAlignmentVertical.CSS_NAME )) {
 				// vertical-align
 				return new TextAlignmentVertical(value);
+			} else if (name.equals(SpaceAfter.CSS_NAME )) {
+				// space-after
+				return new SpaceAfter(value);
 			}		
 		} catch (java.lang.UnsupportedOperationException uoe) {
 			// TODO: consider whether it is right to catch this,
