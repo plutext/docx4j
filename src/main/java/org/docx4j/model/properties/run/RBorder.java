@@ -20,6 +20,7 @@
 package org.docx4j.model.properties.run;
 
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBorder;
@@ -181,5 +182,10 @@ public class RBorder extends AbstractRunProperty {
 	public void set(RPr rPr) {
 		rPr.setBdr((CTBorder)getObject());
 	}
+
+    @Override
+    public void set(CTTextCharacterProperties rPr) {
+        //TODO
+    }
 	
 }

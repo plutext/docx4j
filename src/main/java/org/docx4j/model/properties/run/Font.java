@@ -20,6 +20,7 @@
 package org.docx4j.model.properties.run;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.openpackaging.packages.OpcPackage;
@@ -136,6 +137,11 @@ public class Font extends AbstractRunProperty {
 	public void set(RPr rPr) {
 		rPr.setRFonts((RFonts)this.getObject());
 	}
+
+    @Override
+    public void set(CTTextCharacterProperties rPr) {
+        //TODO
+    }
 	
 	
 }

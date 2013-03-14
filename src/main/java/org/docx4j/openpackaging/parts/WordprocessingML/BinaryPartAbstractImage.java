@@ -1033,18 +1033,21 @@ public abstract class BinaryPartAbstractImage extends BinaryPart {
 		}
 		
 		public static CxCy scale(ImageInfo imageInfo, SldSz sldSz) {
-			ImageSize size = imageInfo.getSize();
-			double iwEmu = toEmu(size.getWidthPx(), size.getDpiHorizontal());
-			double ihEmu = toEmu(size.getHeightPx(), size.getDpiVertical());
-			double swEmu = sldSz.getCx();
-			double shEmu = sldSz.getCy();
-		
-			return scaleToFit(iwEmu, ihEmu, swEmu, shEmu);
+			return scale(imageInfo, sldSz.getCx(), sldSz.getCy());
 		}
 		
 		private static double toEmu(double widthPx, double dpi) {
 			return widthPx * EMU_RATIO / dpi;
 		}
+
+        public static CxCy scale(ImageInfo imageInfo, double xEmu, double yEmu) {
+            ImageSize size = imageInfo.getSize();
+            double iwEmu = toEmu(size.getWidthPx(), size.getDpiHorizontal());
+            double ihEmu = toEmu(size.getHeightPx(), size.getDpiVertical());
+        
+            return scaleToFit(iwEmu, ihEmu, xEmu, yEmu);
+        }
+
 		
 		/**
 		 * 

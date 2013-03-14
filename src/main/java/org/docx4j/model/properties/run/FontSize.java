@@ -21,6 +21,7 @@ package org.docx4j.model.properties.run;
 
 import java.math.BigInteger;
 
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.RPr;
@@ -99,5 +100,10 @@ public class FontSize extends AbstractRunProperty {
 	public void set(RPr rPr) {
 		rPr.setSz( (HpsMeasure)this.getObject() );
 	}
+
+    @Override
+    public void set(CTTextCharacterProperties rPr) {
+        //TODO
+    }
 	
 }
