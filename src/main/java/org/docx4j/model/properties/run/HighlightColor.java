@@ -19,6 +19,7 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.Highlight;
 import org.docx4j.wml.RPr;
@@ -88,5 +89,10 @@ public class HighlightColor extends AbstractRunProperty {
 	public void set(RPr rPr) {
 		rPr.setHighlight((Highlight)this.getObject() );		
 	}
+
+    @Override
+    public void set(CTTextCharacterProperties rPr) {
+        //TODO
+    }
 	
 }

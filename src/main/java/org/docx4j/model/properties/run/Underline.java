@@ -19,6 +19,8 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.docx4j.dml.CTTextCharacterProperties;
+import org.docx4j.dml.STTextUnderlineType;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.U;
@@ -94,5 +96,16 @@ public class Underline extends AbstractRunProperty {
 	public void set(RPr rPr) {
 		rPr.setU((U)this.getObject());
 	}
+
+    @Override
+    public void set(CTTextCharacterProperties rPr) {
+        if (((U)this.getObject()).getVal()==null ) {
+            rPr.setU(STTextUnderlineType.SNG);
+        } else if (!((U)this.getObject()).getVal().equals( UnderlineEnumeration.NONE ) ) {
+            rPr.setU(STTextUnderlineType.SNG);
+        } else {
+            //
+        }
+    }
 	
 }
