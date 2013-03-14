@@ -19,6 +19,7 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.RPr;
@@ -42,13 +43,13 @@ public class Bold extends AbstractRunProperty {
 	}
 	
 	public Bold(CSSValue value) {	
+        BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();
 		
-		if (value.getCssText().toLowerCase().equals("bold")) {
-			this.setObject( Context.getWmlObjectFactory().createBooleanDefaultTrue()  );
-		} else {
-			BooleanDefaultTrue bdt = Context.getWmlObjectFactory().createBooleanDefaultTrue();
+		if (!value.getCssText().toLowerCase().equals("bold")) {
 			bdt.setVal(Boolean.FALSE);
 		}
+
+        this.setObject( bdt );
 	}
 
 	@Override
@@ -77,5 +78,10 @@ public class Bold extends AbstractRunProperty {
 	public void set(RPr rPr) {
 		rPr.setB( (BooleanDefaultTrue)this.getObject() );
 	}
+
+    @Override
+    public void set(CTTextCharacterProperties rPr) {
+        rPr.setB(((BooleanDefaultTrue)this.getObject()).isVal());
+    }
 	
 }

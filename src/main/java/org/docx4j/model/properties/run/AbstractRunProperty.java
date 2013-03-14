@@ -19,11 +19,14 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.model.properties.Property;
 import org.docx4j.wml.RPr;
 
 public abstract class AbstractRunProperty extends Property {
 	
 	public abstract void set(RPr rPr);
+
+    public abstract void set(CTTextCharacterProperties rPr);
 
 }
