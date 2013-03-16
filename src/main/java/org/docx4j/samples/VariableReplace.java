@@ -47,10 +47,15 @@ import org.docx4j.wml.Document;
  * to insert images, or multiple rows in a table.
  * 
  * You're encouraged to investigate binding content controls
- * to an XML part.
+ * to an XML part.  There is org.docx4j.model.datastorage.migration.FromVariableReplacement
+ * to automatically convert your templates to this better
+ * approach.
  * 
  * OK, enough preaching.  If you want to use VariableReplace,
  * your variables should be appear like so: ${key1}, ${key2} 
+ * 
+ * And if you are having problems with your runs being split,
+ * VariablePrepare can clean them up.
  *
  */
 public class VariableReplace {
