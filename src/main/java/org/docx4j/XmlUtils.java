@@ -718,6 +718,7 @@ public class XmlUtils {
 		try {
 				Transformer serializer = transformerFactory.newTransformer();
 				serializer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+				serializer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");				
 				//serializer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
 				serializer.transform( new DOMSource(n) , new StreamResult(sw) );				
 				return sw.toString();
