@@ -304,6 +304,11 @@ public final class NumberingDefinitionsPart extends JaxbXmlPart<Numbering> {
 			
 			org.docx4j.wml.Style style = propertyResolver.getStyle( lvl.getPStyle().getVal() );
 			
+			if (style==null) {
+				log.error("Couldn't find style " + lvl.getPStyle().getVal());
+				return null;
+			}
+			
 			// If the style has a w:ind, return it.
 			// Otherwise, continue
 			if (style.getPPr() != null
