@@ -139,6 +139,46 @@ public abstract class JaxbXmlPart<E> extends Part {
 		return jaxbElement!=null;
 	}
 	
+	/**
+	 * @param mappings
+	 * @throws JAXBException
+	 * @throws Docx4JException
+	 * 
+	 * @since 3.0.0
+	 */
+	public void variableReplace(java.util.HashMap<String, String> mappings) throws JAXBException, Docx4JException {
+		
+		// Get the contents as a string
+		String wmlTemplateString = null;
+		if (jaxbElement==null) {
+
+			PartStore partStore = this.getPackage().getPartStore();
+			String name = this.partName.getName();
+			InputStream is = partStore.loadPart( 
+					name.substring(1));
+			if (is==null) {
+				log.warn(name + " missing from part store");
+				throw new Docx4JException(name + " missing from part store");
+			} else {
+				log.info("Lazily unmarshalling " + name);
+				wmlTemplateString = convertStreamToString(is);
+			}
+			
+		} else {
+			
+			wmlTemplateString = XmlUtils.marshaltoString(jaxbElement, true, false, jc);
+			
+		}
+		
+		// Do the replacement
+		jaxbElement = (E)XmlUtils.unmarshallFromTemplate(wmlTemplateString, mappings);
+		
+	}
+	
+	private static String convertStreamToString(java.io.InputStream is) {
+	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+	    return s.hasNext() ? s.next() : "";
+	}	
 	
     /**
      * Marshal the content tree rooted at <tt>jaxbElement</tt> into a DOM tree.
