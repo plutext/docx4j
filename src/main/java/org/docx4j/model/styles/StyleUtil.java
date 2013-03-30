@@ -1554,6 +1554,9 @@ public class StyleUtil {
 	
 /////////////////////////////////////////////
 //apply-Methods
+//
+// see similar ImmutablePropertyResolver
+//	
 /////////////////////////////////////////////
 	
 	public static void apply(Style source, Style destination) {

@@ -15,6 +15,7 @@ import org.docx4j.wml.RPr;
  * 
  *  @author Adam Schmideg
  *  
+ *  @see also StyleUtil.apply methods
  */
 public class ImmutablePropertyResolver extends PropertyResolver {
 
@@ -29,6 +30,8 @@ public class ImmutablePropertyResolver extends PropertyResolver {
 //			throws Docx4JException {
 //		super(styleDefinitionsPart, themePart, numberingDefinitionsPart);
 //	}
+	
+
 
 	protected void applyPPr(PPr src, PPr dest) {
 		if (src == null) {
