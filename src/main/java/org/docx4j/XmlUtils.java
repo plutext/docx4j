@@ -384,11 +384,12 @@ public class XmlUtils {
 	
     /**
 	 * Give a string of wml containing ${key1}, ${key2}, return a suitable
-	 * object.
+	 * object.  
 	 * 
 	 * @param wmlTemplateString
 	 * @param mappings
 	 * @return
+	 * @see JaxbXmlPart.variableReplace which can invoke this more efficiently
 	 */
 	public static Object unmarshallFromTemplate(String wmlTemplateString, 
 			java.util.HashMap<String, String> mappings) throws JAXBException {
@@ -409,22 +410,24 @@ public class XmlUtils {
 	   }
 	
 	
-	 private static StringBuilder replace(String s, int offset, StringBuilder b, java.util.HashMap<String, String> mappings) {
-	    int startKey = s.indexOf("${", offset);
+	 private static StringBuilder replace(String wmlTemplateString, int offset, StringBuilder strB, 
+			 java.util.HashMap<String, String> mappings) {
+		 
+	    int startKey = wmlTemplateString.indexOf("${", offset);
 	    if (startKey == -1)
-	       return b.append(s.substring(offset));
+	       return strB.append(wmlTemplateString.substring(offset));
 	    else {
-	       b.append(s.substring(offset, startKey));
-	       int keyEnd = s.indexOf('}', startKey);
-	       String key = s.substring(startKey + 2, keyEnd);
+	       strB.append(wmlTemplateString.substring(offset, startKey));
+	       int keyEnd = wmlTemplateString.indexOf('}', startKey);
+	       String key = wmlTemplateString.substring(startKey + 2, keyEnd);
 	       String val = mappings.get(key);
 	       if (val==null) {
 	    	   log.warn("Invalid key '" + key + "' or key not mapped to a value");
-	    	   b.append(key );
+	    	   strB.append(key );
 	       } else {
-	    	   b.append(val  );
+	    	   strB.append(val  );
 	       }
-	       return replace(s, keyEnd + 1, b, mappings);
+	       return replace(wmlTemplateString, keyEnd + 1, strB, mappings);
 	    }
 	 }
 

@@ -24,6 +24,7 @@ package org.docx4j.samples;
 import java.util.HashMap;
 
 import org.docx4j.XmlUtils;
+import org.docx4j.jaxb.Context;
 import org.docx4j.openpackaging.io.SaveToZipFile;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
@@ -61,11 +62,13 @@ import org.docx4j.wml.Document;
 public class VariableReplace {
 	
 	public static void main(String[] args) throws Exception {
+		
+		// Exclude context init from timing
+		org.docx4j.wml.ObjectFactory foo = Context.getWmlObjectFactory();
 
 		// Input docx has variables in it: ${colour}, ${icecream}
-		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateExample.docx";
+		String inputfilepath = System.getProperty("user.dir") + "/sample-docs/word/unmarshallFromTemplateExample176.docx";
 
-		
 		boolean save = false;
 		String outputfilepath = System.getProperty("user.dir")
 				+ "/OUT_VariableReplace.docx";
@@ -74,18 +77,29 @@ public class VariableReplace {
 				.load(new java.io.File(inputfilepath));
 		MainDocumentPart documentPart = wordMLPackage.getMainDocumentPart();
 
-		// unmarshallFromTemplate requires string input
-		String xml = XmlUtils.marshaltoString(documentPart.getJaxbElement(), true);
-
 		HashMap<String, String> mappings = new HashMap<String, String>();
 		mappings.put("colour", "green");
 		mappings.put("icecream", "chocolate");
+		
+		long start = System.currentTimeMillis();
 
-		// Do it...
-		Object obj = XmlUtils.unmarshallFromTemplate(xml, mappings);
-
-		// Inject result into docx
-		documentPart.setJaxbElement((Document) obj);
+		// Approach 1 (from 3.0.0; faster if you haven't yet caused unmarshalling to occur):
+		
+			documentPart.variableReplace(mappings);
+		
+/*		// Approach 2 (original)
+		
+			// unmarshallFromTemplate requires string input
+			String xml = XmlUtils.marshaltoString(documentPart.getJaxbElement(), true);
+			// Do it...
+			Object obj = XmlUtils.unmarshallFromTemplate(xml, mappings);
+			// Inject result into docx
+			documentPart.setJaxbElement((Document) obj);
+*/
+			
+		long end = System.currentTimeMillis();
+		long total = end - start;
+		System.out.println("Time: " + total);
 
 		// Save it
 		if (save) {

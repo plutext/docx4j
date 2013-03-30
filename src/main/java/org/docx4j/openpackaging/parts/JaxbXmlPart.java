@@ -33,6 +33,7 @@ import javax.xml.bind.util.JAXBResult;
 import javax.xml.transform.Templates;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
@@ -140,6 +141,12 @@ public abstract class JaxbXmlPart<E> extends Part {
 	}
 	
 	/**
+	 * unmarshallFromTemplate.  Where jaxbElement has not been
+	 * unmarshalled yet, this is more efficient (3 times
+	 * faster, in some testing) than calling
+	 * XmlUtils.marshaltoString directly, since it avoids
+	 * some JAXB processing.  
+	 * 
 	 * @param mappings
 	 * @throws JAXBException
 	 * @throws Docx4JException
@@ -161,7 +168,14 @@ public abstract class JaxbXmlPart<E> extends Part {
 				throw new Docx4JException(name + " missing from part store");
 			} else {
 				log.info("Lazily unmarshalling " + name);
-				wmlTemplateString = convertStreamToString(is);
+//				wmlTemplateString = convertStreamToString(is);
+				
+				// This seems to be about 5% faster than the Scanner approach
+				try {
+					wmlTemplateString = IOUtils.toString(is, "UTF-8");
+				} catch (IOException e) {
+					throw new Docx4JException(e.getMessage(), e);
+				}
 			}
 			
 		} else {
@@ -175,10 +189,10 @@ public abstract class JaxbXmlPart<E> extends Part {
 		
 	}
 	
-	private static String convertStreamToString(java.io.InputStream is) {
-	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-	    return s.hasNext() ? s.next() : "";
-	}	
+//	private static String convertStreamToString(java.io.InputStream is) {
+//	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+//	    return s.hasNext() ? s.next() : "";
+//	}	
 	
     /**
      * Marshal the content tree rooted at <tt>jaxbElement</tt> into a DOM tree.
