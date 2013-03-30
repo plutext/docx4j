@@ -46,8 +46,10 @@ import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
  * 
  * The OpenDoPE conventions support that; and this sample 
  * demonstrates docx4j's implementation of that.
- *  
- */
+ * 
+ * In practice you'll want the XML part to be injected at runtime.  
+ * For that, see the sample: ContentControlsMergeXML
+*/
 public class ContentControlBindingExtensions {
 	
 	public static JAXBContext context = org.docx4j.jaxb.Context.jc; 
