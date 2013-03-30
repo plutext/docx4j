@@ -26,7 +26,9 @@ import org.docx4j.XmlUtils;
 import org.docx4j.convert.in.xhtml.XHTMLImporter;
 import org.docx4j.dml.wordprocessingDrawing.Inline;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.ImmutablePropertyResolver;
 import org.docx4j.model.sdt.QueryString;
+import org.docx4j.model.styles.StyleUtil;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
@@ -38,6 +40,7 @@ import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.docx4j.wml.CTSdtDate;
 import org.docx4j.wml.Color;
 import org.docx4j.wml.P;
+import org.docx4j.wml.R;
 import org.docx4j.wml.RFonts;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.P.Hyperlink;
@@ -245,7 +248,54 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 					&& sdtParent.equals("p")) {
 				// Importer class always returns run-level content wrapped in a w:p 
 				// so extract contents
-				for (Object o : ((P)results.get(0)).getContent() ) {							
+				
+				RPr rPrSDT = null;
+				Node rPrNode = rPrNodeIt.nextNode();
+				if (rPrNode!=null) {
+					rPrSDT = (RPr)XmlUtils.unmarshal(rPrNode);
+				}
+								
+				for (Object o : ((P)results.get(0)).getContent() ) {
+					
+					if (o instanceof R) {
+
+						// Start with rPrSDT,
+						// and then superimpose on top anything which comes
+						// from the CSS. 
+						
+						if (rPrSDT==null) {
+							// Leave the CSS rPr as it is
+						} else {
+							RPr cssRPR = ((R)o).getRPr(); 
+							if (cssRPR==null) {
+								((R)o).setRPr(rPrSDT);																
+							} else {
+								log.info("CSS rPR: " + XmlUtils.marshaltoString(cssRPR, true, true));
+								RPr baseRPR = XmlUtils.deepCopy(rPrSDT);
+								
+								// We want to apply
+								// real CSS settings, but not the defaults eg those in 
+								// src/main/resources/XhtmlNamespaceHandler.css								
+								// CSS defaults are:
+								//  <w:color w:val="000000"/>
+								//  <w:sz w:val="22"/>	
+								// We want to ignore those.
+								if (cssRPR.getColor()!=null
+										&& cssRPR.getColor().getVal().equals("000000")) {
+									cssRPR.setColor(null);
+								}
+								if (cssRPR.getSz()!=null
+										&& cssRPR.getSz().getVal().toString().equals("22")) {
+									cssRPR.setSz(null);
+								}
+								
+								
+								StyleUtil.apply(cssRPR, baseRPR);
+								((R)o).setRPr(baseRPR);								
+							}
+						}
+					}					
+					
 					Document tmpDoc = XmlUtils.marshaltoW3CDomDocument(o);
 					XmlUtils.treeCopy(tmpDoc.getDocumentElement(), docfrag);													
 				}

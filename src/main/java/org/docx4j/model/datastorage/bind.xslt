@@ -138,11 +138,7 @@
   				  So the convertXHTML extension
   				  function must read xpath from the w:tag, which in turn means the Word Add-In 
   				  editor must write that.
-  				  
-  				  For the run-level case, there is an argument for writing w:dataBinding,
-  				  since this gives the user visual feedback in the Add-In, and that's probably
-  				  worth it for this common case.
-  			
+  				    			
   			 -->
 			<xsl:copy>
 			     <xsl:apply-templates select="w:sdtPr"/>
@@ -236,9 +232,9 @@
 				  		</xsl:when>
 				  		<xsl:otherwise>  <!--  run level 
 				  		
-				  			  Note also that in the w:p/w:sdt case, w:sdtContent is empty
-				  			  since Word puts nothing there without a dataBinding.  run-level
-				  			  sdt may be the same?  So in practice the xsl:otherwise is used.
+						       <w:sdtContent>
+						          <w:r>
+						            <w:rPr>				  			 
 				  		
 				  		--> 
 				  			<!--  can we insert a fragment ie multiple runs? --> 		
@@ -250,7 +246,7 @@
 										$xPathsPart,
 										local-name(..),
 										local-name(w:sdtContent/*[1]),
-										w:sdtPr/w:rPr,
+										w:sdtContent/w:r/w:rPr,
 										$tag )" />
 				  		</xsl:otherwise>  		
 				  	</xsl:choose>    
