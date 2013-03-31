@@ -20,6 +20,7 @@
 package org.docx4j.model.properties.run;
 
 import org.docx4j.UnitsOfMeasurement;
+import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.org.xhtmlrenderer.css.parser.FSColor;
 import org.docx4j.org.xhtmlrenderer.css.parser.FSRGBColor;
@@ -108,5 +109,10 @@ public class FontColor extends AbstractRunProperty {
 	public void set(RPr rPr) {
 		rPr.setColor((Color)this.getObject());
 	}
+
+    @Override
+    public void set(CTTextCharacterProperties rPr) {
+        //TODO
+    }
 	
 }
