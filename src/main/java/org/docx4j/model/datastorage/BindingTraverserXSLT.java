@@ -270,7 +270,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 							if (cssRPR==null) {
 								((R)o).setRPr(rPrSDT);																
 							} else {
-								log.info("CSS rPR: " + XmlUtils.marshaltoString(cssRPR, true, true));
+								log.debug("CSS rPR: " + XmlUtils.marshaltoString(cssRPR, true, true));
 								RPr baseRPR = XmlUtils.deepCopy(rPrSDT);
 								
 								// We want to apply
@@ -280,15 +280,16 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 								//  <w:color w:val="000000"/>
 								//  <w:sz w:val="22"/>	
 								// We want to ignore those.
-								if (cssRPR.getColor()!=null
+								if (rPrSDT.getColor()!=null
+										&& cssRPR.getColor()!=null
 										&& cssRPR.getColor().getVal().equals("000000")) {
 									cssRPR.setColor(null);
 								}
-								if (cssRPR.getSz()!=null
+								if (rPrSDT.getSz()!=null
+										&& cssRPR.getSz()!=null
 										&& cssRPR.getSz().getVal().toString().equals("22")) {
 									cssRPR.setSz(null);
 								}
-								
 								
 								StyleUtil.apply(cssRPR, baseRPR);
 								((R)o).setRPr(baseRPR);								
@@ -313,9 +314,7 @@ public class BindingTraverserXSLT implements BindingTraverserInterface {
 					
 				}
 			}
-			
-			System.out.println("returning...");
-			
+						
 			return docfrag;			
 			
 		} catch (Exception e) {
