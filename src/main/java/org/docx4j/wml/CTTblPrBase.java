@@ -89,7 +89,7 @@ import org.jvnet.jaxb2_commons.ppp.Child;
  *         &lt;element name="shd" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_Shd" minOccurs="0"/>
  *         &lt;element name="tblLayout" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblLayoutType" minOccurs="0"/>
  *         &lt;element name="tblCellMar" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblCellMar" minOccurs="0"/>
- *         &lt;element name="tblLook" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_ShortHexNumber" minOccurs="0"/>
+ *         &lt;element name="tblLook" type="{http://schemas.openxmlformats.org/wordprocessingml/2006/main}CT_TblLook" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -134,7 +134,7 @@ public class CTTblPrBase
     protected CTShd shd;
     protected CTTblLayoutType tblLayout;
     protected CTTblCellMar tblCellMar;
-    protected CTShortHexNumber tblLook;
+    protected CTTblLook tblLook;
     @XmlTransient
     private Object parent;
 
@@ -479,10 +479,10 @@ public class CTTblPrBase
      * 
      * @return
      *     possible object is
-     *     {@link CTShortHexNumber }
+     *     {@link CTTblLook }
      *     
      */
-    public CTShortHexNumber getTblLook() {
+    public CTTblLook getTblLook() {
         return tblLook;
     }
 
@@ -491,10 +491,10 @@ public class CTTblPrBase
      * 
      * @param value
      *     allowed object is
-     *     {@link CTShortHexNumber }
+     *     {@link CTTblLook }
      *     
      */
-    public void setTblLook(CTShortHexNumber value) {
+    public void setTblLook(CTTblLook value) {
         this.tblLook = value;
     }
 
@@ -548,7 +548,7 @@ public class CTTblPrBase
         implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main")
         protected String val;
         @XmlTransient
         private Object parent;
@@ -634,7 +634,7 @@ public class CTTblPrBase
         implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;
@@ -720,7 +720,7 @@ public class CTTblPrBase
         implements Child
     {
 
-        @XmlAttribute(namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
+        @XmlAttribute(name = "val", namespace = "http://schemas.openxmlformats.org/wordprocessingml/2006/main", required = true)
         protected BigInteger val;
         @XmlTransient
         private Object parent;

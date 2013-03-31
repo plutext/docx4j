@@ -21,6 +21,7 @@
 
 package org.docx4j.wml;
 
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
@@ -1832,6 +1833,14 @@ public class ObjectFactory {
         return new CTTextScale();
     }
 
+    /**
+     * Create an instance of {@link CTTblLook }
+     * 
+     */
+    public CTTblLook createCTTblLook() {
+        return new CTTblLook();
+    }
+    
     /**
      * Create an instance of {@link CTColorSchemeMapping }
      * 

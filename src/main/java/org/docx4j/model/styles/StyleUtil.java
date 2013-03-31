@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.sharedtypes.STOnOff;
 import org.docx4j.wml.BooleanDefaultTrue;
 import org.docx4j.wml.CTBorder;
 import org.docx4j.wml.CTCnf;
@@ -40,6 +41,7 @@ import org.docx4j.wml.CTSignedTwipsMeasure;
 import org.docx4j.wml.CTTabStop;
 import org.docx4j.wml.CTTblCellMar;
 import org.docx4j.wml.CTTblLayoutType;
+import org.docx4j.wml.CTTblLook;
 import org.docx4j.wml.CTTblOverlap;
 import org.docx4j.wml.CTTblPPr;
 import org.docx4j.wml.CTTblPrBase;
@@ -296,6 +298,25 @@ public class StyleUtil {
 				 areEqual(tblPr1.getTblLook(), tblPr2.getTblLook())
 				)
 			   );
+	}
+
+	public static boolean areEqual(CTTblLook tblLook1, CTTblLook tblLook2) {
+		return ((tblLook1 == tblLook2) || 
+				((tblLook1 !=null) && (tblLook2 !=null) &&
+						areEqual(tblLook1.getVal(), tblLook2.getVal()) &&
+						areEqual(tblLook1.getFirstColumn(), tblLook2.getFirstColumn()) &&
+						areEqual(tblLook1.getFirstRow(), tblLook2.getFirstRow()) &&
+						areEqual(tblLook1.getLastColumn(), tblLook2.getLastColumn()) &&
+						areEqual(tblLook1.getLastRow(), tblLook2.getLastRow()) &&
+						areEqual(tblLook1.getNoHBand(), tblLook2.getNoHBand()) &&
+						areEqual(tblLook1.getNoVBand(), tblLook2.getNoVBand())
+						)
+						);
+	}
+						
+	
+	private static boolean areEqual(STOnOff oo1, STOnOff oo2) {
+		return (oo1 == oo2);
 	}
 
 	public static boolean areEqual(TcPr tcPr1, TcPr tcPr2) {
@@ -1413,6 +1434,18 @@ public class StyleUtil {
 		return (color == null) || isEmpty(color.getVal());
 	}
 
+	public static boolean isEmpty(CTTblLook tblLook) {
+		return (tblLook == null) || 
+				(tblLook.getFirstColumn()==null &&
+				tblLook.getFirstRow()==null && 
+				tblLook.getLastColumn()==null && 
+				tblLook.getLastRow()==null && 
+				tblLook.getNoHBand()==null && 
+				tblLook.getNoVBand()==null &&
+				tblLook.getVal()==null
+				);
+	}
+	
 	public static boolean isEmpty(CTTblLayoutType tblLayout) {
 		return (tblLayout == null) || (tblLayout.getType() == null);
 	}
@@ -1855,6 +1888,25 @@ public class StyleUtil {
 				}
 			}
 		}
+	}
+
+	public static CTTblLook apply(CTTblLook source, CTTblLook destination) {
+		if (!isEmpty(source)) {
+			if (destination == null)
+				destination = Context.getWmlObjectFactory().createCTTblLook();
+			destination.setFirstColumn(apply(source.getFirstColumn(), destination.getFirstColumn()));
+			destination.setFirstRow(apply(source.getFirstRow(), destination.getFirstRow()));
+			destination.setLastColumn(apply(source.getLastColumn(), destination.getLastColumn()));
+			destination.setLastRow(apply(source.getLastRow(), destination.getLastRow()));
+			destination.setNoHBand(apply(source.getNoHBand(), destination.getNoHBand()));
+			destination.setNoVBand(apply(source.getNoVBand(), destination.getNoVBand()));
+			destination.setVal(apply(source.getVal(), destination.getVal()));
+		}
+		return destination;
+	}
+	
+	private static STOnOff apply(STOnOff source, STOnOff destination) {
+		return (source == null ? destination : source);
 	}
 
 	public static CTTblStylePr apply(CTTblStylePr source, CTTblStylePr destination) {

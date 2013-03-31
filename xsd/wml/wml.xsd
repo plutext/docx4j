@@ -26,7 +26,9 @@ REVISION HISTORY
 
 20091010 - oops, added EG_MathContent back into EG_RunElements
 
-20120105 - add element name="compatSetting" and type="CT_CompatSetting" from 2ed, so Word 2010 can detect docx as native 
+20120105 - add element name="compatSetting" and type="CT_CompatSetting" from 2ed, so Word 2010 can detect docx as native
+
+20130401 - CT_TblLook from transitional 4ed; fixes https://github.com/plutext/docx4j/issues/53 
 	
 USAGE INSTRUCTIONS
 	  
@@ -72,7 +74,8 @@ USAGE INSTRUCTIONS
   Windows:
   
      C:>\Java\jaxb-ri-20110601\bin\xjc.bat -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d t2 -no-header -target 2.0
-  
+  or
+     C:>\Java\jaxb-ri-2.2.6\bin\xjc -classpath \Java\parent-pointer-plugin-1.0.jar -Xparent-pointer wml.xsd -d tmp -no-header -target 2.0
 	
 	cd to the directory containing the new sources
 	
@@ -132,6 +135,7 @@ PRINCIPLES:
 	xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 	xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main"
 	xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+  	xmlns:s="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"	
 	xmlns="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	targetNamespace="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
@@ -157,6 +161,11 @@ PRINCIPLES:
 	<xsd:import id="rel"
 		namespace="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 		schemaLocation="../shared/shared-relationshipReference.xsd"/>
+		
+	<!-- Used by w:tblLook -->
+	<xsd:import namespace="http://schemas.openxmlformats.org/officeDocument/2006/sharedTypes"
+    schemaLocation="../shared/shared-commonSimpleTypes.xsd"/>
+		
 	
 	<xsd:import id="xml" namespace="http://www.w3.org/XML/1998/namespace"
 		schemaLocation="xml.xsd"/>
@@ -9336,13 +9345,7 @@ PRINCIPLES:
 						Defaults</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="tblLook" type="CT_ShortHexNumber" minOccurs="0"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Table Style Conditional Formatting
-						Settings</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
+      		<xsd:element name="tblLook" type="CT_TblLook" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblPr">
@@ -9418,13 +9421,7 @@ PRINCIPLES:
 						Exceptions</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<xsd:element name="tblLook" type="CT_ShortHexNumber" minOccurs="0"
-				maxOccurs="1">
-				<xsd:annotation>
-					<xsd:documentation>Table Style Conditional Formatting Settings
-						Exception</xsd:documentation>
-				</xsd:annotation>
-			</xsd:element>
+			<xsd:element name="tblLook" type="CT_TblLook" minOccurs="0" maxOccurs="1"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="CT_TblPrEx">
@@ -9484,6 +9481,15 @@ PRINCIPLES:
 		</xsd:sequence>
 	</xsd:complexType>
 	
+	  <xsd:complexType name="CT_TblLook">
+	    <xsd:attribute name="firstRow" type="s:ST_OnOff"/>
+	    <xsd:attribute name="lastRow" type="s:ST_OnOff"/>
+	    <xsd:attribute name="firstColumn" type="s:ST_OnOff"/>
+	    <xsd:attribute name="lastColumn" type="s:ST_OnOff"/>
+	    <xsd:attribute name="noHBand" type="s:ST_OnOff"/>
+	    <xsd:attribute name="noVBand" type="s:ST_OnOff"/>
+	    <xsd:attribute name="val" type="ST_ShortHexNumber"/>
+	  </xsd:complexType>
 	
 	<xsd:simpleType name="ST_FtnPos">
 		<xsd:annotation>
