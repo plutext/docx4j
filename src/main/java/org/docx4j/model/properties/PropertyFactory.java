@@ -556,8 +556,11 @@ public class PropertyFactory {
 			} else if (name.equals("text-decoration")) {
 				if (value.getCssText().toLowerCase().equals("line-through")) {
 					return new Strike(value);
-				} else if (value.getCssText().toLowerCase().equals("underline")) {
+				} else if (value.getCssText().toLowerCase().equals("underline")
+						|| value.getCssText().toLowerCase().equals("[underline]")) {
 					return new Underline(value);
+				} else if (value.getCssText().toLowerCase().equals("none")) {
+					return null;
 				} else {
 					log.error("What to do for " + name + ":" + value.getCssText());
 				}
