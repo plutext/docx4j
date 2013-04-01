@@ -310,8 +310,14 @@ public class FieldRef {
 	public String getInstr() {
 		return instrText.getValue().getValue();
 	}
-	public void setInstrText(JAXBElement<Text> instrText) {
-		this.instrText = instrText;
+	public void setInstrText(JAXBElement<Text> instrTextIn) {
+		if (this.instrText==null){
+			this.instrText = instrTextIn;
+		} else {
+			// Merge
+			String text = this.getInstr() + instrTextIn.getValue().getValue();
+			this.instrText.getValue().setValue(text);
+		}
 	}
 
 	private R resultsSlot;
