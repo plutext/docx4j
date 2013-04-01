@@ -19,9 +19,11 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.properties.Property;
 import org.docx4j.wml.CTShd;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Element;
@@ -29,6 +31,8 @@ import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
 public class RShading extends AbstractRunProperty {
+	
+	protected static Logger log = Logger.getLogger(RShading.class);		
 	
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 

@@ -21,9 +21,11 @@ package org.docx4j.model.properties.paragraph;
 
 import java.math.BigInteger;
 
+import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.properties.Property;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.w3c.dom.Element;
@@ -31,6 +33,8 @@ import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
 public class Indent extends AbstractParagraphProperty {
+	
+	protected static Logger log = Logger.getLogger(Indent.class);		
 		
 	public final static String CSS_NAME = "margin-left";  // Use 'margin-left' instead of 'left' for CSS.
 	// 'Left' pushes the box to the right, which results can result in a horizontal scroll bar in the web browser.
@@ -58,16 +62,34 @@ public class Indent extends AbstractParagraphProperty {
 		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;	
 		short ignored = 1;
 		float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
-
+		if (fVal==0f) {
+			ind.setLeft(BigInteger.ZERO );		
+			this.setObject(ind);
+			return;
+		}
+		
 		int twip;
 		
-		short type = cssPrimitiveValue.getPrimitiveType();
+		short type = cssPrimitiveValue.getPrimitiveType();		
 		if (CSSPrimitiveValue.CSS_IN == type) {
 			twip = UnitsOfMeasurement.inchToTwip(fVal);
 		} else if (CSSPrimitiveValue.CSS_MM == type) {
 			twip = UnitsOfMeasurement.mmToTwip(fVal);		
+		} else if (CSSPrimitiveValue.CSS_PT == type) {
+			twip = UnitsOfMeasurement.pointToTwip(fVal);	
+		} else if (CSSPrimitiveValue.CSS_PX == type) {
+			twip = UnitsOfMeasurement.pxToTwip(fVal);
+		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
+			log.error("Indent: No support for unspecified unit: CSS_NUMBER "); 
+			// http://stackoverflow.com/questions/11479985/what-is-the-default-unit-for-margin-left
+			/*
+			 * In quirks mode (without a doctype), most browsers will try to correct the code by 
+			 * using the unit px. In standards compliance mode (with a proper doctype), most browsers 
+			 * will ignore the style.			
+			 **/
+			twip = 0; // TODO: should throw UnsupportedUnitException?
 		} else {
-			log.error("No support for unit " + type);
+			log.error("Indent: No support for unit " + type);
 			twip = 0;
 		}
 		ind.setLeft(BigInteger.valueOf(twip) );		

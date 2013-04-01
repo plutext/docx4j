@@ -21,8 +21,10 @@ package org.docx4j.model.properties.run;
 
 import java.math.BigInteger;
 
+import org.apache.log4j.Logger;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.properties.Property;
 import org.docx4j.wml.HpsMeasure;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Element;
@@ -30,6 +32,8 @@ import org.w3c.dom.css.CSSPrimitiveValue;
 import org.w3c.dom.css.CSSValue;
 
 public class FontSize extends AbstractRunProperty {
+	
+	protected static Logger log = Logger.getLogger(FontSize.class);		
 
 	public final static String CSS_NAME = "font-size"; 
 	public final static String FO_NAME  = "font-size"; 
@@ -53,10 +57,11 @@ public class FontSize extends AbstractRunProperty {
 		if (cssPrimitiveValue.getPrimitiveType()==CSSPrimitiveValue.CSS_IDENT) {
 			// eg 'medium'
 			String adjective = cssPrimitiveValue.getStringValue();
-			log.warn("TODO Handle FontSize units properly: " + adjective );			
 			if (adjective.equals("medium")) {
 				hpsMeasure.setVal( BigInteger.valueOf(22) ); //11 point for now
 				this.setObject(hpsMeasure);				
+			} else {
+				log.warn("TODO Handle FontSize units properly: " + adjective );							
 			}
 			
 		} else  if (cssPrimitiveValue.getPrimitiveType()!=CSSPrimitiveValue.CSS_PT) {

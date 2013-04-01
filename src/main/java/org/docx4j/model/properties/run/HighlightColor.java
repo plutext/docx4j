@@ -19,14 +19,18 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.apache.log4j.Logger;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.properties.Property;
 import org.docx4j.wml.Highlight;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
 public class HighlightColor extends AbstractRunProperty {
+
+	protected static Logger log = Logger.getLogger(HighlightColor.class);	
 	
 	public final static String CSS_NAME = "background-color"; 
 	public final static String FO_NAME  = "background-color"; 

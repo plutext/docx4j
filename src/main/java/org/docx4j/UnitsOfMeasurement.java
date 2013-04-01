@@ -35,9 +35,14 @@ public class UnitsOfMeasurement {
 	private final static Logger log = Logger.getLogger(UnitsOfMeasurement.class);
 	
 	public final static DecimalFormat format2DP;
+	public final static int DPI;
 	static {
 		format2DP =  new DecimalFormat("##.##", 
 							new DecimalFormatSymbols(Locale.ENGLISH)); 
+		
+		
+		DPI = Integer.parseInt(Docx4jProperties.getProperty("docx4j.DPI", "96"));
+		
 	}
 	
 	public static long twipToEMU(double twips) {		
@@ -77,6 +82,16 @@ public class UnitsOfMeasurement {
 	 */
 	public static int pointToTwip(float point  ) {		
 		return Math.round(20 * point);
+	}
+
+	/**
+	 * @since 3.0.0
+	 */
+	public static int pxToTwip(float px) {
+		
+		float inch = px/DPI;
+		return inchToTwip(inch);
+		
 	}
 	
 	

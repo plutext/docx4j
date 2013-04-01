@@ -21,8 +21,10 @@ package org.docx4j.model.properties.paragraph;
 
 import java.math.BigInteger;
 
+import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.jaxb.Context;
+import org.docx4j.model.properties.Property;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.Ind;
 import org.docx4j.wml.PPrBase.Spacing;
@@ -32,6 +34,7 @@ import org.w3c.dom.css.CSSValue;
 
 public class SpaceAfter extends AbstractParagraphProperty {
 	
+	protected static Logger log = Logger.getLogger(SpaceAfter.class);		
 	
 	public final static String CSS_NAME = "margin-bottom"; 
 	public final static String FO_NAME  = "space-after"; 
@@ -59,6 +62,10 @@ public class SpaceAfter extends AbstractParagraphProperty {
 		CSSPrimitiveValue cssPrimitiveValue = (CSSPrimitiveValue)value;	
 		short ignored = 1;
 		float fVal = cssPrimitiveValue.getFloatValue(ignored); // unit type ignored in cssparser
+		if (fVal==0f) {
+			this.setObject(BigInteger.ZERO);
+			return;
+		}
 
 		int twip;
 		
@@ -66,7 +73,18 @@ public class SpaceAfter extends AbstractParagraphProperty {
 		if (CSSPrimitiveValue.CSS_IN == type) {
 			twip = UnitsOfMeasurement.inchToTwip(fVal);
 		} else if (CSSPrimitiveValue.CSS_MM == type) {
-			twip = UnitsOfMeasurement.mmToTwip(fVal);		
+			twip = UnitsOfMeasurement.mmToTwip(fVal);	
+		} else if (CSSPrimitiveValue.CSS_PT == type) {
+			twip = UnitsOfMeasurement.pointToTwip(fVal);	
+		} else if (CSSPrimitiveValue.CSS_EMS == type) {
+			log.warn("No support for unit: CSS_EMS; instead of em, please use an absolute unit. ");
+			// calculated based on the font size
+			twip = 0;
+		} else if (CSSPrimitiveValue.CSS_PX == type) {
+			twip = UnitsOfMeasurement.pxToTwip(fVal);
+		} else if (CSSPrimitiveValue.CSS_NUMBER == type) {
+			log.error("No support for unit: CSS_NUMBER ");
+			twip = 0;			
 		} else {
 			log.error("No support for unit " + type);
 			twip = 0;

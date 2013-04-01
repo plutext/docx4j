@@ -19,10 +19,12 @@
  */
 package org.docx4j.model.properties.run;
 
+import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
 import org.docx4j.dml.CTTextCharacterProperties;
 import org.docx4j.fonts.Mapper;
 import org.docx4j.fonts.PhysicalFont;
+import org.docx4j.model.properties.Property;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.wml.RFonts;
@@ -32,6 +34,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.css.CSSValue;
 
 public class Font extends AbstractRunProperty {
+	
+	protected static Logger log = Logger.getLogger(Font.class);		
 
 	public final static String CSS_NAME = "font-family"; 
 	public final static String FO_NAME  = "font-family"; 
@@ -52,7 +56,7 @@ public class Font extends AbstractRunProperty {
 	public Font(CSSValue value) {
 		
 		debug(CSS_NAME, value);
-		log.warn("TODO");
+		log.warn("RFonts from CSS font-family is a TODO");
 	}
 	
 
