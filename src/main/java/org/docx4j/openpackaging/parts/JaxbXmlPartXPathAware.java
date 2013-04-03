@@ -42,6 +42,7 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.JaxbValidationEventHandler;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkInterface;
 import org.docx4j.openpackaging.parts.WordprocessingML.AltChunkType;
@@ -111,7 +112,8 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 	public List<Object> getJAXBNodesViaXPath(String xpathExpr, boolean refreshXmlFirst) 
 			throws JAXBException {
 		
-		return XmlUtils.getJAXBNodesViaXPath(binder, getJaxbElement(), xpathExpr, refreshXmlFirst);
+		E el = getJaxbElement();
+		return XmlUtils.getJAXBNodesViaXPath(binder, el, xpathExpr, refreshXmlFirst);
 	}	
 
 	/**
@@ -166,7 +168,7 @@ public abstract class JaxbXmlPartXPathAware<E> extends JaxbXmlPart<E> implements
 			// 
 			binder = jc.createBinder();
 			
-			log.debug("binder: " + binder.getClass().getName());
+			log.debug("info: " + binder.getClass().getName());
 			
 			JaxbValidationEventHandler eventHandler = new JaxbValidationEventHandler();
 			eventHandler.setContinue(false);
