@@ -286,6 +286,7 @@
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/core/dc/terms/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/custom/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/extended/jaxb.properties"/>
+		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/coverPageProps/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/docProps/variantTypes/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/fonts/microsoft/jaxb.properties"/>
 		<copy file="src/main/resources/jaxb.properties.MOXy" tofile="src/main/java/org/docx4j/fonts/substitutions/jaxb.properties"/>
@@ -335,6 +336,7 @@
 		<delete file="src/main/java/org/docx4j/docProps/core/dc/terms/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/docProps/custom/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/docProps/extended/jaxb.properties"/>
+		<delete file="src/main/java/org/docx4j/docProps/coverPageProps/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/docProps/variantTypes/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/fonts/microsoft/jaxb.properties"/>
 		<delete file="src/main/java/org/docx4j/fonts/substitutions/jaxb.properties"/>
