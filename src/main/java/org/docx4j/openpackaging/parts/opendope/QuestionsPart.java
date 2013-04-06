@@ -5,6 +5,7 @@ import javax.xml.bind.JAXBContext;
 import org.apache.log4j.Logger;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.PartName;
 import org.opendope.conditions.Condition;
 import org.opendope.questions.Question;

@@ -33,6 +33,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
@@ -48,6 +49,9 @@ import org.docx4j.openpackaging.io3.stores.PartStore;
 import org.docx4j.openpackaging.io3.stores.ZipPartStore;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
+import org.docx4j.openpackaging.parts.DocPropsCoverPagePart;
+import org.docx4j.openpackaging.parts.JaxbCustomXmlDataStoragePart;
+import org.docx4j.openpackaging.parts.JaxbXmlPart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
@@ -435,6 +439,8 @@ public class Load3 extends Load {
 //					((BinaryPart)part).setBinaryData(is);
 
 				} else if (part instanceof org.docx4j.openpackaging.parts.CustomXmlDataStoragePart ) {
+					// ContentTypeManager initially detects them as CustomXmlDataStoragePart;
+					// the below changes as necessary 
 					
 					// Is it a part we know?
 					is = partStore.loadPart( resolvedPartUri);
@@ -444,7 +450,13 @@ public class Load3 extends Load {
 						log.debug(o.getClass().getName());
 						
 						PartName name = part.getPartName();
-						
+						if (o instanceof CoverPageProperties) {
+							
+							part = new DocPropsCoverPagePart(name);	
+							((DocPropsCoverPagePart)part).setJaxbElement(
+									(CoverPageProperties)o);
+							
+						} else 						
 						if (o instanceof org.opendope.conditions.Conditions) {
 							
 							part = new ConditionsPart(name);

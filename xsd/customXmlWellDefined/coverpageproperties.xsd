@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema
+	targetNamespace="http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps"
+	xmlns="http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	blockDefault="#all" elementFormDefault="qualified"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" jaxb:version="2.1">
+	
+	<!-- 
+	****************************************************************
+	***                                                          ***
+	***                      cover page Properties                  ***
+	***                                                          ***
+	****************************************************************
+	
+	
+		
+	 xjc.sh  THIS.xsd -d ../java/ -no-header  -target 2.0
+	 
+	 NB check package-info.java .. this seems to be putting weird characters in there (with RI 2.2.6)!
+	 
+			 "http://schemas.microsoft.com/\u200coffice/\u200c2006/\u200ccoverPageProps", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+	 									   ^^^^^^	
+		
+	
+	-->
+		
+	<xsd:annotation>
+		<xsd:appinfo>
+			<xsd:appinfo>
+				<jaxb:globalBindings>
+				</jaxb:globalBindings>
+			</xsd:appinfo>
+			<jaxb:schemaBindings>
+				<!-- can be overridden on the command line with -p -->
+				<!-- A schema scope covers all the schema elements in the
+				*target namespace* of a schema.  [JAXB 2.1 Spec 7.4.1]
+				
+				Since all the relevant bits of wordml are in a
+				single namespace, this means we can't put for
+				example the table elements in a table package. -->
+				<jaxb:package name="org.docx4j.docProps.coverPageProps"/>
+			</jaxb:schemaBindings>
+		</xsd:appinfo>
+	</xsd:annotation>
+	
+	<xsd:element name="CoverPageProperties">
+		<xsd:complexType>
+		  <xsd:sequence>
+		    <xsd:element name="PublishDate" type="ST_PublishDate"/>
+		    <xsd:element name="Abstract" type="xsd:string"/>
+		    <xsd:element name="CompanyAddress" type="xsd:string"/>
+		    <xsd:element name="CompanyPhone" type="xsd:string"/>
+		    <xsd:element name="CompanyFax" type="xsd:string"/>
+		    <xsd:element name="CompanyEmail" type="xsd:string"/>
+		  </xsd:sequence>
+		</xsd:complexType>
+		</xsd:element>	
+	
+	<xsd:simpleType name="ST_PublishDate">
+	  <xsd:union memberTypes="xsd:date xsd:dateTime xsd:string"/>
+	</xsd:simpleType>
+	
+	</xsd:schema>

@@ -45,6 +45,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
 import org.docx4j.openpackaging.Base;
@@ -56,6 +57,7 @@ import org.docx4j.openpackaging.exceptions.InvalidFormatException;
 import org.docx4j.openpackaging.exceptions.PartUnrecognisedException;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.DefaultXmlPart;
+import org.docx4j.openpackaging.parts.DocPropsCoverPagePart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.XmlPart;
@@ -594,7 +596,13 @@ public class LoadFromZipNG extends Load {
 						
 						PartName name = part.getPartName();
 						
-						if (o instanceof org.opendope.conditions.Conditions) {
+						if (o instanceof CoverPageProperties) {
+							
+							part = new DocPropsCoverPagePart(name);							
+							((DocPropsCoverPagePart)part).setJaxbElement(
+									(CoverPageProperties)o);
+							
+						} else if (o instanceof org.opendope.conditions.Conditions) {
 							
 							part = new ConditionsPart(name);
 							((ConditionsPart)part).setJaxbElement(

@@ -8,8 +8,8 @@ import org.docx4j.XmlUtils;
 import org.docx4j.bibliography.CTSourceType;
 import org.docx4j.bibliography.CTSources;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
+import org.docx4j.openpackaging.parts.JaxbCustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.PartName;
-import org.docx4j.openpackaging.parts.opendope.JaxbCustomXmlDataStoragePart;
 
 /**
  * @since 2.7

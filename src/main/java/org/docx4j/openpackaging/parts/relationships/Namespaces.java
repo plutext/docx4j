@@ -53,6 +53,9 @@ public class Namespaces {
 	// docProps/custom.xml
 	public final static String PROPERTIES_CUSTOM = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties";
+
+	public final static String PROPERTIES_COVERPAGE = 
+			"http://schemas.microsoft.com/‌office/‌2006/‌coverPageProps";
 	
 	public final static String IMAGE = 
 		"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";

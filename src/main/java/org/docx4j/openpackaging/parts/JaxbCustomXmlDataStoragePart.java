@@ -1,4 +1,4 @@
-package org.docx4j.openpackaging.parts.opendope;
+package org.docx4j.openpackaging.parts;
 
 import java.util.List;
 
@@ -12,10 +12,6 @@ import org.docx4j.jaxb.Context;
 import org.docx4j.jaxb.NamespacePrefixMappings;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.exceptions.InvalidFormatException;
-import org.docx4j.openpackaging.parts.CustomXmlPart;
-import org.docx4j.openpackaging.parts.JaxbXmlPart;
-import org.docx4j.openpackaging.parts.JaxbXmlPartXPathAware;
-import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;

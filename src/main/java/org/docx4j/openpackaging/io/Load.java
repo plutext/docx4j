@@ -31,6 +31,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
+import org.docx4j.docProps.coverPageProps.CoverPageProperties;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.datastorage.BindingHandler;
 import org.docx4j.model.datastorage.CustomXmlDataStorage;
@@ -43,6 +44,7 @@ import org.docx4j.openpackaging.packages.OpcPackage;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePart;
 import org.docx4j.openpackaging.parts.CustomXmlDataStoragePropertiesPart;
 import org.docx4j.openpackaging.parts.CustomXmlPart;
+import org.docx4j.openpackaging.parts.DocPropsCoverPagePart;
 import org.docx4j.openpackaging.parts.Part;
 import org.docx4j.openpackaging.parts.PartName;
 import org.docx4j.openpackaging.parts.WordprocessingML.BibliographyPart;
@@ -180,11 +182,17 @@ public class Load {
 					try {
 						Unmarshaller u = Context.jc.createUnmarshaller();
 						Object o = u.unmarshal( is );						
-						log.debug(o.getClass().getName());
+						log.info(o.getClass().getName());
 						
 						PartName name = part.getPartName();
 						
-						if (o instanceof org.opendope.conditions.Conditions) {
+						if (o instanceof CoverPageProperties) {
+							
+							part = new DocPropsCoverPagePart(name);							
+							((DocPropsCoverPagePart)part).setJaxbElement(
+									(CoverPageProperties)o);
+							
+						} else if (o instanceof org.opendope.conditions.Conditions) {
 							
 							part = new ConditionsPart(name);
 							((ConditionsPart)part).setJaxbElement(
