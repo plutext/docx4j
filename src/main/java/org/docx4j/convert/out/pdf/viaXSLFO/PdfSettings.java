@@ -1,7 +1,5 @@
 package org.docx4j.convert.out.pdf.viaXSLFO;
 
-import java.util.Set;
-
 import org.docx4j.convert.out.AbstractConversionSettings;
 
 public class PdfSettings extends AbstractConversionSettings {

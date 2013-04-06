@@ -18,20 +18,17 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_COMMON_DEEP_COPY = "pp.common.deepcopy";
 
-	
 	/** The conversion is only able to handle bookmarks that are in a paragraph. This 
 	 *  flag that bookmarks are in paragraphs. This is not needed if 
 	 *  the document doesn't contain bookmarks or page references.
 	 */
 	public static final String PP_COMMON_MOVE_BOOKMARKS = "pp.common.movebookmarks";
 
-	
 	/** Word might put some pagebreaks in a paragraph. In the conversion process the 
 	 *  pagebreaks need to be at the beginning of a paragraph. This is not needed if 
 	 *  the document doesn't contain explicit pagebreaks. 
 	 */
 	public static final String PP_COMMON_MOVE_PAGEBREAK = "pp.common.movepagebreak";
-
 	
 	/** Word combines the borders and background colors of two (or more) continuous paragraphs. 
 	 *  This flag simulates this behaviour. This is not needed if paragraphs dont have a 
@@ -39,7 +36,6 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_COMMON_CONTAINERIZATION = "pp.common.containerization";
 
-	
 	/** Word may save a field (date, page numbers, references...) in two formats: a simple one
 	 *  and a complex one. The conversion process only knows about the simple ones. This step
 	 *  converts the complex fields (if possible) to simple ones. This step is only required
@@ -47,7 +43,6 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_COMMON_COMBINE_FIELDS = "pp.common.combinefields";
 
-	
 	/** The page number formatting might be stored in different places, the section pointer and the 
 	 *  field definition. If the document contains page count fields (NUMPAGES, SECTIONPAGES) it might
 	 *  be necessary to do a two pass conversion. This step collects the necessary information.  
@@ -58,13 +53,11 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_COMMON_PAGE_NUMBERING = "pp.common.pagenumbering";
 
-	
 	/** This step defines some dummy page number information. The required data will be taken only 
 	 *  from the section pointers. In PDF the conversion will always be one pass. The use of 
 	 *  <code>PP_COMMON_PAGE_NUMBERING</code> in HTML doesn't offer any advantage. 
 	 */
 	public static final String PP_COMMON_DUMMY_PAGE_NUMBERING = "pp.common.dummypagenumbering";
-
 	
 	/** In PDF the conversion process needs to break up the document into the defined sections to handle
 	 *  such things as headers and footers. This step does this processing. If the document only contains
@@ -74,7 +67,6 @@ public interface ConversionFeatures {
 	 */
 	public static final String PP_COMMON_CREATE_SECTIONS = "pp.common.createsections";
 
-	
 	/** This step defines only one section for the complete document. The required data will be taken 
 	 *  from the body section pointers. In PDF the document will be treated as having only one section. 
 	 *  The use of <code>PP_COMMON_CREATE_SECTIONS</code> in HTML doesn't offer any advantage. 

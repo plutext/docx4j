@@ -271,7 +271,7 @@ public class ConversionSectionWrapperFactory {
 				}				
 			} 
 			sectionContent.add(o);
-			log.debug(XmlUtils.marshaltoString(o, true));
+			System.out.println(XmlUtils.marshaltoString(o, true));
 		}
 		
 		currentSectionWrapper = createSectionWrapper(

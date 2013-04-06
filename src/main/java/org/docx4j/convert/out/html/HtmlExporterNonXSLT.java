@@ -11,6 +11,7 @@ import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
 import org.docx4j.convert.out.Converter;
 import org.docx4j.convert.out.html.AbstractHtmlExporter.HtmlSettings;
+import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
@@ -21,11 +22,12 @@ import org.docx4j.model.styles.Tree;
 import org.docx4j.model.table.TableModel;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
 import org.docx4j.openpackaging.parts.relationships.Namespaces;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
-import org.docx4j.wml.Tbl;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -289,34 +291,18 @@ public class HtmlExporterNonXSLT {
 							((org.docx4j.wml.Text)o).getValue()));					
 				}
 
+			} else if (o instanceof org.docx4j.wml.CTSimpleField) {
+
+				convertToNode(conversionContext, 
+							  (ContentAccessor)o, FldSimpleModel.MODEL_ID,
+							  htmlDoc, (currentSpan != null ? currentSpan : currentP));
+				
+
 			} else if (o instanceof org.docx4j.wml.Tbl) {
 
-				Tbl tbl = (org.docx4j.wml.Tbl)o;
-
-				// To use our existing model, first we need childResults.
-				// We get these using a new XSLFOGenerator object.
-				
-		    	DocumentFragment tableFragment = htmlDoc.createDocumentFragment();
-		    	HTMLGenerator tableRowTraversor = new HTMLGenerator(conversionContext, tableFragment);
-				new TraversalUtil(tbl.getContent(), tableRowTraversor);
-				
-				Node htmlTable = 
-					 conversionContext.getModelRegistry().toNode(
-							 conversionContext, 
-							 tbl, 
-							 TableModel.MODEL_ID, 
-							 tableFragment, 
-							 htmlDoc);
-				
-				if (htmlTable != null) {
-					if (currentP != null) {
-						currentP.appendChild(htmlTable);
-					}
-					else {
-						//in case there isn't a paragraph 
-						blockContext.appendChild(htmlTable);
-					}
-				}
+				convertToNode(conversionContext, 
+							  (ContentAccessor)o, TableModel.MODEL_ID,
+							  htmlDoc, (currentP != null ? currentP : blockContext));
 				
 				currentP=null;
 				currentSpan=null;
@@ -402,13 +388,36 @@ public class HtmlExporterNonXSLT {
 			
 			return null;
 		}
+
+		private void convertToNode(HTMLConversionContextNonXSLT conversionContext, 
+								   ContentAccessor contentAccessor, String modelId, 
+								   org.w3c.dom.Document document, Node parentNode) throws DOMException {
+
+			// To use our existing model, first we need childResults.
+			// We get these using a new HTMLGenerator object.
+			
+			DocumentFragment childResults = document.createDocumentFragment();
+			HTMLGenerator generator = new HTMLGenerator(conversionContext, childResults);
+			new TraversalUtil(contentAccessor.getContent(), generator);
+			
+			Node resultNode = 
+				 conversionContext.getModelRegistry().toNode(
+						 conversionContext, 
+						 contentAccessor, 
+						 modelId, 
+						 childResults, 
+						 document);
+			
+			if (resultNode != null) {
+				parentNode.appendChild(resultNode);
+			}
+		}
     	
     	@Override
 		public boolean shouldTraverse(Object o) {
-    		if (o instanceof org.docx4j.wml.Tbl) {
-    			return false;
-    		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
-    			// this is handled separately    			
+    		if ((o instanceof org.docx4j.wml.Tbl) ||
+    			(o instanceof org.docx4j.wml.P.Hyperlink) ||
+    			(o instanceof org.docx4j.wml.CTSimpleField)) {
     			return false;
     		} else {
     			return true;

@@ -3,7 +3,6 @@ package org.docx4j.convert.out.html;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -231,11 +230,6 @@ public abstract class AbstractHtmlExporter implements Output {
 		
 		public String getImageTargetUri() {
 			return (String)settings.get(IMAGE_TARGET_URI);
-		}
-
-		public Set<String> getFeatures() {
-			// TODO Auto-generated method stub
-			return null;
 		}
 	}
 	

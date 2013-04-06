@@ -680,8 +680,12 @@
 <!--  tmp bookmarks -->
 
   <xsl:template match="w:fldSimple" >
-		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.Converter.notImplemented($conversionContext,., 'no support for fields' )" />  	
+		<xsl:variable name="childResults">
+			<xsl:apply-templates/>
+		</xsl:variable>
+
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode(
+	  			$conversionContext,., $childResults)"/>	  		
   </xsl:template>
   <xsl:template match="w:fldChar" >
 		<xsl:copy-of 
