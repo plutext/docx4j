@@ -1,12 +1,14 @@
 package org.docx4j.convert.out;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.OpcPackage;
 
-public abstract class AbstractConversionSettings {
+public abstract class AbstractConversionSettings implements ConversionFeatures {
 	
 	public static final String IMAGE_INCLUDE_UUID = "imageIncludeUUID";
 	public static final String IMAGE_DIR_PATH = "imageDirPath";
@@ -14,9 +16,22 @@ public abstract class AbstractConversionSettings {
 	public static final String WML_PACKAGE = "wmlPackage";
 
 	protected Map<String, Object> settings = new TreeMap<String, Object>();
+	protected Set<String> features = new TreeSet<String>();
 	
 	public Map<String, Object> getSettings() {
 		return settings;
+	}
+	
+	public Set<String> getFeatures() {
+		return features;
+	}
+	
+	public void addFeatures(String[] featuresArray) {
+		if ((featuresArray != null) && (featuresArray.length > 0)) {
+			for (int i=0; i<featuresArray.length; i++) {
+				getFeatures().add(featuresArray[i]);
+			}
+		}
 	}
 	
 	// If this is set to something, images in

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.log4j.Logger;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.model.Model;
@@ -21,6 +22,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public abstract class AbstractFldSimpleWriter implements ModelConverter {
+	
+	private static Logger log = Logger.getLogger(AbstractFldSimpleWriter.class);			
+	
 	public interface FldSimpleWriterHandler {
 		public String getName();
 	}
@@ -127,14 +131,22 @@ public abstract class AbstractFldSimpleWriter implements ModelConverter {
 	}
 
 	@Override
-	public Node toNode(AbstractWmlConversionContext context, Model model, TransformState state, Document doc) throws TransformerException {
-	FldSimpleModel fldSimpleModel = (FldSimpleModel)model;
-	FldSimpleWriterHandler handler = handlers.get(fldSimpleModel.getFldName());
-	FldSimpleNodeWriterHandler nodeHandler = null;
-	Node ret = null;
-	String value = null;
+	public Node toNode(AbstractWmlConversionContext context, Model model, 
+			TransformState state, Document doc) throws TransformerException {
+		
+		FldSimpleModel fldSimpleModel = (FldSimpleModel)model;
+		
+		log.debug("looking for handler for " + fldSimpleModel.getFldName());
+		
+		FldSimpleWriterHandler handler = handlers.get(fldSimpleModel.getFldName());
+		FldSimpleNodeWriterHandler nodeHandler = null;
+		Node ret = null;
+		String value = null;
 		if (handler == null) {
 			handler = defaultHandler;
+			log.debug(".. using  defaultHandler" );
+		} else {
+			log.debug(".. got it .. " + handler.getClass().getName());			
 		}
 		if (handler instanceof FldSimpleNodeWriterHandler) {
 			nodeHandler = (FldSimpleNodeWriterHandler)handler;

@@ -22,6 +22,7 @@ package org.docx4j.convert.out;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.openpackaging.packages.OpcPackage;
 import org.w3c.dom.DocumentFragment;

@@ -22,9 +22,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.fop.apps.MimeConstants;
 import org.apache.log4j.Logger;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.ConversionSectionWrappers;
-import org.docx4j.convert.out.PageBreak;
+import org.docx4j.convert.out.Preprocess;
+import org.docx4j.convert.out.common.preprocess.Containerization;
 import org.docx4j.fonts.fop.util.FopUtils;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
@@ -120,7 +120,6 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 		if (settings == null) {
 			settings = new PdfSettings();
 		}
-		settings.setWmlPackage(localWmlPackage);
 	
 		
 		if (localWmlPackage == null) {
@@ -140,17 +139,12 @@ public class Conversion extends org.docx4j.convert.out.pdf.PdfConversion {
 			// Document domDoc = XmlPackage.getFlatDomDocument(wordMLPackage);
 			// Document domDoc =
 			// XmlUtils.marshaltoW3CDomDocument(wordMLPackage.getMainDocumentPart().getJaxbElement());
-
-			// Don't change the user's Document object; create a tmp one
-			org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(localWmlPackage
-					.getMainDocumentPart().getJaxbElement());
 			
-			
-			// Preprocessing
-			Containerization.groupAdjacentBorders(tmpDoc.getBody());
-			PageBreak.movePageBreaks(tmpDoc.getBody());
+			localWmlPackage = 
+					Preprocess.process(localWmlPackage, settings.getFeatures());
 			ConversionSectionWrappers conversionSectionWrappers = 
-					ConversionSectionWrappers.build(tmpDoc, localWmlPackage);
+					Preprocess.createWrappers(localWmlPackage, settings.getFeatures());
+			settings.setWmlPackage(localWmlPackage);
 
 			conversionContext = new PdfConversionContext(settings, conversionSectionWrappers);
 			

@@ -29,16 +29,16 @@ import org.apache.log4j.Logger;
 import org.docx4j.TraversalUtil;
 import org.docx4j.TraversalUtil.CallbackImpl;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.ConversionSectionWrapper;
 import org.docx4j.convert.out.ConversionSectionWrappers;
 import org.docx4j.convert.out.Converter;
-import org.docx4j.convert.out.PageBreak;
+import org.docx4j.convert.out.Preprocess;
 import org.docx4j.convert.out.pdf.viaXSLFO.LayoutMasterSetBuilder;
 import org.docx4j.convert.out.pdf.viaXSLFO.PDFConversionImageHandler;
 import org.docx4j.convert.out.pdf.viaXSLFO.PdfSettings;
 import org.docx4j.fonts.fop.util.FopUtils;
 import org.docx4j.model.PropertyResolver;
+import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.images.ConversionImageHandler;
 import org.docx4j.model.images.WordXmlPictureE10;
 import org.docx4j.model.images.WordXmlPictureE20;
@@ -58,13 +58,14 @@ import org.docx4j.wml.Br;
 import org.docx4j.wml.P;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.PPrBase.NumPr.Ilvl;
+import org.docx4j.wml.ContentAccessor;
 import org.docx4j.wml.R;
 import org.docx4j.wml.RPr;
 import org.docx4j.wml.STBrType;
 import org.docx4j.wml.Style;
-import org.docx4j.wml.Tbl;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -142,22 +143,18 @@ public class XSLFOExporterNonXSLT {
 	 * Generate XSL FO for the entire MainDocumentPart.
 	 * @return
 	 */
-	public org.w3c.dom.Document export() {
+	public org.w3c.dom.Document export() throws Docx4JException {
 		Element foRoot = null;
 		Element pageSequence = null;
 		Element flow = null;
+		WordprocessingMLPackage localWmlPackage = null;
+		ConversionSectionWrappers conversionSectionWrappers = null;
 		
-		//XSLFOExporterNonXSLT didn't do a deep copy
-		org.docx4j.wml.Document tmpDoc = 
-				((WordprocessingMLPackage)pdfSettings.getWmlPackage()).getMainDocumentPart().getJaxbElement();
-
 		
-		// Preprocessing
-		Containerization.groupAdjacentBorders(tmpDoc.getBody());
-		PageBreak.movePageBreaks(tmpDoc.getBody());
-		ConversionSectionWrappers conversionSectionWrappers = 
-				ConversionSectionWrappers.build(tmpDoc, (WordprocessingMLPackage)pdfSettings.getWmlPackage());
-
+		localWmlPackage = Preprocess.process(localWmlPackage, pdfSettings.getFeatures());
+		conversionSectionWrappers = Preprocess.createWrappers(localWmlPackage, pdfSettings.getFeatures()); 
+		pdfSettings.setWmlPackage(localWmlPackage);
+		
 		XSLFOConversionContextNonXSLT conversionContext = new XSLFOConversionContextNonXSLT(pdfSettings, conversionSectionWrappers);
 		
     	document = XmlUtils.neww3cDomDocument();
@@ -879,47 +876,32 @@ public class XSLFOExporterNonXSLT {
 								
 			} else if (o instanceof org.docx4j.wml.Text) {
 				
-				System.out.println("Processing '" + ((org.docx4j.wml.Text)o).getValue());					
+				log.debug("Processing '" + ((org.docx4j.wml.Text)o).getValue());					
 				
 				if (currentSpan!=null) {
 					currentSpan.appendChild(document.createTextNode(
 							((org.docx4j.wml.Text)o).getValue()));
 					
-					System.out.println(XmlUtils.w3CDomNodeToString(currentP));
+					log.debug(XmlUtils.w3CDomNodeToString(currentP));
 					
 				} else {
 					currentP.appendChild(document.createTextNode(
 							((org.docx4j.wml.Text)o).getValue()));					
 				}
 
+
+			} else if (o instanceof org.docx4j.wml.CTSimpleField) {
+
+				convertToNode(conversionContext, 
+							  (ContentAccessor)o, FldSimpleModel.MODEL_ID,
+							  document, (currentSpan != null ? currentSpan : currentP));
+				
+
 			} else if (o instanceof org.docx4j.wml.Tbl) {
 
-				Tbl tbl = (org.docx4j.wml.Tbl)o;
-				
-				// To use our existing model, first we need childResults.
-				// We get these using a new XSLFOGenerator object.
-				
-		    	DocumentFragment tableFragment = document.createDocumentFragment();
-				XSLFOGenerator tableRowTraversor = new XSLFOGenerator(conversionContext, tableFragment);
-				new TraversalUtil(tbl.getContent(), tableRowTraversor);
-				
-				Node foTable = 
-					 conversionContext.getModelRegistry().toNode(
-							 conversionContext, 
-							 tbl, 
-							 TableModel.MODEL_ID, 
-							 tableFragment, 
-							 document);
-				
-				if (foTable != null) {
-					if (currentP != null) { // ??
-						currentP.appendChild(foTable);
-					}
-					else {
-						//in case there isn't a paragraph 
-						parentNode.appendChild(foTable);
-					}
-				}
+				convertToNode(conversionContext, 
+							  (ContentAccessor)o, TableModel.MODEL_ID,
+							  document, (currentP != null ? currentP : parentNode));
 				
 				currentP=null;
 				currentSpan=null;
@@ -1037,21 +1019,41 @@ public class XSLFOExporterNonXSLT {
 			
 			return null;
 		}
+
+		private void convertToNode(XSLFOConversionContextNonXSLT conversionContext, 
+								   ContentAccessor contentAccessor, String modelId, 
+								   org.w3c.dom.Document document, Node parentNode) throws DOMException {
+
+			// To use our existing model, first we need childResults.
+			// We get these using a new HTMLGenerator object.
+			
+			DocumentFragment childResults = document.createDocumentFragment();
+			XSLFOGenerator generator = new XSLFOGenerator(conversionContext, childResults);
+			new TraversalUtil(contentAccessor.getContent(), generator);
+			
+			Node resultNode = 
+				 conversionContext.getModelRegistry().toNode(
+						 conversionContext, 
+						 contentAccessor, 
+						 modelId, 
+						 childResults, 
+						 document);
+			
+			if (resultNode != null) {
+				parentNode.appendChild(resultNode);
+			}
+		}
     	
     	@Override
 		public boolean shouldTraverse(Object o) {
-    		if (o instanceof org.docx4j.wml.Tbl) {
-    			// Don't traverse into the table,
-    			// since this is handled separately    			
-    			return false;
-    		} else if (o instanceof org.docx4j.wml.P.Hyperlink) {
-    			// this is handled separately    			
+    		if ((o instanceof org.docx4j.wml.Tbl) ||
+    			(o instanceof org.docx4j.wml.P.Hyperlink) ||
+    			(o instanceof org.docx4j.wml.CTSimpleField)) {
     			return false;
     		} else {
     			return true;
     		}
 		}
-    	
     	
 	}
 	

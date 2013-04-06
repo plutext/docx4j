@@ -1,13 +1,11 @@
 package org.docx4j.convert.out.html;
 
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
-import org.docx4j.convert.out.AbstractTableWriter;
+import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.table.Cell;
@@ -28,9 +26,6 @@ public class TableWriter extends AbstractTableWriter {
 	
 	protected final static String TABLE_BORDER_MODEL = "border-collapse";
 	protected final static String TABLE_INDENT = "margin-left"; 
-	
-	//This map gets used in applyAttributes, it's created here to be able to reuse it
-	protected Map<String, Property> tempAttributeMap = new TreeMap<String, Property>();
 
   	public static String getId(int idx) {
   		return "docx4j_tbl_" + idx;
@@ -78,18 +73,7 @@ public class TableWriter extends AbstractTableWriter {
 
 	@Override
 	protected void applyAttributes(AbstractWmlConversionContext context, List<Property> properties, Element element) {
-	StringBuilder buffer = null;
-		if ((properties != null) && (!properties.isEmpty())) {
-			buffer = new StringBuilder();
-			for (int i=0; i<properties.size(); i++) {
-				tempAttributeMap.put(properties.get(i).getCssName(), properties.get(i));
-			}
-			for (Property property : tempAttributeMap.values()) {
-				buffer.append(property.getCssProperty());
-			}
-			tempAttributeMap.clear();
-			appendStyle(element, buffer.toString());
-		}
+		HtmlCssHelper.applyAttributes(properties, element);
 	}
 	
 	@Override
@@ -117,18 +101,18 @@ public class TableWriter extends AbstractTableWriter {
 		// border model
 		// Handle cellSpacing as in xsl-fo to have a consistent look.
 		if (cellSpacing > 0) {
-			appendStyle(tableRoot, Property.composeCss(TABLE_BORDER_MODEL, "separate"));
+			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss(TABLE_BORDER_MODEL, "separate"));
 			tableRoot.setAttribute("cellspacing", 
 					//WW seems only to store cellSpacing/2 but displays and applies cellSpacing * 2
 					convertToPixels(cellSpacing * 2));
 		}
 		else {
-			appendStyle(tableRoot, Property.composeCss(TABLE_BORDER_MODEL, "collapse"));
+			HtmlCssHelper.appendStyle(tableRoot, Property.composeCss(TABLE_BORDER_MODEL, "collapse"));
 		}
 		
 		// table width
 		if (table.getTableWidth() > 0) {
-			appendStyle(tableRoot, 
+			HtmlCssHelper.appendStyle(tableRoot, 
 					Property.composeCss("width", UnitsOfMeasurement.twipToBest(table.getTableWidth())));
 		}
 	}
@@ -149,7 +133,7 @@ public class TableWriter extends AbstractTableWriter {
 	@Override
 	protected void applyColumnCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Element column, int columnIndex, int columnWidth) {
 		if ((table.getTableWidth() > 0) && (columnWidth > -1)) {
-			appendStyle(column, Property.composeCss("width", 
+			HtmlCssHelper.appendStyle(column, Property.composeCss("width", 
 					UnitsOfMeasurement.format2DP.format((100f * columnWidth)/table.getTableWidth()) + "%"));
 		}
 	}
@@ -157,8 +141,8 @@ public class TableWriter extends AbstractTableWriter {
   	@Override
 	protected void applyTableCellCustomAttributes(AbstractWmlConversionContext context, TableModel table, TransformState transformState, Cell tableCell, Element cellNode, boolean isHeader, boolean isDummyCell) {
   		if (isDummyCell) {
-			appendStyle(cellNode, Property.composeCss("border", "none"));
-			appendStyle(cellNode, Property.composeCss("background-color:", "transparent"));
+  			HtmlCssHelper.appendStyle(cellNode, Property.composeCss("border", "none"));
+  			HtmlCssHelper.appendStyle(cellNode, Property.composeCss("background-color:", "transparent"));
   		}
   		
 		if (tableCell.getExtraCols() > 0) {
@@ -169,16 +153,5 @@ public class TableWriter extends AbstractTableWriter {
 			cellNode.setAttribute("rowspan", Integer.toString(tableCell.getExtraRows() + 1));
 		}
   	}
-
-	private void appendStyle(Element element, String newValue) {
-	String style = element.getAttribute("style");
-		if ((style != null) && (style.length() > 0)) {
-			element.setAttribute("style", style + newValue);
-		}
-		else {
-			element.setAttribute("style", newValue);
-		}
-	}
-	
 	
 }

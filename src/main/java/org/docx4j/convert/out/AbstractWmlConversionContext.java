@@ -21,6 +21,7 @@ package org.docx4j.convert.out;
 
 import java.util.Map;
 
+import org.docx4j.convert.out.common.writer.AbstractMessageWriter;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.TransformState;
 import org.docx4j.openpackaging.packages.OpcPackage;

@@ -33,9 +33,8 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.log4j.Logger;
 import org.docx4j.Docx4jProperties;
 import org.docx4j.XmlUtils;
-import org.docx4j.convert.out.Containerization;
 import org.docx4j.convert.out.ConversionSectionWrappers;
-import org.docx4j.convert.out.PageBreak;
+import org.docx4j.convert.out.Preprocess;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.PropertyResolver;
 import org.docx4j.model.properties.paragraph.SpaceBefore;
@@ -44,7 +43,6 @@ import org.docx4j.model.styles.StyleTree.AugmentedStyle;
 import org.docx4j.model.styles.Tree;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
-import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart;
 import org.docx4j.wml.PPr;
 import org.docx4j.wml.RPr;
 import org.w3c.dom.Document;
@@ -54,7 +52,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.w3c.dom.traversal.NodeIterator;
-import org.xml.sax.InputSource;
 
 /**
  * HtmlExporterNG (now removed - see 
@@ -158,6 +155,7 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 	
 	// Implement the interface.  	
 	
+	@Override
 	public void output(javax.xml.transform.Result result) throws Docx4JException {
 		
 		if (wmlPackage==null) {
@@ -225,23 +223,10 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			javax.xml.transform.Result result, HtmlSettings htmlSettings)
 			throws Exception {
 	HTMLConversionContext conversionContext = null;
+	WordprocessingMLPackage localWmlPackage = wmlPackage;
+	ConversionSectionWrappers conversionSectionWrappers = null; 
 
-		// Containerization of borders/shading
-		MainDocumentPart mdp = wmlPackage.getMainDocumentPart();
-		// Don't change the user's Document object; create a tmp one
-		org.docx4j.wml.Document tmpDoc = XmlUtils.deepCopy(wmlPackage
-				.getMainDocumentPart().getJaxbElement());
-		
-		Containerization.groupAdjacentBorders(tmpDoc.getBody());
-		PageBreak.movePageBreaks(tmpDoc.getBody());
-		//the html xslt does access the header/footer logic, therefore we need here the sectionWrappers
-		ConversionSectionWrappers conversionSectionWrappers = 
-				ConversionSectionWrappers.build(tmpDoc, wmlPackage);
-
-		org.w3c.dom.Document doc = XmlUtils.marshaltoW3CDomDocument(tmpDoc);
-
-		// log.debug( XmlUtils.w3CDomNodeToString(doc));
-
+	
 		// Prep parameters
 		if (htmlSettings == null) {
 			htmlSettings = new HtmlSettings();
@@ -249,8 +234,16 @@ public class HtmlExporterNG2 extends  AbstractHtmlExporter {
 			// these matches
 			// possibly via an extension function in the XSLT
 		}
+	
+		localWmlPackage = Preprocess.process(localWmlPackage, htmlSettings.getFeatures());
+		conversionSectionWrappers = Preprocess.createWrappers(localWmlPackage, htmlSettings.getFeatures()); 
 
-		htmlSettings.setWmlPackage(wmlPackage);
+		htmlSettings.setWmlPackage(localWmlPackage);
+
+		org.w3c.dom.Document doc = 
+				XmlUtils.marshaltoW3CDomDocument(localWmlPackage.getMainDocumentPart().getJaxbElement());
+
+		// log.debug( XmlUtils.w3CDomNodeToString(doc));
 		
 		//Setup the context
 		conversionContext = new HTMLConversionContext(htmlSettings, conversionSectionWrappers);

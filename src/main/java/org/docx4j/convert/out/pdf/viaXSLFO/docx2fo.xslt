@@ -799,14 +799,13 @@
 
 
   <xsl:template match="w:fldSimple" >
-  
+
 		<xsl:variable name="childResults">
 			<xsl:apply-templates/>
 		</xsl:variable>
-				
-		<xsl:copy-of 
-			select="java:org.docx4j.convert.out.pdf.viaXSLFO.Conversion.createBlockForFldSimple(
-		  		$conversionContext, ., $childResults)" />
+
+	  	<xsl:copy-of select="java:org.docx4j.convert.out.Converter.toNode(
+	  			$conversionContext,., $childResults)"/>	  		
   </xsl:template>
   
   <xsl:template match="w:fldChar" >

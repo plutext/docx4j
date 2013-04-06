@@ -23,8 +23,8 @@ package org.docx4j.convert.out.pdf.viaXSLFO;
 import javax.xml.transform.TransformerException;
 
 import org.apache.log4j.Logger;
-import org.docx4j.convert.out.AbstractSymbolWriter;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
+import org.docx4j.convert.out.common.writer.AbstractSymbolWriter;
 import org.docx4j.fonts.PhysicalFont;
 import org.docx4j.fonts.fop.fonts.Typeface;
 import org.docx4j.wml.R;

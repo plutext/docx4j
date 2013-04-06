@@ -1,4 +1,4 @@
-package org.docx4j.convert.out.html;
+package org.docx4j.convert.out.pdf.viaXSLFO;
 
 import java.util.List;
 
@@ -8,24 +8,27 @@ import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.common.writer.AbstractFldSimpleWriter;
 import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.properties.Property;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 public class FldSimpleWriter extends AbstractFldSimpleWriter {
+	protected static final String FO_NS = "http://www.w3.org/1999/XSL/Format";
 	
-	//In HTML there is only one page - therefore the result is always a (more or less formatted) "1"
-	protected static class PageHandler implements FldSimpleStringWriterHandler {
+	protected static class PageHandler implements FldSimpleNodeWriterHandler {
 		@Override
 		public String getName() { return "PAGE"; }
+		@Override
+		public int getProcessType() { return PROCESS_APPLY_STYLE; }
 
 		@Override
-		public String toString(AbstractWmlConversionContext context, FldSimpleModel model) throws TransformerException {
-			return "1";
+		public Node toNode(AbstractWmlConversionContext context, FldSimpleModel model, Document doc) throws TransformerException {
+			return doc.createElementNS(FO_NS, "fo:page-number");
 		}
 	}
 	
 	protected FldSimpleWriter() {
-		super(null, "span");
+		super(FO_NS, "fo:inline");
 	}
 
 	@Override
@@ -36,6 +39,6 @@ public class FldSimpleWriter extends AbstractFldSimpleWriter {
 
 	@Override
 	protected void applyProperties(List<Property> properties, Node node) {
-		HtmlCssHelper.applyAttributes(properties, (Element)node);
+		Conversion.applyFoAttributes(properties, (Element)node);
 	}
 }

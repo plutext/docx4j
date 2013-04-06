@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out;
+package org.docx4j.convert.out.common.writer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerException;
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.XmlUtils;
+import org.docx4j.convert.out.AbstractWmlConversionContext;
 import org.docx4j.convert.out.ModelConverter;
 import org.docx4j.jaxb.Context;
 import org.docx4j.model.Model;

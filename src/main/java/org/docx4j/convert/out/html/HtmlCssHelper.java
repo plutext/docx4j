@@ -20,6 +20,8 @@
 package org.docx4j.convert.out.html;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.docx4j.model.properties.Property;
@@ -39,6 +41,7 @@ import org.docx4j.wml.RPr;
 import org.docx4j.wml.Style;
 import org.docx4j.wml.TcPr;
 import org.docx4j.wml.TrPr;
+import org.w3c.dom.Element;
 
 /** These is an utility class with some common functions for the 
  *  HTML-exporters and the SvgExporter.
@@ -47,6 +50,9 @@ import org.docx4j.wml.TrPr;
 public class HtmlCssHelper {
 
 	private static Logger log = Logger.getLogger(HtmlCssHelper.class);
+	
+	//Temporary maps that get used in applyAttributes, they are kept here to be able to reuse it
+	private static ThreadLocal<Map<String, Property>> threadLocalTempMap = new ThreadLocal<Map<String, Property>>();
 	
     public static void createCssForStyles(OpcPackage opcPackage, StyleTree styleTree, StringBuffer result) {
 
@@ -228,5 +234,43 @@ public class HtmlCssHelper {
     		result.append(p.getCssProperty());
     	}
     }
+
+	public static void applyAttributes(List<Property> properties, Element node) {
+	Map<String, Property> tempAttributeMap = null;
+	StringBuilder buffer = null;
+		if ((properties != null) && (!properties.isEmpty())) {
+			tempAttributeMap = getTempMap();
+			if ((properties != null) && (!properties.isEmpty())) {
+				buffer = new StringBuilder();
+				for (int i=0; i<properties.size(); i++) {
+					tempAttributeMap.put(properties.get(i).getCssName(), properties.get(i));
+				}
+				for (Property property : tempAttributeMap.values()) {
+					buffer.append(property.getCssProperty());
+				}
+				tempAttributeMap.clear();
+				appendStyle(node, buffer.toString());
+			}
+		}
+	}
+
+	public static void appendStyle(Element node, String newValue) {
+	String style = node.getAttribute("style");
+		if ((style != null) && (style.length() > 0)) {
+			node.setAttribute("style", style + newValue);
+		}
+		else {
+			node.setAttribute("style", newValue);
+		}
+	}
+	
+	protected static Map<String, Property> getTempMap() {
+	Map<String, Property> ret = threadLocalTempMap.get();
+		if (ret == null) {
+			ret = new TreeMap<String, Property>();
+			threadLocalTempMap.set(ret);
+		}
+		return ret;
+	}
 
 }

@@ -17,7 +17,7 @@
     limitations under the License.
 
  */
-package org.docx4j.convert.out;
+package org.docx4j.convert.out.common.writer;
 
 import java.io.StringReader;
 
@@ -71,7 +71,7 @@ public abstract class AbstractMessageWriter {
 			+ message
 			+ getOutputSuffix();  
 		
-		System.out.println(documentFragment);
+		log.debug(documentFragment);
 
 		javax.xml.parsers.DocumentBuilderFactory dbf = DocumentBuilderFactory
 				.newInstance();

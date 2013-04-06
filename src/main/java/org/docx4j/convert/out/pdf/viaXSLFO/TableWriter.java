@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.docx4j.UnitsOfMeasurement;
 import org.docx4j.convert.out.AbstractWmlConversionContext;
-import org.docx4j.convert.out.AbstractTableWriter;
+import org.docx4j.convert.out.common.writer.AbstractTableWriter;
 import org.docx4j.model.TransformState;
 import org.docx4j.model.properties.Property;
 import org.docx4j.model.table.Cell;

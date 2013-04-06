@@ -29,6 +29,7 @@ import org.docx4j.XmlUtils;
 import org.docx4j.model.Model;
 import org.docx4j.model.SymbolModel;
 import org.docx4j.model.TransformState;
+import org.docx4j.model.fields.FldSimpleModel;
 import org.docx4j.model.table.TableModel;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -77,6 +78,7 @@ public abstract class AbstractModelRegistry {
 	protected void registerDefaultModelClasses() {
 	    registerModel(TableModel.MODEL_ID, TableModel.class);
 	    registerModel(SymbolModel.MODEL_ID, SymbolModel.class);
+	    registerModel(FldSimpleModel.MODEL_ID, FldSimpleModel.class);
 //    	registerModel("w:p", ParagraphModel.class);
 //    	registerModel("w:t", TextModel.class);
 //    	registerModel("wp:inline", ImageModel.class);
